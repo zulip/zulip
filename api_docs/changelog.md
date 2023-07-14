@@ -20,6 +20,30 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 192**
+
+* [`GET /events`](/api/get-events): Stream creation events are now
+  sent when guest users gain access to a public stream by being
+  subscribed. Guest users previously only received these events when
+  subscribed to private streams.
+
+**Feature level 191**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_mention_group_id` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_mention_group_id`
+  parameter to support setting the user group whose members can mention the new user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_mention_group_id` parameter to support changing the user group whose
+  members can mention the specified user group.
+
+**Feature level 190**
+
+* [`DELETE /realm/emoji/{emoji_name}`](/api/deactivate-custom-emoji): This endpoint
+  now returns an HTTP status code of 404 when an emoji does not exist, instead of 400.
+
 **Feature level 189**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
@@ -1241,8 +1265,10 @@ field with an integer field `invite_to_realm_policy`.
 
 **Feature level 35**
 
-* The peer_add and peer_remove subscription events now have plural
-  versions of `user_ids` and `stream_ids`.
+* [`GET /events`](/api/get-events): The `subscription` events for
+  `peer_add` and `peer_remove` now include `user_ids` and `stream_ids`
+  arrays. Previously, these events included singular `user_id` and
+  `stream_id` integers.
 
 **Feature level 34**
 
@@ -1296,8 +1322,9 @@ releases.
 
 **Feature level 26**
 
-* [`GET /messages`](/api/get-messages): `sender_short_name` field is no
-  longer included in return values for this endpoint.
+* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
+  The `sender_short_name` field is no longer included in message objects
+  returned by these endpoints.
 * [`GET /messages`](/api/get-messages) : Removed `short_name` field from
   `display_recipient` array objects.
 
@@ -1348,9 +1375,9 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 19**
 
-* [`GET /events`](/api/get-events): `subscriptions` event with
-  `op="peer_add"` and `op="peer_remove"` now identify the modified
-  stream by a `stream_id` field, replacing the old `name` field.
+* [`GET /events`](/api/get-events): The `subscription` events for
+  `peer_add` and `peer_remove` now identify the modified
+  stream by the `stream_id` field, replacing the old `name` field.
 
 **Feature level 18**
 

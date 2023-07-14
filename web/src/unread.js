@@ -104,7 +104,7 @@ class Bucketer {
     }
 }
 
-class UnreadPMCounter {
+class UnreadDirectMessageCounter {
     bucketer = new Bucketer({
         KeyDict: Map,
         make_bucket: () => new Set(),
@@ -212,7 +212,7 @@ class UnreadPMCounter {
         return util.sorted_ids(ids);
     }
 }
-const unread_pm_counter = new UnreadPMCounter();
+const unread_direct_message_counter = new UnreadDirectMessageCounter();
 
 function make_per_stream_bucketer() {
     return new Bucketer({
@@ -414,7 +414,7 @@ class UnreadTopicCounter {
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
             if (stream_id === undefined) {
-                // This is a private message containing a mention.
+                // This is a direct message containing a mention.
                 continue;
             }
             streams_with_mentions.add(stream_id);
@@ -431,7 +431,7 @@ class UnreadTopicCounter {
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
             if (stream_id === undefined) {
-                // This is a private message containing a mention.
+                // This is a direct message containing a mention.
                 continue;
             }
 
@@ -509,7 +509,7 @@ function add_message_to_unread_mention_topics(message_id) {
 function remove_message_from_unread_mention_topics(message_id) {
     const stream_id = unread_topic_counter.bucketer.reverse_lookup.get(message_id);
     if (!stream_id) {
-        // Private messages and messages that were already not unread
+        // Direct messages and messages that were already not unread
         // exit here.
         return;
     }
@@ -655,7 +655,7 @@ export function process_unread_message(message) {
     unread_messages.add(message.id);
 
     if (message.type === "private") {
-        unread_pm_counter.add({
+        unread_direct_message_counter.add({
             message_id: message.id,
             user_ids_string: message.user_ids_string,
         });
@@ -706,7 +706,7 @@ export function mark_as_read(message_id) {
     // We don't need to check anything about the message, since all
     // the following methods are cheap and work fine even if message_id
     // was never set to unread.
-    unread_pm_counter.delete(message_id);
+    unread_direct_message_counter.delete(message_id);
 
     // Important: This function uses `unread_topic_counter` to look up
     // the stream/topic for this previously unread message, so much
@@ -724,7 +724,7 @@ export function mark_as_read(message_id) {
 
 export function declare_bankruptcy() {
     // Only used in tests.
-    unread_pm_counter.clear();
+    unread_direct_message_counter.clear();
     unread_topic_counter.clear();
     unread_mentions_counter.clear();
     unread_messages.clear();
@@ -749,7 +749,7 @@ export function get_counts() {
     res.streams_with_mentions = [...streams_with_mentions];
     res.streams_with_unmuted_mentions = [...streams_with_unmuted_mentions];
 
-    const pm_res = unread_pm_counter.get_counts();
+    const pm_res = unread_direct_message_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
     res.private_message_count = pm_res.total_count;
     res.right_sidebar_private_message_count = pm_res.right_sidebar_count;
@@ -824,7 +824,7 @@ export function get_topics_with_unread_mentions(stream_id) {
 }
 
 export function num_unread_for_user_ids_string(user_ids_string) {
-    return unread_pm_counter.num_unread(user_ids_string);
+    return unread_direct_message_counter.num_unread(user_ids_string);
 }
 
 export function get_msg_ids_for_stream(stream_id) {
@@ -836,11 +836,11 @@ export function get_msg_ids_for_topic(stream_id, topic_name) {
 }
 
 export function get_msg_ids_for_user_ids_string(user_ids_string) {
-    return unread_pm_counter.get_msg_ids_for_user_ids_string(user_ids_string);
+    return unread_direct_message_counter.get_msg_ids_for_user_ids_string(user_ids_string);
 }
 
 export function get_msg_ids_for_private() {
-    return unread_pm_counter.get_msg_ids();
+    return unread_direct_message_counter.get_msg_ids();
 }
 
 export function get_msg_ids_for_mentions() {
@@ -871,8 +871,8 @@ export function initialize(params) {
     const unread_msgs = params.unread_msgs;
 
     old_unreads_missing = unread_msgs.old_unreads_missing;
-    unread_pm_counter.set_huddles(unread_msgs.huddles);
-    unread_pm_counter.set_pms(unread_msgs.pms);
+    unread_direct_message_counter.set_huddles(unread_msgs.huddles);
+    unread_direct_message_counter.set_pms(unread_msgs.pms);
     unread_topic_counter.set_streams(unread_msgs.streams);
 
     for (const message_id of unread_msgs.mentions) {

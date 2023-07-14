@@ -15,14 +15,14 @@ class UserMessageNotificationsData:
     pm_push_notify: bool
     mention_email_notify: bool
     mention_push_notify: bool
-    wildcard_mention_email_notify: bool
-    wildcard_mention_push_notify: bool
+    stream_wildcard_mention_email_notify: bool
+    stream_wildcard_mention_push_notify: bool
     stream_push_notify: bool
     stream_email_notify: bool
     followed_topic_push_notify: bool
     followed_topic_email_notify: bool
-    followed_topic_wildcard_mention_push_notify: bool
-    followed_topic_wildcard_mention_email_notify: bool
+    stream_wildcard_mention_in_followed_topic_push_notify: bool
+    stream_wildcard_mention_in_followed_topic_email_notify: bool
     sender_is_muted: bool
     disable_external_notifications: bool
 
@@ -57,10 +57,10 @@ class UserMessageNotificationsData:
         pm_mention_email_disabled_user_ids: Set[int],
         stream_push_user_ids: Set[int],
         stream_email_user_ids: Set[int],
-        wildcard_mention_user_ids: Set[int],
+        stream_wildcard_mention_user_ids: Set[int],
         followed_topic_push_user_ids: Set[int],
         followed_topic_email_user_ids: Set[int],
-        followed_topic_wildcard_mention_user_ids: Set[int],
+        stream_wildcard_mention_in_followed_topic_user_ids: Set[int],
         muted_sender_user_ids: Set[int],
         all_bot_user_ids: Set[int],
     ) -> "UserMessageNotificationsData":
@@ -70,35 +70,35 @@ class UserMessageNotificationsData:
                 user_id=user_id,
                 pm_email_notify=False,
                 mention_email_notify=False,
-                wildcard_mention_email_notify=False,
+                stream_wildcard_mention_email_notify=False,
                 pm_push_notify=False,
                 mention_push_notify=False,
-                wildcard_mention_push_notify=False,
+                stream_wildcard_mention_push_notify=False,
                 online_push_enabled=False,
                 stream_push_notify=False,
                 stream_email_notify=False,
                 followed_topic_push_notify=False,
                 followed_topic_email_notify=False,
-                followed_topic_wildcard_mention_push_notify=False,
-                followed_topic_wildcard_mention_email_notify=False,
+                stream_wildcard_mention_in_followed_topic_push_notify=False,
+                stream_wildcard_mention_in_followed_topic_email_notify=False,
                 sender_is_muted=False,
                 disable_external_notifications=False,
             )
 
-        # `wildcard_mention_user_ids` are those user IDs for whom wildcard mentions should
-        # obey notification settings of personal mentions. Hence, it isn't an independent
-        # notification setting and acts as a wrapper.
+        # `stream_wildcard_mention_user_ids` are those user IDs for whom stream wildcard
+        # mentions should obey notification settings of personal mentions. Hence, it isn't an
+        # independent notification setting and acts as a wrapper.
         pm_email_notify = user_id not in pm_mention_email_disabled_user_ids and private_message
         mention_email_notify = (
             user_id not in pm_mention_email_disabled_user_ids and "mentioned" in flags
         )
-        wildcard_mention_email_notify = (
-            user_id in wildcard_mention_user_ids
+        stream_wildcard_mention_email_notify = (
+            user_id in stream_wildcard_mention_user_ids
             and user_id not in pm_mention_email_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
-        followed_topic_wildcard_mention_email_notify = (
-            user_id in followed_topic_wildcard_mention_user_ids
+        stream_wildcard_mention_in_followed_topic_email_notify = (
+            user_id in stream_wildcard_mention_in_followed_topic_user_ids
             and user_id not in pm_mention_email_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
@@ -107,13 +107,13 @@ class UserMessageNotificationsData:
         mention_push_notify = (
             user_id not in pm_mention_push_disabled_user_ids and "mentioned" in flags
         )
-        wildcard_mention_push_notify = (
-            user_id in wildcard_mention_user_ids
+        stream_wildcard_mention_push_notify = (
+            user_id in stream_wildcard_mention_user_ids
             and user_id not in pm_mention_push_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
-        followed_topic_wildcard_mention_push_notify = (
-            user_id in followed_topic_wildcard_mention_user_ids
+        stream_wildcard_mention_in_followed_topic_push_notify = (
+            user_id in stream_wildcard_mention_in_followed_topic_user_ids
             and user_id not in pm_mention_push_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
@@ -121,17 +121,17 @@ class UserMessageNotificationsData:
             user_id=user_id,
             pm_email_notify=pm_email_notify,
             mention_email_notify=mention_email_notify,
-            wildcard_mention_email_notify=wildcard_mention_email_notify,
+            stream_wildcard_mention_email_notify=stream_wildcard_mention_email_notify,
             pm_push_notify=pm_push_notify,
             mention_push_notify=mention_push_notify,
-            wildcard_mention_push_notify=wildcard_mention_push_notify,
+            stream_wildcard_mention_push_notify=stream_wildcard_mention_push_notify,
             online_push_enabled=(user_id in online_push_user_ids),
             stream_push_notify=(user_id in stream_push_user_ids),
             stream_email_notify=(user_id in stream_email_user_ids),
             followed_topic_push_notify=(user_id in followed_topic_push_user_ids),
             followed_topic_email_notify=(user_id in followed_topic_email_user_ids),
-            followed_topic_wildcard_mention_push_notify=followed_topic_wildcard_mention_push_notify,
-            followed_topic_wildcard_mention_email_notify=followed_topic_wildcard_mention_email_notify,
+            stream_wildcard_mention_in_followed_topic_push_notify=stream_wildcard_mention_in_followed_topic_push_notify,
+            stream_wildcard_mention_in_followed_topic_email_notify=stream_wildcard_mention_in_followed_topic_email_notify,
             sender_is_muted=(user_id in muted_sender_user_ids),
             disable_external_notifications=disable_external_notifications,
         )
@@ -177,10 +177,10 @@ class UserMessageNotificationsData:
             return NotificationTriggers.PRIVATE_MESSAGE
         elif self.mention_push_notify:
             return NotificationTriggers.MENTION
-        elif self.followed_topic_wildcard_mention_push_notify:
-            return NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION
-        elif self.wildcard_mention_push_notify:
-            return NotificationTriggers.WILDCARD_MENTION
+        elif self.stream_wildcard_mention_in_followed_topic_push_notify:
+            return NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+        elif self.stream_wildcard_mention_push_notify:
+            return NotificationTriggers.STREAM_WILDCARD_MENTION
         elif self.followed_topic_push_notify:
             return NotificationTriggers.FOLLOWED_TOPIC_PUSH
         elif self.stream_push_notify:
@@ -205,10 +205,10 @@ class UserMessageNotificationsData:
             return NotificationTriggers.PRIVATE_MESSAGE
         elif self.mention_email_notify:
             return NotificationTriggers.MENTION
-        elif self.followed_topic_wildcard_mention_email_notify:
-            return NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION
-        elif self.wildcard_mention_email_notify:
-            return NotificationTriggers.WILDCARD_MENTION
+        elif self.stream_wildcard_mention_in_followed_topic_email_notify:
+            return NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+        elif self.stream_wildcard_mention_email_notify:
+            return NotificationTriggers.STREAM_WILDCARD_MENTION
         elif self.followed_topic_email_notify:
             return NotificationTriggers.FOLLOWED_TOPIC_EMAIL
         elif self.stream_email_notify:

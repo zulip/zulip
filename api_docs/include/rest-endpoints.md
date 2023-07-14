@@ -96,6 +96,7 @@
 * [Remove a code playground](/api/remove-code-playground)
 * [Get all custom emoji](/api/get-custom-emoji)
 * [Upload custom emoji](/api/upload-custom-emoji)
+* [Deactivate custom emoji](/api/deactivate-custom-emoji)
 * [Get all custom profile fields](/api/get-custom-profile-fields)
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)

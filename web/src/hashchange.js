@@ -9,6 +9,7 @@ import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as info_overlay from "./info_overlay";
 import * as message_lists from "./message_lists";
+import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
@@ -18,7 +19,6 @@ import * as popovers from "./popovers";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
@@ -110,9 +110,9 @@ export function save_narrow(operators) {
 
 function show_all_message_view() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
-    narrow.deactivate(coming_from_recent_topics);
+    const is_actively_scrolling = message_scroll.is_actively_scrolling();
+    narrow.deactivate(coming_from_recent_topics, is_actively_scrolling);
     top_left_corner.handle_narrow_deactivated();
-    search.update_button_visibility();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
     setTimeout(navigate.maybe_scroll_to_selected, 0);
@@ -251,7 +251,7 @@ function do_hashchange_overlay(old_hash) {
     }
     const base = hash_util.get_current_hash_category();
     const old_base = hash_util.get_hash_category(old_hash);
-    const section = hash_util.get_current_hash_section();
+    let section = hash_util.get_current_hash_section();
 
     if (base === "groups" && (!page_params.development_environment || page_params.is_guest)) {
         // The #groups settings page is unfinished, and disabled in production.
@@ -260,7 +260,11 @@ function do_hashchange_overlay(old_hash) {
     }
 
     const coming_from_overlay = hash_util.is_overlay_hash(old_hash);
-
+    if (section === "display-settings") {
+        // Since display-settings was deprecated and replaced with preferences
+        // #settings/display-settings is being redirected to #settings/preferences.
+        section = "preferences";
+    }
     if ((base === "settings" || base === "organization") && !section) {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {

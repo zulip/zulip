@@ -29,14 +29,14 @@ export function process_new_message(message) {
     people.extract_people_from_message(message);
     people.maybe_incr_recipient_count(message);
 
-    const sender = people.get_by_user_id(message.sender_id);
+    const sender = people.maybe_get_user_by_id(message.sender_id);
     if (sender) {
         message.sender_full_name = sender.full_name;
         message.sender_email = sender.email;
         message.status_emoji_info = user_status.get_status_emoji(message.sender_id);
     }
 
-    // Convert topic even for PMs, as legacy code
+    // Convert topic even for direct messages, as legacy code
     // wants the empty field.
     util.convert_message_topic(message);
 

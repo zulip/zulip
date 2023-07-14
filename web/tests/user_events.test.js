@@ -217,7 +217,7 @@ run_test("updates", () => {
     assert.ok(person.timezone);
 
     blueslip.expect("error", "Got update_person event for unexpected user");
-    blueslip.expect("error", "Unknown user_id in get_by_user_id");
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     assert.ok(!user_events.update_person({user_id: 29, full_name: "Sir Isaac Newton"}));
 
     me.profile_data = {};

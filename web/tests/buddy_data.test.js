@@ -240,7 +240,7 @@ test("compose fade interactions (missing topic)", () => {
     assert.equal(faded(), false);
 });
 
-test("compose fade interactions (PMs)", () => {
+test("compose fade interactions (direct messages)", () => {
     people.add_active_user(fred);
 
     set_presence(fred.user_id, "active");
@@ -252,8 +252,8 @@ test("compose fade interactions (PMs)", () => {
     // Don't fade if we're not in a narrow.
     assert.equal(faded(), false);
 
-    // Fade fred if we are narrowed to a PM narrow that does
-    // not include him.
+    // Fade fred if we are narrowed to a direct message narrow
+    // that does not include him.
     compose_fade_helper.set_focused_recipient({
         type: "private",
         to_user_ids: "9999999",
@@ -549,7 +549,7 @@ test("get_items_for_users", () => {
 
 test("error handling", () => {
     presence.presence_info.set(42, {status: "active"});
-    blueslip.expect("error", "Unknown user_id in get_by_user_id");
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();
 });

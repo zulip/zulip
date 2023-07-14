@@ -19,7 +19,7 @@ by Zulip.
 
 {start_tabs}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Emoji**, toggle **Convert emoticons before sending**.
 

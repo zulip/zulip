@@ -13,7 +13,7 @@ class Clipboard {
     constructor(...args) {
         clipboard_args = args;
     }
-    on(success, show_copied_confirmation) {
+    on(_success, show_copied_confirmation) {
         show_copied_confirmation();
     }
 }

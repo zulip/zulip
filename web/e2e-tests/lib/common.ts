@@ -34,7 +34,7 @@ export const pm_recipient = {
 
         // We use [style*="display: block"] here to distinguish
         // the visible typeahead menu from the invisible ones
-        // meant for something else; e.g., the private message
+        // meant for something else; e.g., the direct message
         // input typeahead is different from the topic input
         // typeahead but both can be present in the DOM.
         const entry = await page.waitForSelector('.typeahead[style*="display: block"] .active a', {
@@ -488,8 +488,9 @@ export async function get_rendered_messages(
                 topic_label === null ? "" : (await get_element_text(topic_label)).trim();
             let key = stream_name;
             if (topic_name !== "") {
-                // If topic_name is '' then this is PMs, so only
-                // append > topic_name if we are not in PMs or Group PMs.
+                // If topic_name is '', then this is direct messages, so only
+                // append > topic_name if we are not in 1:1 or group direct
+                // messages.
                 key = `${stream_name} > ${topic_name}`;
             }
 

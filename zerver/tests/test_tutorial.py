@@ -75,7 +75,7 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "Go to [Display settings](#settings/display-settings) "
+                "Go to [Preferences](#settings/preferences) "
                 "to [switch between the light and dark themes](/help/dark-theme), "
                 "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
                 "[change your language](/help/change-your-language), and make other tweaks to your Zulip experience."

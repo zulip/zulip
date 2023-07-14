@@ -39,7 +39,7 @@ export function needs_subscribe_warning(user_id, stream_id) {
     //  We expect the caller to already have verified that we're
     //  sending to a valid stream and trying to mention the user.
 
-    const user = people.get_by_user_id(user_id);
+    const user = people.maybe_get_user_by_id(user_id);
 
     if (!user) {
         return false;

@@ -19,7 +19,7 @@ are at your computer. You will still be able to
 
 {tab|desktop-web}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Advanced**, click on the **Automatically mark messages as
    read** dropdown, and select **Always**, **Never** or **Only in

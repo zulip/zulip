@@ -28,6 +28,8 @@ from zerver.lib.webhooks.git import (
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
     get_commits_comment_action_message,
     get_issue_event_message,
+    get_issue_labeled_or_unlabeled_event_message,
+    get_issue_milestoned_or_demilestoned_event_message,
     get_pull_request_event_message,
     get_push_commits_event_message,
     get_push_tag_event_message,
@@ -46,17 +48,17 @@ DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussio
 class Helper:
     def __init__(
         self,
+        request: HttpRequest,
         payload: WildValue,
         include_title: bool,
     ) -> None:
+        self.request = request
         self.payload = payload
         self.include_title = include_title
 
     def log_unsupported(self, event: str) -> None:
-        summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
-        log_unsupported_webhook_event(
-            summary=summary,
-        )
+        summary = f"The '{event}' event isn't currently supported by the GitHub webhook; ignoring"
+        log_unsupported_webhook_event(request=self.request, summary=summary)
 
 
 def get_opened_or_update_pull_request_body(helper: Helper) -> str:
@@ -200,6 +202,39 @@ def get_issue_comment_body(helper: Helper) -> str:
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
         message=comment["body"].tame(check_string),
+        title=issue["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_issue_labeled_or_unlabeled_body(helper: Helper) -> str:
+    payload = helper.payload
+    include_title = helper.include_title
+    issue = payload["issue"]
+
+    return get_issue_labeled_or_unlabeled_event_message(
+        user_name=get_sender_name(payload),
+        action="added" if payload["action"].tame(check_string) == "labeled" else "removed",
+        url=issue["html_url"].tame(check_string),
+        number=issue["number"].tame(check_int),
+        label_name=payload["label"]["name"].tame(check_string),
+        user_url=get_sender_url(payload),
+        title=issue["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_issue_milestoned_or_demilestoned_body(helper: Helper) -> str:
+    payload = helper.payload
+    include_title = helper.include_title
+    issue = payload["issue"]
+
+    return get_issue_milestoned_or_demilestoned_event_message(
+        user_name=get_sender_name(payload),
+        action="added" if payload["action"].tame(check_string) == "milestoned" else "removed",
+        url=issue["html_url"].tame(check_string),
+        number=issue["number"].tame(check_int),
+        milestone_name=payload["milestone"]["title"].tame(check_string),
+        milestone_url=payload["milestone"]["html_url"].tame(check_string),
+        user_url=get_sender_url(payload),
         title=issue["title"].tame(check_string) if include_title else None,
     )
 
@@ -501,7 +536,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         url=payload["review"]["html_url"].tame(check_string),
         type="PR review",
         title=title if include_title else None,
-        message=payload["review"]["body"].tame(check_string),
+        message=payload["review"]["body"].tame(check_none_or(check_string)),
     )
 
 
@@ -710,6 +745,8 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "fork": get_fork_body,
     "gollum": get_wiki_pages_body,
     "issue_comment": get_issue_comment_body,
+    "issue_labeled_or_unlabeled": get_issue_labeled_or_unlabeled_body,
+    "issue_milestoned_or_demilestoned": get_issue_milestoned_or_demilestoned_body,
     "issues": get_issue_body,
     "member": get_member_body,
     "membership": get_membership_body,
@@ -799,6 +836,7 @@ def api_github_webhook(
     body_function = EVENT_FUNCTION_MAPPER[event]
 
     helper = Helper(
+        request=request,
         payload=payload,
         include_title=user_specified_topic is not None,
     )
@@ -862,6 +900,14 @@ def get_zulip_event_name(
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
             raise UnsupportedWebhookEventTypeError(f"unsupported team action {action}")
+    elif header_event == "issues":
+        action = payload["action"].tame(check_string)
+        if action in ("labeled", "unlabeled"):
+            return "issue_labeled_or_unlabeled"
+        if action in ("milestoned", "demilestoned"):
+            return "issue_milestoned_or_demilestoned"
+        else:
+            return "issues"
     elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
         return header_event
     elif header_event in IGNORED_EVENTS:

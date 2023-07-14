@@ -3,6 +3,10 @@
 map $remote_addr $trusted_x_forwarded_proto {
     default $scheme;
 }
+map $http_x_forwarded_for $x_proxy_misconfiguration {
+    default "";
+    "~." "No proxies configured in Zulip, but proxy headers detected from proxy at $remote_addr; see https://zulip.readthedocs.io/en/latest/production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy";
+}
 <% else %>
 # We do this in two steps because `geo` does not support variable
 # interpolation in the value, but does support CIDR notation,
@@ -17,5 +21,10 @@ geo $realip_remote_addr $is_x_forwarded_proto_trusted {
 map $is_x_forwarded_proto_trusted $trusted_x_forwarded_proto {
     0 $scheme;
     1 $http_x_forwarded_proto;
+}
+map "$is_x_forwarded_proto_trusted:$http_x_forwarded_proto" $x_proxy_misconfiguration {
+    "~^0:" "Incorrect reverse proxy IPs set in Zulip (try $remote_addr?); see https://zulip.readthedocs.io/en/latest/production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy";
+    "~^1:$" "No X-Forwarded-Proto header sent from trusted proxy $realip_remote_addr; see example configurations in https://zulip.readthedocs.io/en/latest/production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy";
+    default "";
 }
 <% end %>

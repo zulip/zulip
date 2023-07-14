@@ -23,7 +23,6 @@ import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
 import * as narrow_banner from "./narrow_banner";
@@ -539,8 +538,6 @@ export function activate(raw_operators, opts) {
         }
         compose_closed_ui.update_reply_recipient_label();
 
-        search.update_button_visibility();
-
         compose_actions.on_narrow(opts);
 
         const current_filter = narrow_state.filter();
@@ -1005,7 +1002,7 @@ function handle_post_narrow_deactivate_processes() {
     message_feed_top_notices.update_top_of_narrow_notices(message_lists.home);
 }
 
-export function deactivate(coming_from_recent_topics = false) {
+export function deactivate(coming_from_recent_topics = false, is_actively_scrolling = false) {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -1029,7 +1026,7 @@ export function deactivate(coming_from_recent_topics = false) {
     }
     blueslip.debug("Unnarrowed");
 
-    if (message_scroll.is_actively_scrolling()) {
+    if (is_actively_scrolling) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
         // on an unnarrow. Wait a bit and try again once the scrolling is over.

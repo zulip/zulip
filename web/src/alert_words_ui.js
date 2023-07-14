@@ -42,10 +42,7 @@ function update_alert_word_status(status_text, is_error) {
     $alert_word_status.show();
 }
 
-function add_alert_word(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
+function add_alert_word() {
     const alert_word = $("#add-alert-word-name").val().trim();
 
     if (alert_words.has_alert_word(alert_word)) {

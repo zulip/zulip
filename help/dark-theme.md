@@ -9,7 +9,7 @@ for working in a dark space.
 
 {tab|desktop-web}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 
 1. Under **General**, select the desired color scheme from the **Theme** dropdown.

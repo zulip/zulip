@@ -24,8 +24,12 @@ from confirmation.models import (
 )
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
-from zerver.actions.create_user import do_create_user, process_new_human_user
-from zerver.actions.default_streams import get_default_streams_for_realm
+from zerver.actions.create_user import (
+    do_create_user,
+    process_new_human_user,
+    set_up_streams_for_new_human_user,
+)
+from zerver.actions.default_streams import do_add_default_stream
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -37,14 +41,18 @@ from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_real
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
+from zerver.lib.create_user import create_user
+from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.send_email import (
     FromAddress,
     deliver_scheduled_emails,
     send_future_email,
 )
+from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email
 from zerver.models import (
+    DefaultStream,
     Message,
     MultiuseInvite,
     PreregistrationUser,
@@ -62,6 +70,81 @@ from zerver.views.registration import accounts_home
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
+
+class StreamSetupTest(ZulipTestCase):
+    def add_messages_to_stream(self, stream_name: str) -> None:
+        # Make sure that add_new_user_history has some messages
+        # to process, so that we get consistent query counts.
+        user = self.example_user("hamlet")
+        self.subscribe(user, stream_name)
+
+        for i in range(5):
+            self.send_stream_message(user, stream_name, f"test {i}")
+
+    def create_simple_new_user(self, realm: Realm, email: str) -> UserProfile:
+        # We don't need to get bogged down in all the details of creating
+        # full users to test how to set up streams.
+        return create_user(
+            email=email,
+            password=None,
+            realm=realm,
+            full_name="full_name",
+        )
+
+    def test_query_counts_for_new_user_using_default_streams(self) -> None:
+        DefaultStream.objects.all().delete()
+        realm = get_realm("zulip")
+
+        for i in range(25):
+            stream = ensure_stream(realm, f"stream{i}", acting_user=None)
+            do_add_default_stream(stream)
+
+        self.add_messages_to_stream("stream5")
+
+        new_user = self.create_simple_new_user(realm, "alice@zulip.com")
+
+        with self.assert_database_query_count(11):
+            set_up_streams_for_new_human_user(
+                user_profile=new_user,
+                prereg_user=None,
+                default_stream_groups=[],
+            )
+
+    def test_query_counts_when_admin_assigns_streams(self) -> None:
+        admin = self.example_user("iago")
+        realm = admin.realm
+
+        streams = [
+            get_stream("Denmark", realm),
+            get_stream("Rome", realm),
+            get_stream("Scotland", realm),
+            get_stream("Scotland", realm),
+            get_stream("Verona", realm),
+            get_stream("Venice", realm),
+        ]
+
+        self.add_messages_to_stream("Rome")
+
+        new_user_email = "bob@zulip.com"
+
+        do_invite_users(
+            admin,
+            [new_user_email],
+            streams,
+            invite_expires_in_minutes=1000,
+        )
+
+        prereg_user = PreregistrationUser.objects.get(email=new_user_email)
+
+        new_user = self.create_simple_new_user(realm, new_user_email)
+
+        with self.assert_database_query_count(12):
+            set_up_streams_for_new_human_user(
+                user_profile=new_user,
+                prereg_user=prereg_user,
+                default_stream_groups=[],
+            )
 
 
 class InviteUserBase(ZulipTestCase):
@@ -708,7 +791,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_success(self.invite(invitee, []))
         self.assertTrue(find_key_by_email(invitee))
 
-        default_streams = get_default_streams_for_realm(realm.id)
+        default_streams = get_default_streams_for_realm_as_dicts(realm.id)
         self.assert_length(default_streams, 1)
 
         self.submit_reg_form_for_user(invitee, "password")
@@ -2197,7 +2280,7 @@ class MultiuseInviteTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)
@@ -2294,7 +2377,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.generate_multiuse_invite_link(streams=streams)
         self.check_user_able_to_register(email3, invite_link)
         # User is not subscribed to default streams as well.
-        self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
+        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 1)
         self.check_user_subscribed_only_to_streams(name3, [])
 
     def test_multiuse_link_different_realms(self) -> None:
@@ -2363,7 +2446,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
         # User is not subscribed to default streams as well.
-        self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
+        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 1)
         self.check_user_subscribed_only_to_streams("alice", [])
 
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:

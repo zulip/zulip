@@ -127,7 +127,12 @@ class Migration(migrations.Migration):
                 migrations.RenameModel(
                     old_name="UserPresence",
                     new_name="UserPresenceOld",
-                )
+                ),
+                migrations.RenameIndex(
+                    model_name="userpresenceold",
+                    old_name="zerver_userpresence_realm_id_timestamp_25f410da_idx",
+                    new_name="zerver_userpresenceold_realm_id_timestamp_52ef5fd3_idx",
+                ),
             ],
         ),
         migrations.CreateModel(
@@ -164,8 +169,19 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={
-                "index_together": {("realm", "last_active_time"), ("realm", "last_connected_time")},
-            },
+        ),
+        migrations.AddIndex(
+            model_name="userpresence",
+            index=models.Index(
+                fields=["realm", "last_active_time"],
+                name="zerver_userpresence_realm_id_last_active_time_1c5aa9a2_idx",
+            ),
+        ),
+        migrations.AddIndex(
+            model_name="userpresence",
+            index=models.Index(
+                fields=["realm", "last_connected_time"],
+                name="zerver_userpresence_realm_id_last_connected_time_98d2fc9f_idx",
+            ),
         ),
     ]

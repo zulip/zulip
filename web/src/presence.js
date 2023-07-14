@@ -175,7 +175,7 @@ export function set_info(presences, server_timestamp) {
         // reload_state.is_in_progress, because races where presence
         // returns data on users not yet received via the server_events
         // system are common in both situations.
-        const person = people.get_by_user_id(user_id, true);
+        const person = people.maybe_get_user_by_id(user_id);
         if (person === undefined) {
             if (!(watchdog.suspects_user_is_offline() || reload_state.is_in_progress())) {
                 // If we're online, and we get a user who we don't

@@ -196,15 +196,14 @@
     #userlist-toggle-button,
     .header,
     #message_view_header {
-        background-color: hsl(0deg 0% 13%);
+        background-color: var(--color-background-navbar);
     }
 
     & body,
     .app-main,
     .column-middle,
     #streams_header,
-    .private_messages_container,
-    .header {
+    .private_messages_container {
         background-color: var(--color-background);
     }
 
@@ -333,7 +332,8 @@
                 }
             }
 
-            .main-view-banner-action-button {
+            .main-view-banner-action-button,
+            .upload_banner_cancel_button {
                 background-color: hsl(205deg 58% 69% / 10%);
                 border-color: transparent;
                 color: hsl(205deg 58% 69%);
@@ -479,7 +479,9 @@
     .new-style .tab-switcher .ind-tab:not(.selected),
     select,
     .pill-container,
-    .user-status-content-wrapper {
+    .user-status-content-wrapper,
+    #custom-expiration-time-input,
+    #searchbox #search_query {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;

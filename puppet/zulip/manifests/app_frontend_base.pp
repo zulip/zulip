@@ -59,6 +59,12 @@ class zulip::app_frontend_base {
       source  => 'puppet:///modules/zulip/nginx/zulip-include-app.d/keepalive-loadbalancer.conf',
       notify  => Service['nginx'],
     }
+  } else {
+    file { ['/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf',
+            '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf']:
+      ensure => absent,
+      notify => Service['nginx'],
+    }
   }
 
   file { '/etc/nginx/zulip-include/upstreams':

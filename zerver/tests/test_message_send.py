@@ -28,9 +28,9 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy
+from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
-from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.streams import create_stream_if_needed
@@ -52,6 +52,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserMessage,
     UserProfile,
     flush_per_request_caches,
@@ -1464,7 +1465,6 @@ class StreamMessagesTest(ZulipTestCase):
         stream_name = "Denmark"
         topic_name = "foo"
         content = "whatever"
-        realm = sender.realm
 
         # To get accurate count of the queries, we should make sure that
         # caches don't come into play. If we count queries while caches are
@@ -1472,7 +1472,6 @@ class StreamMessagesTest(ZulipTestCase):
         # persistent, so our test can also fail if cache is invalidated
         # during the course of the unit test.
         flush_per_request_caches()
-        cache_delete(get_stream_cache_key(stream_name, realm.id))
         with self.assert_database_query_count(13):
             check_send_stream_message(
                 sender=sender,
@@ -1622,11 +1621,11 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(user_message.message.content, content)
         self.assertTrue(user_message.flags.mentioned)
 
-    def send_and_verify_wildcard_mention_message(
+    def send_and_verify_stream_wildcard_mention_message(
         self, sender_name: str, test_fails: bool = False, sub_count: int = 16
     ) -> None:
         sender = self.example_user(sender_name)
-        content = "@**all** test wildcard mention"
+        content = "@**all** test stream wildcard mention"
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=sub_count):
             if not test_fails:
                 msg_id = self.send_stream_message(sender, "test_stream", content)
@@ -1640,7 +1639,7 @@ class StreamMessagesTest(ZulipTestCase):
                 ):
                     self.send_stream_message(sender, "test_stream", content)
 
-    def test_wildcard_mention_restrictions(self) -> None:
+    def test_stream_wildcard_mention_restrictions(self) -> None:
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         polonius = self.example_user("polonius")
@@ -1659,7 +1658,7 @@ class StreamMessagesTest(ZulipTestCase):
             Realm.WILDCARD_MENTION_POLICY_EVERYONE,
             acting_user=None,
         )
-        self.send_and_verify_wildcard_mention_message("polonius")
+        self.send_and_verify_stream_wildcard_mention_message("polonius")
 
         do_set_realm_property(
             realm,
@@ -1667,10 +1666,10 @@ class StreamMessagesTest(ZulipTestCase):
             Realm.WILDCARD_MENTION_POLICY_MEMBERS,
             acting_user=None,
         )
-        self.send_and_verify_wildcard_mention_message("polonius", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("polonius", test_fails=True)
         # There is no restriction on small streams.
-        self.send_and_verify_wildcard_mention_message("polonius", sub_count=10)
-        self.send_and_verify_wildcard_mention_message("cordelia")
+        self.send_and_verify_stream_wildcard_mention_message("polonius", sub_count=10)
+        self.send_and_verify_stream_wildcard_mention_message("cordelia")
 
         do_set_realm_property(
             realm,
@@ -1685,15 +1684,15 @@ class StreamMessagesTest(ZulipTestCase):
         shiva.save()
         cordelia.date_joined = timezone_now()
         cordelia.save()
-        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
-        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", sub_count=10)
         # Administrators and moderators can use wildcard mentions even if they are new.
-        self.send_and_verify_wildcard_mention_message("iago")
-        self.send_and_verify_wildcard_mention_message("shiva")
+        self.send_and_verify_stream_wildcard_mention_message("iago")
+        self.send_and_verify_stream_wildcard_mention_message("shiva")
 
         cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
         cordelia.save()
-        self.send_and_verify_wildcard_mention_message("cordelia")
+        self.send_and_verify_stream_wildcard_mention_message("cordelia")
 
         do_set_realm_property(
             realm,
@@ -1701,25 +1700,25 @@ class StreamMessagesTest(ZulipTestCase):
             Realm.WILDCARD_MENTION_POLICY_MODERATORS,
             acting_user=None,
         )
-        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
-        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
-        self.send_and_verify_wildcard_mention_message("shiva")
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_stream_wildcard_mention_message("shiva")
 
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
             realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
         )
-        self.send_and_verify_wildcard_mention_message("shiva", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on small streams.
-        self.send_and_verify_wildcard_mention_message("shiva", sub_count=10)
-        self.send_and_verify_wildcard_mention_message("iago")
+        self.send_and_verify_stream_wildcard_mention_message("shiva", sub_count=10)
+        self.send_and_verify_stream_wildcard_mention_message("iago")
 
         do_set_realm_property(
             realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
         )
-        self.send_and_verify_wildcard_mention_message("iago", test_fails=True)
-        self.send_and_verify_wildcard_mention_message("iago", sub_count=10)
+        self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
 
     def test_invalid_wildcard_mention_policy(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -1731,6 +1730,88 @@ class StreamMessagesTest(ZulipTestCase):
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16):
             with self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"):
                 self.send_stream_message(cordelia, "test_stream", content)
+
+    def test_user_group_mention_restrictions(self) -> None:
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        self.subscribe(iago, "test_stream")
+        self.subscribe(shiva, "test_stream")
+        self.subscribe(othello, "test_stream")
+        self.subscribe(cordelia, "test_stream")
+
+        leadership = check_add_user_group(othello.realm, "leadership", [othello], acting_user=None)
+        support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
+
+        moderators_system_group = UserGroup.objects.get(
+            realm=iago.realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
+        )
+
+        content = "Test mentioning user group @*leadership*"
+        msg_id = self.send_stream_message(cordelia, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        leadership.can_mention_group = moderators_system_group
+        leadership.save()
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+        ):
+            self.send_stream_message(cordelia, "test_stream", content)
+
+        # The restriction does not apply on silent mention.
+        content = "Test mentioning user group @_*leadership*"
+        msg_id = self.send_stream_message(cordelia, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        content = "Test mentioning user group @*leadership*"
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(shiva, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(iago, "test_stream", content)
+        result = self.api_get(iago, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        test = check_add_user_group(shiva.realm, "test", [shiva], acting_user=None)
+        add_subgroups_to_user_group(leadership, [test], acting_user=None)
+        support.can_mention_group = leadership
+        support.save()
+
+        content = "Test mentioning user group @*support*"
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+        ):
+            self.send_stream_message(iago, "test_stream", content)
+
+        msg_id = self.send_stream_message(othello, "test_stream", content)
+        result = self.api_get(othello, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(shiva, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        content = "Test mentioning user group @*support* @*leadership*"
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+        ):
+            self.send_stream_message(iago, "test_stream", content)
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+        ):
+            self.send_stream_message(othello, "test_stream", content)
+
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(shiva, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
 
     def test_stream_message_mirroring(self) -> None:
         user = self.mit_user("starnine")

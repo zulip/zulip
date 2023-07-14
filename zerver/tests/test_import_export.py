@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+from collections import defaultdict
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 from unittest.mock import patch
 
@@ -440,7 +441,7 @@ class RealmImportExportTest(ExportFile):
 
         exported_usergroups = data["zerver_usergroup"]
         self.assert_length(exported_usergroups, 9)
-        self.assertEqual(exported_usergroups[2]["name"], "@role:administrators")
+        self.assertEqual(exported_usergroups[2]["name"], "role:administrators")
         self.assertFalse("direct_members" in exported_usergroups[2])
         self.assertFalse("direct_subgroups" in exported_usergroups[2])
 
@@ -1206,7 +1207,7 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_group_group_membership(r: Realm) -> Set[str]:
-            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            usergroup = UserGroup.objects.get(realm=r, name="role:members")
             group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
             subgroups = {membership.subgroup.name for membership in group_group_membership}
             return subgroups
@@ -1226,10 +1227,15 @@ class RealmImportExportTest(ExportFile):
             # We already check the subgroups of the group through GroupGroupMembership
             # objects, but we also want to check that direct_subgroups field is set
             # correctly since we do not include this in export data.
-            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            usergroup = UserGroup.objects.get(realm=r, name="role:members")
             direct_subgroups = usergroup.direct_subgroups.all()
             direct_subgroup_names = {group.name for group in direct_subgroups}
             return direct_subgroup_names
+
+        @getter
+        def get_user_group_can_mention_group_setting(r: Realm) -> Set[str]:
+            user_group = UserGroup.objects.get(realm=r, name="hamletcharacters")
+            return user_group.can_mention_group.name
 
         # test botstoragedata and botconfigdata
         @getter
@@ -1544,6 +1550,35 @@ class RealmImportExportTest(ExportFile):
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
+
+    def test_system_usergroup_audit_logs(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm(realm)
+
+        # Simulate an external export where user groups are missing.
+        data = read_json("realm.json")
+        data.pop("zerver_usergroup")
+        data.pop("zerver_realmauditlog")
+        with open(export_fn("realm.json"), "wb") as f:
+            f.write(orjson.dumps(data))
+
+        with self.assertLogs(level="INFO"):
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
+        user_membership_logs = RealmAuditLog.objects.filter(
+            realm=imported_realm,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        ).values_list("modified_user_id", "modified_user_group__name")
+        logged_membership_by_user_id = defaultdict(set)
+        for user_id, user_group_name in user_membership_logs:
+            logged_membership_by_user_id[user_id].add(user_group_name)
+
+        # Make sure that all users get logged as a member in their
+        # corresponding system groups.
+        for user in UserProfile.objects.filter(realm=imported_realm):
+            expected_group_names = {UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user.role]["name"]}
+            if UserGroup.MEMBERS_GROUP_NAME in expected_group_names:
+                expected_group_names.add(UserGroup.FULL_MEMBERS_GROUP_NAME)
+            self.assertSetEqual(logged_membership_by_user_id[user.id], expected_group_names)
 
 
 class SingleUserExportTest(ExportFile):

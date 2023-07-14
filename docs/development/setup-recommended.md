@@ -5,7 +5,7 @@ Zulip development environment on Windows, macOS, and Linux.
 
 The recommended method for installing the Zulip development environment is
 to use WSL 2 on Windows, and Vagrant with Docker on macOS and Linux.
-This methoduses the Windows Subsystem for Linux or creates a Linux container
+This method uses the Windows Subsystem for Linux or creates a Linux container
 (for macOS and Linux) inside which the Zulip server and all related
 services will run.
 

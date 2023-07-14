@@ -12,10 +12,13 @@ export const page_params: {
     }[];
     development_environment: boolean;
     is_admin: boolean;
+    is_bot: boolean;
     is_guest: boolean;
     is_moderator: boolean;
     is_owner: boolean;
     is_spectator: boolean;
+    needs_tutorial: boolean;
+    page_load_time: number;
     promote_sponsoring_zulip: boolean;
     realm_add_custom_emoji_policy: number;
     realm_avatar_changes_disabled: boolean;
@@ -33,6 +36,7 @@ export const page_params: {
     realm_name: string;
     realm_org_type: number;
     realm_plan_type: number;
+    realm_private_message_policy: number;
     realm_push_notifications_enabled: boolean;
     realm_sentry_key: string | undefined;
     realm_uri: string;

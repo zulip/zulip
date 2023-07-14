@@ -5,14 +5,12 @@ import render_search_list_item from "../templates/search_list_item.hbs";
 import {Filter} from "./filter";
 import * as keydown_util from "./keydown_util";
 import * as message_view_header from "./message_view_header";
-import * as narrow from "./narrow";
-import * as narrow_state from "./narrow_state";
 import * as search_suggestion from "./search_suggestion";
 
 // Exported for unit testing
 export let is_using_input_method = false;
 
-export function narrow_or_search_for_term(search_string) {
+export function narrow_or_search_for_term(search_string, {on_narrow_search}) {
     const $search_query_box = $("#search_query");
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -22,7 +20,7 @@ export function narrow_or_search_for_term(search_string) {
     }
 
     const operators = Filter.parse(search_string);
-    narrow.activate(operators, {trigger: "search"});
+    on_narrow_search(operators, {trigger: "search"});
 
     // It's sort of annoying that this is not in a position to
     // blur the search box, because it means that Esc won't
@@ -34,21 +32,7 @@ export function narrow_or_search_for_term(search_string) {
     return $search_query_box.val();
 }
 
-function update_buttons_with_focus(focused) {
-    const $search_query_box = $("#search_query");
-
-    // Show buttons iff the search input is focused, or has non-empty contents,
-    // or we are narrowed.
-    if (focused || $search_query_box.val() || narrow_state.active()) {
-        $(".search_close_button").prop("disabled", false);
-    }
-}
-
-export function update_button_visibility() {
-    update_buttons_with_focus($("#search_query").is(":focus"));
-}
-
-export function initialize() {
+export function initialize({on_narrow_search}) {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -79,7 +63,7 @@ export function initialize() {
             return true;
         },
         updater(search_string) {
-            return narrow_or_search_for_term(search_string);
+            return narrow_or_search_for_term(search_string, {on_narrow_search});
         },
         sorter(items) {
             return items;
@@ -102,7 +86,6 @@ export function initialize() {
 
     $searchbox_form
         .on("keydown", (e) => {
-            update_button_visibility();
             if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
                 // Don't submit the form so that the typeahead can instead
                 // handle our Enter keypress. Any searching that needs
@@ -125,41 +108,10 @@ export function initialize() {
                 // indicate that they've done what they need to do)
 
                 // Pill is already added during keydown event of input pills.
-                narrow_or_search_for_term($search_query_box.val());
+                narrow_or_search_for_term($search_query_box.val(), {on_narrow_search});
                 $search_query_box.trigger("blur");
-                update_buttons_with_focus(false);
             }
         });
-
-    // Some of these functions don't actually need to be exported,
-    // but the code was moved here from elsewhere, and it would be
-    // more work to re-order everything and make them private.
-
-    $search_query_box.on("focus", focus_search);
-    $search_query_box.on("blur", () => {
-        // The search query box is a visual cue as to
-        // whether search or narrowing is active.  If
-        // the user blurs the search box, then we should
-        // update the search string to reflect the current
-        // narrow (or lack of narrow).
-        //
-        // But we can't do this right away, because
-        // selecting something in the typeahead menu causes
-        // the box to lose focus a moment before.
-        //
-        // The workaround is to check 100ms later -- long
-        // enough for the search to have gone through, but
-        // short enough that the user won't notice (though
-        // really it would be OK if they did).
-        setTimeout(() => {
-            update_button_visibility();
-        }, 100);
-    });
-}
-
-export function focus_search() {
-    // The search bar is not focused yet, but will be.
-    update_buttons_with_focus(true);
 }
 
 export function initiate_search() {
@@ -170,5 +122,4 @@ export function initiate_search() {
 export function clear_search_form() {
     $("#search_query").val("");
     $("#search_query").trigger("blur");
-    $(".search_close_button").prop("disabled", true);
 }

@@ -49,7 +49,7 @@ run_test("topics", ({override}) => {
         [4, ["4a"]],
     ]);
 
-    function has_unread_messages(stream, topic) {
+    function has_unread_messages(_stream, topic) {
         return topic !== "read";
     }
 
@@ -105,7 +105,7 @@ run_test("topics", ({override}) => {
         [devel_stream_id, muted_stream_id].includes(stream_id),
     );
 
-    override(user_topics, "is_topic_muted", (stream_name, topic) => topic === "muted");
+    override(user_topics, "is_topic_muted", (_stream_name, topic) => topic === "muted");
 
     let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {

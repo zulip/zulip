@@ -50,7 +50,8 @@ def sanitize_name(value: str) -> str:
     value = unicodedata.normalize("NFKC", value)
     value = re.sub(r"[^\w\s.-]", "", value).strip()
     value = re.sub(r"[-\s]+", "-", value)
-    assert value not in {"", ".", ".."}
+    if value in {"", ".", ".."}:
+        return "uploaded-file"
     return value
 
 

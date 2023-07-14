@@ -253,7 +253,7 @@ export function initialize_kitchen_sink_stuff() {
     //      the code here can probably be moved to more
     //      specific-purpose modules like message_viewport.js.
 
-    const throttled_mousewheelhandler = _.throttle((e, delta) => {
+    const throttled_mousewheelhandler = _.throttle((_e, delta) => {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
@@ -535,7 +535,7 @@ export function initialize_everything() {
             - tracking all streams
             - tracking presence data
             - tracking user groups and bots
-            - tracking recent PMs
+            - tracking recent direct messages
 
         Using stream data as an example, we use a
         module called `stream_data` to actually track
@@ -719,7 +719,9 @@ export function initialize_everything() {
         on_enter_send: compose.finish,
     });
     compose_textarea.initialize();
-    search.initialize();
+    search.initialize({
+        on_narrow_search: narrow.activate,
+    });
     tutorial.initialize();
     notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
     unread_ops.initialize();

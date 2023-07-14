@@ -16,6 +16,7 @@ from zerver.actions.message_edit import (
 from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
+from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_change_user_role
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids, truncate_topic
@@ -34,6 +35,7 @@ from zerver.models import (
     Message,
     Realm,
     Stream,
+    UserGroup,
     UserMessage,
     UserProfile,
     UserTopic,
@@ -2037,7 +2039,59 @@ class EditMessageTest(EditMessageTestCase):
         )
 
     @mock.patch("zerver.actions.message_edit.send_event")
-    def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
+    def test_stream_wildcard_mention_in_followed_topic(
+        self, mock_send_event: mock.MagicMock
+    ) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.login_user(hamlet)
+
+        do_set_user_topic_visibility_policy(
+            user_profile=hamlet,
+            stream=get_stream(stream_name, cordelia.realm),
+            topic="test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
+
+        def notify(user_id: int) -> Dict[str, Any]:
+            return {
+                "id": user_id,
+                "flags": ["wildcard_mentioned"],
+            }
+
+        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": "Hello @**all**",
+            },
+        )
+        self.assert_json_success(result)
+
+        # Extract the send_event call where event type is 'update_message'.
+        # Here we assert 'stream_wildcard_mention_in_followed_topic_user_ids'
+        # has been set properly.
+        called = False
+        for call_args in mock_send_event.call_args_list:
+            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "update_message":
+                self.assertEqual(arg_event["type"], "update_message")
+                self.assertEqual(
+                    arg_event["stream_wildcard_mention_in_followed_topic_user_ids"], [hamlet.id]
+                )
+                self.assertEqual(
+                    sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
+                )
+                called = True
+        self.assertTrue(called)
+
+    @mock.patch("zerver.actions.message_edit.send_event")
+    def test_stream_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -2063,20 +2117,22 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
 
         # Extract the send_event call where event type is 'update_message'.
-        # Here we assert wildcard_mention_user_ids has been set properly.
+        # Here we assert 'stream_wildcard_mention_user_ids' has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
-                self.assertEqual(arg_event["wildcard_mention_user_ids"], [cordelia.id, hamlet.id])
+                self.assertEqual(
+                    arg_event["stream_wildcard_mention_user_ids"], [cordelia.id, hamlet.id]
+                )
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
                 )
                 called = True
         self.assertTrue(called)
 
-    def test_wildcard_mention_restrictions_when_editing(self) -> None:
+    def test_stream_wildcard_mention_restrictions_when_editing(self) -> None:
         cordelia = self.example_user("cordelia")
         shiva = self.example_user("shiva")
         self.login("cordelia")
@@ -2123,6 +2179,157 @@ class EditMessageTest(EditMessageTestCase):
                     "content": "Hello @**everyone**",
                 },
             )
+        self.assert_json_success(result)
+
+    def test_user_group_mention_restrictions_while_editing(self) -> None:
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        self.subscribe(iago, "test_stream")
+        self.subscribe(shiva, "test_stream")
+        self.subscribe(othello, "test_stream")
+        self.subscribe(cordelia, "test_stream")
+
+        leadership = check_add_user_group(othello.realm, "leadership", [othello], acting_user=None)
+        support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
+
+        moderators_system_group = UserGroup.objects.get(
+            realm=iago.realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
+        )
+
+        self.login("cordelia")
+        msg_id = self.send_stream_message(cordelia, "test_stream", "Test message")
+        content = "Edited test message @*leadership*"
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        leadership.can_mention_group = moderators_system_group
+        leadership.save()
+
+        msg_id = self.send_stream_message(cordelia, "test_stream", "Test message")
+        content = "Edited test message @*leadership*"
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_error(
+            result,
+            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+        )
+
+        # The restriction does not apply on silent mention.
+        msg_id = self.send_stream_message(cordelia, "test_stream", "Test message")
+        content = "Edited test message @_*leadership*"
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        self.login("shiva")
+        content = "Edited test message @*leadership*"
+        msg_id = self.send_stream_message(shiva, "test_stream", "Test message")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        self.login("iago")
+        msg_id = self.send_stream_message(iago, "test_stream", "Test message")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        test = check_add_user_group(shiva.realm, "test", [shiva], acting_user=None)
+        add_subgroups_to_user_group(leadership, [test], acting_user=None)
+        support.can_mention_group = leadership
+        support.save()
+
+        content = "Test mentioning user group @*support*"
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_error(
+            result,
+            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+        )
+
+        msg_id = self.send_stream_message(othello, "test_stream", "Test message")
+        self.login("othello")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(shiva, "test_stream", "Test message")
+        self.login("shiva")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(iago, "test_stream", "Test message")
+        content = "Test mentioning user group @*support* @*leadership*"
+
+        self.login("iago")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_error(
+            result,
+            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+        )
+
+        msg_id = self.send_stream_message(othello, "test_stream", "Test message")
+        self.login("othello")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_error(
+            result,
+            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+        )
+
+        msg_id = self.send_stream_message(shiva, "test_stream", "Test message")
+        self.login("shiva")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
         self.assert_json_success(result)
 
     def test_topic_edit_history_saved_in_all_message(self) -> None:

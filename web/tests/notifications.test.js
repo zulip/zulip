@@ -281,7 +281,7 @@ test("basic_notifications", () => {
 
     // Notifications API stub
     class StubNotification {
-        constructor(title, {icon, body, tag}) {
+        constructor(_title, {icon, body, tag}) {
             this.icon = icon;
             this.body = body;
             this.tag = tag;

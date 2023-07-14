@@ -317,7 +317,10 @@ export function delete_sub(stream_id) {
 export function get_non_default_stream_names() {
     let subs = [...stream_info.values()];
     subs = subs.filter((sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only);
-    const names = subs.map((sub) => sub.name);
+    const names = subs.map((sub) => ({
+        name: sub.name,
+        unique_id: sub.stream_id.toString(),
+    }));
     return names;
 }
 
@@ -845,4 +848,14 @@ export function initialize(params) {
 
 export function remove_default_stream(stream_id) {
     default_stream_ids.delete(stream_id);
+}
+
+export function get_options_for_dropdown_widget() {
+    return subscribed_subs()
+        .map((stream) => ({
+            name: stream.name,
+            unique_id: stream.stream_id,
+            stream,
+        }))
+        .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
 }

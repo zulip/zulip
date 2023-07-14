@@ -1,5 +1,4 @@
 import datetime
-import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
 
@@ -31,13 +30,14 @@ from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperatorError,
     NarrowBuilder,
-    build_narrow_filter,
+    build_narrow_predicate,
     exclude_muting_conditions,
     find_first_unread_anchor,
     is_spectator_compatible,
     ok_to_include_history,
     post_process_limited_query,
 )
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
@@ -592,24 +592,255 @@ class NarrowBuilderTest(ZulipTestCase):
 
 
 class NarrowLibraryTest(ZulipTestCase):
-    def test_build_narrow_filter(self) -> None:
-        fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures/narrow.json")
-        with open(fixtures_path, "rb") as f:
-            scenarios = orjson.loads(f.read())
-        self.assert_length(scenarios, 11)
-        for scenario in scenarios:
-            narrow = scenario["narrow"]
-            accept_events = scenario["accept_events"]
-            reject_events = scenario["reject_events"]
-            narrow_filter = build_narrow_filter(narrow)
-            for e in accept_events:
-                self.assertTrue(narrow_filter(e))
-            for e in reject_events:
-                self.assertFalse(narrow_filter(e))
+    def test_build_narrow_predicate(self) -> None:
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="stream", operand="devel")])
 
-    def test_build_narrow_filter_invalid(self) -> None:
+        self.assertTrue(
+            narrow_predicate(
+                message={"display_recipient": "devel", "type": "stream"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_predicate(
+                message={"display_recipient": "social", "type": "stream"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="topic", operand="bark")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "stream", "subject": "BarK"},
+                flags=[],
+            )
+        )
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "stream", "topic": "bark"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream", "subject": "play with tail"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream", "topic": "play with tail"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate(
+            [
+                NarrowTerm(operator="stream", operand="devel"),
+                NarrowTerm(operator="topic", operand="python"),
+            ]
+        )
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"display_recipient": "devel", "type": "stream", "subject": "python"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_predicate(
+                message={"display_recipient": "devel", "type": "stream", "subject": "java"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_predicate(
+                message={"display_recipient": "social", "type": "stream"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate(
+            [NarrowTerm(operator="sender", operand="hamlet@zulip.com")]
+        )
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"sender_email": "hamlet@zulip.com"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"sender_email": "cordelia@zulip.com"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="dm")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="private")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="starred")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={},
+                flags=["starred"],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={},
+                flags=["alerted"],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="alerted")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={},
+                flags=["mentioned"],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={},
+                flags=["starred"],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="mentioned")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={},
+                flags=["mentioned"],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={},
+                flags=["starred"],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="unread")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={},
+                flags=["read"],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="resolved")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "stream", "subject": "✔ python"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream", "subject": "java"},
+                flags=[],
+            )
+        )
+
+    def test_build_narrow_predicate_invalid(self) -> None:
         with self.assertRaises(JsonableError):
-            build_narrow_filter(["invalid_operator", "operand"])
+            build_narrow_predicate([NarrowTerm(operator="invalid_operator", operand="operand")])
 
     def test_is_spectator_compatible(self) -> None:
         self.assertTrue(is_spectator_compatible([]))

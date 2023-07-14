@@ -204,7 +204,7 @@ run_test("compute_placeholder_text", () => {
         $t({defaultMessage: "Message #all > Test"}),
     );
 
-    // PM Narrows
+    // direct message narrows
     opts = {
         message_type: "private",
         stream: "",
@@ -233,7 +233,7 @@ run_test("compute_placeholder_text", () => {
     });
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message Alice"}));
 
-    // Group PM
+    // group direct message
     opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
@@ -475,10 +475,10 @@ run_test("format_text", ({override}) => {
     let wrap_selection_called = false;
     let wrap_syntax = "";
 
-    override(text_field_edit, "set", (field, text) => {
+    override(text_field_edit, "set", (_field, text) => {
         set_text = text;
     });
-    override(text_field_edit, "wrapSelection", (field, syntax) => {
+    override(text_field_edit, "wrapSelection", (_field, syntax) => {
         wrap_selection_called = true;
         wrap_syntax = syntax;
     });
@@ -627,7 +627,7 @@ run_test("format_text", ({override}) => {
 
 run_test("markdown_shortcuts", ({override_rewire}) => {
     let format_text_type;
-    override_rewire(compose_ui, "format_text", ($textarea, type) => {
+    override_rewire(compose_ui, "format_text", (_$textarea, type) => {
         format_text_type = type;
     });
 

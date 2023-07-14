@@ -75,10 +75,11 @@ export function query_matches_string(
 
 function clean_query(query: string): string {
     query = remove_diacritics(query);
-    // When `abc ` with a space at the end is typed in a
-    // contenteditable widget such as the composebox PM section, the
-    // space at the end was a `no break-space (U+00A0)` instead of
-    // `space (U+0020)`, which lead to no matches in those cases.
+    // When `abc ` with a space at the end is typed in
+    // a content-editable widget such as the composebox
+    // direct message section, the space at the end was
+    // a `no break-space (U+00A0)` instead of `space (U+0020)`,
+    // which lead to no matches in those cases.
     query = query.replace(/\u00A0/g, " ");
 
     return query;

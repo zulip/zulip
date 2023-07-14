@@ -153,7 +153,7 @@ test("peer event error handling (bad stream_ids/user_ids)", ({override}) => {
     };
 
     blueslip.expect("warn", "We have untracked stream_ids: 8888,9999");
-    blueslip.expect("warn", "We have untracked user_ids: 3333,4444");
+    blueslip.expect("warn", "We have untracked user_ids");
     dispatch(add_event);
     blueslip.reset();
 
@@ -165,7 +165,7 @@ test("peer event error handling (bad stream_ids/user_ids)", ({override}) => {
     };
 
     blueslip.expect("warn", "We have untracked stream_ids: 8888,9999");
-    blueslip.expect("warn", "We have untracked user_ids: 3333,4444");
+    blueslip.expect("warn", "We have untracked user_ids");
     dispatch(remove_event);
 });
 

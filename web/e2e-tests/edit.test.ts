@@ -56,7 +56,7 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
     );
     await page.waitForSelector(
         `xpath/${last_message_xpath}//*[${common.has_class_x(
-            "sender_name-in-status",
+            "sender_name",
         )} and normalize-space()="Desdemona"]`,
     );
 
@@ -69,7 +69,7 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
     );
     await page.waitForSelector(
         `xpath/${last_message_xpath}//*[${common.has_class_x(
-            "sender_name-in-status",
+            "sender_name",
         )} and normalize-space()="Desdemona"]`,
     );
 }

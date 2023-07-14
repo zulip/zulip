@@ -55,12 +55,14 @@ from zerver.models import (
     InvalidFakeEmailDomainError,
     Message,
     PreregistrationUser,
+    RealmAuditLog,
     RealmDomain,
     RealmUserDefault,
     Recipient,
     ScheduledEmail,
     Stream,
     Subscription,
+    UserGroup,
     UserGroupMembership,
     UserHotspot,
     UserProfile,
@@ -786,7 +788,7 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(91):
+        with self.assert_database_query_count(93):
             with cache_tries_captured() as cache_tries:
                 with self.capture_send_event_calls(expected_num_events=11) as events:
                     fred = do_create_user(
@@ -850,13 +852,42 @@ class BulkCreateUserTest(ZulipTestCase):
             ("Cher", "cher@zulip.com"),
         ]
 
+        now = timezone_now()
+        expected_user_group_names = {
+            UserGroup.MEMBERS_GROUP_NAME,
+            UserGroup.FULL_MEMBERS_GROUP_NAME,
+        }
         create_users(realm, name_list)
         bono = get_user_by_delivery_email("bono@zulip.com", realm)
         self.assertEqual(bono.email, "bono@zulip.com")
         self.assertEqual(bono.delivery_email, "bono@zulip.com")
+        user_group_names = set(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                modified_user=bono,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time__gte=now,
+            ).values_list("modified_user_group__name", flat=True)
+        )
+        self.assertSetEqual(
+            user_group_names,
+            expected_user_group_names,
+        )
 
         cher = get_user_by_delivery_email("cher@zulip.com", realm)
         self.assertEqual(cher.full_name, "Cher")
+        user_group_names = set(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                modified_user=cher,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time__gte=now,
+            ).values_list("modified_user_group__name", flat=True)
+        )
+        self.assertSetEqual(
+            user_group_names,
+            expected_user_group_names,
+        )
 
 
 class AdminCreateUserTest(ZulipTestCase):
@@ -1618,7 +1649,7 @@ class ActivateTest(ZulipTestCase):
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user("hamlet")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             user.realm,
             to_user_ids=[user.id],
             delay=datetime.timedelta(hours=1),
@@ -1631,7 +1662,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1647,7 +1678,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1662,7 +1693,7 @@ class ActivateTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1688,7 +1719,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         to_user_ids = [hamlet.id, iago.id]
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=to_user_ids,
             delay=datetime.timedelta(hours=1),
@@ -1711,7 +1742,7 @@ class ActivateTest(ZulipTestCase):
             [
                 f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
                 "had empty users and address attributes: "
-                "{'template_prefix': 'zerver/emails/followup_day1', 'from_name': None, "
+                "{'template_prefix': 'zerver/emails/followup_day2', 'from_name': None, "
                 "'from_address': None, 'language': None, 'context': {}}"
             ],
         )
@@ -1755,7 +1786,8 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=False,
+            possible_topic_wildcard_mention=False,
+            possible_stream_wildcard_mention=False,
         )
 
         all_user_ids = {hamlet.id, cordelia.id, othello.id}
@@ -1767,10 +1799,12 @@ class RecipientInfoTest(ZulipTestCase):
             pm_mention_push_disabled_user_ids=set(),
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
-            wildcard_mention_user_ids=set(),
+            topic_wildcard_mention_user_ids=set(),
+            stream_wildcard_mention_user_ids=set(),
             followed_topic_push_user_ids=set(),
             followed_topic_email_user_ids=set(),
-            followed_topic_wildcard_mention_user_ids=set(),
+            topic_wildcard_mention_in_followed_topic_user_ids=set(),
+            stream_wildcard_mention_in_followed_topic_user_ids=set(),
             muted_sender_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
@@ -1789,7 +1823,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=False,
+            possible_stream_wildcard_mention=False,
         )
         self.assertEqual(info.pm_mention_email_disabled_user_ids, {hamlet.id})
         self.assertEqual(info.pm_mention_push_disabled_user_ids, {hamlet.id})
@@ -1806,19 +1840,72 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=False,
+            possible_stream_wildcard_mention=False,
         )
         self.assertEqual(info.stream_push_user_ids, {hamlet.id})
-        self.assertEqual(info.wildcard_mention_user_ids, set())
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
 
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=True,
+            possible_stream_wildcard_mention=True,
         )
-        self.assertEqual(info.wildcard_mention_user_ids, {hamlet.id, othello.id})
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+
+        do_change_user_setting(
+            hamlet,
+            "wildcard_mentions_notify",
+            True,
+            acting_user=None,
+        )
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=False,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
+        self.assertEqual(info.topic_wildcard_mention_user_ids, set())
+
+        # User who sent a message to the topic, or reacted to a message on the topic
+        # is only considered as a possible user to be notified for topic mention.
+        self.send_stream_message(hamlet, stream_name, content="test message", topic_name=topic_name)
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=False,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=False,
+            possible_stream_wildcard_mention=True,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+        self.assertEqual(info.topic_wildcard_mention_user_ids, set())
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=True,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
 
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = False
@@ -1884,22 +1971,22 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=False,
+            possible_stream_wildcard_mention=False,
         )
         self.assertEqual(info.stream_push_user_ids, set())
-        self.assertEqual(info.wildcard_mention_user_ids, set())
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
 
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=True,
+            possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_push_user_ids, set())
         # Since Hamlet has muted the stream and Cordelia has disabled
         # wildcard notifications, it should just be Othello here.
-        self.assertEqual(info.wildcard_mention_user_ids, {othello.id})
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {othello.id})
 
         # If Hamlet mutes Cordelia, he should be in `muted_sender_user_ids` for a message
         # sent by Cordelia.
@@ -1909,7 +1996,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=cordelia.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=True,
+            possible_stream_wildcard_mention=True,
         )
         self.assertTrue(hamlet.id in info.muted_sender_user_ids)
 
@@ -1922,11 +2009,11 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=True,
+            possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_push_user_ids, set())
         # Verify that stream-level wildcard_mentions_notify=False works correctly.
-        self.assertEqual(info.wildcard_mention_user_ids, set())
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
 
         # Verify that True works as expected as well
         sub = get_subscription(stream_name, othello)
@@ -1938,10 +2025,10 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=True,
+            possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_push_user_ids, set())
-        self.assertEqual(info.wildcard_mention_user_ids, {othello.id})
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {othello.id})
 
         # Add a service bot.
         service_bot = do_create_user(
@@ -2005,7 +2092,7 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.followed_topic_email_user_ids, {hamlet.id})
         self.assertEqual(info.followed_topic_push_user_ids, {hamlet.id})
-        self.assertEqual(info.followed_topic_wildcard_mention_user_ids, {hamlet.id})
+        self.assertEqual(info.stream_wildcard_mention_in_followed_topic_user_ids, {hamlet.id})
 
         # Omit Hamlet from followed_topic_email_user_ids
         do_change_user_setting(
@@ -2021,7 +2108,7 @@ class RecipientInfoTest(ZulipTestCase):
             False,
             acting_user=None,
         )
-        # Omit Hamlet from followed_topic_wildcard_mention_user_ids
+        # Omit Hamlet from stream_wildcard_mention_in_followed_topic_user_ids
         do_change_user_setting(
             hamlet,
             "enable_followed_topic_wildcard_mentions_notify",
@@ -2037,7 +2124,7 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.followed_topic_email_user_ids, set())
         self.assertEqual(info.followed_topic_push_user_ids, set())
-        self.assertEqual(info.followed_topic_wildcard_mention_user_ids, set())
+        self.assertEqual(info.stream_wildcard_mention_in_followed_topic_user_ids, set())
 
     def test_get_recipient_info_invalid_recipient_type(self) -> None:
         hamlet = self.example_user("hamlet")

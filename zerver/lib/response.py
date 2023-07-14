@@ -117,8 +117,11 @@ def json_response_from_error(exception: JsonableError) -> MutableJsonResponse:
     middleware takes care of transforming it into a response by
     calling this function.
     """
+    response_type = "error"
+    if 200 <= exception.http_status_code < 300:
+        response_type = "success"
     response = json_response(
-        "error", msg=exception.msg, data=exception.data, status=exception.http_status_code
+        response_type, msg=exception.msg, data=exception.data, status=exception.http_status_code
     )
 
     for header, value in exception.extra_headers.items():

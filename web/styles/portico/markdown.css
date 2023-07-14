@@ -287,14 +287,14 @@
     .tip::before {
         display: inline;
         content: "\f0eb   Tip:  ";
-        font-family: FontAwesome, "Source Sans 3", sans-serif;
+        font-family: FontAwesome, "Source Sans 3 VF", sans-serif;
         font-weight: 600;
     }
 
     .keyboard_tip::before {
         display: inline;
         content: "\f11c   Keyboard shortcut:  ";
-        font-family: FontAwesome, "Source Sans 3", sans-serif;
+        font-family: FontAwesome, "Source Sans 3 VF", sans-serif;
         font-weight: 600;
     }
 
@@ -399,6 +399,7 @@
     }
 
     .copy-codeblock {
+        cursor: pointer;
         /* Invisible default button */
         background: none;
         border: none;
@@ -412,6 +413,10 @@
         &:focus {
             outline-offset: -1px;
             outline-color: hsl(176deg 46% 41%);
+        }
+
+        &:hover svg path {
+            fill: hsl(200deg 100% 40%);
         }
     }
 

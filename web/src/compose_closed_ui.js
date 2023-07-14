@@ -16,8 +16,8 @@ export function get_recipient_label(message) {
     if (message === undefined) {
         if (message_lists.current.visibly_empty()) {
             // For empty narrows where there's a clear reply target,
-            // i.e. stream+topic or a single PM conversation, we label
-            // the button as replying to the thread.
+            // i.e. stream+topic or a single direct message conversation,
+            // we label the button as replying to the thread.
             if (narrow_state.narrowed_to_topic()) {
                 message = {
                     stream: narrow_state.stream(),
@@ -167,7 +167,7 @@ export function initialize() {
     });
 
     $("body").on("click", ".compose_private_button", () => {
-        compose_actions.start("private", {trigger: "new private message"});
+        compose_actions.start("private", {trigger: "new direct message"});
     });
 
     $("body").on("click", ".compose_reply_button", () => {

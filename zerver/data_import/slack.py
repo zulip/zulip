@@ -1472,7 +1472,8 @@ def check_token_access(token: str) -> None:
             )
         if not data.json()["ok"]:
             error = data.json()["error"]
-            raise ValueError(f"Invalid Slack token: {token}, {error}")
+            if error != "missing_scope":
+                raise ValueError(f"Invalid Slack token: {token}, {error}")
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
         required_scopes = {"emoji:read", "users:read", "users:read.email", "team:read"}
         missing_scopes = required_scopes - has_scopes

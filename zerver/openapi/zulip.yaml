@@ -771,6 +771,15 @@ paths:
                                 Event sent to other users when users have been subscribed to
                                 streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
+
+                                **Changes**: In Zulip 4.0 (feature level 35), the singular
+                                `user_id` and `stream_id` integers included in this event
+                                were replaced with plural `user_ids` and `stream_ids` integer
+                                arrays.
+
+                                In Zulip 3.0 (feature level 19), the `stream_id` field was
+                                added to identify the stream the user subscribed to,
+                                replacing the `name` field.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -787,12 +796,18 @@ paths:
                                   type: array
                                   description: |
                                     The IDs of the streams to which the user has subscribed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 35), replacing
+                                    the `stream_id` integer.
                                   items:
                                     type: integer
                                 user_ids:
                                   type: array
                                   description: |
                                     The IDs of the users who subscribed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 35), replacing
+                                    the `user_id` integer.
                                   items:
                                     type: integer
                               additionalProperties: false
@@ -800,8 +815,8 @@ paths:
                                 {
                                   "type": "subscription",
                                   "op": "peer_add",
-                                  "stream_id": 9,
-                                  "user_id": 12,
+                                  "stream_ids": [9],
+                                  "user_ids": [12],
                                   "id": 0,
                                 }
                             - type: object
@@ -809,6 +824,15 @@ paths:
                                 Event sent to other users when users have been unsubscribed
                                 from streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
+
+                                **Changes**: In Zulip 4.0 (feature level 35), the singular
+                                `user_id` and `stream_id` integers included in this event
+                                were replaced with plural `user_ids` and `stream_ids` integer
+                                arrays.
+
+                                In Zulip 3.0 (feature level 19), the `stream_id` field was
+                                added to identify the stream the user unsubscribed from,
+                                replacing the `name` field.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -826,12 +850,18 @@ paths:
                                   description: |
                                     The IDs of the streams from which the users have been
                                     unsubscribed from.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 35), replacing
+                                    the `stream_id` integer.
                                   items:
                                     type: integer
                                 user_ids:
                                   type: array
                                   description: |
                                     The IDs of the users who have been unsubscribed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 35), replacing
+                                    the `user_id` integer.
                                   items:
                                     type: integer
                               additionalProperties: false
@@ -839,13 +869,17 @@ paths:
                                 {
                                   "type": "subscription",
                                   "op": "peer_remove",
-                                  "stream_id": 9,
-                                  "user_id": 12,
+                                  "stream_ids": [9],
+                                  "user_ids": [12],
                                   "id": 0,
                                 }
                             - type: object
                               description: |
                                 Event type for messages.
+
+                                **Changes**: In Zulip 3.1 (feature level 26), the
+                                `sender_short_name` field was removed from message
+                                objects.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -888,7 +922,6 @@ paths:
                                       "reactions": [],
                                       "submessages": [],
                                       "sender_full_name": "King Hamlet",
-                                      "sender_short_name": "hamlet",
                                       "sender_email": "user10@zulip.testserver",
                                       "sender_realm_str": "zulip",
                                       "display_recipient": "Denmark",
@@ -1135,8 +1168,17 @@ paths:
                                 the new stream exists (for private streams, only subscribers and
                                 organization administrators will receive this event).
 
+                                This event is also sent when a user gains access to a stream they
+                                previously [could not access](/help/stream-permissions), such as
+                                when a private stream is made public, or when a [guest user](/help/roles-and-permissions)
+                                is subscribed to a public (or private) stream.
+
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the stream; just that it exists.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 192), this event was
+                                not sent when guest users gained access to a public stream by being
+                                subscribed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2778,7 +2820,8 @@ paths:
                                   additionalProperties:
                                     type: object
                                     description: |
-                                      Additional properties.
+                                      `{message_id}`: Object containing details about the
+                                      message with the specified ID.
                                     additionalProperties: false
                                     required: ["type"]
                                     properties:
@@ -2833,7 +2876,7 @@ paths:
                                   "messages": [63],
                                   "message_details":
                                     {
-                                      63:
+                                      "63":
                                         {
                                           "type": "stream",
                                           "stream_id": 22,
@@ -2872,6 +2915,7 @@ paths:
                                       "description": "Backend team",
                                       "id": 2,
                                       "is_system_group": false,
+                                      "can_mention_group_id": 11,
                                     },
                                   "id": 0,
                                 }
@@ -2911,6 +2955,14 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
+                                    can_mention_group_id:
+                                      type: integer
+                                      description: |
+                                        ID of the new user group whose members are allowed to mention the
+                                        group.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+                                        could be mentioned if and only if they were not system groups.
                               example:
                                 {
                                   "type": "user_group",
@@ -3619,8 +3671,7 @@ paths:
                                 {
                                   "type": "realm_bot",
                                   "op": "delete",
-                                  "bot":
-                                    {"user_id": 35, "full_name": "Foo Bot"},
+                                  "bot": {"user_id": 35},
                                   "id": 1,
                                 }
                             - type: object
@@ -4445,7 +4496,7 @@ paths:
                               example:
                                 {
                                   "type": "drafts",
-                                  "op": "update",
+                                  "op": "remove",
                                   "draft_id": 17,
                                 }
                             - type: object
@@ -5791,8 +5842,11 @@ paths:
                       messages:
                         type: array
                         description: |
-                          An array of `message` objects, each containing the following
-                          fields:
+                          An array of `message` objects.
+
+                          **Changes**: In Zulip 3.1 (feature level 26), the
+                          `sender_short_name` field was removed from message
+                          objects.
                         items:
                           allOf:
                             - $ref: "#/components/schemas/MessagesBase"
@@ -8283,7 +8337,14 @@ paths:
       summary: Get topics in a stream
       tags: ["streams"]
       description: |
-        Get all the topics in a specific stream
+        Get all topics the user has access to in a specific stream.
+
+        Note that for private streams with [protected
+        history](/help/stream-permissions), the user will only have access to
+        topics of messages sent after they [subscribed to](/api/subscribe) the
+        stream. Similarly, a user's [bot](/help/bots-and-integrations#bot-type)
+        will only have access to messages sent after the bot was subscribed to
+        the stream, instead of when the user subscribed.
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
       responses:
@@ -8964,8 +9025,9 @@ paths:
       summary: Mute a user
       tags: ["users"]
       description: |
-        This endpoint [mutes a user](/help/mute-a-user). Messages sent by users
-        you've muted will be automatically marked as read and hidden.
+        [Mute a user](/help/mute-a-user) from the perspective of the requesting
+        user. Messages sent by muted users will be automatically marked as read
+        and hidden for the user who muted them.
 
         Muted users should be implemented by clients as follows:
 
@@ -8973,10 +9035,11 @@ paths:
           user as read. This will automatically clear any existing mobile
           push notifications related to the muted user.
         - The server will mark any new messages sent by the muted user as read
-          for your account, which prevents all email and mobile push notifications.
+          for the requesting user's account, which prevents all email and mobile
+          push notifications.
         - Clients should exclude muted users from presence lists or other UI
-          for viewing or composing 1:1 direct messages. 1:1 direct messages sent by
-          muted users should be hidden everywhere in the Zulip UI.
+          for viewing or composing one-on-one direct messages. One-on-one direct
+          messages sent by muted users should be hidden everywhere in the Zulip UI.
         - Stream messages and group direct messages sent by the muted
           user should avoid displaying the content and name/avatar,
           but should display that N messages by a muted user were
@@ -9024,7 +9087,8 @@ paths:
       summary: Unmute a user
       tags: ["users"]
       description: |
-        This endpoint unmutes a user.
+        [Unmute a user](/help/mute-a-user#see-your-list-of-muted-users)
+        from the perspective of the requesting user.
 
         **Changes**: New in Zulip 4.0 (feature level 48).
       parameters:
@@ -9128,6 +9192,48 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+    delete:
+      operationId: deactivate-custom-emoji
+      summary: Deactivate custom emoji
+      tags: ["server_and_organizations"]
+      description: |
+        [Deactivate a custom emoji](/help/custom-emoji#deactivate-custom-emoji) from
+        the user's organization.
+
+        Users can only deactivate custom emoji that they added themselves except for
+        organization administrators, who can deactivate any custom emoji.
+
+        Note that deactivated emoji will still be visible in old messages, reactions,
+        user statuses and stream descriptions.
+
+        **Changes**: Before Zulip 8.0 (feature level 190), this endpoint returned an
+        HTTP status code of 400 when the emoji did not exist, instead of 404.
+      parameters:
+        - name: emoji_name
+          required: true
+          in: path
+          description: |
+            The name of the custom emoji to deactivate.
+          schema:
+            type: string
+          example: green_tick
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - description: |
+                      JSON response for when no emoji exists with the provided name.
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Emoji 'green_tick' does not exist",
+                      }
 
   /realm/emoji:
     get:
@@ -16075,6 +16181,21 @@ paths:
                   type: integer
               example: [1, 2, 3, 4]
           required: true
+        - name: can_mention_group_id
+          in: query
+          description: |
+            ID of the user group whose members are allowed to mention the new
+            user group.
+
+            This setting cannot be set to `"role:internet"` and `"role:owners"`
+            system groups.
+
+            **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+            could be mentioned if and only if they were not system groups.
+          schema:
+            type: integer
+          example: 11
+          required: false
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -16197,6 +16318,21 @@ paths:
           schema:
             type: string
           example: The marketing team.
+        - name: can_mention_group_id
+          in: query
+          description: |
+            ID of the new user group whose members are allowed to mention the
+            group.
+
+            This setting cannot be set to `"role:internet"` and `"role:owners"`
+            system groups.
+
+            **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+            could be mentioned if and only if they were not system groups.
+          schema:
+            type: integer
+          example: 12
+          required: false
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -16313,6 +16449,13 @@ paths:
                                 modified by users.
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
+                            can_mention_group_id:
+                              type: integer
+                              description: |
+                                ID of the user group whose members are allowed to mention the group.
+
+                                **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+                                could be mentioned if and only if they were not system groups.
                         description: |
                           A list of `user_group` objects.
                     example:
@@ -16324,18 +16467,20 @@ paths:
                             {
                               "description": "Owners of this organization",
                               "id": 1,
-                              "name": "@role:owners",
+                              "name": "role:owners",
                               "members": [1],
                               "direct_subgroup_ids": [],
                               "is_system_group": true,
+                              "can_mention_group_id": 11,
                             },
                             {
                               "description": "Administrators of this organization, including owners",
                               "id": 2,
-                              "name": "@role:administrators",
+                              "name": "role:administrators",
                               "members": [2],
                               "direct_subgroup_ids": [1],
                               "is_system_group": true,
+                              "can_mention_group_id": 12,
                             },
                             {
                               "description": "Characters of Hamlet",
@@ -16344,6 +16489,7 @@ paths:
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
+                              "can_mention_group_id": 13,
                             },
                           ],
                       }
@@ -17311,6 +17457,13 @@ components:
             directly modified by users.
 
             **Changes**: New in Zulip 5.0 (feature level 93).
+        can_mention_group_id:
+          type: integer
+          description: |
+            ID of the user group whose members are allowed to mention the group.
+
+            **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+            could be mentioned if and only if they were not system groups.
     Subscriptions:
       type: object
       additionalProperties: false
@@ -17936,7 +18089,7 @@ components:
                 type: integer
                 description: |
                   The ID of the user who sent the message.
-              submessage_id:
+              id:
                 type: integer
                 description: |
                   The ID of the submessage.
@@ -18939,9 +19092,10 @@ components:
       name: muted_user_id
       in: path
       description: |
-        The ID of the user to mute/un-mute.
+        The ID of the user to mute/unmute.
 
-        **Changes**: Before Zulip 8.0 (feature level 188), it was an error to specify a bot user.
+        **Changes**: Before Zulip 8.0 (feature level 188), bot users could not
+        be muted/unmuted, and specifying a bot user's ID returned an error response.
       schema:
         type: integer
       example: 10
@@ -19118,7 +19272,7 @@ components:
 
         This setting can currently only be set to user groups that are
         system groups, except for the system groups named
-        `"@role:internet"` and `"@role:owners"`.
+        `"role:internet"` and `"role:owners"`.
 
         **Changes**: New in Zulip 7.0 (feature level 161).
       schema:

@@ -92,9 +92,9 @@ function user_default_language_modal_post_render() {
             const data = {default_language: setting_value};
 
             const new_language = $link.attr("data-name");
-            $(
-                "#user-display-settings .language_selection_widget .language_selection_button span",
-            ).text(new_language);
+            $("#user-preferences .language_selection_widget .language_selection_button span").text(
+                new_language,
+            );
 
             change_display_setting(
                 data,
@@ -320,7 +320,7 @@ export function initialize() {
     const user_language_name = get_language_name(user_settings.default_language);
     set_default_language_name(user_language_name);
 
-    user_settings_panel.container = "#user-display-settings";
+    user_settings_panel.container = "#user-preferences";
     user_settings_panel.settings_object = user_settings;
     user_settings_panel.for_realm_settings = false;
 }

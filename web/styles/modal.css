@@ -148,6 +148,10 @@
     margin-bottom: 10px;
 }
 
+#archive-stream-modal .notification_stream_archive_warning {
+    margin-bottom: 0;
+}
+
 #read_receipts_modal {
     .modal__container {
         width: 360px;
@@ -161,7 +165,7 @@
             /* Setting a minimum height prevents the loading indicator
                appearing/disappearing from resizing the modal in the
                common case that one is requesting read receipts for
-               PMs. */
+               direct messages. */
             min-height: 120px;
             /* Setting a maximum height is just for aesthetics; the modal looks
                weird if its aspect ratio gets too stretched. */
@@ -351,13 +355,13 @@
     }
 }
 
-.dropdown-widget-button,
-.modal_text_input {
+.dropdown-widget-button {
     width: 206px;
 }
 
 .modal_password_input,
-.modal_url_input {
+.modal_url_input,
+.modal_text_input {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;

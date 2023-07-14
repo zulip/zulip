@@ -22,7 +22,7 @@ from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
-from sentry_sdk import capture_exception
+from sentry_sdk import capture_exception, set_tag
 from sentry_sdk.integrations.logging import ignore_logger
 from typing_extensions import Concatenate, ParamSpec
 
@@ -33,7 +33,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import REQ, RequestNotes, has_request_variables, set_request, unset_request
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import (
     AsynchronousResponse,
     json_response,
@@ -226,15 +226,6 @@ def write_log_line(
         logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requester_for_logs)
 
 
-class RequestContext(MiddlewareMixin):
-    def __call__(self, request: HttpRequest) -> HttpResponseBase:
-        set_request(request)
-        try:
-            return self.get_response(request)
-        finally:
-            unset_request()
-
-
 # We take advantage of `has_request_variables` being called multiple times
 # when processing a request in order to process any `client` parameter that
 # may have been sent in the request content.
@@ -295,6 +286,8 @@ class LogRequests(MiddlewareMixin):
             logging.exception(e)
             request_notes.client_name = "Unparsable"
             request_notes.client_version = None
+
+        set_tag("client", request_notes.client_name)
 
         request_notes.log_data = {}
         record_request_start_data(request_notes.log_data)
@@ -563,6 +556,8 @@ class HostDomainMiddleware(MiddlewareMixin):
 
             return render(request, "zerver/invalid_realm.html", status=404)
 
+        set_tag("realm", request_notes.realm.string_id)
+
         # Check that we're not using the non-canonical form of a REALM_HOSTS subdomain
         if subdomain in settings.REALM_HOSTS:
             host = request.get_host().lower()
@@ -598,6 +593,50 @@ class SetRemoteAddrFromRealIpHeader(MiddlewareMixin):
             pass
         else:
             request.META["REMOTE_ADDR"] = real_ip
+
+
+class ProxyMisconfigurationError(JsonableError):
+    http_status_code = 500
+    data_fields = ["proxy_reason"]
+
+    def __init__(self, proxy_reason: str) -> None:
+        self.proxy_reason = proxy_reason
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Reverse proxy misconfiguration: {proxy_reason}")
+
+
+class DetectProxyMisconfiguration(MiddlewareMixin):
+    def process_view(
+        self,
+        request: HttpRequest,
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
+        kwargs: Dict[str, Any],
+    ) -> None:
+        proxy_state_header = request.headers.get("X-Proxy-Misconfiguration", "")
+        # Our nginx configuration sets this header if:
+        #  - there is an X-Forwarded-For set but no proxies configured in Zulip
+        #  - proxies are configured but the request did not come from them
+        #  - proxies are configured and the request came from them,
+        #    but there was no X-Forwarded-Proto header
+        #
+        # Note that the first two may be false-positives.  We only
+        # display the error if the request also came in over HTTP (and
+        # a trusted proxy didn't say they get it over HTTPS), which
+        # should be impossible because Zulip only supports external
+        # https:// URLs in production.  nginx configuration ensures
+        # that request.is_secure() is only true if our nginx is
+        # serving the request over HTTPS, or it came from a trusted
+        # proxy which reports that it is doing so.  This will result
+        # in false negatives if Zulip's nginx is serving responses
+        # over HTTPS to a proxy whose IP is not configured, or
+        # misconfigured, but we cannot distinguish this from a random
+        # client which is providing proxy headers to a correctly
+        # configured Zulip.
+        if proxy_state_header != "" and not request.is_secure():
+            raise ProxyMisconfigurationError(proxy_state_header)
 
 
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
@@ -689,3 +728,7 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
             return response
 
         return None
+
+
+class ZulipNoopMiddleware(MiddlewareMixin):
+    pass

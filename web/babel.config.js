@@ -6,7 +6,7 @@ module.exports = {
             "formatjs",
             {
                 additionalFunctionNames: ["$t", "$t_html"],
-                overrideIdFn: (id, defaultMessage) => defaultMessage,
+                overrideIdFn: (_id, defaultMessage) => defaultMessage,
             },
         ],
     ],

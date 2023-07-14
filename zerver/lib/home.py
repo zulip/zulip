@@ -15,6 +15,7 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
@@ -120,7 +121,7 @@ def build_page_params_for_home_page_load(
     user_profile: Optional[UserProfile],
     realm: Realm,
     insecure_desktop_app: bool,
-    narrow: List[List[str]],
+    narrow: List[NarrowTerm],
     narrow_stream: Optional[Stream],
     narrow_topic: Optional[str],
     first_in_realm: bool,
@@ -235,7 +236,9 @@ def build_page_params_for_home_page_load(
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic is not None:
             page_params["narrow_topic"] = narrow_topic
-        page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
+        page_params["narrow"] = [
+            dict(operator=term.operator, operand=term.operand) for term in narrow
+        ]
         page_params["max_message_id"] = max_message_id
         assert isinstance(page_params["user_settings"], dict)
         page_params["user_settings"]["enable_desktop_notifications"] = False

@@ -19,7 +19,6 @@ from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_streams_from_default_stream_group,
-    get_default_streams_for_realm,
 )
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import (
@@ -48,6 +47,7 @@ from zerver.decorator import (
     require_post,
     require_realm_admin,
 )
+from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -318,7 +318,7 @@ def update_stream_backend(
 
     if is_private is not None:
         # Default streams cannot be made private.
-        default_stream_ids = {s.id for s in get_default_streams_for_realm(stream.realm_id)}
+        default_stream_ids = get_default_stream_ids_for_realm(stream.realm_id)
         if is_private and stream.id in default_stream_ids:
             raise JsonableError(_("Default streams cannot be made private."))
 
@@ -592,8 +592,13 @@ def add_subscriptions_backend(
             allow_nobody_group=False,
         )
     else:
+        can_remove_subscribers_group_default = Stream.stream_permission_group_settings[
+            "can_remove_subscribers_group"
+        ].default_group_name
         can_remove_subscribers_group = UserGroup.objects.get(
-            name="@role:administrators", realm=user_profile.realm, is_system_group=True
+            name=can_remove_subscribers_group_default,
+            realm=user_profile.realm,
+            is_system_group=True,
         )
 
     for stream_dict in streams_raw:

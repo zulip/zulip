@@ -182,16 +182,14 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
-        override_rewire(echo, "insert_message", (message) => {
-            assert.equal(message.timestamp, fake_now);
-        });
-
         override(markdown, "apply_markdown", () => {});
         override(markdown, "add_topic_links", () => {});
 
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
-            return echo.insert_local_message(message_request, local_id_float);
+            return echo.insert_local_message(message_request, local_id_float, (messages) =>
+                assert.equal(messages[0].timestamp, fake_now),
+            );
         });
 
         override(transmit, "send_message", (payload, success) => {
@@ -242,7 +240,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     })();
 
     // This is the additional setup which is common to both the tests below.
-    override(transmit, "send_message", (payload, success, error) => {
+    override(transmit, "send_message", (_payload, _success, error) => {
         stub_state.send_msg_called += 1;
         error("Error sending message: Server says 408");
     });

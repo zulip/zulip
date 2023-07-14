@@ -113,7 +113,8 @@ class LinkInfo(TypedDict):
 @dataclass
 class MessageRenderingResult:
     rendered_content: str
-    mentions_wildcard: bool
+    mentions_topic_wildcard: bool
+    mentions_stream_wildcard: bool
     mentions_user_ids: Set[int]
     mentions_user_group_ids: Set[int]
     alert_words: Set[str]
@@ -698,13 +699,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
         parsed_url = urllib.parse.urlparse(url)
-        if parsed_url.netloc.lower().endswith(".wikipedia.org"):
+        if parsed_url.netloc.lower().endswith(".wikipedia.org") and parsed_url.path.startswith(
+            "/wiki/File:"
+        ):
             # Redirecting from "/wiki/File:" to "/wiki/Special:FilePath/File:"
             # A possible alternative, that avoids the redirect after hitting "Special:"
             # is using the first characters of md5($filename) to generate the URL
-            domain = parsed_url.scheme + "://" + parsed_url.netloc
-            correct_url = domain + parsed_url.path[:6] + "Special:FilePath" + parsed_url.path[5:]
-            return correct_url
+            newpath = parsed_url.path.replace("/wiki/File:", "/wiki/Special:FilePath/File:", 1)
+            return parsed_url._replace(path=newpath).geturl()
         if parsed_url.netloc == "linx.li":
             return "https://linx.li/s" + parsed_url.path
         return None
@@ -1129,15 +1131,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return insertion_index
 
             uncle = grandparent[insertion_index]
-            inline_image_classes = [
+            inline_image_classes = {
                 "message_inline_image",
                 "message_inline_ref",
                 "inline-preview-twitter",
-            ]
+            }
             if (
                 uncle.tag != "div"
                 or "class" not in uncle.keys()
-                or uncle.attrib["class"] not in inline_image_classes
+                or not (set(uncle.attrib["class"].split()) & inline_image_classes)
             ):
                 return insertion_index
 
@@ -1776,7 +1778,8 @@ class UserMentionPattern(CompiledInlineProcessor):
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is not None:
-            wildcard = mention.user_mention_matches_wildcard(name)
+            topic_wildcard = mention.user_mention_matches_topic_wildcard(name)
+            stream_wildcard = mention.user_mention_matches_stream_wildcard(name)
 
             # For @**|id** and @**name|id** mention syntaxes.
             id_syntax_match = re.match(r"(?P<full_name>.+)?\|(?P<user_id>\d+)$", name)
@@ -1795,10 +1798,14 @@ class UserMentionPattern(CompiledInlineProcessor):
                 # For @**name** syntax.
                 user = db_data.mention_data.get_user_by_name(name)
 
-            if wildcard:
+            user_id = None
+            if stream_wildcard:
                 if not silent:
-                    self.zmd.zulip_rendering_result.mentions_wildcard = True
+                    self.zmd.zulip_rendering_result.mentions_stream_wildcard = True
                 user_id = "*"
+            elif topic_wildcard:
+                if not silent:
+                    self.zmd.zulip_rendering_result.mentions_topic_wildcard = True
             elif user is not None:
                 assert isinstance(user, FullNameInfo)
 
@@ -1811,13 +1818,16 @@ class UserMentionPattern(CompiledInlineProcessor):
                 return None, None, None
 
             el = Element("span")
-            el.set("data-user-id", user_id)
-            text = f"{name}"
-            if silent:
-                el.set("class", "user-mention silent")
+            if user_id:
+                el.set("data-user-id", user_id)
+            text = f"@{name}"
+            if topic_wildcard:
+                el.set("class", "topic-mention")
             else:
                 el.set("class", "user-mention")
-                text = f"@{text}"
+            if silent:
+                el.set("class", el.get("class", "") + " silent")
+                text = f"{name}"
             el.text = markdown.util.AtomicString(text)
             return el, m.start(), m.end()
         return None, None, None
@@ -2491,7 +2501,8 @@ def do_convert(
     # Filters such as UserMentionPattern need a message.
     rendering_result: MessageRenderingResult = MessageRenderingResult(
         rendered_content="",
-        mentions_wildcard=False,
+        mentions_topic_wildcard=False,
+        mentions_stream_wildcard=False,
         mentions_user_ids=set(),
         mentions_user_group_ids=set(),
         alert_words=set(),

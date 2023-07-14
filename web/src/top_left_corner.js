@@ -23,7 +23,7 @@ export function update_scheduled_messages_row() {
 }
 
 export function update_dom_with_unread_counts(counts, skip_animations) {
-    // Note that "Private messages" counts are handled in pm_list.js.
+    // Note that direct message counts are handled in pm_list.js.
 
     // mentioned/home have simple integer counts
     const $mentioned_li = $(".top_left_mentions");

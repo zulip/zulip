@@ -98,7 +98,7 @@ export const update_elements = ($content) => {
                     $(this).addClass("user-mention-me");
                 }
             } else {
-                // Always highlight wildcard mentions in private message.
+                // Always highlight wildcard mentions in direct messages.
                 $(this).addClass("user-mention-me");
             }
         }
@@ -107,7 +107,7 @@ export const update_elements = ($content) => {
             // mention text to show the user's current name,
             // assuming that you're not searching for text
             // inside the highlight.
-            const person = people.get_by_user_id(user_id, true);
+            const person = people.maybe_get_user_by_id(user_id);
             if (person !== undefined) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import.

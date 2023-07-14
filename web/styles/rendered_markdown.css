@@ -161,7 +161,8 @@
     }
 
     .user-group-mention,
-    .user-mention {
+    .user-mention,
+    .topic-mention {
         font-size: 14px;
         line-height: 17px;
         padding: 0 3px;
@@ -170,7 +171,8 @@
         display: inline-block;
     }
 
-    .user-mention {
+    .user-mention,
+    .topic-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-direct-mention);
 

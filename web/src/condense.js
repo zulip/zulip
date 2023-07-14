@@ -3,7 +3,6 @@ import $ from "jquery";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
-import * as recent_topics_util from "./recent_topics_util";
 import * as rows from "./rows";
 
 /*
@@ -17,8 +16,6 @@ This library implements two related, similar concepts:
   single line, with a button to see the content.
 
 */
-
-const _message_content_height_cache = new Map();
 
 function show_more_link($row) {
     $row.find(".message_condenser").hide();
@@ -149,25 +146,11 @@ export function toggle_collapse(message) {
     }
 }
 
-export function clear_message_content_height_cache() {
-    _message_content_height_cache.clear();
-}
-
-export function un_cache_message_content_height(message_id) {
-    _message_content_height_cache.delete(message_id);
-}
-
-function get_message_height(elem, message_id) {
-    if (_message_content_height_cache.has(message_id)) {
-        return _message_content_height_cache.get(message_id);
-    }
-
-    // shown to be ~2.5x faster than Node.getBoundingClientRect().
-    const height = elem.offsetHeight;
-    if (!recent_topics_util.is_visible()) {
-        _message_content_height_cache.set(message_id, height);
-    }
-    return height;
+function get_message_height(elem) {
+    // This needs to be very fast. This function runs hundreds of times
+    // when displaying a message feed view that has hundreds of message
+    // history, which ideally should render in <100ms.
+    return $(elem).find(".message_content")[0].scrollHeight;
 }
 
 export function hide_message_expander($row) {
@@ -195,7 +178,8 @@ export function show_message_condenser($row) {
 }
 
 export function condense_and_collapse(elems) {
-    const height_cutoff = message_viewport.height() * 0.65;
+    const height_cutoff = message_viewport.max_message_height();
+    const rows_to_resize = [];
 
     for (const elem of elems) {
         const $content = $(elem).find(".message_content");
@@ -218,6 +202,20 @@ export function condense_and_collapse(elems) {
         }
 
         const message_height = get_message_height(elem, message.id);
+
+        rows_to_resize.push({
+            elem,
+            $content,
+            message,
+            message_height,
+        });
+    }
+
+    // Note that we resize all the rows *after* we calculate if we should
+    // resize them or not. This allows us to do all measurements before
+    // changing the layout of the page, which is more performanant.
+    // More information here: https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/#avoid-layout-thrashing
+    for (const {elem, $content, message, message_height} of rows_to_resize) {
         const long_message = message_height > height_cutoff;
         if (long_message) {
             // All long messages are flagged as such.

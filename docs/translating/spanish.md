@@ -34,11 +34,10 @@ Zulip friendly and usable.
 ## Términos
 
 - Message - **Mensaje**
-- Private message (PM) - **Mensaje privado (MP)**
-- Group PM - **mensaje privado grupal**: even though "MP grupal" is the most
-  precise translation, preferably don't use that one. Many users may not
-  associate "MP" with _private message_ in a group context. Better use it
-  without abbreviations.
+- Direct message (DM) - **Mensaje directo (MD)**
+- Group DM - **Mensaje directo grupal**: many users may not associate "MD" with
+  _direct message_ in a group context, so it's better to use the unabbreviated
+  form rather than "MD grupal".
 - Stream - **Canal**: the use of the literal Spanish word for stream
   "Flujo" is very confusing and not the correct metaphor for Spanish
   speaking people. The correct term would be "canal" (_channel_).

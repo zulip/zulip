@@ -188,7 +188,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.topic(), "");
     stream_data.clear_subscriptions();
 
-    // Start PM
+    // Start direct message
     compose_defaults = {
         private_message_recipient: "foo@example.com",
     };
@@ -207,9 +207,9 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
 
-    // Triggered by new private message
+    // Triggered by new direct message
     opts = {
-        trigger: "new private message",
+        trigger: "new direct message",
     };
 
     start("private", opts);
@@ -251,7 +251,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     mock_template("inline_decorated_stream_name.hbs", false, () => {});
     mock_stream_header_colorblock();
 
-    // Test PM
+    // Test direct message
     const person = {
         user_id: 22,
         email: "alice@example.com",
@@ -393,7 +393,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     override(message_lists.current, "selected_id", () => 100);
 
-    override(compose_ui, "insert_syntax_and_focus", (syntax, $textarea, mode) => {
+    override(compose_ui, "insert_syntax_and_focus", (syntax, _$textarea, mode) => {
         assert.equal(syntax, "translated: [Quoting…]");
         assert.equal(mode, "block");
     });

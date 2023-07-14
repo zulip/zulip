@@ -175,7 +175,7 @@ test_ui("validate", ({override_rewire, mock_template}) => {
         $("#compose-textarea").val("foobarfoobar");
     }
 
-    // test validating private messages
+    // test validating direct messages
     compose_state.set_message_type("private");
 
     initialize_pm_pill();
@@ -616,7 +616,7 @@ test_ui("needs_subscribe_warning", () => {
     stream_data.add_sub(sub);
     peer_data.set_subscribers(sub.stream_id, [bob.user_id, me.user_id]);
 
-    blueslip.expect("error", "Unknown user_id in get_by_user_id");
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     // Test with an invalid user id.
     assert.equal(compose_validate.needs_subscribe_warning(invalid_user_id, sub.stream_id), false);
 

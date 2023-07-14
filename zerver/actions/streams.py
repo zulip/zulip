@@ -17,11 +17,9 @@ from zerver.actions.default_streams import (
 )
 from zerver.actions.message_send import internal_send_stream_message
 from zerver.lib.cache import (
-    cache_delete,
     cache_delete_many,
     cache_set,
     display_recipient_cache_key,
-    get_stream_cache_key,
     to_dict_cache_key_id,
 )
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -68,9 +66,7 @@ from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 @transaction.atomic(savepoint=False)
-def do_deactivate_stream(
-    stream: Stream, log: bool = True, *, acting_user: Optional[UserProfile]
-) -> None:
+def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) -> None:
     # If the stream is already deactivated, this is a no-op
     if stream.deactivated is True:
         raise JsonableError(_("Stream is already deactivated"))
@@ -119,10 +115,6 @@ def do_deactivate_stream(
     default_stream_groups_for_stream = DefaultStreamGroup.objects.filter(streams__id=stream.id)
     for group in default_stream_groups_for_stream:
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
-
-    # Remove the old stream information from remote cache.
-    old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
-    cache_delete(old_cache_key)
 
     stream_dict = stream.to_dict()
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
@@ -365,14 +357,16 @@ def bulk_add_subs_to_db_with_logging(
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
-def send_stream_creation_events_for_private_streams(
+def send_stream_creation_events_for_previously_inaccessible_streams(
     realm: Realm,
     stream_dict: Dict[int, Stream],
     altered_user_dict: Dict[int, Set[int]],
+    altered_guests: Set[int],
 ) -> None:
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
 
+        notify_user_ids = []
         if not stream.is_public():
             # Users newly added to invite-only streams
             # need a `create` notification.  The former, because
@@ -382,9 +376,14 @@ def send_stream_creation_events_for_private_streams(
             # Realm admins already have all created private streams.
             realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
             notify_user_ids = list(stream_users_ids - realm_admin_ids)
+        else:
+            # Guese users need a `create` notification for
+            # public streams as well because they need the stream
+            # to exist before they get the "subscribe" notification.
+            notify_user_ids = list(stream_users_ids & altered_guests)
 
-            if notify_user_ids:
-                send_stream_creation_event(stream, notify_user_ids)
+        if notify_user_ids:
+            send_stream_creation_event(realm, stream, notify_user_ids)
 
 
 def send_peer_subscriber_events(
@@ -558,8 +557,11 @@ def bulk_add_subscriptions(
     )
 
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
+    altered_guests: Set[int] = set()
     for sub_info in subs_to_add + subs_to_activate:
         altered_user_dict[sub_info.stream.id].add(sub_info.user.id)
+        if sub_info.user.is_guest:
+            altered_guests.add(sub_info.user.id)
 
     stream_dict = {stream.id: stream for stream in streams}
 
@@ -575,10 +577,11 @@ def bulk_add_subscriptions(
     # being subscribed; we can skip these notifications when this is
     # being called from the new user creation flow.
     if not from_user_creation:
-        send_stream_creation_events_for_private_streams(
+        send_stream_creation_events_for_previously_inaccessible_streams(
             realm=realm,
             stream_dict=stream_dict,
             altered_user_dict=altered_user_dict,
+            altered_guests=altered_guests,
         )
 
         send_subscription_add_events(
@@ -867,6 +870,8 @@ def do_change_stream_permission(
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
 
+    realm = stream.realm
+
     with transaction.atomic():
         stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
 
@@ -885,7 +890,7 @@ def do_change_stream_permission(
             )
 
             RealmAuditLog.objects.create(
-                realm=stream.realm,
+                realm=realm,
                 acting_user=acting_user,
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
@@ -901,7 +906,7 @@ def do_change_stream_permission(
 
         if old_history_public_to_subscribers_value != stream.history_public_to_subscribers:
             RealmAuditLog.objects.create(
-                realm=stream.realm,
+                realm=realm,
                 acting_user=acting_user,
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
@@ -929,7 +934,7 @@ def do_change_stream_permission(
             )
 
             RealmAuditLog.objects.create(
-                realm=stream.realm,
+                realm=realm,
                 acting_user=acting_user,
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
@@ -964,7 +969,7 @@ def do_change_stream_permission(
         )
         non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
         notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_user_ids
-        send_stream_creation_event(stream, list(notify_stream_creation_ids))
+        send_stream_creation_event(realm, stream, list(notify_stream_creation_ids))
 
         # Add subscribers info to the stream object. We need to send peer_add
         # events to users who were previously subscribed to the streams as
@@ -1114,13 +1119,6 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     recipient_id: int = stream.recipient_id
     messages = Message.objects.filter(recipient_id=recipient_id).only("id")
 
-    # Update the display recipient and stream, which are easy single
-    # items to set.
-    old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
-    new_cache_key = get_stream_cache_key(stream.name, stream.realm_id)
-    if old_cache_key != new_cache_key:
-        cache_delete(old_cache_key)
-        cache_set(new_cache_key, stream)
     cache_set(display_recipient_cache_key(recipient_id), stream.name)
 
     # Delete cache entries for everything else, which is cheaper and

@@ -50,7 +50,7 @@ run_test("render_notifications_for_narrow", ({override, mock_template}) => {
 
     const $typing_notifications = $("#typing_notifications");
 
-    mock_template("typing_notifications.hbs", true, (args, rendered_html) => rendered_html);
+    mock_template("typing_notifications.hbs", true, (_args, rendered_html) => rendered_html);
 
     // Having only two(<MAX_USERS_TO_DISPLAY_NAME) typists, both of them
     // should be rendered but not 'Several people are typing…'

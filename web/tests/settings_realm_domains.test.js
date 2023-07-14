@@ -13,7 +13,7 @@ mock_esm("../src/ui_report", {
         elem.val(msg);
     },
 
-    error(msg, xhr, elem) {
+    error(msg, _xhr, elem) {
         elem.val(msg);
     },
 });

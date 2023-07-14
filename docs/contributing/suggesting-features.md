@@ -33,10 +33,10 @@ Steps and best practices for starting a conversation:
 1. [**Join** the Zulip development
    community](https://zulip.com/development-community/) if you don't already
    have an account.
-2. Pick an **appropriate stream** to report your issue:
+2. Pick an **appropriate stream** to discuss your idea:
    - [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback) for suggestions for
-     the Zulip web app or server. A good default if you aren't sure which stream
-     to use.
+     the Zulip web app or server. Use this stream if you aren't sure which stream is
+     most appropriate.
    - [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) for suggestions
      for the mobile apps.
    - [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) for suggestions
@@ -47,7 +47,7 @@ Steps and best practices for starting a conversation:
      help](https://chat.zulip.org/#narrow/stream/31-production-help) for suggestions
      related to self-hosting Zulip.
 3. **[Start a new topic](https://zulip.com/help/starting-a-new-topic)** for
-   discussing your suggestions, using a brief summary of the proposal as the
+   discussing your suggestions, using a brief summary of your idea as the
    name of the topic.
 
 If you aren't sure where to post or how to name your topic, don't worry!
@@ -77,8 +77,8 @@ for a feature or improvement. Steps and best practices for filing an issue:
      suggestions for the terminal app.
 2. Do a **quick search** of the repository to see if there is already a similar
    request. If there is, add a comment explaining why you would also appreciate
-   the proposed change, and making any additional suggestions. Do not file a new
-   issue.
+   the proposed change, and make any additional suggestions you might have. Do
+   not file a new issue.
 3. If you are aware of a related discussion in the Zulip development community,
    please **cross-link** between the issue and the discussion thread. [Link to a
    specific

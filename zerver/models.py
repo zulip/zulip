@@ -7,7 +7,6 @@ from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
     TYPE_CHECKING,
-    AbstractSet,
     Any,
     Callable,
     Dict,
@@ -15,7 +14,6 @@ from typing import (
     List,
     Optional,
     Pattern,
-    Sequence,
     Set,
     Tuple,
     TypedDict,
@@ -63,7 +61,6 @@ from zerver.lib.cache import (
     bot_dict_fields,
     bot_dicts_in_realm_cache_key,
     bot_profile_cache_key,
-    bulk_cached_fetch,
     cache_delete,
     cache_set,
     cache_with_key,
@@ -75,7 +72,6 @@ from zerver.lib.cache import (
     flush_used_upload_space_cache,
     flush_user_profile,
     get_realm_used_upload_space_cache_key,
-    get_stream_cache_key,
     realm_alert_words_automaton_cache_key,
     realm_alert_words_cache_key,
     realm_user_dict_fields,
@@ -119,8 +115,6 @@ MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 SECONDS_PER_DAY = 86400
-
-STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
 
 if TYPE_CHECKING:
     # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
@@ -245,12 +239,12 @@ def get_recipient_ids(
     return to, recipient_type_str
 
 
-def get_realm_emoji_cache_key(realm: "Realm") -> str:
-    return f"realm_emoji:{realm.id}"
+def get_realm_emoji_cache_key(realm_id: int) -> str:
+    return f"realm_emoji:{realm_id}"
 
 
-def get_active_realm_emoji_cache_key(realm: "Realm") -> str:
-    return f"active_realm_emoji:{realm.id}"
+def get_active_realm_emoji_cache_key(realm_id: int) -> str:
+    return f"active_realm_emoji:{realm_id}"
 
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
@@ -845,13 +839,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
-    @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
+    @cache_with_key(lambda realm: get_realm_emoji_cache_key(realm.id), timeout=3600 * 24 * 7)
     def get_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
-        return get_realm_emoji_uncached(realm)
+        return get_realm_emoji_uncached(realm.id)
 
-    @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
+    @cache_with_key(lambda realm: get_active_realm_emoji_cache_key(realm.id), timeout=3600 * 24 * 7)
     def get_active_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
-        return get_active_realm_emoji_uncached(realm)
+        return get_active_realm_emoji_uncached(realm.id)
 
     def get_admin_users_and_bots(
         self, include_realm_owners: bool = True
@@ -950,7 +944,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
-    @cache_with_key(get_realm_used_upload_space_cache_key, timeout=3600 * 24 * 7)
+    @cache_with_key(
+        lambda realm: get_realm_used_upload_space_cache_key(realm.id), timeout=3600 * 24 * 7
+    )
     def currently_used_upload_space_bytes(realm) -> int:  # noqa: N805
         used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
         if used_space is None:
@@ -1165,13 +1161,13 @@ class RealmEmoji(models.Model):
         return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
 
-def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
+def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
     # RealmEmoji objects with file_name=None are still in the process
     # of being uploaded, and we expect to be cleaned up by a
     # try/finally block if the upload fails, so it's correct to
     # exclude them.
     query = (
-        RealmEmoji.objects.filter(realm=realm)
+        RealmEmoji.objects.filter(realm_id=realm_id)
         .exclude(
             file_name=None,
         )
@@ -1212,12 +1208,12 @@ def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dic
     return d
 
 
-def get_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
-    return get_realm_emoji_dicts(realm)
+def get_realm_emoji_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
+    return get_realm_emoji_dicts(realm_id)
 
 
-def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
-    realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
+def get_active_realm_emoji_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
+    realm_emojis = get_realm_emoji_dicts(realm_id, only_active_emojis=True)
     d = {}
     for emoji_id, emoji_dict in realm_emojis.items():
         d[emoji_dict["name"]] = emoji_dict
@@ -1235,13 +1231,15 @@ def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
         # such an object shouldn't have been cached yet, and this
         # function will be called again when file_name is set.
         return
-    realm = instance.realm
+    realm_id = instance.realm_id
     cache_set(
-        get_realm_emoji_cache_key(realm), get_realm_emoji_uncached(realm), timeout=3600 * 24 * 7
+        get_realm_emoji_cache_key(realm_id),
+        get_realm_emoji_uncached(realm_id),
+        timeout=3600 * 24 * 7,
     )
     cache_set(
-        get_active_realm_emoji_cache_key(realm),
-        get_active_realm_emoji_uncached(realm),
+        get_active_realm_emoji_cache_key(realm_id),
+        get_active_realm_emoji_uncached(realm_id),
         timeout=3600 * 24 * 7,
     )
 
@@ -2236,8 +2234,11 @@ class PasswordTooWeakError(Exception):
 
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+    MAX_NAME_LENGTH = 100
+    INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
+
     objects: CTEManager = CTEManager()
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=MAX_NAME_LENGTH)
     direct_members = models.ManyToManyField(
         UserProfile, through="UserGroupMembership", related_name="direct_groups"
     )
@@ -2252,15 +2253,17 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     description = models.TextField(default="")
     is_system_group = models.BooleanField(default=False)
 
+    can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
+
     # Names for system groups.
-    FULL_MEMBERS_GROUP_NAME = "@role:fullmembers"
-    EVERYONE_ON_INTERNET_GROUP_NAME = "@role:internet"
-    OWNERS_GROUP_NAME = "@role:owners"
-    ADMINISTRATORS_GROUP_NAME = "@role:administrators"
-    MODERATORS_GROUP_NAME = "@role:moderators"
-    MEMBERS_GROUP_NAME = "@role:members"
-    EVERYONE_GROUP_NAME = "@role:everyone"
-    NOBODY_GROUP_NAME = "@role:nobody"
+    FULL_MEMBERS_GROUP_NAME = "role:fullmembers"
+    EVERYONE_ON_INTERNET_GROUP_NAME = "role:internet"
+    OWNERS_GROUP_NAME = "role:owners"
+    ADMINISTRATORS_GROUP_NAME = "role:administrators"
+    MODERATORS_GROUP_NAME = "role:moderators"
+    MEMBERS_GROUP_NAME = "role:members"
+    EVERYONE_GROUP_NAME = "role:everyone"
+    NOBODY_GROUP_NAME = "role:nobody"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -2286,6 +2289,17 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             "name": EVERYONE_GROUP_NAME,
             "description": "Everyone in this organization, including guests",
         },
+    }
+
+    GROUP_PERMISSION_SETTINGS = {
+        "can_mention_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=True,
+            default_group_name=EVERYONE_GROUP_NAME,
+            default_for_system_groups=NOBODY_GROUP_NAME,
+        ),
     }
 
     class Meta:
@@ -2643,6 +2657,7 @@ class Stream(models.Model):
             allow_internet_group=False,
             allow_owners_group=False,
             allow_nobody_group=False,
+            default_group_name=UserGroup.ADMINISTRATORS_GROUP_NAME,
         ),
     }
 
@@ -2831,9 +2846,8 @@ def get_client_remote_cache(name: str) -> Client:
     return client
 
 
-@cache_with_key(get_stream_cache_key, timeout=3600 * 24 * 7)
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
-    return Stream.objects.select_related().get(name__iexact=stream_name.strip(), realm_id=realm_id)
+    return Stream.objects.get(name__iexact=stream_name.strip(), realm_id=realm_id)
 
 
 def get_active_streams(realm: Realm) -> QuerySet[Stream]:
@@ -2866,8 +2880,8 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related().get(id=stream_id, realm=realm)
 
 
-def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]:
-    def fetch_streams_by_name(stream_names: List[str]) -> QuerySet[Stream]:
+def bulk_get_streams(realm: Realm, stream_names: Set[str]) -> Dict[str, Any]:
+    def fetch_streams_by_name(stream_names: Set[str]) -> QuerySet[Stream]:
         #
         # This should be just
         #
@@ -2879,24 +2893,12 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         where_clause = (
             "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         )
-        return (
-            get_active_streams(realm)
-            .select_related()
-            .extra(where=[where_clause], params=(list(stream_names),))
-        )
+        return get_active_streams(realm).extra(where=[where_clause], params=(list(stream_names),))
 
-    def stream_name_to_cache_key(stream_name: str) -> str:
-        return get_stream_cache_key(stream_name, realm.id)
-
-    def stream_to_lower_name(stream: Stream) -> str:
-        return stream.name.lower()
-
-    return bulk_cached_fetch(
-        stream_name_to_cache_key,
-        fetch_streams_by_name,
-        [stream_name.lower() for stream_name in stream_names],
-        id_fetcher=stream_to_lower_name,
-    )
+    if not stream_names:
+        return {}
+    streams = list(fetch_streams_by_name(stream_names))
+    return {stream.name.lower(): stream for stream in streams}
 
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
@@ -4026,7 +4028,7 @@ def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
         return None
 
 
-@cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(lambda realm: bot_dicts_in_realm_cache_key(realm.id), timeout=3600 * 24 * 7)
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return list(UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields))
 
@@ -4131,8 +4133,11 @@ class UserActivityInterval(models.Model):
     end = models.DateTimeField("end time", db_index=True)
 
     class Meta:
-        index_together = [
-            ("user_profile", "end"),
+        indexes = [
+            models.Index(
+                fields=["user_profile", "end"],
+                name="zerver_useractivityinterval_user_profile_id_end_bb3bfc37_idx",
+            ),
         ]
 
 
@@ -4172,9 +4177,15 @@ class UserPresence(models.Model):
     LEGACY_STATUS_IDLE_INT = 2
 
     class Meta:
-        index_together = [
-            ("realm", "last_active_time"),
-            ("realm", "last_connected_time"),
+        indexes = [
+            models.Index(
+                fields=["realm", "last_active_time"],
+                name="zerver_userpresence_realm_id_last_active_time_1c5aa9a2_idx",
+            ),
+            models.Index(
+                fields=["realm", "last_connected_time"],
+                name="zerver_userpresence_realm_id_last_connected_time_98d2fc9f_idx",
+            ),
         ]
 
     @staticmethod
@@ -4285,12 +4296,12 @@ class NotificationTriggers:
     # "private_message" is for 1:1 direct messages as well as huddles
     PRIVATE_MESSAGE = "private_message"
     MENTION = "mentioned"
-    WILDCARD_MENTION = "wildcard_mentioned"
+    STREAM_WILDCARD_MENTION = "stream_wildcard_mentioned"
     STREAM_PUSH = "stream_push_notify"
     STREAM_EMAIL = "stream_email_notify"
     FOLLOWED_TOPIC_PUSH = "followed_topic_push_notify"
     FOLLOWED_TOPIC_EMAIL = "followed_topic_email_notify"
-    FOLLOWED_TOPIC_WILDCARD_MENTION = "followed_topic_wildcard_mentioned"
+    STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC = "stream_wildcard_mentioned_in_followed_topic"
 
 
 class ScheduledMessageNotificationEmail(models.Model):
@@ -4306,10 +4317,13 @@ class ScheduledMessageNotificationEmail(models.Model):
     EMAIL_NOTIFICATION_TRIGGER_CHOICES = [
         (NotificationTriggers.PRIVATE_MESSAGE, "Private message"),
         (NotificationTriggers.MENTION, "Mention"),
-        (NotificationTriggers.WILDCARD_MENTION, "Wildcard mention"),
+        (NotificationTriggers.STREAM_WILDCARD_MENTION, "Stream wildcard mention"),
         (NotificationTriggers.STREAM_EMAIL, "Stream notifications enabled"),
         (NotificationTriggers.FOLLOWED_TOPIC_EMAIL, "Followed topic notifications enabled"),
-        (NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION, "Followed topic wildcard mention"),
+        (
+            NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+            "Stream wildcard mention in followed topic",
+        ),
     ]
 
     trigger = models.TextField(choices=EMAIL_NOTIFICATION_TRIGGER_CHOICES)
@@ -4549,6 +4563,19 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_PROPERTY_CHANGED = 607
     STREAM_GROUP_BASED_SETTING_CHANGED = 608
 
+    USER_GROUP_CREATED = 701
+    USER_GROUP_DELETED = 702
+    USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED = 703
+    USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED = 704
+    USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED = 705
+    USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED = 706
+    USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED = 707
+    USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED = 708
+    # 709 to 719 reserved for membership changes
+    USER_GROUP_NAME_CHANGED = 720
+    USER_GROUP_DESCRIPTION_CHANGED = 721
+    USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
+
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
@@ -4611,13 +4638,14 @@ class RealmAuditLog(AbstractRealmAuditLog):
     * acting_user is the user who initiated the state change
     * modified_user (if present) is the user being modified
     * modified_stream (if present) is the stream being modified
+    * modified_user_group (if present) is the user group being modified
 
     For example:
     * When a user subscribes another user to a stream, modified_user,
       acting_user, and modified_stream will all be present and different.
     * When an administrator changes an organization's realm icon,
-      acting_user is that administrator and both modified_user and
-      modified_stream will be None.
+      acting_user is that administrator and modified_user,
+      modified_stream and modified_user_group will be None.
     """
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
@@ -4638,6 +4666,11 @@ class RealmAuditLog(AbstractRealmAuditLog):
         null=True,
         on_delete=CASCADE,
     )
+    modified_user_group = models.ForeignKey(
+        UserGroup,
+        null=True,
+        on_delete=CASCADE,
+    )
     event_last_message_id = models.IntegerField(null=True)
 
     def __str__(self) -> str:
@@ -4645,6 +4678,8 @@ class RealmAuditLog(AbstractRealmAuditLog):
             return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
         if self.modified_stream is not None:
             return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
+        if self.modified_user_group is not None:
+            return f"{self.modified_user_group!r} {self.event_type} {self.event_time} {self.id}"
         return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
 
     class Meta:
@@ -4944,14 +4979,14 @@ class AlertWord(models.Model):
         unique_together = ("user_profile", "word")
 
 
-def flush_realm_alert_words(realm: Realm) -> None:
-    cache_delete(realm_alert_words_cache_key(realm))
-    cache_delete(realm_alert_words_automaton_cache_key(realm))
+def flush_realm_alert_words(realm_id: int) -> None:
+    cache_delete(realm_alert_words_cache_key(realm_id))
+    cache_delete(realm_alert_words_automaton_cache_key(realm_id))
 
 
 def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
-    realm = instance.realm
-    flush_realm_alert_words(realm)
+    realm_id = instance.realm_id
+    flush_realm_alert_words(realm_id)
 
 
 post_save.connect(flush_alert_word, sender=AlertWord)

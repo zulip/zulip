@@ -73,7 +73,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     // All typists are rendered in `#typing_notifications`.
     const $typing_notifications = $("#typing_notifications");
 
-    // Narrow to a PM group with four users.
+    // Narrow to a group direct message with four users.
     override(page_params, "user_id", anna.user_id);
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
@@ -120,7 +120,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     // can be helpful in testing conditionals inside the template.
 
     // Let's set the mock to just return the rendered html.
-    mock_template("typing_notifications.hbs", true, (args, rendered_html) => rendered_html);
+    mock_template("typing_notifications.hbs", true, (_args, rendered_html) => rendered_html);
 
     // Since we only have two(<MAX_USERS_TO_DISPLAY_NAME) typists, both of them
     // should be rendered but not 'Several people are typing…'

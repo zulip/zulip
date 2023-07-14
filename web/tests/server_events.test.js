@@ -9,13 +9,6 @@ const {page_params} = require("./lib/zpage_params");
 
 const noop = () => {};
 
-set_global("document", {
-    to_$() {
-        return {
-            trigger() {},
-        };
-    },
-});
 set_global("addEventListener", noop);
 
 const channel = mock_esm("../src/channel");

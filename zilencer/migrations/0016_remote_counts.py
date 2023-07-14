@@ -59,9 +59,12 @@ class Migration(migrations.Migration):
             name="remoterealmcount",
             unique_together={("server", "realm_id", "property", "subgroup", "end_time")},
         ),
-        migrations.AlterIndexTogether(
-            name="remoterealmcount",
-            index_together={("property", "end_time")},
+        migrations.AddIndex(
+            model_name="remoterealmcount",
+            index=models.Index(
+                fields=["property", "end_time"],
+                name="zilencer_remoterealmcount_property_end_time_506a0b38_idx",
+            ),
         ),
         migrations.AlterUniqueTogether(
             name="remoteinstallationcount",

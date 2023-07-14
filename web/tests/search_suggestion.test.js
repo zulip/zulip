@@ -441,9 +441,9 @@ test("empty_query_suggestions", () => {
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
     assert.equal(describe("sender:myself@zulip.com"), "Sent by me");
-    assert.equal(describe("has:link"), "Messages with one or more link");
-    assert.equal(describe("has:image"), "Messages with one or more image");
-    assert.equal(describe("has:attachment"), "Messages with one or more attachment");
+    assert.equal(describe("has:link"), "Messages that contain links");
+    assert.equal(describe("has:image"), "Messages that contain images");
+    assert.equal(describe("has:attachment"), "Messages that contain attachments");
 });
 
 test("has_suggestions", ({override}) => {
@@ -462,17 +462,17 @@ test("has_suggestions", ({override}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
 
-    assert.equal(describe("has:link"), "Messages with one or more link");
-    assert.equal(describe("has:image"), "Messages with one or more image");
-    assert.equal(describe("has:attachment"), "Messages with one or more attachment");
+    assert.equal(describe("has:link"), "Messages that contain links");
+    assert.equal(describe("has:image"), "Messages that contain images");
+    assert.equal(describe("has:attachment"), "Messages that contain attachments");
 
     query = "-h";
     suggestions = get_suggestions("", query);
     expected = ["-h", "-has:link", "-has:image", "-has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
-    assert.equal(describe("-has:link"), "Exclude messages with one or more link");
-    assert.equal(describe("-has:image"), "Exclude messages with one or more image");
-    assert.equal(describe("-has:attachment"), "Exclude messages with one or more attachment");
+    assert.equal(describe("-has:link"), "Exclude messages that contain links");
+    assert.equal(describe("-has:image"), "Exclude messages that contain images");
+    assert.equal(describe("-has:attachment"), "Exclude messages that contain attachments");
 
     // operand suggestions follow.
 

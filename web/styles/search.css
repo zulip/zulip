@@ -70,13 +70,18 @@
         padding-right: 40px;
         border: none;
         border-radius: 0;
-        font-family: "Source Sans 3", sans-serif;
+        font-family: "Source Sans 3 VF", sans-serif;
         font-weight: 300;
         line-height: var(--header-height);
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
         padding-left: 35px;
+        color: hsl(0deg 0% 33%);
+
+        &:focus {
+            outline: 0;
+        }
 
         @media (width < $sm_min) {
             vertical-align: text-bottom;
@@ -87,10 +92,9 @@
         box-shadow: inset 0 0 0 2px hsl(204deg 20% 74%);
     }
 
-    .search_close_button,
-    .search_close_button:disabled:hover {
+    .search_close_button {
         position: absolute;
-        right: 35px;
+        right: 0;
         top: 6px;
         background: none;
         border-radius: 0;
@@ -104,10 +108,6 @@
         box-shadow: none;
         text-shadow: none;
         z-index: 5;
-    }
-
-    .search_close_button {
-        right: 0;
 
         &:hover {
             opacity: 1;

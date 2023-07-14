@@ -10,7 +10,7 @@
   [edit your profile information](/help/edit-your-profile) to tell others
   about yourself.
 
-- [Review your display settings](/help/review-your-settings#review-your-display-settings).
+- [Review your Preferences](/help/review-your-settings#review-your-preferences).
   You can [switch between light and dark theme](/help/dark-theme),
   [pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set),
   [change your language](/help/change-your-language), and make other tweaks to your Zulip experience.

@@ -600,7 +600,7 @@ button {
             border: 2px solid hsl(0deg 0% 100%);
 
             font-size: 1.2em;
-            font-weight: 500;
+            font-weight: 400;
             color: hsl(148deg 23% 51%);
 
             box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
@@ -831,7 +831,7 @@ button {
                 top: 3px;
 
                 font-size: 2.5rem;
-                font-weight: 500;
+                font-weight: 400;
                 line-height: 0.9;
 
                 opacity: 0.4;
@@ -872,7 +872,7 @@ button {
         min-width: 650px;
 
         .number {
-            font-weight: 800;
+            font-weight: 700;
 
             &.one {
                 color: hsl(0deg 0% 100% / 40%);
@@ -1960,7 +1960,7 @@ button {
 
     font-size: 0.8rem;
     font-weight: 600;
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     margin-top: 10px;
 }
 
@@ -2440,7 +2440,7 @@ button {
     padding: 10px 0 10px 25px;
 
     font-size: 0.9em;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .pricing-model .pricing-container ul.feature-list li::before {
@@ -3574,7 +3574,7 @@ button {
     overflow: hidden;
     transition: border-color 0.3s, background-color 0.3s;
     transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
-    font-weight: 800;
+    font-weight: 700;
     padding: 15px 5px;
 
     &:focus {
@@ -3627,7 +3627,7 @@ button {
 
     & blockquote::before {
         font-size: 20px;
-        font-weight: 800;
+        font-weight: 700;
     }
 
     & cite {
@@ -3668,7 +3668,7 @@ button {
         margin: 40px auto;
         font-size: 20px;
         text-align: center;
-        font-weight: bolder;
+        font-weight: 400;
         opacity: 0.9;
     }
 
@@ -3807,7 +3807,7 @@ button {
                     margin: 0 0 -10px;
                     width: 100%;
                     text-align: center;
-                    font-weight: 550;
+                    font-weight: 600;
                     color: hsl(169deg 46% 33%);
                 }
             }
@@ -4031,7 +4031,7 @@ button {
                 }
 
                 & h1 {
-                    font-weight: 550;
+                    font-weight: 600;
                     font-size: clamp(24px, 2.5vw, 32px);
                 }
 

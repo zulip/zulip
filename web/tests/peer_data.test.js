@@ -204,7 +204,7 @@ test("subscribers", () => {
     blueslip.reset();
 
     // Verify that we don't crash for a bad user id.
-    blueslip.expect("error", "Unknown user_id in get_by_user_id");
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     blueslip.expect("warn", "We tried to add invalid subscriber: 88888");
     peer_data.add_subscriber(stream_id, 88888);
     blueslip.reset();

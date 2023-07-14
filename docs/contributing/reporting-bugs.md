@@ -1,6 +1,6 @@
 # Reporting bugs
 
-The are several ways to report bugs (or possible bugs) you encounter in Zulip.
+There are several ways to report bugs (or possible bugs) you encounter in Zulip:
 
 - If you have a concrete bug report with steps to reproduce the behavior, [file an
   issue](#filing-a-github-issue) in the appropriate GitHub repository.
@@ -25,7 +25,7 @@ what to include in a bug report.
    Include screenshots and/or screen captures (see [recommended
    tools](../tutorials/screenshot-and-gif-software.md)) if they help
    communicate what you are describing, but avoid posting long videos.
-1. Indicate the **[version](https://zulip.com/help/view-zulip-version)** of the
+1. **Indicate the [version](https://zulip.com/help/view-zulip-version)** of the
    Zulip app where you encountered the bug. It may also be helpful to note your
    operating system, whether you are using the web app or the desktop app, and
    your browser if using the web app.
@@ -44,10 +44,10 @@ Filing a GitHub issue works best when:
 If all of the above accurately describe your situation, please file an issue!
 Otherwise, we recommend [starting a
 conversation](#starting-a-conversation-about-a-possible-bug) in the Zulip
-development community, so that the problem you encountered can be discussed
+development community so that the problem you encountered can be discussed
 interactively.
 
-Steps and best practices for filing an issue:
+Steps and best practices for filing a GitHub issue:
 
 1. Report the issue in the **appropriate [Zulip
    repository](https://github.com/zulip)**. The most commonly used repositories
@@ -58,8 +58,8 @@ Steps and best practices for filing an issue:
    - [zulip/zulip-mobile](https://github.com/zulip/zulip-mobile/issues) for
      issues with the mobile apps.
    - [zulip/zulip-desktop](https://github.com/zulip/zulip-desktop/issues) for
-     issues that are specific to the Zulip desktop app, and _do not_ occur in
-     the web app.
+     issues that are specific to the Zulip desktop app, and therefore _do not_
+     occur in the web app.
    - [zulip/zulip-terminal](https://github.com/zulip/zulip-terminal/issues) for
      issues with the terminal app.
 2. Do a **quick search** of the repository to see if your issue has already
@@ -91,13 +91,13 @@ Steps and best practices for starting a conversation:
    have an account.
 2. Pick an **appropriate stream** to report your issue:
    - [#issues](https://chat.zulip.org/#narrow/stream/9-issues) for issues with
-     the Zulip web app or server. A good default if you aren't sure which stream
-     to use.
+     the Zulip web app or server. Use this stream if you aren't sure which
+     stream is most appropriate.
    - [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) for issues with
      the mobile apps.
    - [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) for issues
-     that are specific to the Zulip desktop app, and _do not_ occur in the web
-     app.
+     that are specific to the Zulip desktop app, and therefore _do not_
+     occur in the web app.
    - [#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal)
      for issues with the terminal app.
    - [#production
@@ -112,15 +112,15 @@ Moderators can always rename the topic, or move the thread to another stream.
 
 Once a possible bug is reported, members of the development community will jump
 in to discuss whether the report constitutes a bug, how to reproduce it, and how
-it can be resolved. The initial reporter can help by monitoring the discussion,
+it can be resolved. The initial reporter can help by monitoring the discussion
 and replying to any follow-up questions. If the report is determined to be a
 reproducible bug, a GitHub issue will be filed to keep track of it (see below).
 
 ## Managing bug reports
 
-This section describes our bug management process. All community members are
-encouraged to help make sure things run smoothly, whether or not they originally
-reported the bug.
+This section describes our process for managing bugs. All community members are
+encouraged to help make sure this process runs smoothly, whether or not they
+originally reported the bug.
 
 Whenever a bug is tracked in GitHub and also discussed in the development
 community, be sure to cross-link between the issue and the conversation. [Link
@@ -130,7 +130,7 @@ in the discussion thread, as message links will still work even if the topic is
 renamed or resolved.
 
 - If you encounter a definite bug with a clear reproducer and significant user
-  impact, it is best to both file a GitHub issue, and immediately start a
+  impact, it is best to both file a GitHub issue and immediately start a
   discussion in the development community. This helps us address important
   issues as quickly as possible.
 - For minor bugs (e.g., a visual glitch in a settings menu for very long stream
@@ -139,16 +139,17 @@ renamed or resolved.
   an actual, reproducible bug, anyone can help out by filing a GitHub issue to
   track it:
   - In some cases, especially if we're planning to fix the issue right away, the
-    issue description can be a quote from a message with a link to the
-    discussion -- no need to stress over making it perfect.
+    GitHub issue description can simply quote and link to a message from the
+    discussion in the development community -- no need to stress over making it
+    perfect.
   - [Use Zulipbot](../contributing/zulipbot-usage.md) to add the appropriate
-    labels, including “bug” and at least one area label; leave a comment if you
-    don't know what area labels to use.
+    labels, including “bug” and at least one area label; leave a comment on
+    the issue if you don't know what area labels to use.
   - You can add the “help wanted” label (and claim the issue if you like) if
     that is appropriate based on the discussion. Note that sometimes we won't
-    mark a reproducible bug as “help wanted”, e.g., if we want a core
-    contributor to take it on, if the fix will happen as part of a larger
-    project, etc.
+    mark a reproducible bug as “help wanted” for various reasons. For example,
+    we might want a core contributor to take it on, or the fix might be planned
+    as part of a larger project.
   - Don't forget to cross-link between the issue and the discussion.
 - If a bug report in GitHub is not sufficiently clear, Zulip maintainers will
   often encourage the reporter to discuss it interactively in the development

@@ -355,7 +355,7 @@ def get_users_for_soft_deactivation(
     return users_to_deactivate
 
 
-def do_soft_activate_users(users: Iterable[UserProfile]) -> List[UserProfile]:
+def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
     users_soft_activated = []
     for user_profile in users:
         user_activated = reactivate_user_if_soft_deactivated(user_profile)
@@ -407,7 +407,7 @@ def soft_reactivate_if_personal_notification(
     return to Zulip. As a result, it makes sense to optimistically
     soft-reactivate that user, to give them a good return experience.
 
-    It's important that we do nothing for wildcard or group mentions,
+    It's important that we do nothing for stream wildcard or group mentions,
     because soft-reactivating an entire realm would be very expensive
     (and we can't easily check the group's size). The caller is
     responsible for passing a mentioned_user_group_name that is None

@@ -38,7 +38,7 @@ import {user_settings} from "./user_settings";
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
 
-// This is what we use for PM/compose typeaheads.
+// This is what we use for direct message/compose typeaheads.
 // We export it to allow tests to mock it.
 export const max_num_items = 8;
 
@@ -335,6 +335,9 @@ export function tokenize_compose_str(s) {
 }
 
 export function broadcast_mentions() {
+    if (!compose_validate.wildcard_mention_allowed()) {
+        return [];
+    }
     const wildcard_mention_array = ["all", "everyone"];
     let wildcard_string = "";
     if (compose_state.get_message_type() === "private") {
@@ -424,6 +427,7 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
         want_broadcast: !is_silent,
         filter_pills: false,
+        filter_groups: !is_silent,
         ...opts,
     };
     return get_person_suggestions(query, opts);
@@ -460,7 +464,12 @@ export function get_person_suggestions(query, opts) {
         return persons.filter((item) => query_matches_person(query, item));
     }
 
-    const groups = user_groups.get_realm_user_groups();
+    let groups;
+    if (opts.filter_groups) {
+        groups = user_groups.get_user_groups_allowed_to_mention();
+    } else {
+        groups = user_groups.get_realm_user_groups();
+    }
 
     const filtered_groups = groups.filter((item) => query_matches_name(query, item));
 

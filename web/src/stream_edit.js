@@ -267,7 +267,7 @@ export function setup_stream_settings(node) {
             {label: $t({defaultMessage: "Personal"}), key: "personal_settings"},
             {label: $t({defaultMessage: "Subscribers"}), key: "subscriber_settings"},
         ],
-        callback(name, key) {
+        callback(_name, key) {
             $(".stream_section").hide();
             $(`.${CSS.escape(key)}`).show();
             select_tab = key;
@@ -452,8 +452,6 @@ export function initialize() {
     });
 
     function save_stream_info(e) {
-        e.preventDefault();
-        e.stopPropagation();
         const sub = get_sub_for_target(e.currentTarget);
 
         const url = `/json/streams/${sub.stream_id}`;
@@ -603,8 +601,19 @@ export function initialize() {
         const stream = sub_store.get(stream_id);
 
         const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream});
+
+        const is_new_stream_notification_stream =
+            stream_id === page_params.realm_notifications_stream_id;
+        const is_signup_notification_stream =
+            stream_id === page_params.realm_signup_notifications_stream_id;
+        const is_notification_stream =
+            is_new_stream_notification_stream || is_signup_notification_stream;
+
         const html_body = render_settings_deactivation_stream_modal({
             stream_name_with_privacy_symbol_html,
+            is_new_stream_notification_stream,
+            is_signup_notification_stream,
+            is_notification_stream,
         });
 
         confirm_dialog.launch({

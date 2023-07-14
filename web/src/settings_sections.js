@@ -51,7 +51,7 @@ export function get_group(section) {
 export function initialize() {
     // personal
     load_func_dict.set("your-account", settings_account.set_up);
-    load_func_dict.set("display-settings", () => {
+    load_func_dict.set("preferences", () => {
         settings_display.set_up(settings_display.user_settings_panel);
     });
     load_func_dict.set("notifications", () => {
