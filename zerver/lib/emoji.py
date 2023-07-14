@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Tuple
+from dataclasses import dataclass
 
 import orjson
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -62,17 +62,29 @@ def translate_emoticons(text: str) -> str:
     return translated
 
 
-def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
-    # TODO: Just ask callers for realm_id. Also consider returning a
-    #       tiny dataclass instead of a tuple.
-    realm_emoji_dict = get_name_keyed_dict_for_active_realm_emoji(realm.id)
+@dataclass
+class EmojiData:
+    emoji_code: str
+    reaction_type: str
+
+
+def get_emoji_data(realm_id: int, emoji_name: str) -> EmojiData:
+    # Even if emoji_name is either in name_to_codepoint or named "zulip",
+    # we still need to call get_realm_active_emoji.
+    realm_emoji_dict = get_name_keyed_dict_for_active_realm_emoji(realm_id)
     realm_emoji = realm_emoji_dict.get(emoji_name)
+
     if realm_emoji is not None:
-        return str(realm_emoji["id"]), Reaction.REALM_EMOJI
+        emoji_code = str(realm_emoji["id"])
+        return EmojiData(emoji_code=emoji_code, reaction_type=Reaction.REALM_EMOJI)
+
     if emoji_name == "zulip":
-        return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
+        return EmojiData(emoji_code=emoji_name, reaction_type=Reaction.ZULIP_EXTRA_EMOJI)
+
     if emoji_name in name_to_codepoint:
-        return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
+        emoji_code = name_to_codepoint[emoji_name]
+        return EmojiData(emoji_code=emoji_code, reaction_type=Reaction.UNICODE_EMOJI)
+
     raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
 
 

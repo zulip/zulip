@@ -1163,7 +1163,7 @@ def build_reactions(
     reactions = [{"name": k, "users": v, "count": len(v)} for k, v in merged_reactions.items()]
 
     # For the Unicode emoji codes, we use equivalent of
-    # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
+    # function 'get_emoji_data' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
         emoji_name = slack_reaction["name"]
         if emoji_name in slack_emoji_name_to_codepoint:

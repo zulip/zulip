@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.actions.reactions import check_add_reaction, do_remove_reaction
-from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
 from zerver.lib.request import REQ, has_request_variables
@@ -57,7 +57,7 @@ def remove_reaction(
         # without needing the mapping between emoji names and codes,
         # we allow instead passing the emoji_name and looking up the
         # corresponding code using the current data.
-        emoji_code = emoji_name_to_emoji_code(message.sender.realm, emoji_name)[0]
+        emoji_code = get_emoji_data(message.sender.realm_id, emoji_name).emoji_code
 
     if not Reaction.objects.filter(
         user_profile=user_profile,

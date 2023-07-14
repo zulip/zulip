@@ -13,7 +13,7 @@ from zerver.actions.message_send import (
     internal_send_private_message,
 )
 from zerver.actions.reactions import do_add_reaction
-from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.emoji import get_emoji_data
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
@@ -355,5 +355,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     turtle_message = Message.objects.select_for_update().get(
         id__in=message_ids, content__icontains="cute/turtle.png"
     )
-    (emoji_code, reaction_type) = emoji_name_to_emoji_code(realm, "turtle")
-    do_add_reaction(welcome_bot, turtle_message, "turtle", emoji_code, reaction_type)
+    emoji_data = get_emoji_data(realm.id, "turtle")
+    do_add_reaction(
+        welcome_bot, turtle_message, "turtle", emoji_data.emoji_code, emoji_data.reaction_type
+    )
