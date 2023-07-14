@@ -210,6 +210,8 @@ function set_guest_users_statistic(guest_users) {
 
 // PLOTLY CHARTS
 function populate_messages_sent_over_time(data) {
+    // Content rendered by this method is titled as "Messages sent over time" on the webpage
+
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
         return;
@@ -517,6 +519,8 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
 }
 
 function populate_messages_sent_by_client(data) {
+    // Content rendered by this method is titled as "Messages sent by client" on the webpage
+
     const layout = {
         width: 750,
         height: null, // set in draw_plot()
@@ -657,6 +661,8 @@ function populate_messages_sent_by_client(data) {
 }
 
 function populate_messages_sent_by_message_type(data) {
+    // Content rendered by this method is titled as "Messages sent by recipient type" on the webpage
+
     const layout = {
         margin: {l: 90, r: 0, b: 10, t: 0},
         width: 750,
@@ -775,6 +781,8 @@ function populate_messages_sent_by_message_type(data) {
 }
 
 function populate_number_of_users(data) {
+    // Content rendered by this method is titled as "Active users" on the webpage
+
     const weekly_rangeselector = make_rangeselector(
         {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
         {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
@@ -873,6 +881,8 @@ function populate_number_of_users(data) {
 }
 
 function populate_messages_read_over_time(data) {
+    // Content rendered by this method is titled as "Messages read over time" on the webpage
+
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
         return;
