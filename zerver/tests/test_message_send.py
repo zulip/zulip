@@ -33,6 +33,7 @@ from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -55,7 +56,6 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
-    flush_per_request_caches,
     get_or_create_huddle,
     get_realm,
     get_stream,

@@ -6,6 +6,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
@@ -18,7 +19,6 @@ from zerver.models import (
     Recipient,
     Stream,
     UserProfile,
-    flush_per_request_caches,
     get_display_recipient,
     get_realm,
     get_stream,

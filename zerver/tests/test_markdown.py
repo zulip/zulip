@@ -54,6 +54,7 @@ from zerver.lib.mention import (
     topic_wildcards,
 )
 from zerver.lib.message import render_markdown
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.models import (
@@ -63,7 +64,6 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
-    flush_per_request_caches,
     get_client,
     get_realm,
     get_stream,

@@ -32,6 +32,7 @@ from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import (
@@ -42,7 +43,7 @@ from zerver.lib.response import (
 )
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_agent import parse_user_agent
-from zerver.models import Realm, flush_per_request_caches, get_realm
+from zerver.models import Realm, get_realm
 
 ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
