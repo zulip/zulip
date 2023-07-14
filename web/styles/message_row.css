@@ -215,6 +215,10 @@ $time_column_min_width: 50px; /* + padding */
             /* Span both the controls and time columns */
             grid-row: controls-start;
             grid-column: controls-start / time-end;
+            /* Use 1px of margin on the right to keep the alert message's
+               background color from overlapping the selected-message
+               outline. */
+            margin-right: 1px;
         }
 
         .message_length_controller {
