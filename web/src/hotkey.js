@@ -433,12 +433,12 @@ export function process_enter_key(e) {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
-        drafts.handle_keyboard_events(e, "enter");
+        drafts.handle_keyboard_events("enter");
         return true;
     }
 
     if (overlays.scheduled_messages_open()) {
-        scheduled_messages_overlay_ui.handle_keyboard_events(e, "enter");
+        scheduled_messages_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
 
@@ -662,11 +662,11 @@ export function process_hotkey(e, hotkey) {
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
-                drafts.handle_keyboard_events(e, event_name);
+                drafts.handle_keyboard_events(event_name);
                 return true;
             }
             if (overlays.scheduled_messages_open()) {
-                scheduled_messages_overlay_ui.handle_keyboard_events(e, event_name);
+                scheduled_messages_overlay_ui.handle_keyboard_events(event_name);
                 return true;
             }
     }

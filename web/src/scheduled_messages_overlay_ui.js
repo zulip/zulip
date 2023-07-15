@@ -55,8 +55,8 @@ function sort_scheduled_messages(scheduled_messages) {
     return sorted_messages;
 }
 
-export function handle_keyboard_events(e, event_key) {
-    messages_overlay_ui.modals_handle_events(e, event_key, keyboard_handling_context);
+export function handle_keyboard_events(event_key) {
+    messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
 function format(scheduled_messages) {
