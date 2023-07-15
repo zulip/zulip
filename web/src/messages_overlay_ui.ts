@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 type Context = {
     items_container_selector: string;
@@ -34,14 +33,14 @@ export function focus_on_sibling_element(context: Context): void {
 
     // Try to get the next item in the list and 'focus' on it.
     // Use previous item as a fallback.
-    if ($next_row[0] !== undefined) {
+    if ($next_row.length > 0) {
         elem_to_be_focused_id = $next_row.attr(context.id_attribute_name);
-    } else if ($prev_row[0] !== undefined) {
+    } else if ($prev_row.length > 0) {
         elem_to_be_focused_id = $prev_row.attr(context.id_attribute_name);
     }
 
     const new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
-    if (new_focus_element[0] !== undefined) {
+    if (new_focus_element.length > 0) {
         activate_element(new_focus_element[0].children[0] as HTMLElement, context);
     }
 }
@@ -117,7 +116,7 @@ function initialize_focus(event_name: string, context: Context): void {
     // if up_arrow is clicked or the first item if down_arrow is clicked.
     if (
         (event_name !== "up_arrow" && event_name !== "down_arrow") ||
-        $(`.${CSS.escape(context.box_item_selector)}:focus`)[0]
+        $(`.${CSS.escape(context.box_item_selector)}:focus`).length > 0
     ) {
         return;
     }
@@ -128,7 +127,7 @@ function initialize_focus(event_name: string, context: Context): void {
         return;
     }
 
-    let element;
+    let element: JQuery;
 
     function get_last_element(): JQuery {
         const last_id = modal_items_ids.at(-1) ?? "";
@@ -142,20 +141,19 @@ function initialize_focus(event_name: string, context: Context): void {
 
     if (event_name === "up_arrow") {
         element = get_last_element();
-    } else if (event_name === "down_arrow") {
+    } else {
         element = get_first_element();
     }
 
-    assert(element !== undefined, "Element is undefined in initialize_focus");
     const focus_element = element[0].children[0] as HTMLElement;
     activate_element(focus_element, context);
 }
 
 function scroll_to_element($element: JQuery, context: Context): void {
-    if ($element[0] === undefined) {
+    if ($element.length > 0) {
         return;
     }
-    if ($element[0].children[0] === undefined) {
+    if ($element.length > 0) {
         return;
     }
     activate_element($element[0].children[0] as HTMLElement, context);
