@@ -4,13 +4,16 @@ import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 import tippy from "tippy.js";
+import {z} from "zod";
 
+import * as blueslip from "../blueslip";
 import {$t, $t_html} from "../i18n";
 
 import {page_params} from "./page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
 
+// Define types
 type DateFormatter = (date: Date) => string;
 
 type AggregatedData<T> = {
@@ -48,6 +51,52 @@ type DataByTime<T> = {
     week: T;
 };
 
+// Define zod schemas for plotly
+const datum_schema: z.ZodType<Plotly.Datum> = z.any();
+
+// Define a schema factory function for the utility generic type
+// The inferred types from zod have to be used to type the return values
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(schema: T) {
+    return z.object({
+        everyone: schema,
+        user: schema,
+    });
+}
+
+// Define zod schemas for incoming data from the server
+const common_data_schema = z.object({
+    end_times: z.array(z.number()),
+});
+
+const active_user_data = z.object({
+    _1day: z.array(datum_schema),
+    _15day: z.array(datum_schema),
+    all_time: z.array(datum_schema),
+});
+
+const read_data_schema = instantiate_type_DataByEveryoneUser(
+    z.object({read: z.array(z.number())}),
+).extend({...common_data_schema.shape});
+
+const sent_data_schema = instantiate_type_DataByEveryoneUser(z.record(z.array(z.number()))).extend({
+    ...common_data_schema.shape,
+});
+const ordered_sent_data_schema = sent_data_schema.extend({display_order: z.array(z.string())});
+
+const user_count_data_schema = z
+    .object({everyone: active_user_data})
+    .extend({...common_data_schema.shape});
+
+// Inferred types used in nested functions
+type SentData = z.infer<typeof sent_data_schema>;
+type OrderedSentData = z.infer<typeof ordered_sent_data_schema>;
+type ReadData = z.infer<typeof read_data_schema>;
+
+// Define misc zod schemas
+const time_button_schema = z.enum(["cumulative", "year", "month", "week"]);
+const user_button_schema = z.enum(["everyone", "user"]);
+
 const font_14pt = {
     family: "Open Sans, sans-serif",
     size: 14,
@@ -61,6 +110,22 @@ const font_12pt = {
 };
 
 let last_full_update = Number.POSITIVE_INFINITY;
+
+function handle_parse_server_stats_result<_, T>(
+    result: z.SafeParseReturnType<_, T>,
+): T | undefined {
+    if (!result.success) {
+        blueslip.warn(
+            "Server stats data cannot be parsed as expected.\n" +
+                "Check if the schema is up-to-date or the data satisfies the schema definition.",
+            {
+                issues: result.error.issues,
+            },
+        );
+        return undefined;
+    }
+    return result.data;
+}
 
 // Copied from attachments_ui.js
 function bytes_to_size(bytes: number, kb_with_1024_bytes = false): string {
@@ -256,8 +321,13 @@ function set_guest_users_statistic(guest_users: number): void {
 }
 
 // PLOTLY CHARTS
-function populate_messages_sent_over_time(data: SentData): void {
+function populate_messages_sent_over_time(raw_data: unknown): void {
     // Content rendered by this method is titled as "Messages sent over time" on the webpage
+    const result = sent_data_schema.safeParse(raw_data);
+    const data = handle_parse_server_stats_result(result);
+    if (data === undefined) {
+        return;
+    }
 
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
@@ -375,7 +445,10 @@ function populate_messages_sent_over_time(data: SentData): void {
             new Date(timestamp * 1000 - 60 * 60 * 1000),
     );
 
-    function aggregate_data(aggregation: "day" | "week"): AggregatedData<DataByUserType<number[]>> {
+    function aggregate_data(
+        data: SentData,
+        aggregation: "day" | "week",
+    ): AggregatedData<DataByUserType<number[]>> {
         let start;
         let is_boundary;
         if (aggregation === "day") {
@@ -432,7 +505,7 @@ function populate_messages_sent_over_time(data: SentData): void {
     };
     let values = {me: data.user.human, human: data.everyone.human, bot: data.everyone.bot};
 
-    let info = aggregate_data("day");
+    let info = aggregate_data(data, "day");
     date_formatter = function (date) {
         return format_date(date, false);
     };
@@ -440,7 +513,7 @@ function populate_messages_sent_over_time(data: SentData): void {
     const daily_traces = make_traces(info.dates, info.values, "bar", date_formatter);
     get_thirty_days_messages_sent(info.values);
 
-    info = aggregate_data("week");
+    info = aggregate_data(data, "week");
     date_formatter = function (date) {
         return $t({defaultMessage: "Week of {date}"}, {date: format_date(date, false)});
     };
@@ -611,8 +684,13 @@ function compute_summary_chart_data(
     };
 }
 
-function populate_messages_sent_by_client(data: SentData): void {
+function populate_messages_sent_by_client(raw_data: unknown): void {
     // Content rendered by this method is titled as "Messages sent by client" on the webpage
+    const result = ordered_sent_data_schema.safeParse(raw_data);
+    const data = handle_parse_server_stats_result(result);
+    if (data === undefined) {
+        return;
+    }
 
     type PlotDataByMessageClient = PlotTrace & {
         trace_annotations: Partial<Plotly.PlotData>;
@@ -754,18 +832,25 @@ function populate_messages_sent_by_client(data: SentData): void {
     $("#pie_messages_sent_by_client button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
-            user_button = $(this).attr("data-user")! as "everyone" | "user";
+            user_button = user_button_schema.parse($(this).attr("data-user"));
+            // Now `user_button` will be of type "everyone" | "user"
         }
         if ($(this).attr("data-time")) {
             set_time_button($(this));
-            time_button = $(this).attr("data-time")! as "cumulative" | "year" | "month" | "week";
+            time_button = time_button_schema.parse($(this).attr("data-time"));
+            // Now `time_button` will be of type "cumulative" | "year" | "month" | "week"
         }
         draw_plot();
     });
 }
 
-function populate_messages_sent_by_message_type(data: SentData): void {
+function populate_messages_sent_by_message_type(raw_data: unknown): void {
     // Content rendered by this method is titled as "Messages sent by recipient type" on the webpage
+    const result = ordered_sent_data_schema.safeParse(raw_data);
+    const data = handle_parse_server_stats_result(result);
+    if (data === undefined) {
+        return;
+    }
 
     type PlotDataByMessageType = {
         trace: Partial<Plotly.PieData>;
@@ -783,6 +868,7 @@ function populate_messages_sent_by_message_type(data: SentData): void {
     };
 
     function make_plot_data(
+        data: OrderedSentData,
         time_series_data: Record<string, number[]>,
         num_steps: number,
     ): PlotDataByMessageType {
@@ -821,16 +907,16 @@ function populate_messages_sent_by_message_type(data: SentData): void {
 
     const plot_data: DataByEveryoneUser<DataByTime<PlotDataByMessageType>> = {
         everyone: {
-            cumulative: make_plot_data(data.everyone, data.end_times.length),
-            year: make_plot_data(data.everyone, 365),
-            month: make_plot_data(data.everyone, 30),
-            week: make_plot_data(data.everyone, 7),
+            cumulative: make_plot_data(data, data.everyone, data.end_times.length),
+            year: make_plot_data(data, data.everyone, 365),
+            month: make_plot_data(data, data.everyone, 30),
+            week: make_plot_data(data, data.everyone, 7),
         },
         user: {
-            cumulative: make_plot_data(data.user, data.end_times.length),
-            year: make_plot_data(data.user, 365),
-            month: make_plot_data(data.user, 30),
-            week: make_plot_data(data.user, 7),
+            cumulative: make_plot_data(data, data.user, data.end_times.length),
+            year: make_plot_data(data, data.user, 365),
+            month: make_plot_data(data, data.user, 30),
+            week: make_plot_data(data, data.user, 7),
         },
     };
 
@@ -882,18 +968,25 @@ function populate_messages_sent_by_message_type(data: SentData): void {
     $("#pie_messages_sent_by_type button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
-            user_button = $(this).attr("data-user") as "everyone" | "user";
+            user_button = user_button_schema.parse($(this).attr("data-user"));
+            // Now `user_button` will be of type "everyone" | "user"
         }
         if ($(this).attr("data-time")) {
             set_time_button($(this));
-            time_button = $(this).attr("data-time") as "cumulative" | "year" | "month" | "week";
+            time_button = time_button_schema.parse($(this).attr("data-time"));
+            // Now `time_button` will be of type "cumulative" | "year" | "month" | "week"
         }
         draw_plot();
     });
 }
 
-function populate_number_of_users(data: UserCountData): void {
+function populate_number_of_users(raw_data: unknown): void {
     // Content rendered by this method is titled as "Active users" on the webpage
+    const result = user_count_data_schema.safeParse(raw_data);
+    const data = handle_parse_server_stats_result(result);
+    if (data === undefined) {
+        return;
+    }
 
     const weekly_rangeselector = make_rangeselector(
         {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
@@ -996,8 +1089,13 @@ function populate_number_of_users(data: UserCountData): void {
     get_user_summary_statistics(data.everyone);
 }
 
-function populate_messages_read_over_time(data: ReadData): void {
+function populate_messages_read_over_time(raw_data: unknown): void {
     // Content rendered by this method is titled as "Messages read over time" on the webpage
+    const result = read_data_schema.safeParse(raw_data);
+    const data = handle_parse_server_stats_result(result);
+    if (data === undefined) {
+        return;
+    }
 
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
@@ -1106,6 +1204,7 @@ function populate_messages_read_over_time(data: ReadData): void {
     );
 
     function aggregate_data(
+        data: ReadData,
         aggregation: "day" | "week",
     ): AggregatedData<DataByEveryoneMe<number[]>> {
         let start;
@@ -1157,14 +1256,14 @@ function populate_messages_read_over_time(data: ReadData): void {
     };
     let values = {me: data.user.read, everyone: data.everyone.read};
 
-    let info = aggregate_data("day");
+    let info = aggregate_data(data, "day");
     date_formatter = function (date) {
         return format_date(date, false);
     };
     const last_day_is_partial = info.last_value_is_partial;
     const daily_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
-    info = aggregate_data("week");
+    info = aggregate_data(data, "week");
     date_formatter = function (date) {
         return $t({defaultMessage: "Week of {date}"}, {date: format_date(date, false)});
     };
@@ -1256,33 +1355,15 @@ function populate_messages_read_over_time(data: ReadData): void {
     }
 }
 
-type CommonData = {
-    end_times: number[];
-    display_order: string[];
-};
-
-type ReadData = DataByEveryoneUser<
-    {
-        read: number[];
-    } & DataByTime<PlotTrace>
-> &
-    CommonData;
-
-type SentData = DataByEveryoneUser<DataByUserType<number[]>> & CommonData;
-
-type UserCountData = {
-    everyone: ActiveUserData;
-} & CommonData;
+// Above are helper functions that prepare the plot data
+// Below are main functions that render the plots
 
 function get_chart_data(
     data: {
         chart_name: string;
         min_length: string;
     },
-    callback:
-        | ((data: SentData) => void)
-        | ((data: ReadData) => void)
-        | ((data: UserCountData) => void),
+    callback: (data: unknown) => void,
 ): void {
     void $.get({
         url: "/json/analytics/chart_data" + page_params.data_url_suffix,
