@@ -184,6 +184,7 @@ All of these data synchronization options have the same model:
   Zulip server with
   `/home/zulip/deployments/current/scripts/restart-server` so that
   your configuration changes take effect.
+- Logs are available in `/var/log/zulip/ldap.log`.
 
 When using this feature, you may also want to
 [prevent users from changing their display name in the Zulip UI][restrict-name-changes],
@@ -211,6 +212,61 @@ if you have a custom profile field `LinkedIn Profile` and the
 corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
+
+#### Synchronizing groups
+
+Zulip supports syncing [Zulip groups][zulip-groups] with LDAP
+groups. To configure this feature:
+
+1. Review the [django-auth-ldap
+   documentation](https://django-auth-ldap.readthedocs.io/en/latest/groups.html)
+   to determine which of its supported group type configurations
+   matches how your LDAP directory stores groups.
+
+1. Set `AUTH_LDAP_GROUP_TYPE` to the appropriate class instance for
+   that LDAP group type:
+
+   ```python
+   from django_auth_ldap.config import ActiveDirectoryGroupType
+   AUTH_LDAP_GROUP_TYPE = ActiveDirectoryGroupType()
+   ```
+
+   The default is `GroupOfUniqueNamesType`.
+
+1. Configure `AUTH_LDAP_GROUP_SEARCH` to specify how to find groups in
+   your LDAP directory:
+
+   ```python
+   AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+       "ou=groups,dc=www,dc=example,dc=com", ldap.SCOPE_SUBTREE,
+       "(objectClass=groupOfUniqueNames)"
+   )
+   ```
+
+1. Configure which LDAP groups you want to sync into
+   Zulip. `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` is a map where the keys
+   are subdomains of the realms being configured (use `""` for the
+   root domain), and the value corresponding to the key being a list
+   the names of groups to sync:
+
+   ```python
+   LDAP_SYNCHRONIZED_GROUPS_BY_REALM = {
+     "subdomain1" : [
+         "group1",
+         "group2",
+     ]
+   }
+   ```
+
+   In this example configuration, for the Zulip realm with subdomain
+   `subdomain1`, user membership in the Zulip groups named `group1`
+   and `group2` will match their membership in LDAP groups with those
+   names.
+
+1. Test your configuration and restart the server into the new
+   configuration as [documented above](#synchronizing-data).
+
+[zulip-groups]: https://zulip.com/help/user-groups
 
 #### Synchronizing email addresses
 

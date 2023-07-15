@@ -63,6 +63,10 @@ from zerver.actions.realm_settings import (
     do_set_realm_authentication_methods,
     do_set_realm_property,
 )
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_groups,
+    create_user_group_in_database,
+)
 from zerver.actions.user_settings import do_change_password, do_change_user_setting
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.avatar import avatar_url
@@ -89,6 +93,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.types import Validator
 from zerver.lib.upload.base import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
+from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.users import get_all_api_keys, get_api_key, get_raw_user_data
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
@@ -109,6 +114,7 @@ from zerver.models import (
     Realm,
     RealmDomain,
     Stream,
+    UserGroup,
     UserProfile,
     clear_supported_auth_backends_cache,
     get_realm,
@@ -7246,6 +7252,137 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
             req_data = {"token": web_token}
             result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
             self.assert_json_error_contains(result, "Invalid subdomain", 404)
+
+
+class LDAPGroupSyncTest(ZulipTestCase):
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_ldap_group_sync(self) -> None:
+        self.init_default_ldap_database()
+
+        hamlet = self.example_user("hamlet")
+        with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
+            result = sync_user_from_ldap(hamlet, mock.Mock())
+            self.assertTrue(result)
+        self.assertTrue(hamlet.is_active)
+
+        realm = get_realm("zulip")
+
+        with self.settings(
+            AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                "ou=groups,dc=zulip,dc=com",
+                ldap.SCOPE_ONELEVEL,
+                "(objectClass=groupOfUniqueNames)",
+            ),
+            LDAP_SYNCHRONIZED_GROUPS_BY_REALM={
+                "zulip": [
+                    "cool_test_group",
+                ]
+            },
+            LDAP_APPEND_DOMAIN="zulip.com",
+        ), self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log:
+            self.assertFalse(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
+
+            create_user_group_in_database(
+                "cool_test_group", [], realm, acting_user=None, description="Created by LDAP sync"
+            )
+
+            self.assertTrue(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
+
+            user_group = UserGroup.objects.get(realm=realm, name="cool_test_group")
+
+            self.assertFalse(
+                is_user_in_group(
+                    user_group,
+                    hamlet,
+                    direct_member_only=True,
+                )
+            )
+
+            sync_user_from_ldap(hamlet, mock.Mock())
+            self.assertTrue(
+                is_user_in_group(
+                    user_group,
+                    hamlet,
+                    direct_member_only=True,
+                )
+            )
+
+            # Add a user to a Zulip group that they are not member of in ldap.
+            # This implies that they should be deleted from the Zulip group
+            # upon the next sync.
+            cordelia = self.example_user("cordelia")
+            bulk_add_members_to_user_groups(
+                [user_group],
+                [cordelia.id],
+                acting_user=None,
+            )
+
+            self.assertTrue(
+                is_user_in_group(
+                    UserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    cordelia,
+                    direct_member_only=True,
+                )
+            )
+
+            # This should remove cordelia from cool_test_group
+            sync_user_from_ldap(cordelia, mock.Mock())
+
+            self.assertFalse(
+                is_user_in_group(
+                    UserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    cordelia,
+                    direct_member_only=True,
+                )
+            )
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        self.assertEqual(
+            zulip_ldap_log.output,
+            [
+                f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
+                "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: set()",
+                f"DEBUG:zulip.ldap:add {hamlet.id} to ['cool_test_group']",
+                f"DEBUG:zulip.ldap:Syncing groups for user: {cordelia.id}",
+                "DEBUG:zulip.ldap:intended groups: set(); zulip groups: {'cool_test_group'}",
+                f"DEBUG:zulip.ldap:removing groups {{'cool_test_group'}} from {cordelia.id}",
+            ],
+        )
+
+        # Test an exception using a malformed ldap group search setting.
+        with self.settings(
+            AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                "ou=groups,dc=zulip,dc=com",
+                ldap.SCOPE_ONELEVEL,
+                "(objectClass=groupOfUniqueNames",  # this is malformed, missing ")"
+            ),
+            LDAP_SYNCHRONIZED_GROUPS_BY_REALM={
+                "zulip": [
+                    "cool_test_group",
+                ]
+            },
+            LDAP_APPEND_DOMAIN="zulip.com",
+        ), self.assertLogs("django_auth_ldap", "WARN") as django_ldap_log, self.assertLogs(
+            "zulip.ldap", "DEBUG"
+        ) as zulip_ldap_log:
+            with self.assertRaisesRegex(
+                ZulipLDAPError,
+                "search_s.*",
+            ):
+                sync_user_from_ldap(cordelia, mock.Mock())
+
+        self.assertEqual(
+            zulip_ldap_log.output,
+            [f"DEBUG:zulip.ldap:Syncing groups for user: {cordelia.id}"],
+        )
+        self.assertEqual(
+            django_ldap_log.output,
+            [
+                'WARNING:django_auth_ldap:search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0) while authenticating cordelia',
+            ],
+        )
 
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
