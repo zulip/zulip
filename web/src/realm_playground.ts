@@ -19,7 +19,7 @@ const map_pygments_pretty_name_to_aliases = new Map<string, string[]>();
 export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
     map_language_to_playground_info.clear();
 
-    for (const data of Object.values(playgrounds_data)) {
+    for (const data of playgrounds_data) {
         const element_to_push: Omit<RealmPlayground, "pygments_language"> = {
             id: data.id,
             name: data.name,
