@@ -141,6 +141,10 @@ class UploadSerializeMixin(SerializeMixin):
 class ZulipTestCaseMixin(SimpleTestCase):
     # Ensure that the test system just shows us diffs
     maxDiff: Optional[int] = None
+    # This bypasses BAN_CONSOLE_OUTPUT for the test case when set.
+    # Override this to verify if the given extra console output matches the
+    # expectation.
+    expected_console_output: Optional[str] = None
 
     def setUp(self) -> None:
         super().setUp()
@@ -170,7 +174,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
             self.mock_initialize.stop()
 
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
-        if not settings.BAN_CONSOLE_OUTPUT:
+        if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
         extra_output_finder = ExtraConsoleOutputFinder()
         with tee_stderr_and_find_extra_console_output(
@@ -180,6 +184,11 @@ class ZulipTestCaseMixin(SimpleTestCase):
         if extra_output_finder.full_extra_output and (
             test_result is None or test_result.wasSuccessful()
         ):
+            extra_output = extra_output_finder.full_extra_output.decode(errors="replace")
+            if self.expected_console_output is not None:
+                self.assertEqual(extra_output, self.expected_console_output)
+                return test_result
+
             exception_message = f"""
 ---- UNEXPECTED CONSOLE OUTPUT DETECTED ----
 
@@ -196,7 +205,7 @@ You should be able to quickly reproduce this failure with:
 ./tools/test-backend --ban-console-output {self.id()}
 
 Output:
-{extra_output_finder.full_extra_output.decode(errors="replace")}
+{extra_output}
 --------------------------------------------
 """
             raise ExtraConsoleOutputInTestError(exception_message)
