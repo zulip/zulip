@@ -266,6 +266,20 @@ AUTH_LDAP_USER_ATTR_MAP = {
 #    ]
 # }
 
+
+## LDAP group sync configuration.
+## See: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#synchronizing-groups
+# AUTH_LDAP_GROUP_TYPE = GroupOfUniqueNamesType()
+# AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+#     "ou=groups,dc=www,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(objectClass=groupOfUniqueNames)"
+# )
+# LDAP_SYNCHRONIZED_GROUPS_BY_REALM = {
+#   "subdomain1" : [
+#       "group1",
+#       "group2",
+#   ]
+# }
+
 ########
 ## Google OAuth.
 ##
