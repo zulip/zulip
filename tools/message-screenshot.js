@@ -37,13 +37,13 @@ async function run() {
             "--font-render-hinting=none",
         ],
         defaultViewport: null,
-        headless: true,
+        headless: "new",
     });
     try {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
         await page.setViewport({width: 1280, height: 1024, deviceScaleFactor: 2});
-        await page.goto(options.realmUri);
+        await page.goto(`${options.realmUri}/devlogin`);
         // wait for Iago devlogin button and click on it.
         await page.waitForSelector('[value="iago@zulip.com"]');
 
@@ -54,7 +54,9 @@ async function run() {
         ]);
 
         // Navigate to message and capture screenshot
-        await page.goto(`${options.realmUri}/#narrow/id/${options.messageId}`);
+        await page.goto(`${options.realmUri}/#narrow/id/${options.messageId}`, {
+            waitUntil: "networkidle2",
+        });
         const messageSelector = `#zfilt${CSS.escape(options.messageId)}`;
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
@@ -62,13 +64,12 @@ async function run() {
         await page.evaluate((sel) => $(sel).remove(), marker);
         const messageBox = await page.$(messageSelector);
         await page.evaluate((msg) => $(msg).removeClass("selected_message"), messageSelector);
-        const messageGroup = (await messageBox.$x(".."))[0];
+        const messageGroup = await messageBox.$("xpath/..");
         // Compute screenshot area, with some padding around the message group
         const clip = {...(await messageGroup.boundingBox())};
-        clip.y -= 5;
         clip.x -= 5;
         clip.width += 10;
-        clip.height += 10;
+        clip.y += 5;
         const imagePath = options.imagePath;
         const imageDir = path.dirname(imagePath);
         mkdirp.sync(imageDir);
