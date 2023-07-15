@@ -70,3 +70,21 @@ run_test("get_group_ids", () => {
     const group_ids = user_group_pill.get_group_ids(widget);
     assert.deepEqual(group_ids, [101, 102]);
 });
+
+run_test("append_user_group", () => {
+    const items = [admins_pill];
+    const widget = {
+        appendValidatedData(group) {
+            assert.deepEqual(group, testers_pill);
+            items.push(testers_pill);
+        },
+        clear_text() {},
+    };
+
+    const group = {
+        ...testers,
+        members: new Set(testers.members),
+    };
+    user_group_pill.append_user_group(group, widget);
+    assert.deepEqual(items, [admins_pill, testers_pill]);
+});
