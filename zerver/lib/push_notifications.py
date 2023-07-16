@@ -657,7 +657,6 @@ def get_gcm_alert(
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
-    display_recipient = get_display_recipient(message.recipient)
     if (
         message.recipient.type == Recipient.HUDDLE
         and trigger == NotificationTriggers.DIRECT_MESSAGE
@@ -668,27 +667,25 @@ def get_gcm_alert(
         and trigger == NotificationTriggers.DIRECT_MESSAGE
     ):
         return f"New direct message from {sender_str}"
-    elif message.is_stream_message() and trigger == NotificationTriggers.MENTION:
+
+    assert message.is_stream_message()
+    display_recipient = get_display_recipient(message.recipient)
+
+    if trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is None:
             return f"{sender_str} mentioned you in #{display_recipient}"
         else:
             return f"{sender_str} mentioned @{mentioned_user_group_name} in #{display_recipient}"
-    elif (
-        message.is_stream_message()
-        and trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
-    ):
+    elif trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC:
         return "TODO - 2"
-    elif (
-        message.is_stream_message()
-        and trigger == NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
-    ):
+    elif trigger == NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC:
         return "TODO"
-    elif message.is_stream_message() and trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION:
+    elif trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION:
         return f"{sender_str} mentioned all topic participants in #{display_recipient} > {message.topic_name()}"
-    elif message.is_stream_message() and trigger == NotificationTriggers.STREAM_WILDCARD_MENTION:
+    elif trigger == NotificationTriggers.STREAM_WILDCARD_MENTION:
         return f"{sender_str} mentioned everyone in #{display_recipient}"
     else:
-        assert message.is_stream_message() and trigger == NotificationTriggers.STREAM_PUSH
+        assert trigger == NotificationTriggers.STREAM_PUSH
         return f"New stream message from {sender_str} in #{display_recipient}"
 
 
