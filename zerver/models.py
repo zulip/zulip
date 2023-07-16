@@ -2,6 +2,7 @@ import ast
 import datetime
 import secrets
 import time
+from collections import defaultdict
 from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
@@ -2897,7 +2898,7 @@ def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", 
     )
 
 
-def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]]:
+def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, Set[int]]:
     """
     Takes a list of huddle-type recipients, returns a dict
     mapping recipient id to list of user ids in the huddle.
@@ -2908,15 +2909,11 @@ def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]
 
     subscriptions = Subscription.objects.filter(
         recipient__in=recipients,
-    ).order_by("user_profile_id")
+    ).only("user_profile_id", "recipient_id")
 
-    result_dict: Dict[int, List[int]] = {}
-    for recipient in recipients:
-        result_dict[recipient.id] = [
-            subscription.user_profile_id
-            for subscription in subscriptions
-            if subscription.recipient_id == recipient.id
-        ]
+    result_dict: Dict[int, Set[int]] = defaultdict(set)
+    for subscription in subscriptions:
+        result_dict[subscription.recipient_id].add(subscription.user_profile_id)
 
     return result_dict
 

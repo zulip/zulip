@@ -90,9 +90,9 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
 
         messages = Message.objects.filter(id__in=message_ids).order_by("id")
         first_huddle_recipient = messages[0].recipient
-        first_huddle_user_ids = list(get_huddle_user_ids(first_huddle_recipient))
+        first_huddle_user_ids = set(get_huddle_user_ids(first_huddle_recipient))
         second_huddle_recipient = messages[1].recipient
-        second_huddle_user_ids = list(get_huddle_user_ids(second_huddle_recipient))
+        second_huddle_user_ids = set(get_huddle_user_ids(second_huddle_recipient))
 
         huddle_user_ids = bulk_get_huddle_user_ids(
             [first_huddle_recipient, second_huddle_recipient]
