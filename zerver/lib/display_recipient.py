@@ -147,7 +147,7 @@ def bulk_fetch_display_recipients(
 
         # Find all user ids whose UserProfiles we will need to fetch:
         user_ids_to_fetch: Set[int] = set()
-        huddle_user_ids: Dict[int, List[int]] = {}
+        huddle_user_ids: Dict[int, Set[int]] = {}
         huddle_user_ids = bulk_get_huddle_user_ids(
             [recipient for recipient in recipients if recipient.type == Recipient.HUDDLE]
         )
