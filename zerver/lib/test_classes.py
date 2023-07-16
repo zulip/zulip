@@ -96,7 +96,6 @@ from zerver.models import (
     UserStatus,
     clear_supported_auth_backends_cache,
     flush_per_request_caches,
-    get_display_recipient,
     get_realm,
     get_realm_stream,
     get_stream,
@@ -1284,6 +1283,13 @@ Output:
         """
         self.assertEqual(get_session_dict_user(self.client.session), user_id)
 
+    def assert_message_stream_name(self, message: Message, stream_name: str) -> None:
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        stream_id = message.recipient.type_id
+        stream = Stream.objects.get(id=stream_id)
+        self.assertEqual(stream.recipient_id, message.recipient_id)
+        self.assertEqual(stream.name, stream_name)
+
     def webhook_fixture_data(self, type: str, action: str, file_type: str = "json") -> str:
         fn = os.path.join(
             os.path.dirname(__file__),
@@ -2139,7 +2145,7 @@ one or more new messages.
         topic_name: str,
         content: str,
     ) -> None:
-        self.assertEqual(get_display_recipient(message.recipient), stream_name)
+        self.assert_message_stream_name(message, stream_name)
         self.assertEqual(message.topic_name(), topic_name)
         self.assertEqual(message.content, content)
 
