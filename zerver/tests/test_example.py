@@ -10,14 +10,7 @@ from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.users import is_administrator_role
-from zerver.models import (
-    UserProfile,
-    UserStatus,
-    get_display_recipient,
-    get_realm,
-    get_stream,
-    get_user_by_delivery_email,
-)
+from zerver.models import UserProfile, UserStatus, get_realm, get_stream, get_user_by_delivery_email
 
 
 # Most Zulip tests use ZulipTestCase, which inherits from django.test.TestCase.
@@ -329,7 +322,7 @@ class TestMessageHelpers(ZulipTestCase):
         # extended to send multiple similar messages.
         self.assertEqual(iago_message.id, sent_message_id)
         self.assertEqual(iago_message.sender_id, hamlet.id)
-        self.assertEqual(get_display_recipient(iago_message.recipient), "Denmark")
+        self.assert_message_stream_name(iago_message, "Denmark")
         self.assertEqual(iago_message.topic_name(), "lunch")
         self.assertEqual(iago_message.content, "I want pizza!")
 
