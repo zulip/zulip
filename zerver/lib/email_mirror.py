@@ -38,7 +38,7 @@ from zerver.models import (
     get_display_recipient,
     get_stream_by_id_in_realm,
     get_system_bot,
-    get_user,
+    get_user_profile_by_id,
 )
 from zproject.backends import is_user_active
 
@@ -454,10 +454,9 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         send_mm_reply_to_stream(user_profile, stream, topic, body)
         recipient_str = stream.name
     elif recipient.type == Recipient.PERSONAL:
-        display_recipient = get_display_recipient(recipient)
-        assert not isinstance(display_recipient, str)
-        recipient_str = display_recipient[0]["email"]
-        recipient_user = get_user(recipient_str, user_profile.realm)
+        recipient_user_id = recipient.type_id
+        recipient_user = get_user_profile_by_id(recipient_user_id)
+        recipient_str = recipient_user.email
         internal_send_private_message(user_profile, recipient_user, body)
     elif recipient.type == Recipient.HUDDLE:
         display_recipient = get_display_recipient(recipient)
