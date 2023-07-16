@@ -2295,7 +2295,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 for i in range(num_messages_per_stream):
                     message_id = self.send_stream_message(hamlet, stream_name, content=f"test {i}")
                     message = Message.objects.get(id=message_id)
-                    self.assertEqual(get_display_recipient(message.recipient), stream_name)
+                    self.assert_message_stream_name(message, stream_name)
 
         send_messages_to_all_streams()
 

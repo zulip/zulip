@@ -42,7 +42,6 @@ from zerver.models import (
     Recipient,
     Stream,
     UserProfile,
-    get_display_recipient,
     get_realm,
     get_stream,
     get_system_bot,
@@ -275,7 +274,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestStreamEmailMessages body")
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     # Test receiving an email with the address on an UnstructuredHeader
@@ -305,7 +304,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestStreamEmailMessages body")
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     def test_receive_stream_email_messages_blank_subject_success(self) -> None:
@@ -330,7 +329,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestStreamEmailMessages body")
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), "(no topic)")
 
     def test_receive_stream_email_messages_subject_with_nonprintable_chars(
@@ -388,7 +387,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestStreamEmailMessages body")
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     def test_receive_stream_email_multiple_recipient_success(self) -> None:
@@ -417,7 +416,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestStreamEmailMessages body")
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     def test_receive_stream_email_show_sender_success(self) -> None:
@@ -437,7 +436,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
             message.content,
             "From: {}\n{}".format(self.example_email("hamlet"), msgtext),
         )
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     def test_receive_stream_email_forwarded_success(self) -> None:
@@ -469,7 +468,7 @@ and other things
             message = most_recent_message(user_profile)
             expected = "From: {}\n{}".format(self.example_email("hamlet"), expected_body)
             self.assertEqual(message.content, expected.strip())
-            self.assertEqual(get_display_recipient(message.recipient), stream.name)
+            self.assert_message_stream_name(message, stream.name)
             self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
         # include_quotes=True: expect the From:... to be preserved
@@ -511,7 +510,7 @@ and other things
                 "Test Useróąę <hamlet_ę@zulip.com>", "TestStreamEmailMessages body"
             ),
         )
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     def test_receive_stream_email_include_footer_success(self) -> None:
@@ -539,7 +538,7 @@ and other things
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, text)
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     def test_receive_stream_email_include_quotes_success(self) -> None:
@@ -569,7 +568,7 @@ and other things
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, text)
-        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
 
