@@ -58,7 +58,7 @@ from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
-from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
@@ -74,7 +74,6 @@ from zerver.lib.test_helpers import find_key_by_email, instrument_url, queries_c
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
-from zerver.lib.validator import check_string
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_fixture_http_headers,
@@ -1040,12 +1039,14 @@ Output:
 
     def get_streams(self, user_profile: UserProfile) -> List[str]:
         """
-        Helper function to get the stream names for a user
+        Helper function to get the active stream names for a user
         """
-        subs = get_stream_subscriptions_for_user(user_profile).filter(
-            active=True,
+
+        return list(
+            Stream.objects.filter(
+                id__in=get_subscribed_stream_ids_for_user(user_profile)
+            ).values_list("name", flat=True)
         )
-        return [check_string("recipient", get_display_recipient(sub.recipient)) for sub in subs]
 
     def send_personal_message(
         self,
