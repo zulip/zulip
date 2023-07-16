@@ -1471,8 +1471,13 @@ class Recipient(models.Model):
     _type_names = {PERSONAL: "personal", STREAM: "stream", HUDDLE: "huddle"}
 
     def __str__(self) -> str:
-        display_recipient = get_display_recipient(self)
-        return f"{display_recipient} ({self.type_id}, {self.type})"
+        return f"{self.label()} ({self.type_id}, {self.type})"
+
+    def label(self) -> str:
+        if self.type == Recipient.STREAM:
+            return Stream.objects.get(id=self.type_id).name
+        else:
+            return str(get_display_recipient(self))
 
     def type_name(self) -> str:
         # Raises KeyError if invalid
@@ -2976,8 +2981,7 @@ class AbstractMessage(models.Model):
         abstract = True
 
     def __str__(self) -> str:
-        display_recipient = get_display_recipient(self.recipient)
-        return f"{display_recipient} / {self.subject} / {self.sender!r}"
+        return f"{self.recipient.label()} / {self.subject} / {self.sender!r}"
 
 
 class ArchiveTransaction(models.Model):
@@ -3457,8 +3461,8 @@ class UserMessage(AbstractUserMessage):
         ]
 
     def __str__(self) -> str:
-        display_recipient = get_display_recipient(self.message.recipient)
-        return f"{display_recipient} / {self.user_profile.email} ({self.flags_list()})"
+        recipient_string = self.message.recipient.label()
+        return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
 
     @staticmethod
     def select_for_update_query() -> QuerySet["UserMessage"]:
@@ -3495,8 +3499,8 @@ class ArchivedUserMessage(AbstractUserMessage):
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
 
     def __str__(self) -> str:
-        display_recipient = get_display_recipient(self.message.recipient)
-        return f"{display_recipient} / {self.user_profile.email} ({self.flags_list()})"
+        recipient_string = self.message.recipient.label()
+        return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
 
 
 class AbstractAttachment(models.Model):
@@ -4412,8 +4416,7 @@ class ScheduledMessage(models.Model):
         ]
 
     def __str__(self) -> str:
-        display_recipient = get_display_recipient(self.recipient)
-        return f"{display_recipient} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
+        return f"{self.recipient.label()} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
 
     def topic_name(self) -> str:
         return self.subject
