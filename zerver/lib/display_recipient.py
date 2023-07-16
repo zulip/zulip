@@ -62,7 +62,7 @@ def user_dict_id_fetcher(user_dict: UserDisplayRecipient) -> int:
     return user_dict["id"]
 
 
-def bulk_get_user_profile_by_id(uids: List[int]) -> Dict[int, UserDisplayRecipient]:
+def bulk_get_user_display_recipient(uids: List[int]) -> Dict[int, UserDisplayRecipient]:
     return bulk_cached_fetch(
         # Use a separate cache key to protect us from conflicts with
         # the get_user_profile_by_id cache.
@@ -146,44 +146,43 @@ def bulk_fetch_user_display_recipients(
         for this function to work as the query_function in generic_bulk_cached_fetch.
         """
 
-        recipients = [
-            Recipient(
-                id=recipient_id,
-                type=recipient_id_to_type[recipient_id],
-                type_id=recipient_id_to_type_id[recipient_id],
-            )
+        personal_recipient_ids = [
+            recipient_id
             for recipient_id in recipient_ids
+            if recipient_id_to_type[recipient_id] == Recipient.PERSONAL
         ]
+        huddle_recipient_ids = [
+            recipient_id
+            for recipient_id in recipient_ids
+            if recipient_id_to_type[recipient_id] == Recipient.HUDDLE
+        ]
+
+        huddle_user_id_dict = bulk_get_huddle_user_ids(huddle_recipient_ids)
 
         # Find all user ids whose UserProfiles we will need to fetch:
         user_ids_to_fetch: Set[int] = set()
-        huddle_user_ids: Dict[int, Set[int]] = {}
-        huddle_user_ids = bulk_get_huddle_user_ids(
-            [recipient for recipient in recipients if recipient.type == Recipient.HUDDLE]
-        )
-        for recipient in recipients:
-            if recipient.type == Recipient.PERSONAL:
-                user_ids_to_fetch.add(recipient.type_id)
-            else:
-                user_ids_to_fetch = user_ids_to_fetch.union(huddle_user_ids[recipient.id])
 
-        # Fetch the needed UserProfiles:
-        user_profiles: Dict[int, UserDisplayRecipient] = bulk_get_user_profile_by_id(
-            list(user_ids_to_fetch)
-        )
+        for recipient_id in personal_recipient_ids:
+            user_id = recipient_id_to_type_id[recipient_id]
+            user_ids_to_fetch.add(user_id)
 
-        # Build the return value:
+        for recipient_id in huddle_recipient_ids:
+            user_ids_to_fetch |= set(huddle_user_id_dict[recipient_id])
+
+        # Fetch the needed user dictionaries.
+        user_display_recipients = bulk_get_user_display_recipient(list(user_ids_to_fetch))
+
         result: List[Tuple[int, List[UserDisplayRecipient]]] = []
-        for recipient in recipients:
-            if recipient.type == Recipient.PERSONAL:
-                result.append((recipient.id, [user_profiles[recipient.type_id]]))
-            else:
-                result.append(
-                    (
-                        recipient.id,
-                        [user_profiles[user_id] for user_id in huddle_user_ids[recipient.id]],
-                    )
-                )
+
+        for recipient_id in personal_recipient_ids:
+            user_id = recipient_id_to_type_id[recipient_id]
+            display_recipients = [user_display_recipients[user_id]]
+            result.append((recipient_id, display_recipients))
+
+        for recipient_id in huddle_recipient_ids:
+            user_ids = huddle_user_id_dict[recipient_id]
+            display_recipients = [user_display_recipients[user_id] for user_id in user_ids]
+            result.append((recipient_id, display_recipients))
 
         return result
 

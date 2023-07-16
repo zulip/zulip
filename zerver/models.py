@@ -2924,17 +2924,20 @@ def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", 
     )
 
 
-def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, Set[int]]:
+def bulk_get_huddle_user_ids(recipient_ids: List[int]) -> Dict[int, Set[int]]:
     """
-    Takes a list of huddle-type recipients, returns a dict
+    Takes a list of huddle-type recipient_ids, returns a dict
     mapping recipient id to list of user ids in the huddle.
+
+    We rely on our caller to pass us recipient_ids that correspond
+    to huddles, but technically this function is valid for any type
+    of subscription.
     """
-    assert all(recipient.type == Recipient.HUDDLE for recipient in recipients)
-    if not recipients:
+    if not recipient_ids:
         return {}
 
     subscriptions = Subscription.objects.filter(
-        recipient__in=recipients,
+        recipient_id__in=recipient_ids,
     ).only("user_profile_id", "recipient_id")
 
     result_dict: Dict[int, Set[int]] = defaultdict(set)

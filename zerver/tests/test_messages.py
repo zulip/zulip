@@ -95,7 +95,7 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
         second_huddle_user_ids = set(get_huddle_user_ids(second_huddle_recipient))
 
         huddle_user_ids = bulk_get_huddle_user_ids(
-            [first_huddle_recipient, second_huddle_recipient]
+            [first_huddle_recipient.id, second_huddle_recipient.id]
         )
         self.assertEqual(huddle_user_ids[first_huddle_recipient.id], first_huddle_user_ids)
         self.assertEqual(huddle_user_ids[second_huddle_recipient.id], second_huddle_user_ids)
