@@ -33,6 +33,7 @@ from zerver.models import (
     NotificationTriggers,
     PushDeviceToken,
     Recipient,
+    Stream,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -58,6 +59,16 @@ def b64_to_hex(data: str) -> str:
 
 def hex_to_b64(data: str) -> str:
     return base64.b64encode(bytes.fromhex(data)).decode()
+
+
+def get_message_stream_name_from_database(message: Message) -> str:
+    """
+    Never use this function outside of the push-notifications
+    codepath. Most of our code knows how to get streams
+    up front in a more efficient manner.
+    """
+    stream_id = message.recipient.type_id
+    return Stream.objects.get(id=stream_id).name
 
 
 class UserPushIdentityCompat:
@@ -669,7 +680,7 @@ def get_gcm_alert(
         return f"New direct message from {sender_str}"
 
     assert message.is_stream_message()
-    stream_name = get_display_recipient(message.recipient)
+    stream_name = get_message_stream_name_from_database(message)
 
     if trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is None:
@@ -805,7 +816,7 @@ def get_message_payload(
 
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
-        data["stream"] = get_display_recipient(message.recipient)
+        data["stream"] = get_message_stream_name_from_database(message)
         data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
@@ -826,7 +837,8 @@ def get_apns_alert_title(message: Message) -> str:
         assert isinstance(recipients, list)
         return ", ".join(sorted(r["full_name"] for r in recipients))
     elif message.is_stream_message():
-        return f"#{get_display_recipient(message.recipient)} > {message.topic_name()}"
+        stream_name = get_message_stream_name_from_database(message)
+        return f"#{stream_name} > {message.topic_name()}"
     # For 1:1 direct messages, we just show the sender name.
     return message.sender.full_name
 
