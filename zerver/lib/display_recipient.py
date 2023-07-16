@@ -40,7 +40,7 @@ def get_display_recipient_remote_cache(
     stream this will be the stream name as a string.  For a huddle or
     personal, it will be an array of dicts about each recipient.
     """
-    if recipient_type == Recipient.STREAM:
+    if recipient_type == Recipient.STREAM:  # nocoverage
         assert recipient_type_id is not None
         stream = Stream.objects.values("name").get(id=recipient_type_id)
         return stream["name"]
