@@ -21,7 +21,7 @@ display_recipient_fields = [
 
 
 class TinyStreamResult(TypedDict):
-    id: int
+    recipient_id: int
     name: str
 
 
@@ -76,50 +76,60 @@ def bulk_get_user_profile_by_id(uids: List[int]) -> Dict[int, UserDisplayRecipie
     )
 
 
-def bulk_fetch_display_recipients(
+def bulk_fetch_stream_names(
     recipient_tuples: Set[Tuple[int, int, int]],
-) -> Dict[int, DisplayRecipientT]:
+) -> Dict[int, str]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
     Returns dict mapping recipient_id to corresponding display_recipient
     """
 
-    # Build dict mapping recipient id to (type, type_id) of the corresponding recipient:
-    recipient_id_to_type_pair_dict = {
-        recipient[0]: (recipient[1], recipient[2]) for recipient in recipient_tuples
-    }
-    # And the inverse mapping:
-    type_pair_to_recipient_id_dict = {
-        (recipient[1], recipient[2]): recipient[0] for recipient in recipient_tuples
-    }
+    if len(recipient_tuples) == 0:
+        return {}
 
-    stream_recipients = {
-        recipient for recipient in recipient_tuples if recipient[1] == Recipient.STREAM
-    }
-    personal_and_huddle_recipients = recipient_tuples - stream_recipients
+    recipient_id_to_stream_id = {tup[0]: tup[2] for tup in recipient_tuples}
+    recipient_ids = [tup[0] for tup in recipient_tuples]
 
-    def stream_query_function(
+    def get_tiny_stream_rows(
         recipient_ids: List[int],
     ) -> ValuesQuerySet[Stream, TinyStreamResult]:
-        stream_ids = [
-            recipient_id_to_type_pair_dict[recipient_id][1] for recipient_id in recipient_ids
-        ]
-        return Stream.objects.filter(id__in=stream_ids).values("name", "id")
+        stream_ids = [recipient_id_to_stream_id[recipient_id] for recipient_id in recipient_ids]
+        return Stream.objects.filter(id__in=stream_ids).values("recipient_id", "name")
 
-    def stream_id_fetcher(stream: TinyStreamResult) -> int:
-        return type_pair_to_recipient_id_dict[(Recipient.STREAM, stream["id"])]
+    def get_recipient_id(row: TinyStreamResult) -> int:
+        return row["recipient_id"]
 
-    def stream_cache_transformer(stream: TinyStreamResult) -> str:
-        return stream["name"]
+    def get_name(row: TinyStreamResult) -> str:
+        return row["name"]
 
-    # ItemT = Stream, CacheItemT = str (name), ObjKT = int (recipient_id)
+    # ItemT = TinyStreamResult, CacheItemT = str (name), ObjKT = int (recipient_id)
     stream_display_recipients: Dict[int, str] = transformed_bulk_cached_fetch(
         cache_key_function=display_recipient_cache_key,
-        query_function=stream_query_function,
-        object_ids=[recipient[0] for recipient in stream_recipients],
-        id_fetcher=stream_id_fetcher,
-        cache_transformer=stream_cache_transformer,
+        query_function=get_tiny_stream_rows,
+        object_ids=recipient_ids,
+        id_fetcher=get_recipient_id,
+        cache_transformer=get_name,
     )
+
+    return stream_display_recipients
+
+
+def bulk_fetch_user_display_recipients(
+    recipient_tuples: Set[Tuple[int, int, int]],
+) -> Dict[int, List[UserDisplayRecipient]]:
+    """
+    Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
+    Returns dict mapping recipient_id to corresponding display_recipient
+    """
+
+    if len(recipient_tuples) == 0:
+        return {}
+
+    recipient_id_to_type = {recipient[0]: recipient[1] for recipient in recipient_tuples}
+
+    recipient_id_to_type_id = {recipient[0]: recipient[2] for recipient in recipient_tuples}
+
+    recipient_ids = [recipient[0] for recipient in recipient_tuples]
 
     # Now we have to create display_recipients for personal and huddle messages.
     # We do this via generic_bulk_cached_fetch, supplying appropriate functions to it.
@@ -139,8 +149,8 @@ def bulk_fetch_display_recipients(
         recipients = [
             Recipient(
                 id=recipient_id,
-                type=recipient_id_to_type_pair_dict[recipient_id][0],
-                type_id=recipient_id_to_type_pair_dict[recipient_id][1],
+                type=recipient_id_to_type[recipient_id],
+                type_id=recipient_id_to_type_id[recipient_id],
             )
             for recipient_id in recipient_ids
         ]
@@ -201,9 +211,30 @@ def bulk_fetch_display_recipients(
     ] = transformed_bulk_cached_fetch(
         cache_key_function=display_recipient_cache_key,
         query_function=personal_and_huddle_query_function,
-        object_ids=[recipient[0] for recipient in personal_and_huddle_recipients],
+        object_ids=recipient_ids,
         id_fetcher=personal_and_huddle_id_fetcher,
         cache_transformer=personal_and_huddle_cache_transformer,
+    )
+
+    return personal_and_huddle_display_recipients
+
+
+def bulk_fetch_display_recipients(
+    recipient_tuples: Set[Tuple[int, int, int]],
+) -> Dict[int, DisplayRecipientT]:
+    """
+    Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
+    Returns dict mapping recipient_id to corresponding display_recipient
+    """
+
+    stream_recipients = {
+        recipient for recipient in recipient_tuples if recipient[1] == Recipient.STREAM
+    }
+    personal_and_huddle_recipients = recipient_tuples - stream_recipients
+
+    stream_display_recipients = bulk_fetch_stream_names(stream_recipients)
+    personal_and_huddle_display_recipients = bulk_fetch_user_display_recipients(
+        personal_and_huddle_recipients
     )
 
     # Glue the dicts together and return:
