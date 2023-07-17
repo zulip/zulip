@@ -234,7 +234,7 @@ export function toggle_message_actions_menu(message) {
     }
 
     message_viewport.maybe_scroll_to_show_message_top();
-    const $popover_reference = $(".selected_message .actions_hover .zulip-icon-ellipsis-v-solid");
+    const $popover_reference = $(".selected_message .actions_hover .message-actions-menu-button");
     message_actions_popover_keyboard_toggle = true;
     $popover_reference.trigger("click");
     return true;
@@ -695,7 +695,7 @@ export function initialize() {
         },
     });
 
-    register_popover_menu(".actions_hover .zulip-icon-ellipsis-v-solid", {
+    register_popover_menu(".actions_hover .message-actions-menu-button", {
         // 320px is our minimum supported width for mobile. We will allow the value to flex
         // to a max of 350px but we shouldn't make the popover wider than this.
         maxWidth: "min(max(320px, 100vw), 350px)",
