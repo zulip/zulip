@@ -7,7 +7,7 @@ integration](/api/incoming-webhooks-overview).
 
 1. {!create-bot-construct-url.md!}
 
-1.  Configure your application to send the webhook
+1. Configure your application to send the webhook
     payload to the **URL** generated above.
 
 {!congrats.md!}

@@ -1,21 +1,21 @@
-1.  {!create-stream.md!}
+1. {!create-stream.md!}
 
-1.  {!create-an-incoming-webhook.md!}
+1. {!create-an-incoming-webhook.md!}
 
-1.  In Home Assistant, you need to add the `notify` service to your
+1. In Home Assistant, you need to add the `notify` service to your
     `configuration.yaml` file.  This should look something like this:
 
     ![](/static/images/integrations/homeassistant/001.png)
 
-1.  The `api_key` parameter should correspond to your bot's key. The `stream`
+1. The `api_key` parameter should correspond to your bot's key. The `stream`
     parameter is not necessarily required; if not given, it will default to
     the `homeassistant` stream.
 
-1.  And the URL under `resource` should start with:
+1. And the URL under `resource` should start with:
 
     `{{ api_url }}/v1/external/homeassistant`
 
-1.  Finally, you need to configure a trigger for the service by adding
+1. Finally, you need to configure a trigger for the service by adding
     an automation entry in the HomeAssistant `configuration.yaml` file.
 
     ![](/static/images/integrations/homeassistant/002.png)

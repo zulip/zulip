@@ -28,7 +28,7 @@ Get Zulip notifications from your Trello boards!
     computer (any computer) connected to the internet. It won't make any
     changes to the computer.
 
-1.  Make sure you have a working copy of Python. If you're running
+1. Make sure you have a working copy of Python. If you're running
     macOS or Linux, you very likely already do. If you're running
     Windows you may or may not.  If you don't have Python, follow the
     installation instructions
