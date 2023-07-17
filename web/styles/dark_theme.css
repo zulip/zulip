@@ -1376,11 +1376,6 @@
         border-bottom: 1px solid hsl(0deg 0% 100%);
     }
 
-    .star:not(.empty-star),
-    .empty-star:hover {
-        color: hsl(126deg 66% 72% / 75%);
-    }
-
     #bots_lists_navbar .active a {
         color: hsl(0deg 0% 87%);
         background-color: var(--color-background);
