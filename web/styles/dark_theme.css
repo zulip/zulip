@@ -205,7 +205,6 @@
     }
 
     #navbar-middle .column-middle-inner,
-    #userlist-toggle-button,
     .header,
     #message_view_header {
         background-color: var(--color-background-navbar);
