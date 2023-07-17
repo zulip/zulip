@@ -88,6 +88,8 @@ body {
     --message-box-avatar-width: 35px;
     --message-box-avatar-height: var(--message-box-avatar-width);
     --message-box-line-height: 1.214;
+    --message-box-icon-width: 26px;
+    --message-box-icon-height: 25px;
 
     /*
     Left position of unread marker. Only needs to be tracked if it is negative so that
@@ -1174,6 +1176,8 @@ td.pointer {
 }
 
 .message_controls {
+    display: flex;
+    align-items: baseline;
     font-size: 16px;
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
@@ -1184,10 +1188,9 @@ td.pointer {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
-        width: 16px;
+        width: var(--message-box-icon-width);
+        height: var(--message-box-icon-height);
         text-align: center;
-        display: inline-block;
-        position: relative;
         color: var(--color-message-action-visible);
 
         > i {
@@ -1227,7 +1230,12 @@ td.pointer {
     }
 
     .edit_content {
-        width: 12px;
+        /* Icons for editing content are determined on message hover;
+           we set an empty `.edit_content` to have 0 height in order to
+           preserve the layout of the other icons prior to any hovering. */
+        &:empty {
+            height: 0;
+        }
 
         &:hover {
             cursor: pointer;

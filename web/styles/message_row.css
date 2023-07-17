@@ -13,7 +13,7 @@ $message_box_margin: 3px;
    wider for individual messages if required, up to `max-content`, to
    prevent ugly line-wrapping. In practice, it's unlikely we'll see
    anything wider than 60px. */
-$time_column_min_width: 50px; /* + padding */
+$time_column_min_width: 42px; /* + padding */
 
 .message_row {
     display: grid;
@@ -124,11 +124,9 @@ $time_column_min_width: 50px; /* + padding */
         align-items: baseline;
         padding-left: 10px;
         grid-template:
-            25px repeat(3, auto) /
-            $avatar_column_width auto 55px 3px minmax(
-                $time_column_min_width,
-                max-content
-            );
+            var(--message-box-icon-height) repeat(3, auto) /
+            $avatar_column_width auto calc(3 * var(--message-box-icon-width))
+            8px minmax($time_column_min_width, max-content);
         /* Named grid areas provide flexibility for positioning grid items
            reliably, even if the row or column definitions of the grid change. */
         grid-template-areas:
@@ -138,7 +136,7 @@ $time_column_min_width: 50px; /* + padding */
             ".      reactions .        . .   ";
 
         @media (width < $sm_min) {
-            grid-template-columns: $avatar_column_width auto max-content 3px minmax(
+            grid-template-columns: $avatar_column_width auto max-content 8px minmax(
                     $time_column_min_width,
                     max-content
                 );
