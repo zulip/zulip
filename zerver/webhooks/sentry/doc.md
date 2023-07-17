@@ -6,12 +6,12 @@ us](/help/contact-support) if a platform you care about is missing.
 
 1. {!create-stream.md!}
 
-2. {!create-bot-construct-url.md!}
+1. {!create-bot-construct-url.md!}
 
     The default topic, if not set in the URL, will be the title of the
     issue or event.
 
-3. In Sentry, go to your organization's **Settings**, and then go to
+1. In Sentry, go to your organization's **Settings**, and then go to
     **Developer Settings**. Click on the **Create New Integration** button,
     and select **Internal Integration**. Set the **Webhook URL** to the URL
     you constructed in the above step, and then enable **Alert Rule
@@ -32,7 +32,7 @@ us](/help/contact-support) if a platform you care about is missing.
         assignments or issues being resolved, will not trigger notifications
         with this configuration.
 
-4. Once you've saved the internal integration, go to **Alerts** and click
+1. Once you've saved the internal integration, go to **Alerts** and click
     on the **Create Alert** button to create a new alert rule. Select the
     project for which you want to receive notifications. Set the conditions
     to be whatever you want (e.g. the events you want to be notified for),
