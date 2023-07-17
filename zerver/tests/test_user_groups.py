@@ -27,6 +27,7 @@ from zerver.lib.user_groups import (
     get_recursive_group_members,
     get_recursive_membership_groups,
     get_recursive_subgroups,
+    get_role_based_system_groups_dict,
     get_subgroup_ids,
     get_user_group_member_ids,
     has_user_group_access,
@@ -453,12 +454,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
             response_dict["user_groups"], UserGroup.objects.filter(realm=user_profile.realm).count()
         )
 
-    def test_can_edit_user_groups(self) -> None:
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_edit_user_groups()
-
-        self.check_has_permission_policies("user_group_edit_policy", validation_func)
-
     def test_user_group_update(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
@@ -725,6 +720,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_length(all_user_ids, 102)
         self.assert_user_membership(user_group, [hamlet, cordelia, *new_users, *original_users])
 
+        # Test query count when user is allowed to update members
+        # as per group-level setting.
+        do_set_realm_property(
+            realm, "user_group_edit_policy", Realm.POLICY_NOBODY, acting_user=None
+        )
+        params = dict(delete=munge(new_user_ids))
+        with mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"):
+            with self.assert_database_query_count(12):
+                result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_success(result)
+        self.assert_user_membership(user_group, [hamlet, cordelia, *original_users])
+
     def test_update_members_of_user_group(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
@@ -951,7 +958,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         cordelia.save()
         check_create_user_group(cordelia)
 
-    def test_user_group_edit_policy_for_deleting_user_group(self) -> None:
+    def test_realm_level_setting_for_deleting_user_groups(self) -> None:
         othello = self.example_user("othello")
         realm = othello.realm
 
@@ -1028,7 +1035,81 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello.save()
         check_delete_user_group("othello")
 
-    def test_user_group_edit_policy_for_updating_user_groups(self) -> None:
+    def test_group_level_setting_for_deleting_user_groups(self) -> None:
+        othello = self.example_user("othello")
+        realm = othello.realm
+
+        def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
+            self.login(acting_user)
+            user_group = UserGroup.objects.get(name="support")
+            with transaction.atomic():
+                result = self.client_delete(f"/json/user_groups/{user_group.id}")
+            if error_msg is None:
+                self.assert_json_success(result)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+
+        check_add_user_group(get_realm("zulip"), "support", [othello], acting_user=othello)
+        # Default value of can_manage_group is single user group corresponding to othello.
+        check_delete_user_group("desdemona", "Insufficient permission")
+        check_delete_user_group("othello")
+
+        system_group_dict = get_role_based_system_groups_dict(realm)
+
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [othello],
+            "",
+            {"can_manage_group": system_group_dict[SystemGroups.OWNERS]},
+            acting_user=othello,
+        )
+        check_delete_user_group("iago", "Insufficient permission")
+        check_delete_user_group("desdemona")
+
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [othello],
+            "",
+            {"can_manage_group": system_group_dict[SystemGroups.ADMINISTRATORS]},
+            acting_user=othello,
+        )
+        check_delete_user_group("shiva", "Insufficient permission")
+        check_delete_user_group("iago")
+
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [othello],
+            "",
+            {"can_manage_group": system_group_dict[SystemGroups.MODERATORS]},
+            acting_user=othello,
+        )
+        check_delete_user_group("othello", "Insufficient permission")
+        check_delete_user_group("shiva")
+
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [othello],
+            "",
+            {"can_manage_group": system_group_dict[SystemGroups.MEMBERS]},
+            acting_user=othello,
+        )
+        check_delete_user_group("polonius", "Not allowed for guest users")
+        check_delete_user_group(
+            "cordelia",
+        )
+
+    def test_realm_level_setting_for_updating_user_groups(self) -> None:
         othello = self.example_user("othello")
         self.login("othello")
         user_group = self.create_user_group_for_test("support")
@@ -1125,7 +1206,79 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello.save()
         check_update_user_group("support", "Support team", "othello")
 
-    def test_user_group_edit_policy_for_updating_members(self) -> None:
+    def test_group_level_setting_for_updating_user_groups(self) -> None:
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        user_group = check_add_user_group(
+            get_realm("zulip"), "support", [othello, iago], acting_user=othello
+        )
+
+        def check_update_user_group(
+            new_name: str,
+            new_description: str,
+            acting_user: str,
+            error_msg: Optional[str] = None,
+        ) -> None:
+            self.login(acting_user)
+            params = {
+                "name": new_name,
+                "description": new_description,
+            }
+            # Ensure that this update request is not a no-op.
+            self.assertNotEqual(user_group.name, new_name)
+            self.assertNotEqual(user_group.description, new_description)
+
+            result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+            if error_msg is None:
+                self.assert_json_success(result)
+                user_group.refresh_from_db()
+                self.assertEqual(user_group.name, new_name)
+                self.assertEqual(user_group.description, new_description)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        realm = othello.realm
+
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+
+        # Default value of can_manage_group is single user group corresponding to othello.
+        check_update_user_group("help", "Troubleshooting team", "iago", "Insufficient permission")
+        check_update_user_group("help", "Troubleshooting team", "othello")
+
+        system_group_dict = get_role_based_system_groups_dict(realm)
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.OWNERS]
+        user_group.save()
+        check_update_user_group("support", "Support team", "iago", "Insufficient permission")
+        check_update_user_group("support", "Support team", "desdemona")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.ADMINISTRATORS]
+        user_group.save()
+        check_update_user_group("help", "Troubleshooting team", "shiva", "Insufficient permission")
+        check_update_user_group("help", "Troubleshooting team", "iago")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.MODERATORS]
+        user_group.save()
+        check_update_user_group("support", "Support team", "othello", "Insufficient permission")
+        check_update_user_group("support", "Support team", "shiva")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.MEMBERS]
+        user_group.save()
+        check_update_user_group(
+            "help", "Troubleshooting team", "polonius", "Not allowed for guest users"
+        )
+        check_update_user_group(
+            "help",
+            "Troubleshooting team",
+            "cordelia",
+        )
+
+    def test_realm_level_setting_for_updating_members(self) -> None:
         user_group = self.create_user_group_for_test("support")
         aaron = self.example_user("aaron")
         othello = self.example_user("othello")
@@ -1233,6 +1386,88 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello.date_joined = timezone_now() - timedelta(days=11)
         othello.save()
         check_removing_members_from_group("othello")
+
+    def test_group_level_setting_for_updating_members(self) -> None:
+        othello = self.example_user("othello")
+        user_group = check_add_user_group(
+            get_realm("zulip"), "support", [othello], acting_user=othello
+        )
+        aaron = self.example_user("aaron")
+
+        def check_adding_members_to_group(
+            acting_user: str, error_msg: Optional[str] = None
+        ) -> None:
+            self.login(acting_user)
+            params = {"add": orjson.dumps([aaron.id]).decode()}
+            self.assert_user_membership(user_group, [othello])
+            result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+            if error_msg is None:
+                self.assert_json_success(result)
+                self.assert_user_membership(user_group, [aaron, othello])
+            else:
+                self.assert_json_error(result, error_msg)
+
+        def check_removing_members_from_group(
+            acting_user: str, error_msg: Optional[str] = None
+        ) -> None:
+            self.login(acting_user)
+            params = {"delete": orjson.dumps([aaron.id]).decode()}
+            self.assert_user_membership(user_group, [aaron, othello])
+            result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+            if error_msg is None:
+                self.assert_json_success(result)
+                self.assert_user_membership(user_group, [othello])
+            else:
+                self.assert_json_error(result, error_msg)
+
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+
+        # Default value of can_manage_group is single user group corresponding to othello.
+        check_adding_members_to_group("iago", "Insufficient permission")
+        check_adding_members_to_group("othello")
+
+        check_removing_members_from_group("iago", "Insufficient permission")
+        check_removing_members_from_group("othello")
+
+        system_group_dict = get_role_based_system_groups_dict(realm)
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.OWNERS]
+        user_group.save()
+        check_adding_members_to_group("iago", "Insufficient permission")
+        check_adding_members_to_group("desdemona")
+
+        check_removing_members_from_group("iago", "Insufficient permission")
+        check_removing_members_from_group("desdemona")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.ADMINISTRATORS]
+        user_group.save()
+        check_adding_members_to_group("shiva", "Insufficient permission")
+        check_adding_members_to_group("iago")
+
+        check_removing_members_from_group("shiva", "Insufficient permission")
+        check_removing_members_from_group("iago")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.MODERATORS]
+        user_group.save()
+        check_adding_members_to_group("othello", "Insufficient permission")
+        check_adding_members_to_group("shiva")
+
+        check_removing_members_from_group("othello", "Insufficient permission")
+        check_removing_members_from_group("shiva")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.MEMBERS]
+        user_group.save()
+        check_adding_members_to_group("polonius", "Not allowed for guest users")
+        check_adding_members_to_group("cordelia")
+
+        check_removing_members_from_group("polonius", "Not allowed for guest users")
+        check_removing_members_from_group("cordelia")
 
     def test_editing_system_user_groups(self) -> None:
         desdemona = self.example_user("desdemona")

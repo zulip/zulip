@@ -69,15 +69,22 @@ def has_user_group_access(
     if user_group.is_system_group:
         return False
 
+    can_edit_user_groups_from_realm_level_permission = (
+        user_profile.can_edit_user_groups_from_realm_level_permission()
+    )
+
     group_member_ids = get_user_group_direct_member_ids(user_group)
     if (
         not user_profile.is_realm_admin
         and not user_profile.is_moderator
         and user_profile.id not in group_member_ids
     ):
-        return False
+        can_edit_user_groups_from_realm_level_permission = False
 
-    return True
+    if can_edit_user_groups_from_realm_level_permission:
+        return True
+
+    return is_user_in_group(user_group.can_manage_group, user_profile)
 
 
 def access_user_group_by_id(
