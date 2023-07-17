@@ -254,11 +254,13 @@ def do_update_message_flags(
 ) -> int:
     valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:
-        raise JsonableError(_("Invalid flag: '{}'").format(flag))
+        raise JsonableError(_("Invalid flag: '{flag}'").format(flag=flag))
     if flag in UserMessage.NON_EDITABLE_FLAGS:
-        raise JsonableError(_("Flag not editable: '{}'").format(flag))
+        raise JsonableError(_("Flag not editable: '{flag}'").format(flag=flag))
     if operation not in ("add", "remove"):
-        raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
+        raise JsonableError(
+            _("Invalid message flag operation: '{operation}'").format(operation=operation)
+        )
     is_adding = operation == "add"
     flagattr = getattr(UserMessage.flags, flag)
     flag_target = flagattr if is_adding else 0

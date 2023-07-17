@@ -19,7 +19,7 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid email '{}'").format(email))
+            raise JsonableError(_("Invalid email '{email}'").format(email=email))
         user_profiles.append(user_profile)
     return user_profiles
 
@@ -30,7 +30,7 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
         try:
             user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user ID {}").format(user_id))
+            raise JsonableError(_("Invalid user ID {user_id}").format(user_id=user_id))
         user_profiles.append(user_profile)
     return user_profiles
 

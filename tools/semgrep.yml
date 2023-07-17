@@ -76,6 +76,20 @@ rules:
     severity: ERROR
     message: "Immediately formatting a lazily translated string destroys its laziness"
 
+  - id: translated-positional-field
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: django.utils.translation.gettext("$MESSAGE")
+          - pattern: django.utils.translation.pgettext($CONTEXT, "$MESSAGE")
+          - pattern: django.utils.translation.gettext_lazy("$MESSAGE")
+          - pattern: django.utils.translation.pgettext_lazy($CONTEXT, "$MESSAGE")
+      - metavariable-regex:
+          metavariable: $MESSAGE
+          regex: (^|.*[^{])(\{\{)*\{[:!}].*
+    severity: ERROR
+    message: "Prefer {named} fields over positional {} in translated strings"
+
   - id: mutable-default-type
     languages: [python]
     pattern-either:
@@ -99,7 +113,9 @@ rules:
     pattern-either:
       - pattern: '"..." % ...'
       - pattern: django.utils.translation.gettext(...) % ...
+      - pattern: django.utils.translation.pgettext(...) % ...
       - pattern: django.utils.translation.gettext_lazy(...) % ...
+      - pattern: django.utils.translation.pgettext_lazy(...) % ...
     severity: ERROR
     message: "Prefer f-strings or .format for string formatting"
 

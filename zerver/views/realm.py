@@ -157,7 +157,7 @@ def update_realm(
     # Additional validation/error checking beyond types go here, so
     # the entire request can succeed or fail atomically.
     if default_language is not None and default_language not in get_available_language_codes():
-        raise JsonableError(_("Invalid language '{}'").format(default_language))
+        raise JsonableError(_("Invalid language '{language}'").format(language=default_language))
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
@@ -166,11 +166,17 @@ def update_realm(
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
-        raise JsonableError(_("Invalid video_chat_provider {}").format(video_chat_provider))
+        raise JsonableError(
+            _("Invalid video_chat_provider {video_chat_provider}").format(
+                video_chat_provider=video_chat_provider
+            )
+        )
     if giphy_rating is not None and giphy_rating not in {
         p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
     }:
-        raise JsonableError(_("Invalid giphy_rating {}").format(giphy_rating))
+        raise JsonableError(
+            _("Invalid giphy_rating {giphy_rating}").format(giphy_rating=giphy_rating)
+        )
 
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:

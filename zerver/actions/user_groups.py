@@ -210,7 +210,7 @@ def check_add_user_group(
         do_send_create_user_group_event(user_group, initial_members)
         return user_group
     except django.db.utils.IntegrityError:
-        raise JsonableError(_("User group '{}' already exists.").format(name))
+        raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
 
 
 def do_send_user_group_update_event(
@@ -242,7 +242,7 @@ def do_update_user_group_name(
             ).decode(),
         )
     except django.db.utils.IntegrityError:
-        raise JsonableError(_("User group '{}' already exists.").format(name))
+        raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
     do_send_user_group_update_event(user_group, dict(name=name))
 
 

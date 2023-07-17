@@ -1230,9 +1230,11 @@ def filter_pattern_validator(value: str) -> Pattern[str]:
     except re2.error as e:
         if len(e.args) >= 1:
             if isinstance(e.args[0], str):  # nocoverage
-                raise ValidationError(_("Bad regular expression: {}").format(e.args[0]))
+                raise ValidationError(_("Bad regular expression: {regex}").format(regex=e.args[0]))
             if isinstance(e.args[0], bytes):
-                raise ValidationError(_("Bad regular expression: {}").format(e.args[0].decode()))
+                raise ValidationError(
+                    _("Bad regular expression: {regex}").format(regex=e.args[0].decode())
+                )
         raise ValidationError(_("Unknown regular expression error"))  # nocoverage
 
     return regex
@@ -4697,13 +4699,15 @@ def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = F
         try:
             user_profile = get_user_profile_by_id_in_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid user ID: {}").format(user_id))
+            raise ValidationError(_("Invalid user ID: {user_id}").format(user_id=user_id))
 
         if not allow_deactivated and not user_profile.is_active:
-            raise ValidationError(_("User with ID {} is deactivated").format(user_id))
+            raise ValidationError(
+                _("User with ID {user_id} is deactivated").format(user_id=user_id)
+            )
 
         if user_profile.is_bot:
-            raise ValidationError(_("User with ID {} is a bot").format(user_id))
+            raise ValidationError(_("User with ID {user_id} is a bot").format(user_id=user_id))
 
     return user_ids
 

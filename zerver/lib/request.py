@@ -439,7 +439,9 @@ def has_request_variables(
                 except orjson.JSONDecodeError:
                     if param.argument_type == "body":
                         raise InvalidJSONError(_("Malformed JSON"))
-                    raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
+                    raise JsonableError(
+                        _('Argument "{name}" is not valid JSON.').format(name=post_var_name)
+                    )
 
                 try:
                     val = param.json_validator(post_var_name, val)

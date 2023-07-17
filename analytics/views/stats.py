@@ -315,7 +315,7 @@ def get_chart_data(
         labels_sort_function = None
         include_empty_subgroups = True
     else:
-        raise JsonableError(_("Unknown chart name: {}").format(chart_name))
+        raise JsonableError(_("Unknown chart name: {chart_name}").format(chart_name=chart_name))
 
     # Most likely someone using our API endpoint. The /stats page does not
     # pass a start or end in its requests.

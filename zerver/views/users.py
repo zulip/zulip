@@ -709,7 +709,7 @@ def create_user_backend(
 
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Email '{}' already in use").format(email))
+        raise JsonableError(_("Email '{email}' already in use").format(email=email))
     except UserProfile.DoesNotExist:
         pass
 

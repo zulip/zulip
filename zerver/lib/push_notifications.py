@@ -338,8 +338,8 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     if priority not in ("normal", "high"):
         raise JsonableError(
             _(
-                "Invalid GCM option to bouncer: priority {!r}",
-            ).format(priority)
+                "Invalid GCM option to bouncer: priority {priority!r}",
+            ).format(priority=priority)
         )
 
     if options:
@@ -348,8 +348,8 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
         # one-way compatibility.
         raise JsonableError(
             _(
-                "Invalid GCM options to bouncer: {}",
-            ).format(orjson.dumps(options).decode())
+                "Invalid GCM options to bouncer: {options}",
+            ).format(options=orjson.dumps(options).decode())
         )
 
     return priority  # when this grows a second option, can make it a tuple
