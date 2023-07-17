@@ -1,0 +1,117 @@
+<div class="dropdown-menu" id="personal-menu-dropdown" data-simplebar>
+    <nav class="inner">
+        <header class="personal-menu-header">
+            <div class="avatar">
+                <img class="avatar-image{{#if user_is_guest}} guest-avatar{{/if}}" src="{{user_avatar}}"/>
+
+                {{#if is_active }}
+                <span class="status-circle {{user_circle_class}} user_circle hidden-for-spectators" data-tippy-placement="bottom" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                {{/if}}
+
+            </div>
+            <div class="text-area">
+                <p class="full-name">{{user_full_name}}</p>
+                <p class="user-type">{{user_type}}</p>
+            </div>
+        </header>
+        <section class="popover-menu personal-menu-actions" data-user-id="{{user_id}}">
+            <ul class="list">
+                <li class="text-item hidden-for-spectators">
+                    <i class="zulip-icon zulip-icon-clock"></i>
+                    {{#tr}}{user_time} local time{{/tr}}
+                </li>
+            </ul>
+
+            <ul class="list">
+                {{#if status_content_available}}
+                <li class="text-item">
+                    <span>
+                        {{#if status_emoji_info}}
+                            {{#if status_emoji_info.emoji_alt_code}}
+                            <span class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</span>
+                            {{else if status_emoji_info.url}}
+                            <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                            {{else}}
+                            <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></span>
+                            {{/if}}
+                        {{/if}}
+                        <span class="status_text">
+                            {{status_text}}
+                        </span>
+                    </span>
+                    <a href="" class="clear_status" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
+                        <i class="zulip-icon zulip-icon-x-circle"></i>
+                    </a>
+                </li>
+                <li class="link-item">
+                    <a href="" class="update_status_text">
+                        <i class="zulip-icon zulip-icon-smile"></i>
+                        {{#tr}}Edit status{{/tr}}
+                    </a>
+                </li>
+                {{else}}
+                <li class="link-item hidden-for-spectators">
+                    <a href="" class="update_status_text">
+                        <i class="zulip-icon zulip-icon-smile"></i>
+                        {{#tr}}Set status{{/tr}}
+                    </a>
+                </li>
+                {{/if}}
+
+                {{#if invisible_mode}}
+                <li class="link-item hidden-for-spectators">
+                    <a href="" class="invisible_mode_turn_off">
+                        <i class="zulip-icon zulip-icon-play-circle"></i>
+                        {{#tr}}Turn off invisible mode{{/tr}}
+                    </a>
+                </li>
+                {{else}}
+                <li class="link-item hidden-for-spectators">
+                    <a href="" class="invisible_mode_turn_on">
+                        <i class="zulip-icon zulip-icon-stop-circle"></i>
+                        {{#tr}}Go invisible{{/tr}}
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+
+            <ul class="list">
+                <li class="link-item">
+                    <a tabindex="0" class="view_full_user_profile">
+                        <i class="zulip-icon zulip-icon-account"></i>
+                        {{#tr}}View your profile{{/tr}}
+                    </a>
+                </li>
+                <li class="link-item">
+                    <a href="" class="narrow-self-direct-message">
+                        <i class="zulip-icon zulip-icon-users"></i>
+                        {{#tr}}View messages with yourself{{/tr}}
+                    </a>
+                </li>
+                <li class="link-item">
+                    <a href="" class="narrow-messages-sent">
+                        <i class="zulip-icon zulip-icon-message-square"></i>
+                        {{#tr}}View messages sent{{/tr}}
+                    </a>
+                </li>
+            </ul>
+            <ul class="list">
+                <li class="link-item">
+                    <a href="#settings/profile" class="open-profile-settings">
+                        <i class="zulip-icon zulip-icon-tool"></i>
+                        {{#tr}}Settings{{/tr}}
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="list">
+                <li class="link-item" role="presentation">
+                    <a class="logout_button hidden-for-spectators" tabindex="0">
+                        <i class="zulip-icon zulip-icon-power" aria-hidden="true"></i>
+                        {{t 'Log out' }}
+                    </a>
+                </li>
+            </ul>
+        </section>
+    </nav>
+</div>
