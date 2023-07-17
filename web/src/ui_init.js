@@ -79,6 +79,7 @@ import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as personal_menu_popover from "./personal_menu_popover";
 import * as playground_links_popover from "./playground_links_popover";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
@@ -709,6 +710,7 @@ export function initialize_everything() {
     user_group_popover.initialize();
     user_card_popover.initialize();
     playground_links_popover.initialize();
+    personal_menu_popover.initialize();
     pm_list.initialize();
     topic_list.initialize({
         on_topic_click(stream_id, topic) {

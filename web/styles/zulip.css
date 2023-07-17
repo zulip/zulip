@@ -197,6 +197,14 @@ body {
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
     --color-background-image-loader: hsl(0deg 0% 0% / 10%);
+    --color-icon-purple: hsl(240deg 35% 60%);
+    --color-background-dropdown-menu: hsl(0deg 0% 100%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 10%);
+    --color-hotkey-hint: hsl(227deg 78% 59%);
+    --color-background-hover-dropdown-menu: hsl(220deg 12% 5% / 5%);
+    --color-background-active-dropdown-menu: hsl(220deg 12% 5% / 7%);
+    --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
+    --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
 
@@ -228,6 +236,9 @@ body {
     --color-text-search: hsl(0deg 0% 35%);
     --color-text-search-hover: hsl(0deg 0% 0%);
     --color-text-search-placeholder: hsl(0deg 0% 50%);
+    --color-text-dropdown-menu: hsl(0deg 0% 15%);
+    --color-text-full-name: hsl(0deg 0% 15%);
+    --color-text-item: hsl(0deg 0% 40%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
@@ -312,6 +323,13 @@ body {
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
     --color-background-image-loader: hsl(0deg 0% 100% / 10%);
+    --color-background-dropdown-menu: hsl(0deg 0% 17%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
+    --color-hotkey-hint: hsl(225deg 100% 84%);
+    --color-background-hover-dropdown-menu: hsl(220deg 12% 95% / 5%);
+    --color-background-active-dropdown-menu: hsl(220deg 12% 95% / 7%);
+    --color-border-dropdown-menu: hsl(0deg 0% 0%);
+    --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
 
@@ -349,6 +367,9 @@ body {
     --color-text-search: hsl(0deg 0% 100% / 75%);
     --color-text-search-hover: hsl(0deg 0% 100%);
     --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
+    --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
+    --color-text-full-name: hsl(0deg 0% 100%);
+    --color-text-item: hsl(0deg 0% 50%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
@@ -3451,5 +3472,74 @@ select.invite-as {
         background-size: cover;
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
+        border: 1px solid var(--color-border-personal-menu-avatar);
+    }
+}
+
+#personal-menu-dropdown {
+    display: block;
+    margin: 0;
+    position: relative;
+    padding: 0;
+    border: solid 1px var(--color-border-dropdown-menu);
+    background-color: var(--color-background-dropdown-menu);
+    max-height: 85vh;
+    min-width: 230px;
+    overflow-x: hidden;
+    user-select: none;
+
+    .simplebar-content {
+        min-width: max-content;
+    }
+
+    .inner {
+        border-radius: 6px;
+        overflow: hidden;
+    }
+}
+
+.personal-menu-tippy {
+    .tippy-box {
+        border: 0;
+    }
+
+    .tippy-content {
+        padding: 0;
+    }
+
+    & > .tippy-box > .tippy-arrow {
+        position: absolute;
+        left: 50%;
+        top: -5.5px !important;
+        width: 16px;
+        height: 8px;
+        z-index: 1;
+        transform: translateX(-50%);
+        filter: drop-shadow(0 -1.25px 0 var(--color-border-dropdown-menu));
+
+        &::before {
+            display: none;
+        }
+
+        &::after {
+            border: 0 !important;
+            content: "";
+            top: 0;
+            width: 100%;
+            height: 100%;
+            mask-image: url("../shared/icons/popover-arrow.svg");
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            background-color: var(--color-background-dropdown-menu);
+        }
+    }
+}
+
+.keyboard-shortcut-option {
+    & span.tooltip-hotkey-hint {
+        margin-left: auto;
+        padding: 0 4px;
+        color: var(--color-hotkey-hint);
+        border-color: var(--color-hotkey-hint);
     }
 }
