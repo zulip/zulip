@@ -3961,10 +3961,17 @@ paths:
                                         **Changes**: New in Zulip 5.0 (feature level 103).
                                     default_code_block_language:
                                       type: string
-                                      nullable: true
                                       description: |
-                                        The default pygments language code to be used for a code blocks
-                                        in this organization. If `null`, no default has been set.
+                                        The default pygments language code to be used for code blocks in this
+                                        organization. If an empty string, no default has been set.
+
+                                        **Changes**: Prior to Zulip 8.0 (feature level 195), a server bug meant
+                                        that both `null` and an empty string could represent that no default was
+                                        set for this realm setting in the [`POST /register`](/api/register-queue)
+                                        response. The documentation for both that endpoint and this event
+                                        incorrectly stated that the only representation for no default language
+                                        was `null`. This event in fact uses the empty string to indicate that no
+                                        default has been set in all server versions.
                                     default_language:
                                       type: string
                                       description: |
@@ -13339,12 +13346,16 @@ paths:
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_default_code_block_language:
                         type: string
-                        nullable: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The default pygments language code to be used for a code blocks
-                          in this organization. If `null`, no default has been set.
+                          The default pygments language code to be used for code blocks in this
+                          organization. If an empty string, no default has been set.
+
+                          **Changes**: Prior to Zulip 8.0 (feature level 195), a server bug meant
+                          that both `null` and an empty string could represent that no default was
+                          set for this realm setting. Clients supporting older server versions
+                          should treat either value (`null` or `""`) as no default being set.
                       realm_message_content_delete_limit_seconds:
                         type: integer
                         nullable: true

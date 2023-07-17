@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 195**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  The `default_code_block_language` realm setting is now consistently an
+  empty string when no default pygments language code is set. Previously,
+  the server had a bug that meant it might represent no default for this
+  realm setting as either `null` or an empty string. Clients supporting
+  older server versions should treat either value (`null` or `""`) as no
+  default being set.
+
 **Feature level 194**
 
 * [`GET /messages`](/api/get-messages),
