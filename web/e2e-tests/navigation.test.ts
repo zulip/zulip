@@ -19,9 +19,9 @@ async function open_menu(page: Page): Promise<void> {
 async function navigate_to_settings(page: Page): Promise<void> {
     console.log("Navigating to settings");
 
-    await open_menu(page);
+    await common.open_personal_menu(page);
 
-    const settings_selector = ".dropdown-menu a[href^='#settings']";
+    const settings_selector = "#personal-menu-dropdown a[href^='#settings']";
     await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 

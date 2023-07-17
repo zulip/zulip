@@ -3,6 +3,7 @@
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 
+import * as buddy_data from "./buddy_data";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
@@ -10,10 +11,13 @@ import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import {user_settings} from "./user_settings";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 export function get_actions_popover_content_context(message_id) {
@@ -152,5 +156,32 @@ export function get_change_visibility_policy_popover_content_context(stream_id, 
         stream_muted: sub.is_muted,
         topic_unmuted,
         all_visibility_policies,
+    };
+}
+
+export function get_personal_menu_content_context() {
+    const my_user_id = page_params.user_id;
+    const invisible_mode = !user_settings.presence_enabled;
+    const status_text = user_status.get_status_text(my_user_id);
+    const status_emoji_info = user_status.get_status_emoji(my_user_id);
+    return {
+        user_id: my_user_id,
+        invisible_mode,
+        user_is_guest: page_params.is_guest,
+        spectator_view: page_params.is_spectator,
+
+        // user information
+        user_avatar: page_params.avatar_url_medium,
+        is_active: people.is_active_user_for_popover(my_user_id),
+        user_circle_class: buddy_data.get_user_circle_class(my_user_id),
+        user_last_seen_time_status: buddy_data.user_last_seen_time_status(my_user_id),
+        user_full_name: page_params.full_name,
+        user_type: people.get_user_type(my_user_id),
+
+        // user status
+        status_content_available: Boolean(status_text || status_emoji_info),
+        status_text,
+        status_emoji_info,
+        user_time: people.get_user_time(my_user_id),
     };
 }

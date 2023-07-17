@@ -194,6 +194,7 @@ export function initialize() {
             "#add_streams_tooltip",
             "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
+            "#personal-menu-dropdown .status-circle",
         ],
         appendTo: () => document.body,
     });
