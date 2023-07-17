@@ -156,6 +156,7 @@ EXEMPT_FILES = make_set(
         "web/src/overlays.ts",
         "web/src/padded_widget.ts",
         "web/src/page_params.ts",
+        "web/src/personal_menu_popover.js",
         "web/src/playground_links_popover.js",
         "web/src/plotly.js.d.ts",
         "web/src/pm_list.js",

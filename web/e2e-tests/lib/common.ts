@@ -537,6 +537,12 @@ export async function open_streams_modal(page: Page): Promise<void> {
     assert.ok(url.includes("#streams/all"));
 }
 
+export async function open_personal_menu(page: Page): Promise<void> {
+    const menu_selector = "#personal-menu";
+    await page.waitForSelector(menu_selector, {visible: true});
+    await page.click(menu_selector);
+}
+
 export async function manage_organization(page: Page): Promise<void> {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
