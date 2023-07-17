@@ -233,9 +233,7 @@ def update_plan(
             )
         if last_ledger_entry.licenses > licenses:
             raise JsonableError(
-                _("You cannot decrease the licenses in the current billing period.").format(
-                    licenses=licenses
-                )
+                _("You cannot decrease the licenses in the current billing period.")
             )
         validate_licenses(
             plan.charge_automatically,
