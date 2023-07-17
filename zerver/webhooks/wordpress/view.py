@@ -53,7 +53,7 @@ def api_wordpress_webhook(
         data = WP_LOGIN_TEMPLATE.format(name=user_login)
 
     else:
-        raise JsonableError(_("Unknown WordPress webhook action: {}").format(hook))
+        raise JsonableError(_("Unknown WordPress webhook action: {hook}").format(hook=hook))
 
     topic = "WordPress notification"
 

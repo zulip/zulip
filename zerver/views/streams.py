@@ -1052,11 +1052,15 @@ def update_subscription_properties_backend(
         value = change["value"]
 
         if property not in property_converters:
-            raise JsonableError(_("Unknown subscription property: {}").format(property))
+            raise JsonableError(
+                _("Unknown subscription property: {property}").format(property=property)
+            )
 
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
-            raise JsonableError(_("Not subscribed to stream id {}").format(stream_id))
+            raise JsonableError(
+                _("Not subscribed to stream id {stream_id}").format(stream_id=stream_id)
+            )
 
         try:
             value = property_converters[property](property, value)

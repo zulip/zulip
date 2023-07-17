@@ -33,7 +33,7 @@ def create_realm_domain(
     try:
         validate_domain(domain)
     except ValidationError as e:
-        raise JsonableError(_("Invalid domain: {}").format(e.messages[0]))
+        raise JsonableError(_("Invalid domain: {error}").format(error=e.messages[0]))
     if RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists():
         raise JsonableError(
             _("The domain {domain} is already a part of your organization.").format(domain=domain)

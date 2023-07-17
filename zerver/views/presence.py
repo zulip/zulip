@@ -143,7 +143,7 @@ def update_active_status_backend(
 ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
-        raise JsonableError(_("Invalid status: {}").format(status))
+        raise JsonableError(_("Invalid status: {status}").format(status=status))
     elif user_profile.presence_enabled:
         client = RequestNotes.get_notes(request).client
         assert client is not None

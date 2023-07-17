@@ -265,7 +265,9 @@ def remove_members_from_group_backend(
     group_member_ids = get_user_group_direct_member_ids(user_group)
     for member in members:
         if member not in group_member_ids:
-            raise JsonableError(_("There is no member '{}' in this user group").format(member))
+            raise JsonableError(
+                _("There is no member '{user_id}' in this user group").format(user_id=member)
+            )
 
     user_profile_ids = [user.id for user in user_profiles]
     remove_members_from_user_group(user_group, user_profile_ids, acting_user=user_profile)

@@ -21,18 +21,22 @@ from zerver.tornado.django_api import send_event_on_commit
 
 def check_default_stream_group_name(group_name: str) -> None:
     if group_name.strip() == "":
-        raise JsonableError(_("Invalid default stream group name '{}'").format(group_name))
+        raise JsonableError(
+            _("Invalid default stream group name '{group_name}'").format(group_name=group_name)
+        )
     if len(group_name) > DefaultStreamGroup.MAX_NAME_LENGTH:
         raise JsonableError(
-            _("Default stream group name too long (limit: {} characters)").format(
-                DefaultStreamGroup.MAX_NAME_LENGTH,
+            _("Default stream group name too long (limit: {max_length} characters)").format(
+                max_length=DefaultStreamGroup.MAX_NAME_LENGTH,
             )
         )
     for i in group_name:
         if ord(i) == 0:
             raise JsonableError(
-                _("Default stream group name '{}' contains NULL (0x00) characters.").format(
-                    group_name,
+                _(
+                    "Default stream group name '{group_name}' contains NULL (0x00) characters."
+                ).format(
+                    group_name=group_name,
                 )
             )
 
@@ -45,7 +49,9 @@ def lookup_default_stream_groups(
         try:
             default_stream_group = DefaultStreamGroup.objects.get(name=group_name, realm=realm)
         except DefaultStreamGroup.DoesNotExist:
-            raise JsonableError(_("Invalid default stream group {}").format(group_name))
+            raise JsonableError(
+                _("Invalid default stream group {group_name}").format(group_name=group_name)
+            )
         default_stream_groups.append(default_stream_group)
     return default_stream_groups
 
@@ -157,11 +163,17 @@ def do_change_default_stream_group_name(
 ) -> None:
     if group.name == new_group_name:
         raise JsonableError(
-            _("This default stream group is already named '{}'").format(new_group_name)
+            _("This default stream group is already named '{group_name}'").format(
+                group_name=new_group_name
+            )
         )
 
     if DefaultStreamGroup.objects.filter(name=new_group_name, realm=realm).exists():
-        raise JsonableError(_("Default stream group '{}' already exists").format(new_group_name))
+        raise JsonableError(
+            _("Default stream group '{group_name}' already exists").format(
+                group_name=new_group_name
+            )
+        )
 
     group.name = new_group_name
     group.save()

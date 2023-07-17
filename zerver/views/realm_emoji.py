@@ -45,8 +45,8 @@ def upload_emoji(
     assert emoji_file.size is not None
     if (settings.MAX_EMOJI_FILE_SIZE_MIB * 1024 * 1024) < emoji_file.size:
         raise JsonableError(
-            _("Uploaded file is larger than the allowed limit of {} MiB").format(
-                settings.MAX_EMOJI_FILE_SIZE_MIB,
+            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                max_size=settings.MAX_EMOJI_FILE_SIZE_MIB,
             )
         )
 
@@ -58,7 +58,9 @@ def delete_emoji(request: HttpRequest, user_profile: UserProfile, emoji_name: st
     if not RealmEmoji.objects.filter(
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).exists():
-        raise ResourceNotFoundError(_("Emoji '{}' does not exist").format(emoji_name))
+        raise ResourceNotFoundError(
+            _("Emoji '{emoji_name}' does not exist").format(emoji_name=emoji_name)
+        )
     check_remove_custom_emoji(user_profile, emoji_name)
     do_remove_realm_emoji(user_profile.realm, emoji_name, acting_user=user_profile)
     return json_success(request)

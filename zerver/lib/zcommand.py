@@ -76,4 +76,4 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
                 setting_value=False,
             )
         )
-    raise JsonableError(_("No such command: {}").format(command))
+    raise JsonableError(_("No such command: {command}").format(command=command))

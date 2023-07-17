@@ -85,7 +85,7 @@ def get_emoji_data(realm_id: int, emoji_name: str) -> EmojiData:
         emoji_code = name_to_codepoint[emoji_name]
         return EmojiData(emoji_code=emoji_code, reaction_type=Reaction.UNICODE_EMOJI)
 
-    raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
+    raise JsonableError(_("Emoji '{emoji_name}' does not exist").format(emoji_name=emoji_name))
 
 
 def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_type: str) -> None:

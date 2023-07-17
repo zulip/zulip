@@ -52,7 +52,7 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
             # is relevant here.
             user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, sender.realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user ID {}").format(user_id))
+            raise JsonableError(_("Invalid user ID {user_id}").format(user_id=user_id))
         user_profiles.append(user_profile)
 
     do_send_typing_notification(

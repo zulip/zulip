@@ -494,10 +494,10 @@ class OurAuthenticationForm(AuthenticationForm):
                 secs_to_freedom = int(e.secs_to_freedom)
                 error_message = _(
                     "You're making too many attempts to sign in."
-                    " Try again in {} seconds or contact your organization administrator"
+                    " Try again in {seconds} seconds or contact your organization administrator"
                     " for help."
                 )
-                raise ValidationError(error_message.format(secs_to_freedom))
+                raise ValidationError(error_message.format(seconds=secs_to_freedom))
 
             if return_data.get("inactive_realm"):
                 raise AssertionError("Programming error: inactive realm in authentication form")

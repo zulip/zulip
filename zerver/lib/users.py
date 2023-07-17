@@ -92,13 +92,15 @@ def check_valid_bot_config(
                 config_options = {c[1]: c[2] for c in integration.config_options}
                 break
         if not config_options:
-            raise JsonableError(_("Invalid integration '{}'.").format(service_name))
+            raise JsonableError(
+                _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
+            )
 
         missing_keys = set(config_options.keys()) - set(config_data.keys())
         if missing_keys:
             raise JsonableError(
-                _("Missing configuration parameters: {}").format(
-                    missing_keys,
+                _("Missing configuration parameters: {keys}").format(
+                    keys=missing_keys,
                 )
             )
 
@@ -106,7 +108,11 @@ def check_valid_bot_config(
             value = config_data[key]
             error = validator(key, value)
             if error is not None:
-                raise JsonableError(_("Invalid {} value {} ({})").format(key, value, error))
+                raise JsonableError(
+                    _("Invalid {key} value {value} ({error})").format(
+                        key=key, value=value, error=error
+                    )
+                )
 
     elif bot_type == UserProfile.EMBEDDED_BOT:
         try:
@@ -229,12 +235,12 @@ def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile
     found_user_ids = user_profiles_by_id.keys()
     missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
     if missed_user_ids:
-        raise JsonableError(_("Invalid user ID: {}").format(missed_user_ids[0]))
+        raise JsonableError(_("Invalid user ID: {user_id}").format(user_id=missed_user_ids[0]))
 
     user_profiles = list(user_profiles_by_id.values())
     for user_profile in user_profiles:
         if user_profile.realm != realm:
-            raise JsonableError(_("Invalid user ID: {}").format(user_profile.id))
+            raise JsonableError(_("Invalid user ID: {user_id}").format(user_id=user_profile.id))
     return user_profiles
 
 
