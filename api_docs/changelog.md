@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 194**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /message/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  For [search/narrow filters](/api/construct-narrow) with the `id`
+  operator, added support for encoding the message ID operand as either
+  a string or an integer. Previously, only string encoding was supported.
+
 **Feature level 193**
 
 * [`POST /messages/{message_id}/reactions`](/api/add-reaction),

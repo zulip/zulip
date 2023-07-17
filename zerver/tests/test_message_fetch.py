@@ -417,8 +417,12 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
         )
 
-    def test_add_term_using_id_operator(self) -> None:
+    def test_add_term_using_id_operator_integer(self) -> None:
         term = dict(operator="id", operand=555)
+        self._do_add_term_test(term, "WHERE id = %(param_1)s")
+
+    def test_add_term_using_id_operator_string(self) -> None:
+        term = dict(operator="id", operand="555")
         self._do_add_term_test(term, "WHERE id = %(param_1)s")
 
     def test_add_term_using_id_operator_invalid(self) -> None:
@@ -3412,10 +3416,11 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_invalid_narrow_operand_in_dict(self) -> None:
         self.login("hamlet")
 
-        # str or int is required for "sender", "stream", "dm-including" and "group-pm-with" operators
+        # str or int is required for "id", "sender", "stream", "dm-including" and "group-pm-with"
+        # operators
         invalid_operands = [["1"], [2], None]
         error_msg = 'elem["operand"] is not a string or integer'
-        for operand in ["sender", "group-pm-with", "stream", "dm-including"]:
+        for operand in ["id", "sender", "stream", "dm-including", "group-pm-with"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
 
         # str or int list is required for "dm" and "pm-with" operator
@@ -3432,7 +3437,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # For others only str is acceptable
         invalid_operands = [2, None, [1]]
         error_msg = 'elem["operand"] is not a string'
-        for operand in ["is", "near", "has", "id"]:
+        for operand in ["is", "near", "has"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
 
         # Disallow empty search terms
