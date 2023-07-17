@@ -379,8 +379,8 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
     # Set the owner key only when the bot has an owner.
     # The default bots don't have an owner. So don't
     # set the owner key while reactivating them.
-    if user_profile.bot_owner is not None:
-        bot["owner_id"] = user_profile.bot_owner.id
+    if user_profile.bot_owner_id is not None:
+        bot["owner_id"] = user_profile.bot_owner_id
 
     return dict(type="realm_bot", op="add", bot=bot)
 
