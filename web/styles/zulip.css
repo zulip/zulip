@@ -196,6 +196,7 @@ body {
     --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
+    --color-background-image-loader: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
 
@@ -310,6 +311,7 @@ body {
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
+    --color-background-image-loader: hsl(0deg 0% 100% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
 
@@ -643,7 +645,6 @@ p.n-margin {
 }
 
 #navbar-middle .column-middle-inner,
-#userlist-toggle-button,
 .header,
 #message_view_header {
     background-color: var(--color-background-navbar);
@@ -804,8 +805,9 @@ body.has-overlay-scrollbar {
         justify-content: space-evenly;
         position: absolute;
         top: 10px;
-        /* width of right column - width of gear icon(250px - 45px) */
-        width: 205px;
+        right: 40px;
+        /* width of right column - width of gear icon - right margin of column-right (250px - 40px -7px) */
+        width: 203px;
 
         & a {
             font-size: calc(16em / 14);
@@ -833,10 +835,8 @@ body.has-overlay-scrollbar {
         position: absolute;
         top: 0;
         right: 0;
-        /* Height of navbar in tablet sizes */
-        height: 40px;
-        /* Width of userlist-toggle button. */
-        width: 45px;
+        height: var(--header-height);
+        width: var(--header-height);
         border-left: 1px solid hsl(0deg 0% 88%);
 
         .login_button {
@@ -1222,10 +1222,6 @@ li.actual-dropdown-menu i {
             filter: none;
         }
     }
-}
-
-.settings-dropdown-cog {
-    padding: 6px 12px;
 }
 
 td.pointer {
@@ -2262,8 +2258,6 @@ div.focused-message-list {
 
 #navbar-buttons {
     white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
     display: inline-block;
     float: right;
 
@@ -2351,8 +2345,8 @@ div.focused-message-list {
 
 .nav .dropdown-menu {
     left: auto;
-    right: 0;
-    top: 30px;
+    right: -7px;
+    top: 35px;
     /* Match the width of the right sidebar so that we don't have
        the presence dots distracting you when looking at this. */
     min-width: 240px;
@@ -3013,6 +3007,17 @@ select.invite-as {
         min-width: 750px;
     }
 
+    .spectator-view {
+        #navbar-middle {
+            margin-right: 85px;
+        }
+
+        #navbar-buttons {
+            position: absolute;
+            right: 45px;
+        }
+    }
+
     .column-right {
         display: none;
 
@@ -3039,15 +3044,6 @@ select.invite-as {
         }
     }
 
-    .header-main .column-right {
-        display: inline-block;
-        width: 30px;
-    }
-
-    #top_navbar #navbar-buttons {
-        margin-right: 41px;
-    }
-
     .nav .dropdown-menu {
         min-width: 180px;
         box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
@@ -3062,7 +3058,7 @@ select.invite-as {
     }
 
     #navbar-middle {
-        margin-right: 87px;
+        margin-right: 127px;
     }
 }
 
@@ -3164,6 +3160,31 @@ select.invite-as {
         }
     }
 
+    .spectator-view {
+        #navbar-middle {
+            margin-right: 65px;
+        }
+
+        #navbar-buttons {
+            position: absolute;
+            right: 35px;
+        }
+    }
+
+    #navbar-middle {
+        margin-right: 97px;
+    }
+
+    .nav .dropdown-menu {
+        right: -13px;
+    }
+
+    /* Usually the styling is applied directly to the icon, but here
+    the icon is `position: static`, so we can't. */
+    .search_closed {
+        top: 5px;
+    }
+
     #streamlist-toggle,
     #navbar-buttons,
     #message_view_header,
@@ -3190,6 +3211,11 @@ select.invite-as {
     #navbar-buttons ul.nav .dropdown-toggle,
     #navbar-buttons ul.nav li.active .dropdown-toggle {
         top: -8px;
+    }
+
+    .column-right #personal-menu .header-button-avatar {
+        width: 20px;
+        height: 20px;
     }
 }
 
@@ -3390,5 +3416,40 @@ select.invite-as {
 
     > strong {
         margin-right: 14px;
+    }
+}
+
+.header-main .column-right {
+    display: flex;
+    width: auto;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 7px;
+
+    & a:focus {
+        filter: none;
+        outline: 0;
+    }
+}
+
+.header-button,
+#navbar-buttons #settings-dropdown {
+    width: var(--header-height);
+    height: var(--header-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    top: 0;
+    right: 0;
+}
+
+#personal-menu {
+    .header-button-avatar {
+        width: 24px;
+        height: 24px;
+        background-size: cover;
+        border-radius: 4px;
+        background-color: var(--color-background-image-loader);
     }
 }
