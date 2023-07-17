@@ -65,11 +65,32 @@ filters did.
 
 ## Narrows that use IDs
 
+### Message IDs
+
 The `near` and `id` operators, documented in the help center, use message
 IDs for their operands.
 
 * `near:12345`: Search messages around the message with ID `12345`.
 * `id:12345`: Search for only message with ID `12345`.
+
+The message ID operand for the `id` operator may be encoded as either a
+number or a string. The message ID operand for the `near` operator must
+be encoded as a string.
+
+**Changes**: Prior to Zulip 8.0 (feature level 194), the message ID
+operand for the `id` operator needed to be encoded as a string.
+
+
+```json
+[
+    {
+        "operator": "id",
+        "operand": 12345
+    }
+]
+```
+
+### Stream and user IDs
 
 There are a few additional narrow/search options (new in Zulip 2.1)
 that use either stream IDs or user IDs that are not documented in the
