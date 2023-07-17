@@ -40,17 +40,22 @@
                     </a>
                 </div>
                 <div class="spectator_narrow_login_button hide show-xl" data-tippy-content="{{t 'Log in' }}" data-tippy-placement="bottom">
-                    <a class="login_button">
+                    <a class="header-button login_button">
                         <i class="fa fa-sign-in"></i>
                     </a>
                 </div>
             </div>
             <div id="userlist-toggle" class="hidden-for-spectators tippy-zulip-delayed-tooltip" data-tooltip-template-id="userlist-tooltip-template">
-                <a id="userlist-toggle-button" role="button" tabindex="0"><i class="fa fa-group" aria-hidden="true"></i>
+                <a id="userlist-toggle-button" role="button" class="header-button" tabindex="0"><i class="fa fa-group" aria-hidden="true"></i>
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
             </div>
-            <div id="navbar-buttons" class="no-auto-hide-sidebar-overlays" {{#if embedded}}class="hide-navbar-buttons-visibility"{{/if}}>
+            <div id="navbar-buttons" class="no-auto-hide-sidebar-overlays header-button" {{#if embedded}}class="hide-navbar-buttons-visibility"{{/if}}>
+            </div>
+            <div id="personal-menu" class="hidden-for-spectators">
+                <a class="header-button tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-tippy-content="{{t 'Personal menu' }}">
+                    <img class="header-button-avatar" src="{{user_avatar}}"/>
+                </a>
             </div>
         </div>
     </nav>
