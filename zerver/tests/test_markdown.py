@@ -1773,7 +1773,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_default_code_block_language(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual(realm.default_code_block_language, None)
+        self.assertEqual(realm.default_code_block_language, "")
         text = "```{}\nconsole.log('Hello World');\n```\n"
 
         # Render without default language
@@ -1803,7 +1803,7 @@ class MarkdownTest(ZulipTestCase):
         msg_without_language_default_math = markdown_convert_wrapper(text.format(""))
 
         # Render without default language
-        do_set_realm_property(realm, "default_code_block_language", None, acting_user=None)
+        do_set_realm_property(realm, "default_code_block_language", "", acting_user=None)
         msg_without_language_final = markdown_convert_wrapper(text.format(""))
 
         self.assertTrue(msg_with_js == msg_without_language_default_js)
@@ -1822,7 +1822,7 @@ class MarkdownTest(ZulipTestCase):
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertTrue(with_language == without_language)
 
-        do_set_realm_property(realm, "default_code_block_language", None, acting_user=None)
+        do_set_realm_property(realm, "default_code_block_language", "", acting_user=None)
         rendered = markdown_convert_wrapper(nested_text)
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertFalse(with_language == without_language)

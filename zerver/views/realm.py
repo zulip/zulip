@@ -327,13 +327,6 @@ def update_realm(
         )
         data["signup_notifications_stream_id"] = signup_notifications_stream_id
 
-    if default_code_block_language is not None:
-        # Migrate '', used in the API to encode the default/None behavior of this feature.
-        if default_code_block_language == "":
-            data["default_code_block_language"] = None
-        else:
-            data["default_code_block_language"] = default_code_block_language
-
     if string_id is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError

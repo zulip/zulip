@@ -710,7 +710,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # maximum rating of the GIFs that will be retrieved from GIPHY
     giphy_rating = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
 
-    default_code_block_language = models.TextField(null=True, default=None)
+    default_code_block_language = models.TextField(default="")
 
     # Whether read receipts are enabled in the organization. If disabled,
     # they will not be available regardless of users' personal settings.
@@ -726,7 +726,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         create_private_stream_policy=int,
         create_public_stream_policy=int,
         create_web_public_stream_policy=int,
-        default_code_block_language=(str, type(None)),
+        default_code_block_language=str,
         default_language=str,
         delete_own_message_policy=int,
         description=str,
