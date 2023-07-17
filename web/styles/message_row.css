@@ -208,6 +208,9 @@ $time_column_min_width: 50px; /* + padding */
               is preserved from the message itself--keeping the time,
               edit message, and controls at the same vertical alignment. */
             align-self: start;
+            /* Keep previewed messages from overflowing the grid area
+               that .message_edit is assigned to. */
+            overflow: hidden;
             margin-top: $distance_of_non_text_elements_from_message_box;
         }
 
