@@ -677,6 +677,25 @@ def require_user_group_edit_permission(
     return _wrapped_view_func
 
 
+def require_user_group_create_permission(
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
+    @require_member_or_admin
+    @wraps(view_func)
+    def _wrapped_view_func(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
+    ) -> HttpResponse:
+        if not user_profile.can_create_user_groups():
+            raise JsonableError(_("Insufficient permission"))
+        return view_func(request, user_profile, *args, **kwargs)
+
+    return _wrapped_view_func
+
+
 # This API endpoint is used only for the mobile apps.  It is part of a
 # workaround for the fact that React Native doesn't support setting
 # HTTP basic authentication headers.
