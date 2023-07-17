@@ -275,7 +275,7 @@ export async function log_in(
 export async function log_out(page: Page): Promise<void> {
     await page.goto(realm_url);
     const menu_selector = "#settings-dropdown";
-    const logout_selector = '.dropdown-menu a[href="#logout"]';
+    const logout_selector = ".dropdown-menu a.logout_button";
     console.log("Logging out");
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
