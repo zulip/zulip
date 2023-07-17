@@ -17,11 +17,7 @@ from zerver.actions.user_groups import (
     do_update_user_group_name,
     remove_subgroups_from_user_group,
 )
-from zerver.decorator import (
-    require_member_or_admin,
-    require_user_group_create_permission,
-    require_user_group_edit_permission,
-)
+from zerver.decorator import require_member_or_admin, require_user_group_create_permission
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
@@ -101,7 +97,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
 
 
 @transaction.atomic(durable=True)
-@require_user_group_edit_permission
+@require_member_or_admin
 @typed_endpoint
 def edit_user_group(
     request: HttpRequest,
@@ -164,7 +160,7 @@ def edit_user_group(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @typed_endpoint
 def delete_user_group(
     request: HttpRequest,
@@ -180,7 +176,7 @@ def delete_user_group(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @typed_endpoint
 def update_user_group_backend(
     request: HttpRequest,
@@ -386,7 +382,7 @@ def remove_subgroups_from_group_backend(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @typed_endpoint
 def update_subgroups_of_user_group(
     request: HttpRequest,
