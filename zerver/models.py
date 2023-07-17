@@ -1986,7 +1986,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
 
     def can_admin_user(self, target_user: "UserProfile") -> bool:
         """Returns whether this user has permission to modify target_user"""
-        if target_user.bot_owner == self:
+        if target_user.bot_owner_id == self.id:
             return True
         elif self.is_realm_admin and self.realm == target_user.realm:
             return True

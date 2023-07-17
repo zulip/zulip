@@ -140,7 +140,7 @@ def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) 
     owned by the current user"""
     if user_profile == target:
         return True
-    if target.is_bot and target.bot_owner == user_profile:
+    if target.is_bot and target.bot_owner_id == user_profile.id:
         return True
     return False
 
