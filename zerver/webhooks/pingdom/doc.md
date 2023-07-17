@@ -5,16 +5,16 @@ uptime status changes from your Pingdom dashboard.
 
 1. {!create-bot-construct-url.md!}
 
-1.  Next, go to the following URL:
+1. Next, go to the following URL:
 
     `https://my.pingdom.com/reports/integration/settings`
 
-1.  Create your integration by clicking on the **Add Integration** button
+1. Create your integration by clicking on the **Add Integration** button
     and filling the form like so:
 
     ![](/static/images/integrations/pingdom/001.png)
 
-1.  Last, during creating or editing your check, scroll down to
+1. Last, during creating or editing your check, scroll down to
     **Connect Integrations** section and ensure your integration is checked.
 
 {!congrats.md!}

@@ -1,17 +1,17 @@
-1.  {!create-stream.md!}
+1. {!create-stream.md!}
 
     Keep in mind you still need to create the stream first even
     if you are using this recommendation.
 
-1.  {!create-an-incoming-webhook.md!}
+1. {!create-an-incoming-webhook.md!}
 
-1.  Next, in Desk.com, open your **Admin** view via the top-left
+1. Next, in Desk.com, open your **Admin** view via the top-left
     dropdown. In the **Admin** view, click on **Apps**, then
     click **Install** under **Custom Action**:
 
     ![](/static/images/integrations/desk/001.png)
 
-1.  From there, click **Install Custom Action** and accept the terms.
+1. From there, click **Install Custom Action** and accept the terms.
     Fill in the form like this:
 
      * **Name**: Zulip
@@ -22,7 +22,7 @@
 
     ![](/static/images/integrations/desk/002.png)
 
-1.  Click **Create** to save your settings. From the next screen, click
+1. Click **Create** to save your settings. From the next screen, click
     **Add Action** to add a new action. You'll do this for every action
     you want a notification on Zulip for. (To add another action later,
     look for your custom action on the **Apps** page under
@@ -30,7 +30,7 @@
 
     ![](/static/images/integrations/desk/003.png)
 
-1.  Let's say you want a notification each time a case is updated. Put
+1. Let's say you want a notification each time a case is updated. Put
     in a descriptive name like **Announce case update**, select
     **POST a string to a URL** for **Action Type**, and copy-paste this
     to the **Appended URL path**:
@@ -45,7 +45,7 @@
     it makes sure the notification goes to the appropriate stream and topic
     within Zulip.
 
-1.  Next, copy this template Zulip message into **Message to POST**:
+1. Next, copy this template Zulip message into **Message to POST**:
 
     {% raw %}
 
@@ -65,13 +65,13 @@
 
     ![](/static/images/integrations/desk/004.png)
 
-1.  Click **Add Action** to save, and then on the next screen, click the
+1. Click **Add Action** to save, and then on the next screen, click the
     slider next to the action to enable it. This is important — actions are
     turned off by default!
 
     ![](/static/images/integrations/desk/005.png)
 
-1.  Now you need to create a rule that triggers this action. Desk.com's
+1. Now you need to create a rule that triggers this action. Desk.com's
     support center has a [lengthy article on rules][1], but in short,
     click on **Cases** up at the top, **Rules** on the left side, and
     then the specific event you want to notify on — in our example,
@@ -81,12 +81,12 @@
 
     ![](/static/images/integrations/desk/006.png)
 
-1.  Select the types of interaction you want your rule to apply to,
+1. Select the types of interaction you want your rule to apply to,
     such as **Chat**. Specify the name and click on **Add Rule**.
 
     ![](/static/images/integrations/desk/007.png)
 
-1.  In the next screen, provide the details. First, click **Add Actions**
+1. In the next screen, provide the details. First, click **Add Actions**
     to display the rule actions. Select **Trigger an App Action** in the
     dropdown, and then the name of the custom action you created earlier
     when the second dropdown appears. You can add additional **All** or
@@ -95,7 +95,7 @@
 
     ![](/static/images/integrations/desk/008.png)
 
-1.  Finally, click **Update**.
+1. Finally, click **Update**.
 
 {!congrats.md!}
 
