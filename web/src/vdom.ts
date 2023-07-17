@@ -2,7 +2,26 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 
-export function eq_array(a, b, eq) {
+type Equal<T> = (...args: T[]) => boolean;
+
+type Node = {
+    key: number;
+    render: () => string;
+    name: string;
+    eq: Equal<number | Node>;
+};
+
+type Options = {
+    attrs: [string, string][];
+    keyed_nodes: Node[];
+};
+
+type Tag = {
+    tag_name: string;
+    opts: Options;
+};
+
+export function eq_array<T>(a: T[] | undefined, b: T[] | undefined, eq: Equal<T>): boolean {
     if (a === b) {
         // either both are undefined, or they
         // are referentially equal
@@ -20,14 +39,14 @@ export function eq_array(a, b, eq) {
     return a.every((item, i) => eq(item, b[i]));
 }
 
-export function ul(opts) {
+export function ul(opts: Options): Tag {
     return {
         tag_name: "ul",
         opts,
     };
 }
 
-export function render_tag(tag) {
+export function render_tag(tag: Tag): string | undefined {
     /*
         This renders a tag into a string.  It will
         automatically escape attributes, but it's your
@@ -41,9 +60,7 @@ export function render_tag(tag) {
     */
     const opts = tag.opts;
     const tag_name = tag.tag_name;
-    const attr_str = opts.attrs
-        .map((attr) => " " + attr[0] + '="' + _.escape(attr[1]) + '"')
-        .join("");
+    const attr_str = opts.attrs.map((attr) => ` ${attr[0]}="${_.escape(attr[1])}"`).join("");
 
     const start_tag = "<" + tag_name + attr_str + ">";
     const end_tag = "</" + tag_name + ">";
@@ -53,11 +70,15 @@ export function render_tag(tag) {
         return undefined;
     }
 
-    const innards = opts.keyed_nodes.map((node) => node.render()).join("\n");
+    const innards = opts.keyed_nodes.map((node: Node) => node.render()).join("\n");
     return start_tag + "\n" + innards + "\n" + end_tag;
 }
 
-export function update_attrs($elem, new_attrs, old_attrs) {
+export function update_attrs(
+    $elem: JQuery,
+    new_attrs: Iterable<[string, string]>,
+    old_attrs: Iterable<[string, string]>,
+): void {
     const new_dict = new Map(new_attrs);
     const old_dict = new Map(old_attrs);
 
@@ -74,7 +95,12 @@ export function update_attrs($elem, new_attrs, old_attrs) {
     }
 }
 
-export function update(replace_content, find, new_dom, old_dom) {
+export function update(
+    replace_content: (html: string | undefined) => void,
+    find: () => JQuery,
+    new_dom: Tag,
+    old_dom: Tag | undefined,
+): void {
     /*
         The update method allows you to continually
         update a "virtual" representation of your DOM,
@@ -126,7 +152,7 @@ export function update(replace_content, find, new_dom, old_dom) {
         For examples of creating vdom objects, look at
         `pm_list_dom.js`.
     */
-    function do_full_update() {
+    function do_full_update(): void {
         const rendered_dom = render_tag(new_dom);
         replace_content(rendered_dom);
     }
