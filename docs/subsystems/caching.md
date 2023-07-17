@@ -10,7 +10,7 @@ caching).
 
 On the backend, Zulip uses `memcached`, a popular key-value store, for
 caching. Our `memcached` caching helps let us optimize Zulip's
-performance and scalability, since most requests don't need to talk to
+performance and scalability, since we often avoid round trips to
 the database (which, even for a trivial query with everything on the
 same machine, usually takes 3-10x as long as a memcached fetch).
 
@@ -32,10 +32,10 @@ amount of Zulip's core caching code correctly, then the code most developers
 naturally write will both benefit from caching and not create any cache
 consistency problems.
 
-The overall result of this design is that in the vast majority of
+The overall result of this design is that for many places in the
 Zulip's Django codebase, all one needs to do is call the standard
-accessor functions for data (like `get_user` or `get_stream` to fetch
-user and stream objects, or for view code, functions like
+accessor functions for data (like `get_user` to fetch
+user objects, or, for view code, functions like
 `access_stream_by_id`, which checks permissions), and everything will
 work great. The data fetches automatically benefit from `memcached`
 caching, since those accessor methods have already been written to
@@ -68,8 +68,7 @@ def user_profile_cache_key(email: str, realm: "Realm") -> str:
 
 @cache_with_key(user_profile_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: Realm) -> UserProfile:
-    return UserProfile.objects.select_related().get(
-        email__iexact=email.strip(), realm=realm)
+    return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 ```
 
 This decorator implements a pretty classic caching paradigm:
@@ -95,7 +94,7 @@ This decorator implements a pretty classic caching paradigm:
   `KEY_PREFIX` is rotated every time we deploy to production; see
   below for details.
 
-We use this decorator in more than 30 places in Zulip, and it saves a
+We use this decorator in about 30 places in Zulip, and it saves a
 huge amount of otherwise very self-similar caching code.
 
 ### Cautions
