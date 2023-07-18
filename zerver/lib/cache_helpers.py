@@ -82,7 +82,7 @@ def get_active_realm_ids() -> ValuesQuerySet[RealmCount, int]:
 
 
 def get_users() -> QuerySet[UserProfile]:
-    return UserProfile.objects.select_related().filter(
+    return UserProfile.objects.select_related("realm", "bot_owner").filter(
         long_term_idle=False, realm__in=get_active_realm_ids()
     )
 
