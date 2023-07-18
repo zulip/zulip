@@ -280,7 +280,7 @@ function create_stream() {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr) {
-            const msg = JSON.parse(xhr.responseText).msg;
+            const msg = xhr.responseJSON.msg;
             if (msg.includes("access")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.

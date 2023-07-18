@@ -73,7 +73,7 @@ function open_linkifier_edit_form(linkifier_id) {
             },
             error_continuation(xhr) {
                 $change_linkifier_button.prop("disabled", false);
-                const response_text = JSON.parse(xhr.responseText);
+                const response_text = xhr.responseJSON;
                 if (response_text.errors !== undefined) {
                     handle_linkifier_api_error(
                         xhr,
@@ -113,17 +113,17 @@ function handle_linkifier_api_error(xhr, pattern_status, template_status, linkif
     // The endpoint uses the Django ValidationError system for error
     // handling, which returns somewhat complicated error
     // dictionaries. This logic parses them.
-    const errors = JSON.parse(xhr.responseText).errors;
+    const errors = xhr.responseJSON.errors;
     if (errors.pattern !== undefined) {
-        xhr.responseText = JSON.stringify({msg: errors.pattern});
+        xhr.responseJSON.msg = errors.pattern;
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
     }
     if (errors.url_template !== undefined) {
-        xhr.responseText = JSON.stringify({msg: errors.url_template});
+        xhr.responseJSON.msg = errors.url_template;
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, template_status);
     }
     if (errors.__all__ !== undefined) {
-        xhr.responseText = JSON.stringify({msg: errors.__all__});
+        xhr.responseJSON.msg = errors.__all__;
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
     }
 }

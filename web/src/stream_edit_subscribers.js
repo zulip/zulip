@@ -196,7 +196,7 @@ function subscribe_new_users({pill_user_ids}) {
     }
 
     function invite_failure(xhr) {
-        const error = JSON.parse(xhr.responseText);
+        const error = xhr.responseJSON;
         show_stream_subscription_request_result({
             message: error.msg,
             add_class: "text-error",

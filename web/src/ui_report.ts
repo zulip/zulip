@@ -41,7 +41,7 @@ export function error(
     if (xhr && xhr.status >= 400 && xhr.status < 500) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        const server_response_html = _.escape(JSON.parse(xhr.responseText).msg);
+        const server_response_html = _.escape(xhr.responseJSON.msg);
         if (response_html) {
             response_html += ": " + server_response_html;
         } else {
@@ -79,7 +79,7 @@ export function generic_embed_error(error_html: string, remove_after: number): v
 
 export function generic_row_button_error(xhr: JQuery.jqXHR, $btn: JQuery): void {
     if (xhr.status >= 400 && xhr.status < 500) {
-        const $error = $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg);
+        const $error = $("<p>").addClass("text-error").text(xhr.responseJSON.msg);
         $btn.closest("td").empty().append($error);
     } else {
         $btn.text($t({defaultMessage: "Failed!"}));

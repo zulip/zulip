@@ -581,7 +581,7 @@ export function set_up() {
             },
             error(xhr) {
                 const $row = $(e.currentTarget).closest("li");
-                $row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
+                $row.find(".api_key_error").text(xhr.responseJSON.msg).show();
             },
         });
     });

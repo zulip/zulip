@@ -9,7 +9,7 @@ const {page_params} = require("./lib/zpage_params");
 
 const xhr_401 = {
     status: 401,
-    responseText: '{"msg": "Use cannot access XYZ"}',
+    responseJSON: {msg: "Use cannot access XYZ"},
 };
 
 let login_to_access_shown = false;
@@ -294,7 +294,7 @@ test("reload_on_403_error", () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
-            responseText: '{"msg": "CSRF Fehler: etwas", "code": "CSRF_FAILED"}',
+            responseJSON: {msg: "CSRF Fehler: etwas", code: "CSRF_FAILED"},
         },
 
         run_code() {
@@ -317,6 +317,7 @@ test("unexpected_403_response", () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
+            responseJSON: undefined,
             responseText: "unexpected",
         },
 
@@ -334,6 +335,7 @@ test("unexpected_403_response", () => {
 test("xhr_error_message", () => {
     let xhr = {
         status: "200",
+        responseJSON: undefined,
         responseText: "does not matter",
     };
     let msg = "data added";
@@ -341,7 +343,7 @@ test("xhr_error_message", () => {
 
     xhr = {
         status: "404",
-        responseText: '{"msg": "file not found"}',
+        responseJSON: {msg: "file not found"},
     };
     msg = "some message";
     assert.equal(channel.xhr_error_message(msg, xhr), "some message: file not found");

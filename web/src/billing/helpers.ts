@@ -80,7 +80,7 @@ export function create_ajax_request(
         },
         error(xhr) {
             $(form_loading).hide();
-            $(form_error).show().text(JSON.parse(xhr.responseText).msg);
+            $(form_error).show().text(xhr.responseJSON.msg);
             $(form_input_section).show();
             $(zulip_limited_section).show();
             $(free_trial_alert_message).show();

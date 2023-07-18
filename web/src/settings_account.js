@@ -119,7 +119,7 @@ function upload_avatar($file_input) {
                 $("#user-avatar-source").show();
             }
             const $error = $("#user-avatar-upload-widget .image_file_input_error");
-            $error.text(JSON.parse(xhr.responseText).msg);
+            $error.text(xhr.responseJSON.msg);
             $error.show();
         },
     });
@@ -490,7 +490,7 @@ export function set_up() {
                     $("#api_key_value").text(data.api_key);
                 },
                 error(xhr) {
-                    $("#user_api_key_error").text(JSON.parse(xhr.responseText).msg).show();
+                    $("#user_api_key_error").text(xhr.responseJSON.msg).show();
                 },
             });
             e.preventDefault();

@@ -223,7 +223,7 @@ function add_new_members({pill_user_ids}) {
     }
 
     function invite_failure(xhr) {
-        const error = JSON.parse(xhr.responseText);
+        const error = xhr.responseJSON;
         show_user_group_membership_request_result({
             message: error.msg,
             add_class: "text-error",

@@ -107,7 +107,7 @@ function call(args) {
         } else if (xhr.status === 403) {
             try {
                 if (
-                    JSON.parse(xhr.responseText).code === "CSRF_FAILED" &&
+                    xhr.responseJSON.code === "CSRF_FAILED" &&
                     reload_state.csrf_failed_handler !== undefined
                 ) {
                     reload_state.csrf_failed_handler();
@@ -192,7 +192,7 @@ export function xhr_error_message(message, xhr) {
     if (xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        const server_response_html = _.escape(JSON.parse(xhr.responseText).msg);
+        const server_response_html = _.escape(xhr.responseJSON.msg);
         if (message) {
             message += ": " + server_response_html;
         } else {
