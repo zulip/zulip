@@ -115,4 +115,5 @@ can schedule a message for next morning to avoid disturbing others.
 * [Message drafts](/help/view-and-edit-your-message-drafts)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
-* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Edit a message](/help/edit-a-message)
+* [Delete a message](/help/delete-a-message)

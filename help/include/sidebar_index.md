@@ -86,7 +86,7 @@
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [Edit a message](/help/edit-a-message)
-* [Delete a message](/help/edit-or-delete-a-message)
+* [Delete a message](/help/delete-a-message)
 * [Draft messages](/help/view-and-edit-your-message-drafts)
 * [Schedule a message](/help/schedule-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)

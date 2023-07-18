@@ -52,4 +52,5 @@ formatted, or to copy the Markdown source for a reply.
 ## Related articles
 
 * [Message formatting](/help/format-your-message-using-markdown)
-* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Edit a message](/help/edit-a-message)
+* [Delete a message](/help/delete-a-message)

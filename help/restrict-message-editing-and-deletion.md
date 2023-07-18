@@ -54,7 +54,8 @@ irretrievably) removes the message from Zulip.
 
 ## Related articles
 
-* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Edit a message](/help/edit-a-message)
+* [Delete a message](/help/delete-a-message)
 * [Delete a topic](/help/delete-a-topic)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Configure message retention policy](/help/message-retention-policy)

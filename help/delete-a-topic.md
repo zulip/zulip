@@ -47,6 +47,7 @@ attribute of messages in Zulip.
 
 ## Related articles
 
-* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Edit a message](/help/edit-a-message)
+* [Delete a message](/help/delete-a-message)
 * [Archive a stream](/help/archive-a-stream)
 * [Message retention policy](/help/message-retention-policy)

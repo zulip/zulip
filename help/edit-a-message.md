@@ -52,4 +52,4 @@ edit the content of a message sent by another user.
 
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)
-* [Delete a message](/help/edit-or-delete-a-message)
+* [Delete a message](/help/delete-a-message)
