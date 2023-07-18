@@ -106,3 +106,43 @@ export function disable_sub_setting_onchange(
         }
     }
 }
+
+export function get_custom_input_time_in_minutes(
+    custom_input_time_unit: string,
+    custom_input_time_value: number,
+): number {
+    switch (custom_input_time_unit) {
+        case "hours":
+            return custom_input_time_value * 60;
+        case "days":
+            return custom_input_time_value * 24 * 60;
+        case "weeks":
+            return custom_input_time_value * 7 * 24 * 60;
+        default:
+            return custom_input_time_value;
+    }
+}
+
+export function set_valid_till_text($elem: JQuery, valid_to_text: string): void {
+    if ($elem.val() === "custom") {
+        $elem.parent().find(".input-time-valid-till").hide();
+        $elem.parent().find(".custom-input-time-valid-till").text(valid_to_text);
+    } else {
+        $elem.parent().find(".input-time-valid-till").show();
+        $elem.parent().find(".input-time-valid-till").text(valid_to_text);
+    }
+}
+
+export function set_custom_time_inputs_visibility(
+    $elem: JQuery,
+    custom_input_time_unit: string,
+    custom_input_time_value: number,
+): void {
+    if ($elem.val() === "custom") {
+        $elem.parent().find(".custom-input-time-value").val(custom_input_time_value);
+        $elem.parent().find(".custom-input-time-unit").val(custom_input_time_unit);
+        $elem.parent().find(".custom-time-input-container").show();
+    } else {
+        $elem.parent().find(".custom-time-input-container").hide();
+    }
+}

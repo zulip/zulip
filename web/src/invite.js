@@ -18,6 +18,7 @@ import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -42,7 +43,7 @@ function get_common_invitation_data() {
         expires_in = JSON.stringify(null);
     } else if (expires_in === "custom") {
         expires_in = Number.parseFloat(
-            get_custom_input_time_in_minutes(
+            settings_ui.get_custom_input_time_in_minutes(
                 custom_expiration_time_unit,
                 custom_expiration_time_input,
             ),
@@ -109,7 +110,7 @@ function submit_invitation_form() {
             if ($("#expires_in").val() === "custom") {
                 // Hide the custom inputs if the custom input is set
                 // to one of the dropdown's standard options.
-                const time_in_minutes = get_custom_input_time_in_minutes(
+                const time_in_minutes = settings_ui.get_custom_input_time_in_minutes(
                     custom_expiration_time_unit,
                     custom_expiration_time_input,
                 );
@@ -213,39 +214,6 @@ function valid_to(expires_in) {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function get_custom_input_time_in_minutes(custom_input_time_unit, custom_input_time_value) {
-    switch (custom_input_time_unit) {
-        case "hours":
-            return custom_input_time_value * 60;
-        case "days":
-            return custom_input_time_value * 24 * 60;
-        case "weeks":
-            return custom_input_time_value * 7 * 24 * 60;
-        default:
-            return custom_input_time_value;
-    }
-}
-
-function set_valid_till_text($elem, valid_to_text) {
-    if ($elem.val() === "custom") {
-        $elem.parent().find(".input-time-valid-till").hide();
-        $elem.parent().find(".custom-input-time-valid-till").text(valid_to_text);
-    } else {
-        $elem.parent().find(".input-time-valid-till").show();
-        $elem.parent().find(".input-time-valid-till").text(valid_to_text);
-    }
-}
-
-function set_custom_time_inputs_visibility($elem, custom_input_time_unit, custom_input_time_value) {
-    if ($elem.val() === "custom") {
-        $elem.parent().find(".custom-input-time-value").val(custom_input_time_value);
-        $elem.parent().find(".custom-input-time-unit").val(custom_input_time_unit);
-        $elem.parent().find(".custom-time-input-container").show();
-    } else {
-        $elem.parent().find(".custom-time-input-container").hide();
-    }
-}
-
 function set_streams_to_join_list_visibility() {
     const default_streams_selected = $("#invite_select_default_streams").prop("checked");
     if (default_streams_selected) {
@@ -291,7 +259,7 @@ function open_invite_user_modal(e) {
 
         autosize($("#invitee_emails").trigger("focus"));
 
-        set_custom_time_inputs_visibility(
+        settings_ui.set_custom_time_inputs_visibility(
             $("#expires_in"),
             custom_expiration_time_unit,
             custom_expiration_time_input,
@@ -301,13 +269,13 @@ function open_invite_user_modal(e) {
         if ($("#expires_in").val() !== "custom") {
             expiration_time_in_minutes = $("#expires_in").val();
         } else {
-            expiration_time_in_minutes = get_custom_input_time_in_minutes(
+            expiration_time_in_minutes = settings_ui.get_custom_input_time_in_minutes(
                 custom_expiration_time_unit,
                 custom_expiration_time_input,
             );
         }
         const valid_to_text = valid_to(expiration_time_in_minutes);
-        set_valid_till_text($("#expires_in"), valid_to_text);
+        settings_ui.set_valid_till_text($("#expires_in"), valid_to_text);
 
         set_streams_to_join_list_visibility();
 
@@ -348,7 +316,7 @@ function open_invite_user_modal(e) {
         });
 
         $("#expires_in").on("change", () => {
-            set_custom_time_inputs_visibility(
+            settings_ui.set_custom_time_inputs_visibility(
                 $("#expires_in"),
                 custom_expiration_time_unit,
                 custom_expiration_time_input,
@@ -358,13 +326,13 @@ function open_invite_user_modal(e) {
             if ($("#expires_in").val() !== "custom") {
                 expiration_time_in_minutes = $("#expires_in").val();
             } else {
-                expiration_time_in_minutes = get_custom_input_time_in_minutes(
+                expiration_time_in_minutes = settings_ui.get_custom_input_time_in_minutes(
                     custom_expiration_time_unit,
                     custom_expiration_time_input,
                 );
             }
             const valid_to_text = valid_to(expiration_time_in_minutes);
-            set_valid_till_text($("#expires_in"), valid_to_text);
+            settings_ui.set_valid_till_text($("#expires_in"), valid_to_text);
         });
 
         $(".input-time-valid-till").text(valid_to($("#expires_in").val()));
@@ -384,7 +352,7 @@ function open_invite_user_modal(e) {
                 custom_expiration_time_unit = $("#custom-expiration-time-unit").val();
                 $(".custom-input-time-valid-till").text(
                     valid_to(
-                        get_custom_input_time_in_minutes(
+                        settings_ui.get_custom_input_time_in_minutes(
                             custom_expiration_time_unit,
                             custom_expiration_time_input,
                         ),
