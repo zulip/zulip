@@ -382,7 +382,8 @@ class TestFollowupEmails(ZulipTestCase):
         )
         self.assert_length(scheduled_emails, 3)
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/account_registered",
         )
         self.assertEqual(
             orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
@@ -407,7 +408,8 @@ class TestFollowupEmails(ZulipTestCase):
         )
         self.assert_length(scheduled_emails, 2)
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/account_registered",
         )
         self.assertEqual(
             orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
@@ -421,7 +423,8 @@ class TestFollowupEmails(ZulipTestCase):
         scheduled_emails = ScheduledEmail.objects.filter(users=iago).order_by("scheduled_timestamp")
         self.assert_length(scheduled_emails, 3)
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/account_registered",
         )
         self.assertEqual(
             orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
@@ -445,7 +448,8 @@ class TestFollowupEmails(ZulipTestCase):
         )
         self.assert_length(scheduled_emails, 2)
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/account_registered",
         )
         self.assertEqual(
             orjson.loads(scheduled_emails[1].data)["template_prefix"],
@@ -468,7 +472,8 @@ class TestFollowupEmails(ZulipTestCase):
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
         self.assert_length(scheduled_emails, 1)
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/account_registered",
         )
 
     def test_followup_emails_for_regular_realms(self) -> None:
@@ -481,7 +486,8 @@ class TestFollowupEmails(ZulipTestCase):
         assert scheduled_emails is not None
         self.assert_length(scheduled_emails, 2)
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/account_registered",
         )
         self.assertEqual(
             orjson.loads(scheduled_emails[1].data)["template_prefix"],
@@ -511,7 +517,8 @@ class TestFollowupEmails(ZulipTestCase):
         assert scheduled_emails is not None
         self.assert_length(scheduled_emails, 2)
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/account_registered",
         )
         self.assertEqual(
             orjson.loads(scheduled_emails[1].data)["template_prefix"],

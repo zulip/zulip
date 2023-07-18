@@ -802,7 +802,7 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
                 break
 
     send_future_email(
-        "zerver/emails/followup_day1",
+        "zerver/emails/account_registered",
         user.realm,
         to_user_ids=[user.id],
         from_name=from_name,

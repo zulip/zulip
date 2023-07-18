@@ -70,7 +70,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         with self.settings(DEVELOPMENT_LOG_EMAILS=True):
             enqueue_welcome_emails(hamlet)
         # TODO: Uncomment and replace with translation once we have German translations for the strings
-        # in followup_day1 emails.
+        # in account_registered emails.
         # check_translation("Viele Grüße", "")
 
 
