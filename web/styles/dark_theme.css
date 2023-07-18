@@ -525,7 +525,7 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
-    #search_arrows .pill,
+    #searchbox-input-container .pill,
     #compose-direct-recipient.pill-container .pill {
         color: inherit;
         border: 1px solid hsl(0deg 0% 0% / 50%);
@@ -533,7 +533,7 @@
         font-weight: 600;
     }
 
-    #search_arrows .pill:focus,
+    #searchbox-input-container .pill:focus,
     #compose-direct-recipient.pill-container .pill:focus {
         color: hsl(0deg 0% 100%);
         border: 1px solid hsl(176deg 78% 28% / 60%);
