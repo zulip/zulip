@@ -41,13 +41,22 @@ export function process_message(msg) {
     return conversation_data_updated;
 }
 
-function get_sorted_topics() {
+function get_sorted_topics(topic_map) {
     // Sort all recent topics by last message time.
-    return new Map([...topics.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id));
+    return new Map([...topic_map.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id));
 }
 
 export function get() {
-    return get_sorted_topics();
+    return get_sorted_topics(topics);
+}
+
+export function get_for_stream_id(stream_id) {
+    const stream_topics = new Map(
+        [...topics.entries()].filter(
+            (topic) => topic[1].type === "stream" && topic[0].startsWith(stream_id),
+        ),
+    );
+    return get_sorted_topics(stream_topics);
 }
 
 export function reify_message_id_if_available(opts) {

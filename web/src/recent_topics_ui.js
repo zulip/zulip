@@ -27,7 +27,7 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
-import {get, process_message, topics} from "./recent_topics_data";
+import {get, get_for_stream_id, process_message, topics} from "./recent_topics_data";
 import {
     get_key_from_message,
     get_topic_key,
@@ -307,6 +307,17 @@ export function process_messages(messages) {
 
     // Only rerender if conversation data actually changed.
     if (conversation_data_updated) {
+        const filter = narrow_state.filter();
+        if (filter !== undefined) {
+            const operators = filter.operators();
+            const is_stream_view = operators.length === 1 && operators[0].operator === "stream";
+            if (is_stream_view) {
+                const stream_name = operators[0].operand;
+                const stream_id = stream_data.get_stream_id(stream_name);
+                complete_rerender(stream_id);
+                return;
+            }
+        }
         complete_rerender();
     }
 }
@@ -810,15 +821,22 @@ function is_scroll_position_for_render(scroll_container) {
     );
 }
 
-export function complete_rerender() {
+export function complete_rerender(for_stream_id = null) {
     if (!is_visible()) {
         return;
     }
+    const is_stream_view = for_stream_id !== null;
 
     // Show topics list
-    const mapped_topic_values = [...get().values()];
+    let mapped_topic_values;
+    if (is_stream_view) {
+        mapped_topic_values = [...get_for_stream_id(for_stream_id).values()];
+    } else {
+        mapped_topic_values = [...get().values()];
+    }
 
     if (topics_widget) {
+        // TODO need to show/hide the DM button
         topics_widget.replace_list_data(mapped_topic_values);
         return;
     }
@@ -830,6 +848,7 @@ export function complete_rerender() {
         filter_pm: filters.has("include_private"),
         search_val: $("#recent_topics_search").val() || "",
         is_spectator: page_params.is_spectator,
+        is_stream_view,
     });
     $("#recent_topics_table").html(rendered_body);
 
@@ -875,18 +894,15 @@ export function complete_rerender() {
     });
 }
 
-export function show() {
+export function show(for_stream_id = null) {
     if (narrow.has_shown_message_list_view) {
         narrow.save_pre_narrow_offset_for_reload();
     }
 
-    if (is_visible()) {
-        // If we're already visible, E.g. because the user hit Esc
-        // while already in the recent topics view, do nothing.
-        return;
-    }
     // Hide selected elements in the left sidebar.
-    left_sidebar_navigation_area.narrow_to_recent_topics();
+    if (for_stream_id === null) {
+        left_sidebar_navigation_area.narrow_to_recent_topics();
+    }
     stream_list.handle_narrow_deactivated();
 
     // Hide "middle-column" which has html for rendering
@@ -902,13 +918,15 @@ export function show() {
     // function. So, we reuse it here.
     compose_closed_ui.update_buttons_for_recent_topics();
 
-    narrow_state.reset_current_filter();
+    if (for_stream_id === null) {
+        narrow_state.reset_current_filter();
+    }
     narrow.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
     pm_list.handle_narrow_deactivated();
     search.clear_search_form();
-    complete_rerender();
+    complete_rerender(for_stream_id);
     resize.update_recent_topics_filters_height();
 }
 

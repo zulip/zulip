@@ -20,7 +20,7 @@ function get_formatted_sub_count(sub_count) {
 
 function make_message_view_header(filter) {
     const message_view_header = {};
-    if (recent_topics_util.is_visible()) {
+    if (recent_topics_util.is_visible() && filter === undefined) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
             icon: "clock-o",

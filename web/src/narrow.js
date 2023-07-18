@@ -404,124 +404,137 @@ export function activate(raw_operators, opts) {
             previous_id: message_lists.current.selected_id(),
         });
 
-        if (opts.then_select_id > 0) {
-            // We override target_id in this case, since the user could be
-            // having a near: narrow auto-reloaded.
-            id_info.target_id = opts.then_select_id;
-            if (opts.then_select_offset === undefined) {
-                const $row = message_lists.current.get_row(opts.then_select_id);
-                if ($row.length > 0) {
-                    opts.then_select_offset = $row.get_offset_to_window().top;
+        const narrowing_to_recent_stream_topics =
+            operators.length === 1 && operators[0].operator === "stream";
+
+        if (!narrowing_to_recent_stream_topics) {
+            if (opts.then_select_id > 0) {
+                // We override target_id in this case, since the user could be
+                // having a near: narrow auto-reloaded.
+                id_info.target_id = opts.then_select_id;
+                if (opts.then_select_offset === undefined) {
+                    const $row = message_lists.current.get_row(opts.then_select_id);
+                    if ($row.length > 0) {
+                        opts.then_select_offset = $row.get_offset_to_window().top;
+                    }
                 }
             }
-        }
 
-        if (!was_narrowed_already) {
-            unread.set_messages_read_in_narrow(false);
+            if (!was_narrowed_already) {
+                unread.set_messages_read_in_narrow(false);
+            }
         }
 
         // IMPORTANT!  At this point we are heavily committed to
         // populating the new narrow, so we update our narrow_state.
         // From here on down, any calls to the narrow_state API will
         // reflect the upcoming narrow.
-        has_shown_message_list_view = true;
+        if (!narrowing_to_recent_stream_topics) {
+            has_shown_message_list_view = true;
+        }
         narrow_state.set_current_filter(filter);
 
-        const excludes_muted_topics = narrow_state.excludes_muted_topics();
+        if (narrowing_to_recent_stream_topics) {
+            const stream_name = operators[0].operand;
+            const stream_id = stream_data.get_sub(stream_name).stream_id;
+            recent_topics_ui.show(stream_id);
+        } else {
+            const excludes_muted_topics = narrow_state.excludes_muted_topics();
 
-        let msg_data = new MessageListData({
-            filter: narrow_state.filter(),
-            excludes_muted_topics,
-        });
-
-        // Populate the message list if we can apply our filter locally (i.e.
-        // with no backend help) and we have the message we want to select.
-        // Also update id_info accordingly.
-        // original back.
-        maybe_add_local_messages({
-            id_info,
-            msg_data,
-        });
-
-        if (!id_info.local_select_id) {
-            // If we're not actually read to select an ID, we need to
-            // trash the `MessageListData` object that we just constructed
-            // and pass an empty one to MessageList, because the block of
-            // messages in the MessageListData built inside
-            // maybe_add_local_messages is likely not be contiguous with
-            // the block we're about to request from the server instead.
-            msg_data = new MessageListData({
+            let msg_data = new MessageListData({
                 filter: narrow_state.filter(),
                 excludes_muted_topics,
             });
-        }
 
-        const msg_list = new message_list.MessageList({
-            data: msg_data,
-            table_name: "zfilt",
-        });
+            // Populate the message list if we can apply our filter locally (i.e.
+            // with no backend help) and we have the message we want to select.
+            // Also update id_info accordingly.
+            // original back.
+            maybe_add_local_messages({
+                id_info,
+                msg_data,
+            });
 
-        // Show the new set of messages.  It is important to set message_lists.current to
-        // the view right as it's being shown, because we rely on message_lists.current
-        // being shown for deciding when to condense messages.
-        $("body").addClass("narrowed_view");
-        $("#zfilt").addClass("focused_table");
-        $("#zhome").removeClass("focused_table");
-
-        message_lists.set_current(msg_list);
-
-        let then_select_offset;
-        if (id_info.target_id === id_info.final_select_id) {
-            then_select_offset = opts.then_select_offset;
-        }
-
-        const select_immediately = id_info.local_select_id !== undefined;
-
-        {
-            let anchor;
-
-            // Either we're trying to center the narrow around a
-            // particular message ID (which could be max_int), or we're
-            // asking the server to figure out for us what the first
-            // unread message is, and center the narrow around that.
-            switch (id_info.final_select_id) {
-                case undefined:
-                    anchor = "first_unread";
-                    break;
-                case -1:
-                    // This case should never happen in this code path; it's
-                    // here in case we choose to extract this as an
-                    // independent reusable function.
-                    anchor = "oldest";
-                    break;
-                case LARGER_THAN_MAX_MESSAGE_ID:
-                    anchor = "newest";
-                    break;
-                default:
-                    anchor = id_info.final_select_id;
+            if (!id_info.local_select_id) {
+                // If we're not actually read to select an ID, we need to
+                // trash the `MessageListData` object that we just constructed
+                // and pass an empty one to MessageList, because the block of
+                // messages in the MessageListData built inside
+                // maybe_add_local_messages is likely not be contiguous with
+                // the block we're about to request from the server instead.
+                msg_data = new MessageListData({
+                    filter: narrow_state.filter(),
+                    excludes_muted_topics,
+                });
             }
 
-            message_fetch.load_messages_for_narrow({
-                anchor,
-                cont() {
-                    if (!select_immediately) {
-                        update_selection({
-                            id_info,
-                            select_offset: then_select_offset,
-                            msg_list: message_lists.current,
-                        });
-                    }
-                },
-                msg_list,
+            const msg_list = new message_list.MessageList({
+                data: msg_data,
+                table_name: "zfilt",
             });
-        }
 
-        if (select_immediately) {
-            update_selection({
-                id_info,
-                select_offset: then_select_offset,
-                msg_list: message_lists.current,
-            });
+            // Show the new set of messages.  It is important to set message_lists.current to
+            // the view right as it's being shown, because we rely on message_lists.current
+            // being shown for deciding when to condense messages.
+            $("body").addClass("narrowed_view");
+            $("#zfilt").addClass("focused_table");
+            $("#zhome").removeClass("focused_table");
+
+            message_lists.set_current(msg_list);
+
+            let then_select_offset;
+            if (id_info.target_id === id_info.final_select_id) {
+                then_select_offset = opts.then_select_offset;
+            }
+
+            const select_immediately = id_info.local_select_id !== undefined;
+
+            {
+                let anchor;
+
+                // Either we're trying to center the narrow around a
+                // particular message ID (which could be max_int), or we're
+                // asking the server to figure out for us what the first
+                // unread message is, and center the narrow around that.
+                switch (id_info.final_select_id) {
+                    case undefined:
+                        anchor = "first_unread";
+                        break;
+                    case -1:
+                        // This case should never happen in this code path; it's
+                        // here in case we choose to extract this as an
+                        // independent reusable function.
+                        anchor = "oldest";
+                        break;
+                    case LARGER_THAN_MAX_MESSAGE_ID:
+                        anchor = "newest";
+                        break;
+                    default:
+                        anchor = id_info.final_select_id;
+                }
+
+                message_fetch.load_messages_for_narrow({
+                    anchor,
+                    cont() {
+                        if (!select_immediately) {
+                            update_selection({
+                                id_info,
+                                select_offset: then_select_offset,
+                                msg_list: message_lists.current,
+                            });
+                        }
+                    },
+                    msg_list,
+                });
+            }
+
+            if (select_immediately) {
+                update_selection({
+                    id_info,
+                    select_offset: then_select_offset,
+                    msg_list: message_lists.current,
+                });
+            }
         }
 
         // Put the narrow operators in the URL fragment.
