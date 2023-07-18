@@ -114,7 +114,7 @@ function submit_invitation_form() {
             }
         },
         error(xhr) {
-            if (xhr.responseJSON.errors === undefined) {
+            if (xhr.responseJSON?.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
                 ui_report.error("", xhr, $invite_status);
             } else {

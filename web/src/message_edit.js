@@ -693,13 +693,15 @@ export function toggle_resolve_topic(message_id, old_topic_name, report_errors_i
         url: "/json/messages/" + message_id,
         data: request,
         error(xhr) {
-            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
-                handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
-                return;
-            }
+            if (xhr.responseJSON) {
+                if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+                    handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
+                    return;
+                }
 
-            if (report_errors_in_global_banner) {
-                ui_report.generic_embed_error(xhr.responseJSON.msg, 3500);
+                if (report_errors_in_global_banner) {
+                    ui_report.generic_embed_error(xhr.responseJSON.msg, 3500);
+                }
             }
         },
     });
@@ -842,7 +844,7 @@ export function save_inline_topic_edit($row) {
         },
         error(xhr) {
             const $spinner = $row.find(".topic_edit_spinner");
-            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+            if (xhr.responseJSON?.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                 const allowed_message_id = xhr.responseJSON.first_message_id_allowed_to_move;
                 const send_notification_to_old_thread = false;
                 const send_notification_to_new_thread = false;
@@ -1223,7 +1225,7 @@ export function move_topic_containing_message_to_stream(
         },
         error(xhr) {
             reset_modal_ui();
-            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+            if (xhr.responseJSON?.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                 const allowed_message_id = xhr.responseJSON.first_message_id_allowed_to_move;
                 function handle_confirm() {
                     move_topic_containing_message_to_stream(

@@ -73,8 +73,7 @@ function open_linkifier_edit_form(linkifier_id) {
             },
             error_continuation(xhr) {
                 $change_linkifier_button.prop("disabled", false);
-                const response_text = xhr.responseJSON;
-                if (response_text.errors !== undefined) {
+                if (xhr.responseJSON?.errors) {
                     handle_linkifier_api_error(
                         xhr,
                         $pattern_status,
@@ -239,12 +238,14 @@ export function build_page() {
                 },
                 error(xhr) {
                     $add_linkifier_button.prop("disabled", false);
-                    handle_linkifier_api_error(
-                        xhr,
-                        $pattern_status,
-                        $template_status,
-                        $linkifier_status,
-                    );
+                    if (xhr.responseJSON?.errors) {
+                        handle_linkifier_api_error(
+                            xhr,
+                            $pattern_status,
+                            $template_status,
+                            $linkifier_status,
+                        );
+                    }
                 },
             });
         });
