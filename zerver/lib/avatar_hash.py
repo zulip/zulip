@@ -2,7 +2,6 @@ import hashlib
 
 from django.conf import settings
 
-from zerver.lib.utils import make_safe_digest
 from zerver.models import UserProfile
 
 
@@ -13,7 +12,7 @@ def gravatar_hash(email: str) -> str:
     # outlining internationalization of email addresses, and regardless if we
     # typo an address or someone manages to give us a non-ASCII address, let's
     # not error out on it.
-    return make_safe_digest(email.lower(), hashlib.md5)
+    return hashlib.md5(email.lower().encode()).hexdigest()
 
 
 def user_avatar_hash(uid: str) -> str:
@@ -24,7 +23,7 @@ def user_avatar_hash(uid: str) -> str:
     # used a hash of the email address, not the user ID, and we salted
     # it in order to make the hashing scheme different from Gravatar's.
     user_key = uid + settings.AVATAR_SALT
-    return make_safe_digest(user_key, hashlib.sha1)
+    return hashlib.sha1(user_key.encode()).hexdigest()
 
 
 def user_avatar_path(user_profile: UserProfile) -> str:
