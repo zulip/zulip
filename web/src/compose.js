@@ -595,7 +595,7 @@ export function initialize() {
             }
 
             function xhr_failure(xhr) {
-                const error = JSON.parse(xhr.responseText);
+                const error = xhr.responseJSON;
                 failure(error.msg);
             }
 

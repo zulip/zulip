@@ -114,16 +114,16 @@ function submit_invitation_form() {
             }
         },
         error(xhr) {
-            const arr = JSON.parse(xhr.responseText);
-            if (arr.errors === undefined) {
+            if (xhr.responseJSON.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
                 ui_report.error("", xhr, $invite_status);
             } else {
                 // Some users were not invited.
+                const response_body = xhr.responseJSON;
                 const invitee_emails_errored = [];
                 const error_list = [];
                 let is_invitee_deactivated = false;
-                for (const value of arr.errors) {
+                for (const value of response_body.errors) {
                     const [email, error_message, deactivated] = value;
                     error_list.push(`${email}: ${error_message}`);
                     if (deactivated) {
@@ -133,17 +133,17 @@ function submit_invitation_form() {
                 }
 
                 const error_response = render_invitation_failed_error({
-                    error_message: arr.msg,
+                    error_message: response_body.msg,
                     error_list,
                     is_admin: page_params.is_admin,
                     is_invitee_deactivated,
-                    license_limit_reached: arr.license_limit_reached,
+                    license_limit_reached: response_body.license_limit_reached,
                     has_billing_access: page_params.is_owner || page_params.is_billing_admin,
-                    daily_limit_reached: arr.daily_limit_reached,
+                    daily_limit_reached: response_body.daily_limit_reached,
                 });
                 ui_report.message(error_response, $invite_status, "alert-warning");
 
-                if (arr.sent_invitations) {
+                if (response_body.sent_invitations) {
                     $invitee_emails.val(invitee_emails_errored.join("\n"));
                 }
             }

@@ -699,8 +699,7 @@ export function toggle_resolve_topic(message_id, old_topic_name, report_errors_i
             }
 
             if (report_errors_in_global_banner) {
-                const error_msg = JSON.parse(xhr.responseText).msg;
-                ui_report.generic_embed_error(error_msg, 3500);
+                ui_report.generic_embed_error(xhr.responseJSON.msg, 3500);
             }
         },
     });

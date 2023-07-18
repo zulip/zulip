@@ -957,7 +957,7 @@ function ajaxSubscribe(stream, color, $stream_row) {
                 $("#create_stream_name").val("");
             }
 
-            const res = JSON.parse(xhr.responseText);
+            const res = xhr.responseJSON;
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
