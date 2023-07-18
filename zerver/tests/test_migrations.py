@@ -4,7 +4,9 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from datetime import datetime, timezone
 
+import orjson
 from django.db.migrations.state import StateApps
 
 from zerver.lib.test_classes import MigrationsTestCase
@@ -26,56 +28,75 @@ from zerver.lib.test_helpers import use_db_models
 # been tested for a migration being merged.
 
 
-class RealmPlaygroundURLPrefix(MigrationsTestCase):
-    migrate_from = "0462_realmplayground_url_template"
-    migrate_to = "0463_backfill_realmplayground_url_template"
+class ScheduledEmailData(MigrationsTestCase):
+    migrate_from = "0467_rename_extradata_realmauditlog_extra_data_json"
+    migrate_to = "0468_rename_followup_day_email_templates"
 
     @use_db_models
     def setUpBeforeMigration(self, apps: StateApps) -> None:
         iago = self.example_user("iago")
-        RealmPlayground = apps.get_model("zerver", "RealmPlayground")
+        ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
+        send_date = datetime(2025, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
 
-        urls = [
-            "http://example.com/",
-            "https://example.com/{",
-            "https://example.com/{}",
-            "https://example.com/{val}",
-            "https://example.com/{code}",
+        templates = [
+            ["zerver/emails/followup_day1", "a", True, 10],
+            ["zerver/emails/followup_day2", "b", False, 20],
+            ["zerver/emails/onboarding_zulip_guide", "c", True, 30],
         ]
-        self.realm_playground_ids = []
 
-        for index, url in enumerate(urls):
-            self.realm_playground_ids.append(
-                RealmPlayground.objects.create(
-                    realm=iago.realm,
-                    name=f"Playground {index}",
-                    pygments_language="Python",
-                    url_prefix=url,
-                    url_template=None,
-                ).id
-            )
-        self.realm_playground_ids.append(
-            RealmPlayground.objects.create(
+        for template in templates:
+            email_fields = {
+                "template_prefix": template[0],
+                "string_context": template[1],
+                "boolean_context": template[2],
+                "integer_context": template[3],
+            }
+
+            email = ScheduledEmail.objects.create(
+                type=1,
                 realm=iago.realm,
-                name="Existing Playground",
-                pygments_language="Python",
-                url_prefix="https://example.com",
-                url_template="https://example.com/{code}",
-            ).id
-        )
+                scheduled_timestamp=send_date,
+                data=orjson.dumps(email_fields).decode(),
+            )
+            email.users.add(iago.id)
 
-    def test_converted_url_templates(self) -> None:
-        RealmPlayground = self.apps.get_model("zerver", "RealmPlayground")
+    def test_updated_email_templates(self) -> None:
+        ScheduledEmail = self.apps.get_model("zerver", "ScheduledEmail")
+        send_date = datetime(2025, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
 
-        expected_urls = [
-            "http://example.com/{code}",
-            "https://example.com/%7B{code}",
-            "https://example.com/%7B%7D{code}",
-            "https://example.com/%7Bval%7D{code}",
-            "https://example.com/%7Bcode%7D{code}",
-            "https://example.com/{code}",
+        old_templates = [
+            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
         ]
 
-        for realm_playground_id, expected_url in zip(self.realm_playground_ids, expected_urls):
-            realm_playground = RealmPlayground.objects.get(id=realm_playground_id)
-            self.assertEqual(realm_playground.url_template, expected_url)
+        current_templates = [
+            "zerver/emails/account_registered",
+            "zerver/emails/onboarding_zulip_guide",
+            "zerver/emails/onboarding_zulip_topics",
+        ]
+
+        email_data = [
+            ["zerver/emails/account_registered", "a", True, 10],
+            ["zerver/emails/onboarding_zulip_topics", "b", False, 20],
+            ["zerver/emails/onboarding_zulip_guide", "c", True, 30],
+        ]
+
+        scheduled_emails = ScheduledEmail.objects.all()
+        self.assert_length(scheduled_emails, 3)
+
+        checked_emails = []
+        for email in scheduled_emails:
+            self.assertEqual(email.type, 1)
+            self.assertEqual(email.scheduled_timestamp, send_date)
+
+            updated_data = orjson.loads(email.data)
+            template_prefix = updated_data["template_prefix"]
+            self.assertFalse(template_prefix in old_templates)
+            for data in email_data:
+                if template_prefix == data[0]:
+                    self.assertEqual(updated_data["string_context"], data[1])
+                    self.assertEqual(updated_data["boolean_context"], data[2])
+                    self.assertEqual(updated_data["integer_context"], data[3])
+                    checked_emails.append(template_prefix)
+
+        self.assertEqual(current_templates, sorted(checked_emails))
