@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 import random
@@ -33,7 +34,7 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload.base import sanitize_name
-from zerver.lib.utils import make_safe_digest, process_list_in_batches
+from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
 
@@ -899,7 +900,7 @@ def map_receiver_id_to_recipient_id(
 def get_string_huddle_hash(id_list: List[str]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
-    return make_safe_digest(hash_key)
+    return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
 def categorize_channels_and_map_with_id(

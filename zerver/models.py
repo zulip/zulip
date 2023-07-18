@@ -1,5 +1,6 @@
 import ast
 import datetime
+import hashlib
 import secrets
 import time
 from contextlib import suppress
@@ -100,7 +101,7 @@ from zerver.lib.types import (
     UserFieldElement,
     Validator,
 )
-from zerver.lib.utils import generate_api_key, make_safe_digest
+from zerver.lib.utils import generate_api_key
 from zerver.lib.validator import (
     check_date,
     check_int,
@@ -2811,7 +2812,7 @@ def get_client(name: str) -> Client:
 
 
 def get_client_cache_key(name: str) -> str:
-    return f"get_client:{make_safe_digest(name)}"
+    return f"get_client:{hashlib.sha1(name.encode()).hexdigest()}"
 
 
 @cache_with_key(get_client_cache_key, timeout=3600 * 24 * 7)
@@ -4035,7 +4036,7 @@ class Huddle(models.Model):
 def get_huddle_hash(id_list: List[int]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
-    return make_safe_digest(hash_key)
+    return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
 def huddle_hash_cache_key(huddle_hash: str) -> str:

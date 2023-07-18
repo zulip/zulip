@@ -30,8 +30,6 @@ from django.http import HttpRequest
 from django_stubs_ext import QuerySetAny
 from typing_extensions import ParamSpec
 
-from zerver.lib.utils import make_safe_digest
-
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
@@ -190,7 +188,7 @@ def validate_cache_key(key: str) -> None:
     # and only "control" characters are strictly disallowed, see:
     # https://github.com/memcached/memcached/blob/master/doc/protocol.txt
     # However, limiting the characters we allow in keys simiplifies things,
-    # and anyway we use make_safe_digest when forming some keys to ensure
+    # and anyway we use a hash function when forming some keys to ensure
     # the resulting keys fit the regex below.
     # The regex checks "all characters between ! and ~ in the ascii table",
     # which happens to be the set of all "nice" ascii characters.
@@ -433,7 +431,7 @@ def bulk_cached_fetch(
 
 
 def preview_url_cache_key(url: str) -> str:
-    return f"preview_url:{make_safe_digest(url)}"
+    return f"preview_url:{hashlib.sha1(url.encode()).hexdigest()}"
 
 
 def display_recipient_cache_key(recipient_id: int) -> str:
@@ -447,7 +445,7 @@ def display_recipient_bulk_get_users_by_id_cache_key(user_id: int) -> str:
 
 
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
-    return f"user_profile:{make_safe_digest(email.strip())}:{realm_id}"
+    return f"user_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
 
 def user_profile_cache_key(email: str, realm: "Realm") -> str:
@@ -455,11 +453,11 @@ def user_profile_cache_key(email: str, realm: "Realm") -> str:
 
 
 def user_profile_delivery_email_cache_key(delivery_email: str, realm: "Realm") -> str:
-    return f"user_profile_by_delivery_email:{make_safe_digest(delivery_email.strip())}:{realm.id}"
+    return f"user_profile_by_delivery_email:{hashlib.sha1(delivery_email.strip().encode()).hexdigest()}:{realm.id}"
 
 
 def bot_profile_cache_key(email: str, realm_id: int) -> str:
-    return f"bot_profile:{make_safe_digest(email.strip())}"
+    return f"bot_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}"
 
 
 def user_profile_by_id_cache_key(user_profile_id: int) -> str:
@@ -700,7 +698,9 @@ def to_dict_cache_key(message: "Message", realm_id: Optional[int] = None) -> str
 
 
 def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> str:
-    return "open_graph_description_path:{}".format(make_safe_digest(request.META["PATH_INFO"]))
+    return "open_graph_description_path:{}".format(
+        hashlib.sha1(request.META["PATH_INFO"].encode()).hexdigest()
+    )
 
 
 def flush_message(*, instance: "Message", **kwargs: object) -> None:

@@ -1,21 +1,8 @@
-import hashlib
 import re
 import secrets
-from typing import TYPE_CHECKING, Callable, List, Optional, TypeVar
-
-if TYPE_CHECKING:
-    from hashlib import _Hash
+from typing import Callable, List, Optional, TypeVar
 
 T = TypeVar("T")
-
-
-def make_safe_digest(string: str, hash_func: "Callable[[bytes], _Hash]" = hashlib.sha1) -> str:
-    """
-    return a hex digest of `string`.
-    """
-    # hashlib.sha1, md5, etc. expect bytes, so non-ASCII strings must
-    # be encoded.
-    return hash_func(string.encode()).hexdigest()
 
 
 def generate_api_key() -> str:
