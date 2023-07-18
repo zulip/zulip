@@ -693,7 +693,7 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
         # as our goal is to maximize the chance that this email is near the top
         # of the user's inbox when the user sits down to deal with their inbox,
         # or comes in while they are dealing with their inbox.
-        "followup_day2": timedelta(days=2, hours=-1),
+        "onboarding_zulip_topics": timedelta(days=2, hours=-1),
         "onboarding_zulip_guide": timedelta(days=4, hours=-1),
     }
 
@@ -708,27 +708,27 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
 
     # User signed up on Tuesday
     if signup_day == 2:
-        # Send followup_day2 on Thursday
+        # Send onboarding_zulip_topics on Thursday
         # Send onboarding_zulip_guide on Monday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
 
     # User signed up on Wednesday
     if signup_day == 3:
-        # Send followup_day2 on Friday
+        # Send onboarding_zulip_topics on Friday
         # Send onboarding_zulip_guide on Tuesday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
 
     # User signed up on Thursday
     if signup_day == 4:
-        # Send followup_day2 on Monday
-        onboarding_emails["followup_day2"] = timedelta(days=4, hours=-1)
+        # Send onboarding_zulip_topics on Monday
+        onboarding_emails["onboarding_zulip_topics"] = timedelta(days=4, hours=-1)
         # Send onboarding_zulip_guide on Wednesday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
 
     # User signed up on Friday
     if signup_day == 5:
-        # Send followup_day2 on Tuesday
-        onboarding_emails["followup_day2"] = timedelta(days=4, hours=-1)
+        # Send onboarding_zulip_topics on Tuesday
+        onboarding_emails["onboarding_zulip_topics"] = timedelta(days=4, hours=-1)
         # Send onboarding_zulip_guide on Thursday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
 
@@ -829,9 +829,9 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
     onboarding_email_schedule = get_onboarding_email_schedule(user)
 
     if other_account_count == 0:
-        followup_day2_context = common_context(user)
+        onboarding_zulip_topics_context = common_context(user)
 
-        followup_day2_context.update(
+        onboarding_zulip_topics_context.update(
             unsubscribe_link=unsubscribe_link,
             move_messages_link=realm_url + "/help/move-content-to-another-topic",
             rename_topics_link=realm_url + "/help/rename-a-topic",
@@ -839,13 +839,13 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
         )
 
         send_future_email(
-            "zerver/emails/followup_day2",
+            "zerver/emails/onboarding_zulip_topics",
             user.realm,
             to_user_ids=[user.id],
             from_name=from_name,
             from_address=from_address,
-            context=followup_day2_context,
-            delay=onboarding_email_schedule["followup_day2"],
+            context=onboarding_zulip_topics_context,
+            delay=onboarding_email_schedule["onboarding_zulip_topics"],
         )
 
     # We only send the onboarding_zulip_guide email for a subset of Realm.ORG_TYPES
@@ -863,7 +863,7 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
     if onboarding_zulip_guide_url is not None:
         onboarding_zulip_guide_context = common_context(user)
         onboarding_zulip_guide_context.update(
-            # We use the same unsubscribe link in both followup_day2
+            # We use the same unsubscribe link in both onboarding_zulip_topics
             # and onboarding_zulip_guide as these links do not expire.
             unsubscribe_link=unsubscribe_link,
             organization_type=organization_type_reference,

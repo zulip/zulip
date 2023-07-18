@@ -38,7 +38,7 @@ is figuring out how to schedule it. There are 3 ways to schedule email.
   email.
 - Add it to a queue. An example is the `invitation` email.
 - Send it (approximately) at a specified time in the future, using
-  `send_future_email`. An example is the `followup_day2` email.
+  `send_future_email`. An example is the `onboarding_zulip_topics` email.
 
 Email takes about a quarter second per email to process and send. Generally
 speaking, if you're sending just one email, doing it in the current process

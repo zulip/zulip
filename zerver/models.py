@@ -4423,6 +4423,7 @@ class ScheduledMessage(models.Model):
 
 EMAIL_TYPES = {
     "account_registered": ScheduledEmail.WELCOME,
+    "onboarding_zulip_topics": ScheduledEmail.WELCOME,
     "followup_day1": ScheduledEmail.WELCOME,
     "followup_day2": ScheduledEmail.WELCOME,
     "onboarding_zulip_guide": ScheduledEmail.WELCOME,
