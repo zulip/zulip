@@ -85,14 +85,16 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
         },
         error(xhr) {
             view.waiting_for_server_request_ids.delete(reaction_request_id);
-            if (
-                xhr.responseJSON?.code === "REACTION_ALREADY_EXISTS" ||
-                xhr.responseJSON?.code === "REACTION_DOES_NOT_EXIST"
-            ) {
-                // Don't send error report for simple precondition failures caused by race
-                // conditions; the user already got what they wanted
-            } else {
-                blueslip.error(channel.xhr_error_message("Error sending reaction", xhr));
+            if (xhr.readyState !== 0) {
+                if (
+                    xhr.responseJSON?.code === "REACTION_ALREADY_EXISTS" ||
+                    xhr.responseJSON?.code === "REACTION_DOES_NOT_EXIST"
+                ) {
+                    // Don't send error report for simple precondition failures caused by race
+                    // conditions; the user already got what they wanted
+                } else {
+                    blueslip.error(channel.xhr_error_message("Error sending reaction", xhr));
+                }
             }
         },
     };

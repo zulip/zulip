@@ -583,20 +583,19 @@ export function initialize() {
                 $invite_row.remove();
             }
 
-            function failure(error_msg) {
+            function xhr_failure(xhr) {
+                let error_message = "Failed to subscribe user!";
+                if (xhr.responseJSON?.msg) {
+                    error_message = xhr.responseJSON.msg;
+                }
                 clear_invites();
                 compose_banner.show_error_message(
-                    error_msg,
+                    error_message,
                     compose_banner.CLASSNAMES.generic_compose_error,
                     $banner_container,
                     $("#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);
-            }
-
-            function xhr_failure(xhr) {
-                const error = xhr.responseJSON;
-                failure(error.msg);
             }
 
             const sub = sub_store.get(stream_id);

@@ -223,9 +223,12 @@ function add_new_members({pill_user_ids}) {
     }
 
     function invite_failure(xhr) {
-        const error = xhr.responseJSON;
+        let message = "Failed to subscribe user!";
+        if (xhr.responseJSON?.msg) {
+            message = xhr.responseJSON.msg;
+        }
         show_user_group_membership_request_result({
-            message: error.msg,
+            message,
             add_class: "text-error",
             remove_class: "text-success",
         });

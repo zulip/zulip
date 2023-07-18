@@ -580,8 +580,10 @@ export function set_up() {
                 $row.find("api_key_error").hide();
             },
             error(xhr) {
-                const $row = $(e.currentTarget).closest("li");
-                $row.find(".api_key_error").text(xhr.responseJSON.msg).show();
+                if (xhr.responseJSON?.msg) {
+                    const $row = $(e.currentTarget).closest("li");
+                    $row.find(".api_key_error").text(xhr.responseJSON.msg).show();
+                }
             },
         });
     });

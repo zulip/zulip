@@ -142,8 +142,10 @@ export function mark_all_as_read(args = {}) {
             dialog_widget.close_modal();
         },
         error(xhr) {
-            // If we hit the rate limit, just continue without showing any error.
-            if (xhr.responseJSON.code === "RATE_LIMIT_HIT") {
+            if (xhr.readyState === 0) {
+                // client cancelled the request
+            } else if (xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+                // If we hit the rate limit, just continue without showing any error.
                 const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
                 setTimeout(() => mark_all_as_read(args), milliseconds_to_wait);
             } else {
@@ -241,8 +243,10 @@ export function mark_as_unread_from_here(
             }
         },
         error(xhr) {
-            // If we hit the rate limit, just continue without showing any error.
-            if (xhr.responseJSON.code === "RATE_LIMIT_HIT") {
+            if (xhr.readyState === 0) {
+                // client cancelled the request
+            } else if (xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+                // If we hit the rate limit, just continue without showing any error.
                 const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
                 setTimeout(
                     () =>

@@ -24,7 +24,9 @@ function send_typing_notification_ajax(user_ids_array, operation) {
         },
         success() {},
         error(xhr) {
-            blueslip.warn("Failed to send typing event: " + xhr.responseText);
+            if (xhr.readyState !== 0) {
+                blueslip.warn("Failed to send typing event: " + xhr.responseText);
+            }
         },
     });
 }

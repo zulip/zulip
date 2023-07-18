@@ -66,10 +66,13 @@ export function post_hotspot_as_read(hotspot_name) {
         url: "/json/users/me/hotspots",
         data: {hotspot: hotspot_name},
         error(err) {
-            blueslip.error("Failed to fetch hotspots", {
-                status: err.status,
-                body: err.responseText,
-            });
+            if (err.readyState !== 0) {
+                blueslip.error("Failed to fetch hotspots", {
+                    readyState: err.readyState,
+                    status: err.status,
+                    body: err.responseText,
+                });
+            }
         },
     });
 }

@@ -118,9 +118,11 @@ function upload_avatar($file_input) {
             if (page_params.avatar_source === "G") {
                 $("#user-avatar-source").show();
             }
-            const $error = $("#user-avatar-upload-widget .image_file_input_error");
-            $error.text(xhr.responseJSON.msg);
-            $error.show();
+            if (xhr.responseJSON?.msg) {
+                const $error = $("#user-avatar-upload-widget .image_file_input_error");
+                $error.text(xhr.responseJSON.msg);
+                $error.show();
+            }
         },
     });
 }
@@ -490,7 +492,9 @@ export function set_up() {
                     $("#api_key_value").text(data.api_key);
                 },
                 error(xhr) {
-                    $("#user_api_key_error").text(xhr.responseJSON.msg).show();
+                    if (xhr.responseJSON?.msg) {
+                        $("#user_api_key_error").text(xhr.responseJSON.msg).show();
+                    }
                 },
             });
             e.preventDefault();
@@ -798,7 +802,7 @@ export function set_up() {
                         },
                     );
                     let rendered_error_msg;
-                    if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
+                    if (xhr.responseJSON?.code === "CANNOT_DEACTIVATE_LAST_USER") {
                         if (xhr.responseJSON.is_last_owner) {
                             rendered_error_msg = error_last_owner;
                         } else {
