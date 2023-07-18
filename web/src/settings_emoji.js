@@ -221,8 +221,6 @@ function show_modal() {
                 error(xhr) {
                     $("#dialog_error").hide();
                     dialog_widget.hide_dialog_spinner();
-                    const errors = JSON.parse(xhr.responseText).msg;
-                    xhr.responseText = JSON.stringify({msg: errors});
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $emoji_status);
                 },
             });

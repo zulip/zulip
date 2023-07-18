@@ -538,21 +538,14 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
 
                 assert.ok(!$("#dialog_error").visible());
             })();
-
             (function test_post_error() {
                 $("#dialog_error").show();
                 ui_report.error = (error_msg, error_obj, ele) => {
-                    const xhr = {
-                        responseText: '{"msg":"fake-msg"}',
-                    };
                     assert.equal(error_msg, "translated HTML: Failed");
-                    assert.deepEqual(error_obj, xhr);
+                    assert.deepEqual(error_obj, {responseJson: {msg: "fake-msg"}});
                     assert.equal(ele, $("#dialog_error"));
                 };
-                const xhr = {
-                    responseText: '{"msg":"fake-msg", "attrib":"val"}',
-                };
-                opts.error(xhr);
+                opts.error({responseJson: {msg: "fake-msg"}});
 
                 assert.ok(!$("#dialog_error").visible());
             })();
@@ -763,17 +756,11 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
                 const $user_group_error = $(user_group_selector + " .user-group-status");
                 $user_group_error.show();
                 ui_report.error = (error_msg, error_obj, ele) => {
-                    const xhr = {
-                        responseText: '{"msg":"fake-msg"}',
-                    };
                     assert.equal(error_msg, "translated HTML: Failed");
-                    assert.deepEqual(error_obj, xhr);
+                    assert.deepEqual(error_obj, {responseJson: {msg: "fake-msg"}});
                     assert.equal(ele, $user_group_error);
                 };
-                const xhr = {
-                    responseText: '{"msg":"fake-msg", "attrib":"val"}',
-                };
-                opts.error(xhr);
+                opts.error({responseJson: {msg: "fake-msg"}});
 
                 assert.ok($user_group_error.visible());
             })();
