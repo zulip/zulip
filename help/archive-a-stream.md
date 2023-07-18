@@ -34,6 +34,7 @@ than archiving them.
 
 ## Related articles
 
-* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Edit a message](/help/edit-a-message)
+* [Delete a message](/help/delete-a-message)
 * [Delete a topic](/help/delete-a-topic)
 * [Message retention policy](/help/message-retention-policy)

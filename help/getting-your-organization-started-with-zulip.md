@@ -91,7 +91,7 @@ stream](/help/create-a-stream#stream-options).
      Before inviting users, you may want to [delete any test messages][delete-message]
      or [topics](/help/delete-a-topic).
 
-[delete-message]: /help/edit-or-delete-a-message#delete-a-message-completely
+[delete-message]: /help/delete-a-message#delete-a-message-completely
 
 ### How to invite users to join
 

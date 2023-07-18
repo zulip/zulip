@@ -64,11 +64,12 @@ Standard hosting.
 if you discover a misconfiguration accidentally deleted content you
 meant to preserve, contact Zulip support promptly for assistance with
 restoration.  See the [deletion
-documentation](/help/edit-or-delete-a-message#delete-a-message-completely) for
+documentation](/help/delete-a-message#delete-a-message-completely) for
 more details on precisely how message deletion works in Zulip.
 
 ## Related articles
 
-* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Edit a message](/help/edit-a-message)
+* [Delete a message](/help/delete-a-message)
 * [Delete a topic](/help/delete-a-topic)
 * [Archive a stream](/help/archive-a-stream)
