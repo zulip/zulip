@@ -29,10 +29,13 @@ import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import {get, get_for_stream_id, process_message, topics} from "./recent_topics_data";
 import {
+    RECENT_CONVERSATIONS,
+    RECENT_STREAM_CONVERSATIONS,
     get_key_from_message,
     get_topic_key,
     is_in_focus,
     is_visible,
+    is_visible_for_stream,
     set_visible,
 } from "./recent_topics_util";
 import * as resize from "./resize";
@@ -704,6 +707,7 @@ export function update_filters_view() {
         filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
         is_spectator: page_params.is_spectator,
+        is_stream_view: is_visible_for_stream(),
     });
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
@@ -836,11 +840,16 @@ export function complete_rerender(for_stream_id = null) {
     }
 
     if (topics_widget) {
-        // TODO need to show/hide the DM button
+        if (is_stream_view) {
+            $(".include_private_filter").hide();
+        } else {
+            $(".include_private_filter").show();
+        }
         topics_widget.replace_list_data(mapped_topic_values);
         return;
     }
 
+    // TODO separate filters by view
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
@@ -909,7 +918,7 @@ export function show(for_stream_id = null) {
     // a messages narrow. We hide it and show recent topics.
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
-    set_visible(true);
+    set_visible(for_stream_id ? RECENT_STREAM_CONVERSATIONS : RECENT_CONVERSATIONS);
 
     unread_ui.hide_unread_banner();
 
@@ -946,7 +955,7 @@ export function hide() {
 
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
-    set_visible(false);
+    set_visible(null);
 
     // This solves a bug with message_view_header
     // being broken sometimes when we narrow

@@ -21,8 +21,6 @@ import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as recent_topics_ui from "./recent_topics_ui";
-import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
 import * as settings_config from "./settings_config";
@@ -302,54 +300,43 @@ export function cancel() {
 }
 
 export function respond_to_message(opts) {
-    let message;
     let msg_type;
-    if (recent_topics_util.is_visible()) {
-        message = recent_topics_ui.get_focused_row_message();
-        if (message === undefined) {
-            // Open empty compose with nothing pre-filled since
-            // user is not focused on any table row.
-            start("stream", {trigger: "recent_topics_nofocus"});
+    const message = message_lists.current.selected_message();
+
+    if (message === undefined) {
+        // empty narrow implementation
+        if (
+            !narrow_state.narrowed_by_pm_reply() &&
+            !narrow_state.narrowed_by_stream_reply() &&
+            !narrow_state.narrowed_by_topic_reply()
+        ) {
+            start("stream", {trigger: "empty_narrow_compose"});
             return;
         }
-    } else {
-        message = message_lists.current.selected_message();
+        const current_filter = narrow_state.filter();
+        const first_term = current_filter.operators()[0];
+        const first_operator = first_term.operator;
+        const first_operand = first_term.operand;
 
-        if (message === undefined) {
-            // empty narrow implementation
-            if (
-                !narrow_state.narrowed_by_pm_reply() &&
-                !narrow_state.narrowed_by_stream_reply() &&
-                !narrow_state.narrowed_by_topic_reply()
-            ) {
-                start("stream", {trigger: "empty_narrow_compose"});
-                return;
-            }
-            const current_filter = narrow_state.filter();
-            const first_term = current_filter.operators()[0];
-            const first_operator = first_term.operator;
-            const first_operand = first_term.operand;
-
-            if (first_operator === "stream" && !stream_data.is_subscribed_by_name(first_operand)) {
-                start("stream", {trigger: "empty_narrow_compose"});
-                return;
-            }
-
-            // Set msg_type to stream by default in the case of an empty
-            // home view.
-            msg_type = "stream";
-            if (narrow_state.narrowed_by_pm_reply()) {
-                msg_type = "private";
-            }
-
-            const new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
-            start(new_opts.message_type, new_opts);
+        if (first_operator === "stream" && !stream_data.is_subscribed_by_name(first_operand)) {
+            start("stream", {trigger: "empty_narrow_compose"});
             return;
         }
 
-        if (message_lists.current.can_mark_messages_read()) {
-            unread_ops.notify_server_message_read(message);
+        // Set msg_type to stream by default in the case of an empty
+        // home view.
+        msg_type = "stream";
+        if (narrow_state.narrowed_by_pm_reply()) {
+            msg_type = "private";
         }
+
+        const new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+        start(new_opts.message_type, new_opts);
+        return;
+    }
+
+    if (message_lists.current.can_mark_messages_read()) {
+        unread_ops.notify_server_message_read(message);
     }
 
     // Important note: A reply_type of 'personal' is for the R hotkey

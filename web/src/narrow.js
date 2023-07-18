@@ -235,6 +235,8 @@ export function activate(raw_operators, opts) {
 
         const filter = new Filter(raw_operators);
         const operators = filter.operators();
+        const narrowing_to_recent_stream_topics =
+            operators.length === 1 && operators[0].operator === "stream";
 
         // These two narrowing operators specify what message should be
         // selected and should be the center of the narrow.
@@ -378,7 +380,7 @@ export function activate(raw_operators, opts) {
         // recursively.
         reset_ui_state();
 
-        if (coming_from_recent_topics) {
+        if (coming_from_recent_topics && !narrowing_to_recent_stream_topics) {
             recent_topics_ui.hide();
         } else {
             // If recent topics was not visible, then we are switching
@@ -403,9 +405,6 @@ export function activate(raw_operators, opts) {
             trigger: opts ? opts.trigger : undefined,
             previous_id: message_lists.current.selected_id(),
         });
-
-        const narrowing_to_recent_stream_topics =
-            operators.length === 1 && operators[0].operator === "stream";
 
         if (!narrowing_to_recent_stream_topics) {
             if (opts.then_select_id > 0) {

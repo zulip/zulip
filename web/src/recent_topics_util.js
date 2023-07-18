@@ -4,14 +4,20 @@ import * as compose_state from "./compose_state";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 
-let is_rt_visible = false;
+export const RECENT_CONVERSATIONS = "RECENT_CONVERSATIONS";
+export const RECENT_STREAM_CONVERSATIONS = "RECENT_STREAM_CONVERSATIONS";
+let is_rt_visible = null;
 
 export function set_visible(value) {
     is_rt_visible = value;
 }
 
 export function is_visible() {
-    return is_rt_visible;
+    return is_rt_visible !== null;
+}
+
+export function is_visible_for_stream() {
+    return is_rt_visible === RECENT_STREAM_CONVERSATIONS;
 }
 
 export function is_in_focus() {

@@ -20,6 +20,7 @@ function get_formatted_sub_count(sub_count) {
 
 function make_message_view_header(filter) {
     const message_view_header = {};
+    // Recent topics for streams has a stream header instead.
     if (recent_topics_util.is_visible() && filter === undefined) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
