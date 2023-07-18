@@ -1,10 +1,8 @@
 from typing import Any, Dict, Optional
 
-from django.utils.translation import gettext as _
-
 from zerver.actions.create_user import create_historical_user_messages
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import ReactionExistsError
 from zerver.lib.message import access_message, update_to_dict_cache
 from zerver.lib.stream_subscription import subscriber_ids_with_stream_history_access
 from zerver.models import Message, Reaction, Recipient, Stream, UserMessage, UserProfile
@@ -115,7 +113,7 @@ def check_add_reaction(
         emoji_code=emoji_code,
         reaction_type=reaction_type,
     ).exists():
-        raise JsonableError(_("Reaction already exists."))
+        raise ReactionExistsError
 
     query = Reaction.objects.filter(
         message=message, emoji_code=emoji_code, reaction_type=reaction_type

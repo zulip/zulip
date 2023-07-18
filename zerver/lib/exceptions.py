@@ -40,6 +40,8 @@ class ErrorCode(Enum):
     UNAUTHORIZED = auto()
     REQUEST_TIMEOUT = auto()
     MOVE_MESSAGES_TIME_LIMIT_EXCEEDED = auto()
+    REACTION_ALREADY_EXISTS = auto()
+    REACTION_DOES_NOT_EXIST = auto()
 
 
 class JsonableError(Exception):
@@ -503,3 +505,25 @@ class MessageMoveError(JsonableError):
         return _(
             "You only have permission to move the {total_messages_allowed_to_move}/{total_messages_in_topic} most recent messages in this topic."
         )
+
+
+class ReactionExistsError(JsonableError):
+    code = ErrorCode.REACTION_ALREADY_EXISTS
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Reaction already exists.")
+
+
+class ReactionDoesNotExistError(JsonableError):
+    code = ErrorCode.REACTION_DOES_NOT_EXIST
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Reaction doesn't exist.")
