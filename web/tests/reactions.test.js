@@ -268,7 +268,7 @@ test("sending", ({override, override_rewire}) => {
         // Since this path calls blueslip.warn, we need to handle it.
         blueslip.expect("error", "XHR error message.");
         channel.xhr_error_message = () => "XHR error message.";
-        args.error();
+        args.error({responseJSON: {msg: "Some error message"}});
     }
     emoji_name = "alien"; // not set yet
     {
