@@ -386,7 +386,8 @@ class TestFollowupEmails(ZulipTestCase):
             "zerver/emails/account_registered",
         )
         self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_topics",
         )
         self.assertEqual(
             orjson.loads(scheduled_emails[2].data)["template_prefix"],
@@ -412,7 +413,8 @@ class TestFollowupEmails(ZulipTestCase):
             "zerver/emails/account_registered",
         )
         self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_topics",
         )
 
         ScheduledEmail.objects.all().delete()
@@ -427,7 +429,8 @@ class TestFollowupEmails(ZulipTestCase):
             "zerver/emails/account_registered",
         )
         self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_topics",
         )
         self.assertEqual(
             orjson.loads(scheduled_emails[2].data)["template_prefix"],
@@ -574,9 +577,9 @@ class TestFollowupEmailDelay(ZulipTestCase):
         user_profile.date_joined = dates_joined["Monday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
 
-        # followup_day2 email sent on Wednesday
+        # onboarding_zulip_topics email sent on Wednesday
         self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
+            onboarding_email_schedule["onboarding_zulip_topics"],
             days_delayed["2"],
         )
         self.assertEqual((dates_joined["Monday"] + days_delayed["2"]).isoweekday(), 3)
@@ -592,9 +595,9 @@ class TestFollowupEmailDelay(ZulipTestCase):
         user_profile.date_joined = dates_joined["Tuesday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
 
-        # followup_day2 email sent on Thursday
+        # onboarding_zulip_topics email sent on Thursday
         self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
+            onboarding_email_schedule["onboarding_zulip_topics"],
             days_delayed["2"],
         )
         self.assertEqual((dates_joined["Tuesday"] + days_delayed["2"]).isoweekday(), 4)
@@ -610,9 +613,9 @@ class TestFollowupEmailDelay(ZulipTestCase):
         user_profile.date_joined = dates_joined["Wednesday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
 
-        # followup_day2 email sent on Friday
+        # onboarding_zulip_topics email sent on Friday
         self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
+            onboarding_email_schedule["onboarding_zulip_topics"],
             days_delayed["2"],
         )
         self.assertEqual((dates_joined["Wednesday"] + days_delayed["2"]).isoweekday(), 5)
@@ -628,9 +631,9 @@ class TestFollowupEmailDelay(ZulipTestCase):
         user_profile.date_joined = dates_joined["Thursday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
 
-        # followup_day2 email sent on Monday
+        # onboarding_zulip_topics email sent on Monday
         self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
+            onboarding_email_schedule["onboarding_zulip_topics"],
             days_delayed["4"],
         )
         self.assertEqual((dates_joined["Thursday"] + days_delayed["4"]).isoweekday(), 1)
@@ -646,9 +649,9 @@ class TestFollowupEmailDelay(ZulipTestCase):
         user_profile.date_joined = dates_joined["Friday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
 
-        # followup_day2 email sent on Tuesday
+        # onboarding_zulip_topics email sent on Tuesday
         self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
+            onboarding_email_schedule["onboarding_zulip_topics"],
             days_delayed["4"],
         )
         self.assertEqual((dates_joined["Friday"] + days_delayed["4"]).isoweekday(), 2)
@@ -664,9 +667,9 @@ class TestFollowupEmailDelay(ZulipTestCase):
         user_profile.date_joined = dates_joined["Saturday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
 
-        # followup_day2 email sent on Monday
+        # onboarding_zulip_topics email sent on Monday
         self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
+            onboarding_email_schedule["onboarding_zulip_topics"],
             days_delayed["2"],
         )
         self.assertEqual((dates_joined["Saturday"] + days_delayed["2"]).isoweekday(), 1)
@@ -682,9 +685,9 @@ class TestFollowupEmailDelay(ZulipTestCase):
         user_profile.date_joined = dates_joined["Sunday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
 
-        # followup_day2 email sent on Tuesday
+        # onboarding_zulip_topics email sent on Tuesday
         self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
+            onboarding_email_schedule["onboarding_zulip_topics"],
             days_delayed["2"],
         )
         self.assertEqual((dates_joined["Sunday"] + days_delayed["2"]).isoweekday(), 2)
@@ -703,9 +706,9 @@ class TestFollowupEmailDelay(ZulipTestCase):
         user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
 
-        # followup_day2 email sent on Monday
+        # onboarding_zulip_topics email sent on Monday
         self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
+            onboarding_email_schedule["onboarding_zulip_topics"],
             days_delayed["4"],
         )
 

@@ -323,7 +323,7 @@ class RealmTest(ZulipTestCase):
     def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
         user = self.example_user("hamlet")
         send_future_email(
-            "zerver/emails/followup_day2",
+            "zerver/emails/onboarding_zulip_topics",
             user.realm,
             to_user_ids=[user.id],
             delay=datetime.timedelta(hours=1),
