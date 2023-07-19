@@ -4,7 +4,7 @@ import secrets
 import urllib
 from datetime import datetime
 from mimetypes import guess_type
-from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, List, Literal, Optional, Tuple
 
 import boto3
 import botocore
@@ -71,6 +71,14 @@ def upload_image_to_s3(
     content_type: Optional[str],
     user_profile: UserProfile,
     contents: bytes,
+    storage_class: Literal[
+        "GLACIER_IR",
+        "INTELLIGENT_TIERING",
+        "ONEZONE_IA",
+        "REDUCED_REDUNDANCY",
+        "STANDARD",
+        "STANDARD_IA",
+    ] = "STANDARD",
 ) -> None:
     key = bucket.Object(file_name)
     metadata = {
@@ -89,6 +97,7 @@ def upload_image_to_s3(
         Metadata=metadata,
         ContentType=content_type,
         ContentDisposition=content_disposition,
+        StorageClass=storage_class,
     )
 
 
@@ -224,6 +233,7 @@ class S3UploadBackend(ZulipUploadBackend):
             content_type,
             user_profile,
             file_data,
+            settings.S3_UPLOADS_STORAGE_CLASS,
         )
 
         create_attachment(
