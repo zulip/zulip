@@ -340,9 +340,11 @@ export function build_move_topic_to_stream_popover(
         stream_bar.decorate(stream_name, $stream_header_colorblock);
         const stream = stream_data.get_sub_by_name(stream_name);
         if (stream === undefined) {
-            $("#move_topic_stream_name").text($t({defaultMessage: "Select a stream"}));
+            $("#move_topic_to_stream_widget .dropdown_widget_value").text(
+                $t({defaultMessage: "Select a stream"}),
+            );
         } else {
-            $("#move_topic_stream_name").html(
+            $("#move_topic_to_stream_widget .dropdown_widget_value").html(
                 render_inline_decorated_stream_name({stream, show_colored_icon: true}),
             );
         }
@@ -391,28 +393,23 @@ export function build_move_topic_to_stream_popover(
                 }
                 return stream_data.can_post_messages_in_stream(stream);
             });
-        dropdown_widget.setup(
-            {
-                target: "#move_topic_stream_widget",
+
+        new dropdown_widget.DropdownWidget({
+            widget_name: "move_topic_to_stream",
+            get_options: streams_list_options,
+            item_click_callback: move_topic_on_update,
+            $events_container: $("#move_topic_modal"),
+            tippy_props: {
                 // Overlap dropdown search input with stream selection button.
                 placement: "bottom-start",
                 offset: [0, -30],
             },
-            streams_list_options,
-            move_topic_on_update,
-        );
+        }).setup();
 
         render_selected_stream();
         $("#select_stream_widget .dropdown-toggle").prop("disabled", disable_stream_input);
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(stream_widget_value);
-        });
-        $(".move-topic-dropdown").on("keydown", (e) => {
-            if (e.key === "Enter") {
-                $("#move_topic_stream_widget").trigger("click");
-                e.stopPropagation();
-                e.preventDefault();
-            }
         });
     }
 

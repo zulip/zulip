@@ -162,7 +162,7 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
             return private_message_recipient().length === 0;
         case "stream_message_recipient_topic":
             return topic() === "";
-        case "compose_select_recipient_name":
+        case "compose_select_recipient_widget_wrapper":
             return stream_name() === "";
     }
 

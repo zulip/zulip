@@ -30,7 +30,7 @@ function add_choice_row($widget) {
 function get_chosen_default_streams() {
     // Return the set of stream id's of streams chosen in the default stream modal.
     return new Set(
-        $("#default-stream-choices .choice-row .stream_name")
+        $("#default-stream-choices .choice-row .dropdown_widget_value")
             .map((_i, elem) => $(elem).data("stream-id")?.toString())
             .get(),
     );
@@ -39,7 +39,7 @@ function get_chosen_default_streams() {
 function create_choice_row() {
     const $container = $("#default-stream-choices");
     const value = settings_profile_fields.get_value_for_new_option("#default-stream-choices");
-    const stream_dropdown_widget_name = `select_default_stream_${value}_widget`;
+    const stream_dropdown_widget_name = `select_default_stream_${value}`;
     const row = render_default_stream_choice({value, stream_dropdown_widget_name});
     $container.append(row);
 
@@ -57,8 +57,8 @@ function create_choice_row() {
         const selected_stream_name = $selected_stream.attr("data-name");
         const selected_stream_id = Number.parseInt($selected_stream.data("unique-id"), 10);
 
-        const $stream_dropdown_widget = $(`#${CSS.escape(stream_dropdown_widget_name)}`);
-        const $stream_name = $stream_dropdown_widget.find(".stream_name");
+        const $stream_dropdown_widget = $(`#${CSS.escape(stream_dropdown_widget_name)}_widget`);
+        const $stream_name = $stream_dropdown_widget.find(".dropdown_widget_value");
         $stream_name.text(selected_stream_name);
         $stream_name.data("stream-id", selected_stream_id);
 
@@ -69,17 +69,15 @@ function create_choice_row() {
         event.preventDefault();
     }
 
-    dropdown_widget.setup(
-        {
-            target: `#${stream_dropdown_widget_name}`,
-            placement: "bottom-start",
-        },
+    new dropdown_widget.DropdownWidget({
+        widget_name: stream_dropdown_widget_name,
         get_options,
         item_click_callback,
-        {
-            show_on_target_enter_keypress: true,
+        $events_container: $container,
+        tippy_props: {
+            placement: "bottom-start",
         },
-    );
+    }).setup();
 }
 
 const meta = {

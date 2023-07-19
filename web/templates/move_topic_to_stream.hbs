@@ -9,15 +9,7 @@
     {{/if}}
     <div class="topic_stream_edit_header">
         {{#unless only_topic_edit}}
-        <div class="move-topic-dropdown" tabindex="0">
-            <div class="stream_header_colorblock"></div>
-            <button id="move_topic_stream_widget" class="dropdown-widget-button" type="button" tabindex="-1">
-                <span id="move_topic_stream_name">
-                    {{t 'Select a stream'}}
-                </span>
-                <i class="fa fa-chevron-down"></i>
-            </button>
-        </div>
+        {{> dropdown_widget_with_stream_colorblock widget_name="move_topic_to_stream"}}
         <i class="fa fa-angle-right" aria-hidden="true"></i>
         {{/unless}}
         <input name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input" autocomplete="off" value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} />
