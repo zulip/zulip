@@ -16,9 +16,6 @@ const realm_icon = mock_esm("../src/realm_icon");
 const channel = mock_esm("../src/channel");
 
 mock_esm("../src/csrf", {csrf_token: "token-stub"});
-mock_esm("../src/list_widget", {
-    create: () => ({init: noop}),
-});
 mock_esm("../src/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
@@ -26,10 +23,9 @@ mock_esm("../src/loading", {
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
-const stream_settings_data = zrequire("stream_settings_data");
 const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
-const dropdown_list_widget = zrequire("dropdown_list_widget");
+const dropdown_widget = zrequire("dropdown_widget");
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -511,10 +507,9 @@ test("set_up", ({override, override_rewire}) => {
         upload_realm_logo_or_icon = f;
     };
 
-    override_rewire(dropdown_list_widget, "DropdownListWidget", () => ({
+    override_rewire(dropdown_widget, "DropdownWidget", () => ({
         setup: noop,
         render: noop,
-        update: noop,
     }));
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
         $.create("<stub edit limit custom input parent>"),
@@ -766,16 +761,10 @@ test("test get_sorted_options_list", () => {
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
-test("misc", ({override_rewire, mock_template}) => {
+test("misc", () => {
     page_params.is_admin = false;
     $("#user-avatar-upload-widget").length = 1;
     $("#user_details_section").length = 1;
-
-    const $stub_notification_disable_parent = $.create("<stub notification_disable parent");
-    $stub_notification_disable_parent.set_find_results(
-        ".dropdown_list_reset_button",
-        $.create("<disable link>"),
-    );
 
     page_params.realm_name_changes_disabled = false;
     page_params.server_name_changes_disabled = false;
@@ -837,64 +826,4 @@ test("misc", ({override_rewire, mock_template}) => {
 
     settings_account.update_avatar_change_display();
     assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
-
-    override_rewire(stream_settings_data, "get_streams_for_settings_page", () => [
-        {name: "some_stream", stream_id: 75, invite_only: true, color: "red"},
-        {name: "some_stream", stream_id: 42, color: "blue"},
-    ]);
-
-    // Set stubs for dropdown_list_widget:
-    const widget_settings = [
-        "realm_notifications_stream_id",
-        "realm_signup_notifications_stream_id",
-        "realm_default_code_block_language",
-    ];
-    const $dropdown_list_parent = $.create("<list parent>");
-    $dropdown_list_parent.set_find_results(
-        ".dropdown_list_reset_button",
-        $.create("<disable button>"),
-    );
-    for (const name of widget_settings) {
-        const $elem = $.create(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
-        $elem.closest = () => $dropdown_list_parent;
-    }
-
-    // We do not define any settings we need in page_params yet, but we don't need to for this test.
-    blueslip.expect(
-        "warn",
-        "dropdown-list-widget: Called without a default value; using null value",
-        3,
-    );
-    settings_org.init_dropdown_widgets();
-
-    let setting_name = "realm_notifications_stream_id";
-    let $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
-    $elem.closest = () => $stub_notification_disable_parent;
-    let selected_stream_id = 42;
-    mock_template("inline_decorated_stream_name.hbs", true, (data, html) => {
-        assert.equal(data.stream.stream_id, selected_stream_id);
-        return html;
-    });
-
-    settings_org.notifications_stream_widget.render(42);
-    assert.ok($elem.html().indexOf("some_stream") > 0);
-    assert.ok($elem.html().indexOf("zulip-icon-hashtag") > 0);
-    assert.ok(!$elem.hasClass("text-warning"));
-
-    settings_org.notifications_stream_widget.render(undefined);
-    assert.equal($elem.text(), "translated: Disabled");
-    assert.ok($elem.hasClass("text-warning"));
-
-    setting_name = "realm_signup_notifications_stream_id";
-    $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
-    $elem.closest = () => $stub_notification_disable_parent;
-    selected_stream_id = 75;
-    settings_org.signup_notifications_stream_widget.render(75);
-    assert.ok($elem.html().indexOf("some_stream") > 0);
-    assert.ok($elem.html().indexOf("zulip-icon-lock") > 0);
-    assert.ok(!$elem.hasClass("text-warning"));
-
-    settings_org.signup_notifications_stream_widget.render(undefined);
-    assert.equal($elem.text(), "translated: Disabled");
-    assert.ok($elem.hasClass("text-warning"));
 });

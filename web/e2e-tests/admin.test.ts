@@ -30,58 +30,33 @@ async function submit_notifications_stream_settings(page: Page): Promise<void> {
 }
 
 async function test_change_new_stream_notifications_setting(page: Page): Promise<void> {
-    await page.click("#realm_notifications_stream_id_widget button.dropdown-toggle");
-    await page.waitForSelector("#realm_notifications_stream_id_widget ul.dropdown-menu", {
+    await page.click("#realm_notifications_stream_id_widget.dropdown-widget-button");
+    await page.waitForSelector(".dropdown-list-container", {
         visible: true,
     });
 
-    await page.type(
-        "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
-        "rome",
-    );
+    await page.type(".dropdown-list-search-input", "rome");
 
     const rome_in_dropdown = await page.waitForSelector(
-        `xpath///*[@id="realm_notifications_stream_id_widget"]//*[${common.has_class_x(
-            "dropdown-list-body",
-        )} and count(li)=1]/li[normalize-space()="Rome"]`,
+        `xpath///*[${common.has_class_x("list-item")}][normalize-space()="Rome"]`,
         {visible: true},
     );
     assert.ok(rome_in_dropdown);
     await rome_in_dropdown.click();
 
     await submit_notifications_stream_settings(page);
-
-    const disable_stream_notifications =
-        "#realm_notifications_stream_id_widget  .dropdown_list_reset_button";
-    await page.waitForSelector(disable_stream_notifications, {visible: true});
-    await page.click(disable_stream_notifications);
-    await submit_notifications_stream_settings(page);
 }
 
 async function test_change_signup_notifications_stream(page: Page): Promise<void> {
     console.log('Changing signup notifications stream to Verona by filtering with "verona"');
 
-    await page.click("#id_realm_signup_notifications_stream_id > button.dropdown-toggle");
-    await page.waitForSelector(
-        "#realm_signup_notifications_stream_id_widget  .dropdown-search > input[type=text]",
-        {visible: true},
-    );
+    await page.click("#realm_signup_notifications_stream_id_widget");
+    await page.waitForSelector(".dropdown-list-search-input", {visible: true});
 
-    await page.type(
-        "#realm_signup_notifications_stream_id_widget  .dropdown-search > input[type=text]",
-        "verona",
-    );
-    await page.waitForSelector(
-        "#realm_signup_notifications_stream_id_widget  .dropdown-list-body > li.list_item",
-        {visible: true},
-    );
+    await page.type(".dropdown-list-search-input", "verona");
+    await page.waitForSelector(".dropdown-list .list-item", {visible: true});
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
-    await submit_notifications_stream_settings(page);
-
-    const disable_signup_notifications =
-        "#realm_signup_notifications_stream_id_widget  .dropdown_list_reset_button";
-    await page.click(disable_signup_notifications);
     await submit_notifications_stream_settings(page);
 }
 
