@@ -140,31 +140,13 @@ def cache_with_key(
     def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         @wraps(func)
         def func_with_caching(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
-            key = keyfunc(*args, **kwargs)
-
-            try:
-                val = cache_get(key, cache_name=cache_name)
-            except InvalidCacheKeyError:
-                stack_trace = traceback.format_exc()
-                log_invalid_cache_keys(stack_trace, [key])
-                return func(*args, **kwargs)
-
-            # Values are singleton tuples so that we can distinguish
-            # a result of None from a missing key.
-            if val is not None:
-                return val[0]
-
+            t = time.time()
             val = func(*args, **kwargs)
-            if isinstance(val, QuerySetAny):
-                logging.error(
-                    "cache_with_key attempted to store a full QuerySet object -- declining to cache",
-                    stack_info=True,
-                )
-            else:
-                cache_set(key, val, cache_name=cache_name, timeout=timeout)
+            print(format_time(time.time() - t), "intentional cache miss", func.__name__, args)
 
             return val
 
+        print("No longer caching", func.__name__)
         return func_with_caching
 
     return decorator
@@ -203,34 +185,14 @@ def validate_cache_key(key: str) -> None:
 def cache_set(
     key: str, val: Any, cache_name: Optional[str] = None, timeout: Optional[int] = None
 ) -> None:
-    final_key = KEY_PREFIX + key
-    validate_cache_key(final_key)
-
-    remote_cache_stats_start()
-    cache_backend = get_cache_backend(cache_name)
-    cache_backend.set(final_key, (val,), timeout=timeout)
-    remote_cache_stats_finish()
+    print("not gonna set", key)
 
 
 def cache_get(key: str, cache_name: Optional[str] = None) -> Any:
-    final_key = KEY_PREFIX + key
-    validate_cache_key(final_key)
-
-    remote_cache_stats_start()
-    cache_backend = get_cache_backend(cache_name)
-    ret = cache_backend.get(final_key)
-    remote_cache_stats_finish()
-    return ret
-
+    print("not gonna get", key)
 
 def cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Dict[str, Any]:
-    keys = [KEY_PREFIX + key for key in keys]
-    for key in keys:
-        validate_cache_key(key)
-    remote_cache_stats_start()
-    ret = get_cache_backend(cache_name).get_many(keys)
-    remote_cache_stats_finish()
-    return {key[len(KEY_PREFIX) :]: value for key, value in ret.items()}
+    print("not gonna get", keys)
 
 
 def safe_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Dict[str, Any]:
@@ -253,15 +215,7 @@ def safe_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Di
 def cache_set_many(
     items: Dict[str, Any], cache_name: Optional[str] = None, timeout: Optional[int] = None
 ) -> None:
-    new_items = {}
-    for key in items:
-        new_key = KEY_PREFIX + key
-        validate_cache_key(new_key)
-        new_items[new_key] = items[key]
-    items = new_items
-    remote_cache_stats_start()
-    get_cache_backend(cache_name).set_many(items, timeout=timeout)
-    remote_cache_stats_finish()
+    print("not gonna get", items)
 
 
 def safe_cache_set_many(
@@ -286,22 +240,11 @@ def safe_cache_set_many(
 
 
 def cache_delete(key: str, cache_name: Optional[str] = None) -> None:
-    final_key = KEY_PREFIX + key
-    validate_cache_key(final_key)
-
-    remote_cache_stats_start()
-    get_cache_backend(cache_name).delete(final_key)
-    remote_cache_stats_finish()
+    print("not gonna delete", key)
 
 
 def cache_delete_many(items: Iterable[str], cache_name: Optional[str] = None) -> None:
-    keys = [KEY_PREFIX + item for item in items]
-    for key in keys:
-        validate_cache_key(key)
-    remote_cache_stats_start()
-    get_cache_backend(cache_name).delete_many(keys)
-    remote_cache_stats_finish()
-
+    print("not gonna delete many", items)
 
 def filter_good_and_bad_keys(keys: List[str]) -> Tuple[List[str], List[str]]:
     good_keys = []
@@ -333,6 +276,8 @@ CacheItemT = TypeVar("CacheItemT")
 # serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar("CompressedItemT")
 
+def format_time(t):
+    return "%0.6f" % t
 
 # Required arguments are as follows:
 # * object_ids: The list of object ids to look up
@@ -360,41 +305,11 @@ def generic_bulk_cached_fetch(
     if len(object_ids) == 0:
         # Nothing to fetch.
         return {}
-
-    cache_keys: Dict[ObjKT, str] = {}
-    for object_id in object_ids:
-        cache_keys[object_id] = cache_key_function(object_id)
-
-    cached_objects_compressed: Dict[str, Tuple[CompressedItemT]] = safe_cache_get_many(
-        [cache_keys[object_id] for object_id in object_ids],
-    )
-
-    cached_objects: Dict[str, CacheItemT] = {}
-    for key, val in cached_objects_compressed.items():
-        cached_objects[key] = extractor(cached_objects_compressed[key][0])
-    needed_ids = [
-        object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects
-    ]
-
-    # Only call query_function if there are some ids to fetch from the database:
-    if len(needed_ids) > 0:
-        db_objects = query_function(needed_ids)
-    else:
-        db_objects = []
-
-    items_for_remote_cache: Dict[str, Tuple[CompressedItemT]] = {}
-    for obj in db_objects:
-        key = cache_keys[id_fetcher(obj)]
-        item = cache_transformer(obj)
-        items_for_remote_cache[key] = (setter(item),)
-        cached_objects[key] = item
-    if len(items_for_remote_cache) > 0:
-        safe_cache_set_many(items_for_remote_cache)
-    return {
-        object_id: cached_objects[cache_keys[object_id]]
-        for object_id in object_ids
-        if cache_keys[object_id] in cached_objects
-    }
+    t = time.time()
+    result = {id_fetcher(row): cache_transformer(row) for row in query_function(list(object_ids))}
+    key = cache_key_function(object_ids[0])
+    print(format_time(time.time() - t), "intentional cache miss (bulk)", key, len(object_ids), "items")
+    return result
 
 
 def transformed_bulk_cached_fetch(
