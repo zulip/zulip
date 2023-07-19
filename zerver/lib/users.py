@@ -17,7 +17,6 @@ from zerver.lib.cache import (
     bulk_cached_fetch,
     realm_user_dict_fields,
     user_profile_by_id_cache_key,
-    user_profile_cache_key_id,
 )
 from zerver.lib.exceptions import (
     JsonableError,
@@ -173,22 +172,9 @@ def is_administrator_role(role: int) -> bool:
     return role in {UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER}
 
 
-def bulk_get_users(
-    emails: List[str], realm: Optional[Realm], base_query: Optional[QuerySet[UserProfile]] = None
-) -> Dict[str, UserProfile]:
-    if base_query is None:
-        assert realm is not None
-        query = UserProfile.objects.filter(realm=realm, is_active=True)
-        realm_id = realm.id
-    else:
-        # WARNING: Currently, this code path only really supports one
-        # version of `base_query` being used (because otherwise,
-        # they'll share the cache, which can screw up the filtering).
-        # If you're using this flow, you'll need to re-do any filters
-        # in base_query in the code itself; base_query is just a perf
-        # optimization.
-        query = base_query
-        realm_id = 0
+def bulk_get_cross_realm_bots() -> Dict[str, UserProfile]:
+    emails = list(settings.CROSS_REALM_BOT_EMAILS)
+    query = UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM)
 
     def fetch_users_by_email(emails: List[str]) -> QuerySet[UserProfile]:
         # This should be just
@@ -205,9 +191,7 @@ def bulk_get_users(
         return user_profile.email.lower()
 
     return bulk_cached_fetch(
-        # Use a separate cache key to protect us from conflicts with
-        # the get_user cache.
-        lambda email: "bulk_get_users:" + user_profile_cache_key_id(email, realm_id),
+        lambda email: f"bulk_get_cross_realm_bots:{email}",
         fetch_users_by_email,
         [email.lower() for email in emails],
         id_fetcher=user_to_email,
@@ -539,18 +523,10 @@ def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
 
 
 def get_cross_realm_dicts() -> List[Dict[str, Any]]:
-    users = bulk_get_users(
-        list(settings.CROSS_REALM_BOT_EMAILS),
-        None,
-        base_query=UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM),
-    ).values()
+    user_dict = bulk_get_cross_realm_bots()
+    users = sorted(user_dict.values(), key=lambda user: user.full_name)
     result = []
     for user in users:
-        # Important: We filter here, is addition to in
-        # `base_query`, because of how bulk_get_users shares its
-        # cache with other UserProfile caches.
-        if user.realm.string_id != settings.SYSTEM_BOT_REALM:  # nocoverage
-            continue
         user_row = user_profile_to_user_row(user)
         # Because we want to avoid clients being exposed to the
         # implementation detail that these bots are self-owned, we
