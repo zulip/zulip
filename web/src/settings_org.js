@@ -8,7 +8,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
-import {DropdownListWidget} from "./dropdown_list_widget";
+import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html, get_language_name} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
@@ -35,6 +35,7 @@ export function reset() {
 }
 
 const MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE = 2147483647;
+const DISABLED_STATE_ID = -1;
 
 export function maybe_disable_widgets() {
     if (page_params.is_owner) {
@@ -1008,43 +1009,92 @@ export function save_discard_widget_status_handler($subsection, for_realm_defaul
 }
 
 export function init_dropdown_widgets() {
-    const streams = stream_settings_data.get_streams_for_settings_page();
-    const notification_stream_options = {
-        data: streams.map((x) => ({
-            name: x.name,
-            value: x.stream_id.toString(),
-            stream: x,
-        })),
-        on_update() {
+    const notification_stream_options = () => {
+        const streams = stream_settings_data.get_streams_for_settings_page();
+        const options = streams.map((stream) => ({
+            name: stream.name,
+            unique_id: stream.stream_id,
+            stream,
+        }));
+
+        const disabled_option = {
+            is_setting_disabled: true,
+            unique_id: DISABLED_STATE_ID,
+            name: $t({defaultMessage: "Disabled"}),
+        };
+
+        options.unshift(disabled_option);
+        return options;
+    };
+
+    notifications_stream_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "realm_notifications_stream_id",
+        get_options: notification_stream_options,
+        $events_container: $("#settings_overlay_container #organization-settings"),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            notifications_stream_widget.render();
             save_discard_widget_status_handler($("#org-notifications"));
         },
-        default_text: $t({defaultMessage: "Disabled"}),
-        render_text: (x) => `#${x}`,
-        null_value: -1,
-    };
-    notifications_stream_widget = new DropdownListWidget({
-        widget_name: "realm_notifications_stream_id",
-        value: page_params.realm_notifications_stream_id,
-        ...notification_stream_options,
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: page_params.realm_notifications_stream_id,
+        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
     });
     notifications_stream_widget.setup();
-    signup_notifications_stream_widget = new DropdownListWidget({
+
+    signup_notifications_stream_widget = new dropdown_widget.DropdownWidget({
         widget_name: "realm_signup_notifications_stream_id",
-        value: page_params.realm_signup_notifications_stream_id,
-        ...notification_stream_options,
+        get_options: notification_stream_options,
+        $events_container: $("#settings_overlay_container #organization-settings"),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            signup_notifications_stream_widget.render();
+            save_discard_widget_status_handler($("#org-notifications"));
+        },
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: page_params.realm_signup_notifications_stream_id,
+        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
     });
     signup_notifications_stream_widget.setup();
-    default_code_language_widget = new DropdownListWidget({
+
+    default_code_language_widget = new dropdown_widget.DropdownWidget({
         widget_name: "realm_default_code_block_language",
-        data: Object.keys(pygments_data.langs).map((x) => ({
-            name: x,
-            value: x,
-        })),
-        value: page_params.realm_default_code_block_language,
-        on_update() {
+        get_options() {
+            const options = Object.keys(pygments_data.langs).map((x) => ({
+                name: x,
+                unique_id: x,
+            }));
+
+            const disabled_option = {
+                is_setting_disabled: true,
+                unique_id: "",
+                name: $t({defaultMessage: "No language set"}),
+            };
+
+            options.unshift(disabled_option);
+            return options;
+        },
+        $events_container: $("#settings_overlay_container #organization-settings"),
+        default_id: page_params.realm_default_code_block_language,
+        unique_id_type: dropdown_widget.DATA_TYPES.STRING,
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            default_code_language_widget.render();
             save_discard_widget_status_handler($("#org-other-settings"));
         },
-        default_text: $t({defaultMessage: "No language set"}),
     });
     default_code_language_widget.setup();
 }
