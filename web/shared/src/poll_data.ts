@@ -21,7 +21,7 @@ export type PollOptionData = {
 
 type PollOption = {
     option: string;
-    user_id: number;
+    user_id: number | string;
     votes: Map<number, number>;
 };
 
@@ -40,7 +40,7 @@ export type PollHandle = {
     };
     new_option: {
         outbound: (option: string) => {type: string; idx: number; option: string};
-        inbound: (sender_id: number, data: InboundData) => void;
+        inbound: (sender_id: number | string, data: InboundData) => void;
     };
     question: {
         outbound: (question: string) => {type: string; question: string} | undefined;
@@ -238,7 +238,7 @@ export class PollData {
         };
 
         for (const [i, option] of options.entries()) {
-            this.handle.new_option.inbound(-1, {
+            this.handle.new_option.inbound("canned", {
                 idx: i,
                 option,
                 type: "new_option",
