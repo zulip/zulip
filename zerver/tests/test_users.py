@@ -27,7 +27,7 @@ from zerver.actions.users import (
     do_delete_user,
     do_delete_user_preserving_messages,
 )
-from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_field, get_gravatar_url
 from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
@@ -48,7 +48,13 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
+from zerver.lib.users import (
+    Accounts,
+    access_user_by_id,
+    get_accounts_for_email,
+    get_cross_realm_dicts,
+    user_ids_to_users,
+)
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
@@ -1101,28 +1107,6 @@ class UserProfileTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             user_ids_to_users(real_user_ids, get_realm("zephyr"))
 
-    def test_bulk_get_users(self) -> None:
-        from zerver.lib.users import bulk_get_users
-
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        webhook_bot = self.example_user("webhook_bot")
-        result = bulk_get_users(
-            [hamlet.email, cordelia.email],
-            get_realm("zulip"),
-        )
-        self.assertEqual(result[hamlet.email].email, hamlet.email)
-        self.assertEqual(result[cordelia.email].email, cordelia.email)
-
-        result = bulk_get_users(
-            [hamlet.email, cordelia.email, webhook_bot.email],
-            None,
-            base_query=UserProfile.objects.all(),
-        )
-        self.assertEqual(result[hamlet.email].email, hamlet.email)
-        self.assertEqual(result[cordelia.email].email, cordelia.email)
-        self.assertEqual(result[webhook_bot.email].email, webhook_bot.email)
-
     def test_get_accounts_for_email(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
@@ -1312,6 +1296,60 @@ class UserProfileTest(ZulipTestCase):
         # cross-realm bot, UserProfile.DoesNotExist is raised
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_by_id_in_realm_including_cross_realm(hamlet.id, None)
+
+    def test_cross_realm_dicts(self) -> None:
+        def user_row(email: str) -> Dict[str, object]:
+            user = UserProfile.objects.get(email=email)
+            avatar_url = get_avatar_field(
+                user_id=user.id,
+                realm_id=user.realm_id,
+                email=user.delivery_email,
+                avatar_source=user.avatar_source,
+                avatar_version=1,
+                medium=False,
+                client_gravatar=False,
+            )
+            return dict(
+                # bot-specific fields
+                avatar_url=avatar_url,
+                date_joined=user.date_joined.isoformat(),
+                delivery_email=email,
+                email=email,
+                full_name=user.full_name,
+                user_id=user.id,
+                # common fields
+                avatar_version=1,
+                bot_owner_id=None,
+                bot_type=1,
+                is_active=True,
+                is_admin=False,
+                is_billing_admin=False,
+                is_bot=True,
+                is_guest=False,
+                is_owner=False,
+                is_system_bot=True,
+                role=400,
+                timezone="",
+            )
+
+        expected_emails = [
+            "emailgateway@zulip.com",
+            "notification-bot@zulip.com",
+            "welcome-bot@zulip.com",
+        ]
+
+        expected_dicts = [user_row(email) for email in expected_emails]
+
+        with self.assert_database_query_count(1):
+            actual_dicts = get_cross_realm_dicts()
+
+        self.assertEqual(actual_dicts, expected_dicts)
+
+        # Now it should be cached.
+        with self.assert_database_query_count(0, keep_cache_warm=True):
+            actual_dicts = get_cross_realm_dicts()
+
+        self.assertEqual(actual_dicts, expected_dicts)
 
     def test_get_user_subscription_status(self) -> None:
         self.login("hamlet")
