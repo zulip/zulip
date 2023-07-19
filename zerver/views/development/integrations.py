@@ -76,9 +76,7 @@ def get_fixtures(request: HttpRequest, integration_name: str = REQ()) -> HttpRes
     fixtures = {}
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
-        msg = ('The integration "{valid_integration_name}" does not have fixtures.').format(
-            valid_integration_name=valid_integration_name
-        )
+        msg = f'The integration "{valid_integration_name}" does not have fixtures.'
         raise ResourceNotFoundError(msg)
 
     for fixture in os.listdir(fixtures_dir):
@@ -135,9 +133,7 @@ def send_all_webhook_fixture_messages(
 
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
-        msg = ('The integration "{valid_integration_name}" does not have fixtures.').format(
-            valid_integration_name=valid_integration_name
-        )
+        msg = f'The integration "{valid_integration_name}" does not have fixtures.'
         raise ResourceNotFoundError(msg)
 
     responses = []

@@ -66,9 +66,7 @@ def ticket_assigned_body(payload: WildValue) -> Optional[str]:
 
     if assignee or assigned_group:
         if assignee and assigned_group:
-            kwargs["assignee_info"] = "{assignee} from {assigned_group}".format(
-                assignee=assignee, assigned_group=assigned_group
-            )
+            kwargs["assignee_info"] = f"{assignee} from {assigned_group}"
         elif assignee:
             kwargs["assignee_info"] = f"{assignee}"
         elif assigned_group:

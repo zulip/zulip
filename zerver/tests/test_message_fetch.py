@@ -4128,9 +4128,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         dummy_urls = [f"http://zulip.testserver/user_uploads/{x}" for x in dummy_path_ids]
         self.subscribe(hamlet, "Denmark")
 
-        body = ("Files ...[zulip.txt]({}) {} {}").format(
-            dummy_urls[0], dummy_urls[1], dummy_urls[2]
-        )
+        body = f"Files ...[zulip.txt]({dummy_urls[0]}) {dummy_urls[1]} {dummy_urls[2]}"
 
         msg_id = self.send_stream_message(hamlet, "Denmark", body, "test")
         msg = Message.objects.get(id=msg_id)
