@@ -875,10 +875,11 @@ def enqueue_welcome_emails(
         return
 
     from_name, from_address = welcome_sender_information()
-    other_account_count = (
+    realm_org_types_for_other_accounts = set(
         UserProfile.objects.filter(delivery_email__iexact=user.delivery_email)
         .exclude(id=user.id)
-        .count()
+        .values_list("realm__org_type", flat=True)
+        .distinct()
     )
     unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
     realm_url = user.realm.url
@@ -887,7 +888,9 @@ def enqueue_welcome_emails(
     # to determine how long to delay sending the email based on when the user signed up.
     onboarding_email_schedule = get_onboarding_email_schedule(user, demo_organization_creator)
 
-    if other_account_count == 0:
+    # If the user has another account with the same email in another
+    # organization, then we don't schedule the followup_day2 email.
+    if len(realm_org_types_for_other_accounts) == 0:
         onboarding_zulip_topics_context = common_context(user)
 
         onboarding_zulip_topics_context.update(
@@ -907,37 +910,43 @@ def enqueue_welcome_emails(
             delay=onboarding_email_schedule["onboarding_zulip_topics"],
         )
 
-    # We only send the onboarding_zulip_guide email for a subset of Realm.ORG_TYPES
-    onboarding_zulip_guide_url, organization_type_reference = get_org_type_zulip_guide(user.realm)
 
-    # Only send follow_zulip_guide to "/for/communities/" guide if user is realm admin.
-    # TODO: Remove this condition and related tests when guide is updated;
-    # see https://github.com/zulip/zulip/issues/24822.
-    if (
-        onboarding_zulip_guide_url == Realm.ORG_TYPES["community"]["onboarding_zulip_guide_url"]
-        and not user.is_realm_admin
-    ):
-        onboarding_zulip_guide_url = None
-
-    if onboarding_zulip_guide_url is not None:
-        onboarding_zulip_guide_context = common_context(user)
-        onboarding_zulip_guide_context.update(
-            # We use the same unsubscribe link in both onboarding_zulip_topics
-            # and onboarding_zulip_guide as these links do not expire.
-            unsubscribe_link=unsubscribe_link,
-            organization_type=organization_type_reference,
-            zulip_guide_link=onboarding_zulip_guide_url,
+    # If the user has an account in another organization of the same
+    # type, then we don't schedule the onboarding_zulip_guide email.
+    if user.realm.org_type not in realm_org_types_for_other_accounts:
+        # We send the onboarding_zulip_guide email for a subset of Realm.ORG_TYPES
+        onboarding_zulip_guide_url, organization_type_reference = get_org_type_zulip_guide(
+            user.realm
         )
 
-        send_future_email(
-            "zerver/emails/onboarding_zulip_guide",
-            user.realm,
-            to_user_ids=[user.id],
-            from_name=from_name,
-            from_address=from_address,
-            context=onboarding_zulip_guide_context,
-            delay=onboarding_email_schedule["onboarding_zulip_guide"],
-        )
+        # Only send follow_zulip_guide to "/for/communities/" guide if user is realm admin.
+        # TODO: Remove this condition and related tests when guide is updated;
+        # see https://github.com/zulip/zulip/issues/24822.
+        if (
+            onboarding_zulip_guide_url == Realm.ORG_TYPES["community"]["onboarding_zulip_guide_url"]
+            and not user.is_realm_admin
+        ):
+            onboarding_zulip_guide_url = None
+
+        if onboarding_zulip_guide_url is not None:
+            onboarding_zulip_guide_context = common_context(user)
+            onboarding_zulip_guide_context.update(
+                # We use the same unsubscribe link in both followup_day2
+                # and onboarding_zulip_guide as these links do not expire.
+                unsubscribe_link=unsubscribe_link,
+                organization_type=organization_type_reference,
+                zulip_guide_link=onboarding_zulip_guide_url,
+            )
+
+            send_future_email(
+                "zerver/emails/onboarding_zulip_guide",
+                user.realm,
+                to_user_ids=[user.id],
+                from_name=from_name,
+                from_address=from_address,
+                context=onboarding_zulip_guide_context,
+                delay=onboarding_email_schedule["onboarding_zulip_guide"],
+            )
 
     # We only send the onboarding_team_to_zulip email to user who created the organization.
     if realm_creation or demo_organization_creator:
