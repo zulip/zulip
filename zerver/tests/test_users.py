@@ -1351,6 +1351,17 @@ class UserProfileTest(ZulipTestCase):
 
         self.assertEqual(actual_dicts, expected_dicts)
 
+        # Test cache invalidation
+        welcome_bot = UserProfile.objects.get(email="welcome-bot@zulip.com")
+        welcome_bot.full_name = "fred"
+        welcome_bot.save()
+
+        with self.assert_database_query_count(1, keep_cache_warm=True):
+            actual_dicts = get_cross_realm_dicts()
+
+        expected_dicts = [user_row(email) for email in expected_emails]
+        self.assertEqual(actual_dicts, expected_dicts)
+
     def test_get_user_subscription_status(self) -> None:
         self.login("hamlet")
         iago = self.example_user("iago")

@@ -449,6 +449,13 @@ def user_profile_by_api_key_cache_key(api_key: str) -> str:
     return f"user_profile_by_api_key:{api_key}"
 
 
+def get_cross_realm_dicts_key() -> str:
+    emails = list(settings.CROSS_REALM_BOT_EMAILS)
+    raw_key = ",".join(sorted(emails))
+    digest = hashlib.sha1(raw_key.encode()).hexdigest()
+    return f"get_cross_realm_dicts:{digest}"
+
+
 realm_user_dict_fields: List[str] = [
     "id",
     "full_name",
@@ -525,6 +532,7 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm: "R
         if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.
             keys.append(bot_profile_cache_key(user_profile.email, realm.id))
+            keys.append(get_cross_realm_dicts_key())
 
     cache_delete_many(keys)
 
