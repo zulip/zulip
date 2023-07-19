@@ -6,8 +6,13 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_groups import check_add_user_group, promote_new_full_members
+from zerver.actions.user_groups import (
+    check_add_user_group,
+    create_user_group_in_database,
+    promote_new_full_members,
+)
 from zerver.actions.users import do_deactivate_user
+from zerver.lib.create_user import create_user
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
@@ -585,6 +590,58 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         result = self.client_delete(f"/json/user_groups/{lear_test_group.id}")
         self.assert_json_error(result, "Invalid user group")
+
+    def test_query_counts(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+        self.login_user(hamlet)
+
+        original_users = [
+            create_user(
+                email=f"original_user{i}@zulip.com",
+                password=None,
+                realm=realm,
+                full_name="full_name",
+            )
+            for i in range(50)
+        ]
+
+        with self.assert_database_query_count(4):
+            user_group = create_user_group_in_database(
+                name="support",
+                members=[hamlet, cordelia, *original_users],
+                realm=realm,
+                acting_user=hamlet,
+            )
+
+        self.assert_user_membership(user_group, [hamlet, cordelia, *original_users])
+
+        new_users = [
+            create_user(
+                email=f"new_user{i}@zulip.com",
+                password=None,
+                realm=realm,
+                full_name="full_name",
+            )
+            for i in range(50)
+        ]
+
+        new_user_ids = [user.id for user in new_users]
+
+        munge = lambda obj: orjson.dumps(obj).decode()
+        params = dict(add=munge(new_user_ids))
+
+        with mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"):
+            with self.assert_database_query_count(11):
+                result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_success(result)
+
+        with self.assert_database_query_count(1):
+            all_user_ids = get_user_group_member_ids(user_group, direct_member_only=True)
+
+        self.assert_length(all_user_ids, 102)
+        self.assert_user_membership(user_group, [hamlet, cordelia, *new_users, *original_users])
 
     def test_update_members_of_user_group(self) -> None:
         hamlet = self.example_user("hamlet")
