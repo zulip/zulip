@@ -777,7 +777,7 @@ a:not(:active):focus,
 button:focus,
 .new-style label.checkbox input[type="checkbox"]:focus ~ span,
 i.fa:focus,
-i.zulip-icon:focus,
+i.zulip-icon:focus-visible,
 .auto-select:focus,
 [role="button"]:focus {
     outline: 2px solid hsl(215deg 47% 50%);
@@ -1195,14 +1195,25 @@ td.pointer {
 
         > i {
             vertical-align: middle;
-        }
+            /* TODO: Math for these values, possibly with variables.
+               In short, the icon body is 16px square; the current
+               area for the icon is 26px wide by 25px tall, so these
+               values ensure a 26px x 25px clickable area for the icon. */
+            padding: 2.5px 3px;
 
-        &:active {
-            scale: 0.92;
-        }
+            &:active {
+                transform: scale(0.92);
+                transform-origin: center;
+                outline: 0;
+                transition: unset;
+            }
 
-        &:hover {
-            color: var(--color-message-action-interactive);
+            &:hover,
+            &:focus,
+            &:focus-visible {
+                outline: 0;
+                color: var(--color-message-action-interactive);
+            }
         }
     }
 
@@ -1630,10 +1641,6 @@ td.pointer {
     .sender_name {
         color: hsl(200deg 100% 40%);
     }
-}
-
-.actions_hover:hover {
-    color: hsl(200deg 100% 40%);
 }
 
 .always_visible_topic_edit,
