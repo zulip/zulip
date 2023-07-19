@@ -106,7 +106,7 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
             )
 
             if len(data) > 0:
-                data.sort(key=lambda e: e["time"], reverse=True)
+                data.sort(key=lambda e: e["start_time"], reverse=True)
                 latest = data[0]
                 labels = {
                     "host": latest["hostname"],
