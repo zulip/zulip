@@ -56,7 +56,6 @@ module = [
     "bmemcached.*",
     "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
     "circuitbreaker.*",
-    "coverage.*", # https://github.com/nedbat/coveragepy/issues/1434
     "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
     "disposable_email_domains.*",
