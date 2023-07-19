@@ -1,4 +1,4 @@
-from disposable_email_domains import blacklist
+from disposable_email_domains import blocklist
 from django.conf import settings
 
 
@@ -359,7 +359,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "xoxo",
 }
 
-DISPOSABLE_DOMAINS = set(blacklist)
+DISPOSABLE_DOMAINS = set(blocklist)
 
 WHITELISTED_EMAIL_DOMAINS = {
     # Controlled by https://www.abine.com; more legitimate than most
