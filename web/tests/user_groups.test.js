@@ -318,11 +318,11 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     };
 
     const expected_groups_list = [
-        {name: "translated: Admins, moderators, members and guests", value: "6"},
-        {name: "translated: Admins, moderators and members", value: "5"},
-        {name: "translated: Admins, moderators and full members", value: "7"},
-        {name: "translated: Admins and moderators", value: "4"},
-        {name: "translated: Admins", value: "3"},
+        {name: "translated: Admins, moderators, members and guests", unique_id: 6},
+        {name: "translated: Admins, moderators and members", unique_id: 5},
+        {name: "translated: Admins, moderators and full members", unique_id: 7},
+        {name: "translated: Admins and moderators", unique_id: 4},
+        {name: "translated: Admins", unique_id: 3},
     ];
 
     user_groups.initialize({
