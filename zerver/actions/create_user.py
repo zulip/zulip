@@ -298,7 +298,7 @@ def notify_created_user(user_profile: UserProfile) -> None:
     user_row = user_profile_to_user_row(user_profile)
 
     format_user_row_kwargs: Dict[str, Any] = {
-        "realm": user_profile.realm,
+        "realm_id": user_profile.realm_id,
         "row": user_row,
         # Since we don't know what the client
         # supports at this point in the code, we

@@ -426,7 +426,7 @@ def can_access_delivery_email(
 
 
 def format_user_row(
-    realm: Realm,
+    realm_id: int,
     acting_user: Optional[UserProfile],
     row: Dict[str, Any],
     client_gravatar: bool,
@@ -489,7 +489,7 @@ def format_user_row(
     if include_avatar_url:
         result["avatar_url"] = get_avatar_field(
             user_id=row["id"],
-            realm_id=realm.id,
+            realm_id=realm_id,
             email=row["delivery_email"],
             avatar_source=row["avatar_source"],
             avatar_version=row["avatar_version"],
@@ -559,7 +559,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
 
         result.append(
             format_user_row(
-                user.realm,
+                user.realm_id,
                 acting_user=user,
                 row=user_row,
                 client_gravatar=False,
@@ -629,7 +629,7 @@ def get_raw_user_data(
             and row["email_address_visibility"] == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         )
         result[row["id"]] = format_user_row(
-            realm,
+            realm.id,
             acting_user=acting_user,
             row=row,
             client_gravatar=client_gravatar_for_user,
