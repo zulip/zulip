@@ -21,7 +21,7 @@ type UserGroupRaw = Omit<UserGroup, "members"> & {members: number[]};
 
 type UserGroupForDropdownListWidget = {
     name: string;
-    value: string;
+    unique_id: number;
 };
 
 let user_group_name_dict: FoldDict<UserGroup>;
@@ -257,7 +257,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             }
             return {
                 name: group.display_name,
-                value: user_group.id.toString(),
+                unique_id: user_group.id,
             };
         });
 
@@ -267,7 +267,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 
     const user_groups_excluding_system_groups = get_realm_user_groups().map((group) => ({
         name: group.name,
-        value: group.id.toString(),
+        unique_id: group.id,
     }));
 
     return [...system_user_groups, ...user_groups_excluding_system_groups];
