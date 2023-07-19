@@ -1479,9 +1479,7 @@ def check_token_access(token: str) -> None:
         missing_scopes = required_scopes - has_scopes
         if missing_scopes:
             raise ValueError(
-                "Slack token is missing the following required scopes: {}".format(
-                    sorted(missing_scopes)
-                )
+                f"Slack token is missing the following required scopes: {sorted(missing_scopes)}"
             )
     else:
         raise Exception("Unknown token type -- must start with xoxb- or xoxp-")

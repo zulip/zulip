@@ -953,9 +953,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_error(
             result,
-            ("User group {group_id} is not a subgroup of this group.").format(
-                group_id=leadership_group.id
-            ),
+            f"User group {leadership_group.id} is not a subgroup of this group.",
         )
 
         params = {"add": orjson.dumps([leadership_group.id]).decode()}
@@ -964,9 +962,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_error(
             result,
-            ("User group {group_id} is already a subgroup of this group.").format(
-                group_id=leadership_group.id
-            ),
+            f"User group {leadership_group.id} is already a subgroup of this group.",
         )
 
         self.login("iago")
