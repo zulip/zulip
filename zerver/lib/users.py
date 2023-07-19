@@ -14,11 +14,9 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import (
-    bulk_cached_fetch,
     cache_with_key,
     get_cross_realm_dicts_key,
     realm_user_dict_fields,
-    user_profile_by_id_cache_key,
 )
 from zerver.lib.exceptions import (
     JsonableError,
@@ -196,33 +194,20 @@ def bulk_get_cross_realm_bots() -> Dict[str, UserProfile]:
     return {user.email.lower(): user for user in users}
 
 
-def get_user_id(user: UserProfile) -> int:
-    return user.id
-
-
 def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile]:
     # TODO: Consider adding a flag to control whether deactivated
     # users should be included.
 
-    def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
-        return list(UserProfile.objects.filter(id__in=user_ids).select_related("realm"))
-
-    user_profiles_by_id: Dict[int, UserProfile] = bulk_cached_fetch(
-        cache_key_function=user_profile_by_id_cache_key,
-        query_function=fetch_users_by_id,
-        object_ids=user_ids,
-        id_fetcher=get_user_id,
+    user_profiles = list(
+        UserProfile.objects.filter(id__in=user_ids, realm=realm).select_related("realm")
     )
 
-    found_user_ids = user_profiles_by_id.keys()
-    missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
-    if missed_user_ids:
-        raise JsonableError(_("Invalid user ID: {user_id}").format(user_id=missed_user_ids[0]))
+    found_user_ids = {user_profile.id for user_profile in user_profiles}
 
-    user_profiles = list(user_profiles_by_id.values())
-    for user_profile in user_profiles:
-        if user_profile.realm != realm:
-            raise JsonableError(_("Invalid user ID: {user_id}").format(user_id=user_profile.id))
+    for user_id in user_ids:
+        if user_id not in found_user_ids:
+            raise JsonableError(_("Invalid user ID: {user_id}").format(user_id=user_id))
+
     return user_profiles
 
 
