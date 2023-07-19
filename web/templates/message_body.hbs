@@ -6,7 +6,10 @@
         <span class="sender_info_hover sender_name auto-select" role="button" tabindex="0">
             <span class="view_user_card_tooltip" data-tooltip-template-id="view-user-card-tooltip-template">
                 {{msg/sender_full_name}}
-                <span style="color:#95a5fd"> {{msg/sender_groups}}</span>
+
+                {{#if msg/sender_groups}}
+                    <span style="color:#95a5fd">{{msg/sender_groups}}</span>
+                {{/if}}
                 {{#unless status_message}}
                 {{> status_emoji msg/status_emoji_info}}
                 {{/unless}}

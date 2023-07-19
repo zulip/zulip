@@ -36,6 +36,7 @@ import * as submessage from "./submessage";
 import * as timerender from "./timerender";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
+import * as user_groups from "./user_groups";
 
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
@@ -732,7 +733,11 @@ export class MessageListView {
 
     _get_message_template(message_container) {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
+        console.log(message_container.msg.sender_id)
+        // const groups_of_user = user_groups.get_user_groups_of_user(message_container.msg.sender_id).map((el) => el.name).join(', ');
+        const groups_of_user = user_groups.get_user_groups_of_user(message_container.msg.sender_id).map((el) => el.name);
         message_container.msg.message_reactions = msg_reactions;
+        message_container.msg.sender_groups = groups_of_user.length ? groups_of_user[groups_of_user.length-1]: '';
         const msg_to_render = {
             ...message_container,
             table_name: this.table_name,
