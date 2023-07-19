@@ -6,8 +6,8 @@ from zerver.lib.cache import (
     bulk_cached_fetch,
     cache_with_key,
     display_recipient_cache_key,
+    generic_bulk_cached_fetch,
     single_user_display_recipient_cache_key,
-    transformed_bulk_cached_fetch,
 )
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import Recipient, Stream, UserProfile, bulk_get_huddle_user_ids
@@ -103,12 +103,14 @@ def bulk_fetch_stream_names(
         return row["name"]
 
     # ItemT = TinyStreamResult, CacheItemT = str (name), ObjKT = int (recipient_id)
-    stream_display_recipients: Dict[int, str] = transformed_bulk_cached_fetch(
+    stream_display_recipients: Dict[int, str] = generic_bulk_cached_fetch(
         cache_key_function=display_recipient_cache_key,
         query_function=get_tiny_stream_rows,
         object_ids=recipient_ids,
         id_fetcher=get_recipient_id,
         cache_transformer=get_name,
+        setter=lambda obj: obj,
+        extractor=lambda obj: obj,
     )
 
     return stream_display_recipients
