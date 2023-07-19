@@ -531,7 +531,7 @@ def send_peer_subscriber_events(
                     # This optimization depends on all public streams
                     # having the same peers for any single user, which
                     # isn't the case for private streams.
-                    altered_user_id = list(altered_user_ids)[0]
+                    [altered_user_id] = altered_user_ids
                     user_streams[altered_user_id].add(stream_id)
                 else:
                     event = dict(
