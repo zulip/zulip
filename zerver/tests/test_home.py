@@ -255,7 +255,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(cache_mock.call_args_list, 4)
+        self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode()
 
@@ -441,7 +441,7 @@ class HomeTest(ZulipTestCase):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
-                self.assert_length(cache_mock.call_args_list, 6)
+                self.assert_length(cache_mock.call_args_list, 7)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")

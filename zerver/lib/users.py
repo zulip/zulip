@@ -15,6 +15,8 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import (
     bulk_cached_fetch,
+    cache_with_key,
+    get_cross_realm_dicts_key,
     realm_user_dict_fields,
     user_profile_by_id_cache_key,
 )
@@ -174,28 +176,24 @@ def is_administrator_role(role: int) -> bool:
 
 def bulk_get_cross_realm_bots() -> Dict[str, UserProfile]:
     emails = list(settings.CROSS_REALM_BOT_EMAILS)
-    query = UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM)
 
-    def fetch_users_by_email(emails: List[str]) -> QuerySet[UserProfile]:
-        # This should be just
-        #
-        # UserProfile.objects.select_related("realm").filter(email__iexact__in=emails,
-        #                                                    realm=realm)
-        #
-        # But chaining __in and __iexact doesn't work with Django's
-        # ORM, so we have the following hack to construct the relevant where clause
-        where_clause = "upper(zerver_userprofile.email::text) IN (SELECT upper(email) FROM unnest(%s) AS email)"
-        return query.select_related("realm").extra(where=[where_clause], params=(emails,))
-
-    def user_to_email(user_profile: UserProfile) -> str:
-        return user_profile.email.lower()
-
-    return bulk_cached_fetch(
-        lambda email: f"bulk_get_cross_realm_bots:{email}",
-        fetch_users_by_email,
-        [email.lower() for email in emails],
-        id_fetcher=user_to_email,
+    # This should be just
+    #
+    # UserProfile.objects.select_related("realm").filter(email__iexact__in=emails,
+    #                                                    realm=realm)
+    #
+    # But chaining __in and __iexact doesn't work with Django's
+    # ORM, so we have the following hack to construct the relevant where clause
+    where_clause = (
+        "upper(zerver_userprofile.email::text) IN (SELECT upper(email) FROM unnest(%s) AS email)"
     )
+    users = list(
+        UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM).extra(
+            where=[where_clause], params=(emails,)
+        )
+    )
+
+    return {user.email.lower(): user for user in users}
 
 
 def get_user_id(user: UserProfile) -> int:
@@ -522,6 +520,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
     return user_row
 
 
+@cache_with_key(get_cross_realm_dicts_key)
 def get_cross_realm_dicts() -> List[Dict[str, Any]]:
     user_dict = bulk_get_cross_realm_bots()
     users = sorted(user_dict.values(), key=lambda user: user.full_name)
