@@ -397,25 +397,6 @@ def generic_bulk_cached_fetch(
     }
 
 
-def transformed_bulk_cached_fetch(
-    cache_key_function: Callable[[ObjKT], str],
-    query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
-    object_ids: Sequence[ObjKT],
-    *,
-    id_fetcher: Callable[[ItemT], ObjKT],
-    cache_transformer: Callable[[ItemT], CacheItemT],
-) -> Dict[ObjKT, CacheItemT]:
-    return generic_bulk_cached_fetch(
-        cache_key_function,
-        query_function,
-        object_ids,
-        extractor=lambda obj: obj,
-        setter=lambda obj: obj,
-        id_fetcher=id_fetcher,
-        cache_transformer=cache_transformer,
-    )
-
-
 def bulk_cached_fetch(
     cache_key_function: Callable[[ObjKT], str],
     query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
@@ -423,11 +404,13 @@ def bulk_cached_fetch(
     *,
     id_fetcher: Callable[[ItemT], ObjKT],
 ) -> Dict[ObjKT, ItemT]:
-    return transformed_bulk_cached_fetch(
+    return generic_bulk_cached_fetch(
         cache_key_function,
         query_function,
         object_ids,
         id_fetcher=id_fetcher,
+        extractor=lambda obj: obj,
+        setter=lambda obj: obj,
         cache_transformer=lambda obj: obj,
     )
 
