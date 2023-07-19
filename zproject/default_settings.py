@@ -1,6 +1,6 @@
 import os
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
 
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
@@ -145,6 +145,14 @@ S3_AUTH_UPLOADS_BUCKET = ""
 S3_REGION: Optional[str] = None
 S3_ENDPOINT_URL: Optional[str] = None
 S3_SKIP_PROXY = True
+S3_UPLOADS_STORAGE_CLASS: Literal[
+    "GLACIER_IR",
+    "INTELLIGENT_TIERING",
+    "ONEZONE_IA",
+    "REDUCED_REDUNDANCY",
+    "STANDARD",
+    "STANDARD_IA",
+] = "STANDARD"
 LOCAL_UPLOADS_DIR: Optional[str] = None
 LOCAL_AVATARS_DIR: Optional[str] = None
 LOCAL_FILES_DIR: Optional[str] = None

@@ -206,3 +206,38 @@ Congratulations! Your uploaded files are now migrated to S3.
 
 **Caveat**: The current version of this tool does not migrate an
 uploaded organization avatar or logo.
+
+## S3 data storage class
+
+In general, uploaded files in Zulip are accessed frequently at first, and then
+age out of frequent access. The S3 backend provides the [S3
+Intelligent-Tiering][s3-it] [storage class][s3-storage-class] which provides
+cheaper storage for less frequently accessed objects, and may provide overall
+cost savings for large deployments.
+
+You can configure Zulip to store uploaded files using Intelligent-Tiering by
+setting `S3_UPLOADS_STORAGE_CLASS` to `INTELLIGENT_TIERING` in `settings.py`.
+This setting can take any of the following [storage class
+value][s3-storage-class-constant] values:
+
+- `STANDARD`
+- `STANDARD_IA`
+- `ONEZONE_IA`
+- `REDUCED_REDUNDANCY`
+- `GLACIER_IR`
+- `INTELLIGENT_TIERING`
+
+Setting `S3_UPLOADS_STORAGE_CLASS` does not affect the storage class of existing
+objects. In order to change those, for example to `INTELLIGENT_TIERING`, perform
+an in-place copy:
+
+    aws s3 cp --storage-class INTELLIGENT_TIERING --recursive \
+        s3://your-bucket-name/ s3://your-bucket-name/
+
+Note that changing the lifecycle of existing objects will incur a [one-time
+lifecycle transition cost][s3-pricing].
+
+[s3-it]: https://aws.amazon.com/s3/storage-classes/intelligent-tiering/
+[s3-storage-class]: https://aws.amazon.com/s3/storage-classes/
+[s3-storage-class-constant]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html#AmazonS3-PutObject-request-header-StorageClass
+[s3-pricing]: https://aws.amazon.com/s3/pricing/

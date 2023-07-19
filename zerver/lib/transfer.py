@@ -65,6 +65,7 @@ def _transfer_message_files_to_s3(attachment: Attachment) -> None:
                 guessed_type,
                 attachment.owner,
                 f.read(),
+                settings.S3_UPLOADS_STORAGE_CLASS,
             )
             logging.info("Uploaded message file in path %s", file_path)
     except FileNotFoundError:  # nocoverage
