@@ -436,7 +436,7 @@ export function validation_error(error_type, stream_name) {
                 $t({defaultMessage: "Error checking subscription."}),
                 compose_banner.CLASSNAMES.subscription_error,
                 $banner_container,
-                $("#compose_select_recipient_widget"),
+                $("#compose_select_recipient_widget_wrapper"),
             );
             return false;
         case "not-subscribed": {
@@ -485,7 +485,7 @@ function validate_stream_message(scheduling_message) {
             $t({defaultMessage: "Please specify a stream."}),
             compose_banner.CLASSNAMES.missing_stream,
             $banner_container,
-            $("#compose_select_recipient_widget"),
+            $("#compose_select_recipient_widget_wrapper"),
         );
         return false;
     }

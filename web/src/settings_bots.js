@@ -26,6 +26,7 @@ import * as user_profile from "./user_profile";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
+export let bot_owner_dropdown_widget;
 
 const focus_tab = {
     active_bots_tab() {
@@ -371,9 +372,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("full_name", $full_name.val());
         formData.append("role", JSON.stringify(role));
-        const new_bot_owner_id = $("#bot_owner_dropdown_widget .bot_owner_name").attr(
-            "data-user-id",
-        );
+        const new_bot_owner_id = bot_owner_dropdown_widget.value();
         if (new_bot_owner_id) {
             formData.append("bot_owner_id", new_bot_owner_id);
         }
@@ -424,29 +423,26 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         }
 
         function item_click_callback(event, dropdown) {
-            const $user = $(event.currentTarget);
-            const user_full_name = $user.attr("data-name");
-            const new_bot_owner_id = Number.parseInt($user.attr("data-unique-id"), 10);
-            const $bot_owner = $("#bot_owner_dropdown_widget .bot_owner_name");
-            $bot_owner.text(user_full_name);
-            $bot_owner.attr("data-user-id", new_bot_owner_id);
-            $("#edit_bot_modal .bot_owner_id").val(new_bot_owner_id).trigger("input");
+            bot_owner_dropdown_widget.render();
+            // Let dialog_wigdet know that there was a change in value.
+            $(bot_owner_dropdown_widget.widget_id).trigger("input");
             dropdown.hide();
             event.stopPropagation();
             event.preventDefault();
         }
 
-        dropdown_widget.setup(
-            {
-                target: "#bot_owner_dropdown_widget",
-                placement: "bottom-start",
-            },
+        bot_owner_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: "edit_bot_owner",
             get_options,
             item_click_callback,
-            {
-                show_on_target_enter_keypress: true,
+            $events_container: $("#bot-edit-form"),
+            tippy_props: {
+                placement: "bottom-start",
             },
-        );
+            default_id: owner_id,
+            unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        });
+        bot_owner_dropdown_widget.setup();
 
         $("#bot-role-select").val(bot.role);
         if (!page_params.is_owner) {

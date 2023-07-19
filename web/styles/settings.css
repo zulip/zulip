@@ -648,7 +648,6 @@ input[type="checkbox"] {
 
 #add-default-stream-modal {
     .dropdown-widget-button {
-        width: 116px;
         display: inline-flex;
     }
 

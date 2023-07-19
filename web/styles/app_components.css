@@ -1023,10 +1023,20 @@ div.overlay {
     align-items: center;
     justify-content: space-between;
     outline: none;
+    color: var(--color-text-default);
 
     .fa-chevron-down {
         position: relative;
         top: -1px;
+    }
+}
+
+.setting-disabled-option {
+    color: hsl(38deg 46% 54%);
+
+    & i {
+        /* Values set to match text alignment in stream dropdown. */
+        padding: 0 5px 0 1px;
     }
 }
 

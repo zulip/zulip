@@ -1,10 +1,5 @@
 <div class="choice-row" data-value="{{value}}">
-    <div id="{{stream_dropdown_widget_name}}" class="dropdown-widget-button" role="button" tabindex="0">
-        <span class="stream_name">
-            Select stream
-        </span>
-        <i class="fa fa-chevron-down"></i>
-    </div>
+    {{> ../dropdown_widget widget_name=stream_dropdown_widget_name default_text=(t 'Select stream')}}
     <button type="button" class="button rounded small delete-choice" title="{{t 'Delete' }}">
         <i class="fa fa-trash-o" aria-hidden="true"></i>
     </button>

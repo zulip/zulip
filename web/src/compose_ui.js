@@ -48,7 +48,7 @@ function get_focus_area(msg_type, opts) {
     }
 
     if (msg_type === "stream") {
-        return "#compose_select_recipient_widget";
+        return "#compose_select_recipient_widget_wrapper";
     }
     return "#private_message_recipient";
 }

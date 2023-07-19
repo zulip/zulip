@@ -225,7 +225,7 @@ export function start(msg_type, opts) {
     }
 
     const $stream_header_colorblock = $(
-        "#compose_recipient_selection_dropdown .stream_header_colorblock",
+        "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
     );
     stream_bar.decorate(opts.stream, $stream_header_colorblock);
 

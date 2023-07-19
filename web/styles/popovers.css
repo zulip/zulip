@@ -852,7 +852,7 @@ ul {
         margin: 0;
     }
 
-    .move-topic-dropdown {
+    #move_topic_to_stream_widget_wrapper {
         display: flex;
         margin-bottom: 10px;
 
@@ -870,7 +870,7 @@ ul {
             margin: 0;
         }
 
-        #move_topic_stream_name {
+        .dropdown_widget_value {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;

@@ -709,7 +709,7 @@ export function initialize() {
         }
 
         // The dropdown menu needs to process clicks to open and close.
-        if ($target.parents("#compose_recipient_selection_dropdown").length > 0) {
+        if ($target.parents("#compose_select_recipient_widget_wrapper").length > 0) {
             return;
         }
 

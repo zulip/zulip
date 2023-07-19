@@ -1032,12 +1032,12 @@ div.settings-radio-input-parent {
         margin-bottom: 10px;
     }
 
-    .dropdown-list-widget {
-        .dropdown-toggle {
-            margin-bottom: 10px;
-            min-width: 325px;
-            max-width: 100%;
-        }
+    .dropdown-widget-button {
+        /* Match the margin with other input groups around. */
+        margin-bottom: 20px;
+        min-width: 325px;
+        max-width: 100%;
+        height: 30px;
     }
 }
 

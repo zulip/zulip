@@ -805,7 +805,7 @@ input.recipient_box {
     margin: auto;
 }
 
-#compose_recipient_selection_dropdown {
+#compose_select_recipient_widget_wrapper {
     display: flex;
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
@@ -814,26 +814,7 @@ input.recipient_box {
         margin: 0;
     }
 
-    .dropdown-toggle {
-        border-radius: 0 4px 4px 0 !important;
-        display: flex;
-        min-width: 0;
-    }
-
-    .dropdown-menu {
-        /* The Bootstrap default of 160px wraps too early.
-           TODO: Replace this with a max-width and natural scaling? */
-        width: 200px;
-        top: auto;
-        left: -10px;
-    }
-
-    .dropup .dropdown-menu {
-        bottom: 100%;
-        margin-bottom: 17px;
-    }
-
-    #compose_select_recipient_name {
+    .dropdown_widget_value {
         flex-grow: 1;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -847,10 +828,6 @@ input.recipient_box {
             position: relative;
             top: 2px;
         }
-    }
-
-    .dropdown-list-body .list_item a {
-        white-space: normal;
     }
 
     .fa-chevron-down {
