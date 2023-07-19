@@ -58,7 +58,6 @@ module = [
     "circuitbreaker.*",
     "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
-    "disposable_email_domains.*",
     "django_auth_ldap.*",
     "django_bmemcached.*",
     "django_cte.*",
@@ -149,6 +148,7 @@ ignore = [
     "RUF001", # String contains ambiguous unicode character
     "RUF002", # Docstring contains ambiguous unicode character
     "RUF003", # Comment contains ambiguous unicode character
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
     "S101", # Use of `assert` detected
     "S105", # Possible hardcoded password
     "S106", # Possible hardcoded password
