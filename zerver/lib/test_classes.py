@@ -317,6 +317,7 @@ Output:
         follow: bool = False,
         secure: bool = False,
         intentionally_undocumented: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -326,7 +327,9 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.patch(url, encoded, follow=follow, secure=secure, **extra)
+        result = django_client.patch(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "patch",
@@ -345,6 +348,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -360,7 +364,13 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         result = django_client.patch(
-            url, encoded, content_type=MULTIPART_CONTENT, follow=follow, secure=secure, **extra
+            url,
+            encoded,
+            content_type=MULTIPART_CONTENT,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            **extra,
         )
         self.validate_api_response_openapi(
             url,
@@ -385,7 +395,13 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.patch(
-            url, data=data, content_type="application/json", follow=follow, secure=secure, **extra
+            url,
+            data=data,
+            content_type="application/json",
+            follow=follow,
+            secure=secure,
+            headers=None,
+            **extra,
         )
 
     @instrument_url
@@ -396,13 +412,16 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         encoded = urllib.parse.urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.put(url, encoded, follow=follow, secure=secure, **extra)
+        return django_client.put(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
 
     def json_put(
         self,
@@ -411,13 +430,20 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.put(
-            url, data=data, content_type="application/json", follow=follow, secure=secure, **extra
+            url,
+            data=data,
+            content_type="application/json",
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            **extra,
         )
 
     @instrument_url
@@ -428,6 +454,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -435,7 +462,9 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.delete(url, encoded, follow=follow, secure=secure, **extra)
+        result = django_client.delete(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "delete",
@@ -454,11 +483,14 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.options(url, dict(info), follow=follow, secure=secure, **extra)
+        return django_client.options(
+            url, dict(info), follow=follow, secure=secure, headers=headers, **extra
+        )
 
     @instrument_url
     def client_head(
@@ -468,11 +500,12 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.head(url, info, follow=follow, secure=secure, **extra)
+        return django_client.head(url, info, follow=follow, secure=secure, headers=headers, **extra)
 
     @instrument_url
     def client_post(
@@ -482,12 +515,15 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.post(url, info, follow=follow, secure=secure, **extra)
+        result = django_client.post(
+            url, info, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "post",
@@ -520,12 +556,15 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.get(url, info, follow=follow, secure=secure, **extra)
+        result = django_client.get(
+            url, info, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url, "get", result, info, extra, intentionally_undocumented=intentionally_undocumented
         )
@@ -671,6 +710,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -811,6 +851,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -909,6 +950,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -927,6 +969,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -941,6 +984,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -960,6 +1004,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -974,6 +1019,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -988,6 +1034,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1420,6 +1467,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )

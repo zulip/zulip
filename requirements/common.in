@@ -40,6 +40,7 @@ mypy-boto3-sqs
 defusedxml
 
 # Needed for LDAP support
+python-ldap
 django-auth-ldap
 
 # Django extension providing bitfield support
@@ -128,7 +129,7 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth[call,phonenumberslite,sms]<1.15.1  # https://github.com/jazzband/django-two-factor-auth/issues/587
+django-two-factor-auth[call,phonenumberslite,sms]
 
 # Needed for processing payments (in corporate)
 stripe
