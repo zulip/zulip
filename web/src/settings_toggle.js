@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as components from "./components";
 import {$t} from "./i18n";
 import * as settings_panel_menu from "./settings_panel_menu";
+import {page_params} from "./page_params";
 
 let toggler;
 
@@ -13,12 +14,13 @@ export function highlight_toggle(tab_name) {
 }
 
 export function initialize() {
+    let buttonValues = [{label: $t({defaultMessage: "Personal"}), key: "settings"},];
+    if (page_params.is_owner || page_params.is_admin || page_params.is_moderator) {
+        buttonValues.push({label: $t({defaultMessage: "Organization"}), key: "organization"});
+    }
     toggler = components.toggle({
         child_wants_focus: true,
-        values: [
-            {label: $t({defaultMessage: "Personal"}), key: "settings"},
-            {label: $t({defaultMessage: "Organization"}), key: "organization"},
-        ],
+        values: buttonValues,
         callback(_name, key) {
             if (key === "organization") {
                 settings_panel_menu.show_org_settings();
