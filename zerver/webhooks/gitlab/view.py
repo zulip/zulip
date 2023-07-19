@@ -89,7 +89,9 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
     # Filter out multiline hidden comments
     if description:
         stringified_description = description.tame(check_string)
-        stringified_description = re.sub("<!--.*?-->", "", stringified_description, 0, re.DOTALL)
+        stringified_description = re.sub(
+            "<!--.*?-->", "", stringified_description, count=0, flags=re.DOTALL
+        )
         stringified_description = stringified_description.rstrip()
     else:
         stringified_description = None
