@@ -6,6 +6,7 @@
                 <h3 class="inline-block">{{t "Account" }}</h3>
                 <div class="alert-notification" id="account-settings-status"></div>
                 <form class="grid">
+                    {{#if user_has_email_set}}
                     <div class="input-group">
                         <label class="inline-block title">{{t "Email" }}</label>
                         <div id="change_email_button_container" class="inline-block {{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
@@ -15,6 +16,22 @@
                             </button>
                         </div>
                     </div>
+                    {{else}}
+                    {{! Demo organizations before the owner has configured an email address. }}
+                    <div class="input-group">
+                        <p>
+                            {{#tr}}
+                                Add your email to <z-link-invite-users-help>invite other users</z-link-invite-users-help>
+                                or <z-link-convert-demo-organization-help>convert to a permanent Zulip organization</z-link-convert-demo-organization-help>.
+                                {{#*inline "z-link-invite-users-help"}}<a href="/help/invite-new-users" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                                {{#*inline "z-link-convert-demo-organization-help"}}<a href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                            {{/tr}}
+                        </p>
+                        <button id="demo_organization_add_email_button" type="button" class="button rounded sea-green">
+                            {{t "Add email"}}
+                        </button>
+                    </div>
+                    {{/if}}
                 </form>
 
                 {{#if page_params.two_fa_enabled }}

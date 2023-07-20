@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
+import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
@@ -739,6 +740,91 @@ export function set_up() {
                     ui_util.place_caret_at_end($("#change_email_form input")[0]);
                 },
                 update_submit_disabled_state_on_change: true,
+            });
+        }
+    });
+
+    function do_demo_organization_add_email(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const $change_email_error = $("#demo_organization_add_email_modal").find("#dialog_error");
+        const data = {};
+        data.email = $("#demo_organization_add_email").val();
+        data.full_name = $("#demo_organization_update_full_name").val();
+
+        const opts = {
+            success_continuation() {
+                if (page_params.development_environment) {
+                    const email_msg = render_settings_dev_env_email_access();
+                    ui_report.success(
+                        email_msg,
+                        $("#dev-account-settings-status").expectOne(),
+                        4000,
+                    );
+                }
+                dialog_widget.close_modal();
+            },
+            error_continuation() {
+                dialog_widget.hide_dialog_spinner();
+            },
+            $error_msg_element: $change_email_error,
+            success_msg_html: $t_html(
+                {defaultMessage: "Check your email ({email}) to confirm the new address."},
+                {email: data.email},
+            ),
+            sticky: true,
+        };
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $("#account-settings-status").expectOne(),
+            opts,
+        );
+    }
+
+    $("#demo_organization_add_email_button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        function demo_organization_add_email_post_render() {
+            // Disable submit button if either input is an empty string.
+            const $add_email_element = $("#demo_organization_add_email");
+            const $add_name_element = $("#demo_organization_update_full_name");
+
+            const $demo_organization_submit_button = $(
+                "#demo_organization_add_email_modal .dialog_submit_button",
+            );
+            $demo_organization_submit_button.prop("disabled", true);
+
+            $("#demo_organization_add_email_form input").on("input", () => {
+                $demo_organization_submit_button.prop(
+                    "disabled",
+                    $add_email_element.val().trim() === "" || $add_name_element.val().trim() === "",
+                );
+            });
+        }
+
+        if (
+            page_params.demo_organization_scheduled_deletion_date &&
+            page_params.is_owner &&
+            page_params.delivery_email === ""
+        ) {
+            dialog_widget.launch({
+                html_heading: $t_html({defaultMessage: "Add email"}),
+                html_body: render_demo_organization_add_email_modal({
+                    delivery_email: page_params.delivery_email,
+                    full_name: page_params.full_name,
+                }),
+                html_submit_button: $t_html({defaultMessage: "Add"}),
+                loading_spinner: true,
+                id: "demo_organization_add_email_modal",
+                form_id: "demo_organization_add_email_form",
+                on_click: do_demo_organization_add_email,
+                on_shown() {
+                    ui_util.place_caret_at_end($("#demo_organization_add_email_form input")[0]);
+                },
+                post_render: demo_organization_add_email_post_render,
             });
         }
     });
