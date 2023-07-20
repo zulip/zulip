@@ -732,7 +732,7 @@ export function show_edit_user_info_modal(user_id, $container) {
     });
 }
 
-function handle_human_form($tbody) {
+function handle_edit_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -744,24 +744,12 @@ function handle_human_form($tbody) {
     });
 }
 
-function handle_bot_form($tbody) {
-    $tbody.on("click", ".open-user-form", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        popovers.hide_all();
-
-        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        const user = people.get_by_user_id(user_id);
-        user_profile.show_user_profile(user, 3);
-    });
-}
-
 section.active.handle_events = () => {
     const $tbody = $("#admin_users_table").expectOne();
 
     handle_deactivation($tbody);
     handle_reactivation($tbody);
-    handle_human_form($tbody);
+    handle_edit_form($tbody);
 };
 
 section.deactivated.handle_events = () => {
@@ -769,7 +757,7 @@ section.deactivated.handle_events = () => {
 
     handle_deactivation($tbody);
     handle_reactivation($tbody);
-    handle_human_form($tbody);
+    handle_edit_form($tbody);
 };
 
 section.bots.handle_events = () => {
@@ -777,7 +765,7 @@ section.bots.handle_events = () => {
 
     handle_bot_deactivation($tbody);
     handle_reactivation($tbody);
-    handle_bot_form($tbody);
+    handle_edit_form($tbody);
 };
 
 export function set_up_humans() {
