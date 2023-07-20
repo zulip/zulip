@@ -151,8 +151,20 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         activate_url=activation_url,
     )
     language = user_profile.default_language
+
+    email_template = "zerver/emails/confirm_new_email"
+
+    if old_email == "":
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert (
+            user_profile.realm.demo_organization_scheduled_deletion_date is not None
+            and user_profile.is_realm_owner
+        )
+        email_template = "zerver/emails/confirm_demo_organization_email"
+
     send_email(
-        "zerver/emails/confirm_new_email",
+        template_prefix=email_template,
         to_emails=[new_email],
         from_name=FromAddress.security_email_from_name(language=language),
         from_address=FromAddress.tokenized_no_reply_address(),
