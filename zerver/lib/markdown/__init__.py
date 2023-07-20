@@ -2579,9 +2579,6 @@ def do_convert(
         return rendering_result
     except Exception:
         cleaned = privacy_clean_markdown(content)
-        # NOTE: Don't change this message without also changing the
-        # logic in logging_handlers.py or we can create recursive
-        # exceptions.
         markdown_logger.exception(
             "Exception in Markdown parser; input (sanitized) was: %s\n (message %s)",
             cleaned,
