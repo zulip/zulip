@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 193**
+
+* [`POST /messages/{message_id}/reactions`](/api/add-reaction),
+  [`DELETE /messages/{message_id}/reactions`](/api/remove-reaction):
+  Endpoints return specific error responses if an emoji reaction
+  already exists when adding a reaction (`"code": "REACTION_ALREADY_EXISTS"`)
+  or if an emoji reaction does not exist when deleting a reaction
+  (`"code": "REACTION_DOES_NOT_EXIST"`). Previously, these errors
+  returned the `"BAD_REQUEST"` code.
+
 **Feature level 192**
 
 * [`GET /events`](/api/get-events): Stream creation events are now
