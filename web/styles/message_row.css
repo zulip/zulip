@@ -17,7 +17,11 @@ $time_column_min_width: 42px; /* + padding */
 
 .message_row {
     display: grid;
-    grid-template: auto auto / 2px 1fr;
+    /* Prevent the messagebox column from overflowing the 1fr
+       space allotted by specifying `minmax(0,1fr)`, which
+       sets 0 as the minimum size, not the grid default of
+       `auto`. */
+    grid-template: auto auto / 2px minmax(0, 1fr);
     grid-template-areas:
         "date_unread_marker    date_row  "
         "message_unread_marker messagebox";
@@ -121,9 +125,15 @@ $time_column_min_width: 42px; /* + padding */
         display: grid;
         align-items: baseline;
         padding-left: 10px;
+        /* Prevent the message column from overflowing the 1fr
+           space allotted by specifying `minmax(0,1fr)`, which
+           sets 0 as the minimum size, not the grid default of
+           `auto`. */
         grid-template:
             var(--message-box-icon-height) repeat(3, auto) /
-            $avatar_column_width auto calc(3 * var(--message-box-icon-width))
+            $avatar_column_width minmax(0, 1fr) calc(
+                3 * var(--message-box-icon-width)
+            )
             8px minmax($time_column_min_width, max-content);
         /* Named grid areas provide flexibility for positioning grid items
            reliably, even if the row or column definitions of the grid change. */
@@ -261,9 +271,6 @@ $time_column_min_width: 42px; /* + padding */
               is preserved from the message itself--keeping the time,
               edit message, and controls at the same vertical alignment. */
             align-self: start;
-            /* Keep previewed messages from overflowing the grid area
-               that .message_edit is assigned to. */
-            overflow: hidden;
             margin-top: $distance_of_non_text_elements_from_message_box;
         }
 
