@@ -195,7 +195,11 @@ function render_user_group_list(groups, user) {
 function render_manage_profile_content(user) {
     const $container = $("#manage-profile-tab");
     $container.empty();
-    settings_users.show_edit_user_info_modal(user.user_id, $container);
+    if (user.is_bot) {
+        settings_bots.show_edit_bot_info_modal(user.user_id, $container);
+    } else {
+        settings_users.show_edit_user_info_modal(user.user_id, $container);
+    }
     $("#user-profile-modal .modal__footer").show();
 }
 
@@ -288,9 +292,11 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         !user.is_system_bot &&
         people.is_person_active(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+    // We currently have the main UI for editing your own profile in
+    // settings, so can_manage_profile is artificially false for those.
     const can_manage_profile =
-        people.is_person_active(user.user_id) &&
-        page_params.is_admin &&
+        (people.can_admin_user(user) || page_params.is_admin) &&
+        !user.is_system_bot &&
         !people.is_my_user_id(user.user_id);
     const args = {
         user_id: user.user_id,
@@ -369,8 +375,11 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     };
 
     if (can_manage_profile) {
+        const manage_profile_label = user.is_bot
+            ? $t({defaultMessage: "Manage bot"})
+            : $t({defaultMessage: "Manage user"});
         const manage_profile_tab = {
-            label: $t({defaultMessage: "Manage user"}),
+            label: manage_profile_label,
             key: "manage-profile-tab",
         };
         opts.values.push(manage_profile_tab);
