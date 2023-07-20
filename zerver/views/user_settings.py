@@ -3,9 +3,10 @@ from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import SafeString
@@ -28,6 +29,7 @@ from zerver.actions.user_settings import (
     do_start_email_change_process,
 )
 from zerver.decorator import human_users_only
+from zerver.forms import generate_password_reset_url
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_validation import (
     get_realm_email_validator,
@@ -88,6 +90,20 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
     context = {"realm_name": user_profile.realm.name, "new_email": new_email}
     language = user_profile.default_language
+
+    if old_email == "":
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert (
+            user_profile.realm.demo_organization_scheduled_deletion_date is not None
+            and user_profile.is_realm_owner
+        )
+        # Because demo organizations are created without setting an email and password
+        # we want to redirect to setting a password after configuring and confirming
+        # an email for the owner's account.
+        reset_password_url = generate_password_reset_url(user_profile, default_token_generator)
+        return HttpResponseRedirect(reset_password_url)
+
     send_email(
         "zerver/emails/notify_change_in_email",
         to_emails=[old_email],
