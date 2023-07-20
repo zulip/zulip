@@ -338,12 +338,12 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
     });
 }
 
-export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
+export function show_edit_bot_info_modal(user_id, $container) {
     const bot = people.maybe_get_user_by_id(user_id);
     const owner_id = bot_data.get(user_id).owner_id;
     const owner_full_name = people.get_full_name(owner_id);
 
-    if (!bot) {
+    if (!bot || !bot_data.get(user_id)) {
         return;
     }
 
@@ -357,15 +357,15 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         owner_full_name,
         current_bot_owner: bot.bot_owner_id,
     });
-
+    $container.append(html_body);
     let avatar_widget;
 
     const bot_type = bot.bot_type.toString();
     const service = bot_data.get_services(bot.user_id)[0];
-
-    function submit_bot_details() {
+    edit_bot_post_render();
+    $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
-        const $full_name = $("#dialog_widget_modal").find("input[name='full_name']");
+        const $full_name = $("#bot-edit-form").find("input[name='full_name']");
         const url = "/json/bots/" + encodeURIComponent(bot.user_id);
 
         const formData = new FormData();
@@ -395,6 +395,11 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             formData.append("file-" + i, file);
         }
 
+        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
+        settings_users.show_button_spinner($submit_btn);
+        $cancel_btn.prop("disabled", true);
+
         channel.patch({
             url,
             data: formData,
@@ -402,14 +407,23 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             contentType: false,
             success() {
                 avatar_widget.clear();
-                dialog_widget.close_modal();
+                user_profile.hide_user_profile();
             },
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
-                dialog_widget.hide_dialog_spinner();
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed"}),
+                    xhr,
+                    $("#bot-edit-form-error"),
+                );
+                // Scrolling modal to top, to make error visible to user.
+                $("#bot-edit-form")
+                    .closest(".simplebar-content-wrapper")
+                    .animate({scrollTop: 0}, "fast");
+                settings_users.hide_button_spinner($submit_btn);
+                $cancel_btn.prop("disabled", false);
             },
         });
-    }
+    });
 
     function edit_bot_post_render() {
         $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
@@ -488,21 +502,9 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
                 const url = "/json/bots/" + encodeURIComponent(bot_id);
                 dialog_widget.submit_api_request(channel.del, url);
             }
-            const open_deactivate_modal_callback = () =>
-                confirm_bot_deactivation(bot_id, handle_confirm, true);
-            dialog_widget.close_modal(open_deactivate_modal_callback);
+            confirm_bot_deactivation(bot_id, handle_confirm, true);
         });
     }
-
-    dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Manage bot"}),
-        html_body,
-        id: "edit_bot_modal",
-        on_click: submit_bot_details,
-        post_render: edit_bot_post_render,
-        loading_spinner: from_user_info_popover,
-        update_submit_disabled_state_on_change: true,
-    });
 }
 
 export function set_up() {
@@ -590,7 +592,8 @@ export function set_up() {
         e.stopPropagation();
         const $li = $(e.currentTarget).closest("li");
         const bot_id = Number.parseInt($li.find(".bot_info").attr("data-user-id"), 10);
-        show_edit_bot_info_modal(bot_id, false);
+        const bot = people.get_by_user_id(bot_id);
+        user_profile.show_user_profile(bot, "manage-profile-tab");
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {

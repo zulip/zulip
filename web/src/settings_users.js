@@ -751,7 +751,8 @@ function handle_bot_form($tbody) {
         popovers.hide_all();
 
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        settings_bots.show_edit_bot_info_modal(user_id, false);
+        const user = people.get_by_user_id(user_id);
+        user_profile.show_user_profile(user, 3);
     });
 }
 
