@@ -6680,17 +6680,30 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "result": "error",
-                        "msg": "Invalid emoji code",
-                        "code": "BAD_REQUEST",
-                      }
-                    description: |
-                      An example JSON error response for when the emoji code is invalid:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid emoji code",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response for when the emoji code is invalid:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Reaction already exists.",
+                            "code": "REACTION_ALREADY_EXISTS",
+                          }
+                        description: |
+                          An example JSON error response for when the reaction already exists.
 
+                          **Changes**: New in Zulip 8.0 (feature level 193). Previously, this
+                          error returned the `"BAD_REQUEST"` code.
     delete:
       operationId: remove-reaction
       summary: Remove an emoji reaction
@@ -6729,16 +6742,30 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "result": "error",
-                        "msg": "Invalid message(s)",
-                        "code": "BAD_REQUEST",
-                      }
-                    description: |
-                      An example JSON error response for when the emoji code is invalid:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid emoji code",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response for when the emoji code is invalid:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Reaction doesn't exist.",
+                            "code": "REACTION_DOES_NOT_EXIST",
+                          }
+                        description: |
+                          An example JSON error response for when the reaction does not exist.
+
+                          **Changes**: New in Zulip 8.0 (feature level 193). Previously, this
+                          error returned the `"BAD_REQUEST"` code.
 
   /messages/{message_id}/read_receipts:
     get:
