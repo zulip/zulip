@@ -130,10 +130,13 @@ A summary of the formatting syntax above is available in the Zulip app.
 
 {start_tabs}
 
-{!start-composing.md!}
+{relative|gear|message-formatting}
 
-1. Click the **question mark** (<i class="fa fa-question"></i>) icon at the
-   bottom of the compose box.
+!!! tip ""
+
+    You can also [open the compose box](/help/open-the-compose-box), and click
+    the **question mark** (<i class="fa fa-question"></i>) icon at the bottom of
+    the compose box.
 
 {end_tabs}
 
