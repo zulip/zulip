@@ -767,7 +767,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
         ({
             "user-id": "34",
             "stream-id": "111",
-        }[key]);
+        })[key];
     $("#compose_banners .recipient_not_subscribed").length = 1;
     $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
 
