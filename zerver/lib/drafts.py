@@ -63,7 +63,7 @@ def further_validated_draft_dict(
     last_edit_time = timestamp_to_datetime(timestamp)
 
     topic = ""
-    recipient = None
+    recipient_id = None
     to = draft_dict["to"]
     if draft_dict["type"] == "stream":
         topic = truncate_topic(draft_dict["topic"])
@@ -72,16 +72,16 @@ def further_validated_draft_dict(
         if len(to) != 1:
             raise JsonableError(_("Must specify exactly 1 stream ID for stream messages"))
         stream, sub = access_stream_by_id(user_profile, to[0])
-        recipient = stream.recipient
+        recipient_id = stream.recipient_id
     elif draft_dict["type"] == "private" and len(to) != 0:
         to_users = get_user_profiles_by_ids(set(to), user_profile.realm)
         try:
-            recipient = recipient_for_user_profiles(to_users, False, None, user_profile)
+            recipient_id = recipient_for_user_profiles(to_users, False, None, user_profile).id
         except ValidationError as e:  # nocoverage
             raise JsonableError(e.messages[0])
 
     return {
-        "recipient": recipient,
+        "recipient_id": recipient_id,
         "topic": topic,
         "content": content,
         "last_edit_time": last_edit_time,
@@ -117,7 +117,7 @@ def do_create_drafts(draft_dicts: List[Dict[str, Any]], user_profile: UserProfil
         draft_objects.append(
             Draft(
                 user_profile=user_profile,
-                recipient=valid_draft_dict["recipient"],
+                recipient_id=valid_draft_dict["recipient_id"],
                 topic=valid_draft_dict["topic"],
                 content=valid_draft_dict["content"],
                 last_edit_time=valid_draft_dict["last_edit_time"],
@@ -147,7 +147,7 @@ def do_edit_draft(draft_id: int, draft_dict: Dict[str, Any], user_profile: UserP
     valid_draft_dict = further_validated_draft_dict(draft_dict, user_profile)
     draft_object.content = valid_draft_dict["content"]
     draft_object.topic = valid_draft_dict["topic"]
-    draft_object.recipient = valid_draft_dict["recipient"]
+    draft_object.recipient_id = valid_draft_dict["recipient_id"]
     draft_object.last_edit_time = valid_draft_dict["last_edit_time"]
     draft_object.save()
 
