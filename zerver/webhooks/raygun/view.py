@@ -227,7 +227,7 @@ def compose_notification_message(payload: WildValue) -> str:
     # We now split this main function again into two functions. One is for
     # "NewErrorOccurred" and "ErrorReoccurred", and one is for the rest. Both
     # functions will return a text message that is formatted for the chat.
-    if event_type == "NewErrorOccurred" or event_type == "ErrorReoccurred":
+    if event_type in ("NewErrorOccurred", "ErrorReoccurred"):
         return notification_message_error_occurred(payload)
     elif "FollowUp" in event_type:
         return notification_message_follow_up(payload)
@@ -285,11 +285,7 @@ def compose_activity_message(payload: WildValue) -> str:
     # But, they all are almost identical and the only differences between them
     # are the keys at line 9 (check fixtures). So there's no need to split
     # the function like the notification one.
-    if (
-        event_type == "StatusChanged"
-        or event_type == "AssignedToUser"
-        or event_type == "CommentAdded"
-    ):
+    if event_type in ("StatusChanged", "AssignedToUser", "CommentAdded"):
         return activity_message(payload)
     else:
         raise UnsupportedWebhookEventTypeError(event_type)

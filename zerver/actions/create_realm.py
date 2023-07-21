@@ -98,9 +98,9 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
     # Custom configuration for educational organizations.  The present
     # defaults are designed for a single class, not a department or
     # larger institution, since those are more common.
-    if (
-        realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
-        or realm.org_type == Realm.ORG_TYPES["education"]["id"]
+    if realm.org_type in (
+        Realm.ORG_TYPES["education_nonprofit"]["id"],
+        Realm.ORG_TYPES["education"]["id"],
     ):
         # Limit user creation to administrators.
         realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
@@ -216,9 +216,9 @@ def do_create_realm(
         )
 
         realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-        if (
-            realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
-            or realm.org_type == Realm.ORG_TYPES["education"]["id"]
+        if realm.org_type in (
+            Realm.ORG_TYPES["education_nonprofit"]["id"],
+            Realm.ORG_TYPES["education"]["id"],
         ):
             # Email address of users should be initially visible to admins only.
             realm_default_email_address_visibility = (

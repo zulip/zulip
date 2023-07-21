@@ -41,12 +41,10 @@ def create_if_missing_realm_internal_bots() -> None:
 
 def send_initial_direct_message(user: UserProfile) -> None:
     # We adjust the initial Welcome Bot direct message for education organizations.
-    education_organization = False
-    if (
-        user.realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
-        or user.realm.org_type == Realm.ORG_TYPES["education"]["id"]
-    ):
-        education_organization = True
+    education_organization = user.realm.org_type in (
+        Realm.ORG_TYPES["education_nonprofit"]["id"],
+        Realm.ORG_TYPES["education"]["id"],
+    )
 
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API

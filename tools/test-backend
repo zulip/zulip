@@ -328,7 +328,7 @@ def main() -> None:
             if suite.startswith("test"):
                 for root, dirs, files_names in os.walk(zerver_test_dir):
                     for file_name in files_names:
-                        if file_name == suite or file_name == suite + ".py":
+                        if file_name in (suite, f"{suite}.py"):
                             new_suite = os.path.join(root, file_name)
                             args[i] = new_suite
                             break

@@ -77,7 +77,7 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
         description = pull_request["body"].tame(check_none_or(check_string))
     target_branch = None
     base_branch = None
-    if action == "opened" or action == "merged":
+    if action in ("opened", "merged"):
         target_branch = pull_request["head"]["label"].tame(check_string)
         base_branch = pull_request["base"]["label"].tame(check_string)
 
