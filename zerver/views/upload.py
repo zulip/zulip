@@ -269,7 +269,7 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     if len(request.FILES) != 1:
         raise JsonableError(_("You may only upload one file at a time"))
 
-    user_file = list(request.FILES.values())[0]
+    [user_file] = request.FILES.values()
     assert isinstance(user_file, UploadedFile)
     file_size = user_file.size
     assert file_size is not None

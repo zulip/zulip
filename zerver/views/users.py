@@ -414,7 +414,7 @@ def patch_bot_backend(
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
-        user_file = list(request.FILES.values())[0]
+        [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
         upload_avatar_image(user_file, user_profile, bot)
@@ -556,7 +556,7 @@ def add_bot_backend(
         acting_user=user_profile,
     )
     if len(request.FILES) == 1:
-        user_file = list(request.FILES.values())[0]
+        [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
         upload_avatar_image(user_file, user_profile, bot_profile)

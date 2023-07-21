@@ -453,11 +453,9 @@ def check_presence(
     assert isinstance(event["presence"], dict)
 
     # Our tests only have one presence value.
-    assert len(event["presence"]) == 1
-
-    assert list(event["presence"].keys())[0] == presence_key
-
-    assert list(event["presence"].values())[0]["status"] == status
+    [(event_presence_key, event_presence_value)] = event["presence"].items()
+    assert event_presence_key == presence_key
+    assert event_presence_value["status"] == status
 
 
 # Type for the legacy user field; the `user_id` field is intended to

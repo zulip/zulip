@@ -1072,9 +1072,9 @@ class NormalActionsTest(BaseAction):
             pronouns_field_type_supported=True,
         )
         check_custom_profile_fields("events[0]", events[0])
-        pronouns_field = [
+        [pronouns_field] = (
             field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
-        ][0]
+        )
         self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
 
         hint = "What pronouns should people use to refer you?"
@@ -1083,9 +1083,9 @@ class NormalActionsTest(BaseAction):
             pronouns_field_type_supported=False,
         )
         check_custom_profile_fields("events[0]", events[0])
-        pronouns_field = [
+        [pronouns_field] = (
             field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
-        ][0]
+        )
         self.assertEqual(pronouns_field["type"], CustomProfileField.SHORT_TEXT)
 
     def test_custom_profile_field_data_events(self) -> None:

@@ -623,10 +623,10 @@ def get_user_groups(client: Client) -> int:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/user_groups", "get", "200")
-    hamlet_user_group = [u for u in result["user_groups"] if u["name"] == "hamletcharacters"][0]
+    [hamlet_user_group] = (u for u in result["user_groups"] if u["name"] == "hamletcharacters")
     assert hamlet_user_group["description"] == "Characters of Hamlet"
 
-    marketing_user_group = [u for u in result["user_groups"] if u["name"] == "marketing"][0]
+    [marketing_user_group] = (u for u in result["user_groups"] if u["name"] == "marketing")
     return marketing_user_group["id"]
 
 

@@ -126,6 +126,11 @@ def communities_view(request: HttpRequest) -> HttpResponse:
     for realm in want_to_be_advertised_realms:
         open_to_public = not realm.invite_required and not realm.emails_restricted_to_domains
         if realm.allow_web_public_streams_access() or open_to_public:
+            [org_type] = (
+                org_type
+                for org_type in Realm.ORG_TYPES
+                if Realm.ORG_TYPES[org_type]["id"] == realm.org_type
+            )
             eligible_realms.append(
                 {
                     "id": realm.id,
@@ -133,11 +138,7 @@ def communities_view(request: HttpRequest) -> HttpResponse:
                     "realm_url": realm.uri,
                     "logo_url": get_realm_icon_url(realm),
                     "description": get_realm_text_description(realm),
-                    "org_type_key": [
-                        org_type
-                        for org_type in Realm.ORG_TYPES
-                        if Realm.ORG_TYPES[org_type]["id"] == realm.org_type
-                    ][0],
+                    "org_type_key": org_type,
                 }
             )
             unique_org_type_ids.add(realm.org_type)

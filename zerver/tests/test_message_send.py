@@ -585,9 +585,7 @@ class MessagePOSTTest(ZulipTestCase):
         message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        self.assert_length(recent_conversations, 1)
-        recent_conversation = list(recent_conversations.values())[0]
-        recipient_id = list(recent_conversations.keys())[0]
+        [(recipient_id, recent_conversation)] = recent_conversations.items()
         self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
         self.assertEqual(recent_conversation["max_message_id"], message_id)
 
@@ -611,8 +609,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         # Now verify we have the appropriate self-pm data structure
         del recent_conversations[recipient_id]
-        recent_conversation = list(recent_conversations.values())[0]
-        recipient_id = list(recent_conversations.keys())[0]
+        [(recipient_id, recent_conversation)] = recent_conversations.items()
         self.assertEqual(set(recent_conversation["user_ids"]), set())
         self.assertEqual(recent_conversation["max_message_id"], self_message_id)
 
@@ -1817,8 +1814,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assert_length(msg_data["huddle_dict"].keys(), 2)
 
         recent_conversations = get_recent_private_conversations(users[1])
-        self.assert_length(recent_conversations, 1)
-        recent_conversation = list(recent_conversations.values())[0]
+        [recent_conversation] = recent_conversations.values()
         self.assertEqual(
             set(recent_conversation["user_ids"]), {user.id for user in users if user != users[1]}
         )

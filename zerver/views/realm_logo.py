@@ -25,7 +25,7 @@ def upload_logo(
 
     if len(request.FILES) != 1:
         raise JsonableError(_("You must upload exactly one logo."))
-    logo_file = list(request.FILES.values())[0]
+    [logo_file] = request.FILES.values()
     assert isinstance(logo_file, UploadedFile)
     assert logo_file.size is not None
     if (settings.MAX_LOGO_FILE_SIZE_MIB * 1024 * 1024) < logo_file.size:

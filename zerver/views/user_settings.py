@@ -344,7 +344,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
-    user_file = list(request.FILES.values())[0]
+    [user_file] = request.FILES.values()
     assert isinstance(user_file, UploadedFile)
     assert user_file.size is not None
     if (settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024) < user_file.size:
