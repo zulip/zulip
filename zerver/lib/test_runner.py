@@ -326,28 +326,25 @@ class Runner(DiscoverRunner):
     def test_imports(
         self, test_labels: List[str], suite: Union[TestSuite, ParallelTestSuite]
     ) -> None:
-        prefix_old = "unittest.loader.ModuleImportFailure."  # Python <= 3.4
-        prefix_new = "unittest.loader._FailedTest."  # Python > 3.4
-        error_prefixes = [prefix_old, prefix_new]
+        prefix = "unittest.loader._FailedTest."
         for test_name in get_test_names(suite):
-            for prefix in error_prefixes:
-                if test_name.startswith(prefix):
-                    test_name = test_name[len(prefix) :]
-                    for label in test_labels:
-                        # This code block is for Python 3.5 when test label is
-                        # directly provided, for example:
-                        # ./tools/test-backend zerver.tests.test_alert_words.py
-                        #
-                        # In this case, the test name is of this form:
-                        # 'unittest.loader._FailedTest.test_alert_words'
-                        #
-                        # Whereas check_import_error requires test names of
-                        # this form:
-                        # 'unittest.loader._FailedTest.zerver.tests.test_alert_words'.
-                        if test_name in label:
-                            test_name = label
-                            break
-                    check_import_error(test_name)
+            if test_name.startswith(prefix):
+                test_name = test_name[len(prefix) :]
+                for label in test_labels:
+                    # This code block is for when a test label is
+                    # directly provided, for example:
+                    # ./tools/test-backend zerver.tests.test_alert_words.py
+                    #
+                    # In this case, the test name is of this form:
+                    # 'unittest.loader._FailedTest.test_alert_words'
+                    #
+                    # Whereas check_import_error requires test names of
+                    # this form:
+                    # 'unittest.loader._FailedTest.zerver.tests.test_alert_words'.
+                    if test_name in label:
+                        test_name = label
+                        break
+                check_import_error(test_name)
 
     def run_tests(
         self,
@@ -359,23 +356,7 @@ class Runner(DiscoverRunner):
         **kwargs: Any,
     ) -> int:
         self.setup_test_environment()
-        try:
-            suite = self.build_suite(test_labels, extra_tests)
-        except AttributeError:
-            # We are likely to get here only when running tests in serial
-            # mode on Python 3.4 or lower.
-            # test_labels are always normalized to include the correct prefix.
-            # If we run the command with ./tools/test-backend test_alert_words,
-            # test_labels will be equal to ['zerver.tests.test_alert_words'].
-            for test_label in test_labels:
-                check_import_error(test_label)
-
-            # I think we won't reach this line under normal circumstances, but
-            # for some unforeseen scenario in which the AttributeError was not
-            # caused by an import error, let's re-raise the exception for
-            # debugging purposes.
-            raise
-
+        suite = self.build_suite(test_labels, extra_tests)
         self.test_imports(test_labels, suite)
         if self.parallel == 1:
             # We are running in serial mode so create the databases here.

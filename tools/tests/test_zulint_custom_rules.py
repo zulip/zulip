@@ -48,25 +48,15 @@ class TestRuleList(TestCase):
         for rule in self.all_rules:
             pattern = rule["pattern"]
             for line in rule.get("good_lines", []):
-                # create=True is superfluous when mocking built-ins in Python >= 3.5
-                with patch(
-                    "builtins.open",
-                    return_value=StringIO(line + "\n\n"),
-                    create=True,
-                    autospec=True,
-                ):
+                with patch("builtins.open", return_value=StringIO(line + "\n\n"), autospec=True):
                     self.assertFalse(
                         RuleList([], [rule]).custom_check_file("foo.bar", "baz", ""),
                         f"The pattern '{pattern}' matched the line '{line}' while it shouldn't.",
                     )
 
             for line in rule.get("bad_lines", []):
-                # create=True is superfluous when mocking built-ins in Python >= 3.5
                 with patch(
-                    "builtins.open",
-                    return_value=StringIO(line + "\n\n"),
-                    create=True,
-                    autospec=True,
+                    "builtins.open", return_value=StringIO(line + "\n\n"), autospec=True
                 ), patch("builtins.print"):
                     filename = list(rule.get("include_only", {"foo.bar"}))[0]
                     self.assertTrue(
