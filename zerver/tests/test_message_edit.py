@@ -3690,7 +3690,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(57), cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(56), cache_tries_captured() as cache_tries:
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
