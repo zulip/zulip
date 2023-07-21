@@ -863,10 +863,10 @@ export function process_hotkey(e, hotkey) {
             narrow.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic();
+            narrow.narrow_to_next_topic({trigger: "hotkey"});
             return true;
         case "p_key":
-            narrow.narrow_to_next_pm_string();
+            narrow.narrow_to_next_pm_string({trigger: "hotkey"});
             return true;
         case "open_recent_topics":
             browser_history.go_to_location("#recent");
