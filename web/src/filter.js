@@ -527,10 +527,6 @@ export class Filter {
             return true;
         }
 
-        if (_.isEqual(term_types, ["is-mentioned"])) {
-            return true;
-        }
-
         if (_.isEqual(term_types, ["is-resolved"])) {
             return true;
         }
@@ -568,15 +564,19 @@ export class Filter {
         // can_mark_messages_read tests the following filters:
         // stream, stream + topic,
         // is:dm, dm,
-        // is:mentioned, is:resolved
+        // is:resolved
         if (this.can_mark_messages_read()) {
             return true;
         }
         // that leaves us with checking:
         // is: starred
-        // (which can_mark_messages_read_does not check as starred messages are always read)
+        // (which can_mark_messages_read does not check as starred messages are always read)
+        // is: mentioned
+        // (for which can_mark_messages_read returns false, since they don't have conversation context)
         const term_types = this.sorted_term_types();
-
+        if (_.isEqual(term_types, ["is-mentioned"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
