@@ -56,14 +56,14 @@ def api_sonarr_webhook(
 
 def get_subject_for_http_request(payload: WildValue) -> str:
     event_type = payload["eventType"].tame(check_string)
-    if event_type != "Test" and event_type != "Health":
-        topic = SONARR_TOPIC_TEMPLATE.format(
-            series_title=payload["series"]["title"].tame(check_string)
-        )
-    elif event_type == "Test":
+    if event_type == "Test":
         topic = SONARR_TOPIC_TEMPLATE_TEST
     elif event_type == "Health":
         topic = SONARR_TOPIC_TEMPLATE_HEALTH_CHECK.format(level=payload["level"].tame(check_string))
+    else:
+        topic = SONARR_TOPIC_TEMPLATE.format(
+            series_title=payload["series"]["title"].tame(check_string)
+        )
 
     return topic
 

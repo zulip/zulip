@@ -454,7 +454,7 @@ def get_subject_based_on_event(
 ) -> str:
     if event == "Push Hook":
         return f"{get_repo_name(payload)} / {get_branch_name(payload)}"
-    elif event == "Job Hook" or event == "Build Hook":
+    elif event in ("Job Hook", "Build Hook"):
         return "{} / {}".format(
             payload["repository"]["name"].tame(check_string), get_branch_name(payload)
         )
@@ -479,7 +479,7 @@ def get_subject_based_on_event(
             id=payload["object_attributes"]["iid"].tame(check_int),
             title=payload["object_attributes"]["title"].tame(check_string),
         )
-    elif event == "Note Hook Issue" or event == "Confidential Note Hook Issue":
+    elif event in ("Note Hook Issue", "Confidential Note Hook Issue"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="issue",

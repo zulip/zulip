@@ -400,7 +400,7 @@ def get_story_create_github_entity_body(payload: WildValue, action: WildValue, e
             app_url=action["app_url"].tame(check_string),
         ),
         "name": pull_request_action["number"].tame(check_int)
-        if entity == "pull-request" or entity == "pull-request-comment"
+        if entity in ("pull-request", "pull-request-comment")
         else pull_request_action["name"].tame(check_string),
         "url": pull_request_action["url"].tame(check_string),
         "workflow_state_template": "",

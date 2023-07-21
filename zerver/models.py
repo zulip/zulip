@@ -2022,10 +2022,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
 
     @property
     def is_realm_admin(self) -> bool:
-        return (
-            self.role == UserProfile.ROLE_REALM_ADMINISTRATOR
-            or self.role == UserProfile.ROLE_REALM_OWNER
-        )
+        return self.role in (UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER)
 
     @is_realm_admin.setter
     def is_realm_admin(self, value: bool) -> None:

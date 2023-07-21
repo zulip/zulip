@@ -515,7 +515,7 @@ def do_send_missedmessage_events_reply_in_zulip(
                 {
                     m["message"].sender
                     for m in missed_messages
-                    if m["trigger"] == "mentioned" or m["trigger"] == "wildcard_mentioned"
+                    if m["trigger"] in ("mentioned", "wildcard_mentioned")
                 }
             )
         message = missed_messages[0]["message"]
