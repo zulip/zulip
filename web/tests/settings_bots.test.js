@@ -11,10 +11,19 @@ const bot_data_params = {
     realm_bots: [
         {
             api_key: "QadL788EkiottHmukyhHgePUFHREiu8b",
+            avatar_url: "",
+            bot_type: 1, // DEFAULT_BOT
+            default_all_public_streams: true,
+            default_events_register_stream: "register stream 1",
+            default_sending_stream: "sending stream 1",
             email: "error-bot@zulip.org",
             full_name: "Error bot",
+            is_active: true,
+            owner: "someone 4",
+            owner_id: 4,
             user_id: 1,
             services: [],
+            extra: "This field should be ignored",
         },
     ],
 };
