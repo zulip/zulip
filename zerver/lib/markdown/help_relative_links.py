@@ -75,9 +75,15 @@ scheduled_instructions = """
    sidebar. If you do not see this link, you have no scheduled messages.
 """
 
+recent_instructions = """
+1. Click on <i class="fa fa-clock-o"></i> **Recent conversations** in the left
+   sidebar.
+"""
+
 message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
+    "recent": ["Recent conversations", "/#recent", recent_instructions],
 }
 
 

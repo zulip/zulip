@@ -2,7 +2,7 @@
 
 {tab|via-recent-conversations}
 
-{!open-recent-conversations.md!}
+{relative|message|recent}
 
 1. Click on the name of a topic in the **Topic** column.
 
