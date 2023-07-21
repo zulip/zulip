@@ -832,7 +832,7 @@ export function stream_cycle_forward() {
     activate_stream_for_cycle_hotkey(stream_name);
 }
 
-export function narrow_to_next_topic() {
+export function narrow_to_next_topic(opts = {}) {
     const curr_info = {
         stream: narrow_state.stream(),
         topic: narrow_state.topic(),
@@ -849,10 +849,10 @@ export function narrow_to_next_topic() {
         {operator: "topic", operand: next_narrow.topic},
     ];
 
-    activate(filter_expr, {});
+    activate(filter_expr, opts);
 }
 
-export function narrow_to_next_pm_string() {
+export function narrow_to_next_pm_string(opts = {}) {
     const current_direct_message = narrow_state.pm_ids_string();
 
     const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
@@ -868,11 +868,12 @@ export function narrow_to_next_pm_string() {
     const filter_expr = [{operator: "dm", operand: direct_message}];
 
     // force_close parameter is true to not auto open compose_box
-    const opts = {
+    const updated_opts = {
+        ...opts,
         force_close: true,
     };
 
-    activate(filter_expr, opts);
+    activate(filter_expr, updated_opts);
 }
 
 // Activate narrowing with a single operator.
