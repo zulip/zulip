@@ -14,7 +14,7 @@ def check_venv(filename: str) -> None:
             "to enter the development environment."
         )
 
-        if user_name != "vagrant" and user_name != "zulipdev":
+        if user_name not in ("vagrant", "zulipdev"):
             print()
             print("If you are using Vagrant, first run `vagrant ssh` to enter the Vagrant guest.")
         sys.exit(1)

@@ -61,9 +61,9 @@ def try_add_realm_custom_profile_field(
         display_in_profile_summary=display_in_profile_summary,
     )
     custom_profile_field.hint = hint
-    if (
-        custom_profile_field.field_type == CustomProfileField.SELECT
-        or custom_profile_field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
+    if custom_profile_field.field_type in (
+        CustomProfileField.SELECT,
+        CustomProfileField.EXTERNAL_ACCOUNT,
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
 
@@ -109,10 +109,7 @@ def try_update_realm_custom_profile_field(
     field.name = name
     field.hint = hint
     field.display_in_profile_summary = display_in_profile_summary
-    if (
-        field.field_type == CustomProfileField.SELECT
-        or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
-    ):
+    if field.field_type in (CustomProfileField.SELECT, CustomProfileField.EXTERNAL_ACCOUNT):
         if field.field_type == CustomProfileField.SELECT:
             assert field_data is not None
             remove_custom_profile_field_value_if_required(field, field_data)

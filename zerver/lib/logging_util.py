@@ -147,7 +147,7 @@ def find_log_origin(record: logging.LogRecord) -> str:
 
     if settings.LOGGING_SHOW_MODULE:
         module_name = find_log_caller_module(record)
-        if module_name == logger_name or module_name == record.name:
+        if module_name in (logger_name, record.name):
             # Abbreviate a bit.
             pass
         else:

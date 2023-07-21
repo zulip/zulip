@@ -43,7 +43,7 @@ def api_wordpress_webhook(
     # remove trailing whitespace (issue for some test fixtures)
     hook = hook.rstrip()
 
-    if hook == "publish_post" or hook == "publish_page":
+    if hook in ("publish_post", "publish_page"):
         data = PUBLISH_POST_OR_PAGE_TEMPLATE.format(type=post_type, title=post_title, url=post_url)
 
     elif hook == "user_register":
