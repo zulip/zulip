@@ -28,6 +28,7 @@ gear_info = {
     "invite": ["Invite users", "/#invite"],
     "keyboard-shortcuts": ["Keyboard shortcuts (?)", "/#keyboard-shortcuts"],
     "message-formatting": ["Message formatting", "/#message-formatting"],
+    "search-filters": ["Search filters", "/#search-operators"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
