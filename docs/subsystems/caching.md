@@ -68,8 +68,9 @@ def user_profile_cache_key(email: str, realm: "Realm") -> str:
 
 @cache_with_key(user_profile_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: Realm) -> UserProfile:
-    return UserProfile.objects.select_related().get(
-        email__iexact=email.strip(), realm=realm)
+    return UserProfile.objects.select_related("realm", "bot_owner").get(
+        email__iexact=email.strip(), realm=realm
+    )
 ```
 
 This decorator implements a pretty classic caching paradigm:
