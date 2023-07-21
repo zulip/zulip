@@ -288,19 +288,17 @@ Your remote Zulip dev server has been created!
 
 def print_production_droplet_instructions(droplet_domain_name: str) -> None:
     print(
-        """
+        f"""
 -----
 
 Production droplet created successfully!
 
 Connect to the server by running
 
-ssh root@{}
+ssh root@{droplet_domain_name}
 
 -----
-""".format(
-            droplet_domain_name
-        )
+"""
     )
 
 
