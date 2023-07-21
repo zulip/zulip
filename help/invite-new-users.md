@@ -29,7 +29,7 @@ permission to invite users.
 
 {start_tabs}
 
-{relative|gear|invite}
+{!invite-users.md!}
 
 1. Click **Send an email**.
 
@@ -61,7 +61,7 @@ permission to invite users.
 
 {start_tabs}
 
-{relative|gear|invite}
+{!invite-users.md!}
 
 1. Click **Generate invite link**.
 
