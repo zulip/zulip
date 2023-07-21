@@ -109,7 +109,9 @@
 }
 
 .top-menu-tab-input:checked + label {
-    transition: background, color 0.2s;
+    transition:
+        background,
+        color 0.2s;
     background: hsl(240deg 100% 10% / 60%);
     color: hsl(0deg 0% 100%);
     pointer-events: none;
@@ -359,7 +361,9 @@
     font-size: 20px;
     line-height: 28px;
     letter-spacing: 0.02em;
-    font-feature-settings: "pnum" on, "lnum" on;
+    font-feature-settings:
+        "pnum" on,
+        "lnum" on;
     color: hsl(0deg 0% 100% / 80%);
 
     transition: all 0.2;
@@ -553,7 +557,9 @@
     background-repeat: no-repeat;
     background-size: 32px;
     background-position: right;
-    transition: background, letter-spacing 0.2s;
+    transition:
+        background,
+        letter-spacing 0.2s;
 }
 
 .top-menu-mobile-summary:active::after {

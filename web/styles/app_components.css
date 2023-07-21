@@ -480,7 +480,8 @@ div.overlay {
 
 .stream-selection-header-colorblock {
     /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
-    box-shadow: inset 0 2px 1px -2px hsl(0deg 0% 20%),
+    box-shadow:
+        inset 0 2px 1px -2px hsl(0deg 0% 20%),
         inset 2px 0 1px -2px hsl(0deg 0% 20%),
         inset 0 -2px 1px -2px hsl(0deg 0% 20%);
     width: 10px;
@@ -1033,14 +1034,17 @@ div.overlay {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border: 1px solid hsl(0deg 0% 80%);
-    transition: border linear 0.2s, box-shadow linear 0.2s;
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     border-radius: 4px;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
         outline: 0;
-        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
 }

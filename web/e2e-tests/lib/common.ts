@@ -495,9 +495,9 @@ export async function get_rendered_messages(
             }
 
             const messages = await Promise.all(
-                (
-                    await element.$$(".message_row .message_content")
-                ).map(async (message_row) => (await get_element_text(message_row)).trim()),
+                (await element.$$(".message_row .message_content")).map(async (message_row) =>
+                    (await get_element_text(message_row)).trim(),
+                ),
             );
 
             return [key, messages];

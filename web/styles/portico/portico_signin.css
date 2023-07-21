@@ -203,7 +203,9 @@ html {
         margin: 0;
         width: auto;
 
-        transition: color 0.3s ease, border 0.3s ease;
+        transition:
+            color 0.3s ease,
+            border 0.3s ease;
 
         &:hover {
             color: hsl(156deg 62% 61%);
@@ -837,7 +839,9 @@ button.login-social-button {
     background-repeat: no-repeat;
     background-position: 13px 50%;
     background-color: hsl(0deg 0% 100%);
-    box-shadow: 0 1px 3px hsl(0deg 0% 0% / 30%), 0 0 5px hsl(0deg 0% 0% / 10%);
+    box-shadow:
+        0 1px 3px hsl(0deg 0% 0% / 30%),
+        0 0 5px hsl(0deg 0% 0% / 10%);
     margin-left: 0;
     margin-top: 0;
 

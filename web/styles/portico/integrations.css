@@ -122,7 +122,9 @@ $category-text: hsl(219deg 23% 33%);
                     display: block;
                     color: hsl(0deg 0% 33%);
                     margin-bottom: 10px;
-                    transition: border linear 0.2s, box-shadow linear 0.2s;
+                    transition:
+                        border linear 0.2s,
+                        box-shadow linear 0.2s;
 
                     &:focus {
                         border: 1px solid $border-green;

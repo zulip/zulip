@@ -582,7 +582,8 @@ button {
             font-size: 1.5em;
             font-weight: 300;
             line-height: 1.4;
-            text-shadow: 0 0 5px hsl(164deg 74% 15% / 30%),
+            text-shadow:
+                0 0 5px hsl(164deg 74% 15% / 30%),
                 0 0 20px hsl(0deg 0% 100% / 20%);
         }
 
@@ -3572,7 +3573,9 @@ button {
     letter-spacing: 2px;
     text-transform: uppercase;
     overflow: hidden;
-    transition: border-color 0.3s, background-color 0.3s;
+    transition:
+        border-color 0.3s,
+        background-color 0.3s;
     transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
     font-weight: 700;
     padding: 15px 5px;
@@ -4016,7 +4019,8 @@ button {
                 flex-direction: column;
                 width: 40vw;
                 height: 350px;
-                box-shadow: 0 1px 1px 0 hsl(193deg 100% 7.1% / 30%),
+                box-shadow:
+                    0 1px 1px 0 hsl(193deg 100% 7.1% / 30%),
                     1px 1px 1px 0 hsl(193deg 100% 7.1% / 15%),
                     -1px 1px 1px 0 hsl(193deg 100% 7.1% / 15%);
 

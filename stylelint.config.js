@@ -11,6 +11,7 @@ module.exports = {
         ],
 
         // Disable recommended rules we don't comply with yet
+        "media-query-no-invalid": null,
         "no-descending-specificity": null,
 
         // Disable standard rules we don't comply with yet
