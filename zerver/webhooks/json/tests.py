@@ -16,11 +16,9 @@ class JsonHookTests(WebhookTestCase):
             original_fixture = json.load(f)
 
         expected_topic = "JSON"
-        expected_message = """```json
-{original_fixture}
-```""".format(
-            original_fixture=json.dumps(original_fixture, indent=2)
-        )
+        expected_message = f"""```json
+{json.dumps(original_fixture, indent=2)}
+```"""
         self.check_webhook("json_github_push__1_commit", expected_topic, expected_message)
 
     def test_json_pingdom_http_up_to_down_message(self) -> None:
@@ -31,11 +29,9 @@ class JsonHookTests(WebhookTestCase):
             original_fixture = json.load(f)
 
         expected_topic = "JSON"
-        expected_message = """```json
-{original_fixture}
-```""".format(
-            original_fixture=json.dumps(original_fixture, indent=2)
-        )
+        expected_message = f"""```json
+{json.dumps(original_fixture, indent=2)}
+```"""
         self.check_webhook("json_pingdom_http_up_to_down", expected_topic, expected_message)
 
     def test_json_sentry_event_for_exception_js_message(self) -> None:
@@ -46,9 +42,7 @@ class JsonHookTests(WebhookTestCase):
             original_fixture = json.load(f)
 
         expected_topic = "JSON"
-        expected_message = """```json
-{original_fixture}
-```""".format(
-            original_fixture=json.dumps(original_fixture, indent=2)
-        )
+        expected_message = f"""```json
+{json.dumps(original_fixture, indent=2)}
+```"""
         self.check_webhook("json_sentry_event_for_exception_js", expected_topic, expected_message)
