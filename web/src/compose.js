@@ -569,6 +569,18 @@ export function initialize() {
     $("body").on(
         "click",
         `.${CSS.escape(
+            compose_banner.CLASSNAMES.unscheduled_message,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            const send_at_timestamp = popover_menus.get_selected_send_later_timestamp();
+            popover_menus.do_schedule_message(send_at_timestamp);
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(
             compose_banner.CLASSNAMES.recipient_not_subscribed,
         )} .main-view-banner-action-button`,
         (event) => {
