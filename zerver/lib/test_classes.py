@@ -1542,7 +1542,8 @@ Output:
         return values
 
     def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
-        return [r for r in data if r["id"] == db_id][0]
+        [r] = (r for r in data if r["id"] == db_id)
+        return r
 
     def init_default_ldap_database(self) -> None:
         """

@@ -155,7 +155,7 @@ class Command(BaseCommand):
             table: Type[BaseCount],
         ) -> None:
             end_times = time_range(
-                last_end_time, last_end_time, stat.frequency, len(list(fixture_data.values())[0])
+                last_end_time, last_end_time, stat.frequency, len(next(iter(fixture_data.values())))
             )
             if table == InstallationCount:
                 id_args: Dict[str, Any] = {}

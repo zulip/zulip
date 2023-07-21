@@ -2158,7 +2158,7 @@ class BulkUsersTest(ZulipTestCase):
             data = dict(client_gravatar=orjson.dumps(client_gravatar).decode())
             result = self.client_get("/json/users", data)
             rows = self.assert_json_success(result)["members"]
-            hamlet_data = [row for row in rows if row["user_id"] == hamlet.id][0]
+            [hamlet_data] = (row for row in rows if row["user_id"] == hamlet.id)
             return hamlet_data["avatar_url"]
 
         self.assertEqual(

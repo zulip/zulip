@@ -2812,7 +2812,7 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p>昨日、<span class="highlight">日本</span>のお菓子を送りました。</p>',
         )
 
-        english_message = [m for m in messages if m[TOPIC_NAME] == "english"][0]
+        [english_message] = (m for m in messages if m[TOPIC_NAME] == "english")
         self.assertEqual(english_message[MATCH_TOPIC], "english")
         self.assertEqual(
             english_message["match_content"],
