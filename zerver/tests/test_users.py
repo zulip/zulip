@@ -800,7 +800,7 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(cache_tries, 24)
+        self.assert_length(cache_tries, 22)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
         notifications = set()

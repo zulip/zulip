@@ -421,10 +421,6 @@ def display_recipient_cache_key(recipient_id: int) -> str:
     return f"display_recipient_dict:{recipient_id}"
 
 
-def single_user_display_recipient_cache_key(user_id: int) -> str:
-    return f"single_user_display_recipient:{user_id}"
-
-
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
     return f"user_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
@@ -536,7 +532,6 @@ def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
         "recipient_id", flat=True
     )
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
-    keys.append(single_user_display_recipient_cache_key(user_profile.id))
     cache_delete_many(keys)
 
 
