@@ -782,6 +782,7 @@ export function update_selection(opts) {
     message_lists.current.select_id(msg_id, {
         then_scroll,
         use_closest: true,
+        mark_read: false,
         force_rerender: true,
     });
 

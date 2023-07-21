@@ -129,7 +129,11 @@ export class MessageList {
             // message. Regardless of whether the messages are new or
             // old, we want to select a message as though we just
             // entered this view.
-            this.select_id(this.first_unread_message_id(), {then_scroll: true, use_closest: true});
+            this.select_id(this.first_unread_message_id(), {
+                then_scroll: true,
+                use_closest: true,
+                mark_read: false,
+            });
         }
 
         return render_info;

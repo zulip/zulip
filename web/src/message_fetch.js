@@ -469,6 +469,7 @@ export function initialize(home_view_loaded) {
             message_lists.home.select_id(data.anchor, {
                 then_scroll: true,
                 use_closest: true,
+                mark_read: false,
                 target_scroll_offset: page_params.initial_offset,
             });
         }
