@@ -435,9 +435,9 @@ class NarrowBuilder:
             cond = column("recipient_id", Integer).in_(recipient_ids)
             return query.where(maybe_negate(cond))
 
-        recipient = stream.recipient
-        assert recipient is not None
-        cond = column("recipient_id", Integer) == recipient.id
+        recipient_id = stream.recipient_id
+        assert recipient_id is not None
+        cond = column("recipient_id", Integer) == recipient_id
         return query.where(maybe_negate(cond))
 
     def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
