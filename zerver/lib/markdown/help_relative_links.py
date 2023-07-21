@@ -25,7 +25,6 @@ gear_info = {
     "stats": ["Usage statistics", "/stats"],
     "plans": ["Plans and pricing", "/plans/"],
     "billing": ["Billing", "/billing/"],
-    "invite": ["Invite users", "/#invite"],
     "keyboard-shortcuts": ["Keyboard shortcuts (?)", "/#keyboard-shortcuts"],
     "message-formatting": ["Message formatting", "/#message-formatting"],
     "search-filters": ["Search filters", "/#search-operators"],
