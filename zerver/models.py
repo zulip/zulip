@@ -43,7 +43,7 @@ from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
-from django.db import models, transaction
+from django.db import connection, models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import CASCADE, Exists, F, OuterRef, Q, QuerySet, Sum
 from django.db.models.functions import Lower, Upper
@@ -181,6 +181,48 @@ def query_for_ids(
         params=(tuple(user_ids),),
     )
     return query
+
+
+def get_column_values_from_single_table_using_id_lookup(
+    *, columns: List[str], table: str, id_field: str, ids: List[int], order_by_columns: List[str]
+) -> List[Dict[str, object]]:
+    """
+    Use this function somewhat judiciously, because it does impose a little bit
+    of burden on security auditors to make sure our callers are passing
+    `columns` that are not from user input and therefore not vulnerable to
+    injection attacks.
+
+    But this function is safe and fast. The Django ORM takes almost half a
+    millisecond to produce really simple queries that just fetch a bunch of
+    columns from a single table based on a bunch of ids. This function is
+    better.
+    """
+    if len(ids) == 0:
+        return []
+
+    column_list = ", ".join(columns)
+
+    assert table.startswith("zerver_")
+
+    for id in ids:
+        assert type(id) == int
+
+    id_list = ", ".join(str(id) for id in ids)
+
+    cursor = connection.cursor()
+
+    # ruff: noqa: S608
+    sql = f"SELECT {column_list} FROM {table} WHERE {id_field} in ({id_list})"
+
+    if order_by_columns:
+        order_by_list = ", ".join(order_by_columns)
+        sql += f" ORDER BY {order_by_list}"
+
+    cursor.execute(sql)
+    desc = cursor.description
+    rows = [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
+    cursor.close()
+    return rows
 
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
@@ -3137,10 +3179,15 @@ class SubMessage(AbstractSubMessage):
 
     @staticmethod
     def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
-        fields = ["id", "message_id", "sender_id", "msg_type", "content"]
-        query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
-        query = query.order_by("message_id", "id")
-        return list(query)
+        columns = ["id", "message_id", "sender_id", "msg_type", "content"]
+        rows = get_column_values_from_single_table_using_id_lookup(
+            columns=columns,
+            table="zerver_submessage",
+            id_field="message_id",
+            ids=needed_ids,
+            order_by_columns=["message_id", "id"],
+        )
+        return rows
 
 
 class ArchivedSubMessage(AbstractSubMessage):

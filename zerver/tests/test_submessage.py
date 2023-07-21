@@ -18,10 +18,10 @@ class TestBasics(ZulipTestCase):
             stream_name=stream_name,
         )
 
+        self.assertEqual(SubMessage.get_raw_db_rows([]), [])
+
         def get_raw_rows() -> List[Dict[str, Any]]:
-            query = SubMessage.get_raw_db_rows([message_id])
-            rows = list(query)
-            return rows
+            return SubMessage.get_raw_db_rows([message_id])
 
         rows = get_raw_rows()
         self.assertEqual(rows, [])
