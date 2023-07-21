@@ -31,8 +31,10 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
     target_branch = None
     base_branch = None
     if action != "edited":
-        target_branch = payload["pull_request"]["head"]["ref"].tame(check_string)
-        base_branch = payload["pull_request"]["base"]["ref"].tame(check_string)
+        if "head" in payload["pull_request"]:
+            target_branch = payload["pull_request"]["head"]["ref"].tame(check_string)
+        if "base" in payload["pull_request"]:
+            base_branch = payload["pull_request"]["base"]["ref"].tame(check_string)
     title = payload["pull_request"]["title"].tame(check_string) if include_title else None
     stringified_assignee = assignee["login"].tame(check_string) if assignee else None
 
