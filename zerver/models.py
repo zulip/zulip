@@ -4074,7 +4074,9 @@ def get_or_create_huddle(id_list: List[int]) -> Huddle:
 )
 def get_or_create_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
     with transaction.atomic():
-        (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
+        (huddle, created) = Huddle.objects.select_related("recipient").get_or_create(
+            huddle_hash=huddle_hash
+        )
         if created:
             recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
             huddle.recipient = recipient
