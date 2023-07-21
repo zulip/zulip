@@ -98,7 +98,7 @@ cache_fillers: Dict[
         10000,
     ),
     "huddle": (
-        lambda: Huddle.objects.select_related().all(),
+        lambda: Huddle.objects.select_related("recipient").all(),
         huddle_cache_items,
         3600 * 24 * 7,
         10000,
