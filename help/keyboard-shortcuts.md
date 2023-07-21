@@ -232,8 +232,12 @@ A summary of the keyboard shortcuts above is available in the Zulip app.
 
 {start_tabs}
 
-1. Click the **keyboard** (<i class="fa fa-keyboard-o"></i>) icon at the bottom
-   of the app, just below the right sidebar.
+{relative|gear|keyboard-shortcuts}
+
+!!! tip ""
+
+    You can also click the **keyboard** (<i class="fa fa-keyboard-o"></i>)
+    icon at the bottom of the app, just below the right sidebar.
 
 {end_tabs}
 

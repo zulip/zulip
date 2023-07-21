@@ -26,6 +26,7 @@ gear_info = {
     "plans": ["Plans and pricing", "/plans/"],
     "billing": ["Billing", "/billing/"],
     "invite": ["Invite users", "/#invite"],
+    "keyboard-shortcuts": ["Keyboard shortcuts (?)", "/#keyboard-shortcuts"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
