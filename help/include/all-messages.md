@@ -9,8 +9,7 @@ view](/help/configure-default-view#configure-default-view) for the Zulip web app
 
 {tab|desktop-web}
 
-1. Open **All messages** from the left sidebar or with the
-   <kbd>A</kbd> keyboard shortcut.
+{relative|message|all}
 
 {tab|mobile}
 

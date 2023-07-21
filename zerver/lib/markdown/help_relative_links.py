@@ -80,10 +80,16 @@ recent_instructions = """
    sidebar.
 """
 
+all_instructions = """
+1. Click on <i class="fa fa-align-left"></i> **All messages** in the left
+   sidebar or use the <kbd>A</kbd> keyboard shortcut.
+"""
+
 message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
     "recent": ["Recent conversations", "/#recent", recent_instructions],
+    "all": ["All messages", "/#all_messages", all_instructions],
 }
 
 
