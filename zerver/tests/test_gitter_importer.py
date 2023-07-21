@@ -95,16 +95,16 @@ class GitterImporter(ZulipTestCase):
         self.assertIn(messages["zerver_message"][0]["content"], "test message")
 
         # test usermessages and soft-deactivation of users
-        user_should_be_long_term_idle = [
+        [user_should_be_long_term_idle] = (
             user
             for user in realm["zerver_userprofile"]
             if user["delivery_email"] == "username1@users.noreply.github.com"
-        ][0]
-        user_should_not_be_long_term_idle = [
+        )
+        [user_should_not_be_long_term_idle] = (
             user
             for user in realm["zerver_userprofile"]
             if user["delivery_email"] == "username2@users.noreply.github.com"
-        ][0]
+        )
         self.assertEqual(user_should_be_long_term_idle["long_term_idle"], True)
 
         # Only the user who's not soft-deactivated gets UserMessages.

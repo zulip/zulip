@@ -19,7 +19,7 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
     if len(request.FILES) != 1:
         raise JsonableError(_("You must upload exactly one icon."))
 
-    icon_file = list(request.FILES.values())[0]
+    [icon_file] = request.FILES.values()
     assert isinstance(icon_file, UploadedFile)
     assert icon_file.size is not None
     if (settings.MAX_ICON_FILE_SIZE_MIB * 1024 * 1024) < icon_file.size:

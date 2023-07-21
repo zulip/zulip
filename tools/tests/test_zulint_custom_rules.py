@@ -55,11 +55,11 @@ class TestRuleList(TestCase):
                     )
 
             for line in rule.get("bad_lines", []):
-                with patch(
-                    "builtins.open", return_value=StringIO(line + "\n\n"), autospec=True
-                ), patch("builtins.print"):
-                    filename = list(rule.get("include_only", {"foo.bar"}))[0]
-                    self.assertTrue(
-                        RuleList([], [rule]).custom_check_file(filename, "baz", ""),
-                        f"The pattern '{pattern}' didn't match the line '{line}' while it should.",
-                    )
+                for filename in rule.get("include_only", {"foo.bar"}):
+                    with patch(
+                        "builtins.open", return_value=StringIO(line + "\n\n"), autospec=True
+                    ), patch("builtins.print"):
+                        self.assertTrue(
+                            RuleList([], [rule]).custom_check_file(filename, "baz", ""),
+                            f"The pattern '{pattern}' didn't match the line '{line}' while it should.",
+                        )

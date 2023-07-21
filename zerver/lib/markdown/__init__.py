@@ -1152,8 +1152,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             ):
                 return insertion_index
 
-            uncle_link = list(uncle.iter(tag="a"))[0].attrib["href"]
-            if uncle_link not in parent_links:
+            uncle_link = uncle.find("a")
+            assert uncle_link is not None
+            if uncle_link.attrib["href"] not in parent_links:
                 return insertion_index
 
     def run(self, root: Element) -> None:
