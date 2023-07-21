@@ -154,10 +154,7 @@ A summary of the search filters above is available in the Zulip app.
 
 {start_tabs}
 
-1. Click the **keyboard** (<i class="fa fa-keyboard-o"></i>) icon at the bottom
-   of the app, just below the right sidebar.
-
-1. Switch to the **Search filters** tab.
+{relative|gear|search-filters}
 
 {end_tabs}
 
