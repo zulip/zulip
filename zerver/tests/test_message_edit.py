@@ -76,7 +76,7 @@ class EditMessageTestCase(ZulipTestCase):
                 allow_edit_history=True,
             )
 
-        self.assert_length(queries, 1)
+        self.assert_length(queries, 2)
         for query in queries:
             self.assertNotIn("message", query.sql)
 
@@ -3700,7 +3700,7 @@ class EditMessageTest(EditMessageTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assert_length(cache_tries, 13)
+        self.assert_length(cache_tries, 11)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assert_length(messages, 1)

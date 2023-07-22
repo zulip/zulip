@@ -1,11 +1,8 @@
 from typing import Dict, List, Optional, Set, Tuple, TypedDict, cast
 
-from django_stubs_ext import ValuesQuerySet
-
 from zerver.lib.cache import (
     cache_with_key,
     display_recipient_cache_key,
-    generic_bulk_cached_fetch,
 )
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import (
@@ -81,20 +78,23 @@ def bulk_fetch_stream_names(
 ) -> Dict[int, str]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
-    Returns dict mapping recipient_id to corresponding display_recipient
+    Returns dict mapping recipient_id to corresponding stream name
     """
 
     if len(recipient_tuples) == 0:
         return {}
 
-    recipient_id_to_stream_id = {tup[0]: tup[2] for tup in recipient_tuples}
-    recipient_ids = [tup[0] for tup in recipient_tuples]
+    stream_ids = [tup[2] for tup in recipient_tuples]
 
-    def get_tiny_stream_rows(
-        recipient_ids: List[int],
-    ) -> ValuesQuerySet[Stream, TinyStreamResult]:
-        stream_ids = [recipient_id_to_stream_id[recipient_id] for recipient_id in recipient_ids]
-        return Stream.objects.filter(id__in=stream_ids).values("recipient_id", "name")
+    db_rows = get_column_values_from_single_table_using_id_lookup(
+        columns=["recipient_id", "name"],
+        table="zerver_stream",
+        id_field="id",
+        ids=stream_ids,
+        order_by_columns=["recipient_id"],
+    )
+
+    rows = cast(List[TinyStreamResult], db_rows)
 
     def get_recipient_id(row: TinyStreamResult) -> int:
         return row["recipient_id"]
@@ -102,18 +102,7 @@ def bulk_fetch_stream_names(
     def get_name(row: TinyStreamResult) -> str:
         return row["name"]
 
-    # ItemT = TinyStreamResult, CacheItemT = str (name), ObjKT = int (recipient_id)
-    stream_display_recipients: Dict[int, str] = generic_bulk_cached_fetch(
-        cache_key_function=display_recipient_cache_key,
-        query_function=get_tiny_stream_rows,
-        object_ids=recipient_ids,
-        id_fetcher=get_recipient_id,
-        cache_transformer=get_name,
-        setter=lambda obj: obj,
-        extractor=lambda obj: obj,
-    )
-
-    return stream_display_recipients
+    return {get_recipient_id(row): get_name(row) for row in rows}
 
 
 def bulk_fetch_user_display_recipients(
