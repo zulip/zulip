@@ -15978,6 +15978,20 @@ paths:
             type: boolean
           example: false
           required: false
+        - name: is_default_stream
+          in: query
+          description: |
+            Add or remove the stream as a [default stream][default-stream]
+            for new users joining the organization.
+
+            [default-stream]: /help/set-default-streams-for-new-users
+
+            **Changes**: New in Zulip 8.0 (feature level 200). Previously, default stream status
+            could only be changed using the [dedicated API endpoint](/api/add-default-stream).
+          schema:
+            type: boolean
+          example: false
+          required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
         - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"

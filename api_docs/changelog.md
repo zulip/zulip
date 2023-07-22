@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 200**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `is_default_stream` parameter to add or remove the stream as a default
+  stream for new users.
+
 **Feature level 199**
 
 * [`POST /register`](/api/register-queue), [`GET /events`][/api/get-events],

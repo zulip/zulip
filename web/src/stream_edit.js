@@ -247,6 +247,7 @@ export function show_settings_for(node) {
         stream_post_policy_values: stream_data.stream_post_policy_values,
         stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
+        check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
         upgrade_text_for_wide_organization_logo:
             page_params.upgrade_text_for_wide_organization_logo,
@@ -679,6 +680,9 @@ export function initialize() {
         const sub = sub_store.get(stream_id);
         const $subsection = $(e.target).closest(".settings-subsection-parent");
         settings_org.save_discard_widget_status_handler($subsection, false, sub);
+        if (sub) {
+            stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+        }
         return true;
     });
 
@@ -714,6 +718,7 @@ export function initialize() {
             for (const elem of settings_org.get_subsection_property_elements($subsection)) {
                 settings_org.discard_property_element_changes(elem, false, sub);
             }
+            stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
             const $save_btn_controls = $(e.target).closest(".save-button-controls");
             settings_org.change_save_button_state($save_btn_controls, "discarded");
         },

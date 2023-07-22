@@ -102,6 +102,7 @@ export function dispatch_normal_event(event) {
         case "default_streams":
             stream_data.set_realm_default_streams(event.default_streams);
             settings_streams.update_default_streams_table();
+            stream_settings_ui.update_is_default_stream();
             break;
 
         case "delete_message": {

@@ -168,6 +168,9 @@ function get_property_value(property_name, for_realm_default_settings, sub) {
         if (property_name === "stream_privacy") {
             return stream_data.get_stream_privacy_policy(sub.stream_id);
         }
+        if (property_name === "is_default_stream") {
+            return stream_data.is_default_stream_id(sub.stream_id);
+        }
 
         return sub[property_name];
     }
