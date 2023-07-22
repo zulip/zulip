@@ -113,6 +113,24 @@ export function update_regular_sub_settings(sub) {
     }
 }
 
+export function update_default_stream_and_stream_privacy_state($container) {
+    const $default_stream = $container.find(".default-stream");
+    const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
+    const is_invite_only =
+        privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
+
+    // If a private stream option is selected, the default stream option is disabled.
+    $default_stream.find("input").prop("disabled", is_invite_only);
+    $default_stream.toggleClass(
+        "control-label-disabled default_stream_private_tooltip",
+        is_invite_only,
+    );
+
+    // If the default stream option is checked, the private stream options are disabled.
+    const is_default_stream = $default_stream.find("input").prop("checked");
+    stream_settings_ui.update_private_stream_privacy_option_state($container, is_default_stream);
+}
+
 export function enable_or_disable_permission_settings_in_edit_panel(sub) {
     if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
@@ -128,6 +146,8 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
     if (!sub.can_change_stream_permissions) {
         return;
     }
+
+    update_default_stream_and_stream_privacy_state($stream_settings);
 
     const disable_message_retention_setting =
         !page_params.zulip_plan_is_not_limited || !page_params.is_owner;

@@ -250,6 +250,14 @@ export function update_can_remove_subscribers_group_id(sub, new_value) {
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
 
+export function update_is_default_stream() {
+    const active_stream_id = get_active_data().id;
+    if (active_stream_id) {
+        const sub = sub_store.get(active_stream_id);
+        stream_ui_updates.update_setting_element(sub, "is_default_stream");
+    }
+}
+
 export function set_color(stream_id, color) {
     const sub = sub_store.get(stream_id);
     stream_edit.set_stream_property(sub, "color", color);
@@ -1156,7 +1164,7 @@ export function update_public_stream_privacy_option_state($container) {
     $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
 }
 
-export function update_private_stream_privacy_option_state($container) {
+export function update_private_stream_privacy_option_state($container, is_default_stream = false) {
     // Disable both "Private, shared history" and "Private, protected history" options.
     const $private_stream_elem = $container.find(
         `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.private.code)}']`,
@@ -1167,11 +1175,18 @@ export function update_private_stream_privacy_option_state($container) {
         )}']`,
     );
 
-    $private_stream_elem.prop("disabled", !settings_data.user_can_create_private_streams());
-    $private_with_public_history_elem.prop(
-        "disabled",
-        !settings_data.user_can_create_private_streams(),
-    );
+    const disable_private_stream_options =
+        is_default_stream || !settings_data.user_can_create_private_streams();
+
+    $private_stream_elem.prop("disabled", disable_private_stream_options);
+    $private_with_public_history_elem.prop("disabled", disable_private_stream_options);
+
+    $private_stream_elem
+        .closest("div")
+        .toggleClass("default_stream_private_tooltip", is_default_stream);
+    $private_with_public_history_elem
+        .closest("div")
+        .toggleClass("default_stream_private_tooltip", is_default_stream);
 }
 
 export function hide_or_disable_stream_privacy_options_if_required($container) {

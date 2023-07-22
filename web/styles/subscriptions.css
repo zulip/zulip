@@ -1006,6 +1006,14 @@ div.settings-radio-input-parent {
             cursor: not-allowed;
         }
     }
+
+    &.default_stream_private_tooltip {
+        cursor: not-allowed;
+
+        & label {
+            pointer-events: none;
+        }
+    }
 }
 
 .stream-permissions,
@@ -1038,6 +1046,15 @@ div.settings-radio-input-parent {
         min-width: 325px;
         max-width: 100%;
         height: 30px;
+    }
+
+    .default-stream {
+        margin: 25px 0;
+        width: fit-content;
+
+        .inline {
+            display: inline;
+        }
     }
 }
 

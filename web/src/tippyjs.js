@@ -293,6 +293,28 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: [".settings-radio-input-parent.default_stream_private_tooltip"],
+        content: $t({
+            defaultMessage: "Default streams for new users cannot be made private.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: [".default-stream.default_stream_private_tooltip"],
+        content: $t({
+            defaultMessage: "Private streams cannot be default streams for new users.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: ["#generate_multiuse_invite_radio_container.disabled_setting_tooltip"],
         content: $t({
             defaultMessage:

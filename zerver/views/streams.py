@@ -262,6 +262,7 @@ def update_stream_backend(
     ),
     is_private: Optional[bool] = REQ(json_validator=check_bool, default=None),
     is_announcement_only: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    is_default_stream: Optional[bool] = REQ(json_validator=check_bool, default=None),
     stream_post_policy: Optional[int] = REQ(
         json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES), default=None
     ),
@@ -289,6 +290,12 @@ def update_stream_backend(
         proposed_is_web_public = is_web_public
     else:
         proposed_is_web_public = stream.is_web_public
+
+    if is_default_stream is not None:
+        proposed_is_default_stream = is_default_stream
+    else:
+        default_stream_ids = get_default_stream_ids_for_realm(stream.realm_id)
+        proposed_is_default_stream = stream.id in default_stream_ids
 
     if stream.realm.is_zephyr_mirror_realm:
         # In the Zephyr mirroring model, history is unconditionally
@@ -319,12 +326,11 @@ def update_stream_backend(
         else:
             raise JsonableError(_("Invalid parameters"))
 
-    if is_private is not None:
-        # Default streams cannot be made private.
-        default_stream_ids = get_default_stream_ids_for_realm(stream.realm_id)
-        if is_private and stream.id in default_stream_ids:
-            raise JsonableError(_("Default streams cannot be made private."))
+    # Ensure that a stream cannot be both a default stream for new users and private
+    if proposed_is_private and proposed_is_default_stream:
+        raise JsonableError(_("A default stream cannot be private."))
 
+    if is_private is not None:
         # We require even realm administrators to be actually
         # subscribed to make a private stream public, via this
         # stricted access_stream check.
@@ -351,6 +357,12 @@ def update_stream_backend(
             is_web_public=proposed_is_web_public,
             acting_user=user_profile,
         )
+
+    if is_default_stream is not None:
+        if is_default_stream:
+            do_add_default_stream(stream)
+        else:
+            do_remove_default_stream(stream)
 
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:

@@ -293,6 +293,7 @@ run_test("custom profile fields", ({override}) => {
 run_test("default_streams", ({override}) => {
     const event = event_fixtures.default_streams;
     override(settings_streams, "update_default_streams_table", noop);
+    override(stream_settings_ui, "update_is_default_stream", noop);
     const stub = make_stub();
     override(stream_data, "set_realm_default_streams", stub.f);
     dispatch(event);
