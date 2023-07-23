@@ -205,7 +205,7 @@ Coffee`,
                         <input type="checkbox" class="task" checked="checked">
                         <span></span>
                     </div>
-                    <strike><em><strong>Share draft budget</strong> - By Tuesday</em></strike>
+                    <del><em><strong>Share draft budget</strong> - By Tuesday</em></del>
                 </label>
             </li>
         </ul>
