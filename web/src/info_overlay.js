@@ -34,103 +34,167 @@ function format_usage_html(...keys) {
 
 const markdown_help_rows = [
     {
-        markdown: "**bold**",
+        markdown: $t(
+            {
+                defaultMessage: "{markdown_syntax}bold{markdown_syntax}",
+            },
+            {markdown_syntax: "**"},
+        ),
         usage_html: format_usage_html("Ctrl", "B"),
     },
     {
-        markdown: "*italic*",
+        markdown: $t(
+            {
+                defaultMessage: "{markdown_syntax}italic{markdown_syntax}",
+            },
+            {markdown_syntax: "*"},
+        ),
         usage_html: format_usage_html("Ctrl", "I"),
     },
     {
-        markdown: "~~strikethrough~~",
+        markdown: $t(
+            {
+                defaultMessage: "{markdown_syntax}strikethrough{markdown_syntax}",
+            },
+            {markdown_syntax: "~~"},
+        ),
     },
     {
         markdown: ":heart:",
     },
     {
-        markdown: "[Zulip website](https://zulip.org)",
+        markdown: $t(
+            {
+                defaultMessage: "{open_markdown_syntax}Zulip website{close_markdown_syntax}",
+            },
+            {open_markdown_syntax: "[", close_markdown_syntax: "](https://zulip.org)"},
+        ),
         usage_html: format_usage_html("Ctrl", "Shift", "L"),
     },
     {
-        markdown: "#**stream name**",
+        markdown: $t(
+            {
+                defaultMessage: "{open_markdown_syntax}stream name{close_markdown_syntax}",
+            },
+            {open_markdown_syntax: "#**", close_markdown_syntax: "**"},
+        ),
         output_html: "<p><a>#stream name</a></p>",
         effect_html: "(links to a stream)",
     },
     {
-        markdown: "#**stream name>topic name**",
+        markdown: $t(
+            {
+                defaultMessage:
+                    "{open_markdown_syntax}stream name>topic name{close_markdown_syntax}",
+            },
+            {open_markdown_syntax: "#**", close_markdown_syntax: "**"},
+        ),
         output_html: "<p><a>#stream name > topic name</a></p>",
         effect_html: "(links to topic)",
     },
     {
-        markdown: "@**Joe Smith**",
+        markdown: $t(
+            {
+                defaultMessage: "{open_markdown_syntax}Joe Smith{close_markdown_syntax}",
+            },
+            {open_markdown_syntax: "@**", close_markdown_syntax: "**"},
+        ),
         output_html: '<p><span class="user-mention">@Joe Smith</span></p>',
         effect_html: "(notifies Joe Smith)",
     },
     {
-        markdown: "@_**Joe Smith**",
+        markdown: $t(
+            {
+                defaultMessage: "{open_markdown_syntax}Joe Smith{close_markdown_syntax}",
+            },
+            {open_markdown_syntax: "@_**", close_markdown_syntax: "**"},
+        ),
         output_html: '<p><span class="user-mention">Joe Smith</span></p>',
         effect_html: "(links to profile but doesn't notify Joe Smith)",
     },
     {
-        markdown: "@*support team*",
+        markdown: $t(
+            {
+                defaultMessage: "{open_markdown_syntax}support team{close_markdown_syntax}",
+            },
+            {open_markdown_syntax: "@*", close_markdown_syntax: "*"},
+        ),
         output_html: '<p><span class="user-group-mention">@support team</span></p>',
         effect_html: "(notifies <b>support team</b> group)",
     },
     {
-        markdown: "@**all**",
+        markdown: $t(
+            {
+                defaultMessage: "{open_markdown_syntax}all{close_markdown_syntax}",
+            },
+            {open_markdown_syntax: "@**", close_markdown_syntax: "**"},
+        ),
         effect_html: "(notifies all recipients)",
     },
     {
         markdown: `\
-* Milk
-* Tea
-  * Green tea
-  * Black tea
-* Coffee`,
+* ${$t({defaultMessage: "Milk"})}
+* ${$t({defaultMessage: "Tea"})}
+  * ${$t({defaultMessage: "Green tea"})}
+  * ${$t({defaultMessage: "Black tea"})}
+* ${$t({defaultMessage: "Coffee"})}`,
     },
     {
         markdown: `\
-1. Milk
-1. Tea
-1. Coffee`,
+1. ${$t({defaultMessage: "Milk"})}
+1. ${$t({defaultMessage: "Tea"})}
+1. ${$t({defaultMessage: "Coffee"})}`,
     },
     {
-        markdown: "> Quoted",
+        markdown: $t(
+            {
+                defaultMessage: "{quote_markdown_syntax} Quoted",
+            },
+            {quote_markdown_syntax: ">"},
+        ),
     },
     {
         markdown: `\
 \`\`\`quote
-Quoted block
+${$t({defaultMessage: "Quoted block"})}
 \`\`\``,
     },
     {
         markdown: `\
-\`\`\`spoiler Always visible heading
-This text won't be visible until the user clicks.
+\`\`\`spoiler ${$t({defaultMessage: "Always visible heading"})}
+${$t({defaultMessage: "This text won't be visible until the user clicks."})}
 \`\`\``,
     },
     {
-        markdown: "Some inline `code`",
+        markdown: $t(
+            {defaultMessage: "Some inline {code_markdown_syntax}"},
+            {code_markdown_syntax: "`code`"},
+        ),
     },
     {
         markdown: `\
 \`\`\`
-def zulip():
-    print "Zulip"
+def ${$t({defaultMessage: "zulip"})}():
+    print "${$t({defaultMessage: "Zulip"})}"
 \`\`\``,
     },
     {
         markdown: `\
 \`\`\`python
-def zulip():
-    print "Zulip"
+def ${$t({defaultMessage: "zulip"})}():
+    print "${$t({defaultMessage: "Zulip"})}"
 \`\`\``,
         output_html: `\
 <div class="codehilite"><pre><span class="k">def</span> <span class="nf">zulip</span><span class="p">():</span>
     <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
     },
     {
-        markdown: "Some inline math $$ e^{i \\pi} + 1 = 0 $$",
+        markdown: $t(
+            {
+                defaultMessage: "Some inline math {math_markdown_syntax}",
+            },
+            {math_markdown_syntax: "$$ e^{i \\pi} + 1 = 0 $$"},
+        ),
     },
     {
         markdown: `\
@@ -139,7 +203,12 @@ def zulip():
 \`\`\``,
     },
     {
-        markdown: "/me is busy working",
+        markdown: $t(
+            {
+                defaultMessage: "{me_markdown_syntax} is busy working",
+            },
+            {me_markdown_syntax: "/me"},
+        ),
         output_html:
             '<p><span class="sender_name">Iago</span> <span class="status-message">is busy working</span></p>',
     },
@@ -148,10 +217,10 @@ def zulip():
         output_html: '<time datetime="2023-05-28T13:30:00+05:30"></time>',
     },
     {
-        markdown: `/poll What did you drink this morning?
-Milk
-Tea
-Coffee`,
+        markdown: `/poll ${$t({defaultMessage: "What did you drink this morning?"})}
+${$t({defaultMessage: "Milk"})}
+${$t({defaultMessage: "Tea"})}
+${$t({defaultMessage: "Coffee"})}`,
         output_html: `\
 <div class="poll-widget">
     <h4 class="poll-question-header reduced-font-size">What did you drink this morning?</h4>

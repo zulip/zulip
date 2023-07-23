@@ -136,6 +136,16 @@ IGNORED_PHRASES = [
     r"does not apply to moderators and administrators",
     # Used in message-delete-time-limit setting label
     r"does not apply to administrators",
+    # Used in info_overlay
+    r"Joe Smith",
+    r"links to a stream",
+    r"links to profile but doesn't notify Joe Smith",
+    r"links to topic",
+    r"notifies Joe Smith",
+    r"notifies <b>support team</b> group",
+    r"notifies all recipients",
+    r"then",
+    r"zulip",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
