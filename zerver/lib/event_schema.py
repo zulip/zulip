@@ -873,7 +873,7 @@ def check_realm_update(
         assert "extra_data" in event
         return
 
-    assert "extra_data" not in event.keys()
+    assert "extra_data" not in event
 
     if prop in ["notifications_stream_id", "signup_notifications_stream_id", "org_type"]:
         assert isinstance(value, int)
@@ -1472,7 +1472,7 @@ def check_update_display_settings(
     if setting_name == "default_language":
         assert "language_name" in event
     else:
-        assert "language_name" not in event.keys()
+        assert "language_name" not in event
 
 
 def check_user_settings_update(
@@ -1493,7 +1493,7 @@ def check_user_settings_update(
     if setting_name == "default_language":
         assert "language_name" in event
     else:
-        assert "language_name" not in event.keys()
+        assert "language_name" not in event
 
 
 update_global_notifications_event = event_dict_type(

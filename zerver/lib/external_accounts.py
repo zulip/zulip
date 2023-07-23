@@ -65,9 +65,9 @@ def validate_external_account_field_data(field_data: ProfileFieldData) -> Profil
     field_validator("field_data", field_data)
 
     field_subtype = field_data.get("subtype")
-    if field_subtype not in DEFAULT_EXTERNAL_ACCOUNTS.keys():
+    if field_subtype not in DEFAULT_EXTERNAL_ACCOUNTS:
         if field_subtype == "custom":
-            if "url_pattern" not in field_data.keys():
+            if "url_pattern" not in field_data:
                 raise ValidationError(_("Custom external account must define URL pattern"))
         else:
             raise ValidationError(_("Invalid external account type"))

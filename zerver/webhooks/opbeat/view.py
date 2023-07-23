@@ -62,7 +62,7 @@ def format_object(
     subject_type: str,
     message: str,
 ) -> str:
-    if subject_type not in subject_types.keys():
+    if subject_type not in subject_types:
         return message
     keys: List[List[str]] = subject_types[subject_type][1:]
     title = subject_types[subject_type][0]
