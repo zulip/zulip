@@ -20,14 +20,26 @@ import * as util from "./util";
 // set_up_toggler is called.
 export let toggler;
 
+function format_usage_html(...keys) {
+    const get_formatted_keys = () => keys.map((key) => `<kbd>${key}</kbd>`).join("+");
+    return $t_html(
+        {
+            defaultMessage: "(or <key-html></key-html>)",
+        },
+        {
+            "key-html": get_formatted_keys,
+        },
+    );
+}
+
 const markdown_help_rows = [
     {
         markdown: "**bold**",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>B</kbd>)",
+        usage_html: format_usage_html("Ctrl", "B"),
     },
     {
         markdown: "*italic*",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>I</kbd>)",
+        usage_html: format_usage_html("Ctrl", "I"),
     },
     {
         markdown: "~~strikethrough~~",
@@ -37,7 +49,7 @@ const markdown_help_rows = [
     },
     {
         markdown: "[Zulip website](https://zulip.org)",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
+        usage_html: format_usage_html("Ctrl", "Shift", "L"),
     },
     {
         markdown: "#**stream name**",
