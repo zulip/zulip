@@ -145,8 +145,7 @@ def zulip():
     },
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
-        output_html:
-            '<p><time datetime="2023-05-28T08:00:00Z"><i class="fa fa-clock-o"></i>Sun, May 28, 2023, 1:30 PM</time></p>',
+        output_html: '<time datetime="2023-05-28T13:30:00+05:30"></time>',
     },
     {
         markdown: `/poll What did you drink this morning?
