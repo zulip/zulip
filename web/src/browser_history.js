@@ -2,6 +2,8 @@
 
 import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
+import * as message_lists from "./message_lists";
+import * as narrow_state from "./narrow_state";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -95,4 +97,25 @@ export function update_hash_internally_if_required(hash) {
 
 export function return_to_web_public_hash() {
     window.location.hash = state.spectator_old_hash;
+}
+
+export const hash_to_page_location = {};
+
+export function save_narrow() {
+    const narrow_data = {};
+    if (!narrow_state.active()) {
+        return;
+    }
+
+    const narrow_pointer = message_lists.current.selected_id();
+    if (narrow_pointer === -1) {
+        return;
+    }
+    narrow_data.narrow_pointer = narrow_pointer;
+    const $narrow_row = message_lists.current.selected_row();
+    if ($narrow_row.length === 0) {
+        return;
+    }
+    narrow_data.narrow_offset = $narrow_row.get_offset_to_window().top;
+    hash_to_page_location[window.location.hash] = narrow_data;
 }

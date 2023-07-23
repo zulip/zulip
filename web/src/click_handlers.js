@@ -196,6 +196,7 @@ export function initialize() {
                 // This might happen for locally echoed messages, for example.
                 return;
             }
+            browser_history.save_narrow();
             window.location = hash_util.by_conversation_and_time_url(message);
             return;
         }
