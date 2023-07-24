@@ -172,6 +172,7 @@ def do_send_create_user_group_event(
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
             can_mention_group=user_group.can_mention_group_id,
+            can_manage_group=user_group.can_manage_group_id,
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
