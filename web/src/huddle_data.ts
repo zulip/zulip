@@ -1,14 +1,15 @@
 import _ from "lodash";
 
 import * as people from "./people";
+import type {Message} from "./types";
 
-const huddle_timestamps = new Map();
+const huddle_timestamps = new Map<string, number>();
 
-export function clear_for_testing() {
+export function clear_for_testing(): void {
     huddle_timestamps.clear();
 }
 
-export function process_loaded_messages(messages) {
+export function process_loaded_messages(messages: Message[]): void {
     for (const message of messages) {
         const huddle_string = people.huddle_string(message);
 
@@ -22,7 +23,7 @@ export function process_loaded_messages(messages) {
     }
 }
 
-export function get_huddles() {
+export function get_huddles(): string[] {
     let huddles = [...huddle_timestamps.keys()];
     huddles = _.sortBy(huddles, (huddle) => huddle_timestamps.get(huddle));
     return huddles.reverse();
