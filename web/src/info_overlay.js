@@ -78,7 +78,14 @@ const markdown_help_rows = [
             },
             {open_markdown_syntax: "#**", close_markdown_syntax: "**"},
         ),
-        output_html: "<p><a>#stream name</a></p>",
+        output_html: $t_html(
+            {
+                defaultMessage: "<p><z-link>#stream name</z-link></p>",
+            },
+            {
+                "z-link": (content_html) => `<a>${content_html}</a>`,
+            },
+        ),
         effect_html: "(links to a stream)",
     },
     {
@@ -99,7 +106,14 @@ const markdown_help_rows = [
             },
             {open_markdown_syntax: "@**", close_markdown_syntax: "**"},
         ),
-        output_html: '<p><span class="user-mention">@Joe Smith</span></p>',
+        output_html: $t_html(
+            {
+                defaultMessage: "<p><z-mention>@Joe Smith</z-mention></p>",
+            },
+            {
+                "z-mention": (content_html) => `<span class="user-mention">${content_html}</span>`,
+            },
+        ),
         effect_html: "(notifies Joe Smith)",
     },
     {
@@ -109,7 +123,14 @@ const markdown_help_rows = [
             },
             {open_markdown_syntax: "@_**", close_markdown_syntax: "**"},
         ),
-        output_html: '<p><span class="user-mention">Joe Smith</span></p>',
+        output_html: $t_html(
+            {
+                defaultMessage: "<p><z-mention>Joe Smith</z-mention></p>",
+            },
+            {
+                "z-mention": (content_html) => `<span class="user-mention">${content_html}</span>`,
+            },
+        ),
         effect_html: "(links to profile but doesn't notify Joe Smith)",
     },
     {
@@ -119,7 +140,15 @@ const markdown_help_rows = [
             },
             {open_markdown_syntax: "@*", close_markdown_syntax: "*"},
         ),
-        output_html: '<p><span class="user-group-mention">@support team</span></p>',
+        output_html: $t_html(
+            {
+                defaultMessage: "<p><z-team-mention>@support team</z-team-mention></p>",
+            },
+            {
+                "z-team-mention": (content_html) =>
+                    `<span class="user-group-mention">${content_html}</span>`,
+            },
+        ),
         effect_html: "(notifies <b>support team</b> group)",
     },
     {
@@ -186,7 +215,9 @@ def ${$t({defaultMessage: "zulip"})}():
 \`\`\``,
         output_html: `\
 <div class="codehilite"><pre><span class="k">def</span> <span class="nf">zulip</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
+    <span class="k">print</span> <span class="s">"${$t({
+        defaultMessage: "Zulip",
+    })}"</span></pre></div>`,
     },
     {
         markdown: $t(
@@ -209,8 +240,16 @@ def ${$t({defaultMessage: "zulip"})}():
             },
             {me_markdown_syntax: "/me"},
         ),
-        output_html:
-            '<p><span class="sender_name">Iago</span> <span class="status-message">is busy working</span></p>',
+        output_html: $t_html(
+            {
+                defaultMessage:
+                    "<p><z-sender>Iago</z-sender> <z-status>is busy working</z-status></p>",
+            },
+            {
+                "z-sender": (content_html) => `<span class="sender_name">${content_html}</span>`,
+                "z-status": (content_html) => `<span class="status-message">${content_html}</span>`,
+            },
+        ),
     },
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
@@ -223,26 +262,28 @@ ${$t({defaultMessage: "Tea"})}
 ${$t({defaultMessage: "Coffee"})}`,
         output_html: `\
 <div class="poll-widget">
-    <h4 class="poll-question-header reduced-font-size">What did you drink this morning?</h4>
+    <h4 class="poll-question-header reduced-font-size">${$t({
+        defaultMessage: "What did you drink this morning?",
+    })}</h4>
     <i class="fa fa-pencil poll-edit-question"></i>
     <ul class="poll-widget">
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Milk</span>
+        <span>${$t({defaultMessage: "Milk"})}</span>
     </li>
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Tea</span>
+        <span>${$t({defaultMessage: "Tea"})}</span>
     </li>
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Coffee</span>
+        <span>${$t({defaultMessage: "Coffee"})}</span>
     </li>
     </ul>
 </div>
@@ -254,7 +295,7 @@ ${$t({defaultMessage: "Coffee"})}`,
 <div class="message_content rendered_markdown">
    <div class="widget-content">
       <div class="todo-widget">
-        <h4>Task list</h4>
+        <h4>${$t({defaultMessage: "Task list"})}</h4>
         <ul class="todo-widget new-style">
             <li>
                 <label class="checkbox">
@@ -263,7 +304,9 @@ ${$t({defaultMessage: "Coffee"})}`,
                         <span></span>
                     </div>
                     <div>
-                        <strong>Submit final budget</strong> - Due Friday
+                        ${$t_html({
+                            defaultMessage: "<strong>Submit final budget</strong> - Due Friday",
+                        })}
                     </div>
                 </label>
             </li>
@@ -273,7 +316,15 @@ ${$t({defaultMessage: "Coffee"})}`,
                         <input type="checkbox" class="task" checked="checked">
                         <span></span>
                     </div>
-                    <del><em><strong>Share draft budget</strong> - By Tuesday</em></del>
+                    ${$t_html(
+                        {
+                            defaultMessage:
+                                "<z-del><em><strong>Share draft budget</strong> - By Tuesday</em></z-del>",
+                        },
+                        {
+                            "z-del": (content_html) => `<del>${content_html}</del>`,
+                        },
+                    )}
                 </label>
             </li>
         </ul>
