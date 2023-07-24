@@ -125,6 +125,7 @@
         max-width: fit-content;
         overflow-x: auto;
         white-space: nowrap;
+        border-collapse: collapse;
     }
 
     & thead {
