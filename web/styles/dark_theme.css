@@ -1568,12 +1568,6 @@
     }
 }
 
-@supports (-moz-appearance: none) {
-    %dark-theme #settings_page select {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-}
-
 :root.dark-theme {
     @extend %dark-theme;
 }
