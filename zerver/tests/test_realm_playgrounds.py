@@ -1,4 +1,4 @@
-from zerver.actions.realm_playgrounds import do_add_realm_playground
+from zerver.actions.realm_playgrounds import check_add_realm_playground
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmPlayground, get_realm
 
@@ -115,7 +115,7 @@ class RealmPlaygroundTests(ZulipTestCase):
         iago = self.example_user("iago")
         realm = get_realm("zulip")
 
-        playground_id = do_add_realm_playground(
+        playground_id = check_add_realm_playground(
             realm,
             acting_user=iago,
             name="Python playground",

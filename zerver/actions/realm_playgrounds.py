@@ -1,9 +1,11 @@
 from typing import List, Optional
 
 import orjson
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.exceptions import ValidationFailureError
 from zerver.lib.types import RealmPlaygroundDict
 from zerver.models import (
     Realm,
@@ -22,7 +24,7 @@ def notify_realm_playgrounds(realm: Realm, realm_playgrounds: List[RealmPlaygrou
 
 
 @transaction.atomic(durable=True)
-def do_add_realm_playground(
+def check_add_realm_playground(
     realm: Realm,
     *,
     acting_user: Optional[UserProfile],
@@ -36,7 +38,14 @@ def do_add_realm_playground(
         pygments_language=pygments_language,
         url_template=url_template,
     )
-    realm_playground.full_clean()
+    # The additional validations using url_template_validaton
+    # check_pygments_language, etc are included in full_clean.
+    # Because we want to avoid raising ValidationError from this check_*
+    # function, we do error handling here to turn it into a JsonableError.
+    try:
+        realm_playground.full_clean()
+    except ValidationError as e:
+        raise ValidationFailureError(e)
     realm_playground.save()
     realm_playgrounds = get_realm_playgrounds(realm)
     RealmAuditLog.objects.create(

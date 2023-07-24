@@ -66,7 +66,7 @@ from zerver.actions.realm_linkifiers import (
     do_update_linkifier,
 )
 from zerver.actions.realm_logo import do_change_logo_source
-from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
+from zerver.actions.realm_playgrounds import check_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import (
     do_change_realm_org_type,
     do_change_realm_plan_type,
@@ -2223,7 +2223,7 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_playground_events(self) -> None:
         events = self.verify_action(
-            lambda: do_add_realm_playground(
+            lambda: check_add_realm_playground(
                 self.user_profile.realm,
                 acting_user=None,
                 name="Python playground",

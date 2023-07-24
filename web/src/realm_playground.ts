@@ -7,7 +7,7 @@ type RealmPlayground = {
     id: number;
     name: string;
     pygments_language: string;
-    url_prefix: string;
+    url_template: string;
 };
 
 const map_language_to_playground_info = new Map<
