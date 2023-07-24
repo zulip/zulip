@@ -86,7 +86,7 @@ const markdown_help_rows = [
                 "z-link": (content_html) => `<a>${content_html}</a>`,
             },
         ),
-        effect_html: "(links to a stream)",
+        effect_html: `(${$t({defaultMessage: "links to a stream"})})`,
     },
     {
         markdown: $t(
@@ -97,7 +97,7 @@ const markdown_help_rows = [
             {open_markdown_syntax: "#**", close_markdown_syntax: "**"},
         ),
         output_html: "<p><a>#stream name > topic name</a></p>",
-        effect_html: "(links to topic)",
+        effect_html: `(${$t({defaultMessage: "links to topic"})})`,
     },
     {
         markdown: $t(
@@ -114,7 +114,7 @@ const markdown_help_rows = [
                 "z-mention": (content_html) => `<span class="user-mention">${content_html}</span>`,
             },
         ),
-        effect_html: "(notifies Joe Smith)",
+        effect_html: `(${$t({defaultMessage: "notifies Joe Smith"})})`,
     },
     {
         markdown: $t(
@@ -131,7 +131,7 @@ const markdown_help_rows = [
                 "z-mention": (content_html) => `<span class="user-mention">${content_html}</span>`,
             },
         ),
-        effect_html: "(links to profile but doesn't notify Joe Smith)",
+        effect_html: `(${$t({defaultMessage: "links to profile but doesn't notify Joe Smith"})})`,
     },
     {
         markdown: $t(
@@ -149,7 +149,7 @@ const markdown_help_rows = [
                     `<span class="user-group-mention">${content_html}</span>`,
             },
         ),
-        effect_html: "(notifies <b>support team</b> group)",
+        effect_html: `(${$t_html({defaultMessage: "notifies <b>support team</b> group"})})`,
     },
     {
         markdown: $t(
@@ -158,7 +158,7 @@ const markdown_help_rows = [
             },
             {open_markdown_syntax: "@**", close_markdown_syntax: "**"},
         ),
-        effect_html: "(notifies all recipients)",
+        effect_html: `(${$t({defaultMessage: "notifies all recipients"})})`,
     },
     {
         markdown: `\
