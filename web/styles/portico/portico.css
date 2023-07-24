@@ -565,6 +565,10 @@ input.text-error {
 .table.table-striped {
     background-color: hsl(0deg 0% 100%);
     box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
+
+    tbody > tr:nth-child(odd) > td {
+        background-color: hsl(0deg 0% 98%);
+    }
 }
 
 .team-profiles {

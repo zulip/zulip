@@ -36,6 +36,10 @@ td.number {
         border-left: 1px solid hsl(0deg 0% 87%);
     }
 
+    tbody > tr:nth-child(odd) > td {
+        background-color: hsl(0deg 0% 98%);
+    }
+
     thead tr:first-child > th:first-child {
         border-top-left-radius: 4px;
     }

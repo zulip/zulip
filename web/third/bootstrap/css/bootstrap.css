@@ -239,9 +239,6 @@ table {
 .table thead:first-child tr:first-child th {
   border-top: 0;
 }
-.table-striped tbody > tr:nth-child(odd) > td {
-  background-color: #f9f9f9;
-}
 form {
   margin: 0 0 20px;
 }
