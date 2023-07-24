@@ -69,7 +69,14 @@ export function set_up() {
 
         e.stopPropagation();
 
-        user_topics.set_user_topic_visibility_policy(stream_id, topic, visibility_policy);
+        user_topics.set_user_topic_visibility_policy(
+            stream_id,
+            topic,
+            visibility_policy,
+            false,
+            false,
+            $row.closest("#user-topic-settings").find(".alert-notification"),
+        );
     });
 
     populate_list();
