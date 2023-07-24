@@ -1158,7 +1158,7 @@ td.pointer {
     /* Disable blue link styling for the message timestamp link. */
     &:hover {
         text-decoration: none;
-        color: var(--color-text-default);
+        color: var(--color-message-action-interactive);
     }
 }
 
