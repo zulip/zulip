@@ -619,7 +619,12 @@ function register_popover_events($popover) {
     });
 }
 
-export function build_emoji_popover($elt, id) {
+export function build_emoji_popover(element, id) {
+    const $elt = $(element);
+    if (id !== undefined) {
+        message_lists.current.select_id(id);
+    }
+
     let placement = popovers.compute_placement($elt, APPROX_HEIGHT, APPROX_WIDTH, true);
 
     if (placement === "viewport_center") {
@@ -649,6 +654,8 @@ export function build_emoji_popover($elt, id) {
         fixed: true,
     });
     $elt.popover("show");
+    $elt.addClass("reaction_button_visible");
+    $elt.closest(".message_row").toggleClass("has_popover has_emoji_popover");
 
     const $popover = $elt.data("popover").$tip;
     $popover.find(".emoji-popover-filter").trigger("focus");
@@ -659,12 +666,13 @@ export function build_emoji_popover($elt, id) {
         index: 0,
     };
     show_emoji_catalog();
+    reset_emoji_showcase();
 
     $(() => refill_section_head_offsets($popover));
     register_popover_events($popover);
 }
 
-export function toggle_emoji_popover(element, id, coming_from_actions_popover) {
+export function toggle_emoji_popover(element, id) {
     const $last_popover_elem = $current_message_emoji_popover_elem;
     popovers.hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -673,20 +681,7 @@ export function toggle_emoji_popover(element, id, coming_from_actions_popover) {
         return;
     }
 
-    const $elt = $(element);
-    $elt.closest(".message_row").toggleClass("has_popover has_emoji_popover");
-    if (id !== undefined) {
-        message_lists.current.select_id(id);
-    }
-
-    if (user_status_ui.user_status_picker_open()) {
-        build_emoji_popover($elt, id);
-    } else if ($elt.data("popover") === undefined || coming_from_actions_popover) {
-        // Keep the element over which the popover is based off visible.
-        $elt.addClass("reaction_button_visible");
-        build_emoji_popover($elt, id);
-    }
-    reset_emoji_showcase();
+    build_emoji_popover(element, id);
 }
 
 export function register_click_handlers() {
