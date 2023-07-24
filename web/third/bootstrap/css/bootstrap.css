@@ -239,10 +239,6 @@ table {
 .table thead:first-child tr:first-child th {
   border-top: 0;
 }
-.table-condensed th,
-.table-condensed td {
-  padding: 4px 5px;
-}
 .table-striped tbody > tr:nth-child(odd) > td {
   background-color: #f9f9f9;
 }
