@@ -744,6 +744,11 @@ div.overlay {
         width: 1%;
         white-space: nowrap;
     }
+
+    & th,
+    td {
+        padding: 4px 5px;
+    }
 }
 
 .table-bordered {
@@ -755,6 +760,7 @@ div.overlay {
     & th,
     td {
         border-left: 1px solid hsl(0deg 0% 87%);
+        padding: 4px 5px;
     }
 
     thead tr:first-child > th:first-child {
