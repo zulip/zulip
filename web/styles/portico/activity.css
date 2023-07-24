@@ -24,6 +24,35 @@ td.number {
     text-align: right;
 }
 
+.summary-table,
+.analytics_table {
+    border: 1px solid hsl(0deg 0% 87%);
+    border-collapse: separate;
+    border-left: 0;
+    border-radius: 4px;
+
+    & th,
+    td {
+        border-left: 1px solid hsl(0deg 0% 87%);
+    }
+
+    thead tr:first-child > th:first-child {
+        border-top-left-radius: 4px;
+    }
+
+    thead tr:first-child > th:last-child {
+        border-top-right-radius: 4px;
+    }
+
+    tbody tr:last-child > td:first-child {
+        border-bottom-left-radius: 4px;
+    }
+
+    tbody tr:last-child > td:last-child {
+        border-bottom-right-radius: 4px;
+    }
+}
+
 .summary-table {
     width: auto;
     margin: 0 auto;
