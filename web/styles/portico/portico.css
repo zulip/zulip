@@ -567,6 +567,20 @@ input.text-error {
     box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
 
     border-collapse: collapse;
+    margin-bottom: 20px;
+
+    thead tr:first-child th {
+        border-top: 0;
+    }
+
+    & th,
+    td {
+        padding: 8px;
+        line-height: 20px;
+        text-align: left;
+        vertical-align: top;
+        border-top: 1px solid hsl(0deg 0% 87%);
+    }
 
     tbody > tr:nth-child(odd) > td {
         background-color: hsl(0deg 0% 98%);
