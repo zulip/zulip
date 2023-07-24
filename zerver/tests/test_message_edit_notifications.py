@@ -8,7 +8,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.push_notifications import get_apns_badge_count, get_apns_badge_count_future
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import Subscription, UserPresence, UserTopic, get_stream
+from zerver.models import NotificationTriggers, Subscription, UserPresence, UserTopic, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications
 
 
@@ -203,13 +203,13 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         mobile_event = queue_messages[0]["event"]
 
         self.assertEqual(mobile_event["user_profile_id"], cordelia.id)
-        self.assertEqual(mobile_event["trigger"], "mentioned")
+        self.assertEqual(mobile_event["trigger"], NotificationTriggers.MENTION)
 
         self.assertEqual(queue_messages[1]["queue_name"], "missedmessage_emails")
         email_event = queue_messages[1]["event"]
 
         self.assertEqual(email_event["user_profile_id"], cordelia.id)
-        self.assertEqual(email_event["trigger"], "mentioned")
+        self.assertEqual(email_event["trigger"], NotificationTriggers.MENTION)
 
     def test_second_mention_is_ignored(self) -> None:
         original_content = "hello @**Cordelia, Lear's daughter**"

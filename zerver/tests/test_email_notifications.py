@@ -37,6 +37,7 @@ from zerver.lib.email_notifications import (
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
+    NotificationTriggers,
     Realm,
     ScheduledEmail,
     UserMessage,
@@ -548,7 +549,8 @@ class TestMissedMessages(ZulipTestCase):
             "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
         ) as m:
             handle_missedmessage_emails(
-                cordelia.id, {message.id: MissedMessageData(trigger="private_message")}
+                cordelia.id,
+                {message.id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)},
             )
         m.assert_not_called()
 
@@ -557,7 +559,8 @@ class TestMissedMessages(ZulipTestCase):
             "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
         ) as m:
             handle_missedmessage_emails(
-                hamlet.id, {message.id: MissedMessageData(trigger="private_message")}
+                hamlet.id,
+                {message.id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)},
             )
         m.assert_called_once()
 
@@ -573,7 +576,8 @@ class TestMissedMessages(ZulipTestCase):
             "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
         ) as m:
             handle_missedmessage_emails(
-                hamlet.id, {message.id: MissedMessageData(trigger="private_message")}
+                hamlet.id,
+                {message.id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)},
             )
         m.assert_not_called()
 
@@ -702,7 +706,7 @@ class TestMissedMessages(ZulipTestCase):
             send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
-            trigger="mentioned",
+            trigger=NotificationTriggers.MENTION,
         )
 
     def _extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(
@@ -743,7 +747,7 @@ class TestMissedMessages(ZulipTestCase):
             send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
-            trigger="topic_wildcard_mentioned_in_followed_topic",
+            trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         )
 
     def _extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic(
@@ -785,7 +789,7 @@ class TestMissedMessages(ZulipTestCase):
             send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
-            trigger="stream_wildcard_mentioned_in_followed_topic",
+            trigger=NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         )
 
     def _extra_context_in_missed_stream_messages_topic_wildcard_mention(
@@ -826,7 +830,7 @@ class TestMissedMessages(ZulipTestCase):
             send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
-            trigger="topic_wildcard_mentioned",
+            trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
         )
 
     def _extra_context_in_missed_stream_messages_stream_wildcard_mention(
@@ -868,7 +872,7 @@ class TestMissedMessages(ZulipTestCase):
             send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
-            trigger="stream_wildcard_mentioned",
+            trigger=NotificationTriggers.STREAM_WILDCARD_MENTION,
         )
 
     def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool) -> None:
@@ -882,7 +886,11 @@ class TestMissedMessages(ZulipTestCase):
         ]
         email_subject = "#Denmark > test"
         self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user, trigger="stream_email_notify"
+            msg_id,
+            verify_body_include,
+            email_subject,
+            send_as_user,
+            trigger=NotificationTriggers.STREAM_EMAIL,
         )
 
     def _extra_context_in_missed_stream_messages_mention_two_senders(
@@ -902,7 +910,11 @@ class TestMissedMessages(ZulipTestCase):
         ]
         email_subject = "#Denmark > test"
         self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user, trigger="mentioned"
+            msg_id,
+            verify_body_include,
+            email_subject,
+            send_as_user,
+            trigger=NotificationTriggers.MENTION,
         )
 
     def _resolved_topic_missed_stream_messages_thread_friendly(self, send_as_user: bool) -> None:
@@ -925,7 +937,11 @@ class TestMissedMessages(ZulipTestCase):
         ]
         email_subject = "[resolved] #Denmark > threading and so forth"
         self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user, trigger="stream_email_notify"
+            msg_id,
+            verify_body_include,
+            email_subject,
+            send_as_user,
+            trigger=NotificationTriggers.STREAM_EMAIL,
         )
 
     def _extra_context_in_missed_personal_messages(
@@ -1081,7 +1097,9 @@ class TestMissedMessages(ZulipTestCase):
         self.login("othello")
         result = self.client_patch("/json/messages/" + str(msg_id), {"content": " "})
         self.assert_json_success(result)
-        handle_missedmessage_emails(hamlet.id, {msg_id: MissedMessageData(trigger="mentioned")})
+        handle_missedmessage_emails(
+            hamlet.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.MENTION)}
+        )
         self.assert_length(mail.outbox, 0)
 
     def _deleted_message_in_missed_personal_messages(self, send_as_user: bool) -> None:
@@ -1096,7 +1114,7 @@ class TestMissedMessages(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id), {"content": " "})
         self.assert_json_success(result)
         handle_missedmessage_emails(
-            hamlet.id, {msg_id: MissedMessageData(trigger="private_message")}
+            hamlet.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)}
         )
         self.assert_length(mail.outbox, 0)
 
@@ -1116,10 +1134,12 @@ class TestMissedMessages(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id), {"content": " "})
         self.assert_json_success(result)
         handle_missedmessage_emails(
-            hamlet.id, {msg_id: MissedMessageData(trigger="private_message")}
+            hamlet.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)}
         )
         self.assert_length(mail.outbox, 0)
-        handle_missedmessage_emails(iago.id, {msg_id: MissedMessageData(trigger="private_message")})
+        handle_missedmessage_emails(
+            iago.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)}
+        )
         self.assert_length(mail.outbox, 0)
 
     def test_smaller_user_group_mention_priority(self) -> None:
@@ -1143,10 +1163,11 @@ class TestMissedMessages(ZulipTestCase):
             hamlet.id,
             {
                 hamlet_only_message_id: MissedMessageData(
-                    trigger="mentioned", mentioned_user_group_id=hamlet_only.id
+                    trigger=NotificationTriggers.MENTION, mentioned_user_group_id=hamlet_only.id
                 ),
                 hamlet_and_cordelia_message_id: MissedMessageData(
-                    trigger="mentioned", mentioned_user_group_id=hamlet_and_cordelia.id
+                    trigger=NotificationTriggers.MENTION,
+                    mentioned_user_group_id=hamlet_and_cordelia.id,
                 ),
             },
         )
@@ -1179,9 +1200,12 @@ class TestMissedMessages(ZulipTestCase):
             hamlet.id,
             {
                 user_group_mentioned_message_id: MissedMessageData(
-                    trigger="mentioned", mentioned_user_group_id=hamlet_and_cordelia.id
+                    trigger=NotificationTriggers.MENTION,
+                    mentioned_user_group_id=hamlet_and_cordelia.id,
                 ),
-                personal_mentioned_message_id: MissedMessageData(trigger="mentioned"),
+                personal_mentioned_message_id: MissedMessageData(
+                    trigger=NotificationTriggers.MENTION
+                ),
             },
         )
 
@@ -1213,10 +1237,11 @@ class TestMissedMessages(ZulipTestCase):
             hamlet.id,
             {
                 topic_wildcard_mentioned_in_followed_topic_message_id: MissedMessageData(
-                    trigger="topic_wildcard_mentioned_in_followed_topic"
+                    trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
                 ),
                 user_group_mentioned_message_id: MissedMessageData(
-                    trigger="mentioned", mentioned_user_group_id=hamlet_and_cordelia.id
+                    trigger=NotificationTriggers.MENTION,
+                    mentioned_user_group_id=hamlet_and_cordelia.id,
                 ),
             },
         )
@@ -1246,10 +1271,10 @@ class TestMissedMessages(ZulipTestCase):
             hamlet.id,
             {
                 stream_wildcard_mentioned_in_followed_topic_message_id: MissedMessageData(
-                    trigger="stream_wildcard_mentioned_in_followed_topic"
+                    trigger=NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
                 ),
                 topic_wildcard_mentioned_in_followed_topic_message_id: MissedMessageData(
-                    trigger="topic_wildcard_mentioned_in_followed_topic"
+                    trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
                 ),
             },
         )
@@ -1277,10 +1302,10 @@ class TestMissedMessages(ZulipTestCase):
             hamlet.id,
             {
                 topic_wildcard_mentioned_message_id: MissedMessageData(
-                    trigger="topic_wildcard_mentioned"
+                    trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION
                 ),
                 stream_wildcard_mentioned_in_followed_topic_message_id: MissedMessageData(
-                    trigger="stream_wildcard_mentioned_in_followed_topic"
+                    trigger=NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
                 ),
             },
         )
@@ -1308,10 +1333,10 @@ class TestMissedMessages(ZulipTestCase):
             hamlet.id,
             {
                 stream_wildcard_mentioned_message_id: MissedMessageData(
-                    trigger="stream_wildcard_mentioned"
+                    trigger=NotificationTriggers.STREAM_WILDCARD_MENTION
                 ),
                 topic_wildcard_mentioned_message_id: MissedMessageData(
-                    trigger="topic_wildcard_mentioned"
+                    trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION
                 ),
             },
         )
@@ -1337,10 +1362,10 @@ class TestMissedMessages(ZulipTestCase):
             hamlet.id,
             {
                 followed_topic_mentioned_message_id: MissedMessageData(
-                    trigger="followed_topic_email_notify"
+                    trigger=NotificationTriggers.FOLLOWED_TOPIC_EMAIL
                 ),
                 stream_wildcard_mentioned_message_id: MissedMessageData(
-                    trigger="stream_wildcard_mentioned"
+                    trigger=NotificationTriggers.STREAM_WILDCARD_MENTION
                 ),
             },
         )
@@ -1363,9 +1388,11 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(
             hamlet.id,
             {
-                stream_mentioned_message_id: MissedMessageData(trigger="stream_email_notify"),
+                stream_mentioned_message_id: MissedMessageData(
+                    trigger=NotificationTriggers.STREAM_EMAIL
+                ),
                 followed_topic_mentioned_message_id: MissedMessageData(
-                    trigger="followed_topic_email_notify"
+                    trigger=NotificationTriggers.FOLLOWED_TOPIC_EMAIL
                 ),
             },
         )
@@ -1752,9 +1779,9 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(
             hamlet.id,
             {
-                msg_id_1: MissedMessageData(trigger="mentioned"),
-                msg_id_2: MissedMessageData(trigger="stream_email_notify"),
-                msg_id_3: MissedMessageData(trigger="private_message"),
+                msg_id_1: MissedMessageData(trigger=NotificationTriggers.MENTION),
+                msg_id_2: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
+                msg_id_3: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE),
             },
         )
 
@@ -1797,8 +1824,8 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(
             hamlet.id,
             {
-                msg_id_1: MissedMessageData(trigger="private_message"),
-                msg_id_2: MissedMessageData(trigger="private_message"),
+                msg_id_1: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE),
+                msg_id_2: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE),
             },
         )
         self.assert_length(mail.outbox, 2)
@@ -1815,8 +1842,8 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(
             hamlet.id,
             {
-                msg_id_1: MissedMessageData(trigger="stream_email_notify"),
-                msg_id_2: MissedMessageData(trigger="stream_email_notify"),
+                msg_id_1: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
+                msg_id_2: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -1834,8 +1861,8 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(
             hamlet.id,
             {
-                msg_id_1: MissedMessageData(trigger="stream_email_notify"),
-                msg_id_2: MissedMessageData(trigger="mentioned"),
+                msg_id_1: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
+                msg_id_2: MissedMessageData(trigger=NotificationTriggers.MENTION),
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -1861,7 +1888,7 @@ class TestMissedMessages(ZulipTestCase):
 
         handle_missedmessage_emails(
             late_subscribed_user.id,
-            {mention_msg_id: MissedMessageData(trigger="mentioned")},
+            {mention_msg_id: MissedMessageData(trigger=NotificationTriggers.MENTION)},
         )
 
         self.assert_length(mail.outbox, 1)
@@ -1889,9 +1916,9 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(
             hamlet.id,
             {
-                msg_id_1: MissedMessageData(trigger="mentioned"),
-                msg_id_2: MissedMessageData(trigger="mentioned"),
-                msg_id_3: MissedMessageData(trigger="stream_email_notify"),
+                msg_id_1: MissedMessageData(trigger=NotificationTriggers.MENTION),
+                msg_id_2: MissedMessageData(trigger=NotificationTriggers.MENTION),
+                msg_id_3: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -1909,8 +1936,8 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(
             hamlet.id,
             {
-                msg_id_1: MissedMessageData(trigger="stream_email_notify"),
-                msg_id_2: MissedMessageData(trigger="stream_email_notify"),
+                msg_id_1: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
+                msg_id_2: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
             },
         )
         self.assert_length(mail.outbox, 2)
@@ -2056,7 +2083,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_include,
             email_subject,
             send_as_user,
-            trigger="mentioned",
+            trigger=NotificationTriggers.MENTION,
             verify_body_does_not_include=verify_body_does_not_include,
         )
 
@@ -2107,7 +2134,11 @@ class TestMissedMessages(ZulipTestCase):
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
                 hamlet.id,
-                {stream_mentioned_message_id: MissedMessageData(trigger="mentioned")},
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger=NotificationTriggers.MENTION
+                    )
+                },
             )
 
         # Direct message should soft reactivate the user
@@ -2116,7 +2147,11 @@ class TestMissedMessages(ZulipTestCase):
             personal_message_id = self.send_personal_message(othello, hamlet, "Message")
             handle_missedmessage_emails(
                 hamlet.id,
-                {personal_message_id: MissedMessageData(trigger="private_message")},
+                {
+                    personal_message_id: MissedMessageData(
+                        trigger=NotificationTriggers.PRIVATE_MESSAGE
+                    )
+                },
             )
 
         # Hamlet FOLLOWS the topic.
@@ -2140,7 +2175,7 @@ class TestMissedMessages(ZulipTestCase):
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
-                        trigger="topic_wildcard_mentioned_in_followed_topic"
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
                     ),
                 },
             )
@@ -2153,7 +2188,7 @@ class TestMissedMessages(ZulipTestCase):
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
-                        trigger="stream_wildcard_mentioned_in_followed_topic"
+                        trigger=NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
                     ),
                 },
             )
@@ -2175,7 +2210,7 @@ class TestMissedMessages(ZulipTestCase):
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
-                        trigger="topic_wildcard_mentioned"
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION
                     ),
                 },
             )
@@ -2188,7 +2223,7 @@ class TestMissedMessages(ZulipTestCase):
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
-                        trigger="stream_wildcard_mentioned"
+                        trigger=NotificationTriggers.STREAM_WILDCARD_MENTION
                     ),
                 },
             )
@@ -2201,7 +2236,8 @@ class TestMissedMessages(ZulipTestCase):
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
-                        trigger="mentioned", mentioned_user_group_id=large_user_group.id
+                        trigger=NotificationTriggers.MENTION,
+                        mentioned_user_group_id=large_user_group.id,
                     ),
                 },
             )
@@ -2213,7 +2249,7 @@ class TestMissedMessages(ZulipTestCase):
 
         handle_missedmessage_emails(
             hamlet.id,
-            {msg_id: MissedMessageData(trigger="followed_topic_email_notify")},
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.FOLLOWED_TOPIC_EMAIL)},
         )
         self.assert_length(mail.outbox, 1)
         email_subject = mail.outbox[0].subject

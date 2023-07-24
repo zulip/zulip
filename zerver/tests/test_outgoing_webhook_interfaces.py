@@ -11,7 +11,14 @@ from zerver.lib.outgoing_webhook import get_service_interface_class, process_suc
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import SLACK_INTERFACE, Message, get_realm, get_stream, get_user
+from zerver.models import (
+    SLACK_INTERFACE,
+    Message,
+    NotificationTriggers,
+    get_realm,
+    get_stream,
+    get_user,
+)
 from zerver.openapi.openapi import validate_against_openapi_schema
 
 
@@ -174,7 +181,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             "user_profile_id": 24,
             "service_name": "test-service",
             "command": "test content",
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
             "message": {
                 "sender_id": 3,
                 "sender_realm_str": "zulip",

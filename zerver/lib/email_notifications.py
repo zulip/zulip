@@ -451,28 +451,29 @@ def do_send_missedmessage_events_reply_in_zulip(
     unique_triggers = set(triggers)
 
     personal_mentioned = any(
-        message["trigger"] == "mentioned" and message["mentioned_user_group_id"] is None
+        message["trigger"] == NotificationTriggers.MENTION
+        and message["mentioned_user_group_id"] is None
         for message in missed_messages
     )
 
     mention = (
-        "mentioned" in unique_triggers
-        or "topic_wildcard_mentioned" in unique_triggers
-        or "stream_wildcard_mentioned" in unique_triggers
-        or "topic_wildcard_mentioned_in_followed_topic" in unique_triggers
-        or "stream_wildcard_mentioned_in_followed_topic" in unique_triggers
+        NotificationTriggers.MENTION in unique_triggers
+        or NotificationTriggers.TOPIC_WILDCARD_MENTION in unique_triggers
+        or NotificationTriggers.STREAM_WILDCARD_MENTION in unique_triggers
+        or NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC in unique_triggers
+        or NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC in unique_triggers
     )
 
     context.update(
         mention=mention,
         personal_mentioned=personal_mentioned,
-        topic_wildcard_mentioned="topic_wildcard_mentioned" in unique_triggers,
-        stream_wildcard_mentioned="stream_wildcard_mentioned" in unique_triggers,
-        stream_email_notify="stream_email_notify" in unique_triggers,
-        followed_topic_email_notify="followed_topic_email_notify" in unique_triggers,
-        topic_wildcard_mentioned_in_followed_topic="topic_wildcard_mentioned_in_followed_topic"
+        topic_wildcard_mentioned=NotificationTriggers.TOPIC_WILDCARD_MENTION in unique_triggers,
+        stream_wildcard_mentioned=NotificationTriggers.STREAM_WILDCARD_MENTION in unique_triggers,
+        stream_email_notify=NotificationTriggers.STREAM_EMAIL in unique_triggers,
+        followed_topic_email_notify=NotificationTriggers.FOLLOWED_TOPIC_EMAIL in unique_triggers,
+        topic_wildcard_mentioned_in_followed_topic=NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
         in unique_triggers,
-        stream_wildcard_mentioned_in_followed_topic="stream_wildcard_mentioned_in_followed_topic"
+        stream_wildcard_mentioned_in_followed_topic=NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
         in unique_triggers,
         mentioned_user_group_name=mentioned_user_group_name,
     )
