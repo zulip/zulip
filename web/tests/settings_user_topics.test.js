@@ -67,6 +67,18 @@ run_test("settings", ({override, override_rewire}) => {
         assert.equal(opts, "tr");
         return $topic_tr_html;
     };
+    const $topics_panel_header = $.create("fake.topic_panel_header").attr(
+        "id",
+        "user-topic-settings",
+    );
+    const $status_element = $.create("fake.topics_panel_status_element").addClass(
+        "alert-notification",
+    );
+    $topics_panel_header.set_find_results(".alert-notification", $status_element);
+    $topic_tr_html.closest = (opts) => {
+        assert.equal(opts, "#user-topic-settings");
+        return $topics_panel_header;
+    };
 
     let topic_data_called = 0;
     $topic_tr_html.attr = (opts) => {

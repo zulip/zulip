@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as blueslip from "./blueslip";
@@ -6,9 +8,12 @@ import * as compose_banner from "./compose_banner";
 import * as feedback_widget from "./feedback_widget";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
+import * as loading from "./loading";
 import {page_params} from "./page_params";
+import * as settings_ui from "./settings_ui";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+import * as ui_report from "./ui_report";
 import {get_time_from_date_muted} from "./util";
 
 const all_user_topics = new Map();
@@ -86,6 +91,7 @@ export function set_user_topic_visibility_policy(
     visibility_policy,
     from_hotkey,
     from_banner,
+    status_element,
 ) {
     const data = {
         stream_id,
@@ -93,10 +99,27 @@ export function set_user_topic_visibility_policy(
         visibility_policy,
     };
 
+    let $spinner;
+    if (status_element) {
+        $spinner = $(status_element).expectOne();
+        $spinner.fadeTo(0, 1);
+        loading.make_indicator($spinner, {text: settings_ui.strings.saving});
+    }
+
     channel.post({
         url: "/json/user_topics",
         data,
         success() {
+            if (status_element) {
+                const remove_after = 1000;
+                const appear_after = 500;
+                setTimeout(() => {
+                    ui_report.success(settings_ui.strings.success_html, $spinner, remove_after);
+                    settings_ui.display_checkmark($spinner);
+                }, appear_after);
+                return;
+            }
+
             if (visibility_policy === all_visibility_policies.INHERIT) {
                 feedback_widget.dismiss();
                 return;

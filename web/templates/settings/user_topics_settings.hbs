@@ -22,6 +22,7 @@
         {{else}}
             <h3>{{t "Topic settings"}}</h3>
         {{/if}}
+        {{> settings_save_discard_widget section_name="user-topics-settings" show_only_indicator=true }}
         <input id="user_topics_search" class="search filter_text_input" type="text" placeholder="{{t 'Filter topics' }}" aria-label="{{t 'Filter topics' }}"/>
     </div>
     <div class="progressive-table-wrapper" data-simplebar>
