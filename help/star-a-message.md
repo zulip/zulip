@@ -10,12 +10,12 @@ tasks you need to go back to or documents you reference often.
 {tab|desktop}
 {!message-actions.md!}
 
-1. Click the **star** (<i class="fa fa-star-o"></i>) icon.
+1. Click the **star** (<i class="zulip-icon zulip-icon-star"></i>) icon.
 
 !!! tip ""
 
-    Starred messages have a filled in star (<i class="fa fa-star"></i>) to their
-    right. You can unstar a message using the same instructions used to star it.
+    Starred messages have a filled in star (<i class="zulip-icon zulip-icon-star-filled"></i>)
+    to their right. You can unstar a message using the same instructions used to star it.
 
 {tab|mobile}
 
