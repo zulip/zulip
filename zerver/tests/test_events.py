@@ -1809,11 +1809,14 @@ class NormalActionsTest(BaseAction):
                 self.user_profile.realm, "backend", [othello], "Backend team", acting_user=None
             )
         check_user_group_add("events[0]", events[0])
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=self.user_profile.realm, is_system_group=True
+        )
+        self.assertEqual(events[0]["group"]["can_manage_group"], nobody_group.id)
         everyone_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=self.user_profile.realm, is_system_group=True
         )
         self.assertEqual(events[0]["group"]["can_mention_group"], everyone_group.id)
-
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=self.user_profile.realm, is_system_group=True
         )
@@ -1827,10 +1830,16 @@ class NormalActionsTest(BaseAction):
                 "frontend",
                 [othello],
                 "",
-                {"can_mention_group": user_group},
+                {"can_manage_group": user_group, "can_mention_group": user_group},
                 acting_user=None,
             )
         check_user_group_add("events[0]", events[0])
+        self.assertEqual(
+            events[0]["group"]["can_manage_group"],
+            AnonymousSettingGroupDict(
+                direct_members=[othello.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
         self.assertEqual(
             events[0]["group"]["can_mention_group"],
             AnonymousSettingGroupDict(

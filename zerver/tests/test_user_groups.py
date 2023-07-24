@@ -81,6 +81,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[0]["description"], "Nobody")
         self.assertEqual(user_groups[0]["members"], [])
         self.assertEqual(user_groups[0]["direct_subgroup_ids"], [])
+        self.assertEqual(user_groups[0]["can_manage_group"], user_group.id)
         self.assertEqual(user_groups[0]["can_mention_group"], user_group.id)
 
         owners_system_group = NamedUserGroup.objects.get(name=SystemGroups.OWNERS, realm=realm)
@@ -92,6 +93,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[1]["description"], "Owners of this organization")
         self.assertEqual(set(user_groups[1]["members"]), set(membership))
         self.assertEqual(user_groups[1]["direct_subgroup_ids"], [])
+        self.assertEqual(user_groups[1]["can_manage_group"], user_group.id)
         self.assertEqual(user_groups[1]["can_mention_group"], user_group.id)
 
         admins_system_group = NamedUserGroup.objects.get(
@@ -108,6 +110,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[9]["name"], "newgroup")
         self.assertEqual(user_groups[9]["description"], "")
         self.assertEqual(user_groups[9]["members"], [])
+        self.assertEqual(user_groups[9]["can_manage_group"], user_group.id)
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
 
         othello = self.example_user("othello")
@@ -119,7 +122,10 @@ class UserGroupTestCase(ZulipTestCase):
             realm,
             "newgroup2",
             [othello],
-            group_settings_map={"can_mention_group": setting_group},
+            group_settings_map={
+                "can_manage_group": setting_group,
+                "can_mention_group": setting_group,
+            },
             acting_user=None,
         )
         user_groups = user_groups_in_realm_serialized(realm)
@@ -127,6 +133,14 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[10]["name"], "newgroup2")
         self.assertEqual(user_groups[10]["description"], "")
         self.assertEqual(user_groups[10]["members"], [othello.id])
+
+        assert isinstance(user_groups[10]["can_manage_group"], AnonymousSettingGroupDict)
+        self.assertEqual(user_groups[10]["can_manage_group"].direct_members, [othello.id])
+        self.assertCountEqual(
+            user_groups[10]["can_manage_group"].direct_subgroups,
+            [admins_system_group.id, hamletcharacters_group.id],
+        )
+
         assert isinstance(user_groups[10]["can_mention_group"], AnonymousSettingGroupDict)
         self.assertEqual(user_groups[10]["can_mention_group"].direct_members, [othello.id])
         self.assertCountEqual(
