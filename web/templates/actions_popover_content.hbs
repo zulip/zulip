@@ -13,7 +13,7 @@
     {{#if editability_menu_item}}
     <li>
         <a class="popover_edit_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-pencil" aria-hidden="true"></i> {{editability_menu_item}}
+            <i class="zulip-icon zulip-icon-edit" aria-hidden="true"></i> {{editability_menu_item}}
             <span class="hotkey-hint">(e)</span>
         </a>
     </li>
@@ -22,7 +22,7 @@
     {{#if move_message_menu_item}}
     <li>
         <a class="popover_move_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-arrows" aria-hidden="true"></i> {{move_message_menu_item}}
+            <i class="zulip-icon zulip-icon-move-alt" aria-hidden="true"></i> {{move_message_menu_item}}
             <span class="hotkey-hint">(m)</span>
         </a>
     </li>
@@ -44,7 +44,7 @@
     {{#if should_display_add_reaction_option}}
     <li>
         <a class="reaction_button" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-smile-o" aria-hidden="true"></i>
+            <i class="zulip-icon zulip-icon-smile" aria-hidden="true"></i>
             {{t "Add emoji reaction" }} <span class="hotkey-hint">(:)</span>
         </a>
     </li>
