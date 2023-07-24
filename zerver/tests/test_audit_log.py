@@ -29,7 +29,7 @@ from zerver.actions.realm_linkifiers import (
     do_remove_linkifier,
     do_update_linkifier,
 )
-from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
+from zerver.actions.realm_playgrounds import check_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
@@ -861,7 +861,7 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user("iago")
         initial_playgrounds = get_realm_playgrounds(user.realm)
         now = timezone_now()
-        playground_id = do_add_realm_playground(
+        playground_id = check_add_realm_playground(
             user.realm,
             acting_user=user,
             name="Python playground",
