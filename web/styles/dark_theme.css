@@ -567,6 +567,10 @@
         color: hsl(0deg 0% 42% / 90%) !important;
     }
 
+    .message_time:hover {
+        color: var(--color-message-action-interactive);
+    }
+
     .message_reactions:hover .message_reaction + .reaction_button,
     .message_reactions .message_reaction {
         background-color: transparent;
