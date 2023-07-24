@@ -7,23 +7,36 @@ side validators in zerver/lib/validator.py.
 
 */
 
-export function check_string(var_name, val) {
+type CheckData = (var_name: string, val: unknown) => string | undefined;
+type RecordFields = {
+    short_name: CheckData;
+    long_name: CheckData;
+    reply: CheckData;
+    heading: CheckData;
+    choices: CheckData;
+};
+
+export function check_string(var_name: string, val: unknown): string | undefined {
     if (typeof val !== "string") {
         return var_name + " is not a string";
     }
     return undefined;
 }
 
-export function check_record(var_name, val, fields) {
+export function check_record(
+    var_name: string,
+    val: unknown,
+    fields: RecordFields,
+): string | undefined {
     if (typeof val !== "object") {
         return var_name + " is not a record";
     }
 
     const field_results = Object.entries(fields).map(([field_name, f]) => {
-        if (val[field_name] === undefined) {
+        if ((val as Record<string, unknown>)[field_name] === undefined) {
             return field_name + " is missing";
         }
-        return f(field_name, val[field_name]);
+        return f(field_name, (val as Record<string, unknown>)[field_name]);
     });
 
     const msg = field_results.filter(Boolean).sort().join(", ");
@@ -35,7 +48,11 @@ export function check_record(var_name, val, fields) {
     return undefined;
 }
 
-export function check_array(var_name, val, checker) {
+export function check_array(
+    var_name: string,
+    val: unknown,
+    checker: CheckData,
+): string | undefined {
     if (!Array.isArray(val)) {
         return var_name + " is not an array";
     }
