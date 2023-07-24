@@ -698,12 +698,15 @@ div.overlay {
     table-layout: auto;
     border-collapse: separate;
 
+    &:not(.table-bordered) thead th {
+        border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
+        border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
+    }
+
     & thead th {
         min-width: 100px;
         color: inherit;
         background-color: hsl(0deg 0% 100%);
-        border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
-        border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
 
         &.active::after,
         &[data-sort]:hover::after {
