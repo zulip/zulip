@@ -215,24 +215,6 @@ pre {
   -moz-border-radius: 4px;
   border-radius: 4px;
 }
-.table {
-  width: 100%;
-  margin-bottom: 20px;
-}
-.table th,
-.table td {
-  padding: 8px;
-  line-height: 20px;
-  text-align: left;
-  vertical-align: top;
-  border-top: 1px solid #dddddd;
-}
-.table thead th {
-  vertical-align: bottom;
-}
-.table thead:first-child tr:first-child th {
-  border-top: 0;
-}
 form {
   margin: 0 0 20px;
 }
