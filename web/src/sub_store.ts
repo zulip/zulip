@@ -1,5 +1,7 @@
 import * as blueslip from "./blueslip";
 
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<T>;
+
 export const enum StreamPostPolicy {
     EVERYONE = 1,
     ADMINS = 2,
@@ -7,6 +9,7 @@ export const enum StreamPostPolicy {
     MODERATORS = 4,
 }
 
+// These types are taken from the `zerver/lib/types.py`.
 export type Stream = {
     date_created: number;
     description: string;
@@ -20,6 +23,7 @@ export type Stream = {
     rendered_description: string;
     stream_id: number;
     stream_post_policy: StreamPostPolicy;
+    can_remove_subscribers_group: number;
 };
 
 export type StreamSpecificNotificationSettings = {
@@ -30,15 +34,35 @@ export type StreamSpecificNotificationSettings = {
     wildcard_mentions_notify: boolean | null;
 };
 
-export type StreamSubscription = (Stream & StreamSpecificNotificationSettings) & {
+export type NeverSubscribedStream = Stream & {
+    stream_weekly_traffic: number | null;
+    subscribers?: number[];
+};
+
+// This is the raw data we get from the server for a subscription.
+export type ApiStreamSubscription = (Stream & StreamSpecificNotificationSettings) & {
     color: string;
     email_address: string;
-    in_home_view: boolean;
     is_muted: boolean;
     pin_to_top: boolean;
     stream_weekly_traffic: number | null;
     subscribers?: number[];
 };
+
+// These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
+export type ExtraStreamAttrs = {
+    render_subscribers: boolean;
+    newly_subscribed: boolean;
+    subscribed: boolean;
+    previously_subscribed?: boolean;
+};
+
+// This is the actual type of subscription objects we use in the app.
+export type StreamSubscription = PartialBy<
+    Omit<ApiStreamSubscription, "subscribers">,
+    "pin_to_top" | "email_address"
+> &
+    ExtraStreamAttrs;
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();
 

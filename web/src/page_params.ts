@@ -31,6 +31,7 @@ export const page_params: {
     realm_enable_spectator_access: boolean;
     realm_invite_to_realm_policy: number;
     realm_invite_to_stream_policy: number;
+    realm_is_zephyr_mirror_realm: boolean;
     realm_move_messages_between_streams_policy: number;
     realm_name_changes_disabled: boolean;
     realm_name: string;
