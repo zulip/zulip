@@ -93,6 +93,16 @@
             */
             margin-bottom: var(--max-unexpanded-compose-height);
             border-spacing: 0;
+            width: 100%;
+
+            th {
+                padding: 8px;
+                text-align: left;
+            }
+
+            td {
+                border-top: 1px solid hsl(0deg 0% 87%);
+            }
         }
 
         #recent_topics_filter_buttons {

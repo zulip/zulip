@@ -698,6 +698,8 @@ div.overlay {
     table-layout: auto;
     border-collapse: separate;
     border-spacing: 0;
+    margin-bottom: 20px;
+    width: 100%;
 
     &:not(.table-bordered) thead th {
         border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
@@ -754,6 +756,14 @@ div.overlay {
     td {
         padding: 4px 5px;
     }
+
+    & th {
+        text-align: left;
+    }
+
+    & td {
+        border-top: 1px solid hsl(0deg 0% 87%);
+    }
 }
 
 .table-bordered {
@@ -762,11 +772,19 @@ div.overlay {
     border-left: 0;
     border-radius: 4px;
     border-spacing: 0;
+    width: 100%;
+    margin-bottom: 20px;
 
     & th,
     td {
         border-left: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid hsl(0deg 0% 87%);
         padding: 4px 5px;
+        text-align: left;
+    }
+
+    thead tr:first-child th {
+        border-top: 0;
     }
 
     thead tr:first-child > th:first-child {
