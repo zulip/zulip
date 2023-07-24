@@ -833,10 +833,13 @@ export function initialize(params) {
 
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
         for (const sub of subs) {
-            sub.subscribed = subscribed;
-            sub.previously_subscribed = previously_subscribed;
+            const attrs = {
+                ...sub,
+                subscribed,
+                previously_subscribed,
+            };
 
-            create_sub_from_server_data(sub);
+            create_sub_from_server_data(attrs);
         }
     }
 
