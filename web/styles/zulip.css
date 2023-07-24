@@ -2995,18 +2995,10 @@ select.invite-as {
         top: -8px;
     }
 
-    .messagebox-content {
-        padding-right: 15px;
-    }
-
     .include-sender .message_controls {
         background: none !important;
         padding: 0 !important;
         border: none !important;
-    }
-
-    .message_content {
-        padding-right: 50px;
     }
 }
 
