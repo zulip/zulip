@@ -92,6 +92,7 @@
             user is at the bottom of scroll container when the compose box is open.
             */
             margin-bottom: var(--max-unexpanded-compose-height);
+            border-spacing: 0;
         }
 
         #recent_topics_filter_buttons {

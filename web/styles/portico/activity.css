@@ -30,6 +30,7 @@ td.number {
     border-collapse: separate;
     border-left: 0;
     border-radius: 4px;
+    border-spacing: 0;
 
     & th,
     td {

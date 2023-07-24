@@ -574,6 +574,7 @@ ul {
             width: 100%;
             margin: auto;
             border-radius: 6px;
+            border-collapse: collapse;
 
             & tr {
                 border-bottom: 1px solid hsl(0deg 0% 87%);

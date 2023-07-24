@@ -215,12 +215,6 @@ pre {
   -moz-border-radius: 4px;
   border-radius: 4px;
 }
-table {
-  max-width: 100%;
-  background-color: transparent;
-  border-collapse: collapse;
-  border-spacing: 0;
-}
 .table {
   width: 100%;
   margin-bottom: 20px;
