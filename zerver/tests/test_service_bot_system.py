@@ -15,7 +15,7 @@ from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
-from zerver.models import Recipient, UserProfile, get_realm
+from zerver.models import NotificationTriggers, Recipient, UserProfile, get_realm
 
 BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: "outgoing_webhooks",
@@ -56,7 +56,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
         expected = dict(
             outgoing_webhooks=[
-                dict(trigger="private_message", user_profile_id=outgoing_bot.id),
+                dict(trigger=NotificationTriggers.PRIVATE_MESSAGE, user_profile_id=outgoing_bot.id),
             ],
         )
 
@@ -533,7 +533,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
             self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
-            self.assertEqual(trigger_event["trigger"], "private_message")
+            self.assertEqual(trigger_event["trigger"], NotificationTriggers.PRIVATE_MESSAGE)
             self.assertEqual(trigger_event["message"]["sender_email"], sender.email)
             display_recipients = [
                 trigger_event["message"]["display_recipient"][0]["email"],
@@ -576,7 +576,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
             self.assertIn(trigger_event["user_profile_id"], profile_ids)
             profile_ids.remove(trigger_event["user_profile_id"])
-            self.assertEqual(trigger_event["trigger"], "private_message")
+            self.assertEqual(trigger_event["trigger"], NotificationTriggers.PRIVATE_MESSAGE)
             self.assertEqual(trigger_event["message"]["sender_email"], sender.email)
             self.assertEqual(trigger_event["message"]["type"], "private")
 

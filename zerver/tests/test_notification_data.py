@@ -2,6 +2,7 @@ from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import NotificationTriggers
 
 
 class TestNotificationData(ZulipTestCase):
@@ -26,7 +27,7 @@ class TestNotificationData(ZulipTestCase):
         user_data = self.create_user_notifications_data_object(user_id=user_id, pm_push_notify=True)
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "private_message",
+            NotificationTriggers.PRIVATE_MESSAGE,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -36,7 +37,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "mentioned",
+            NotificationTriggers.MENTION,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -46,7 +47,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "topic_wildcard_mentioned",
+            NotificationTriggers.TOPIC_WILDCARD_MENTION,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -56,7 +57,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "stream_wildcard_mentioned",
+            NotificationTriggers.STREAM_WILDCARD_MENTION,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -66,7 +67,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "stream_push_notify",
+            NotificationTriggers.STREAM_PUSH,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -76,7 +77,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "followed_topic_push_notify",
+            NotificationTriggers.FOLLOWED_TOPIC_PUSH,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -86,7 +87,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "topic_wildcard_mentioned_in_followed_topic",
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -96,7 +97,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "stream_wildcard_mentioned_in_followed_topic",
+            NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -115,7 +116,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=False),
-            "private_message",
+            NotificationTriggers.PRIVATE_MESSAGE,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=False))
 
@@ -194,7 +195,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "private_message",
+            NotificationTriggers.PRIVATE_MESSAGE,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -204,7 +205,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "mentioned",
+            NotificationTriggers.MENTION,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -214,7 +215,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "topic_wildcard_mentioned",
+            NotificationTriggers.TOPIC_WILDCARD_MENTION,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -224,7 +225,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "stream_wildcard_mentioned",
+            NotificationTriggers.STREAM_WILDCARD_MENTION,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -234,7 +235,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "stream_email_notify",
+            NotificationTriggers.STREAM_EMAIL,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -244,7 +245,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "followed_topic_email_notify",
+            NotificationTriggers.FOLLOWED_TOPIC_EMAIL,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -254,7 +255,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "topic_wildcard_mentioned_in_followed_topic",
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -264,7 +265,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "stream_wildcard_mentioned_in_followed_topic",
+            NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 

@@ -14,6 +14,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
+    NotificationTriggers,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -417,11 +418,16 @@ def soft_reactivate_if_personal_notification(
     if not user_profile.long_term_idle:
         return
 
-    private_message = "private_message" in unique_triggers
-    personal_mention = "mentioned" in unique_triggers and mentioned_user_group_name is None
+    private_message = NotificationTriggers.PRIVATE_MESSAGE in unique_triggers
+    personal_mention = (
+        NotificationTriggers.MENTION in unique_triggers and mentioned_user_group_name is None
+    )
     topic_wildcard_mention = any(
         trigger in unique_triggers
-        for trigger in ["topic_wildcard_mentioned", "topic_wildcard_mentioned_in_followed_topic"]
+        for trigger in [
+            NotificationTriggers.TOPIC_WILDCARD_MENTION,
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+        ]
     )
     if not private_message and not personal_mention and not topic_wildcard_mention:
         return

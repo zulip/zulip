@@ -323,7 +323,10 @@ def get_mentioned_user_group_name(
     messages instead.
     """
     for message in messages:
-        if message["mentioned_user_group_id"] is None and message["trigger"] == "mentioned":
+        if (
+            message["mentioned_user_group_id"] is None
+            and message["trigger"] == NotificationTriggers.MENTION
+        ):
             # The user has also been personally mentioned, so that gets prioritized.
             return None
 

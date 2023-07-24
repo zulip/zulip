@@ -80,6 +80,7 @@ from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
     Message,
+    NotificationTriggers,
     Realm,
     Recipient,
     Stream,
@@ -516,7 +517,7 @@ def get_service_bot_events(
             trigger = "mention"
         # Direct message triggers for personal and huddle messages
         elif (not is_stream) and (user_profile_id in active_user_ids):
-            trigger = "private_message"
+            trigger = NotificationTriggers.PRIVATE_MESSAGE
         else:
             return
 
