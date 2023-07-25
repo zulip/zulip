@@ -8,6 +8,7 @@ import tippy, {delegate} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
+import render_change_visibility_policy_popover from "../templates/change_visibility_policy_popover.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
@@ -68,6 +69,7 @@ const popover_instances = {
     compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
+    change_visibility_policy: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -631,6 +633,65 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.compose_enter_sends = undefined;
+        },
+    });
+
+    register_popover_menu(".change_visibility_policy", {
+        placement: "bottom",
+        popperOptions: {
+            modifiers: [
+                {
+                    // The placement is set to bottom, but if that placement does not fit,
+                    // the opposite top placement will be used.
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: ["top", "left"],
+                    },
+                },
+            ],
+        },
+        onShow(instance) {
+            popover_instances.change_visibility_policy = instance;
+            on_show_prep(instance);
+            const elt = $(instance.reference).closest(".change_visibility_policy").expectOne()[0];
+            const stream_id = $(elt).attr("data-stream-id");
+            const topic_name = $(elt).attr("data-topic-name");
+
+            instance.context =
+                popover_menus_data.get_change_visibility_policy_popover_content_context(
+                    Number.parseInt(stream_id, 10),
+                    topic_name,
+                );
+            instance.setContent(
+                parse_html(render_change_visibility_policy_popover(instance.context)),
+            );
+        },
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            const {stream_id, topic_name} = instance.context;
+
+            if (!stream_id) {
+                instance.hide();
+                return;
+            }
+
+            // TODO: Figure out a good way to offer feedback if this request fails.
+            $popper.on("click", ".visibility_policy_option", (e) => {
+                $(".visibility_policy_option").removeClass("selected_visibility_policy");
+                $(e.currentTarget).addClass("selected_visibility_policy");
+
+                const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    visibility_policy,
+                );
+                instance.hide();
+            });
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.change_visibility_policy = undefined;
         },
     });
 

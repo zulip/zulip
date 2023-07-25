@@ -1,0 +1,32 @@
+<ul class="nav nav-list visibility_policy_popover hidden-for-spectators">
+    <li class="visibility_policy_option {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected_visibility_policy{{/if}}"
+      data-visibility-policy="{{ all_visibility_policies.MUTED }}">
+        <a tabindex="0" class="icon_and_text">
+            <i class="zulip-icon zulip-icon-mute-new" aria-hidden="true"></i>
+            {{t "Mute"}}
+        </a>
+    </li>
+    <li class="visibility_policy_option {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}selected_visibility_policy{{/if}}"
+      data-visibility-policy="{{ all_visibility_policies.INHERIT }}">
+        <a tabindex="0" class="icon_and_text">
+            <i class="zulip-icon zulip-icon-inherit" aria-hidden="true"></i>
+            {{t "Default"}}
+        </a>
+    </li>
+    {{#if (or stream_muted topic_unmuted)}}
+        <li class="visibility_policy_option {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected_visibility_policy{{/if}}"
+          data-visibility-policy="{{ all_visibility_policies.UNMUTED }}">
+            <a tabindex="0" class="icon_and_text">
+                <i class="zulip-icon zulip-icon-unmute-new" aria-hidden="true"></i>
+                {{t "Unmute"}}
+            </a>
+        </li>
+    {{/if}}
+    <li class="visibility_policy_option {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected_visibility_policy{{/if}}"
+      data-visibility-policy="{{ all_visibility_policies.FOLLOWED }}">
+        <a tabindex="0" class="icon_and_text">
+            <i class="zulip-icon zulip-icon-follow" aria-hidden="true"></i>
+            {{t "Follow"}}
+        </a>
+    </li>
+</ul>

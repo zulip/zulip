@@ -1,6 +1,7 @@
 import $ from "jquery";
 import {delegate} from "tippy.js";
 
+import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
@@ -198,6 +199,22 @@ export function initialize() {
     });
 
     message_list_tooltip(".code_external_link");
+
+    message_list_tooltip(".change_visibility_policy > i", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const current_visibility_policy_str = $elem.attr("data-tippy-content");
+            instance.setContent(
+                parse_html(
+                    render_change_visibility_policy_button_tooltip({current_visibility_policy_str}),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 
     message_list_tooltip([".recipient_bar_icon"], {
         delay: LONG_HOVER_DELAY,

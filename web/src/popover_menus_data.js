@@ -151,3 +151,18 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         development: page_params.development_environment,
     };
 }
+
+export function get_change_visibility_policy_popover_content_context(stream_id, topic_name) {
+    const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic_name);
+    const sub = sub_store.get(stream_id);
+    const all_visibility_policies = user_topics.all_visibility_policies;
+    const topic_unmuted = visibility_policy === all_visibility_policies.UNMUTED;
+    return {
+        stream_id,
+        topic_name,
+        visibility_policy,
+        stream_muted: sub.is_muted,
+        topic_unmuted,
+        all_visibility_policies,
+    };
+}

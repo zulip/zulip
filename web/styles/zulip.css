@@ -961,6 +961,10 @@ strong {
     }
 }
 
+#change_visibility_policy_button_tooltip {
+    text-align: center;
+}
+
 .narrow-filter {
     display: block;
     position: relative;
@@ -1449,6 +1453,15 @@ td.pointer {
     display: flex;
     flex-grow: 1;
     align-items: center;
+
+    .change_visibility_policy {
+        display: flex;
+        cursor: pointer;
+
+        i {
+            font-size: 17px;
+        }
+    }
 }
 
 .recipient_row_date {
