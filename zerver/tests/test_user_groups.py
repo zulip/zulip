@@ -443,9 +443,15 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group name cannot start with 'channel:'.")
         self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
-    def test_can_mention_group_setting_during_user_group_creation(self) -> None:
+    def do_test_set_group_setting_during_user_group_creation(self, setting_name: str) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
+        # Delete all existing user groups except the hamletcharacters group
+        NamedUserGroup.objects.exclude(name="hamletcharacters").filter(
+            is_system_group=False
+        ).delete()
+
+        permission_configuration = NamedUserGroup.GROUP_PERMISSION_SETTINGS[setting_name]
         leadership_group = check_add_user_group(
             hamlet.realm, "leadership", [hamlet], acting_user=None
         )
@@ -456,23 +462,23 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "support",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Support team",
-            "can_mention_group": orjson.dumps(moderators_group.id).decode(),
         }
+        params[setting_name] = orjson.dumps(moderators_group.id).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, moderators_group.usergroup_ptr)
+        self.assertEqual(getattr(support_group, setting_name), moderators_group.usergroup_ptr)
 
         params = {
             "name": "test",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Test group",
-            "can_mention_group": orjson.dumps(leadership_group.id).decode(),
         }
+        params[setting_name] = orjson.dumps(leadership_group.id).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         test_group = NamedUserGroup.objects.get(name="test", realm=hamlet.realm)
-        self.assertEqual(test_group.can_mention_group, leadership_group.usergroup_ptr)
+        self.assertEqual(getattr(test_group, setting_name), leadership_group.usergroup_ptr)
 
         nobody_group = NamedUserGroup.objects.get(
             name="role:nobody", realm=hamlet.realm, is_system_group=True
@@ -481,34 +487,34 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "marketing",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Marketing team",
-            "can_mention_group": orjson.dumps(nobody_group.id).decode(),
         }
+        params[setting_name] = orjson.dumps(nobody_group.id).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         marketing_group = NamedUserGroup.objects.get(name="marketing", realm=hamlet.realm)
-        self.assertEqual(marketing_group.can_mention_group, nobody_group.usergroup_ptr)
+        self.assertEqual(getattr(marketing_group, setting_name), nobody_group.usergroup_ptr)
 
         othello = self.example_user("othello")
         params = {
             "name": "backend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Backend team",
-            "can_mention_group": orjson.dumps(
-                {
-                    "direct_members": [othello.id],
-                    "direct_subgroups": [leadership_group.id, moderators_group.id],
-                }
-            ).decode(),
         }
+        params[setting_name] = orjson.dumps(
+            {
+                "direct_members": [othello.id],
+                "direct_subgroups": [leadership_group.id, moderators_group.id],
+            }
+        ).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         backend_group = NamedUserGroup.objects.get(name="backend", realm=hamlet.realm)
         self.assertCountEqual(
-            list(backend_group.can_mention_group.direct_members.all()),
+            list(getattr(backend_group, setting_name).direct_members.all()),
             [othello],
         )
         self.assertCountEqual(
-            list(backend_group.can_mention_group.direct_subgroups.all()),
+            list(getattr(backend_group, setting_name).direct_subgroups.all()),
             [leadership_group, moderators_group],
         )
 
@@ -516,18 +522,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "help",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Troubleshooting team",
-            "can_mention_group": orjson.dumps(
-                {
-                    "direct_members": [],
-                    "direct_subgroups": [moderators_group.id],
-                }
-            ).decode(),
         }
+        params[setting_name] = orjson.dumps(
+            {
+                "direct_members": [],
+                "direct_subgroups": [moderators_group.id],
+            }
+        ).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         help_group = NamedUserGroup.objects.get(name="help", realm=hamlet.realm)
         # We do not create a new UserGroup object in such case.
-        self.assertEqual(help_group.can_mention_group_id, moderators_group.id)
+        self.assertEqual(getattr(help_group, setting_name).id, moderators_group.id)
 
         internet_group = NamedUserGroup.objects.get(
             name="role:internet", realm=hamlet.realm, is_system_group=True
@@ -536,33 +542,39 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group": orjson.dumps(internet_group.id).decode(),
         }
+        params[setting_name] = orjson.dumps(internet_group.id).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to 'role:internet' group."
+            result, f"'{setting_name}' setting cannot be set to 'role:internet' group."
         )
 
         owners_group = NamedUserGroup.objects.get(
             name="role:owners", realm=hamlet.realm, is_system_group=True
         )
         params = {
-            "name": "frontend",
+            "name": "frontend-team",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group": orjson.dumps(owners_group.id).decode(),
         }
+        params[setting_name] = orjson.dumps(owners_group.id).decode()
         result = self.client_post("/json/user_groups/create", info=params)
-        self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to 'role:owners' group."
-        )
+
+        if not permission_configuration.allow_owners_group:
+            self.assert_json_error(
+                result, f"'{setting_name}' setting cannot be set to 'role:owners' group."
+            )
+        else:
+            self.assert_json_success(result)
+            frontend_group = NamedUserGroup.objects.get(name="frontend-team", realm=hamlet.realm)
+            self.assertEqual(getattr(frontend_group, setting_name), owners_group.usergroup_ptr)
 
         params = {
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group": orjson.dumps(1111).decode(),
         }
+        params[setting_name] = orjson.dumps(1111).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group")
 
@@ -570,13 +582,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group": orjson.dumps(
-                {
-                    "direct_members": [1111],
-                    "direct_subgroups": [leadership_group.id, moderators_group.id],
-                }
-            ).decode(),
         }
+        params[setting_name] = orjson.dumps(
+            {
+                "direct_members": [1111],
+                "direct_subgroups": [leadership_group.id, moderators_group.id],
+            }
+        ).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user ID: 1111")
 
@@ -584,13 +596,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group": orjson.dumps(
-                {
-                    "direct_members": [othello.id],
-                    "direct_subgroups": [1111, moderators_group.id],
-                }
-            ).decode(),
         }
+        params[setting_name] = orjson.dumps(
+            {
+                "direct_members": [othello.id],
+                "direct_subgroups": [1111, moderators_group.id],
+            }
+        ).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
@@ -599,42 +611,49 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 "name": "frontend",
                 "members": orjson.dumps([hamlet.id]).decode(),
                 "description": "Frontend team",
-                "can_mention_group": orjson.dumps(
-                    {
-                        "direct_members": [othello.id],
-                        "direct_subgroups": [moderators_group.id],
-                    }
-                ).decode(),
             }
+            params[setting_name] = orjson.dumps(
+                {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [moderators_group.id],
+                }
+            ).decode()
             result = self.client_post("/json/user_groups/create", info=params)
-            self.assert_json_error(result, "'can_mention_group' must be a system user group.")
+            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
 
             params = {
                 "name": "frontend",
                 "members": orjson.dumps([hamlet.id]).decode(),
                 "description": "Frontend team",
-                "can_mention_group": orjson.dumps(
-                    {
-                        "direct_members": [],
-                        "direct_subgroups": [moderators_group.id],
-                    }
-                ).decode(),
             }
+            params[setting_name] = orjson.dumps(
+                {
+                    "direct_members": [],
+                    "direct_subgroups": [moderators_group.id],
+                }
+            ).decode()
             result = self.client_post("/json/user_groups/create", info=params)
             self.assert_json_success(result)
             frontend_group = NamedUserGroup.objects.get(name="frontend", realm=hamlet.realm)
-            self.assertEqual(frontend_group.can_mention_group_id, moderators_group.id)
+            self.assertEqual(getattr(frontend_group, setting_name).id, moderators_group.id)
 
             params = {
                 "name": "devops",
                 "members": orjson.dumps([hamlet.id]).decode(),
                 "description": "Devops team",
-                "can_mention_group": orjson.dumps(leadership_group.id).decode(),
             }
+            params[setting_name] = orjson.dumps(leadership_group.id).decode()
             result = self.client_post("/json/user_groups/create", info=params)
-            self.assert_json_success(result)
-            devops_group = NamedUserGroup.objects.get(name="devops", realm=hamlet.realm)
-            self.assertEqual(devops_group.can_mention_group_id, leadership_group.id)
+            if setting_name == "can_mention_group":
+                self.assert_json_success(result)
+                devops_group = NamedUserGroup.objects.get(name="devops", realm=hamlet.realm)
+                self.assertEqual(getattr(devops_group, setting_name).id, leadership_group.id)
+            else:
+                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+    def test_set_group_settings_during_user_group_creation(self) -> None:
+        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+            self.do_test_set_group_setting_during_user_group_creation(setting_name)
 
     def test_user_group_get(self) -> None:
         # Test success
