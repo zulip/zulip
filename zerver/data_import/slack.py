@@ -822,6 +822,11 @@ def get_messages_iterator(
                     # change this to point to slackbot instead, but
                     # skipping those messages is simpler.
                     continue
+                if message.get("mimetype") == "application/vnd.slack-docs":
+                    # This is a Slack "Post" which is HTML-formatted,
+                    # and we don't have a clean way to import at the
+                    # moment.  We skip them on import.
+                    continue
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
