@@ -18,16 +18,25 @@ gear_info = {
     # key is from REGEXP: `{relative|gear|key}`
     # name is what the item is called in the gear menu: `Select **name**.`
     # link is used for relative links: `Select [name](link).`
-    "manage-streams": ["Manage streams", "/#streams/subscribed"],
-    "settings": ["Personal Settings", "/#settings/profile"],
-    "organization-settings": ["Organization settings", "/#organization/organization-profile"],
-    "integrations": ["Integrations", "/integrations/"],
-    "stats": ["Usage statistics", "/stats"],
-    "plans": ["Plans and pricing", "/plans/"],
-    "billing": ["Billing", "/billing/"],
-    "keyboard-shortcuts": ["Keyboard shortcuts (?)", "/#keyboard-shortcuts"],
-    "message-formatting": ["Message formatting", "/#message-formatting"],
-    "search-filters": ["Search filters", "/#search-operators"],
+    "manage-streams": ['<i class="fa fa-exchange"></i> Manage streams', "/#streams/subscribed"],
+    "settings": ['<i class="fa fa-wrench"></i> Personal Settings', "/#settings/profile"],
+    "organization-settings": [
+        '<i class="fa fa-bolt"></i> Organization settings',
+        "/#organization/organization-profile",
+    ],
+    "integrations": ['<i class="fa fa-github"></i> Integrations', "/integrations/"],
+    "stats": ['<i class="fa fa-bar-chart"></i> Usage statistics', "/stats"],
+    "plans": ['<i class="fa fa-rocket"></i> Plans and pricing', "/plans/"],
+    "billing": ['<i class="fa fa-credit-card"></i> Billing', "/billing/"],
+    "keyboard-shortcuts": [
+        '<i class="fa fa-keyboard-o"></i> Keyboard shortcuts (?)',
+        "/#keyboard-shortcuts",
+    ],
+    "message-formatting": [
+        '<i class="fa fa-pencil"></i> Message formatting',
+        "/#message-formatting",
+    ],
+    "search-filters": ['<i class="fa fa-search"></i> Search filters', "/#search-operators"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
