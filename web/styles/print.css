@@ -1,0 +1,74 @@
+@media print {
+    /* Hide unnecessary blocks. */
+    #navbar_alerts_wrapper,
+    #streamlist-toggle,
+    #left-sidebar-container,
+    #right-sidebar-container,
+    .top-messages-logo,
+    #userlist-toggle,
+    .message_length_controller,
+    #loading_older_messages_indicator,
+    #page_loading_indicator,
+    #message_feed_errors_container,
+    #bottom_whitespace,
+    #mark_read_on_scroll_state_banner,
+    #compose {
+        display: none;
+    }
+
+    /* Prevent headers from running on every page. */
+    #navbar-fixed-container,
+    .message_list .message_header {
+        position: static;
+    }
+
+    /* Save a bit of paper by removing padding. */
+    #message_feed_container {
+        padding-top: 0;
+    }
+
+    /* Hide unnecessary controls, but leave them
+       in the document flow. */
+    .search_icon,
+    .settings-dropdown-cog,
+    .recipient_bar_controls {
+        visibility: hidden;
+    }
+
+    /* Don't highlight the selected message. */
+    .selected_message .messagebox-content {
+        outline: 0;
+    }
+
+    /* Show collapsed content for printing. Note that
+       CSS Grid does not yet break very intelligently
+       in all browsers, so longer messages may sometimes
+       appear at the top of new pages. */
+    .message_content.collapsed,
+    .message_content.condensed {
+        max-height: unset !important;
+        min-height: unset !important;
+        overflow: auto !important;
+        height: auto !important;
+        mask-image: none;
+    }
+
+    /* Print links in the same color as text, with any
+       likely full URL values in parentheses. */
+    .message_content a {
+        color: inherit;
+
+        &[href^="http"]::after {
+            content: " (" attr(href) ")";
+        }
+    }
+
+    /* Ensure that emoji print. They are background-images,
+       which ordinarily do not print, so these properties
+       should ensure proper printing of inline, status, and
+       other emoji. */
+    .emoji {
+        color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
