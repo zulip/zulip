@@ -248,7 +248,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
         "Failed: Name is already in use!",
     );
 
-    const cancel_button_selector = "#edit_bot_modal .dialog_cancel_button";
+    const cancel_button_selector = "#edit_bot_modal .dialog_exit_button";
     await page.waitForFunction(
         (cancel_button_selector: string) =>
             !document.querySelector(cancel_button_selector)?.hasAttribute("disabled"),
@@ -320,7 +320,7 @@ async function test_duplicate_alert_words_cannot_be_added(
     const status_text = await common.get_text_from_selector(page, alert_word_status_selector);
     assert.strictEqual(status_text, "Alert word already exists!");
 
-    await page.click("#add-alert-word .dialog_cancel_button");
+    await page.click("#add-alert-word .dialog_exit_button");
     await common.wait_for_micromodal_to_close(page);
 }
 

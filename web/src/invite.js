@@ -151,7 +151,7 @@ function submit_invitation_form() {
         complete() {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
-            $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
+            $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
             $("#invitee_emails").trigger("focus");
             scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
@@ -178,7 +178,7 @@ function generate_multiuse_invite() {
                 $t({defaultMessage: "Generate invite link"}),
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
-            $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
+            $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
             scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
