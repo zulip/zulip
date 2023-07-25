@@ -149,6 +149,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         old_email=old_email,
         new_email=new_email,
         activate_url=activation_url,
+        organization_host=user_profile.realm.host,
     )
     language = user_profile.default_language
 
