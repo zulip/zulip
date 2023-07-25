@@ -743,6 +743,10 @@ ul {
         /* We remove the default padding from this container
            as it is not necessary for the Giphy popover. */
         padding: 0;
+
+        /* By resetting to the default color from the `body`,
+           we can ignore the colors applied from `tippy-box`. */
+        color: var(--color-text-default);
     }
 }
 
@@ -773,10 +777,6 @@ ul {
             flex-grow: 1;
             margin: 5px;
             border-radius: 3px;
-
-            /* By resetting to the default color from the `body`,
-             * we can ignore the colors applied from `tippy-box`. */
-            color: var(--color-text-default);
         }
 
         .clear_search_button {
