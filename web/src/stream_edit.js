@@ -513,6 +513,7 @@ export function initialize() {
             html_body: copy_email_address,
             id: "copy_email_address_modal",
             html_submit_button: $t_html({defaultMessage: "Copy address"}),
+            html_exit_button: $t_html({defaultMessage: "Close"}),
             help_link: "/help/message-a-stream-by-email#configuration-options",
             on_click() {},
             close_on_submit: false,
