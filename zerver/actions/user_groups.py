@@ -456,6 +456,7 @@ def get_single_user_group_name_from_user_id(user_id: int) -> str:
 def get_or_create_single_user_group(
     group_user: UserProfile,
     realm: Realm,
+    acting_user: UserProfile,
 ) -> UserGroup:
     group_name = get_single_user_group_name_from_user_id(group_user.id)
     try:
@@ -471,7 +472,7 @@ def get_or_create_single_user_group(
                 [group_user],
                 realm,
                 is_system_group=True,
-                acting_user=group_user,
+                acting_user=acting_user,
             )
             do_send_create_user_group_event(user_group, [group_user])
 
@@ -496,4 +497,4 @@ def get_default_group_for_setting(
     assert default_group_name == "creating_user"
     assert acting_user is not None
 
-    return get_or_create_single_user_group(acting_user, user_group.realm)
+    return get_or_create_single_user_group(acting_user, user_group.realm, acting_user)

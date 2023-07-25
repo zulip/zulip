@@ -17482,6 +17482,22 @@ paths:
             type: integer
           example: 11
           required: false
+        - name: can_manage_group
+          in: query
+          description: |
+            ID of the user group whose members are allowed to manage the
+            user group.
+
+            This setting cannot be set to `"role:internet"` and `"role:nobody"`
+            system groups.
+
+            **Changes**: New in Zulip 9.0 (feature level 240).
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+          example: 11
+          required: false
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"

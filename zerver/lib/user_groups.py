@@ -1,6 +1,7 @@
+import re
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Collection, Dict, Iterable, Iterator, List, Optional, TypedDict
+from typing import Collection, Dict, Iterable, Iterator, List, Optional, TypedDict, Union
 
 from django.db import transaction
 from django.db.models import F, QuerySet
@@ -21,6 +22,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.users import get_user_profile_by_id_in_realm
 
 
 class UserGroupDict(TypedDict):
@@ -175,13 +177,38 @@ def lock_subgroups_with_respect_to_supergroup(
         )
 
 
+def check_single_user_group_name(group_name: str, realm: Realm) -> UserProfile:
+    expected_pattern = r"^user:(\d+)$"
+    match = re.match(expected_pattern, group_name)
+
+    if not match:
+        raise JsonableError(_("Invalid group name"))
+
+    group_member_id = int(match.group(1))
+    try:
+        user_profile = get_user_profile_by_id_in_realm(group_member_id, realm)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("Invalid group name"))
+
+    return user_profile
+
+
 def access_user_group_for_setting(
-    user_group_id: int,
+    user_group_id_or_str: Union[int, str],
     user_profile: UserProfile,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
 ) -> UserGroup:
+    if isinstance(user_group_id_or_str, str):
+        assert setting_name == "can_manage_group"
+
+        group_user = check_single_user_group_name(user_group_id_or_str, user_profile.realm)
+        from zerver.actions.user_groups import get_or_create_single_user_group
+
+        return get_or_create_single_user_group(group_user, user_profile.realm, user_profile)
+
+    user_group_id = user_group_id_or_str
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
 
     if permission_configuration.require_system_group and not user_group.is_system_group:

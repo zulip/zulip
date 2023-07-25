@@ -444,6 +444,138 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group")
 
+    def test_can_manage_group_setting_during_user_group_creation(self) -> None:
+        self.login("hamlet")
+
+        # Test sending id of can_manage_group.
+        hamlet = self.example_user("hamlet")
+        leadership_group = check_add_user_group(
+            hamlet.realm, "leadership", [hamlet], acting_user=self.example_user("othello")
+        )
+
+        moderators_group = UserGroup.objects.get(
+            name="role:moderators", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "support",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Support team",
+            "can_manage_group": orjson.dumps(moderators_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, moderators_group)
+
+        owners_group = UserGroup.objects.get(
+            name="role:owners", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "frontend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Frontend team",
+            "can_manage_group": orjson.dumps(owners_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        frontend_group = UserGroup.objects.get(name="frontend", realm=hamlet.realm)
+        self.assertEqual(frontend_group.can_manage_group, owners_group)
+
+        params = {
+            "name": "test",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Test group",
+            "can_manage_group": orjson.dumps(leadership_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        test_group = UserGroup.objects.get(name="test", realm=hamlet.realm)
+        self.assertEqual(test_group.can_manage_group, leadership_group)
+
+        nobody_group = UserGroup.objects.get(
+            name="role:nobody", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(nobody_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(
+            result, "'can_manage_group' setting cannot be set to 'role:nobody' group."
+        )
+
+        internet_group = UserGroup.objects.get(
+            name="role:internet", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(internet_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(
+            result, "'can_manage_group' setting cannot be set to 'role:internet' group."
+        )
+
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(1111).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid user group")
+
+        # Test sending name of can_manage_group.
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps("Random string").decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        invalid_single_user_group_name = "invalid-name"
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(invalid_single_user_group_name).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        invalid_single_user_group_name = "user:99"
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(invalid_single_user_group_name).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        expected_can_manage_group_name = get_single_user_group_name_from_user_id(hamlet.id)
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(expected_can_manage_group_name).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        marketing_group = UserGroup.objects.get(name="marketing", realm=hamlet.realm)
+        self.assertEqual(marketing_group.can_manage_group.name, expected_can_manage_group_name)
+        self.assertEqual(
+            marketing_group.can_manage_group.can_mention_group.name, SystemGroups.NOBODY
+        )
+        self.assertTrue(marketing_group.can_manage_group.is_system_group)
+        self.assert_user_membership(marketing_group.can_manage_group, [hamlet])
+
     def test_user_group_get(self) -> None:
         # Test success
         user_profile = self.example_user("hamlet")

@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Union
 
 from django.conf import settings
 from django.db import transaction
@@ -36,7 +36,7 @@ from zerver.lib.user_groups import (
     user_groups_in_realm_serialized,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
-from zerver.lib.validator import check_bool, check_int, check_list
+from zerver.lib.validator import check_bool, check_int, check_list, check_string_or_int
 from zerver.models import UserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
@@ -53,6 +53,9 @@ def add_user_group(
     can_mention_group_id: Optional[int] = REQ(
         "can_mention_group", json_validator=check_int, default=None
     ),
+    can_manage_group_id: Optional[Union[int, str]] = REQ(
+        "can_manage_group", json_validator=check_string_or_int, default=None
+    ),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
@@ -66,9 +69,9 @@ def add_user_group(
             continue
 
         if request_settings_dict[setting_group_id_name] is not None:
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
+            setting_value_group_id_or_str = request_settings_dict[setting_group_id_name]
             setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+                setting_value_group_id_or_str,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
