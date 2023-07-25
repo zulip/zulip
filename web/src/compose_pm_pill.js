@@ -29,6 +29,7 @@ export function initialize({on_pill_create_or_remove}) {
 
     widget.onPillCreate(() => {
         on_pill_create_or_remove();
+        $("#private_message_recipient").trigger("focus");
     });
 
     widget.onPillRemove(() => {
