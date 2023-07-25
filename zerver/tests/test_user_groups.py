@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 from unittest import mock
 
 import orjson
@@ -732,6 +732,121 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group")
+
+    def test_update_can_manage_group_setting(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Test sending id of can_manage_group.
+        support_group = check_add_user_group(
+            hamlet.realm, "support", [hamlet], acting_user=self.example_user("othello")
+        )
+        marketing_group = check_add_user_group(
+            hamlet.realm, "marketing", [hamlet], acting_user=self.example_user("othello")
+        )
+
+        moderators_group = UserGroup.objects.get(
+            name="role:moderators", realm=hamlet.realm, is_system_group=True
+        )
+
+        self.login("hamlet")
+        params = {
+            "can_manage_group": orjson.dumps(moderators_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, moderators_group)
+
+        params = {
+            "can_manage_group": orjson.dumps(marketing_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, marketing_group)
+
+        owners_group = UserGroup.objects.get(
+            name="role:owners", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "can_manage_group": orjson.dumps(owners_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, owners_group)
+
+        nobody_group = UserGroup.objects.get(
+            name="role:nobody", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "can_manage_group": orjson.dumps(nobody_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(
+            result, "'can_manage_group' setting cannot be set to 'role:nobody' group."
+        )
+
+        internet_group = UserGroup.objects.get(
+            name="role:internet", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "can_manage_group": orjson.dumps(internet_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(
+            result, "'can_manage_group' setting cannot be set to 'role:internet' group."
+        )
+
+        params = {
+            "can_mention_group": orjson.dumps(1111).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Invalid user group")
+
+        # Test sending name of can_manage_group.
+        params = {
+            "can_manage_group": orjson.dumps("Random string").decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        invalid_single_user_group_name = "user:99"
+        params = {
+            "can_manage_group": orjson.dumps(invalid_single_user_group_name).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        expected_can_manage_group_name = get_single_user_group_name_from_user_id(hamlet.id)
+        params = {
+            "can_manage_group": orjson.dumps(expected_can_manage_group_name).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group.name, expected_can_manage_group_name)
+        self.assertEqual(support_group.can_manage_group.can_mention_group.name, SystemGroups.NOBODY)
+        self.assertTrue(support_group.can_manage_group.is_system_group)
+        self.assert_user_membership(support_group.can_manage_group, [hamlet])
+
+        # Test trying to update the setting to already set value to ensure
+        # coverage.
+        current_setting_value: Union[int, str] = support_group.can_manage_group.id
+        params = {
+            "can_manage_group": orjson.dumps(current_setting_value).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        self.assertEqual(support_group.can_manage_group.id, current_setting_value)
+
+        current_setting_value = support_group.can_manage_group.name
+        params = {
+            "can_manage_group": orjson.dumps(current_setting_value).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        self.assertEqual(support_group.can_manage_group.name, current_setting_value)
 
     def test_user_group_update_to_already_existing_name(self) -> None:
         hamlet = self.example_user("hamlet")

@@ -108,8 +108,16 @@ def edit_user_group(
     can_mention_group_id: Optional[int] = REQ(
         "can_mention_group", json_validator=check_int, default=None
     ),
+    can_manage_group_id: Optional[Union[int, str]] = REQ(
+        "can_manage_group", json_validator=check_string_or_int, default=None
+    ),
 ) -> HttpResponse:
-    if name is None and description is None and can_mention_group_id is None:
+    if (
+        name is None
+        and description is None
+        and can_mention_group_id is None
+        and can_manage_group_id is None
+    ):
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
@@ -128,12 +136,19 @@ def edit_user_group(
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
-            setting_group_id_name
-        ] != getattr(user_group, setting_group_id_name):
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
+        if request_settings_dict[setting_group_id_name] is not None:
+            setting_value = request_settings_dict[setting_group_id_name]
+            if isinstance(setting_value, str):
+                current_value = getattr(user_group, setting_name)
+                if current_value.name == setting_value:
+                    continue
+            else:
+                current_value = getattr(user_group, setting_group_id_name)
+                if current_value == setting_value:
+                    continue
+
             setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+                setting_value,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
