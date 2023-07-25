@@ -162,14 +162,6 @@ body {
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
 
-    --color-zulip-logo: hsl(0deg 0% 0% / 34%);
-    --color-zulip-logo-loading: hsl(0deg 0% 27%);
-    --color-zulip-logo-z: hsl(0deg 0% 100%);
-
-    --color-show-more-less-button-background: hsl(240deg 44% 56% / 8%);
-    --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 15%);
-    --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 20%);
-
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-default: hsl(0deg 0% 15%);
@@ -182,6 +174,16 @@ body {
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
+
+    /* Message feed loading indicator colors */
+    --color-zulip-logo: hsl(0deg 0% 0% / 34%);
+    --color-zulip-logo-loading: hsl(0deg 0% 27%);
+    --color-zulip-logo-z: hsl(0deg 0% 100%);
+
+    /* Message collapsing/condensing button colors */
+    --color-show-more-less-button-background: hsl(240deg 44% 56% / 8%);
+    --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 15%);
+    --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 20%);
 
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 52% 95%);
@@ -213,14 +215,6 @@ body {
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-background-modal: hsl(212deg 28% 18%);
 
-    --color-zulip-logo: hsl(0deg 0% 100% / 50%);
-    --color-zulip-logo-loading: hsl(0deg 0% 100%);
-    --color-zulip-logo-z: hsl(214deg 27% 18%);
-
-    --color-show-more-less-button-background: hsla(240deg 44% 56% / 15%);
-    --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 25%);
-    --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 15%);
-
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
     /* Unlike the light theme, the dark theme renders message
@@ -237,6 +231,16 @@ body {
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
+
+    /* Message feed loading indicator colors */
+    --color-zulip-logo: hsl(0deg 0% 100% / 50%);
+    --color-zulip-logo-loading: hsl(0deg 0% 100%);
+    --color-zulip-logo-z: hsl(214deg 27% 18%);
+
+    /* Message collapsing/condensing button colors */
+    --color-show-more-less-button-background: hsla(240deg 44% 56% / 15%);
+    --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 25%);
+    --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 15%);
 
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 13% 20%);
