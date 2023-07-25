@@ -19544,6 +19544,22 @@ paths:
                   items:
                     type: integer
                   example: [1, 2, 3, 4]
+                can_manage_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to [manage this user group][manage-user-groups].
+
+                        This setting cannot be set to `"role:internet"` and `"role:everyone"`
+                        [system groups][system-groups].
+
+                        **Changes**: New in Zulip 10.0 (feature level 283).
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                        [manage-user-groups]: /help/manage-user-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 11
                 can_mention_group:
                   allOf:
                     - description: |
@@ -19573,6 +19589,8 @@ paths:
                 - members
             encoding:
               members:
+                contentType: application/json
+              can_manage_group:
                 contentType: application/json
               can_mention_group:
                 contentType: application/json
