@@ -48,6 +48,7 @@ export type DialogWidgetConfig = {
     html_body: string;
     on_click: (e: unknown) => void;
     html_submit_button?: string;
+    html_exit_button?: string;
     close_on_submit?: boolean;
     focus_submit_on_open?: boolean;
     help_link?: string;
@@ -112,6 +113,7 @@ export function launch(conf: DialogWidgetConfig): void {
 
     // Optional parameters:
     // * html_submit_button: Submit button text.
+    // * html_exit_button: Exit button text.
     // * close_on_submit: Whether to close modal on clicking submit.
     // * focus_submit_on_open: Whether to focus submit button on open.
     // * help_link: A help link in the heading area.
@@ -130,10 +132,12 @@ export function launch(conf: DialogWidgetConfig): void {
     //   on valid input change in modal.
 
     const html_submit_button = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
+    const html_exit_button = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
     const html = render_dialog_widget({
         heading_text: conf.html_heading,
         link: conf.help_link,
         html_submit_button,
+        html_exit_button,
         html_body: conf.html_body,
         id: conf.id,
         single_footer_button: conf.single_footer_button,
