@@ -35,6 +35,7 @@ export const page_params: {
     realm_move_messages_between_streams_policy: number;
     realm_name_changes_disabled: boolean;
     realm_name: string;
+    realm_notifications_stream_id: number;
     realm_org_type: number;
     realm_plan_type: number;
     realm_private_message_policy: number;
