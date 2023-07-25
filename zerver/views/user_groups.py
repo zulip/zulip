@@ -107,9 +107,15 @@ def edit_user_group(
     user_group_id: PathOnly[int],
     name: str | None = None,
     description: str | None = None,
+    can_manage_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
-    if name is None and description is None and can_mention_group is None:
+    if (
+        name is None
+        and description is None
+        and can_manage_group is None
+        and can_mention_group is None
+    ):
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)

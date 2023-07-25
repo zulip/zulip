@@ -19720,6 +19720,41 @@ paths:
                     a required field.
                   type: string
                   example: The marketing team.
+                can_manage_group:
+                  description: |
+                    The set of users who have permission to [manage this user group][manage-user-groups]
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    This setting cannot be set to `"role:internet"` and `"role:everyone"`
+                    [system groups][system-groups].
+
+                    **Changes**: New in Zulip 10.0 (feature level 283).
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                    [manage-user-groups]: /help/manage-user-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to manage the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to manage the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 11,
+                    }
                 can_mention_group:
                   description: |
                     The set of users who have permission to [mention this group][mentions],
@@ -19769,6 +19804,8 @@ paths:
                       "old": 11,
                     }
             encoding:
+              can_manage_group:
+                contentType: application/json
               can_mention_group:
                 contentType: application/json
       responses:
