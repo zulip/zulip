@@ -1,1 +1,0 @@
-{{ _("Keep your conversations organized with topics") }}
