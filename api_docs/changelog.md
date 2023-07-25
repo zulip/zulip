@@ -28,6 +28,9 @@ format used by the Zulip server that they are interacting with.
 * [`POST /user_groups/create`](/api/create-user-group): Added `can_manage_group`
   parameter to support setting the user group whose members can manage the user
   group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_manage_group` parameter to support changing the user group whose
+  members can manage the specified user group.
 
 **Feature level 282**
 
