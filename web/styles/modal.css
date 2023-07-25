@@ -124,7 +124,7 @@
     transform: scale(1.05);
 }
 
-.dialog_cancel_button {
+.dialog_exit_button {
     background: hsl(0deg 0% 100%);
     border: 1px solid hsl(300deg 2% 11% / 30%);
 

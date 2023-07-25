@@ -104,7 +104,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     );
     assert.strictEqual(edit_linkifier_template_status, "Failed: Invalid URL template.");
 
-    await page.click(".dialog_cancel_button");
+    await page.click(".dialog_exit_button");
     await page.waitForSelector("#dialog_widget_modal", {hidden: true});
 
     await page.waitForSelector(".linkifier_row", {visible: true});
