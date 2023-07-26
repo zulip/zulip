@@ -245,11 +245,24 @@ function debug_notification_source_value(message) {
     blueslip.debug("Desktop notification from source " + notification_source);
 }
 
+function get_notification_key(message) {
+    let key;
+
+    if (message.type === "private" || message.type === "test-notification") {
+        key = message.display_reply_to;
+    } else {
+        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
+        key = message.sender_full_name + " to " + stream_name + " > " + message.topic;
+    }
+
+    return key;
+}
+
 export function process_notification(notification) {
     let notification_object;
-    let key;
     const message = notification.message;
     const content = get_notification_content(message);
+    const key = get_notification_key(message);
     let other_recipients;
     let title = message.sender_full_name;
     let msg_count = 1;
@@ -259,14 +272,10 @@ export function process_notification(notification) {
     debug_notification_source_value(message);
 
     if (message.type === "private" || message.type === "test-notification") {
-        key = message.display_reply_to;
         // Remove the sender from the list of other recipients
         other_recipients = `, ${message.display_reply_to}, `
             .replace(`, ${message.sender_full_name}, `, ", ")
             .slice(", ".length, -", ".length);
-    } else {
-        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-        key = message.sender_full_name + " to " + stream_name + " > " + topic;
     }
 
     if (notice_memory.has(key)) {
