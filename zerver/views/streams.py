@@ -70,6 +70,7 @@ from zerver.lib.streams import (
     filter_stream_authorization,
     get_stream_permission_policy_name,
     list_to_streams,
+    stream_to_dict,
 )
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.subscription_info import gather_subscriptions
@@ -873,7 +874,7 @@ def get_stream_backend(
     stream_id: int,
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
-    return json_success(request, data={"stream": stream.to_dict()})
+    return json_success(request, data={"stream": stream_to_dict(stream)})
 
 
 @has_request_variables

@@ -44,6 +44,7 @@ from zerver.lib.streams import (
     get_stream_permission_policy_name,
     render_stream_description,
     send_stream_creation_event,
+    stream_to_dict,
 )
 from zerver.lib.subscription_info import get_subscribers_query
 from zerver.lib.types import APISubscriptionDict
@@ -117,7 +118,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     for group in default_stream_groups_for_stream:
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
 
-    stream_dict = stream.to_dict()
+    stream_dict = stream_to_dict(stream)
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
     event = dict(type="stream", op="delete", streams=[stream_dict])
     send_event_on_commit(stream.realm, event, affected_user_ids)
@@ -354,7 +355,7 @@ def send_subscription_add_events(
             stream = sub_info.stream
             stream_info = stream_info_dict[stream.id]
             subscription = sub_info.sub
-            stream_dict = stream.to_dict()
+            stream_dict = stream_to_dict(stream)
             # This is verbose as we cannot unpack existing TypedDict
             # to initialize another TypedDict while making mypy happy.
             # https://github.com/python/mypy/issues/5382

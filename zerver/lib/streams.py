@@ -17,6 +17,7 @@ from zerver.lib.stream_subscription import (
     get_subscribed_stream_ids_for_user,
 )
 from zerver.lib.string_validation import check_stream_name
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import APIStreamDict
 from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
@@ -111,7 +112,7 @@ def render_stream_description(text: str, realm: Realm) -> str:
 
 
 def send_stream_creation_event(realm: Realm, stream: Stream, user_ids: List[int]) -> None:
-    event = dict(type="stream", op="create", streams=[stream.to_dict()])
+    event = dict(type="stream", op="create", streams=[stream_to_dict(stream)])
     send_event(realm, event, user_ids)
 
 
@@ -823,6 +824,24 @@ def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
         .filter(occupied=True)
     )
     return occupied_streams
+
+
+def stream_to_dict(stream: Stream) -> APIStreamDict:
+    return APIStreamDict(
+        can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
+        date_created=datetime_to_timestamp(stream.date_created),
+        description=stream.description,
+        first_message_id=stream.first_message_id,
+        history_public_to_subscribers=stream.history_public_to_subscribers,
+        invite_only=stream.invite_only,
+        is_web_public=stream.is_web_public,
+        message_retention_days=stream.message_retention_days,
+        name=stream.name,
+        rendered_description=stream.rendered_description,
+        stream_id=stream.id,
+        stream_post_policy=stream.stream_post_policy,
+        is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+    )
 
 
 def get_web_public_streams(realm: Realm) -> List[APIStreamDict]:  # nocoverage
