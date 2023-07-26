@@ -218,10 +218,7 @@ export function process_notification(notification) {
     }
 
     if (message.type === "private" || message.type === "test-notification") {
-        if (
-            user_settings.pm_content_in_desktop_notifications !== undefined &&
-            !user_settings.pm_content_in_desktop_notifications
-        ) {
+        if (!user_settings.pm_content_in_desktop_notifications) {
             content = "New direct message from " + message.sender_full_name;
         }
         key = message.display_reply_to;
