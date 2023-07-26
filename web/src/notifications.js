@@ -258,6 +258,12 @@ function get_notification_key(message) {
     return key;
 }
 
+function remove_sender_from_list_of_recipients(message) {
+    return `, ${message.display_reply_to}, `
+        .replace(`, ${message.sender_full_name}, `, ", ")
+        .slice(", ".length, -", ".length);
+}
+
 export function process_notification(notification) {
     let notification_object;
     const message = notification.message;
@@ -273,9 +279,7 @@ export function process_notification(notification) {
 
     if (message.type === "private" || message.type === "test-notification") {
         // Remove the sender from the list of other recipients
-        other_recipients = `, ${message.display_reply_to}, `
-            .replace(`, ${message.sender_full_name}, `, ", ")
-            .slice(", ".length, -", ".length);
+        other_recipients = remove_sender_from_list_of_recipients(message);
     }
 
     if (notice_memory.has(key)) {
