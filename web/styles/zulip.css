@@ -1215,6 +1215,11 @@ td.pointer {
                 color: var(--color-message-action-interactive);
             }
         }
+
+        .zulip-icon-more-vertical {
+            /* Increase visual prominence of the vdots. */
+            font-size: 21px;
+        }
     }
 
     .actions_hover {
