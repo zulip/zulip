@@ -350,7 +350,7 @@ $time_column_min_width: 50px; /* + padding */
 
                 .zulip-icon.zulip-icon-bot {
                     align-self: center;
-                    padding: $message_box_margin 0 0 5px;
+                    padding: 0 0 0 5px;
                 }
 
                 .sender_name {
