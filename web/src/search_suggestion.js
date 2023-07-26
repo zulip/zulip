@@ -1,5 +1,7 @@
 import Handlebars from "handlebars/runtime";
 
+import render_search_description from "../templates/search_description.hbs";
+
 import * as common from "./common";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
@@ -59,9 +61,39 @@ function check_validity(last, operators, valid, invalid) {
     return true;
 }
 
+function get_details_for_suggestion(operators) {
+    const parts = Filter.parts_for_describe(operators);
+
+    const details = parts.map((part) => {
+        if (part.operand) {
+            const person = people.get_by_email(part.operand);
+            if (person) {
+                return {
+                    description_html: part.prefix_for_operator,
+                    is_person: true,
+                    user_pill_context: {
+                        id: person.user_id,
+                        display_value: person.full_name,
+                        has_image: true,
+                        img_src: people.small_avatar_url_for_person(person),
+                    },
+                };
+            }
+        }
+
+        return {
+            description_html: render_search_description({
+                parts: [part],
+            }),
+        };
+    });
+
+    return details;
+}
+
 function format_as_suggestion(terms) {
     return {
-        description_html: Filter.search_description_as_html(terms),
+        details: get_details_for_suggestion(terms),
         search_string: Filter.unparse(terms),
     };
 }
@@ -318,7 +350,7 @@ function get_default_suggestion(operators) {
     // Here we return the canonical suggestion for the query that the
     // user typed. (The caller passes us the parsed query as "operators".)
     if (operators.length === 0) {
-        return {description_html: "", search_string: ""};
+        return {details: [], search_string: ""};
     }
     return format_as_suggestion(operators);
 }
@@ -676,31 +708,35 @@ class Attacher {
         this.base = base;
     }
 
-    prepend_base(suggestion) {
-        if (this.base && this.base.description_html.length > 0) {
+    prepend_base_and_restructer_suggestion(suggestion, prepend_base) {
+        if (suggestion.details === undefined) {
+            suggestion.details = [{...suggestion}];
+            delete suggestion.details[0].search_string;
+        }
+
+        if (prepend_base && this.base && this.base.details.length) {
+            suggestion.details = [...this.base.details, ...suggestion.details];
             suggestion.search_string = this.base.search_string + " " + suggestion.search_string;
-            suggestion.description_html =
-                this.base.description_html + ", " + suggestion.description_html;
+        }
+
+        for (const key in suggestion) {
+            if (key !== "search_string" && key !== "details") {
+                delete suggestion[key];
+            }
         }
     }
 
-    push(suggestion) {
+    push(suggestion, prepend_base) {
+        this.prepend_base_and_restructer_suggestion(suggestion, prepend_base);
         if (!this.prev.has(suggestion.search_string)) {
             this.prev.add(suggestion.search_string);
             this.result.push(suggestion);
         }
     }
 
-    push_many(suggestions) {
+    push_many(suggestions, prepend_base) {
         for (const suggestion of suggestions) {
-            this.push(suggestion);
-        }
-    }
-
-    attach_many(suggestions) {
-        for (const suggestion of suggestions) {
-            this.prepend_base(suggestion);
-            this.push(suggestion);
+            this.push(suggestion, prepend_base);
         }
     }
 }
@@ -756,8 +792,7 @@ export function get_search_result(query) {
                 last.operand,
             )}</strong>`,
         };
-        attacher.prepend_base(suggestion);
-        attacher.push(suggestion);
+        attacher.push(suggestion, true);
     } else if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
         suggestion = get_default_suggestion(search_operators);
         attacher.push(suggestion);
@@ -805,7 +840,7 @@ export function get_search_result(query) {
     for (const filterer of filterers) {
         if (attacher.result.length < max_items) {
             const suggestions = filterer(last, base_operators);
-            attacher.attach_many(suggestions);
+            attacher.push_many(suggestions, true);
         }
     }
 
@@ -824,8 +859,8 @@ export function get_suggestions(query) {
 
 export function finalize_search_result(result) {
     for (const sug of result) {
-        const first = sug.description_html.charAt(0).toUpperCase();
-        sug.description_html = first + sug.description_html.slice(1);
+        const first = sug.details[0].description_html.charAt(0).toUpperCase();
+        sug.details[0].description_html = first + sug.details[0].description_html.slice(1);
     }
 
     // Typeahead expects us to give it strings, not objects,
