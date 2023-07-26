@@ -54,6 +54,14 @@ message_lists.all_rendered_message_lists = () => [message_lists.home, message_li
 const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
+const stream_data = zrequire("stream_data");
+
+const general_sub = {
+    stream_id: 101,
+    name: "general",
+    subscribed: true,
+};
+stream_data.add_sub(general_sub);
 
 run_test("process_from_server for un-echoed messages", () => {
     const waiting_for_ack = new Map();
@@ -138,7 +146,7 @@ run_test("build_display_recipient", () => {
 
     let message = {
         type: "stream",
-        stream: "general",
+        stream_id: general_sub.stream_id,
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,
@@ -237,7 +245,7 @@ run_test("insert_local_message streams", ({override}) => {
 
     const message_request = {
         type: "stream",
-        stream: "general",
+        stream_id: general_sub.stream_id,
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,
@@ -304,7 +312,7 @@ run_test("test reify_message_id", ({override}) => {
 
     const message_request = {
         type: "stream",
-        stream: "general",
+        stream_id: general_sub.stream_id,
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,

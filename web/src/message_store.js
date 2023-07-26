@@ -108,7 +108,6 @@ export function update_property(property, value, info) {
             for (const msg of stored_messages.values()) {
                 if (msg.stream_id && msg.stream_id === info.stream_id) {
                     msg.display_recipient = value;
-                    msg.stream = value;
                 }
             }
             break;

@@ -142,7 +142,6 @@ run_test("update_messages", () => {
             sent_by_me: false,
             starred: false,
             status_emoji_info: undefined,
-            stream: denmark.name,
             stream_id: denmark.stream_id,
             topic: "lunch",
             type: "stream",

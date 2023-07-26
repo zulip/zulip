@@ -24,6 +24,7 @@ function MessageListView() {
 mock_esm("../src/message_list_view", {
     MessageListView,
 });
+const stream_data = zrequire("stream_data");
 // Code we're actually using/testing
 const compose_closed_ui = zrequire("compose_closed_ui");
 const {Filter} = zrequire("filter");
@@ -48,25 +49,37 @@ run_test("reply_label", () => {
         filter,
     });
     message_lists.current = list;
+    const stream_one = {
+        subscribed: true,
+        name: "first_stream",
+        stream_id: 1,
+    };
+    stream_data.add_sub(stream_one);
+    const stream_two = {
+        subscribed: true,
+        name: "second_stream",
+        stream_id: 2,
+    };
+    stream_data.add_sub(stream_two);
     list.add_messages([
         {
             id: 0,
-            stream: "first_stream",
+            stream_id: stream_one.stream_id,
             topic: "first_topic",
         },
         {
             id: 1,
-            stream: "first_stream",
+            stream_id: stream_one.stream_id,
             topic: "second_topic",
         },
         {
             id: 2,
-            stream: "second_stream",
+            stream_id: stream_two.stream_id,
             topic: "third_topic",
         },
         {
             id: 3,
-            stream: "second_stream",
+            stream_id: stream_two.stream_id,
             topic: "second_topic",
         },
         {
@@ -105,8 +118,14 @@ run_test("reply_label", () => {
 });
 
 run_test("test_custom_message_input", () => {
+    const stream = {
+        subscribed: true,
+        name: "stream test",
+        stream_id: 10,
+    };
+    stream_data.add_sub(stream);
     compose_closed_ui.update_reply_recipient_label({
-        stream: "stream test",
+        stream_id: stream.stream_id,
         topic: "topic test",
     });
     test_reply_label("#stream test > topic test");

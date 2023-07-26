@@ -43,7 +43,6 @@ export function process_new_message(message) {
     switch (message.type) {
         case "stream":
             message.is_stream = true;
-            message.stream = message.display_recipient;
             message.reply_to = message.sender_email;
 
             stream_topic_history.add_message({

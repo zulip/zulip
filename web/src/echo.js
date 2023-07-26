@@ -19,6 +19,7 @@ import * as popovers from "./popovers";
 import * as recent_topics_data from "./recent_topics_data";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
+import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as transmit from "./transmit";
@@ -112,7 +113,7 @@ function resend_message(message, $row, on_send_message_success) {
 
 export function build_display_recipient(message) {
     if (message.type === "stream") {
-        return message.stream;
+        return stream_data.get_stream_name_from_id(message.stream_id);
     }
 
     // Build a display recipient with the full names of each

@@ -213,8 +213,10 @@ function set_table_focus(row, col, using_keyboard) {
             display_reply_to: $topic_row.find(".recent_topic_name a").text(),
         };
     } else {
+        const stream_name = $topic_row.find(".recent_topic_stream a").text();
+        const stream = stream_data.get_sub_by_name(stream_name);
         message = {
-            stream: $topic_row.find(".recent_topic_stream a").text(),
+            stream_id: stream?.stream_id,
             topic: $topic_row.find(".recent_topic_name a").text(),
         };
     }
@@ -382,7 +384,7 @@ function format_conversation(conversation_data) {
 
         // Stream info
         context.stream_id = last_msg.stream_id;
-        context.stream = last_msg.stream;
+        context.stream_name = stream_data.get_stream_name_from_id(last_msg.stream_id);
         context.stream_muted = stream_info.is_muted;
         context.stream_color = stream_info.color;
         context.stream_url = hash_util.by_stream_url(context.stream_id);
@@ -583,7 +585,8 @@ export function filters_should_hide_topic(topic_data) {
     }
 
     const search_keyword = $("#recent_topics_search").val();
-    if (!topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
+    const stream_name = stream_data.get_stream_name_from_id(msg.stream_id);
+    if (!topic_in_search_results(search_keyword, stream_name, msg.topic)) {
         return true;
     }
 
@@ -732,7 +735,9 @@ function stream_sort(a, b) {
         const b_msg = message_store.get(b.last_msg_id);
 
         if (a.type === "stream") {
-            return sort_comparator(a_msg.stream, b_msg.stream);
+            const a_stream_name = stream_data.get_stream_name_from_id(a_msg.stream_id);
+            const b_stream_name = stream_data.get_stream_name_from_id(b_msg.stream_id);
+            return sort_comparator(a_stream_name, b_stream_name);
         }
         return sort_comparator(a_msg.display_reply_to, b_msg.display_reply_to);
     }

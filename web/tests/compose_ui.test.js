@@ -249,9 +249,15 @@ run_test("compute_placeholder_text", () => {
 });
 
 run_test("quote_and_reply", ({override, override_rewire}) => {
+    const devel_stream = {
+        subscribed: false,
+        name: "devel",
+        stream_id: 20,
+    };
+
     const selected_message = {
         type: "stream",
-        stream: "devel",
+        stream_id: devel_stream.stream_id,
         topic: "python",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,

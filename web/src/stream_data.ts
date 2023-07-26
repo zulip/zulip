@@ -258,6 +258,10 @@ export function get_stream_id(name: string): number | undefined {
     return stream_id;
 }
 
+export function get_stream_name_from_id(stream_id: number): string {
+    return get_sub_by_id(stream_id)?.name ?? "";
+}
+
 export function get_sub_by_name(name: string): StreamSubscription | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an

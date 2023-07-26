@@ -149,7 +149,6 @@ test("process_new_message", () => {
     };
 
     message_helper.process_new_message(message);
-    assert.deepEqual(message.stream, message.display_recipient);
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
@@ -292,7 +291,6 @@ test("update_property", () => {
         sender_id: alice.user_id,
         small_avatar_url: "alice_url",
         stream_id: devel.stream_id,
-        stream: devel.name,
         display_recipient: devel.name,
         id: 100,
     };
@@ -302,7 +300,6 @@ test("update_property", () => {
         sender_id: bob.user_id,
         small_avatar_url: "bob_url",
         stream_id: denmark.stream_id,
-        stream: denmark.name,
         display_recipient: denmark.name,
         id: 101,
     };
@@ -322,14 +319,14 @@ test("update_property", () => {
     assert.equal(message1.small_avatar_url, "alice_url");
     assert.equal(message2.small_avatar_url, "bobby_url");
 
-    assert.equal(message1.stream, devel.name);
+    assert.equal(message1.stream_id, devel.stream_id);
     assert.equal(message1.display_recipient, devel.name);
-    assert.equal(message2.stream, denmark.name);
+    assert.equal(message2.stream_id, denmark.stream_id);
     assert.equal(message2.display_recipient, denmark.name);
     message_store.update_property("stream_name", "Prod", {stream_id: devel.stream_id});
-    assert.equal(message1.stream, "Prod");
+    assert.equal(message1.stream_id, devel.stream_id);
     assert.equal(message1.display_recipient, "Prod");
-    assert.equal(message2.stream, denmark.name);
+    assert.equal(message2.stream_id, denmark.stream_id);
     assert.equal(message2.display_recipient, denmark.name);
 });
 

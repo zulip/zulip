@@ -360,7 +360,6 @@ export function update_messages(events) {
                 if (stream_changed) {
                     const new_stream_name = sub_store.get(new_stream_id).name;
                     moved_message.stream_id = new_stream_id;
-                    moved_message.stream = new_stream_name;
                     moved_message.display_recipient = new_stream_name;
                 }
 

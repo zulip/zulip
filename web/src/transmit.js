@@ -7,6 +7,7 @@ import * as people from "./people";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
+import * as stream_data from "./stream_data";
 
 export function send_message(request, on_success, error) {
     if (!request.resend) {
@@ -91,14 +92,14 @@ export function reply_message(opts) {
     });
 
     if (message.type === "stream") {
-        const stream = message.stream;
+        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
 
         const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
 
         content = mention + " " + content;
 
         reply.type = "stream";
-        reply.to = stream;
+        reply.to = stream_name;
         reply.content = content;
         reply.topic = message.topic;
 

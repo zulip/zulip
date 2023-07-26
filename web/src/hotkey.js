@@ -41,6 +41,7 @@ import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
+import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -1068,7 +1069,10 @@ export function process_hotkey(e, hotkey) {
                 case "stream":
                     narrow.activate(
                         [
-                            {operator: "stream", operand: msg.stream},
+                            {
+                                operator: "stream",
+                                operand: stream_data.get_stream_name_from_id(msg.stream_id),
+                            },
                             {operator: "topic", operand: msg.topic},
                             {operator: "near", operand: msg.id},
                         ],

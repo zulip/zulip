@@ -20,6 +20,7 @@ const sent_messages = mock_esm("../src/sent_messages", {
 
 const people = zrequire("people");
 const transmit = zrequire("transmit");
+const stream_data = zrequire("stream_data");
 
 run_test("transmit_message_ajax", () => {
     let success_func_called;
@@ -97,9 +98,15 @@ run_test("transmit_message_ajax_reload_pending", () => {
 });
 
 run_test("reply_message_stream", ({override}) => {
+    const social_stream_id = 555;
+    stream_data.add_sub({
+        name: "social",
+        stream_id: social_stream_id,
+    });
+
     const stream_message = {
         type: "stream",
-        stream: "social",
+        stream_id: social_stream_id,
         topic: "lunch",
         sender_full_name: "Alice",
         sender_id: 123,

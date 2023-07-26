@@ -134,7 +134,7 @@ export function create_message_object() {
         content: compose_state.message_content(),
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
-        stream: "",
+        stream_id: "",
     };
     message.topic = "";
 
@@ -159,8 +159,6 @@ export function create_message_object() {
         const stream_id = compose_state.stream_id();
         message.stream_id = stream_id;
         message.to = stream_id;
-        const stream = stream_data.get_sub_by_id(stream_id);
-        message.stream = stream ? stream.name : "";
     }
     return message;
 }

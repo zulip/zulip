@@ -942,7 +942,7 @@ export function by_recipient(target_id, opts) {
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            by("stream", message.stream, opts);
+            by("stream", stream_data.get_stream_name_from_id(message.stream_id));
             break;
     }
 }
