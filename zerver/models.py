@@ -2701,11 +2701,6 @@ class Stream(models.Model):
         "can_remove_subscribers_group_id",
     ]
 
-    @staticmethod
-    def get_client_data(query: QuerySet["Stream"]) -> List[APIStreamDict]:
-        query = query.only(*Stream.API_FIELDS)
-        return [row.to_dict() for row in query]
-
     def to_dict(self) -> APIStreamDict:
         return APIStreamDict(
             can_remove_subscribers_group=self.can_remove_subscribers_group_id,

@@ -846,8 +846,9 @@ def stream_to_dict(stream: Stream) -> APIStreamDict:
 
 def get_web_public_streams(realm: Realm) -> List[APIStreamDict]:  # nocoverage
     query = get_web_public_streams_queryset(realm)
-    streams = Stream.get_client_data(query)
-    return streams
+    streams = query.only(*Stream.API_FIELDS)
+    stream_dicts = [stream_to_dict(stream) for stream in streams]
+    return stream_dicts
 
 
 def do_get_streams(
@@ -870,7 +871,7 @@ def do_get_streams(
     query = Stream.objects.filter(realm=user_profile.realm, deactivated=False)
 
     if include_all_active:
-        streams = Stream.get_client_data(query)
+        streams = query.only(*Stream.API_FIELDS)
     else:
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
@@ -908,16 +909,17 @@ def do_get_streams(
 
         if query_filter is not None:
             query = query.filter(query_filter)
-            streams = Stream.get_client_data(query)
+            streams = query.only(*Stream.API_FIELDS)
         else:
             # Don't bother going to the database with no valid sources
-            streams = []
+            return []
 
-    streams.sort(key=lambda elt: elt["name"])
+    stream_dicts = [stream_to_dict(stream) for stream in streams]
+    stream_dicts.sort(key=lambda elt: elt["name"])
 
     if include_default:
         default_stream_ids = get_default_stream_ids_for_realm(user_profile.realm_id)
-        for stream in streams:
+        for stream in stream_dicts:
             stream["is_default"] = stream["stream_id"] in default_stream_ids
 
-    return streams
+    return stream_dicts
