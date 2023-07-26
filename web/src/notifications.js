@@ -231,7 +231,8 @@ export function process_notification(notification) {
             .slice(", ".length, -", ".length);
         notification_source = "pm";
     } else {
-        key = message.sender_full_name + " to " + message.stream + " > " + topic;
+        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
+        key = message.sender_full_name + " to " + stream_name + " > " + topic;
         if (message.mentioned) {
             notification_source = "mention";
         } else if (message.alerted) {
@@ -277,7 +278,8 @@ export function process_notification(notification) {
     }
 
     if (message.type === "stream") {
-        title += " (to " + message.stream + " > " + topic + ")";
+        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
+        title += " (to " + stream_name + " > " + topic + ")";
     }
 
     if (notification.desktop_notify) {
@@ -559,7 +561,8 @@ export function send_test_notification(content) {
 // Handlebars templates that will do further escaping.
 function get_message_header(message) {
     if (message.type === "stream") {
-        return `#${message.stream} > ${message.topic}`;
+        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
+        return `#${stream_name} > ${message.topic}`;
     }
     if (message.display_recipient.length > 2) {
         return $t(

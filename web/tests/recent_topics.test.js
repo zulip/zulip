@@ -132,6 +132,7 @@ mock_esm("../src/stream_data", {
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
         false,
+    get_stream_name_from_id: () => "stream_name",
 });
 mock_esm("../src/stream_list", {
     handle_narrow_deactivated: noop,
@@ -211,7 +212,6 @@ let id = 0;
 const sample_messages = [];
 sample_messages[0] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic1,
     sender_id: sender1,
@@ -220,7 +220,6 @@ sample_messages[0] = {
 
 sample_messages[1] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic2,
     sender_id: sender1,
@@ -229,7 +228,6 @@ sample_messages[1] = {
 
 sample_messages[2] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic2,
     sender_id: sender2,
@@ -238,7 +236,6 @@ sample_messages[2] = {
 
 sample_messages[3] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic3,
     sender_id: sender2,
@@ -247,7 +244,6 @@ sample_messages[3] = {
 
 sample_messages[4] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic4,
     sender_id: sender2,
@@ -256,7 +252,6 @@ sample_messages[4] = {
 
 sample_messages[5] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic5,
     sender_id: sender1,
@@ -265,7 +260,6 @@ sample_messages[5] = {
 
 sample_messages[6] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic5,
     sender_id: sender2,
@@ -274,7 +268,6 @@ sample_messages[6] = {
 
 sample_messages[7] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic6,
     sender_id: sender1,
@@ -283,7 +276,6 @@ sample_messages[7] = {
 
 sample_messages[8] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic6,
     sender_id: sender2,
@@ -292,7 +284,6 @@ sample_messages[8] = {
 
 sample_messages[9] = {
     stream_id: stream1,
-    stream: "stream1",
     id: (id += 1),
     topic: topic7,
     sender_id: sender1,
@@ -302,7 +293,6 @@ sample_messages[9] = {
 // a message of stream4
 sample_messages[10] = {
     stream_id: stream4,
-    stream: "stream4",
     id: (id += 1),
     topic: topic10,
     sender_id: sender1,
@@ -355,7 +345,7 @@ function generate_topic_data(topic_info_array) {
             last_msg_url: "https://www.example.com",
             full_last_msg_date_time: "date at time",
             senders: people.sender_info_for_recent_topics_row([1, 2]),
-            stream: "stream" + stream_id,
+            stream_name: "stream_name",
             stream_color: "",
             stream_id,
             stream_muted: undefined,

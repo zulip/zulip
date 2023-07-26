@@ -692,17 +692,25 @@ test("predicate_basics", () => {
 
     assert.ok(predicate({type: "stream", stream_id, topic: "bar"}));
     assert.ok(!predicate({type: "stream", stream_id, topic: "whatever"}));
+    // 9999999 doesn't exist, testing no match
     assert.ok(!predicate({type: "stream", stream_id: 9999999}));
     assert.ok(!predicate({type: "private"}));
 
     // For old streams that we are no longer subscribed to, we may not have
     // a sub, but these should still match by stream name.
+    const old_sub = {
+        name: "old-Stream",
+        stream_id: 5,
+        subscribed: false,
+    };
+    stream_data.add_sub(old_sub);
     predicate = get_predicate([
         ["stream", "old-Stream"],
         ["topic", "Bar"],
     ]);
-    assert.ok(predicate({type: "stream", stream: "Old-stream", topic: "bar"}));
-    assert.ok(!predicate({type: "stream", stream: "no-match", topic: "whatever"}));
+    assert.ok(predicate({type: "stream", stream_id: 5, topic: "bar"}));
+    // 99999 doesn't exist, testing no match
+    assert.ok(!predicate({type: "stream", stream_id: 99999, topic: "whatever"}));
 
     predicate = get_predicate([["search", "emoji"]]);
     assert.ok(predicate({}));
@@ -748,9 +756,10 @@ test("predicate_basics", () => {
     assert.ok(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert.ok(predicate({type: "private"}));
 
+    make_sub("kiosk", 1234);
     with_overrides(({override}) => {
         override(page_params, "narrow_stream", "kiosk");
-        assert.ok(predicate({stream: "kiosk"}));
+        assert.ok(predicate({stream_id: 1234}));
     });
 
     predicate = get_predicate([["near", 5]]);
@@ -925,22 +934,24 @@ test("negated_predicates", () => {
 });
 
 function test_mit_exceptions() {
+    const foo_stream_id = 555;
+    make_sub("Foo", foo_stream_id);
     let predicate = get_predicate([
         ["stream", "Foo"],
         ["topic", "personal"],
     ]);
-    assert.ok(predicate({type: "stream", stream: "foo", topic: "personal"}));
-    assert.ok(predicate({type: "stream", stream: "foo.d", topic: "personal"}));
-    assert.ok(predicate({type: "stream", stream: "foo.d", topic: ""}));
-    assert.ok(!predicate({type: "stream", stream: "wrong"}));
-    assert.ok(!predicate({type: "stream", stream: "foo", topic: "whatever"}));
+    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: "personal"}));
+    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: ""}));
+    // 9999 doesn't correspond to any stream
+    assert.ok(!predicate({type: "stream", stream_id: 9999}));
+    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "whatever"}));
     assert.ok(!predicate({type: "private"}));
 
     predicate = get_predicate([
         ["stream", "Foo"],
         ["topic", "bar"],
     ]);
-    assert.ok(predicate({type: "stream", stream: "foo", topic: "bar.d"}));
+    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: "bar.d"}));
 
     // Try to get the MIT regex to explode for an empty stream.
     let terms = [
@@ -948,7 +959,7 @@ function test_mit_exceptions() {
         {operator: "topic", operand: "bar"},
     ];
     predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: "stream", stream: "foo", topic: "bar"}));
+    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "bar"}));
 
     // Try to get the MIT regex to explode for an empty topic.
     terms = [
@@ -956,7 +967,7 @@ function test_mit_exceptions() {
         {operator: "topic", operand: ""},
     ];
     predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: "stream", stream: "foo", topic: "bar"}));
+    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "bar"}));
 }
 
 test("mit_exceptions", ({override}) => {

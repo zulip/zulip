@@ -200,8 +200,6 @@ export function snapshot_message() {
         message.private_message_recipient = recipient;
     } else {
         message.stream_id = compose_state.stream_id();
-        const sub = stream_data.get_sub_by_id(message.stream_id);
-        message.stream = sub ? sub.name : "";
         message.topic = compose_state.topic();
     }
     return message;
@@ -217,7 +215,7 @@ export function restore_message(draft) {
     if (draft.type === "stream") {
         compose_args = {
             type: "stream",
-            stream: draft.stream,
+            stream_id: draft.stream_id,
             topic: draft.topic,
             content: draft.content,
         };

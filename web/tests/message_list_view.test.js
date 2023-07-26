@@ -417,7 +417,6 @@ test("merge_message_groups", () => {
             id: _.uniqueId("test_message_"),
             status_message: false,
             type: "stream",
-            stream: "Test stream 1",
             stream_id: 2,
             topic: "Test topic 1",
             sender_email: "test@example.com",

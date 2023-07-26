@@ -4,6 +4,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as message_store from "./message_store";
 import * as narrow from "./narrow";
+import * as stream_data from "./stream_data";
 
 if (window.electron_bridge !== undefined) {
     window.electron_bridge.on_event("logout", () => {
@@ -30,9 +31,13 @@ if (window.electron_bridge !== undefined) {
         const data = {
             type: message.type,
             content: reply,
-            to: message.type === "private" ? message.reply_to : message.stream,
             topic: message.topic,
         };
+        if (message.type === "private") {
+            data.to = message.reply_to;
+        } else {
+            data.to = stream_data.get_stream_name_from_id(message.stream_id);
+        }
 
         function success() {
             if (message.type === "stream") {

@@ -79,7 +79,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: true,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "whatever",
     };
@@ -101,7 +100,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: true,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "whatever",
     };
@@ -120,7 +118,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: true,
         type: "stream",
-        stream: "muted",
         stream_id: muted.stream_id,
         topic: "topic_three",
     };
@@ -140,7 +137,6 @@ test("message_is_notifiable", () => {
         mentioned: false,
         mentioned_me_directly: false,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "followed topic",
     };
@@ -169,7 +165,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: true,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "vanilla",
     };
@@ -188,7 +183,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: false,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "vanilla",
     };
@@ -223,7 +217,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: false,
         type: "stream",
-        stream: "muted",
         stream_id: muted.stream_id,
         topic: "whatever",
     };
@@ -242,7 +235,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: true,
         type: "stream",
-        stream: "muted",
         stream_id: muted.stream_id,
         topic: "whatever",
     };
@@ -261,7 +253,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: false,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "muted topic",
     };
@@ -286,7 +277,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: false,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "followed topic",
     };
@@ -316,7 +306,6 @@ test("message_is_notifiable", () => {
         mentioned: true,
         mentioned_me_directly: true,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "whatever",
     };
@@ -340,7 +329,6 @@ test("message_is_notifiable", () => {
         mentioned: false,
         mentioned_me_directly: false,
         type: "stream",
-        stream: "general",
         stream_id: general.stream_id,
         topic: "whatever",
     };
@@ -387,8 +375,7 @@ test("basic_notifications", () => {
         notification_sent: false,
         mentioned_me_directly: true,
         type: "stream",
-        stream: "general",
-        stream_id: muted.stream_id,
+        stream_id: general.stream_id,
         topic: "whatever",
     };
 
@@ -401,8 +388,7 @@ test("basic_notifications", () => {
         notification_sent: false,
         mentioned_me_directly: true,
         type: "stream",
-        stream: "general",
-        stream_id: muted.stream_id,
+        stream_id: general.stream_id,
         topic: "lunch",
     };
 

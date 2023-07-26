@@ -656,7 +656,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         updatedAt: date(-1),
     };
     const stream_draft_2 = {
-        stream: "stream 2",
+        stream: "stream 2", // TODO_STREAM_ID
         topic: "topic",
         type: "stream",
         content: "Test stream message 2",

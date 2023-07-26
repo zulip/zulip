@@ -6,6 +6,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
+import * as stream_data from "./stream_data";
 
 export function get_recipient_label(message) {
     // TODO: This code path is bit of a type-checking disaster; we mix
@@ -19,8 +20,10 @@ export function get_recipient_label(message) {
             // i.e. stream+topic or a single direct message conversation,
             // we label the button as replying to the thread.
             if (narrow_state.narrowed_to_topic()) {
+                const stream = narrow_state.stream_sub();
+                const stream_id = stream?.stream_id;
                 message = {
-                    stream: narrow_state.stream_name(),
+                    stream_id,
                     topic: narrow_state.topic(),
                 };
             } else if (narrow_state.pm_ids_string()) {
@@ -44,8 +47,11 @@ export function get_recipient_label(message) {
     }
 
     if (message) {
-        if (message.stream && message.topic) {
-            return "#" + message.stream + " > " + message.topic;
+        if (message.stream_id && message.topic) {
+            const stream = stream_data.get_sub_by_id(message.stream_id);
+            if (stream) {
+                return "#" + stream.name + " > " + message.topic;
+            }
         } else if (message.display_reply_to) {
             return message.display_reply_to;
         }
