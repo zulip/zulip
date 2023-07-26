@@ -186,16 +186,8 @@ export function notify_above_composebox(
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
 }
 
-export function process_notification(notification) {
-    let i;
-    let notification_object;
-    let key;
+function get_notification_content(message) {
     let content;
-    let other_recipients;
-    const message = notification.message;
-    let title = message.sender_full_name;
-    let msg_count = 1;
-    let notification_source;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
     ui_util.replace_emoji_with_text($content);
@@ -211,16 +203,45 @@ export function process_notification(notification) {
         content = $content.text();
     }
 
-    const topic = message.topic;
-
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
     }
 
-    if (message.type === "private" || message.type === "test-notification") {
-        if (!user_settings.pm_content_in_desktop_notifications) {
-            content = "New direct message from " + message.sender_full_name;
+    if (
+        (message.type === "private" || message.type === "test-notification") &&
+        !user_settings.pm_content_in_desktop_notifications
+    ) {
+        content = "New direct message from " + message.sender_full_name;
+    }
+
+    if (content.length > 150) {
+        let i;
+        // Truncate content at a word boundary
+        for (i = 150; i > 0; i -= 1) {
+            if (content[i] === " ") {
+                break;
+            }
         }
+        content = content.slice(0, i);
+        content += " [...]";
+    }
+
+    return content;
+}
+
+export function process_notification(notification) {
+    let notification_object;
+    let key;
+    const message = notification.message;
+    const content = get_notification_content(message);
+    let other_recipients;
+    let title = message.sender_full_name;
+    let msg_count = 1;
+    let notification_source;
+
+    const topic = message.topic;
+
+    if (message.type === "private" || message.type === "test-notification") {
         key = message.display_reply_to;
         // Remove the sender from the list of other recipients
         other_recipients = `, ${message.display_reply_to}, `
@@ -239,17 +260,6 @@ export function process_notification(notification) {
         }
     }
     blueslip.debug("Desktop notification from source " + notification_source);
-
-    if (content.length > 150) {
-        // Truncate content at a word boundary
-        for (i = 150; i > 0; i -= 1) {
-            if (content[i] === " ") {
-                break;
-            }
-        }
-        content = content.slice(0, i);
-        content += " [...]";
-    }
 
     if (notice_memory.has(key)) {
         msg_count = notice_memory.get(key).msg_count + 1;
