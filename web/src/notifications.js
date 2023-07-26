@@ -229,6 +229,22 @@ function get_notification_content(message) {
     return content;
 }
 
+function debug_notification_source_value(message) {
+    let notification_source;
+
+    if (message.type === "private" || message.type === "test-notification") {
+        notification_source = "pm";
+    } else if (message.mentioned) {
+        notification_source = "mention";
+    } else if (message.alerted) {
+        notification_source = "alert";
+    } else {
+        notification_source = "stream";
+    }
+
+    blueslip.debug("Desktop notification from source " + notification_source);
+}
+
 export function process_notification(notification) {
     let notification_object;
     let key;
@@ -237,9 +253,10 @@ export function process_notification(notification) {
     let other_recipients;
     let title = message.sender_full_name;
     let msg_count = 1;
-    let notification_source;
 
     const topic = message.topic;
+
+    debug_notification_source_value(message);
 
     if (message.type === "private" || message.type === "test-notification") {
         key = message.display_reply_to;
@@ -247,19 +264,10 @@ export function process_notification(notification) {
         other_recipients = `, ${message.display_reply_to}, `
             .replace(`, ${message.sender_full_name}, `, ", ")
             .slice(", ".length, -", ".length);
-        notification_source = "pm";
     } else {
         const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
         key = message.sender_full_name + " to " + stream_name + " > " + topic;
-        if (message.mentioned) {
-            notification_source = "mention";
-        } else if (message.alerted) {
-            notification_source = "alert";
-        } else {
-            notification_source = "stream";
-        }
     }
-    blueslip.debug("Desktop notification from source " + notification_source);
 
     if (notice_memory.has(key)) {
         msg_count = notice_memory.get(key).msg_count + 1;
