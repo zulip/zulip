@@ -265,22 +265,15 @@ function remove_sender_from_list_of_recipients(message) {
 }
 
 export function process_notification(notification) {
-    let notification_object;
     const message = notification.message;
     const content = get_notification_content(message);
     const key = get_notification_key(message);
+    let notification_object;
     let other_recipients;
     let title = message.sender_full_name;
     let msg_count = 1;
 
-    const topic = message.topic;
-
     debug_notification_source_value(message);
-
-    if (message.type === "private" || message.type === "test-notification") {
-        // Remove the sender from the list of other recipients
-        other_recipients = remove_sender_from_list_of_recipients(message);
-    }
 
     if (notice_memory.has(key)) {
         msg_count = notice_memory.get(key).msg_count + 1;
@@ -289,25 +282,31 @@ export function process_notification(notification) {
         notification_object.close();
     }
 
-    if (message.type === "private") {
-        if (message.display_recipient.length > 2) {
-            // If the message has too many recipients to list them all...
-            if (content.length + title.length + other_recipients.length > 230) {
-                // Then count how many people are in the conversation and summarize
-                // by saying the conversation is with "you and [number] other people"
-                other_recipients =
-                    other_recipients.replaceAll(/[^,]/g, "").length + " other people";
+    switch (message.type) {
+        case "test-notification":
+            other_recipients = remove_sender_from_list_of_recipients(message);
+            break;
+        case "private":
+            other_recipients = remove_sender_from_list_of_recipients(message);
+            if (message.display_recipient.length > 2) {
+                // If the message has too many recipients to list them all...
+                if (content.length + title.length + other_recipients.length > 230) {
+                    // Then count how many people are in the conversation and summarize
+                    // by saying the conversation is with "you and [number] other people"
+                    other_recipients =
+                        other_recipients.replaceAll(/[^,]/g, "").length + " other people";
+                }
+
+                title += " (to you and " + other_recipients + ")";
+            } else {
+                title += " (to you)";
             }
-
-            title += " (to you and " + other_recipients + ")";
-        } else {
-            title += " (to you)";
+            break;
+        case "stream": {
+            const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
+            title += " (to " + stream_name + " > " + message.topic + ")";
+            break;
         }
-    }
-
-    if (message.type === "stream") {
-        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-        title += " (to " + stream_name + " > " + topic + ")";
     }
 
     if (notification.desktop_notify) {
