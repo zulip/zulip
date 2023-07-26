@@ -32,12 +32,15 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     const $searchbox_form = $("#searchbox_form");
 
     mock_template("search_list_item.hbs", true, (data, html) => {
-        assert.equal(typeof data.description_html, "string");
-        if (data.is_person) {
-            assert.equal(typeof data.user_pill_context.id, "number");
-            assert.equal(typeof data.user_pill_context.display_value, "string");
-            assert.equal(typeof data.user_pill_context.has_image, "boolean");
-            assert.equal(typeof data.user_pill_context.img_src, "string");
+        const suggestion_parts = data.suggestion_parts;
+        for (const part of suggestion_parts) {
+            assert.equal(typeof part.description_html, "string");
+            if (part.is_person) {
+                assert.equal(typeof part.user_pill_context.id, "number");
+                assert.equal(typeof part.user_pill_context.display_value, "string");
+                assert.equal(typeof part.user_pill_context.has_image, "boolean");
+                assert.equal(typeof part.user_pill_context.img_src, "string");
+            }
         }
         return html;
     });
@@ -57,14 +60,22 @@ run_test("initialize", ({override_rewire, mock_template}) => {
                     [
                         "stream:Verona",
                         {
-                            description_html: "Stream <strong>Ver</strong>ona",
+                            suggestion_parts: [
+                                {
+                                    description_html: "Stream <strong>Ver</strong>ona",
+                                },
+                            ],
                             search_string: "stream:Verona",
                         },
                     ],
                     [
                         "ver",
                         {
-                            description_html: "Search for ver",
+                            suggestion_parts: [
+                                {
+                                    description_html: "Search for ver",
+                                },
+                            ],
                             search_string: "ver",
                         },
                     ],
@@ -79,10 +90,10 @@ run_test("initialize", ({override_rewire, mock_template}) => {
             assert.equal(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = `<div class="search_list_item">\n    <span>Search for ver</span>\n</div>\n`;
+            let expected_value = `<div class="search_list_item"><span>Search for ver</span>\n</div>\n`;
             assert.equal(opts.highlighter(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>Stream <strong>Ver</strong>ona</span>\n</div>\n`;
+            expected_value = `<div class="search_list_item"><span>Stream <strong>Ver</strong>ona</span>\n</div>\n`;
             assert.equal(opts.highlighter(source[1]), expected_value);
 
             /* Test sorter */
@@ -95,53 +106,69 @@ run_test("initialize", ({override_rewire, mock_template}) => {
                     [
                         "dm-including:zo",
                         {
-                            description_html: "group direct messages including",
-                            is_person: true,
                             search_string: "dm-including:user7@zulipdev.com",
-                            user_pill_context: {
-                                display_value: "<strong>Zo</strong>e",
-                                has_image: true,
-                                id: 7,
-                                img_src:
-                                    "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
-                            },
+                            suggestion_parts: [
+                                {
+                                    description_html: "group direct messages including",
+                                    is_person: true,
+                                    user_pill_context: {
+                                        display_value: "<strong>Zo</strong>e",
+                                        has_image: true,
+                                        id: 7,
+                                        img_src:
+                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                                    },
+                                },
+                            ],
                         },
                     ],
                     [
                         "dm:zo",
                         {
-                            description_html: "direct messages with",
-                            is_person: true,
                             search_string: "dm:user7@zulipdev.com",
-                            user_pill_context: {
-                                display_value: "<strong>Zo</strong>e",
-                                has_image: true,
-                                id: 7,
-                                img_src:
-                                    "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
-                            },
+                            suggestion_parts: [
+                                {
+                                    description_html: "direct messages with",
+                                    is_person: true,
+                                    user_pill_context: {
+                                        display_value: "<strong>Zo</strong>e",
+                                        has_image: true,
+                                        id: 7,
+                                        img_src:
+                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                                    },
+                                },
+                            ],
                         },
                     ],
                     [
                         "sender:zo",
                         {
-                            description_html: "sent by",
-                            is_person: true,
                             search_string: "sender:user7@zulipdev.com",
-                            user_pill_context: {
-                                display_value: "<strong>Zo</strong>e",
-                                has_image: true,
-                                id: 7,
-                                img_src:
-                                    "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
-                            },
+                            suggestion_parts: [
+                                {
+                                    description_html: "sent by",
+                                    is_person: true,
+                                    user_pill_context: {
+                                        display_value: "<strong>Zo</strong>e",
+                                        has_image: true,
+                                        id: 7,
+                                        img_src:
+                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                                    },
+                                },
+                            ],
                         },
                     ],
                     [
                         "zo",
                         {
-                            description_html: "Search for zo",
                             search_string: "zo",
+                            suggestion_parts: [
+                                {
+                                    description_html: "Search for zo",
+                                },
+                            ],
                         },
                     ],
                 ]),
@@ -155,16 +182,16 @@ run_test("initialize", ({override_rewire, mock_template}) => {
             assert.equal(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
+            let expected_value = `<div class="search_list_item"><span>Search for zo</span>\n</div>\n`;
             assert.equal(opts.highlighter(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item"><span>sent by</span>\n        <span class="pill-container pill-container-btn">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item"><span>direct messages with</span>\n        <span class="pill-container pill-container-btn">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item"><span>group direct messages including</span>\n        <span class="pill-container pill-container-btn">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[3]), expected_value);
 
             /* Test sorter */

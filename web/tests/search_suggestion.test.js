@@ -437,7 +437,7 @@ test("empty_query_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].description_html;
     }
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
@@ -466,7 +466,7 @@ test("has_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].description_html;
     }
 
     assert.equal(describe("has:link"), "Messages that contain links");
@@ -538,7 +538,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].description_html;
     }
 
     assert.equal(describe("is:dm"), "Direct messages");
@@ -605,7 +605,8 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
     let suggestions = get_suggestions(query);
     assert.ok(suggestions.strings.includes("sender:myself@zulip.com"));
     assert.equal(
-        suggestions.lookup_table.get("sender:myself@zulip.com").description_html,
+        suggestions.lookup_table.get("sender:myself@zulip.com").suggestion_parts[0]
+            .description_html,
         "Sent by me",
     );
 
@@ -712,7 +713,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].description_html;
     }
     assert.equal(describe("te"), "Search for <strong>te</strong>");
     assert.equal(describe("stream:office topic:team"), "Stream office > team");
@@ -879,21 +880,21 @@ test("people_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function is_person(q) {
-        return suggestions.lookup_table.get(q).is_person;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].is_person;
     }
     assert.equal(is_person("dm:ted@zulip.com"), true);
     assert.equal(is_person("sender:ted@zulip.com"), true);
     assert.equal(is_person("dm-including:ted@zulip.com"), true);
 
     function has_image(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.has_image;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context.has_image;
     }
     assert.equal(has_image("dm:bob@zulip.com"), true);
     assert.equal(has_image("sender:bob@zulip.com"), true);
     assert.equal(has_image("dm-including:bob@zulip.com"), true);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].description_html;
     }
     assert.equal(describe("dm:ted@zulip.com"), "Direct messages with");
     assert.equal(describe("sender:ted@zulip.com"), "Sent by");
@@ -902,7 +903,8 @@ test("people_suggestions", ({override, mock_template}) => {
     let expectedString = "<strong>Te</strong>d Smith";
 
     function get_full_name(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.display_value.string;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context.display_value
+            .string;
     }
     assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
     assert.equal(get_full_name("dm:ted@zulip.com"), expectedString);
@@ -911,14 +913,15 @@ test("people_suggestions", ({override, mock_template}) => {
     expectedString = example_avatar_url + "?s=50";
 
     function get_avatar_url(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.img_src;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context.img_src;
     }
     assert.equal(get_avatar_url("dm:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("dm-including:bob@zulip.com"), expectedString);
 
     function get_should_add_guest_user_indicator(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.should_add_guest_user_indicator;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context
+            .should_add_guest_user_indicator;
     }
 
     page_params.realm_enable_guest_user_indicator = true;

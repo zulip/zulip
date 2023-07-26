@@ -1,5 +1,7 @@
 import Handlebars from "handlebars/runtime";
 
+import render_search_description from "../templates/search_description.hbs";
+
 import * as common from "./common";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
@@ -60,9 +62,37 @@ function check_validity(last, operators, valid, invalid) {
     return true;
 }
 
+function get_suggestion_parts(operators) {
+    const parts = Filter.parts_for_describe(operators);
+
+    return parts.map((part) => {
+        if (part.operand) {
+            const person = people.get_by_email(part.operand);
+            if (person) {
+                return {
+                    description_html: part.prefix_for_operator,
+                    is_person: true,
+                    user_pill_context: {
+                        id: person.user_id,
+                        display_value: person.full_name,
+                        has_image: true,
+                        img_src: people.small_avatar_url_for_person(person),
+                    },
+                };
+            }
+        }
+
+        return {
+            description_html: render_search_description({
+                parts: [part],
+            }),
+        };
+    });
+}
+
 function format_as_suggestion(terms) {
     return {
-        description_html: Filter.search_description_as_html(terms),
+        suggestion_parts: get_suggestion_parts(terms),
         search_string: Filter.unparse(terms),
     };
 }
@@ -130,7 +160,10 @@ function get_stream_suggestions(last, operators) {
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
-        return {description_html, search_string};
+        return {
+            suggestion_parts: [{description_html}],
+            search_string,
+        };
     });
 
     return objs;
@@ -201,10 +234,14 @@ function get_group_suggestions(last, operators) {
         }
 
         return {
-            description_html,
             search_string: Filter.unparse(terms),
-            is_person: true,
-            user_pill_context: highlight_person(person, person_highlighter),
+            suggestion_parts: [
+                {
+                    description_html,
+                    is_person: true,
+                    user_pill_context: highlight_person(person, person_highlighter),
+                },
+            ],
         };
     });
 
@@ -305,10 +342,14 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
         }
 
         return {
-            description_html: prefix,
             search_string: Filter.unparse(terms),
-            is_person: true,
-            user_pill_context: highlight_person(person, person_highlighter),
+            suggestion_parts: [
+                {
+                    description_html: prefix,
+                    is_person: true,
+                    user_pill_context: highlight_person(person, person_highlighter),
+                },
+            ],
         };
     });
 
@@ -319,7 +360,7 @@ function get_default_suggestion(operators) {
     // Here we return the canonical suggestion for the query that the
     // user typed. (The caller passes us the parsed query as "operators".)
     if (operators.length === 0) {
-        return {description_html: "", search_string: ""};
+        return {suggestion_parts: [], search_string: ""};
     }
     return format_as_suggestion(operators);
 }
@@ -473,10 +514,24 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated operators.
     if (last.negated || is_search_operand_negated) {
+        // We expect all suggestions to only have one part at this point.
+        // TODO: Ideally we'd have types to differentiate suggestions
+        // that are definitely single-part and ones that are potentially
+        // multi-part, and have clear separation in the code of where
+        // each is used.
+        for (const suggestion of suggestions) {
+            if (suggestion.suggestion_parts.length !== 1) {
+                blueslip.warn("Multiple suggestion parts, only one expected");
+            }
+        }
         suggestions = suggestions.map((suggestion) => ({
             search_string: "-" + suggestion.search_string,
-            description_html: "exclude " + suggestion.description_html,
             invalid: suggestion.invalid,
+            suggestion_parts: [
+                {
+                    description_html: "exclude " + suggestion.suggestion_parts[0].description_html,
+                },
+            ],
         }));
     }
 
@@ -497,7 +552,9 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         return (
             s.search_string.toLowerCase().startsWith(last_string) ||
             show_operator_suggestions ||
-            s.description_html.toLowerCase().startsWith(last_string)
+            s.suggestion_parts.some((part) =>
+                part.description_html.toLowerCase().startsWith(last_string),
+            )
         );
     });
     return suggestions;
@@ -506,8 +563,12 @@ function get_special_filter_suggestions(last, operators, suggestions) {
 function get_streams_filter_suggestions(last, operators) {
     const suggestions = [
         {
+            suggestion_parts: [
+                {
+                    description_html: "All public streams in organization",
+                },
+            ],
             search_string: "streams:public",
-            description_html: "All public streams in organization",
             invalid: [
                 {operator: "is", operand: "dm"},
                 {operator: "stream"},
@@ -523,8 +584,12 @@ function get_streams_filter_suggestions(last, operators) {
 function get_is_filter_suggestions(last, operators) {
     const suggestions = [
         {
+            suggestion_parts: [
+                {
+                    description_html: "direct messages",
+                },
+            ],
             search_string: "is:dm",
-            description_html: "direct messages",
             invalid: [
                 {operator: "is", operand: "dm"},
                 {operator: "is", operand: "resolved"},
@@ -534,28 +599,48 @@ function get_is_filter_suggestions(last, operators) {
             ],
         },
         {
+            suggestion_parts: [
+                {
+                    description_html: "starred messages",
+                },
+            ],
             search_string: "is:starred",
-            description_html: "starred messages",
             invalid: [{operator: "is", operand: "starred"}],
         },
         {
+            suggestion_parts: [
+                {
+                    description_html: "@-mentions",
+                },
+            ],
             search_string: "is:mentioned",
-            description_html: "@-mentions",
             invalid: [{operator: "is", operand: "mentioned"}],
         },
         {
             search_string: "is:alerted",
-            description_html: "alerted messages",
+            suggestion_parts: [
+                {
+                    description_html: "alerted messages",
+                },
+            ],
             invalid: [{operator: "is", operand: "alerted"}],
         },
         {
+            suggestion_parts: [
+                {
+                    description_html: "unread messages",
+                },
+            ],
             search_string: "is:unread",
-            description_html: "unread messages",
             invalid: [{operator: "is", operand: "unread"}],
         },
         {
+            suggestion_parts: [
+                {
+                    description_html: "topics marked as resolved",
+                },
+            ],
             search_string: "is:resolved",
-            description_html: "topics marked as resolved",
             invalid: [
                 {operator: "is", operand: "resolved"},
                 {operator: "is", operand: "dm"},
@@ -571,17 +656,29 @@ function get_has_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "has:link",
-            description_html: "messages that contain links",
+            suggestion_parts: [
+                {
+                    description_html: "messages that contain links",
+                },
+            ],
             invalid: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
-            description_html: "messages that contain images",
+            suggestion_parts: [
+                {
+                    description_html: "messages that contain images",
+                },
+            ],
             invalid: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
-            description_html: "messages that contain attachments",
+            suggestion_parts: [
+                {
+                    description_html: "messages that contain attachments",
+                },
+            ],
             invalid: [{operator: "has", operand: "attachment"}],
         },
     ];
@@ -616,14 +713,22 @@ function get_sent_by_me_suggestions(last, operators) {
         return [
             {
                 search_string: sender_query,
-                description_html,
+                suggestion_parts: [
+                    {
+                        description_html,
+                    },
+                ],
             },
         ];
     } else if (from_query.startsWith(last_string) || from_me_query.startsWith(last_string)) {
         return [
             {
                 search_string: from_query,
-                description_html,
+                suggestion_parts: [
+                    {
+                        description_html,
+                    },
+                ],
             },
         ];
     }
@@ -672,31 +777,29 @@ class Attacher {
         this.base = base;
     }
 
-    prepend_base(suggestion) {
-        if (this.base && this.base.description_html.length > 0) {
-            suggestion.search_string = this.base.search_string + " " + suggestion.search_string;
-            suggestion.description_html =
-                this.base.description_html + ", " + suggestion.description_html;
+    prepend_base_and_restructure_suggestion(suggestion, prepend_base) {
+        if (prepend_base && this.base) {
+            suggestion.suggestion_parts = [
+                ...this.base.suggestion_parts,
+                ...suggestion.suggestion_parts,
+            ];
+            if (this.base.search_string && suggestion.search_string) {
+                suggestion.search_string = this.base.search_string + " " + suggestion.search_string;
+            }
         }
     }
 
-    push(suggestion) {
+    push(suggestion, prepend_base) {
+        this.prepend_base_and_restructure_suggestion(suggestion, prepend_base);
         if (!this.prev.has(suggestion.search_string)) {
             this.prev.add(suggestion.search_string);
             this.result.push(suggestion);
         }
     }
 
-    push_many(suggestions) {
+    push_many(suggestions, prepend_base) {
         for (const suggestion of suggestions) {
-            this.push(suggestion);
-        }
-    }
-
-    attach_many(suggestions) {
-        for (const suggestion of suggestions) {
-            this.prepend_base(suggestion);
-            this.push(suggestion);
+            this.push(suggestion, prepend_base);
         }
     }
 }
@@ -748,12 +851,15 @@ export function get_search_result(query) {
     if (last.operator === "search") {
         suggestion = {
             search_string: last.operand,
-            description_html: `search for <strong>${Handlebars.Utils.escapeExpression(
-                last.operand,
-            )}</strong>`,
+            suggestion_parts: [
+                {
+                    description_html: `search for <strong>${Handlebars.Utils.escapeExpression(
+                        last.operand,
+                    )}</strong>`,
+                },
+            ],
         };
-        attacher.prepend_base(suggestion);
-        attacher.push(suggestion);
+        attacher.push(suggestion, true);
     } else if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
         suggestion = get_default_suggestion(search_operators);
         attacher.push(suggestion);
@@ -801,7 +907,7 @@ export function get_search_result(query) {
     for (const filterer of filterers) {
         if (attacher.result.length < max_items) {
             const suggestions = filterer(last, base_operators);
-            attacher.attach_many(suggestions);
+            attacher.push_many(suggestions, true);
         }
     }
 
@@ -820,8 +926,9 @@ export function get_suggestions(query) {
 
 export function finalize_search_result(result) {
     for (const sug of result) {
-        const first = sug.description_html.charAt(0).toUpperCase();
-        sug.description_html = first + sug.description_html.slice(1);
+        const first = sug.suggestion_parts[0].description_html.charAt(0).toUpperCase();
+        sug.suggestion_parts[0].description_html =
+            first + sug.suggestion_parts[0].description_html.slice(1);
     }
 
     // Typeahead expects us to give it strings, not objects,
