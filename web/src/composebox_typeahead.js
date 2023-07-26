@@ -411,7 +411,10 @@ export function broadcast_mentions() {
         is_broadcast: true,
 
         // used for sorting
-        idx,
+        //
+        // We can safely assume that no user will ever have any
+        // negative user_id, so there is no risk of conflict.
+        user_id: -(wildcard_mention_array.length - idx),
     }));
 }
 

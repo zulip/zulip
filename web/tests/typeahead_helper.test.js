@@ -443,7 +443,7 @@ test("sort_recipients all mention", () => {
     const all_obj = ct.broadcast_mentions()[0];
     assert.equal(all_obj.email, "all");
     assert.equal(all_obj.is_broadcast, true);
-    assert.equal(all_obj.idx, 0);
+    assert.equal(all_obj.user_id, -3);
 
     // Test person email is "all" or "everyone"
     const test_objs = [...matches, all_obj];

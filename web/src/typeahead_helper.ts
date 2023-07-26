@@ -239,7 +239,7 @@ export function compare_people_for_relevance(
     if (compose_state.get_message_type() !== "private") {
         if (person_a.is_broadcast) {
             if (person_b.is_broadcast) {
-                return person_a.idx - person_b.idx;
+                return person_a.user_id - person_b.user_id;
             }
             return -1;
         } else if (person_b.is_broadcast) {
@@ -248,7 +248,7 @@ export function compare_people_for_relevance(
     } else {
         if (person_a.is_broadcast) {
             if (person_b.is_broadcast) {
-                return person_a.idx - person_b.idx;
+                return person_a.user_id - person_b.user_id;
             }
             return 1;
         } else if (person_b.is_broadcast) {
