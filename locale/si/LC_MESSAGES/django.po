@@ -3,16 +3,16 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# හෙළබස සමූහය, 2021
-# හෙළබස සමූහය, 2022
-# හෙළබස සමූහය, 2022
+# HelaBasa Group <transifex-helabasa-group@yalu.lk>, 2021
+# HelaBasa Group <transifex-helabasa-group@yalu.lk>, 2022
+# HelaBasa Group <transifex-helabasa-group@yalu.lk>, 2022
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: හෙළබස සමූහය, 2022\n"
+"Last-Translator: HelaBasa Group <transifex-helabasa-group@yalu.lk>, 2022\n"
 "Language-Team: Sinhala (http://app.transifex.com/zulip/zulip/language/si/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"

@@ -812,7 +812,7 @@ msgstr "Accept the Terms of Service"
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
-msgstr ""
+msgstr "Welcome to Zulip"
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/login.html:102 templates/zerver/register.html:79
@@ -830,7 +830,7 @@ msgstr "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" target=\"_
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
-msgstr ""
+msgstr "Continue"
 
 #: templates/zerver/accounts_home.html:5
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:154
@@ -2496,25 +2496,25 @@ msgstr "Don't have an account yet? You need to be invited to join this organisat
 msgid ""
 "Administrators of this Zulip organization will be able to see this email address.\n"
 "            "
-msgstr ""
+msgstr "Administrators of this Zulip organisation will be able to see this email address.\n            "
 
 #: templates/zerver/new_user_email_address_visibility.html:8
 msgid ""
 "Administrators and moderators of this Zulip organization will be able to see this email address.\n"
 "            "
-msgstr ""
+msgstr "Administrators and moderators of this Zulip organisation will be able to see this email address.\n            "
 
 #: templates/zerver/new_user_email_address_visibility.html:11
 msgid ""
 "Nobody in this Zulip organization will be able to see this email address.\n"
 "            "
-msgstr ""
+msgstr "Nobody in this Zulip organisation will be able to see this email address.\n            "
 
 #: templates/zerver/new_user_email_address_visibility.html:14
 msgid ""
 "Other users in this Zulip organization will be able to see this email address.\n"
 "            "
-msgstr ""
+msgstr "Other users in this Zulip organisation will be able to see this email address.\n            "
 
 #: templates/zerver/new_user_email_address_visibility.html:18
 msgid "Change"
@@ -3059,7 +3059,7 @@ msgstr "The time limit for editing this message has passed"
 
 #: zerver/actions/message_edit.py:1214
 msgid "The time limit for editing this message's topic has passed."
-msgstr ""
+msgstr "The time limit for editing this message's topic has passed."
 
 #: zerver/actions/message_edit.py:1248 zerver/actions/message_send.py:1428
 msgid "You do not have permission to use wildcard mentions in this stream."
@@ -3183,22 +3183,22 @@ msgstr "Scheduled delivery time must be in the future."
 
 #: zerver/actions/scheduled_messages.py:300
 msgid "Message could not be sent at the scheduled time."
-msgstr ""
+msgstr "Message could not be sent at the scheduled time."
 
 #: zerver/actions/scheduled_messages.py:351
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
 "the following error:"
-msgstr ""
+msgstr "The message you scheduled for {delivery_datetime} was not sent because of the following error:"
 
 #: zerver/actions/scheduled_messages.py:356
 msgid "[View scheduled messages](#scheduled)"
-msgstr ""
+msgstr "[View scheduled messages](#scheduled)"
 
 #: zerver/actions/streams.py:76
 msgid "Stream is already deactivated"
-msgstr ""
+msgstr "Stream is already deactivated"
 
 #: zerver/actions/streams.py:841
 #, python-brace-format
@@ -4779,7 +4779,7 @@ msgstr "Stream does not exist with id: {}. No invites were sent."
 
 #: zerver/views/invite.py:87
 msgid "You do not have permission to subscribe other users to streams."
-msgstr ""
+msgstr "You do not have permission to subscribe other users to streams."
 
 #: zerver/views/invite.py:124 zerver/views/invite.py:127
 #: zerver/views/invite.py:146 zerver/views/invite.py:149
@@ -4962,11 +4962,11 @@ msgstr "Export already deleted"
 
 #: zerver/views/realm_export.py:113
 msgid "Export failed, nothing to delete"
-msgstr ""
+msgstr "Export failed, nothing to delete"
 
 #: zerver/views/realm_export.py:114
 msgid "Export still in progress"
-msgstr ""
+msgstr "Export still in progress"
 
 #: zerver/views/realm_icon.py:20
 msgid "You must upload exactly one icon."
@@ -4986,11 +4986,11 @@ msgstr "Invalid playground"
 
 #: zerver/views/scheduled_messages.py:64
 msgid "Recipient required when updating type of scheduled message."
-msgstr ""
+msgstr "Recipient required when updating type of scheduled message."
 
 #: zerver/views/scheduled_messages.py:69
 msgid "Topic required when updating scheduled message type to stream."
-msgstr ""
+msgstr "Topic required when updating scheduled message type to stream."
 
 #: zerver/views/sentry.py:32
 msgid "Invalid request format"

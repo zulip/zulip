@@ -15,7 +15,7 @@
 # Fabian Tribrunner <fabian@tribrunner.at>, 2019
 # Felix <strifel@outlook.de>, 2020
 # Felix <strifel@outlook.de>, 2021
-# martinlablans <github@martin.lablans.de>, 2018
+# d82cfdcd5f95059d0c449b4c5f004c81_5845b3b <b8c1f27ecc6cc598dae89d2f3dcf244f_681727>, 2018
 # Greg Price <gnprice@gmail.com>, 2017
 # Harlan Lieberman-Berg <hlieberman@setec.io>, 2016,2018
 # 93626949be8c715c052f6dc10733548d_3902a33 <09e2a0f08f39803f6bbf1b16e4ef9612_386425>, 2016
