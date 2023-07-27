@@ -39,6 +39,13 @@ const topic8 = "topic-8";
 const topic9 = "topic-9";
 const topic10 = "topic-10";
 
+const all_visibility_policies = {
+    INHERIT: 0,
+    MUTED: 1,
+    UNMUTED: 2,
+    FOLLOWED: 3,
+};
+
 let expected_data_to_replace_in_list_widget;
 
 const ListWidget = mock_esm("../src/list_widget", {
@@ -108,6 +115,13 @@ mock_esm("../src/user_topics", {
         return false;
     },
     is_topic_unmuted: () => false,
+    get_topic_visibility_policy(stream_id, topic) {
+        if (stream_id === 1 && topic === "topic-7") {
+            return all_visibility_policies.MUTED;
+        }
+        return all_visibility_policies.INHERIT;
+    },
+    all_visibility_policies,
 });
 const narrow = mock_esm("../src/narrow", {
     update_narrow_title: noop,
@@ -367,6 +381,11 @@ function generate_topic_data(topic_info_array) {
             mention_in_unread: false,
             topic_muted: muted,
             topic_unmuted: false,
+            visibility_policy: muted
+                ? all_visibility_policies.MUTED
+                : all_visibility_policies.INHERIT,
+            development: true,
+            all_visibility_policies,
         });
     }
     return data;
@@ -397,6 +416,7 @@ function stub_out_filter_buttons() {
 function test(label, f) {
     run_test(label, (helpers) => {
         $(".header").css = () => {};
+        page_params.development_environment = true;
 
         messages = sample_messages.map((message) => ({...message}));
         f(helpers);
