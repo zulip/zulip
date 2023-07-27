@@ -86,7 +86,7 @@ from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
-    APIStreamDict,
+    DefaultStreamDict,
     DisplayRecipientT,
     ExtendedFieldElement,
     ExtendedValidator,
@@ -2701,8 +2701,8 @@ class Stream(models.Model):
         "can_remove_subscribers_group_id",
     ]
 
-    def to_dict(self) -> APIStreamDict:
-        return APIStreamDict(
+    def to_dict(self) -> DefaultStreamDict:
+        return DefaultStreamDict(
             can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             date_created=datetime_to_timestamp(self.date_created),
             description=self.description,

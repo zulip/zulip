@@ -650,13 +650,31 @@ exports.fixtures = {
     stream__create: {
         type: "stream",
         op: "create",
-        streams: [streams.devel, streams.test],
+        streams: [
+            {
+                ...streams.devel,
+                stream_weekly_traffic: null,
+            },
+            {
+                ...streams.test,
+                stream_weekly_traffic: null,
+            },
+        ],
     },
 
     stream__delete: {
         type: "stream",
         op: "delete",
-        streams: [streams.devel, streams.test],
+        streams: [
+            {
+                ...streams.devel,
+                stream_weekly_traffic: null,
+            },
+            {
+                ...streams.test,
+                stream_weekly_traffic: null,
+            },
+        ],
     },
 
     stream__update: {

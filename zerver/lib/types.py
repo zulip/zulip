@@ -217,7 +217,7 @@ class NeverSubscribedStreamDict(TypedDict):
     subscribers: NotRequired[List[int]]
 
 
-class APIStreamDict(TypedDict):
+class DefaultStreamDict(TypedDict):
     """Stream information provided to Zulip clients as a dictionary via API.
     It should contain all the fields specified in `zerver.models.Stream.API_FIELDS`
     with few exceptions and possible additional fields.
@@ -240,6 +240,10 @@ class APIStreamDict(TypedDict):
     is_default: NotRequired[bool]
 
 
+class APIStreamDict(DefaultStreamDict):
+    stream_weekly_traffic: Optional[int]
+
+
 class APISubscriptionDict(APIStreamDict):
     """Similar to StreamClientDict, it should contain all the fields specified in
     `zerver.models.Subscription.API_FIELDS` and several additional fields.
@@ -256,7 +260,6 @@ class APISubscriptionDict(APIStreamDict):
     # Computed fields not specified in `Subscription.API_FIELDS`
     email_address: str
     in_home_view: bool
-    stream_weekly_traffic: Optional[int]
     subscribers: List[int]
 
 

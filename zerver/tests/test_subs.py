@@ -230,7 +230,7 @@ class TestMiscStuff(ZulipTestCase):
         expected_fields |= {"can_remove_subscribers_group"}
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
-        computed_fields = {"is_announcement_only", "is_default"}
+        computed_fields = {"is_announcement_only", "is_default", "stream_weekly_traffic"}
 
         self.assertEqual(stream_dict_fields - computed_fields, expected_fields)
 
@@ -262,6 +262,7 @@ class TestCreateStreams(ZulipTestCase):
         # Send public stream creation event to all active users.
         self.assertEqual(events[0]["users"], active_non_guest_user_ids(realm.id))
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Public stream")
+        self.assertEqual(events[0]["event"]["streams"][0]["stream_weekly_traffic"], None)
 
         with self.capture_send_event_calls(expected_num_events=1) as events:
             ensure_stream(realm, "Private stream", invite_only=True, acting_user=None)
@@ -273,6 +274,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertTrue(self.example_user("iago").id in events[0]["users"])
         self.assertTrue(self.example_user("desdemona").id in events[0]["users"])
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Private stream")
+        self.assertEqual(events[0]["event"]["streams"][0]["stream_weekly_traffic"], None)
 
         moderators_system_group = UserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
@@ -4528,7 +4530,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         flush_per_request_caches()
         with self.capture_send_event_calls(expected_num_events=5) as events:
-            with self.assert_database_query_count(36):
+            with self.assert_database_query_count(37):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -4552,7 +4554,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Now add ourselves
         with self.capture_send_event_calls(expected_num_events=2) as events:
-            with self.assert_database_query_count(12):
+            with self.assert_database_query_count(13):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -4982,7 +4984,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         test_user_ids = [user.id for user in test_users]
 
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(21):
             with cache_tries_captured() as cache_tries:
                 with mock.patch("zerver.views.streams.send_messages_for_new_subscribers"):
                     self.common_subscribe_to_streams(
@@ -5456,7 +5458,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(36):
+        with self.assert_database_query_count(37):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5464,7 +5466,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(35):
+        with self.assert_database_query_count(36):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5476,7 +5478,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notifications_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(45):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -5897,7 +5899,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(47):
+        with self.assert_database_query_count(48):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,

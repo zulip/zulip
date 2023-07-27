@@ -1884,7 +1884,7 @@ paths:
                                     An array of dictionaries where each dictionary
                                     contains details about a single default stream.
                                   items:
-                                    $ref: "#/components/schemas/BasicStream"
+                                    $ref: "#/components/schemas/DefaultStream"
                               example:
                                 {
                                   "type": "default_streams",
@@ -11766,7 +11766,7 @@ paths:
                       realm_default_streams:
                         type: array
                         items:
-                          $ref: "#/components/schemas/BasicStream"
+                          $ref: "#/components/schemas/DefaultStream"
                         description: |
                           Present if `default_streams` is present in `fetch_event_types`.
 
@@ -15689,6 +15689,21 @@ paths:
                                   nullable: true
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
+                                stream_weekly_traffic:
+                                  type: integer
+                                  nullable: true
+                                  description: |
+                                    The average number of messages sent to the stream per week, as
+                                    estimated based on recent weeks, rounded to the nearest integer.
+
+                                    If `null`, no information is provided on the average traffic.
+                                    This can be because the stream was recently created and there
+                                    is insufficient data to make an estimate, or because the server
+                                    wishes to omit this information for this client, this realm, or
+                                    this endpoint or type of event.
+
+                                    **Changes**: New in Zulip 8.0 (feature level 199). Previously,
+                                    this statistic was available only in subscription objects.
                                 is_default:
                                   type: boolean
                                   description: |
@@ -16995,6 +17010,41 @@ components:
               nullable: true
             is_announcement_only: {}
             can_remove_subscribers_group: {}
+            stream_weekly_traffic:
+              type: integer
+              nullable: true
+              description: |
+                The average number of messages sent to the stream per week, as
+                estimated based on recent weeks, rounded to the nearest integer.
+
+                If `null`, no information is provided on the average traffic.
+                This can be because the stream was recently created and there
+                is insufficient data to make an estimate, or because the server
+                wishes to omit this information for this client, this realm, or
+                this endpoint or type of event.
+
+                **Changes**: New in Zulip 8.0 (feature level 199). Previously, this
+                statistic was available only in subscription objects.
+    DefaultStream:
+      allOf:
+        - $ref: "#/components/schemas/BasicStreamBase"
+        - additionalProperties: false
+          properties:
+            stream_id: {}
+            name: {}
+            description: {}
+            date_created: {}
+            invite_only: {}
+            rendered_description: {}
+            is_web_public: {}
+            stream_post_policy: {}
+            message_retention_days:
+              nullable: true
+            history_public_to_subscribers: {}
+            first_message_id:
+              nullable: true
+            is_announcement_only: {}
+            can_remove_subscribers_group: {}
     BasicStreamBase:
       type: object
       description: |
@@ -17786,7 +17836,7 @@ components:
             Array containing details about the streams
             in the default stream group.
           items:
-            $ref: "#/components/schemas/BasicStream"
+            $ref: "#/components/schemas/DefaultStream"
     EmailAddressVisibility:
       type: integer
       description: |

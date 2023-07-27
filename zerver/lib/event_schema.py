@@ -49,7 +49,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
-basic_stream_fields = [
+default_stream_fields = [
     ("can_remove_subscribers_group", int),
     ("date_created", int),
     ("description", str),
@@ -65,6 +65,11 @@ basic_stream_fields = [
     ("stream_post_policy", int),
 ]
 
+basic_stream_fields = [
+    *default_stream_fields,
+    ("stream_weekly_traffic", OptionalType(int)),
+]
+
 subscription_fields: Sequence[Tuple[str, object]] = [
     *basic_stream_fields,
     ("audible_notifications", OptionalType(bool)),
@@ -76,7 +81,6 @@ subscription_fields: Sequence[Tuple[str, object]] = [
     ("is_muted", bool),
     ("pin_to_top", bool),
     ("push_notifications", OptionalType(bool)),
-    ("stream_weekly_traffic", OptionalType(int)),
     # We may try to remove subscribers from some events in
     # the future for clients that don't want subscriber
     # info.
@@ -185,7 +189,7 @@ _check_stream_group = DictType(
         ("name", str),
         ("id", int),
         ("description", str),
-        ("streams", ListType(DictType(basic_stream_fields))),
+        ("streams", ListType(DictType(default_stream_fields))),
     ]
 )
 
@@ -200,7 +204,7 @@ check_default_stream_groups = make_checker(default_stream_groups_event)
 default_streams_event = event_dict_type(
     required_keys=[
         ("type", Equals("default_streams")),
-        ("default_streams", ListType(DictType(basic_stream_fields))),
+        ("default_streams", ListType(DictType(default_stream_fields))),
     ]
 )
 check_default_streams = make_checker(default_streams_event)

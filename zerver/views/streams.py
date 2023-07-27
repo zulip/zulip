@@ -58,6 +58,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_partial_success, json_success
 from zerver.lib.retention import STREAM_MESSAGE_BATCH_SIZE as RETENTION_STREAM_MESSAGE_BATCH_SIZE
 from zerver.lib.retention import parse_message_retention_days
+from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
     access_default_stream_group_by_id,
@@ -874,7 +875,12 @@ def get_stream_backend(
     stream_id: int,
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
-    return json_success(request, data={"stream": stream_to_dict(stream)})
+
+    recent_traffic = None
+    if not user_profile.realm.is_zephyr_mirror_realm:
+        # We do not need stream traffic data in zephyr mirroring realm.
+        recent_traffic = get_streams_traffic({stream.id})
+    return json_success(request, data={"stream": stream_to_dict(stream, recent_traffic)})
 
 
 @has_request_variables

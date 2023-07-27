@@ -1,6 +1,6 @@
 from typing import List, Set
 
-from zerver.lib.types import APIStreamDict
+from zerver.lib.types import DefaultStreamDict
 from zerver.models import DefaultStream, Stream
 
 
@@ -22,7 +22,7 @@ def get_default_stream_ids_for_realm(realm_id: int) -> Set[int]:
     return set(DefaultStream.objects.filter(realm_id=realm_id).values_list("stream_id", flat=True))
 
 
-def get_default_streams_for_realm_as_dicts(realm_id: int) -> List[APIStreamDict]:
+def get_default_streams_for_realm_as_dicts(realm_id: int) -> List[DefaultStreamDict]:
     """
     Return all the default streams for a realm using a list of dictionaries sorted
     by stream name.

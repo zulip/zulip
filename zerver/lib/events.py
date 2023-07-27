@@ -998,12 +998,6 @@ def apply_event(
                     if include_subscribers:
                         stream_data["subscribers"] = []
 
-                    # We know the stream has no traffic, and this
-                    # field is not present in the event.
-                    #
-                    # TODO: Probably this should just be added to the event.
-                    stream_data["stream_weekly_traffic"] = None
-
                     # Add stream to never_subscribed (if not invite_only)
                     state["never_subscribed"].append(stream_data)
                 if "streams" in state:

@@ -1,4 +1,4 @@
-from typing import Collection, List, Optional, Set, Tuple, TypedDict, Union
+from typing import Collection, Dict, List, Optional, Set, Tuple, TypedDict, Union
 
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q, QuerySet
@@ -16,6 +16,7 @@ from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_subscribed_stream_ids_for_user,
 )
+from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import APIStreamDict
@@ -111,8 +112,13 @@ def render_stream_description(text: str, realm: Realm) -> str:
     return markdown_convert(text, message_realm=realm, no_previews=True).rendered_content
 
 
-def send_stream_creation_event(realm: Realm, stream: Stream, user_ids: List[int]) -> None:
-    event = dict(type="stream", op="create", streams=[stream_to_dict(stream)])
+def send_stream_creation_event(
+    realm: Realm,
+    stream: Stream,
+    user_ids: List[int],
+    recent_traffic: Optional[Dict[int, int]] = None,
+) -> None:
+    event = dict(type="stream", op="create", streams=[stream_to_dict(stream, recent_traffic)])
     send_event(realm, event, user_ids)
 
 
@@ -826,7 +832,22 @@ def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
     return occupied_streams
 
 
-def stream_to_dict(stream: Stream) -> APIStreamDict:
+def stream_to_dict(
+    stream: Stream, recent_traffic: Optional[Dict[int, int]] = None
+) -> APIStreamDict:
+    if recent_traffic is not None:
+        stream_weekly_traffic = get_average_weekly_stream_traffic(
+            stream.id, stream.date_created, recent_traffic
+        )
+    else:
+        # We cannot compute the traffic data for a newly created
+        # stream, so we set "stream_weekly_traffic" field to
+        # "None" for the stream object in creation event.
+        # Also, there are some cases where we do not need to send
+        # the traffic data, like when deactivating a stream, and
+        # passing stream data to spectators.
+        stream_weekly_traffic = None
+
     return APIStreamDict(
         can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
         date_created=datetime_to_timestamp(stream.date_created),
@@ -841,6 +862,7 @@ def stream_to_dict(stream: Stream) -> APIStreamDict:
         stream_id=stream.id,
         stream_post_policy=stream.stream_post_policy,
         is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+        stream_weekly_traffic=stream_weekly_traffic,
     )
 
 
@@ -914,7 +936,13 @@ def do_get_streams(
             # Don't bother going to the database with no valid sources
             return []
 
-    stream_dicts = [stream_to_dict(stream) for stream in streams]
+    recent_traffic = None
+    if not user_profile.realm.is_zephyr_mirror_realm:
+        # We do not need stream traffic data for streams in zephyr mirroring realm.
+        stream_ids = {stream.id for stream in streams}
+        recent_traffic = get_streams_traffic(stream_ids)
+
+    stream_dicts = [stream_to_dict(stream, recent_traffic) for stream in streams]
     stream_dicts.sort(key=lambda elt: elt["name"])
 
     if include_default:

@@ -2476,6 +2476,7 @@ class NormalActionsTest(BaseAction):
             action = lambda: do_deactivate_stream(stream, acting_user=None)
             events = self.verify_action(action, include_streams=include_streams)
             check_stream_delete("events[0]", events[0])
+            self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
@@ -3266,6 +3267,7 @@ class SubscribeActionTest(BaseAction):
             events[0]["streams"][0]["message_retention_days"],
             10,
         )
+        self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
         stream.invite_only = False
         stream.save()

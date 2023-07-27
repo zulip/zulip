@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 199**
+
+* [`POST /register`](/api/register-queue), [`GET /events`][/api/get-events],
+  [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id): Stream objects now
+  include a `stream_weekly_traffic` field indicating the stream's level of
+  traffic.
+
 **Feature level 198**
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),

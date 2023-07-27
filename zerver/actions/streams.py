@@ -37,7 +37,7 @@ from zerver.lib.stream_subscription import (
     get_bulk_stream_subscriber_info,
     get_used_colors_for_user_ids,
 )
-from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
+from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_user_ids,
     get_occupied_streams,
@@ -210,10 +210,15 @@ def do_reactivate_stream(
         event_time=timezone_now(),
     )
 
+    recent_traffic = None
+    if not realm.is_zephyr_mirror_realm:
+        # We do not need stream traffic data for streams in zephyr mirroring realm.
+        recent_traffic = get_streams_traffic({stream.id})
+
     # All admins always get to know about private streams' existence,
     # but we only subscribe the realm owners.
     send_stream_creation_event(
-        realm, stream, [user.id for user in realm.get_admin_users_and_bots()]
+        realm, stream, [user.id for user in realm.get_admin_users_and_bots()], recent_traffic
     )
     bulk_add_subscriptions(
         realm=realm,
@@ -313,7 +318,6 @@ def get_subscriber_ids(
 @dataclass
 class StreamInfo:
     email_address: str
-    stream_weekly_traffic: Optional[int]
     subscribers: List[int]
 
 
@@ -336,16 +340,12 @@ def send_subscription_add_events(
         stream = sub_info.stream
         if stream.id not in stream_info_dict:
             email_address = encode_email_address(stream, show_sender=True)
-            stream_weekly_traffic = get_average_weekly_stream_traffic(
-                stream.id, stream.date_created, recent_traffic
-            )
             if stream.is_in_zephyr_realm and not stream.invite_only:
                 subscribers = []
             else:
                 subscribers = list(subscriber_dict[stream.id])
             stream_info_dict[stream.id] = StreamInfo(
                 email_address=email_address,
-                stream_weekly_traffic=stream_weekly_traffic,
                 subscribers=subscribers,
             )
 
@@ -355,7 +355,7 @@ def send_subscription_add_events(
             stream = sub_info.stream
             stream_info = stream_info_dict[stream.id]
             subscription = sub_info.sub
-            stream_dict = stream_to_dict(stream)
+            stream_dict = stream_to_dict(stream, recent_traffic)
             # This is verbose as we cannot unpack existing TypedDict
             # to initialize another TypedDict while making mypy happy.
             # https://github.com/python/mypy/issues/5382
@@ -372,7 +372,7 @@ def send_subscription_add_events(
                 # Computed fields not present in Subscription.API_FIELDS
                 email_address=stream_info.email_address,
                 in_home_view=not subscription.is_muted,
-                stream_weekly_traffic=stream_info.stream_weekly_traffic,
+                stream_weekly_traffic=stream_dict["stream_weekly_traffic"],
                 subscribers=stream_info.subscribers,
                 # Fields from Stream.API_FIELDS
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
@@ -452,6 +452,12 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     altered_user_dict: Dict[int, Set[int]],
     altered_guests: Set[int],
 ) -> None:
+    recent_traffic = None
+    if not realm.is_zephyr_mirror_realm:
+        # We do not need stream traffic data for streams in zephyr mirroring realm.
+        stream_ids = set(altered_user_dict.keys())
+        recent_traffic = get_streams_traffic(stream_ids)
+
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
 
@@ -472,7 +478,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
             notify_user_ids = list(stream_users_ids & altered_guests)
 
         if notify_user_ids:
-            send_stream_creation_event(realm, stream, notify_user_ids)
+            send_stream_creation_event(realm, stream, notify_user_ids, recent_traffic)
 
 
 def send_peer_subscriber_events(
@@ -1058,7 +1064,12 @@ def do_change_stream_permission(
         )
         non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
         notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_user_ids
-        send_stream_creation_event(realm, stream, list(notify_stream_creation_ids))
+
+        recent_traffic = None
+        if not realm.is_zephyr_mirror_realm:
+            # We do not need stream traffic data for streams in zephyr mirroing realm.
+            recent_traffic = get_streams_traffic({stream.id})
+        send_stream_creation_event(realm, stream, list(notify_stream_creation_ids), recent_traffic)
 
         # Add subscribers info to the stream object. We need to send peer_add
         # events to users who were previously subscribed to the streams as
