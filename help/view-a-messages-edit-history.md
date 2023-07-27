@@ -16,23 +16,14 @@ Organization administrators can
 
 {start_tabs}
 
-1. Click on the message's **EDITED** or **MOVED** label.
+1. Click on the message's **EDITED** or **MOVED** label shown next to
+   a user's name or to the left of each message in the message feed.
 
-{end_tabs}
+!!! tip ""
 
-### Via the message menu (alternate method)
-
-{start_tabs}
-
-{!message-actions-menu.md!}
-
-1. Click **View edit history**.
-
-!!! warn ""
-
-    You will only see **View edit history** in the dropdown
-    menu if the message has been moved or edited, and
-    message edit history is enabled in the organization.
+    In organizations where message edit history is disabled, you will
+    never see a **MOVED** label; messages that have been moved will be
+    marked as **EDITED** just like those whose content has been edited.
 
 {end_tabs}
 
