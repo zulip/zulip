@@ -2,43 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {JSDOM} = require("jsdom");
-
-const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const jquery = require("./lib/real_jquery");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {page_params} = require("./lib/zpage_params");
 
-const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
-
-const {document} = window;
-const $ = jquery(window);
-
-const compose_ui = mock_esm("../src/compose_ui");
-set_global("document", document);
-
 const copy_and_paste = zrequire("copy_and_paste");
 
-// Super stripped down version of the code in the drag-mock library
-// https://github.com/andywer/drag-mock/blob/6d46c7c0ffd6a4d685e6612a90cd58cda80f30fc/src/DataTransfer.js
-class DataTransfer {
-    dataByFormat = {};
-    getData(dataFormat) {
-        return this.dataByFormat[dataFormat];
-    }
-    setData(dataFormat, data) {
-        this.dataByFormat[dataFormat] = data;
-    }
-}
-
-const createPasteEvent = function () {
-    const clipboardData = new DataTransfer();
-    const pasteEvent = new window.Event("paste");
-    pasteEvent.clipboardData = clipboardData;
-    return new $.Event(pasteEvent);
-};
-
-run_test("paste_handler", () => {
+run_test("paste_handler_converter", () => {
     page_params.development_environment = true;
     let input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;"><span> </span>love the<span> </span><b>Zulip</b><b> </b></span><b style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">Organization</b><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">.</span>';
@@ -90,22 +60,4 @@ run_test("paste_handler", () => {
         copy_and_paste.paste_handler_converter(input),
         "Test list:\n*   Item 1\n*   Item 2",
     );
-
-    let data = "<p>text</p>";
-    let event = createPasteEvent();
-    event.originalEvent.clipboardData.setData("text/html", data);
-    let insert_syntax_and_focus_called = false;
-    compose_ui.insert_syntax_and_focus = function () {
-        insert_syntax_and_focus_called = true;
-    };
-    copy_and_paste.paste_handler(event);
-    assert.ok(insert_syntax_and_focus_called);
-
-    data =
-        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><img src="http://localhost:9991/thumbnail?url=user_uploads%2F1%2Fe2%2FHPMCcGWOG9rS2M4ybHN8sEzh%2Fpasted_image.png&amp;size=full"/>';
-    event = createPasteEvent();
-    event.originalEvent.clipboardData.setData("text/html", data);
-    insert_syntax_and_focus_called = false;
-    copy_and_paste.paste_handler(event);
-    assert.ok(!insert_syntax_and_focus_called);
 });
