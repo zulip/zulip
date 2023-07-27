@@ -272,7 +272,10 @@ function get_notification_title(message, content, msg_count) {
     let other_recipients;
 
     if (msg_count > 1) {
-        title = msg_count + " messages from " + title;
+        title = $t(
+            {defaultMessage: "{msg_count} messages from {sender_full_name}"},
+            {msg_count, sender_full_name: title},
+        );
     }
 
     switch (message.type) {
@@ -286,18 +289,30 @@ function get_notification_title(message, content, msg_count) {
                 if (content.length + title.length + other_recipients.length > 230) {
                     // Then count how many people are in the conversation and summarize
                     // by saying the conversation is with "you and [number] other people"
-                    other_recipients =
-                        other_recipients.replaceAll(/[^,]/g, "").length + " other people";
+                    const recipient_count = recipients.replaceAll(/[^,]/g, "").length;
+                    other_recipients = $t(
+                        {
+                            defaultMessage:
+                            "{recipient_count} other {recipient_count, plural, two {# people} other {# people}}",
+                        },
+                        {recipient_count},
+                    );
                 }
 
-                title += " (to you and " + other_recipients + ")";
+                title = $t(
+                    {defaultMessage: "{notification} (to you and {other_recipients})"},
+                    {other_recipients, notification: title},
+                );
             } else {
-                title += " (to you)";
+                title = $t({defaultMessage: "{notification} (to you)"}, {notification: title});
             }
             break;
         case "stream": {
             const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-            title += " (to " + stream_name + " > " + message.topic + ")";
+            title = $t(
+                {defaultMessage: "{notification} (to {stream_name} > {topic_name})"},
+                {stream_name, topic_name: message.topic, notification: title},
+            );
             break;
         }
     }
