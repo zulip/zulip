@@ -107,6 +107,7 @@ def convert_non_ascii_chars(name: str) -> str:
         "ã": "a",
         "í": "i",
         "å": "a",
+        "ü": "u",
     }
     for before, after in replacements.items():
         name = name.replace(before, after)
