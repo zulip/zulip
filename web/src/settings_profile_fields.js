@@ -171,18 +171,11 @@ export function update_choice_delete_btn($container, display_flag) {
 }
 
 export function get_value_for_new_option(container) {
-    const $choice_rows = $(container).find(".choice-row");
-    if ($choice_rows.length === 0) {
-        // Value for the first option is 0.
-        return 0;
+    let value = 0;
+    for (const row of $(container).find(".choice-row")) {
+        value = Math.max(value, Number.parseInt($(row).attr("data-value"), 10) + 1);
     }
-
-    const existing_option_values = [];
-    $choice_rows.each(function () {
-        existing_option_values.push(Number.parseInt($(this).attr("data-value"), 10));
-    });
-    existing_option_values.sort((a, b) => a - b);
-    return existing_option_values.at(-1) + 1;
+    return value;
 }
 
 function create_choice_row(container) {
