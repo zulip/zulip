@@ -376,20 +376,26 @@ export function tokenize_compose_str(s) {
     return "";
 }
 
+function get_wildcard_string(mention) {
+    if (compose_state.get_message_type() === "private") {
+        return $t({defaultMessage: "Notify recipients"});
+    }
+    if (mention === "topic") {
+        return $t({defaultMessage: "Notify topic"});
+    }
+    return $t({defaultMessage: "Notify stream"});
+}
+
 export function broadcast_mentions() {
     if (!compose_validate.wildcard_mention_allowed()) {
         return [];
     }
     const wildcard_mention_array = ["all", "everyone"];
-    let wildcard_string = "";
-    if (compose_state.get_message_type() === "private") {
-        wildcard_string = $t({defaultMessage: "Notify recipients"});
-    } else {
-        wildcard_string = $t({defaultMessage: "Notify stream"});
-        wildcard_mention_array.push("stream");
+    if (compose_state.get_message_type() === "stream") {
+        wildcard_mention_array.push("stream", "topic");
     }
     return wildcard_mention_array.map((mention, idx) => ({
-        special_item_text: `${mention} (${wildcard_string})`,
+        special_item_text: `${mention} (${get_wildcard_string(mention)})`,
         email: mention,
 
         // Always sort above, under the assumption that names will
