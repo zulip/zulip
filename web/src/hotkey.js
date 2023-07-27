@@ -24,6 +24,7 @@ import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
+import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as narrow from "./narrow";
@@ -77,6 +78,7 @@ const keydown_shift_mappings = {
     39: {name: "right_arrow", message_view_only: false}, // right arrow
     38: {name: "up_arrow", message_view_only: false}, // up arrow
     40: {name: "down_arrow", message_view_only: false}, // down arrow
+    72: {name: "view_edit_history", message_view_only: true}, // 'H'
 };
 
 const keydown_unshift_mappings = {
@@ -1043,6 +1045,14 @@ export function process_hotkey(e, hotkey) {
             const $row = message_lists.current.get_row(msg.id);
             message_edit.start($row);
             return true;
+        }
+        case "view_edit_history": {
+            if (page_params.realm_allow_edit_history) {
+                message_edit_history.show_history(msg);
+                $("#message-history-cancel").trigger("focus");
+                return true;
+            }
+            return false;
         }
         case "move_message": {
             if (!message_edit.can_move_message(msg)) {
