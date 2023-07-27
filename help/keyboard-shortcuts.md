@@ -150,6 +150,10 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Move message and (optionally) other messages in the same topic**: <kbd>M</kbd>
 
+* **View message edit and move history**: <kbd>Shift</kbd> +
+  <kbd>H</kbd>. Message edit history [must be
+  enabled](/help/disable-message-edit-history).
+
 * **Star message**: <kbd>Ctrl</kbd> + <kbd>S</kbd>
 
 * **React with <img alt=":thumbs_up:" class="emoji"
