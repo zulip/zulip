@@ -132,7 +132,7 @@ h3,
     margin-right: 10px;
 }
 
-#admin_profile_fields_table {
+.admin_profile_fields_table {
     & th.display,
     td.display_in_profile_summary_cell {
         text-align: center;
@@ -226,6 +226,7 @@ h3,
     /* Limit the actions column to not using excessive width */
     .admin-table-wrapper table.admin_profile_fields_table tr .actions {
         width: 11%;
+        min-width: 70px;
     }
 }
 

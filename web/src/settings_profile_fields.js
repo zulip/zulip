@@ -67,17 +67,6 @@ function is_valid_to_display_in_summary(field_type) {
     return true;
 }
 
-function update_profile_fields_table_element() {
-    const $profile_fields_table = $("#admin_profile_fields_table").expectOne();
-
-    // If there are no custom fields, hide the table headers at the top
-    if (page_params.custom_profile_fields.length < 1) {
-        $profile_fields_table.hide();
-    } else {
-        $profile_fields_table.show();
-    }
-}
-
 function delete_profile_field(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -104,7 +93,6 @@ function delete_profile_field(e) {
         const opts = {
             success_continuation() {
                 display_success_status();
-                update_profile_fields_table_element();
             },
         };
         dialog_widget.submit_api_request(channel.del, url, {}, opts);
@@ -681,7 +669,6 @@ export function do_populate_profile_fields(profile_fields_data) {
     }
 
     update_profile_fields_checkboxes();
-    update_profile_fields_table_element();
     loading.destroy_indicator($("#admin_page_profile_fields_loading_indicator"));
 }
 
