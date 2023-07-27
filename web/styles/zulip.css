@@ -1977,7 +1977,8 @@ div.focused-message-list {
     border-radius: 4px;
     overflow: hidden;
 
-    &.guest-avatar::after {
+    &.guest-avatar::after,
+    &.bot-avatar::after {
         outline: 2px solid hsl(0deg 0% 100%);
     }
 }

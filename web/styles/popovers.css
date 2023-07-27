@@ -371,7 +371,8 @@ ul {
     background-position: center;
     position: relative;
 
-    &.guest-avatar::after {
+    &.guest-avatar::after,
+    &.bot-avatar::after {
         outline: 10px solid hsl(0deg 0% 100%);
     }
 
@@ -462,7 +463,8 @@ ul {
         border-radius: 5px;
         box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 20%);
 
-        &.guest-avatar::after {
+        &.guest-avatar::after,
+        &.bot-avatar::after {
             outline: 9px solid hsl(0deg 0% 100%);
         }
     }

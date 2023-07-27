@@ -1,5 +1,7 @@
 <div class="u-{{msg/sender_id}} message-avatar sender_info_hover view_user_card_tooltip" aria-hidden="true" data-tooltip-template-id="view-user-card-tooltip-template">
-    <div class="inline_profile_picture {{#sender_is_guest}} guest-avatar{{/sender_is_guest}}">
+    <div class="inline_profile_picture
+      {{#if sender_is_bot}} bot-avatar
+      {{else if sender_is_guest}} guest-avatar{{/if}}">
         <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
     </div>
 </div>

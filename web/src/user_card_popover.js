@@ -234,6 +234,7 @@ function render_user_card_popover(
             // See the load_medium_avatar comment for important background.
             user_avatar: people.small_avatar_url_for_person(user),
             user_is_guest: user.is_guest,
+            is_bot: user.is_bot,
         }),
         html: true,
         trigger: "manual",

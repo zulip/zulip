@@ -47,6 +47,7 @@ const alice = {
     is_admin: false,
     role: 400,
     date_joined: "2021-11-01T16:32:16.458735+00:00",
+    is_bot: true, // Set this to true to simulate a bot user.
 };
 
 const me = {
@@ -157,6 +158,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
         assert.deepEqual(opts, {
             user_avatar: "http://zulip.zulipdev.com/avatar/42?s=50",
             user_is_guest: false,
+            is_bot: alice.is_bot, // Set is_bot for the mocked user (alice).
         });
         return "title-html";
     });
@@ -179,7 +181,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             show_manage_menu: true,
             is_me: false,
             is_active: true,
-            is_bot: undefined,
+            is_bot: alice.is_bot, // Set is_bot for the mocked user (alice)
             is_sender_popover: true,
             has_message_context: true,
             status_content_available: true,

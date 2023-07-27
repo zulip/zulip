@@ -432,19 +432,27 @@ div.overlay {
     border: 1px solid hsl(0deg 0% 87%);
 }
 
-.guest-avatar {
+.guest-avatar,
+.bot-avatar {
     position: relative;
     overflow: hidden;
 
     &::after {
         content: " ";
-        background-color: hsl(0deg 0% 47%);
         position: absolute;
         bottom: -30%;
         right: -30%;
         width: 50%;
         height: 50%;
         transform: rotate(45deg);
+    }
+
+    &.guest-avatar::after {
+        background-color: hsl(0deg 0% 47%);
+    }
+
+    &.bot-avatar::after {
+        background-color: hsl(0deg 0% 17%);
     }
 }
 
