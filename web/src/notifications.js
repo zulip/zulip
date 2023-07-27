@@ -264,22 +264,12 @@ function remove_sender_from_list_of_recipients(message) {
         .slice(", ".length, -", ".length);
 }
 
-export function process_notification(notification) {
-    const message = notification.message;
-    const content = get_notification_content(message);
-    const key = get_notification_key(message);
-    let notification_object;
-    let other_recipients;
+function get_notification_title(message, content, msg_count) {
     let title = message.sender_full_name;
-    let msg_count = 1;
+    let other_recipients;
 
-    debug_notification_source_value(message);
-
-    if (notice_memory.has(key)) {
-        msg_count = notice_memory.get(key).msg_count + 1;
+    if (msg_count > 1) {
         title = msg_count + " messages from " + title;
-        notification_object = notice_memory.get(key).obj;
-        notification_object.close();
     }
 
     switch (message.type) {
@@ -308,6 +298,26 @@ export function process_notification(notification) {
             break;
         }
     }
+
+    return title;
+}
+
+export function process_notification(notification) {
+    const message = notification.message;
+    const content = get_notification_content(message);
+    const key = get_notification_key(message);
+    let notification_object;
+    let msg_count = 1;
+
+    debug_notification_source_value(message);
+
+    if (notice_memory.has(key)) {
+        msg_count = notice_memory.get(key).msg_count + 1;
+        notification_object = notice_memory.get(key).obj;
+        notification_object.close();
+    }
+
+    const title = get_notification_title(message, content, msg_count);
 
     if (notification.desktop_notify) {
         const icon_url = people.small_avatar_url(message);
