@@ -63,6 +63,7 @@ const ct = composebox_typeahead;
 ct.__Rewire__("max_num_items", 15);
 
 run_test("verify wildcard mentions typeahead for stream message", () => {
+    compose_state.set_message_type("stream");
     const mention_all = ct.broadcast_mentions()[0];
     const mention_everyone = ct.broadcast_mentions()[1];
     const mention_stream = ct.broadcast_mentions()[2];
