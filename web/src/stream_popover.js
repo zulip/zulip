@@ -25,8 +25,8 @@ import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
-// We handle stream popovers and topic popovers in this
-// module.  Both are popped up from the left sidebar.
+// In this module, we manage stream popovers
+// that pop up from the left sidebar.
 let current_stream_sidebar_elem;
 let stream_widget_value;
 let $stream_header_colorblock;
