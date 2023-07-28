@@ -768,9 +768,13 @@ export function process_hotkey(e, hotkey) {
             // don't return, as we still want it to be picked up by the code below
         } else {
             switch (event_name) {
+                // home and page up both move the cursor
+                case "home":
                 case "page_up":
                     $(":focus").caret(0).animate({scrollTop: 0}, "fast");
                     return true;
+                // end and page down both move the cursor
+                case "end":
                 case "page_down": {
                     // so that it always goes to the end of the text box.
                     const height = $(":focus")[0].scrollHeight;
