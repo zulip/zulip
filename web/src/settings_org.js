@@ -614,7 +614,7 @@ export function set_dropdown_list_widget_setting_value(property_name, value) {
     widget.render(value);
 }
 
-export function get_dropdown_list_widget_setting_value($input_elem, for_api_data = true) {
+export function get_dropdown_list_widget_setting_value($input_elem) {
     const widget_name = extract_property_name($input_elem);
     const setting_widget = get_widget_for_dropdown_list_settings(widget_name);
 
@@ -623,11 +623,7 @@ export function get_dropdown_list_widget_setting_value($input_elem, for_api_data
         return Number.parseInt(setting_widget.value(), 10);
     }
 
-    const setting_value = setting_widget.value();
-    if (setting_value.length === 0 && !for_api_data) {
-        return null;
-    }
-    return setting_value;
+    return setting_widget.value();
 }
 
 export function discard_property_element_changes(elem, for_realm_default_settings, sub) {
@@ -959,7 +955,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
         case "realm_signup_notifications_stream_id":
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
-            proposed_val = get_dropdown_list_widget_setting_value($elem, false);
+            proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "email_notifications_batching_period_seconds":
             proposed_val = get_time_limit_setting_value($elem, false);
