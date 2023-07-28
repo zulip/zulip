@@ -195,6 +195,11 @@ def run() -> None:
     )
 
     linter_config.external_linter(
+        "mailmap",
+        ["sh", "-c", "grep '^[^#]' .mailmap | LC_ALL=C.UTF-8 sort -cf"],
+        description="Check that .mailmap is sorted",
+    )
+    linter_config.external_linter(
         "thirdparty",
         ["tools/check-thirdparty"],
         description="Check docs/THIRDPARTY copyright file syntax",
