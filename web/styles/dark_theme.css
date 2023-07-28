@@ -1553,11 +1553,13 @@
     }
 }
 
-:root.dark-theme {
-    @extend %dark-theme;
+@media screen {
+    :root.dark-theme {
+        @extend %dark-theme;
+    }
 }
 
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
     :root.color-scheme-automatic {
         @extend %dark-theme;
     }
