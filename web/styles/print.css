@@ -22,7 +22,13 @@
         position: static;
     }
 
-    /* Save a bit of paper by removing padding. */
+    /* Save a bit of paper by removing height, which
+       otherwise creates a blank final page, and padding. */
+    html,
+    body {
+        height: auto;
+    }
+
     #message_feed_container {
         padding-top: 0;
     }
