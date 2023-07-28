@@ -95,6 +95,10 @@ function user_default_language_modal_post_render() {
             $("#user-preferences .language_selection_widget .language_selection_button span").text(
                 new_language,
             );
+            $("#user-preferences .language_selection_widget .language_selection_button span").attr(
+                "data-language-code",
+                setting_value,
+            );
 
             change_display_setting(
                 data,
