@@ -107,14 +107,28 @@ isn't running. If you don't see relevant logs in
 
 After you change configuration in `/etc/zulip/settings.py` or fix a
 misconfiguration, you will often want to restart the Zulip
-application. Running `scripts/restart-server` will restart all of
-Zulip's services; if you want to restart just one of them, you can use
+application. In order to restart all of Zulip's services, you can use:
+
+```bash
+/home/zulip/deployments/current/scripts/restart-server
+```
+
+If you want to restart just one of them, you can use
 `supervisorctl`:
 
 ```bash
 # You can use this for any service found in `supervisorctl list`
 supervisorctl restart zulip-django
 ```
+
+:::{warning}
+A configuration file might be used by multiple services, so generally
+`scripts/restart-server` is the correct tool to use for reloading
+purposes. Only use `supervisorctl restart` for an individual service
+if you're confident that this specific service requires restarting.
+In particular, it is not the right tool for applying settings changes
+in `/etc/zulip/settings.py` and may cause inconsistent behavior.
+:::
 
 ### Stopping services with `supervisorctl stop`
 
