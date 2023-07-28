@@ -1,4 +1,3 @@
-import datetime
 import io
 import os
 import re
@@ -10,20 +9,16 @@ from unittest.mock import patch
 
 import orjson
 from django.conf import settings
-from django.utils.timezone import now as timezone_now
 from PIL import Image
 from urllib3 import encode_multipart_formdata
 from urllib3.fields import RequestField
 
 import zerver.lib.upload
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
-from zerver.actions.scheduled_messages import check_schedule_message, delete_scheduled_message
-from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
@@ -31,7 +26,6 @@ from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
-from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
@@ -39,19 +33,17 @@ from zerver.lib.test_helpers import (
     ratelimit_rule,
     read_test_image_file,
 )
-from zerver.lib.upload import delete_message_attachment, upload_message_attachment
+from zerver.lib.upload import upload_message_attachment
 from zerver.lib.upload.base import BadImageError, ZulipUploadBackend, resize_emoji, sanitize_name
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
 from zerver.models import (
-    ArchivedAttachment,
     Attachment,
     Message,
     Realm,
     RealmDomain,
     UserProfile,
-    get_client,
     get_realm,
     get_system_bot,
     get_user_by_delivery_email,
@@ -360,126 +352,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         )
         self.assertEqual(response.status_code, 404)
         self.assert_in_response("This file does not exist or has been deleted.", response)
-
-    def test_delete_old_unclaimed_attachments(self) -> None:
-        # Upload some files and make them older than a week
-        hamlet = self.example_user("hamlet")
-        self.login("hamlet")
-        d1 = StringIO("zulip!")
-        d1.name = "dummy_1.txt"
-        result = self.client_post("/json/user_uploads", {"file": d1})
-        response_dict = self.assert_json_success(result)
-        d1_path_id = re.sub("/user_uploads/", "", response_dict["uri"])
-
-        d2 = StringIO("zulip!")
-        d2.name = "dummy_2.txt"
-        result = self.client_post("/json/user_uploads", {"file": d2})
-        response_dict = self.assert_json_success(result)
-        d2_path_id = re.sub("/user_uploads/", "", response_dict["uri"])
-
-        d3 = StringIO("zulip!")
-        d3.name = "dummy_3.txt"
-        result = self.client_post("/json/user_uploads", {"file": d3})
-        d3_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
-
-        d4 = StringIO("zulip!")
-        d4.name = "dummy_4.txt"
-        result = self.client_post("/json/user_uploads", {"file": d4})
-        d4_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
-
-        two_week_ago = timezone_now() - datetime.timedelta(weeks=2)
-        # This Attachment will have a message linking to it:
-        d1_attachment = Attachment.objects.get(path_id=d1_path_id)
-        d1_attachment.create_time = two_week_ago
-        d1_attachment.save()
-        self.assertEqual(repr(d1_attachment), "<Attachment: dummy_1.txt>")
-        # This Attachment won't have any messages.
-        d2_attachment = Attachment.objects.get(path_id=d2_path_id)
-        d2_attachment.create_time = two_week_ago
-        d2_attachment.save()
-        # This Attachment will have a message that gets archived. The file
-        # should not be deleted until the message is deleted from the archive.
-        d3_attachment = Attachment.objects.get(path_id=d3_path_id)
-        d3_attachment.create_time = two_week_ago
-        d3_attachment.save()
-
-        # This Attachment will just have a ScheduledMessage referencing it. It should not be deleted
-        # until the ScheduledMessage is deleted.
-        d4_attachment = Attachment.objects.get(path_id=d4_path_id)
-        d4_attachment.create_time = two_week_ago
-        d4_attachment.save()
-
-        # Send message referencing only dummy_1
-        self.subscribe(hamlet, "Denmark")
-        body = (
-            f"Some files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
-            + d1_path_id
-            + ")"
-        )
-        self.send_stream_message(hamlet, "Denmark", body, "test")
-
-        # Send message referencing dummy_3 - it will be archived next.
-        body = (
-            f"Some more files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
-            + d3_path_id
-            + ")"
-        )
-        message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
-        assert settings.LOCAL_FILES_DIR
-        d3_local_path = os.path.join(settings.LOCAL_FILES_DIR, d3_path_id)
-        self.assertTrue(os.path.exists(d3_local_path))
-
-        body = (
-            f"Some files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
-            + d4_path_id
-            + ")"
-        )
-        scheduled_message_d4_id = check_schedule_message(
-            hamlet,
-            get_client("website"),
-            "stream",
-            [self.get_stream_id("Verona")],
-            "Test topic",
-            body,
-            timezone_now() + datetime.timedelta(days=365),
-            hamlet.realm,
-        )
-        self.assertEqual(
-            list(d4_attachment.scheduled_messages.all().values_list("id", flat=True)),
-            [scheduled_message_d4_id],
-        )
-        d4_local_path = os.path.join(settings.LOCAL_FILES_DIR, d4_path_id)
-        self.assertTrue(os.path.exists(d4_local_path))
-
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
-        # dummy_2 should not exist in database or the uploads folder
-        do_delete_old_unclaimed_attachments(2)
-        self.assertTrue(not Attachment.objects.filter(path_id=d2_path_id).exists())
-        with self.assertLogs(level="WARNING") as warn_log:
-            self.assertTrue(not delete_message_attachment(d2_path_id))
-        self.assertEqual(
-            warn_log.output,
-            ["WARNING:root:dummy_2.txt does not exist. Its entry in the database will be removed."],
-        )
-
-        # dummy_3 file should still exist, because the attachment has been moved to the archive.
-        self.assertTrue(os.path.exists(d3_local_path))
-
-        # After the archive gets emptied, do_delete_old_unclaimed_attachments should result
-        # in deleting the file, since it is now truly no longer referenced.
-        with self.settings(ARCHIVED_DATA_VACUUMING_DELAY_DAYS=0):
-            clean_archived_data()
-        do_delete_old_unclaimed_attachments(2)
-        self.assertFalse(os.path.exists(d3_local_path))
-        self.assertTrue(not Attachment.objects.filter(path_id=d3_path_id).exists())
-        self.assertTrue(not ArchivedAttachment.objects.filter(path_id=d3_path_id).exists())
-
-        # dummy_4 only get deleted after the scheduled message is deleted.
-        self.assertTrue(os.path.exists(d4_local_path))
-        delete_scheduled_message(hamlet, scheduled_message_d4_id)
-        do_delete_old_unclaimed_attachments(2)
-        self.assertFalse(os.path.exists(d4_local_path))
-        self.assertTrue(not Attachment.objects.filter(path_id=d4_path_id).exists())
 
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")

@@ -3739,9 +3739,9 @@ def get_old_unclaimed_attachments(
     )
     old_archived_attachments = ArchivedAttachment.objects.annotate(
         has_other_messages=Exists(
-            Attachment.objects.filter(id=OuterRef("id"))
-            .exclude(messages=None)
-            .exclude(scheduled_messages=None)
+            Attachment.objects.filter(id=OuterRef("id")).exclude(
+                messages=None, scheduled_messages=None
+            )
         )
     ).filter(messages=None, create_time__lt=delta_weeks_ago, has_other_messages=False)
 
