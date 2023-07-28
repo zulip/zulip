@@ -251,11 +251,13 @@ body {
     --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
 }
 
-:root.dark-theme {
-    @extend %dark-theme;
+@media screen {
+    :root.dark-theme {
+        @extend %dark-theme;
+    }
 }
 
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
     :root.color-scheme-automatic {
         @extend %dark-theme;
     }
