@@ -23,6 +23,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     "zerver/lib/email_mirror.py",
     "zerver/lib/email_notifications.py",
     "zerver/lib/send_email.py",
+    "zerver/lib/typed_endpoint.py",
     "zerver/tests/test_new_users.py",
     "zerver/tests/test_email_mirror.py",
     "zerver/tests/test_message_notification_emails.py",

@@ -169,3 +169,20 @@ rules:
     message: 'A batched migration should not be atomic. Add "atomic = False" to the Migration class'
     languages: [python]
     severity: ERROR
+
+  - id: typed_endpoint_without_keyword_only_param
+    patterns:
+      - pattern: |
+          @typed_endpoint
+          def $F(...)-> ...:
+            ...
+      - pattern-not-inside: |
+          @typed_endpoint
+          def $F(..., *, ...)-> ...:
+            ...
+    message: |
+      @typed_endpoint should not be used without keyword-only parameters.
+      Make parameters to be parsed from the request as keyword-only,
+      or use @typed_endpoint_without_parameters instead.
+    languages: [python]
+    severity: ERROR
