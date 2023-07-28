@@ -126,7 +126,9 @@ def edit_user_group(
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None:
+        if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
+            setting_group_id_name
+        ] != getattr(user_group, setting_group_id_name):
             setting_value_group_id = request_settings_dict[setting_group_id_name]
             setting_value_group = access_user_group_for_setting(
                 setting_value_group_id,
