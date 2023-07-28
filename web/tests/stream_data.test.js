@@ -201,7 +201,7 @@ test("basics", () => {
     ]);
 });
 
-test("get_subscribed_streams_for_user", () => {
+test("get_streams_for_user", () => {
     const denmark = {
         subscribed: true,
         color: "blue",
@@ -227,7 +227,16 @@ test("get_subscribed_streams_for_user", () => {
         is_muted: true,
         invite_only: true,
     };
-    const subs = [denmark, social, test];
+    const world = {
+        color: "blue",
+        name: "world",
+        stream_id: 4,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+    const subs = [denmark, social, test, world];
     for (const sub of subs) {
         stream_data.add_sub(sub);
     }
@@ -235,6 +244,7 @@ test("get_subscribed_streams_for_user", () => {
     peer_data.set_subscribers(denmark.stream_id, [me.user_id, test_user.user_id]);
     peer_data.set_subscribers(social.stream_id, [test_user.user_id]);
     peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
+    peer_data.set_subscribers(world.stream_id, [me.user_id]);
 
     // test_user is subscribed to all three streams, but current user (me)
     // gets only two because of subscriber visibility policy of stream:
@@ -243,10 +253,15 @@ test("get_subscribed_streams_for_user", () => {
     //          user is a guest.
     // #test: current user is no longer subscribed to a private stream, so
     //        he can not see whether test_user is subscribed to it.
-    assert.deepEqual(stream_data.get_subscribed_streams_for_user(test_user.user_id), [
+    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).subscribed, [
         denmark,
         social,
     ]);
+    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, []);
+    // Verify can subscribe if we're an administrator.
+    page_params.is_admin = true;
+    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [world]);
+    page_params.is_admin = false;
 });
 
 test("renames", () => {

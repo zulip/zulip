@@ -197,7 +197,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types))
         .filter((f) => f.name !== undefined);
-    const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
+    const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
     const args = {
         user_id: user.user_id,

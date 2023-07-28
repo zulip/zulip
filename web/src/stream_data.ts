@@ -388,11 +388,15 @@ export function muted_stream_ids(): number[] {
         .map((sub) => sub.stream_id);
 }
 
-export function get_subscribed_streams_for_user(user_id: number): StreamSubscription[] {
+export function get_streams_for_user(user_id: number): {
+    subscribed: StreamSubscription[];
+    can_subscribe: StreamSubscription[];
+} {
     // Note that we only have access to subscribers of some streams
     // depending on our role.
     const all_subs = get_unsorted_subs();
     const subscribed_subs = [];
+    const can_subscribe_subs = [];
     for (const sub of all_subs) {
         if (!can_view_subscribers(sub)) {
             // Private streams that we have been removed from appear
@@ -402,10 +406,15 @@ export function get_subscribed_streams_for_user(user_id: number): StreamSubscrip
         }
         if (is_user_subscribed(sub.stream_id, user_id)) {
             subscribed_subs.push(sub);
+        } else if (can_subscribe_others(sub)) {
+            can_subscribe_subs.push(sub);
         }
     }
 
-    return subscribed_subs;
+    return {
+        subscribed: subscribed_subs,
+        can_subscribe: can_subscribe_subs,
+    };
 }
 
 export function get_invite_stream_data(): InviteStreamData[] {
