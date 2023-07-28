@@ -54,6 +54,8 @@ import orjson
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
+from pydantic import ValidationInfo, model_validator
+from pydantic.functional_validators import ModelWrapValidatorHandler
 
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.timezone import canonicalize_timezone
@@ -631,6 +633,17 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
 class WildValue:
     var_name: str
     value: object
+
+    @model_validator(mode="wrap")  # type: ignore[arg-type] # The upstream's type annotation uses a TypeVar that is incorrectly unbounded.
+    @classmethod
+    def to_wild_value(
+        cls,
+        value: object,
+        # We bypass the original WildValue handler to customize it
+        handler: ModelWrapValidatorHandler["WildValue"],
+        info: ValidationInfo,
+    ) -> "WildValue":
+        return wrap_wild_value("request", value)
 
     def __bool__(self) -> bool:
         return bool(self.value)
