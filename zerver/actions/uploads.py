@@ -74,11 +74,17 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         weeks_ago
     )
 
+    # An attachment may be removed from Attachments and
+    # ArchiveAttachments in the same run; prevent warnings from the
+    # backing store by only removing it from there once.
+    already_removed = set()
     for attachment in old_unclaimed_attachments:
         delete_message_attachment(attachment.path_id)
+        already_removed.add(attachment.path_id)
         attachment.delete()
     for archived_attachment in old_unclaimed_archived_attachments:
-        delete_message_attachment(archived_attachment.path_id)
+        if archived_attachment.path_id not in already_removed:
+            delete_message_attachment(archived_attachment.path_id)
         archived_attachment.delete()
 
 
