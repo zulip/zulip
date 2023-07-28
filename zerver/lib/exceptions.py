@@ -527,3 +527,9 @@ class ReactionDoesNotExistError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Reaction doesn't exist.")
+
+
+class ApiParamValidationError(JsonableError):
+    def __init__(self, msg: str, error_type: str) -> None:
+        super().__init__(msg)
+        self.error_type = error_type
