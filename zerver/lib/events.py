@@ -644,6 +644,12 @@ def fetch_initial_state_data(
         # abuse.
         state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
 
+    if want("typing_status"):
+        state["typing_started_expiry_period"] = settings.TYPING_STARTED_EXPIRY_PERIOD
+        state["typing_started_wait_period"] = settings.TYPING_STARTED_WAIT_PERIOD
+        state["typing_stopped_wait_period"] = settings.TYPING_STOPPED_WAIT_PERIOD
+
+
     if user_profile is None:
         # To ensure we have the correct user state set.
         assert state["is_admin"] is False
