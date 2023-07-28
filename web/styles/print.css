@@ -40,6 +40,17 @@
         outline: 0;
     }
 
+    .messagebox-content {
+        .message_edit_notice,
+        .message_time {
+            /* Firefox seems to have a bug that fuzzes out
+               small text with opacity; this unsets that
+               value, and replaces with a matching gray. */
+            opacity: unset;
+            color: hsl(0deg 0% 0% / 48%);
+        }
+    }
+
     /* Show collapsed content for printing. Note that
        CSS Grid does not yet break very intelligently
        in all browsers, so longer messages may sometimes
