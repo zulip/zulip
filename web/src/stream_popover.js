@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
+import {media_breakpoints_num} from "./css_variables";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
@@ -525,7 +526,7 @@ export function register_stream_handlers() {
         $(".streams_popover").on("click", "a.sp-cancel", () => {
             hide_stream_popover();
         });
-        if ($(window).width() <= 768) {
+        if ($(window).width() <= media_breakpoints_num.md) {
             $(".popover-inner").hide().fadeIn(300);
             $(".popover").addClass("colorpicker-popover");
         }
