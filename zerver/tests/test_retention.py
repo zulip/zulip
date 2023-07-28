@@ -9,6 +9,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.scheduled_messages import check_schedule_message, delete_scheduled_message
 from zerver.actions.submessage import do_add_submessage
 from zerver.lib.retention import (
     archive_messages,
@@ -35,6 +36,7 @@ from zerver.models import (
     Stream,
     SubMessage,
     UserMessage,
+    get_client,
     get_realm,
     get_stream,
     get_system_bot,
@@ -798,6 +800,70 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         restore_all_data_from_archive()
         self.assertEqual(
             set(Attachment.objects.filter(messages__id=msg_id).values_list("id", flat=True)),
+            set(attachment_ids),
+        )
+
+    def test_archiving_message_with_scheduled_message(self) -> None:
+        # Make sure that attachments referenced by scheduledmessages do't get deleted
+        self._create_attachments()
+        realm_id = get_realm("zulip").id
+        host = get_realm("zulip").host
+        body = """Some files here ...[zulip.txt](
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+        """.format(
+            id=realm_id, host=host
+        )
+
+        msg_id = self.send_personal_message(self.sender, self.recipient, body)
+
+        # Schedule a message with the same contents
+        scheduled_msg_id = check_schedule_message(
+            sender=self.sender,
+            client=get_client("website"),
+            recipient_type_name="private",
+            message_to=[self.recipient.id],
+            topic_name=None,
+            message_content=body,
+            deliver_at=timezone_now() + timedelta(hours=1),
+        )
+
+        usermsg_ids = self._get_usermessage_ids([msg_id])
+        attachment_ids = list(
+            Attachment.objects.filter(messages__id=msg_id).values_list("id", flat=True),
+        )
+
+        self._assert_archive_empty()
+        # Archive one of the messages:
+        move_messages_to_archive(message_ids=[msg_id])
+        self._verify_archive_data([msg_id], usermsg_ids)
+        # Attachments shouldn't have been deleted, as the scheduled message links to them:
+        self.assertEqual(Attachment.objects.count(), 5)
+
+        self.assertEqual(
+            set(
+                ArchivedAttachment.objects.filter(messages__id=msg_id).values_list("id", flat=True)
+            ),
+            set(attachment_ids),
+        )
+
+        # Delete the ScheduledMessage
+        delete_scheduled_message(self.sender, scheduled_msg_id)
+
+        # The Attachment object exists, with no message or scheduledmessage attached
+        self.assertEqual(Attachment.objects.count(), 5)
+        self.assertEqual(
+            Attachment.objects.filter(messages=None, scheduled_messages=None).count(), 5
+        )
+
+        # There is also the ArchivedAttachment for each of them
+        self.assertEqual(
+            set(
+                ArchivedAttachment.objects.filter(messages__id=msg_id).values_list("id", flat=True)
+            ),
             set(attachment_ids),
         )
 
