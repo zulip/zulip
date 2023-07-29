@@ -318,13 +318,6 @@ export function register_click_handlers() {
 
         function removal_success(data) {
             if (data.removed.length > 0) {
-                // Most of the work for handling the unsubscribe is done
-                // by the subscription -> remove event we will get.
-                // However, the user profile component has not yet
-                // implemented live update, so we do update its
-                // UI manually here by removing the stream from this list.
-                $stream_row.remove();
-
                 ui_report.success(
                     $t_html({defaultMessage: "Unsubscribed successfully!"}),
                     $alert_box,
