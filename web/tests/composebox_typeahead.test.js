@@ -813,11 +813,11 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             hal,
             gael,
             harry,
-            hamlet,
             lear,
             twin1,
             twin2,
             othello,
+            hamlet,
             hamletcharacters,
             backend,
             call_center,
@@ -1671,7 +1671,7 @@ test("typeahead_results", () => {
     assert_mentions_matches("oor ", []);
     assert_mentions_matches("oor o", []);
     assert_mentions_matches("oor of venice", []);
-    assert_mentions_matches("King ", [hamlet, lear]);
+    assert_mentions_matches("King ", [lear, hamlet]);
     assert_mentions_matches("King H", [hamlet]);
     assert_mentions_matches("King L", [lear]);
     assert_mentions_matches("delia lear", []);

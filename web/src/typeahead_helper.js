@@ -6,7 +6,6 @@ import * as typeahead from "../shared/src/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import * as buddy_data from "./buddy_data";
-import * as compose_state from "./compose_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
@@ -176,53 +175,78 @@ export function compare_by_pms(user_a, user_b) {
     return 1;
 }
 
-export function compare_people_for_relevance(
+export function compare_people_for_stream_message(
     person_a,
     person_b,
     tertiary_compare,
     current_stream_id,
+    current_topic,
 ) {
-    // give preference to "all", "everyone" or "stream"
-    // We use is_broadcast for a quick check.  It will
-    // true for all/everyone/stream and undefined (falsy)
-    // for actual people.
-    if (compose_state.get_message_type() !== "private") {
-        if (person_a.is_broadcast) {
-            if (person_b.is_broadcast) {
-                return person_a.user_id - person_b.user_id;
-            }
-            return -1;
-        } else if (person_b.is_broadcast) {
-            return 1;
-        }
-    } else {
-        if (person_a.is_broadcast) {
-            if (person_b.is_broadcast) {
-                return person_a.user_id - person_b.user_id;
-            }
-            return 1;
-        } else if (person_b.is_broadcast) {
-            return -1;
-        }
-    }
+    /**
+     * Typeahead sorting for stream-topic conversations
+     * has the order of priority is as follows:
+     *
+     * 1. Users who have sent messages to the current topic
+     *    over those who haven't sent to the current topic.
+     * 2. Users who have sent messages to the current stream
+     *    over those who haven't sent to the current stream.
+     * 3. Subscribers over non-subscribers.
+     * 4. Users have PMed with over users haven't PMed with.
+     * 5. Current user interaction with the rest of the users.
+     *
+     * Wildcards are given the following preference over:
+     * - non-subscribers
+     * - users who have not participated in topics
+     * - and the users with whom the current user hasn't PMed.
+     */
 
-    // Now handle actual people users.
+    const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user_id);
+    const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user_id);
 
-    // give preference to subscribed users first
-    if (current_stream_id !== undefined) {
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user_id);
+    const a_is_sender_to_current_topic =
+        recent_senders.max_id_for_stream_topic_sender({
+            stream_id: current_stream_id,
+            topic: current_topic,
+            sender_id: person_a.user_id,
+        }) !== -1;
+    const b_is_sender_to_current_topic =
+        recent_senders.max_id_for_stream_topic_sender({
+            stream_id: current_stream_id,
+            topic: current_topic,
+            sender_id: person_b.user_id,
+        }) !== -1;
 
-        if (a_is_sub && !b_is_sub) {
-            return -1;
-        } else if (!a_is_sub && b_is_sub) {
-            return 1;
-        }
-    }
-
-    // give preference to direct message partners if both (are)/(are not) subscribers
+    // Give preference to pm partners if both (are)/(are not) subscribers.
     const a_is_partner = pm_conversations.is_partner(person_a.user_id);
     const b_is_partner = pm_conversations.is_partner(person_b.user_id);
+
+    // Handle wildcards
+    if (person_a.is_broadcast && person_b.is_broadcast) {
+        return person_a.user_id - person_b.user_id;
+    } else if (person_a.is_broadcast) {
+        if (!b_is_sender_to_current_topic || !b_is_sub || !b_is_partner) {
+            return -1;
+        }
+        return 1;
+    } else if (person_b.is_broadcast) {
+        if (!a_is_sender_to_current_topic || !a_is_sub || !a_is_partner) {
+            return 1;
+        }
+        return -1;
+    }
+
+    // Calls recent_senders.compare_by_recency
+    // Sort by recent senders in the topic (first preference) and stream (last preference).
+    const compare_value = tertiary_compare(person_a, person_b);
+    if (compare_value !== 0) {
+        return compare_value;
+    }
+
+    if (a_is_sub && !b_is_sub) {
+        return -1;
+    } else if (!a_is_sub && b_is_sub) {
+        return 1;
+    }
 
     if (a_is_partner && !b_is_partner) {
         return -1;
@@ -230,7 +254,75 @@ export function compare_people_for_relevance(
         return 1;
     }
 
+    return person_a.user_id - person_b.user_id;
+}
+
+export function compare_people_for_pm_message(person_a, person_b, tertiary_compare) {
+    /**
+     * Typeahead sorting for PM conversations has the order of priority as follows:
+     * 1. Users who have PMed with each other over those who haven't.
+     * 2. Recipients with higher counts.
+     * 3. Normal users over bots.
+     * 4. Users with shorter names over those with longer names.
+     *
+     * Wildcards are given the following preference over the users with whom the current user hasn't PMed.
+     */
+
+    const a_is_partner = pm_conversations.is_partner(person_a.user_id);
+    const b_is_partner = pm_conversations.is_partner(person_b.user_id);
+
+    // Handle wildcards
+    if (person_a.is_broadcast && person_b.is_broadcast) {
+        return person_a.user_id - person_b.user_id;
+    } else if (person_a.is_broadcast) {
+        if (!b_is_partner) {
+            return -1;
+        }
+        return 1;
+    } else if (person_b.is_broadcast) {
+        if (!a_is_partner) {
+            return 1;
+        }
+        return -1;
+    }
+
+    if (a_is_partner && !b_is_partner) {
+        return -1;
+    } else if (!a_is_partner && b_is_partner) {
+        return 1;
+    }
+
+    // Calls compare_by_pms.
     return tertiary_compare(person_a, person_b);
+}
+
+export function compare_people_for_relevance(
+    person_a,
+    person_b,
+    tertiary_compare,
+    current_stream_id,
+    current_topic,
+) {
+    // It is very unlikely that user will try to mention themselves,
+    // so we keep the current user to the end of the list.
+    if (people.is_current_user(person_a.email)) {
+        return 1;
+    }
+
+    if (people.is_current_user(person_b.email)) {
+        return -1;
+    }
+
+    if (current_stream_id !== undefined) {
+        return compare_people_for_stream_message(
+            person_a,
+            person_b,
+            tertiary_compare,
+            current_stream_id,
+            current_topic,
+        );
+    }
+    return compare_people_for_pm_message(person_a, person_b, tertiary_compare);
 }
 
 export function sort_people_for_relevance(objs, current_stream_name, current_topic) {
@@ -246,15 +338,17 @@ export function sort_people_for_relevance(objs, current_stream_name, current_top
     } else {
         const stream_id = current_stream.stream_id;
 
-        objs.sort((person_a, person_b) =>
-            compare_people_for_relevance(
+        objs.sort((person_a, person_b) => {
+            const res = compare_people_for_relevance(
                 person_a,
                 person_b,
                 (user_a, user_b) =>
                     recent_senders.compare_by_recency(user_a, user_b, stream_id, current_topic),
-                current_stream.stream_id,
-            ),
-        );
+                stream_id,
+                current_topic,
+            );
+            return res;
+        });
     }
 
     return objs;

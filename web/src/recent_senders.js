@@ -55,7 +55,7 @@ export function clear_for_testing() {
     topic_senders.clear();
 }
 
-function max_id_for_stream_topic_sender({stream_id, topic, sender_id}) {
+export function max_id_for_stream_topic_sender({stream_id, topic, sender_id}) {
     const topic_dict = topic_senders.get(stream_id);
     if (!topic_dict) {
         return -1;
