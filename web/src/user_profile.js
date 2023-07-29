@@ -28,6 +28,8 @@ import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 import * as util from "./util";
 
+let user_streams_list_widget;
+
 function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
 }
@@ -38,6 +40,14 @@ export function get_user_id_if_user_profile_modal_open() {
         return user_id;
     }
     return undefined;
+}
+
+export function update_user_profile_streams_list_for_users(user_ids) {
+    const user_id = get_user_id_if_user_profile_modal_open();
+    if (user_id && user_ids.includes(user_id) && user_streams_list_widget !== undefined) {
+        const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
+        user_streams_list_widget.replace_list_data(user_streams);
+    }
 }
 
 function initialize_bot_owner(element_id, bot_id) {
@@ -89,7 +99,7 @@ function render_user_stream_list(streams, user) {
     streams.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-stream-list");
     $container.empty();
-    ListWidget.create($container, streams, {
+    user_streams_list_widget = ListWidget.create($container, streams, {
         name: `user-${user.user_id}-stream-list`,
         get_item: ListWidget.default_get_item,
         modifier(item) {
@@ -172,6 +182,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
 }
 
 export function hide_user_profile() {
+    user_streams_list_widget = undefined;
     overlays.close_modal_if_open("user-profile-modal");
 }
 
