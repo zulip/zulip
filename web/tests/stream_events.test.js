@@ -33,7 +33,9 @@ mock_esm("../src/settings_notifications", {
     update_page() {},
 });
 
-mock_esm("../src/overlays", {streams_open: () => true});
+mock_esm("../src/overlays", {
+    streams_open: () => true,
+});
 
 const {Filter} = zrequire("../src/filter");
 const narrow_state = zrequire("narrow_state");
@@ -43,6 +45,7 @@ const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
 const compose_recipient = zrequire("compose_recipient");
 const compose_fade = zrequire("compose_fade");
+const user_profile = mock_esm("../src/user_profile");
 
 const george = {
     email: "george@zulip.com",
@@ -304,6 +307,7 @@ test("marked_subscribed (normal)", ({override}) => {
     override(message_lists.current, "update_trailing_bookend", () => {
         list_updated = true;
     });
+    override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -334,6 +338,7 @@ test("marked_subscribed (color)", ({override}) => {
     stream_data.add_sub(sub);
 
     override(color_data, "pick_color", () => "green");
+    override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -364,6 +369,7 @@ test("marked_subscribed (emails)", ({override}) => {
 
     const subs_stub = make_stub();
     override(stream_settings_ui, "update_settings_for_subscribed", subs_stub.f);
+    override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -390,6 +396,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
+    override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -416,6 +423,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
     override(unread_ui, "hide_unread_banner", noop);
+    override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -444,18 +452,21 @@ test("remove_deactivated_user_from_all_streams", () => {
     assert.equal(subs_stub.num_calls, 1);
 });
 
-test("process_subscriber_update", () => {
+test("process_subscriber_update", ({override}) => {
     const subsStub = make_stub();
     stream_settings_ui.update_subscribers_ui = subsStub.f;
 
     const fadedUsersStub = make_stub();
     compose_fade.update_faded_users = fadedUsersStub.f;
 
+    override(user_profile, "update_user_profile_streams_list_for_users", noop);
+    // Sample user IDs
+    const userIds = [104, 2, 3];
     // Sample stream IDs
     const streamIds = [1, 2, 3];
 
     // Call the function being tested
-    stream_events.process_subscriber_update(streamIds);
+    stream_events.process_subscriber_update(userIds, streamIds);
 
     // Assert that update_subscribers_ui is called for each stream ID
     assert.equal(subsStub.num_calls, streamIds.length);

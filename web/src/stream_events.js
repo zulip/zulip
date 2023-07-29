@@ -9,6 +9,7 @@ import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
+import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as settings_notifications from "./settings_notifications";
 import * as stream_color from "./stream_color";
@@ -18,6 +19,7 @@ import * as stream_muting from "./stream_muting";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
+import * as user_profile from "./user_profile";
 
 // In theory, this function should apply the account-level defaults,
 // however, they are only called after a manual override, so
@@ -152,6 +154,7 @@ export function mark_subscribed(sub, subscribers, color) {
 
     stream_list.add_sidebar_row(sub);
     stream_list.update_subscribe_to_more_streams_link();
+    user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
 export function mark_unsubscribed(sub) {
@@ -186,6 +189,7 @@ export function mark_unsubscribed(sub) {
 
     stream_list.remove_sidebar_row(sub.stream_id);
     stream_list.update_subscribe_to_more_streams_link();
+    user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
 export function remove_deactivated_user_from_all_streams(user_id) {
@@ -199,10 +203,11 @@ export function remove_deactivated_user_from_all_streams(user_id) {
     }
 }
 
-export function process_subscriber_update(stream_ids) {
+export function process_subscriber_update(user_ids, stream_ids) {
     for (const stream_id of stream_ids) {
         const sub = sub_store.get(stream_id);
         stream_settings_ui.update_subscribers_ui(sub);
     }
     compose_fade.update_faded_users();
+    user_profile.update_user_profile_streams_list_for_users(user_ids);
 }

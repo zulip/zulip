@@ -589,7 +589,7 @@ export function dispatch_normal_event(event) {
                     const user_ids = people.validate_user_ids(event.user_ids);
 
                     peer_data.bulk_add_subscribers({stream_ids, user_ids});
-                    stream_events.process_subscriber_update(stream_ids);
+                    stream_events.process_subscriber_update(user_ids, stream_ids);
                     break;
                 }
                 case "peer_remove": {
@@ -597,7 +597,7 @@ export function dispatch_normal_event(event) {
                     const user_ids = people.validate_user_ids(event.user_ids);
 
                     peer_data.bulk_remove_subscribers({stream_ids, user_ids});
-                    stream_events.process_subscriber_update(stream_ids);
+                    stream_events.process_subscriber_update(user_ids, stream_ids);
                     break;
                 }
                 case "remove":
