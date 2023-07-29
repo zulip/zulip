@@ -740,28 +740,19 @@ export function create_sub_from_server_data(attrs) {
     delete attrs.subscribers;
 
     sub = {
-        name: attrs.name,
-        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
-        subscribed: true,
+        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only,
         newly_subscribed: false,
         is_muted: false,
-        invite_only: false,
         desktop_notifications: null,
         audible_notifications: null,
         push_notifications: null,
         email_notifications: null,
         wildcard_mentions_notify: null,
-        description: "",
-        rendered_description: "",
-        first_message_id: attrs.first_message_id,
+        color: attrs.color ?? color_data.pick_color(),
         ...attrs,
     };
 
     peer_data.set_subscribers(sub.stream_id, subscriber_user_ids);
-
-    if (!sub.color) {
-        sub.color = color_data.pick_color();
-    }
 
     clean_up_description(sub);
 
