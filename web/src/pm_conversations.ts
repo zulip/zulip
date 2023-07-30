@@ -1,18 +1,24 @@
 import {FoldDict} from "./fold_dict";
 import * as muted_users from "./muted_users";
 import * as people from "./people";
+import type {Message} from "./types";
 
-const partners = new Set();
+type PMConversation = {
+    user_ids_string: string;
+    max_message_id: number;
+};
 
-export function set_partner(user_id) {
+const partners = new Set<number>();
+
+export function set_partner(user_id: number): void {
     partners.add(user_id);
 }
 
-export function is_partner(user_id) {
+export function is_partner(user_id: number): boolean {
     return partners.has(user_id);
 }
 
-function filter_muted_pms(conversation) {
+function filter_muted_pms(conversation: PMConversation): boolean {
     // We hide muted users from the top left corner, as well as those huddles
     // in which all participants are muted.
     const recipients = people.split_to_ints(conversation.user_ids_string);
@@ -28,10 +34,10 @@ class RecentDirectMessages {
     // This data structure keeps track of the sets of users you've had
     // recent conversations with, sorted by time (implemented via
     // `message_id` sorting, since that's how we time-sort messages).
-    recent_message_ids = new FoldDict(); // key is user_ids_string
-    recent_private_messages = [];
+    recent_message_ids = new FoldDict<PMConversation>(); // key is user_ids_string
+    recent_private_messages: PMConversation[] = [];
 
-    insert(user_ids, message_id) {
+    insert(user_ids: number[], message_id: number): void {
         if (user_ids.length === 0) {
             // The server sends [] for direct messages to oneself.
             user_ids = [people.my_current_user_id()];
@@ -69,13 +75,13 @@ class RecentDirectMessages {
         this.recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
     }
 
-    get() {
+    get(): PMConversation[] {
         // returns array of structs with user_ids_string and
         // message_id
         return this.recent_private_messages.filter((pm) => filter_muted_pms(pm));
     }
 
-    get_strings() {
+    get_strings(): string[] {
         // returns array of structs with user_ids_string and
         // message_id
         return this.recent_private_messages
@@ -83,7 +89,12 @@ class RecentDirectMessages {
             .map((conversation) => conversation.user_ids_string);
     }
 
-    initialize(params) {
+    initialize(params: {
+        recent_private_conversations: {
+            max_message_id: number;
+            user_ids: number[];
+        }[];
+    }): void {
         for (const conversation of params.recent_private_conversations) {
             this.insert(conversation.user_ids, conversation.max_message_id);
         }
@@ -92,7 +103,7 @@ class RecentDirectMessages {
 
 export let recent = new RecentDirectMessages();
 
-export function process_message(message) {
+export function process_message(message: Message): void {
     const user_ids = people.pm_with_user_ids(message);
     if (!user_ids) {
         return;
@@ -105,7 +116,7 @@ export function process_message(message) {
     recent.insert(user_ids, message.id);
 }
 
-export function clear_for_testing() {
+export function clear_for_testing(): void {
     recent = new RecentDirectMessages();
     partners.clear();
 }
