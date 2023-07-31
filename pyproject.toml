@@ -102,6 +102,7 @@ select = [
     "E", # style errors
     "EXE", # shebang
     "F", # flakes
+    "FLY", # string formatting
     "G", # logging format
     "I", # import sorting
     "INT", # gettext

@@ -82,7 +82,7 @@ def get_uploader() -> Uploader:
 
 def get_emoji_file_name(emoji_file_name: str, new_name: str) -> str:
     _, image_ext = os.path.splitext(emoji_file_name)
-    return "".join((new_name, image_ext))
+    return f"{new_name}{image_ext}"
 
 
 def migrate_realm_emoji_image_files(

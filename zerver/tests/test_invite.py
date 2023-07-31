@@ -556,7 +556,7 @@ class InviteUserTest(InviteUserBase):
 
         cross_realm_bot_email = "emailgateway@zulip.com"
         legit_new_email = "fred@zulip.com"
-        invitee_emails = ",".join([cross_realm_bot_email, legit_new_email])
+        invitee_emails = f"{cross_realm_bot_email},{legit_new_email}"
 
         result = self.invite(invitee_emails, ["Denmark"])
         self.assert_json_error(

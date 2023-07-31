@@ -58,7 +58,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     if disable_host_check:
         webpack_args.append("--allowed-hosts=all")
     else:
-        webpack_args.append("--allowed-hosts=" + ",".join([host, ".zulipdev.com", ".zulipdev.org"]))
+        webpack_args.append(f"--allowed-hosts={host},.zulipdev.com,.zulipdev.org")
 
     # Tell webpack-dev-server to fall back to periodic polling on
     # filesystems where inotify is known to be broken.
