@@ -326,11 +326,8 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
     def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = ",".join(
-            [
-                self.example_user("hamlet").email,
-                self.example_user("othello").email,
-            ]
+        myself_and_other = (
+            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
         term = dict(operator="dm", operand=myself_and_other)
         self._do_add_term_test(
@@ -339,23 +336,15 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        two_others = ",".join(
-            [
-                self.example_user("cordelia").email,
-                self.example_user("othello").email,
-            ]
-        )
+        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = dict(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
-        myself_and_other = ",".join(
-            [
-                self.example_user("hamlet").email,
-                self.example_user("othello").email,
-            ]
+        myself_and_other = (
+            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
         term = dict(operator="dm", operand=myself_and_other, negated=True)
         self._do_add_term_test(
@@ -366,12 +355,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
-        two_others = ",".join(
-            [
-                self.example_user("cordelia").email,
-                self.example_user("othello").email,
-            ]
-        )
+        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = dict(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 

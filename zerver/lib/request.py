@@ -347,7 +347,7 @@ def has_request_variables(
 
     post_params = []
 
-    view_func_full_name = ".".join([req_func.__module__, req_func.__name__])
+    view_func_full_name = f"{req_func.__module__}.{req_func.__name__}"
 
     for name, value in zip(default_param_names, default_param_values):
         if isinstance(value, _REQ):

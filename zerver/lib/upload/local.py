@@ -236,7 +236,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         )
 
         image_data = emoji_file.read()
-        write_local_file("avatars", ".".join((emoji_path, "original")), image_data)
+        write_local_file("avatars", f"{emoji_path}.original", image_data)
         resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
         write_local_file("avatars", emoji_path, resized_image_data)
         if is_animated:

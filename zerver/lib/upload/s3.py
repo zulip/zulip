@@ -456,7 +456,7 @@ class S3UploadBackend(ZulipUploadBackend):
         image_data = emoji_file.read()
         upload_image_to_s3(
             self.avatar_bucket,
-            ".".join((emoji_path, "original")),
+            f"{emoji_path}.original",
             content_type,
             user_profile,
             image_data,
