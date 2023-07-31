@@ -117,6 +117,14 @@
  *   Some input fields like search have visual changes that need to happen
  *   when the typeahead hides. This callback function is called in `hide()`
  *   and allows those extra UI changes to happen.
+ *
+ *  13. Allow option to remove custom logic for tab keypresses:
+ *
+ *   Sometimes tab is treated similarly to the escape or enter key, with
+ *   custom functionality, which also prevents propagation to default tab
+ *   functionality. The `tabIsEnter` option (default true) lets this be
+ *   turned off so that tab only does one thing while focus is in the
+ *   typeahead -- move focus to the next element.
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -431,6 +439,7 @@ import {get_string_diff} from "../../src/util";
 
       switch(pseudo_keycode) {
         case 9: // tab
+          if (!this.options.tabIsEnter) return
         case 13: // enter
         case 27: // escape
           e.preventDefault()
@@ -487,6 +496,7 @@ import {get_string_diff} from "../../src/util";
           break
 
         case 9: // tab
+          if (!this.options.tabIsEnter) return
         case 13: // enter
           if (!this.shown) return
           this.select(e)
@@ -608,6 +618,7 @@ import {get_string_diff} from "../../src/util";
   , advanceKeyCodes: []
   , openInputFieldOnKeyUp: null
   , closeInputFieldOnHide: null
+  , tabIsEnter: true
   }
 
   $.fn.typeahead.Constructor = Typeahead
