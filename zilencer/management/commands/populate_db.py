@@ -183,14 +183,10 @@ def create_alert_words(realm_id: int) -> None:
     recs: List[AlertWord] = []
     for user_id in user_ids:
         random.shuffle(alert_words)
-        for i in range(4):
-            recs.append(
-                AlertWord(
-                    realm_id=realm_id,
-                    user_profile_id=user_id,
-                    word=alert_words[i],
-                )
-            )
+        recs.extend(
+            AlertWord(realm_id=realm_id, user_profile_id=user_id, word=word)
+            for word in alert_words[:4]
+        )
 
     AlertWord.objects.bulk_create(recs)
 
@@ -545,9 +541,11 @@ class Command(BaseCommand):
             # are needed for the test suite.
             zulip_realm_bots = [
                 ("Zulip Default Bot", "default-bot@zulip.com"),
+                *(
+                    (f"Extra Bot {i}", f"extrabot{i}@zulip.com")
+                    for i in range(options["extra_bots"])
+                ),
             ]
-            for i in range(options["extra_bots"]):
-                zulip_realm_bots.append((f"Extra Bot {i}", f"extrabot{i}@zulip.com"))
 
             create_users(
                 zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT, bot_owner=desdemona
@@ -1159,11 +1157,7 @@ def send_messages(messages: List[Message]) -> None:
     # up with queued events that reference objects from a previous
     # life of the database, which naturally throws exceptions.
     settings.USING_RABBITMQ = False
-    message_dict_list = []
-    for message in messages:
-        message_dict = build_message_send_dict(message=message)
-        message_dict_list.append(message_dict)
-    do_send_messages(message_dict_list)
+    do_send_messages([build_message_send_dict(message=message) for message in messages])
     bulk_create_reactions(messages)
     settings.USING_RABBITMQ = True
 

@@ -1202,7 +1202,6 @@ class HomeTest(ZulipTestCase):
     # performance cost of fetching /.
     @override_settings(MAX_DRAFTS_IN_REGISTER_RESPONSE=5)
     def test_limit_drafts(self) -> None:
-        draft_objects = []
         hamlet = self.example_user("hamlet")
         base_time = timezone_now()
         initial_count = Draft.objects.count()
@@ -1210,16 +1209,16 @@ class HomeTest(ZulipTestCase):
         step_value = timedelta(seconds=1)
         # Create 11 drafts.
         # TODO: This would be better done as an API request.
-        for i in range(0, settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1):
-            draft_objects.append(
-                Draft(
-                    user_profile=hamlet,
-                    recipient=None,
-                    topic="",
-                    content="sample draft",
-                    last_edit_time=base_time + i * step_value,
-                )
+        draft_objects = [
+            Draft(
+                user_profile=hamlet,
+                recipient=None,
+                topic="",
+                content="sample draft",
+                last_edit_time=base_time + i * step_value,
             )
+            for i in range(settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1)
+        ]
         Draft.objects.bulk_create(draft_objects)
 
         # Now fetch the drafts part of the initial state and make sure

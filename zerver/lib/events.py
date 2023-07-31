@@ -489,25 +489,21 @@ def fetch_initial_state_data(
     # This does not yet have an apply_event counterpart, since currently,
     # new entries for EMBEDDED_BOTS can only be added directly in the codebase.
     if want("realm_embedded_bots"):
-        realm_embedded_bots = []
-        for bot in EMBEDDED_BOTS:
-            realm_embedded_bots.append(
-                {"name": bot.name, "config": load_bot_config_template(bot.name)}
-            )
-        state["realm_embedded_bots"] = realm_embedded_bots
+        state["realm_embedded_bots"] = [
+            {"name": bot.name, "config": load_bot_config_template(bot.name)}
+            for bot in EMBEDDED_BOTS
+        ]
 
     # This does not have an apply_events counterpart either since
     # this data is mostly static.
     if want("realm_incoming_webhook_bots"):
-        realm_incoming_webhook_bots = []
-        for integration in WEBHOOK_INTEGRATIONS:
-            realm_incoming_webhook_bots.append(
-                {
-                    "name": integration.name,
-                    "config": {c[1]: c[0] for c in integration.config_options},
-                }
-            )
-        state["realm_incoming_webhook_bots"] = realm_incoming_webhook_bots
+        state["realm_incoming_webhook_bots"] = [
+            {
+                "name": integration.name,
+                "config": {c[1]: c[0] for c in integration.config_options},
+            }
+            for integration in WEBHOOK_INTEGRATIONS
+        ]
 
     if want("recent_private_conversations"):
         # A data structure containing records of this form:

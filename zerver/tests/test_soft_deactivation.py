@@ -62,12 +62,10 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_users(users)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
-        log_output.append(
-            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process"
-        )
+        log_output = [
+            *(f"INFO:{logger_string}:Soft deactivated user {user.id}" for user in users),
+            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process",
+        ]
 
         self.assertEqual(m.output, log_output)
 
@@ -118,13 +116,10 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_users(users)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
-        log_output.append(
-            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process"
-        )
-
+        log_output = [
+            *(f"INFO:{logger_string}:Soft deactivated user {user.id}" for user in users),
+            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process",
+        ]
         self.assertEqual(m.output, log_output)
 
         for user in users:
@@ -133,10 +128,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_activate_users(users)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft reactivated user {user.id}")
-
+        log_output = [f"INFO:{logger_string}:Soft reactivated user {user.id}" for user in users]
         self.assertEqual(m.output, log_output)
 
         for user in users:
@@ -181,13 +173,10 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_users(users)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
-        log_output.append(
-            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process"
-        )
-
+        log_output = [
+            *(f"INFO:{logger_string}:Soft deactivated user {user.id}" for user in users),
+            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process",
+        ]
         self.assertEqual(m.output, log_output)
 
         for user in users:
@@ -243,13 +232,11 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             users_deactivated = do_auto_soft_deactivate_users(-1, realm)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
-        log_output.append(
-            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process"
-        )
-        log_output.append(f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users")
+        log_output = [
+            *(f"INFO:{logger_string}:Soft deactivated user {user.id}" for user in users),
+            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process",
+            f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users",
+        ]
         self.assertEqual(set(m.output), set(log_output))
 
         self.assert_length(users_deactivated, len(users))
@@ -267,8 +254,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             users_deactivated = do_auto_soft_deactivate_users(-1, realm)
 
-        log_output = []
-        log_output.append(f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users")
+        log_output = [f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users"]
         self.assertEqual(set(m.output), set(log_output))
 
         self.assert_length(users_deactivated, 0)  # all users are already deactivated

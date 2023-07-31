@@ -278,13 +278,14 @@ def fix_customprofilefield(data: TableData) -> None:
     In CustomProfileField with 'field_type' like 'USER', the IDs need to be
     re-mapped.
     """
-    field_type_USER_id_list = []
-    for item in data["zerver_customprofilefield"]:
-        if item["field_type"] == CustomProfileField.USER:
-            field_type_USER_id_list.append(item["id"])
+    field_type_USER_ids = {
+        item["id"]
+        for item in data["zerver_customprofilefield"]
+        if item["field_type"] == CustomProfileField.USER
+    }
 
     for item in data["zerver_customprofilefieldvalue"]:
-        if item["field_id"] in field_type_USER_id_list:
+        if item["field_id"] in field_type_USER_ids:
             old_user_id_list = orjson.loads(item["value"])
 
             new_id_list = re_map_foreign_keys_many_to_many_internal(
@@ -392,10 +393,7 @@ def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
     Returns the ids present in the current table
     """
-    id_list = []
-    for item in data[table]:
-        id_list.append(item["id"])
-    return id_list
+    return [item["id"] for item in data[table]]
 
 
 def idseq(model_class: Any) -> str:
@@ -1567,16 +1565,17 @@ def import_attachments(data: TableData) -> None:
     def format_m2m_data(
         child_singular: str, child_plural: str, m2m_table_name: str, child_id: str
     ) -> Tuple[str, List[Record], str]:
-        m2m_rows: List[Record] = []
-        for parent_row in data[parent_db_table_name]:
-            for fk_id in parent_row[child_plural]:
-                m2m_row: Record = {}
-                m2m_row[parent_singular] = parent_row["id"]
+        m2m_rows = [
+            {
+                parent_singular: parent_row["id"],
                 # child_singular will generally match the model name (e.g. Message, ScheduledMessage)
                 # after lowercasing, and that's what we enter as ID_MAP keys, so this should be
                 # a reasonable assumption to make.
-                m2m_row[child_singular] = ID_MAP[child_singular][fk_id]
-                m2m_rows.append(m2m_row)
+                child_singular: ID_MAP[child_singular][fk_id],
+            }
+            for parent_row in data[parent_db_table_name]
+            for fk_id in parent_row[child_plural]
+        ]
 
         # Create our table data for insert.
         m2m_data: TableData = {m2m_table_name: m2m_rows}

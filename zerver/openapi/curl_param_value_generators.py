@@ -142,9 +142,9 @@ def update_flags_message_ids() -> Dict[str, object]:
     stream_name = "Venice"
     helpers.subscribe(helpers.example_user("iago"), stream_name)
 
-    messages = []
-    for _ in range(3):
-        messages.append(helpers.send_stream_message(helpers.example_user("iago"), stream_name))
+    messages = [
+        helpers.send_stream_message(helpers.example_user("iago"), stream_name) for _ in range(3)
+    ]
     return {
         "messages": messages,
     }

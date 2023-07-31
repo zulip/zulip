@@ -858,46 +858,44 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         to_process: List[Dict[str, Any]] = []
         # Build dicts for URLs
         for url_data in urls:
-            short_url = url_data["url"]
-            full_url = url_data["expanded_url"]
-            for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
-                to_process.append(
-                    {
-                        "type": "url",
-                        "start": match.start(),
-                        "end": match.end(),
-                        "url": short_url,
-                        "text": full_url,
-                    }
-                )
+            to_process.extend(
+                {
+                    "type": "url",
+                    "start": match.start(),
+                    "end": match.end(),
+                    "url": url_data["url"],
+                    "text": url_data["expanded_url"],
+                }
+                for match in re.finditer(re.escape(url_data["url"]), text, re.IGNORECASE)
+            )
         # Build dicts for mentions
         for user_mention in user_mentions:
             screen_name = user_mention["screen_name"]
             mention_string = "@" + screen_name
-            for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE):
-                to_process.append(
-                    {
-                        "type": "mention",
-                        "start": match.start(),
-                        "end": match.end(),
-                        "url": "https://twitter.com/" + urllib.parse.quote(screen_name),
-                        "text": mention_string,
-                    }
-                )
+            to_process.extend(
+                {
+                    "type": "mention",
+                    "start": match.start(),
+                    "end": match.end(),
+                    "url": "https://twitter.com/" + urllib.parse.quote(screen_name),
+                    "text": mention_string,
+                }
+                for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE)
+            )
         # Build dicts for media
         for media_item in media:
             short_url = media_item["url"]
             expanded_url = media_item["expanded_url"]
-            for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
-                to_process.append(
-                    {
-                        "type": "media",
-                        "start": match.start(),
-                        "end": match.end(),
-                        "url": short_url,
-                        "text": expanded_url,
-                    }
-                )
+            to_process.extend(
+                {
+                    "type": "media",
+                    "start": match.start(),
+                    "end": match.end(),
+                    "url": short_url,
+                    "text": expanded_url,
+                }
+                for match in re.finditer(re.escape(short_url), text, re.IGNORECASE)
+            )
         # Build dicts for emojis
         for match in re.finditer(UNICODE_EMOJI_RE, text, re.IGNORECASE):
             orig_syntax = match.group("syntax")
@@ -1938,10 +1936,13 @@ class StreamTopicPattern(CompiledInlineProcessor):
 
 
 def possible_linked_stream_names(content: str) -> Set[str]:
-    matches = re.findall(STREAM_LINK_REGEX, content, re.VERBOSE)
-    for match in re.finditer(STREAM_TOPIC_LINK_REGEX, content, re.VERBOSE):
-        matches.append(match.group("stream_name"))
-    return set(matches)
+    return {
+        *re.findall(STREAM_LINK_REGEX, content, re.VERBOSE),
+        *(
+            match.group("stream_name")
+            for match in re.finditer(STREAM_TOPIC_LINK_REGEX, content, re.VERBOSE)
+        ),
+    }
 
 
 class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):

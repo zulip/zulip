@@ -46,18 +46,16 @@ def format_push_event(payload: WildValue) -> str:
 
 
 def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[str, str]]:
-    new_commits_list = []
-    for commit in commits:
-        new_commits_list.append(
-            {
-                "name": commit["author"]["username"].tame(check_string)
-                or commit["author"]["name"].tame(check_string).split()[0],
-                "sha": commit["id"].tame(check_string),
-                "url": commit["url"].tame(check_string),
-                "message": commit["message"].tame(check_string),
-            }
-        )
-    return new_commits_list
+    return [
+        {
+            "name": commit["author"]["username"].tame(check_string)
+            or commit["author"]["name"].tame(check_string).split()[0],
+            "sha": commit["id"].tame(check_string),
+            "url": commit["url"].tame(check_string),
+            "message": commit["message"].tame(check_string),
+        }
+        for commit in commits
+    ]
 
 
 def format_new_branch_event(payload: WildValue) -> str:

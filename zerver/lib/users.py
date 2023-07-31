@@ -303,17 +303,15 @@ def get_accounts_for_email(email: str) -> List[Account]:
         )
         .order_by("date_joined")
     )
-    accounts: List[Account] = []
-    for profile in profiles:
-        accounts.append(
-            dict(
-                realm_name=profile.realm.name,
-                realm_id=profile.realm.id,
-                full_name=profile.full_name,
-                avatar=avatar_url(profile),
-            )
+    return [
+        dict(
+            realm_name=profile.realm.name,
+            realm_id=profile.realm.id,
+            full_name=profile.full_name,
+            avatar=avatar_url(profile),
         )
-    return accounts
+        for profile in profiles
+    ]
 
 
 def get_api_key(user_profile: UserProfile) -> str:
@@ -615,13 +613,12 @@ def is_2fa_verified(user: UserProfile) -> bool:
 
 def get_users_with_access_to_real_email(user_profile: UserProfile) -> List[int]:
     active_users = user_profile.realm.get_active_users()
-    user_ids_with_real_email_access = []
-    for user in active_users:
+    return [
+        user.id
+        for user in active_users
         if can_access_delivery_email(
             user,
             user_profile.id,
             user_profile.email_address_visibility,
-        ):
-            user_ids_with_real_email_access.append(user.id)
-
-    return user_ids_with_real_email_access
+        )
+    ]

@@ -796,9 +796,7 @@ class WorkerTest(ZulipTestCase):
         base_classes = [QueueProcessingWorker]
         all_classes = []
         while base_classes:
-            new_subclasses = []
-            for base_class in base_classes:
-                new_subclasses.append(base_class.__subclasses__())
+            new_subclasses = (base_class.__subclasses__() for base_class in base_classes)
             base_classes = list(itertools.chain(*new_subclasses))
             all_classes += base_classes
         worker_queue_names = {

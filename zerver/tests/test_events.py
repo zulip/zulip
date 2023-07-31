@@ -848,9 +848,10 @@ class NormalActionsTest(BaseAction):
 
     def test_invite_user_event(self) -> None:
         self.user_profile = self.example_user("iago")
-        streams = []
-        for stream_name in ["Denmark", "Scotland"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
+        streams = [
+            get_stream(stream_name, self.user_profile.realm)
+            for stream_name in ["Denmark", "Scotland"]
+        ]
 
         invite_expires_in_minutes = 2 * 24 * 60
         events = self.verify_action(
@@ -866,9 +867,10 @@ class NormalActionsTest(BaseAction):
 
     def test_create_multiuse_invite_event(self) -> None:
         self.user_profile = self.example_user("iago")
-        streams = []
-        for stream_name in ["Denmark", "Verona"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
+        streams = [
+            get_stream(stream_name, self.user_profile.realm)
+            for stream_name in ["Denmark", "Verona"]
+        ]
 
         invite_expires_in_minutes = 2 * 24 * 60
         events = self.verify_action(
@@ -902,9 +904,10 @@ class NormalActionsTest(BaseAction):
         # We need set self.user_profile to be an admin, so that
         # we receive the invites_changed event.
         self.user_profile = self.example_user("iago")
-        streams = []
-        for stream_name in ["Denmark", "Verona"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
+        streams = [
+            get_stream(stream_name, self.user_profile.realm)
+            for stream_name in ["Denmark", "Verona"]
+        ]
 
         invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
@@ -924,9 +927,10 @@ class NormalActionsTest(BaseAction):
 
     def test_revoke_multiuse_invite_event(self) -> None:
         self.user_profile = self.example_user("iago")
-        streams = []
-        for stream_name in ["Denmark", "Verona"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
+        streams = [
+            get_stream(stream_name, self.user_profile.realm)
+            for stream_name in ["Denmark", "Verona"]
+        ]
 
         invite_expires_in_minutes = 2 * 24 * 60
         do_create_multiuse_invite_link(
@@ -947,9 +951,10 @@ class NormalActionsTest(BaseAction):
         reset_email_visibility_to_everyone_in_zulip_realm()
 
         self.user_profile = self.example_user("iago")
-        streams = []
-        for stream_name in ["Denmark", "Scotland"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
+        streams = [
+            get_stream(stream_name, self.user_profile.realm)
+            for stream_name in ["Denmark", "Scotland"]
+        ]
 
         invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
@@ -1462,9 +1467,10 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove("events[0]", events[0])
 
     def test_default_stream_groups_events(self) -> None:
-        streams = []
-        for stream_name in ["Scotland", "Rome", "Denmark"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
+        streams = [
+            get_stream(stream_name, self.user_profile.realm)
+            for stream_name in ["Scotland", "Rome", "Denmark"]
+        ]
 
         events = self.verify_action(
             lambda: do_create_default_stream_group(
@@ -1509,9 +1515,10 @@ class NormalActionsTest(BaseAction):
         check_default_stream_groups("events[0]", events[0])
 
     def test_default_stream_group_events_guest(self) -> None:
-        streams = []
-        for stream_name in ["Scotland", "Rome", "Denmark"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
+        streams = [
+            get_stream(stream_name, self.user_profile.realm)
+            for stream_name in ["Scotland", "Rome", "Denmark"]
+        ]
 
         do_create_default_stream_group(self.user_profile.realm, "group1", "This is group1", streams)
         group = lookup_default_stream_groups(["group1"], self.user_profile.realm)[0]

@@ -138,10 +138,10 @@ def deactivated_streams_by_old_name(realm: Realm, stream_name: str) -> QuerySet[
     fixed_length_prefix = ".......!DEACTIVATED:"
     truncated_name = stream_name[0 : Stream.MAX_NAME_LENGTH - len(fixed_length_prefix)]
 
-    old_names: List[str] = []
-    for bang_length in range(1, 21):
-        name = "!" * bang_length + "DEACTIVATED:" + stream_name
-        old_names.append(name[0 : Stream.MAX_NAME_LENGTH])
+    old_names: List[str] = [
+        ("!" * bang_length + "DEACTIVATED:" + stream_name)[: Stream.MAX_NAME_LENGTH]
+        for bang_length in range(1, 21)
+    ]
 
     possible_streams = Stream.objects.filter(realm=realm, deactivated=True).filter(
         # We go looking for names as they are post-1b6f68bb59dc; 8
@@ -418,31 +418,22 @@ def bulk_add_subs_to_db_with_logging(
     event_time = timezone_now()
     event_last_message_id = get_last_message_id()
 
-    all_subscription_logs: (List[RealmAuditLog]) = []
-    for sub_info in subs_to_add:
-        all_subscription_logs.append(
-            RealmAuditLog(
-                realm=realm,
-                acting_user=acting_user,
-                modified_user=sub_info.user,
-                modified_stream=sub_info.stream,
-                event_last_message_id=event_last_message_id,
-                event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
-                event_time=event_time,
-            )
+    all_subscription_logs = [
+        RealmAuditLog(
+            realm=realm,
+            acting_user=acting_user,
+            modified_user=sub_info.user,
+            modified_stream=sub_info.stream,
+            event_last_message_id=event_last_message_id,
+            event_type=event_type,
+            event_time=event_time,
         )
-    for sub_info in subs_to_activate:
-        all_subscription_logs.append(
-            RealmAuditLog(
-                realm=realm,
-                acting_user=acting_user,
-                modified_user=sub_info.user,
-                modified_stream=sub_info.stream,
-                event_last_message_id=event_last_message_id,
-                event_type=RealmAuditLog.SUBSCRIPTION_ACTIVATED,
-                event_time=event_time,
-            )
-        )
+        for event_type, subs in [
+            (RealmAuditLog.SUBSCRIPTION_CREATED, subs_to_add),
+            (RealmAuditLog.SUBSCRIPTION_ACTIVATED, subs_to_activate),
+        ]
+        for sub_info in subs
+    ]
     # Now since we have all log objects generated we can do a bulk insert
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
@@ -800,24 +791,20 @@ def bulk_remove_subscriptions(
             subscribed_stream_ids = {sub_info.stream.id for sub_info in user_sub_stream_info}
             not_subscribed_stream_ids = stream_ids - subscribed_stream_ids
 
-            for stream_id in not_subscribed_stream_ids:
-                stream = stream_dict[stream_id]
-                not_subscribed.append((user_profile, stream))
+            not_subscribed.extend(
+                (user_profile, stream_dict[stream_id]) for stream_id in not_subscribed_stream_ids
+            )
 
         return not_subscribed
 
     not_subscribed = get_non_subscribed_subs()
 
-    subs_to_deactivate: List[SubInfo] = []
-    sub_ids_to_deactivate: List[int] = []
-
     # This loop just flattens out our data into big lists for
     # bulk operations.
-    for sub_infos in existing_subs_by_user.values():
-        for sub_info in sub_infos:
-            subs_to_deactivate.append(sub_info)
-            sub_ids_to_deactivate.append(sub_info.sub.id)
-
+    subs_to_deactivate = [
+        sub_info for sub_infos in existing_subs_by_user.values() for sub_info in sub_infos
+    ]
+    sub_ids_to_deactivate = [sub_info.sub.id for sub_info in subs_to_deactivate]
     streams_to_unsubscribe = [sub_info.stream for sub_info in subs_to_deactivate]
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.

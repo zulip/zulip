@@ -95,8 +95,7 @@ class FilteredManagementUtility(ManagementUtility):
             for app in sorted(commands_dict):
                 usage.append("")
                 usage.append(style.NOTICE(f"[{app}]"))
-                for name in sorted(commands_dict[app]):
-                    usage.append(f"    {name}")
+                usage.extend(f"    {name}" for name in sorted(commands_dict[app]))
             # Output an extra note if settings are not properly configured
             if self.settings_exception is not None:
                 usage.append(

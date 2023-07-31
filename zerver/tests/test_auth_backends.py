@@ -1587,10 +1587,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         realm.save()
 
         stream_names = ["new_stream_1", "new_stream_2"]
-        streams = []
-        for stream_name in stream_names:
-            stream = ensure_stream(realm, stream_name, acting_user=None)
-            streams.append(stream)
+        streams = [
+            ensure_stream(realm, stream_name, acting_user=None) for stream_name in stream_names
+        ]
 
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
@@ -4598,10 +4597,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
         realm.save()
 
         stream_names = ["new_stream_1", "new_stream_2"]
-        streams = []
-        for stream_name in stream_names:
-            stream = ensure_stream(realm, stream_name, acting_user=None)
-            streams.append(stream)
+        streams = [
+            ensure_stream(realm, stream_name, acting_user=None) for stream_name in stream_names
+        ]
 
         # Without the invite link, we can't create an account due to invite_required
         result = self.get_log_into_subdomain(data)
@@ -5032,9 +5030,8 @@ class ExternalMethodDictsTests(ZulipTestCase):
             expected_button_id_strings = [
                 'id="{}_auth_button_github"',
                 'id="{}_auth_button_google"',
+                *(f'id="{{}}_auth_button_saml:{name}"' for name in saml_idp_names),
             ]
-            for name in saml_idp_names:
-                expected_button_id_strings.append(f'id="{{}}_auth_button_saml:{name}"')
 
             result = self.client_get("/login/")
             self.assert_in_success_response(
@@ -5094,9 +5091,11 @@ class FetchAuthBackends(ZulipTestCase):
         ) -> None:
             authentication_methods_list = [
                 ("password", check_bool),
+                *(
+                    (backend_name_with_case.lower(), check_bool)
+                    for backend_name_with_case in AUTH_BACKEND_NAME_MAP
+                ),
             ]
-            for backend_name_with_case in AUTH_BACKEND_NAME_MAP:
-                authentication_methods_list.append((backend_name_with_case.lower(), check_bool))
             external_auth_methods = get_external_method_dicts()
 
             response_dict = self.assert_json_success(result)

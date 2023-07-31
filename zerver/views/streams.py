@@ -497,9 +497,9 @@ def remove_subscriptions_backend(
 ) -> HttpResponse:
     realm = user_profile.realm
 
-    streams_as_dict: List[StreamDict] = []
-    for stream_name in streams_raw:
-        streams_as_dict.append({"name": stream_name.strip()})
+    streams_as_dict: List[StreamDict] = [
+        {"name": stream_name.strip()} for stream_name in streams_raw
+    ]
 
     unsubscribing_others = False
     if principals:

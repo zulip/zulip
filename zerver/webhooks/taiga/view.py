@@ -30,10 +30,7 @@ def api_taiga_webhook(
     message: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     parsed_events = parse_message(message)
-    content_lines = []
-    for event in parsed_events:
-        content_lines.append(generate_content(event) + "\n")
-    content = "".join(sorted(content_lines))
+    content = "".join(sorted(generate_content(event) + "\n" for event in parsed_events))
     topic = "General"
     if message["data"].get("milestone") and "name" in message["data"]["milestone"]:
         topic = message["data"]["milestone"]["name"].tame(check_string)

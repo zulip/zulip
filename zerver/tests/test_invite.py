@@ -178,9 +178,7 @@ class InviteUserBase(ZulipTestCase):
 
         streams should be a list of strings.
         """
-        stream_ids = []
-        for stream_name in stream_names:
-            stream_ids.append(self.get_stream_id(stream_name, realm=realm))
+        stream_ids = [self.get_stream_id(stream_name, realm=realm) for stream_name in stream_names]
 
         invite_expires_in: Union[str, Optional[int]] = invite_expires_in_minutes
         if invite_expires_in is None:
@@ -1475,9 +1473,10 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     def test_send_more_than_one_invite_to_same_user(self) -> None:
         self.user_profile = self.example_user("iago")
-        streams = []
-        for stream_name in ["Denmark", "Scotland"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
+        streams = [
+            get_stream(stream_name, self.user_profile.realm)
+            for stream_name in ["Denmark", "Scotland"]
+        ]
 
         invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
@@ -1705,9 +1704,9 @@ class InvitationsTestCase(InviteUserBase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
-        streams = []
-        for stream_name in ["Denmark", "Scotland"]:
-            streams.append(get_stream(stream_name, user_profile.realm))
+        streams = [
+            get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
+        ]
 
         invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
@@ -1761,9 +1760,9 @@ class InvitationsTestCase(InviteUserBase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
-        streams = []
-        for stream_name in ["Denmark", "Scotland"]:
-            streams.append(get_stream(stream_name, user_profile.realm))
+        streams = [
+            get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
+        ]
 
         invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
@@ -1815,9 +1814,9 @@ class InvitationsTestCase(InviteUserBase):
         self.login("iago")
         user_profile = self.example_user("iago")
 
-        streams = []
-        for stream_name in ["Denmark", "Scotland"]:
-            streams.append(get_stream(stream_name, user_profile.realm))
+        streams = [
+            get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
+        ]
 
         with patch(
             "confirmation.models.timezone_now",

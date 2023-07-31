@@ -1289,15 +1289,11 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_deactivate_stream_removes_stream_from_default_stream_groups(self) -> None:
         realm = get_realm("zulip")
-        streams_to_keep = []
-        for stream_name in ["stream1", "stream2"]:
-            stream = ensure_stream(realm, stream_name, acting_user=None)
-            streams_to_keep.append(stream)
-
-        streams_to_remove = []
-        stream = ensure_stream(realm, "stream3", acting_user=None)
-        streams_to_remove.append(stream)
-
+        streams_to_keep = [
+            ensure_stream(realm, stream_name, acting_user=None)
+            for stream_name in ["stream1", "stream2"]
+        ]
+        streams_to_remove = [ensure_stream(realm, "stream3", acting_user=None)]
         all_streams = streams_to_keep + streams_to_remove
 
         def get_streams(group: DefaultStreamGroup) -> List[Stream]:
@@ -2471,12 +2467,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(stream_name, invite_only=invite_only)
 
         # Set up the principal to be unsubscribed.
-        principals: List[Union[str, int]] = []
-        for user in target_users:
-            if using_legacy_emails:
-                principals.append(user.email)
-            else:
-                principals.append(user.id)
+        principals = [user.email if using_legacy_emails else user.id for user in target_users]
 
         # Subscribe the admin and/or principal as specified in the flags.
         if is_subbed:
@@ -2893,10 +2884,10 @@ class DefaultStreamGroupTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 0)
 
-        streams = []
-        for stream_name in ["stream1", "stream2", "stream3"]:
-            stream = ensure_stream(realm, stream_name, acting_user=None)
-            streams.append(stream)
+        streams = [
+            ensure_stream(realm, stream_name, acting_user=None)
+            for stream_name in ["stream1", "stream2", "stream3"]
+        ]
 
         def get_streams(group: DefaultStreamGroup) -> List[Stream]:
             return list(group.streams.all().order_by("name"))
@@ -2920,11 +2911,11 @@ class DefaultStreamGroupTest(ZulipTestCase):
             "stream8",
             "stream9",
         ]
-        new_streams = []
-        for new_stream_name in new_stream_names:
-            new_stream = ensure_stream(realm, new_stream_name, acting_user=None)
-            new_streams.append(new_stream)
-            streams.append(new_stream)
+        new_streams = [
+            ensure_stream(realm, new_stream_name, acting_user=None)
+            for new_stream_name in new_stream_names
+        ]
+        streams += new_streams
 
         do_add_streams_to_default_stream_group(realm, group, new_streams)
         default_stream_groups = get_default_stream_groups(realm)
@@ -2980,13 +2971,12 @@ class DefaultStreamGroupTest(ZulipTestCase):
         stream_names = ["stream1", "stream2", "stream3"]
         group_name = "group1"
         description = "This is group1"
-        streams = []
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 0)
 
-        for stream_name in stream_names:
-            stream = ensure_stream(realm, stream_name, acting_user=None)
-            streams.append(stream)
+        streams = [
+            ensure_stream(realm, stream_name, acting_user=None) for stream_name in stream_names
+        ]
 
         result = self.client_post(
             "/json/default_stream_groups/create",
@@ -3017,11 +3007,11 @@ class DefaultStreamGroupTest(ZulipTestCase):
         # Test adding streams to existing default stream group
         group_id = default_stream_groups[0].id
         new_stream_names = ["stream4", "stream5"]
-        new_streams = []
-        for new_stream_name in new_stream_names:
-            new_stream = ensure_stream(realm, new_stream_name, acting_user=None)
-            new_streams.append(new_stream)
-            streams.append(new_stream)
+        new_streams = [
+            ensure_stream(realm, new_stream_name, acting_user=None)
+            for new_stream_name in new_stream_names
+        ]
+        streams += new_streams
 
         result = self.client_patch(
             f"/json/default_stream_groups/{group_id}/streams",
@@ -3169,11 +3159,8 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         stream_names = ["stream1", "stream2", "stream3"]
         description = "This is group1"
-        streams = []
-
         for stream_name in stream_names:
-            stream = ensure_stream(realm, stream_name, acting_user=None)
-            streams.append(stream)
+            ensure_stream(realm, stream_name, acting_user=None)
 
         result = self.client_post(
             "/json/default_stream_groups/create",
@@ -3885,15 +3872,14 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Helper function to make up random stream names. It takes
         existing_stream_names and randomly appends a digit to the end of each,
-        but avoids names that appear in the list names_to_avoid.
+        but avoids names of streams already in the realm.
         """
-        random_streams = []
         all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.test_realm)]
-        for stream in existing_stream_names:
-            random_stream = stream + str(random.randint(0, 9))
-            if random_stream not in all_stream_names:
-                random_streams.append(random_stream)
-        return random_streams
+        return [
+            random_stream
+            for stream in existing_stream_names
+            if (random_stream := stream + str(random.randint(0, 9))) not in all_stream_names
+        ]
 
     def test_invalid_stream_name(self) -> None:
         """
@@ -5159,10 +5145,11 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         self.assertGreaterEqual(len(self.streams), 2)
         streams_to_remove = self.streams[1:]
-        not_subbed = []
-        for stream in Stream.objects.filter(realm=get_realm("zulip")):
-            if stream.name not in self.streams:
-                not_subbed.append(stream.name)
+        not_subbed = [
+            stream.name
+            for stream in Stream.objects.filter(realm=get_realm("zulip"))
+            if stream.name not in self.streams
+        ]
         random.shuffle(not_subbed)
         self.assertNotEqual(len(not_subbed), 0)  # necessary for full test coverage
         try_to_remove = not_subbed[:3]  # attempt to remove up to 3 streams not already subbed to

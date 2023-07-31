@@ -82,9 +82,7 @@ def get_assignee_string(assignees: List[Dict[str, Any]]) -> str:
     if len(assignees) == 1:
         assignees_string = "{username}".format(**assignees[0])
     else:
-        usernames = []
-        for a in assignees:
-            usernames.append(a["username"])
+        usernames = [a["username"] for a in assignees]
 
         assignees_string = ", ".join(usernames[:-1]) + " and " + usernames[-1]
     return assignees_string

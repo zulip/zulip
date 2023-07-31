@@ -129,9 +129,10 @@ def get_topic_for_http_request(payload: WildValue) -> str:
 
 
 def get_body_for_maintenance_planned_event(payload: WildValue) -> str:
-    services_data = []
-    for service in payload["affected_services"].tame(check_string).split(","):
-        services_data.append({"service_name": service})
+    services_data = [
+        {"service_name": service}
+        for service in payload["affected_services"].tame(check_string).split(",")
+    ]
     data = {
         "title": payload["title"].tame(check_string),
         "description": payload["description"].tame(check_string),
@@ -147,9 +148,10 @@ def get_body_for_maintenance_planned_event(payload: WildValue) -> str:
 
 
 def get_body_for_incident_open_event(payload: WildValue) -> str:
-    services_data = []
-    for service in payload["affected_services"].tame(check_string).split(","):
-        services_data.append({"service_name": service})
+    services_data = [
+        {"service_name": service}
+        for service in payload["affected_services"].tame(check_string).split(",")
+    ]
     data = {
         "title": payload["title"].tame(check_string),
         "description": payload["description"].tame(check_string),

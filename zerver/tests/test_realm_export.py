@@ -278,15 +278,14 @@ class RealmExportTest(ZulipTestCase):
         current_log = RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_EXPORTED)
         self.assert_length(current_log, 0)
 
-        exports = []
-        for i in range(0, 5):
-            exports.append(
-                RealmAuditLog(
-                    realm=admin.realm,
-                    event_type=RealmAuditLog.REALM_EXPORTED,
-                    event_time=timezone_now(),
-                )
+        exports = [
+            RealmAuditLog(
+                realm=admin.realm,
+                event_type=RealmAuditLog.REALM_EXPORTED,
+                event_time=timezone_now(),
             )
+            for i in range(5)
+        ]
         RealmAuditLog.objects.bulk_create(exports)
 
         with self.assertRaises(JsonableError) as error:

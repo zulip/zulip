@@ -2075,9 +2075,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login_user(me)
         self.subscribe(self.example_user("hamlet"), "Scotland")
 
-        message_ids = []
-        for i in range(5):
-            message_ids.append(self.send_personal_message(me, self.example_user("iago")))
+        message_ids = [self.send_personal_message(me, self.example_user("iago")) for i in range(5)]
 
         narrow = [dict(operator="dm", operand=self.example_user("iago").email)]
         self.message_visibility_test(narrow, message_ids, 2)
@@ -2093,64 +2091,46 @@ class GetOldMessagesTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
-        matching_message_ids = []
-        # group direct message, sent by current user
-        matching_message_ids.append(
+        matching_message_ids = [
+            # group direct message, sent by current user
             self.send_huddle_message(
                 me,
                 [iago, cordelia, othello],
             ),
-        )
-        # group direct message, sent by searched user
-        matching_message_ids.append(
+            # group direct message, sent by searched user
             self.send_huddle_message(
                 cordelia,
                 [me, othello],
             ),
-        )
-        # group direct message, sent by another user
-        matching_message_ids.append(
+            # group direct message, sent by another user
             self.send_huddle_message(
                 othello,
                 [me, cordelia],
             ),
-        )
-        # direct 1:1 message, sent by current user to searched user
-        matching_message_ids.append(
+            # direct 1:1 message, sent by current user to searched user
             self.send_personal_message(me, cordelia),
-        )
-        # direct 1:1 message, sent by searched user to current user
-        matching_message_ids.append(
+            # direct 1:1 message, sent by searched user to current user
             self.send_personal_message(cordelia, me),
-        )
+        ]
 
-        non_matching_message_ids = []
-        # direct 1:1 message, does not include current user
-        non_matching_message_ids.append(
+        non_matching_message_ids = [
+            # direct 1:1 message, does not include current user
             self.send_personal_message(iago, cordelia),
-        )
-        # direct 1:1 message, does not include searched user
-        non_matching_message_ids.append(
+            # direct 1:1 message, does not include searched user
             self.send_personal_message(iago, me),
-        )
-        # direct 1:1 message, current user to self
-        non_matching_message_ids.append(
+            # direct 1:1 message, current user to self
             self.send_personal_message(me, me),
-        )
-        # group direct message, sent by current user
-        non_matching_message_ids.append(
+            # group direct message, sent by current user
             self.send_huddle_message(
                 me,
                 [iago, othello],
             ),
-        )
-        # group direct message, sent by searched user
-        non_matching_message_ids.append(
+            # group direct message, sent by searched user
             self.send_huddle_message(
                 cordelia,
                 [iago, othello],
             ),
-        )
+        ]
 
         self.login_user(me)
         test_operands = [cordelia.email, cordelia.id]
@@ -2169,27 +2149,22 @@ class GetOldMessagesTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
-        message_ids = []
-        message_ids.append(
+        message_ids = [
             self.send_huddle_message(
                 me,
                 [iago, cordelia, othello],
             ),
-        )
-        message_ids.append(self.send_personal_message(me, cordelia))
-        message_ids.append(
+            self.send_personal_message(me, cordelia),
             self.send_huddle_message(
                 cordelia,
                 [me, othello],
             ),
-        )
-        message_ids.append(self.send_personal_message(cordelia, me))
-        message_ids.append(
+            self.send_personal_message(cordelia, me),
             self.send_huddle_message(
                 iago,
                 [cordelia, me],
             ),
-        )
+        ]
 
         narrow = [dict(operator="dm-including", operand=cordelia.email)]
         self.message_visibility_test(narrow, message_ids, 2)
@@ -2205,41 +2180,28 @@ class GetOldMessagesTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
-        matching_message_ids = []
-
-        matching_message_ids.append(
+        matching_message_ids = [
             self.send_huddle_message(
                 me,
                 [iago, cordelia, othello],
             ),
-        )
-
-        matching_message_ids.append(
             self.send_huddle_message(
                 me,
                 [cordelia, othello],
             ),
-        )
+        ]
 
-        non_matching_message_ids = []
-
-        non_matching_message_ids.append(
+        non_matching_message_ids = [
             self.send_personal_message(me, cordelia),
-        )
-
-        non_matching_message_ids.append(
             self.send_huddle_message(
                 me,
                 [iago, othello],
             ),
-        )
-
-        non_matching_message_ids.append(
             self.send_huddle_message(
                 self.example_user("cordelia"),
                 [iago, othello],
             ),
-        )
+        ]
 
         self.login_user(me)
         test_operands = [cordelia.email, cordelia.id]
@@ -2258,25 +2220,20 @@ class GetOldMessagesTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
-        message_ids = []
-        message_ids.append(
+        message_ids = [
             self.send_huddle_message(
                 me,
                 [iago, cordelia, othello],
             ),
-        )
-        message_ids.append(
             self.send_huddle_message(
                 me,
                 [cordelia, othello],
             ),
-        )
-        message_ids.append(
             self.send_huddle_message(
                 me,
                 [cordelia, iago],
             ),
-        )
+        ]
 
         narrow = [dict(operator="group-pm-with", operand=cordelia.email)]
         self.message_visibility_test(narrow, message_ids, 1)
@@ -2352,9 +2309,9 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login("hamlet")
         self.subscribe(self.example_user("hamlet"), "Scotland")
 
-        message_ids = []
-        for i in range(5):
-            message_ids.append(self.send_stream_message(self.example_user("iago"), "Scotland"))
+        message_ids = [
+            self.send_stream_message(self.example_user("iago"), "Scotland") for i in range(5)
+        ]
 
         narrow = [dict(operator="stream", operand="Scotland")]
         self.message_visibility_test(narrow, message_ids, 2)
@@ -2695,13 +2652,12 @@ class GetOldMessagesTest(ZulipTestCase):
             ),
         ]
 
-        message_ids = []
-        for topic, content in messages_to_search:
-            message_ids.append(
-                self.send_stream_message(
-                    self.example_user("iago"), "Scotland", topic_name=topic, content=content
-                )
+        message_ids = [
+            self.send_stream_message(
+                self.example_user("iago"), "Scotland", topic_name=topic, content=content
             )
+            for topic, content in messages_to_search
+        ]
         self._update_tsvector_index()
         narrow = [dict(operator="search", operand="Hogwart's")]
         self.message_visibility_test(narrow, message_ids, 2)
@@ -3045,9 +3001,9 @@ class GetOldMessagesTest(ZulipTestCase):
 
         Message.objects.all().delete()
 
-        message_ids = []
-        for i in range(10):
-            message_ids.append(self.send_stream_message(self.example_user("cordelia"), "Verona"))
+        message_ids = [
+            self.send_stream_message(self.example_user("cordelia"), "Verona") for i in range(10)
+        ]
 
         data = self.get_messages_response(anchor=message_ids[9], num_before=9, num_after=0)
 
@@ -4261,26 +4217,20 @@ class MessageHasKeywordsTest(ZulipTestCase):
         assert_attachment_claimed(dummy_path_ids[1], False)
 
     def test_finds_all_links(self) -> None:
-        msg_ids = []
         msg_contents = ["foo.org", "[bar](baz.gov)", "http://quux.ca"]
-        for msg_content in msg_contents:
-            msg_ids.append(
-                self.send_stream_message(
-                    self.example_user("hamlet"), "Denmark", content=msg_content
-                )
-            )
+        msg_ids = [
+            self.send_stream_message(self.example_user("hamlet"), "Denmark", content=msg_content)
+            for msg_content in msg_contents
+        ]
         msgs = [Message.objects.get(id=id) for id in msg_ids]
         self.assertTrue(all(msg.has_link for msg in msgs))
 
     def test_finds_only_links(self) -> None:
-        msg_ids = []
         msg_contents = ["`example.org`", "``example.org```", "$$https://example.org$$", "foo"]
-        for msg_content in msg_contents:
-            msg_ids.append(
-                self.send_stream_message(
-                    self.example_user("hamlet"), "Denmark", content=msg_content
-                )
-            )
+        msg_ids = [
+            self.send_stream_message(self.example_user("hamlet"), "Denmark", content=msg_content)
+            for msg_content in msg_contents
+        ]
         msgs = [Message.objects.get(id=id) for id in msg_ids]
         self.assertFalse(all(msg.has_link for msg in msgs))
 
@@ -4321,19 +4271,16 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertFalse(msg.has_link)
 
     def test_has_image(self) -> None:
-        msg_ids = []
         msg_contents = [
             "Link: foo.org",
             "Image: https://www.google.com/images/srpr/logo4w.png",
             "Image: https://www.google.com/images/srpr/logo4w.pdf",
             "[Google link](https://www.google.com/images/srpr/logo4w.png)",
         ]
-        for msg_content in msg_contents:
-            msg_ids.append(
-                self.send_stream_message(
-                    self.example_user("hamlet"), "Denmark", content=msg_content
-                )
-            )
+        msg_ids = [
+            self.send_stream_message(self.example_user("hamlet"), "Denmark", content=msg_content)
+            for msg_content in msg_contents
+        ]
         msgs = [Message.objects.get(id=id) for id in msg_ids]
         self.assertEqual([False, True, False, True], [msg.has_image for msg in msgs])
 

@@ -71,19 +71,17 @@ def get_code_push_commits_body(payload: WildValue) -> str:
         payload["resource"]["refUpdates"][0]["oldObjectId"].tame(check_string),
         payload["resource"]["refUpdates"][0]["newObjectId"].tame(check_string),
     )
-    commits_data = []
-    if payload["resource"].get("commits"):
-        for commit in payload["resource"]["commits"]:
-            commits_data.append(
-                {
-                    "name": commit["author"]["name"].tame(check_string),
-                    "sha": commit["commitId"].tame(check_string),
-                    "url": "{}/commit/{}".format(
-                        get_code_repository_url(payload), commit["commitId"].tame(check_string)
-                    ),
-                    "message": commit["comment"].tame(check_string),
-                }
-            )
+    commits_data = [
+        {
+            "name": commit["author"]["name"].tame(check_string),
+            "sha": commit["commitId"].tame(check_string),
+            "url": "{}/commit/{}".format(
+                get_code_repository_url(payload), commit["commitId"].tame(check_string)
+            ),
+            "message": commit["comment"].tame(check_string),
+        }
+        for commit in payload["resource"].get("commits", [])
+    ]
     return get_push_commits_event_message(
         get_code_push_user_name(payload),
         compare_url,

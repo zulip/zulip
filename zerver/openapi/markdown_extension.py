@@ -149,20 +149,16 @@ def render_python_code_example(
 
     snippets = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
-    code_example = ["{tab|python}\n"]
-    code_example.append("```python")
-    code_example.extend(config)
-
-    for snippet in snippets:
-        for line in snippet:
-            # Remove one level of indentation and strip newlines
-            code_example.append(line[4:].rstrip())
-
-    code_example.append("print(result)")
-    code_example.append("\n")
-    code_example.append("```")
-
-    return code_example
+    return [
+        "{tab|python}\n",
+        "```python",
+        *config,
+        # Remove one level of indentation and strip newlines
+        *(line[4:].rstrip() for snippet in snippets for line in snippet),
+        "print(result)",
+        "\n",
+        "```",
+    ]
 
 
 def render_javascript_code_example(
@@ -193,9 +189,8 @@ def render_javascript_code_example(
     code_example.append("    const client = await zulipInit(config);")
     for snippet in snippets:
         code_example.append("")
-        for line in snippet:
-            # Strip newlines
-            code_example.append("    " + line.rstrip())
+        # Strip newlines
+        code_example.extend("    " + line.rstrip() for line in snippet)
     code_example.append("})();")
 
     code_example.append("```")

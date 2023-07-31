@@ -352,8 +352,7 @@ async def serve() -> None:
     else:
         children.append(start_webpack_watcher())
 
-    for cmd in server_processes():
-        children.append(subprocess.Popen(cmd))
+    children.extend(subprocess.Popen(cmd) for cmd in server_processes())
 
     client = httpclient.AsyncHTTPClient()
     app = Application(enable_logging=options.enable_tornado_logging)

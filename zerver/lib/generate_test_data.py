@@ -19,23 +19,21 @@ def load_config() -> Dict[str, Any]:
 def generate_topics(num_topics: int) -> List[str]:
     config = load_config()["gen_fodder"]
 
-    topics = []
     # Make single word topics account for 30% of total topics.
     # Single word topics are most common, thus
     # it is important we test on it.
     num_single_word_topics = num_topics // 3
-    for _ in itertools.repeat(None, num_single_word_topics):
-        topics.append(random.choice(config["nouns"]))
+    topics = random.choices(config["nouns"], k=num_single_word_topics)
 
     sentence = ["adjectives", "nouns", "connectors", "verbs", "adverbs"]
     for pos in sentence:
         # Add an empty string so that we can generate variable length topics.
         config[pos].append("")
 
-    for _ in itertools.repeat(None, num_topics - num_single_word_topics):
-        generated_topic = [random.choice(config[pos]) for pos in sentence]
-        topic = " ".join(filter(None, generated_topic))
-        topics.append(topic)
+    topics.extend(
+        " ".join(word for pos in sentence if (word := random.choice(config[pos])) != "")
+        for _ in range(num_topics - num_single_word_topics)
+    )
 
     # Mark a small subset of topics as resolved in some streams, and
     # many topics in a few streams. Note that these don't have the
@@ -46,14 +44,10 @@ def generate_topics(num_topics: int) -> List[str]:
     else:
         resolved_topic_probability = 0.05
 
-    final_topics = []
-    for topic in topics:
-        if random.random() < resolved_topic_probability:
-            final_topics.append(RESOLVED_TOPIC_PREFIX + topic)
-        else:
-            final_topics.append(topic)
-
-    return final_topics
+    return [
+        RESOLVED_TOPIC_PREFIX + topic if random.random() < resolved_topic_probability else topic
+        for topic in topics
+    ]
 
 
 def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
