@@ -96,6 +96,7 @@ select = [
     "ANN", # annotations
     "B", # bugbear
     "C4", # comprehensions
+    "COM", # trailing comma
     "DJ", # Django
     "DTZ", # naive datetime
     "E", # style errors
@@ -129,6 +130,7 @@ ignore = [
     "B023", # Function definition does not bind loop variable
     "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
     "C408", # Unnecessary `dict` call (rewrite as a literal)
+    "COM812", # Trailing comma missing
     "DJ001", # Avoid using `null=True` on string-based fields
     "DJ008", # Model does not define `__str__` method
     "E402", # Module level import not at top of file

@@ -79,12 +79,12 @@ class Command(BaseCommand):
                     stop_fut.set_result(None)
 
             def add_signal_handlers() -> None:
-                loop.add_signal_handler(signal.SIGINT, stop),
-                loop.add_signal_handler(signal.SIGTERM, stop),
+                loop.add_signal_handler(signal.SIGINT, stop)
+                loop.add_signal_handler(signal.SIGTERM, stop)
 
             def remove_signal_handlers() -> None:
-                loop.remove_signal_handler(signal.SIGINT),
-                loop.remove_signal_handler(signal.SIGTERM),
+                loop.remove_signal_handler(signal.SIGINT)
+                loop.remove_signal_handler(signal.SIGTERM)
 
             async with AsyncExitStack() as stack:
                 stack.push_async_callback(
