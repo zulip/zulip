@@ -49,8 +49,7 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
             if self.metric_values[metric_name]:
                 # Print preamble
                 lines += self.metrics[metric_name]
-                for metric_value in self.metric_values[metric_name].values():
-                    lines.append(metric_value)
+                lines += self.metric_values[metric_name].values()
                 lines.append("")
         self.wfile.write("\n".join(lines).encode())
 
