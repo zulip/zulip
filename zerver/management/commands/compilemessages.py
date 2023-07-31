@@ -145,7 +145,7 @@ class Command(compilemessages.Command):
 
         # frontend stats
         with open(self.get_json_filename(locale_path, locale), "rb") as reader:
-            for key, value in orjson.loads(reader.read()).items():
+            for value in orjson.loads(reader.read()).values():
                 total += 1
                 if value == "":
                     not_translated += 1

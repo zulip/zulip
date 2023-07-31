@@ -73,7 +73,7 @@ def get_stream_permission_policy_name(
     is_web_public: Optional[bool] = None,
 ) -> str:
     policy_name = None
-    for permission, permission_dict in Stream.PERMISSION_POLICIES.items():
+    for permission_dict in Stream.PERMISSION_POLICIES.values():
         if (
             permission_dict["invite_only"] == invite_only
             and permission_dict["history_public_to_subscribers"] == history_public_to_subscribers

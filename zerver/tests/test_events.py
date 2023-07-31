@@ -1959,7 +1959,7 @@ class NormalActionsTest(BaseAction):
                 check_user_group_add_members("events[3]", events[3])
 
     def test_change_notification_settings(self) -> None:
-        for notification_setting, v in self.user_profile.notification_setting_types.items():
+        for notification_setting in self.user_profile.notification_setting_types:
             if notification_setting in [
                 "notification_sound",
                 "desktop_icon_count_display",

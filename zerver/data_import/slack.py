@@ -366,7 +366,7 @@ def build_customprofile_field(
     # The name of the custom profile field is not provided in the Slack data
     # Hash keys of the fields are provided
     # Reference: https://api.slack.com/methods/users.profile.set
-    for field, value in fields.items():
+    for field in fields:
         if field not in slack_custom_field_name_to_zulip_custom_field_id:
             slack_custom_fields = ["phone", "skype"]
             if field in slack_custom_fields:
