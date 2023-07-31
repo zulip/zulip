@@ -367,9 +367,7 @@ def generic_bulk_cached_fetch(
         [cache_keys[object_id] for object_id in object_ids],
     )
 
-    cached_objects: Dict[str, CacheItemT] = {}
-    for key, val in cached_objects_compressed.items():
-        cached_objects[key] = extractor(cached_objects_compressed[key][0])
+    cached_objects = {key: extractor(val[0]) for key, val in cached_objects_compressed.items()}
     needed_ids = [
         object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects
     ]

@@ -282,7 +282,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def clear_history(cls, entity_key: str) -> None:
-        for rule, reset_times_for_rule in cls.reset_times.items():
+        for reset_times_for_rule in cls.reset_times.values():
             reset_times_for_rule.pop(entity_key, None)
         cls.timestamps_blocked_until.pop(entity_key, None)
 

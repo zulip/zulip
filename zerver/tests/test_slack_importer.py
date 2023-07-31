@@ -1345,8 +1345,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(Message.objects.filter(realm=realm).count(), 82)
 
         # All auth backends are enabled initially.
-        for name, enabled in realm.authentication_methods_dict().items():
-            self.assertTrue(enabled)
+        self.assertTrue(all(realm.authentication_methods_dict().values()))
 
         Realm.objects.filter(name=test_realm_subdomain).delete()
 

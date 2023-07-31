@@ -53,7 +53,7 @@ EMOTICON_CONVERSIONS = {
 
 def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
     emoji_names: List[str] = []
-    for emoji_code, name_info in emoji_name_maps.items():
+    for name_info in emoji_name_maps.values():
         emoji_names.append(name_info["canonical_name"])
         emoji_names.extend(name_info["aliases"])
 

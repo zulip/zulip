@@ -1558,7 +1558,7 @@ Output:
         """
         directory = orjson.loads(self.fixture_data("directory.json", type="ldap"))
 
-        for dn, attrs in directory.items():
+        for attrs in directory.values():
             if "uid" in attrs:
                 # Generate a password for the LDAP account:
                 attrs["userPassword"] = [self.ldap_password(attrs["uid"][0])]

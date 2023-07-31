@@ -1064,7 +1064,7 @@ def avatar_changes_disabled(realm: Realm) -> bool:
 
 
 def get_org_type_display_name(org_type: int) -> str:
-    for realm_type, realm_type_details in Realm.ORG_TYPES.items():
+    for realm_type_details in Realm.ORG_TYPES.values():
         if realm_type_details["id"] == org_type:
             return realm_type_details["name"]
 
