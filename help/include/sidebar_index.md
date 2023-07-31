@@ -104,6 +104,7 @@
 * [View messages sent by a user](/help/view-messages-sent-by-a-user)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Searching for messages](/help/search-for-messages)
+* [Printing messages](/help/printing-messages)
 * [View message Markdown source](/help/view-the-markdown-source-of-a-message)
 * [View when message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View a message's edit history](/help/view-a-messages-edit-history)
