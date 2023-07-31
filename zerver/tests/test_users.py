@@ -49,7 +49,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
-    Accounts,
+    Account,
     access_user_by_id,
     get_accounts_for_email,
     get_cross_realm_dicts,
@@ -1110,7 +1110,7 @@ class UserProfileTest(ZulipTestCase):
     def test_get_accounts_for_email(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        def check_account_present_in_accounts(user: UserProfile, accounts: List[Accounts]) -> None:
+        def check_account_present_in_accounts(user: UserProfile, accounts: List[Account]) -> None:
             for account in accounts:
                 realm = user.realm
                 if (

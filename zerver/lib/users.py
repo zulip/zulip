@@ -289,14 +289,14 @@ def access_user_by_email(
     return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
 
 
-class Accounts(TypedDict):
+class Account(TypedDict):
     realm_name: str
     realm_id: int
     full_name: str
     avatar: Optional[str]
 
 
-def get_accounts_for_email(email: str) -> List[Accounts]:
+def get_accounts_for_email(email: str) -> List[Account]:
     profiles = (
         UserProfile.objects.select_related("realm")
         .filter(
@@ -307,7 +307,7 @@ def get_accounts_for_email(email: str) -> List[Accounts]:
         )
         .order_by("date_joined")
     )
-    accounts: List[Accounts] = []
+    accounts: List[Account] = []
     for profile in profiles:
         accounts.append(
             dict(
