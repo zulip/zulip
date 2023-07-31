@@ -162,9 +162,9 @@ run_test("replace_syntax", ({override}) => {
         assert.equal(old_syntax, "a");
         assert.equal(new_syntax(), "A");
     });
-    let prev_carat = $textbox.caret();
+    let prev_caret = $textbox.caret();
     compose_ui.replace_syntax("a", "A", $textbox);
-    assert.equal(prev_carat, $textbox.caret());
+    assert.equal(prev_caret, $textbox.caret());
 
     override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
         assert.equal(elt, "textarea");
@@ -176,9 +176,9 @@ run_test("replace_syntax", ({override}) => {
     // and that on replacing with a different length string, the
     // cursor is shifted accordingly as expected
     $textbox.caret(5);
-    prev_carat = $textbox.caret();
+    prev_caret = $textbox.caret();
     compose_ui.replace_syntax("Bca", "$$\\pi$$", $textbox);
-    assert.equal(prev_carat + "$$\\pi$$".length - "Bca".length, $textbox.caret());
+    assert.equal(prev_caret + "$$\\pi$$".length - "Bca".length, $textbox.caret());
 });
 
 run_test("compute_placeholder_text", () => {
