@@ -204,3 +204,7 @@ django-stubs-ext
 # Structured data representation with parsing.
 pydantic
 annotated_types
+
+# Needed to force appropriate usage of "select_related()",
+# "prefetch_related()", "only()" and "defer()".
+django-seal
