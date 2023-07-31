@@ -1068,7 +1068,7 @@ check_realm_user_remove = make_checker(realm_user_remove_event)
 custom_profile_field_type = DictType(
     required_keys=[
         ("id", int),
-        ("value", str),
+        ("value", OptionalType(str)),
     ],
     optional_keys=[
         ("rendered_value", str),

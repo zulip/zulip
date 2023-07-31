@@ -956,15 +956,17 @@ def apply_event(
                     p["is_billing_admin"] = person["is_billing_admin"]
 
                 if "custom_profile_field" in person:
-                    custom_field_id = person["custom_profile_field"]["id"]
+                    custom_field_id = str(person["custom_profile_field"]["id"])
                     custom_field_new_value = person["custom_profile_field"]["value"]
-                    if "rendered_value" in person["custom_profile_field"]:
-                        p["profile_data"][str(custom_field_id)] = {
+                    if custom_field_new_value is None and "profile_data" in p:
+                        p["profile_data"].pop(custom_field_id, None)
+                    elif "rendered_value" in person["custom_profile_field"]:
+                        p["profile_data"][custom_field_id] = {
                             "value": custom_field_new_value,
                             "rendered_value": person["custom_profile_field"]["rendered_value"],
                         }
                     else:
-                        p["profile_data"][str(custom_field_id)] = {
+                        p["profile_data"][custom_field_id] = {
                             "value": custom_field_new_value,
                         }
 
