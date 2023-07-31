@@ -946,26 +946,30 @@ def apply_event(
                 for field in p:
                     if field in person:
                         p[field] = person[field]
-                    if "role" in person:
-                        p["is_admin"] = is_administrator_role(person["role"])
-                        p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
-                        p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
-                    if "is_billing_admin" in person:
-                        p["is_billing_admin"] = person["is_billing_admin"]
-                    if "custom_profile_field" in person:
-                        custom_field_id = person["custom_profile_field"]["id"]
-                        custom_field_new_value = person["custom_profile_field"]["value"]
-                        if "rendered_value" in person["custom_profile_field"]:
-                            p["profile_data"][str(custom_field_id)] = {
-                                "value": custom_field_new_value,
-                                "rendered_value": person["custom_profile_field"]["rendered_value"],
-                            }
-                        else:
-                            p["profile_data"][str(custom_field_id)] = {
-                                "value": custom_field_new_value,
-                            }
-                    if "new_email" in person:
-                        p["email"] = person["new_email"]
+
+                if "role" in person:
+                    p["is_admin"] = is_administrator_role(person["role"])
+                    p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
+                    p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
+
+                if "is_billing_admin" in person:
+                    p["is_billing_admin"] = person["is_billing_admin"]
+
+                if "custom_profile_field" in person:
+                    custom_field_id = person["custom_profile_field"]["id"]
+                    custom_field_new_value = person["custom_profile_field"]["value"]
+                    if "rendered_value" in person["custom_profile_field"]:
+                        p["profile_data"][str(custom_field_id)] = {
+                            "value": custom_field_new_value,
+                            "rendered_value": person["custom_profile_field"]["rendered_value"],
+                        }
+                    else:
+                        p["profile_data"][str(custom_field_id)] = {
+                            "value": custom_field_new_value,
+                        }
+
+                if "new_email" in person:
+                    p["email"] = person["new_email"]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
