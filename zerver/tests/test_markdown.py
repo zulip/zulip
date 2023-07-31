@@ -672,16 +672,17 @@ class MarkdownTest(ZulipTestCase):
 
     @override_settings(INLINE_IMAGE_PREVIEW=True)
     def test_max_inline_preview(self) -> None:
-        image_links = []
-        # Add a youtube link within a spoiler to ensure other link types are counted
-        image_links.append(
-            """```spoiler Check out this PyCon video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```"""
-        )
-        # Add a link within blockquote to test that it does NOT get counted
-        image_links.append("> http://cdn.wallpapersafari.com/spoiler/dont_count.jpeg\n")
-        # Using INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1 because of the one link in a spoiler added already
-        for x in range(InlineInterestingLinkProcessor.INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1):
-            image_links.append(f"http://cdn.wallpapersafari.com/{x}/6/16eVjx.jpeg")
+        image_links = [
+            # Add a youtube link within a spoiler to ensure other link types are counted
+            """```spoiler Check out this PyCon video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```""",
+            # Add a link within blockquote to test that it does NOT get counted
+            "> http://cdn.wallpapersafari.com/spoiler/dont_count.jpeg\n",
+            # Using INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1 because of the one link in a spoiler added already
+            *(
+                f"http://cdn.wallpapersafari.com/{x}/6/16eVjx.jpeg"
+                for x in range(InlineInterestingLinkProcessor.INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1)
+            ),
+        ]
         within_limit_content = "\n".join(image_links)
         above_limit_content = (
             within_limit_content + "\nhttp://cdn.wallpapersafari.com/above/0/6/16eVjx.jpeg"

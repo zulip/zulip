@@ -17,11 +17,7 @@ from scripts.lib.zulip_tools import ENDC, FAIL, WARNING
 
 
 def find_handlebars(translatable_strings: List[str]) -> List[str]:
-    errored = []
-    for string in translatable_strings:
-        if "{{" in string:
-            errored.append(string)
-    return errored
+    return [string for string in translatable_strings if "{{" in string]
 
 
 if __name__ == "__main__":

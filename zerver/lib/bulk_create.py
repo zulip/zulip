@@ -100,10 +100,9 @@ def bulk_create_users(
         for profile_ in profiles_to_create
     )
 
-    recipients_to_create: List[Recipient] = []
-    for user_id in user_ids:
-        recipient = Recipient(type_id=user_id, type=Recipient.PERSONAL)
-        recipients_to_create.append(recipient)
+    recipients_to_create = [
+        Recipient(type_id=user_id, type=Recipient.PERSONAL) for user_id in user_ids
+    ]
 
     Recipient.objects.bulk_create(recipients_to_create)
 
@@ -115,15 +114,14 @@ def bulk_create_users(
     for recipient in recipients_to_create:
         recipients_by_user_id[recipient.type_id] = recipient
 
-    subscriptions_to_create: List[Subscription] = []
-    for user_profile in profiles_to_create:
-        recipient = recipients_by_user_id[user_profile.id]
-        subscription = Subscription(
+    subscriptions_to_create = [
+        Subscription(
             user_profile_id=user_profile.id,
-            recipient=recipient,
+            recipient=recipients_by_user_id[user_profile.id],
             is_user_active=user_profile.is_active,
         )
-        subscriptions_to_create.append(subscription)
+        for user_profile in profiles_to_create
+    ]
 
     Subscription.objects.bulk_create(subscriptions_to_create)
 
@@ -233,10 +231,11 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
     streams_to_create.sort(key=lambda x: x.name)
     Stream.objects.bulk_create(streams_to_create)
 
-    recipients_to_create: List[Recipient] = []
-    for stream in Stream.objects.filter(realm=realm).values("id", "name"):
-        if stream["name"].lower() not in existing_streams:
-            recipients_to_create.append(Recipient(type_id=stream["id"], type=Recipient.STREAM))
+    recipients_to_create = [
+        Recipient(type_id=stream["id"], type=Recipient.STREAM)
+        for stream in Stream.objects.filter(realm=realm).values("id", "name")
+        if stream["name"].lower() not in existing_streams
+    ]
     Recipient.objects.bulk_create(recipients_to_create)
 
     bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)

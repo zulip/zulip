@@ -376,9 +376,9 @@ def sponsorship(
 
         return json_success(request)
     else:
-        messages = []
-        for error_list in form.errors.get_json_data().values():
-            for error in error_list:
-                messages.append(error["message"])
-        message = " ".join(messages)
+        message = " ".join(
+            error["message"]
+            for error_list in form.errors.get_json_data().values()
+            for error in error_list
+        )
         raise BillingError("Form validation error", message=message)

@@ -1352,18 +1352,14 @@ class StreamMessagesTest(ZulipTestCase):
             if subscriber.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT
         ]
 
-        old_subscriber_messages = []
-        for subscriber in subscribers:
-            old_subscriber_messages.append(message_stream_count(subscriber))
+        old_subscriber_messages = list(map(message_stream_count, subscribers))
 
         non_subscribers = [
             user_profile
             for user_profile in UserProfile.objects.all()
             if user_profile not in subscribers
         ]
-        old_non_subscriber_messages = []
-        for non_subscriber in non_subscribers:
-            old_non_subscriber_messages.append(message_stream_count(non_subscriber))
+        old_non_subscriber_messages = list(map(message_stream_count, non_subscribers))
 
         non_bot_subscribers = [
             user_profile for user_profile in subscribers if not user_profile.is_bot
@@ -1373,14 +1369,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_stream_message(a_subscriber, stream_name, content=content, topic_name=topic_name)
 
         # Did all of the subscribers get the message?
-        new_subscriber_messages = []
-        for subscriber in subscribers:
-            new_subscriber_messages.append(message_stream_count(subscriber))
+        new_subscriber_messages = list(map(message_stream_count, subscribers))
 
         # Did non-subscribers not get the message?
-        new_non_subscriber_messages = []
-        for non_subscriber in non_subscribers:
-            new_non_subscriber_messages.append(message_stream_count(non_subscriber))
+        new_non_subscriber_messages = list(map(message_stream_count, non_subscribers))
 
         self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
@@ -2009,17 +2001,12 @@ class PersonalMessageSendTest(ZulipTestCase):
         test_email = self.nonreg_email("test1")
         self.register(test_email, "test1")
 
-        old_messages = []
-        for user_profile in old_user_profiles:
-            old_messages.append(message_stream_count(user_profile))
+        old_messages = list(map(message_stream_count, old_user_profiles))
 
         user_profile = self.nonreg_user("test1")
         self.send_personal_message(user_profile, user_profile)
 
-        new_messages = []
-        for user_profile in old_user_profiles:
-            new_messages.append(message_stream_count(user_profile))
-
+        new_messages = list(map(message_stream_count, old_user_profiles))
         self.assertEqual(old_messages, new_messages)
 
         user_profile = self.nonreg_user("test1")
@@ -2037,17 +2024,12 @@ class PersonalMessageSendTest(ZulipTestCase):
         receiver_messages = message_stream_count(receiver)
 
         other_user_profiles = UserProfile.objects.filter(~Q(id=sender.id) & ~Q(id=receiver.id))
-        old_other_messages = []
-        for user_profile in other_user_profiles:
-            old_other_messages.append(message_stream_count(user_profile))
+        old_other_messages = list(map(message_stream_count, other_user_profiles))
 
         self.send_personal_message(sender, receiver, content)
 
         # Users outside the conversation don't get the message.
-        new_other_messages = []
-        for user_profile in other_user_profiles:
-            new_other_messages.append(message_stream_count(user_profile))
-
+        new_other_messages = list(map(message_stream_count, other_user_profiles))
         self.assertEqual(old_other_messages, new_other_messages)
 
         # The personal message is in the streams of both the sender and receiver.

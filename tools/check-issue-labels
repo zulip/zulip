@@ -4,7 +4,7 @@ import configparser
 import os
 import re
 import sys
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 
@@ -64,7 +64,7 @@ def check_issue_labels() -> None:
             sys.exit(1)
 
     next_page_url: Optional[str] = "https://api.github.com/repos/zulip/zulip/issues"
-    unlabeled_issue_urls = []
+    unlabeled_issue_urls: List[str] = []
     while next_page_url:
         try:
             if args.force:
@@ -83,9 +83,11 @@ def check_issue_labels() -> None:
             sys.exit(1)
 
         next_page_url = get_next_page_url(response.headers["Link"])
-        for item in response.json():
-            if is_issue(item) and not area_labeled(item):
-                unlabeled_issue_urls.append(item["html_url"])
+        unlabeled_issue_urls.extend(
+            item["html_url"]
+            for item in response.json()
+            if is_issue(item) and not area_labeled(item)
+        )
 
     if len(unlabeled_issue_urls):
         print("The following issues don't have any area labels associated with it")

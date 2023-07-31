@@ -566,9 +566,6 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
 def get_pull_request_review_requested_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
-    requested_reviewer = [payload["requested_reviewer"]] if "requested_reviewer" in payload else []
-
-    requested_team = [payload["requested_team"]] if "requested_team" in payload else []
 
     sender = get_sender_name(payload)
     pr_number = payload["pull_request"]["number"].tame(check_int)
@@ -579,26 +576,18 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     )
     body = message_with_title if include_title else message
 
-    all_reviewers = []
-
-    for reviewer in requested_reviewer:
-        all_reviewers.append(
-            "[{login}]({html_url})".format(
-                login=reviewer["login"].tame(check_string),
-                html_url=reviewer["html_url"].tame(check_string),
-            )
+    if "requested_reviewer" in payload:
+        reviewer = payload["requested_reviewer"]
+        reviewers = "[{login}]({html_url})".format(
+            login=reviewer["login"].tame(check_string),
+            html_url=reviewer["html_url"].tame(check_string),
         )
-
-    for team_reviewer in requested_team:
-        all_reviewers.append(
-            "[{name}]({html_url})".format(
-                name=team_reviewer["name"].tame(check_string),
-                html_url=team_reviewer["html_url"].tame(check_string),
-            )
+    else:
+        team_reviewer = payload["requested_team"]
+        reviewers = "[{name}]({html_url})".format(
+            name=team_reviewer["name"].tame(check_string),
+            html_url=team_reviewer["html_url"].tame(check_string),
         )
-
-    reviewers = ""
-    reviewers = all_reviewers[0]
 
     return body.format(
         sender=sender,

@@ -13,16 +13,15 @@ def create_nobody_system_user_group_for_existing_realms(
     NOBODY_GROUP_NAME = "@role:nobody"
     NOBODY_GROUP_DESCRIPTION = "Nobody"
 
-    groups_to_create = []
-    for realm in Realm.objects.all():
-        groups_to_create.append(
-            UserGroup(
-                name=NOBODY_GROUP_NAME,
-                description=NOBODY_GROUP_DESCRIPTION,
-                realm=realm,
-                is_system_group=True,
-            )
+    groups_to_create = [
+        UserGroup(
+            name=NOBODY_GROUP_NAME,
+            description=NOBODY_GROUP_DESCRIPTION,
+            realm=realm,
+            is_system_group=True,
         )
+        for realm in Realm.objects.all()
+    ]
 
     UserGroup.objects.bulk_create(groups_to_create)
 

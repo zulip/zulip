@@ -352,10 +352,8 @@ def add_subgroups_to_user_group(
             event_time=now,
             acting_user=acting_user,
             extra_data=orjson.dumps({"subgroup_ids": subgroup_ids}).decode(),
-        )
-    ]
-    for subgroup_id in subgroup_ids:
-        audit_log_entries.append(
+        ),
+        *(
             RealmAuditLog(
                 realm=user_group.realm,
                 modified_user_group_id=subgroup_id,
@@ -364,7 +362,9 @@ def add_subgroups_to_user_group(
                 acting_user=acting_user,
                 extra_data=orjson.dumps({"supergroup_ids": [user_group.id]}).decode(),
             )
-        )
+            for subgroup_id in subgroup_ids
+        ),
+    ]
     RealmAuditLog.objects.bulk_create(audit_log_entries)
 
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
@@ -386,10 +386,8 @@ def remove_subgroups_from_user_group(
             event_time=now,
             acting_user=acting_user,
             extra_data=orjson.dumps({"subgroup_ids": subgroup_ids}).decode(),
-        )
-    ]
-    for subgroup_id in subgroup_ids:
-        audit_log_entries.append(
+        ),
+        *(
             RealmAuditLog(
                 realm=user_group.realm,
                 modified_user_group_id=subgroup_id,
@@ -398,7 +396,9 @@ def remove_subgroups_from_user_group(
                 acting_user=acting_user,
                 extra_data=orjson.dumps({"supergroup_ids": [user_group.id]}).decode(),
             )
-        )
+            for subgroup_id in subgroup_ids
+        ),
+    ]
     RealmAuditLog.objects.bulk_create(audit_log_entries)
 
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)

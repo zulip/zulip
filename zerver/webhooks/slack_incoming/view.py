@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import re
 from itertools import zip_longest
-from typing import Literal, Optional, TypedDict, cast
+from typing import List, Literal, Optional, TypedDict, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -58,14 +58,12 @@ def api_slack_incoming_webhook(
     if user_specified_topic is None:
         user_specified_topic = "(no topic)"
 
-    pieces = []
+    pieces: List[str] = []
     if "blocks" in payload and payload["blocks"]:
-        for block in payload["blocks"]:
-            pieces.append(render_block(block))
+        pieces += map(render_block, payload["blocks"])
 
     if "attachments" in payload and payload["attachments"]:
-        for attachment in payload["attachments"]:
-            pieces.append(render_attachment(attachment))
+        pieces += map(render_attachment, payload["attachments"])
 
     body = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
@@ -218,8 +216,7 @@ def render_attachment(attachment: WildValue) -> str:
                 fields.append(f"{value}")
         pieces.append("\n".join(fields))
     if "blocks" in attachment and attachment["blocks"]:
-        for block in attachment["blocks"]:
-            pieces.append(render_block(block))
+        pieces += map(render_block, attachment["blocks"])
     if "image_url" in attachment and attachment["image_url"]:
         pieces.append("[]({})".format(attachment["image_url"].tame(check_url)))
     if "footer" in attachment and attachment["footer"]:

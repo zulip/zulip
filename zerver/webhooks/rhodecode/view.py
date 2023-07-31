@@ -14,16 +14,15 @@ from zerver.models import UserProfile
 
 
 def get_push_commits_body(payload: WildValue) -> str:
-    commits_data = []
-    for commit in payload["event"]["push"]["commits"]:
-        commits_data.append(
-            {
-                "name": commit["author"].tame(check_string),
-                "sha": commit["raw_id"].tame(check_string),
-                "url": commit["url"].tame(check_string),
-                "message": commit["message"].tame(check_string),
-            }
-        )
+    commits_data = [
+        {
+            "name": commit["author"].tame(check_string),
+            "sha": commit["raw_id"].tame(check_string),
+            "url": commit["url"].tame(check_string),
+            "message": commit["message"].tame(check_string),
+        }
+        for commit in payload["event"]["push"]["commits"]
+    ]
     return get_push_commits_event_message(
         get_user_name(payload),
         None,

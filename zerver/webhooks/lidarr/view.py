@@ -100,10 +100,7 @@ def get_body_for_tracks_retagged_event(payload: WildValue) -> str:
 
 
 def get_body_for_tracks_imported_upgrade_event(payload: WildValue) -> str:
-    tracks_data = []
-    for track in payload["tracks"]:
-        tracks_data.append({"title": track["title"].tame(check_string)})
-
+    tracks_data = [{"title": track["title"].tame(check_string)} for track in payload["tracks"]]
     data = {
         "artist_name": payload["artist"]["name"].tame(check_string),
         "tracks_final_data": get_tracks_content(tracks_data),
@@ -113,10 +110,7 @@ def get_body_for_tracks_imported_upgrade_event(payload: WildValue) -> str:
 
 
 def get_body_for_tracks_imported_event(payload: WildValue) -> str:
-    tracks_data = []
-    for track in payload["tracks"]:
-        tracks_data.append({"title": track["title"].tame(check_string)})
-
+    tracks_data = [{"title": track["title"].tame(check_string)} for track in payload["tracks"]]
     data = {
         "artist_name": payload["artist"]["name"].tame(check_string),
         "tracks_final_data": get_tracks_content(tracks_data),

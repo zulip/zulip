@@ -607,9 +607,8 @@ def get_installation_activity(request: HttpRequest) -> HttpResponse:
     data = [
         ("Counts", counts_content),
         ("Durations", duration_content),
+        *((page["title"], page["content"]) for page in ad_hoc_queries()),
     ]
-    for page in ad_hoc_queries():
-        data.append((page["title"], page["content"]))
 
     title = "Activity"
 

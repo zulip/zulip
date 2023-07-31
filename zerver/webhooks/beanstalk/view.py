@@ -36,17 +36,15 @@ def build_message_from_gitlog(
 
 
 def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[str, str]]:
-    new_commits_list = []
-    for commit in commits:
-        new_commits_list.append(
-            {
-                "name": commit["author"]["name"].tame(check_string),
-                "sha": commit["id"].tame(check_string),
-                "url": commit["url"].tame(check_string),
-                "message": commit["message"].tame(check_string),
-            }
-        )
-    return new_commits_list
+    return [
+        {
+            "name": commit["author"]["name"].tame(check_string),
+            "sha": commit["id"].tame(check_string),
+            "url": commit["url"].tame(check_string),
+            "message": commit["message"].tame(check_string),
+        }
+        for commit in commits
+    ]
 
 
 @authenticated_rest_api_view(

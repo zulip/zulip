@@ -1326,17 +1326,14 @@ def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
 
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
 def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
-    linkifiers = []
-    for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("id"):
-        linkifiers.append(
-            LinkifierDict(
-                pattern=linkifier.pattern,
-                url_template=linkifier.url_template,
-                id=linkifier.id,
-            )
+    return [
+        LinkifierDict(
+            pattern=linkifier.pattern,
+            url_template=linkifier.url_template,
+            id=linkifier.id,
         )
-
-    return linkifiers
+        for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("id")
+    ]
 
 
 def flush_linkifiers(*, instance: RealmFilter, **kwargs: object) -> None:
@@ -1419,17 +1416,15 @@ class RealmPlayground(models.Model):
 
 
 def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
-    playgrounds: List[RealmPlaygroundDict] = []
-    for playground in RealmPlayground.objects.filter(realm=realm).all():
-        playgrounds.append(
-            RealmPlaygroundDict(
-                id=playground.id,
-                name=playground.name,
-                pygments_language=playground.pygments_language,
-                url_template=playground.url_template,
-            )
+    return [
+        RealmPlaygroundDict(
+            id=playground.id,
+            name=playground.name,
+            pygments_language=playground.pygments_language,
+            url_template=playground.url_template,
         )
-    return playgrounds
+        for playground in RealmPlayground.objects.filter(realm=realm).all()
+    ]
 
 
 class Recipient(models.Model):

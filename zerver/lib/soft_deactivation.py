@@ -347,22 +347,22 @@ def get_users_for_soft_deactivation(
         .values("user_profile_id")
         .annotate(last_visit=Max("last_visit"))
     )
-    user_ids_to_deactivate = []
     today = timezone_now()
-    for user_activity in users_activity:
-        if (today - user_activity["last_visit"]).days > inactive_for_days:
-            user_ids_to_deactivate.append(user_activity["user_profile_id"])
+    user_ids_to_deactivate = [
+        user_activity["user_profile_id"]
+        for user_activity in users_activity
+        if (today - user_activity["last_visit"]).days > inactive_for_days
+    ]
     users_to_deactivate = list(UserProfile.objects.filter(id__in=user_ids_to_deactivate))
     return users_to_deactivate
 
 
 def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
-    users_soft_activated = []
-    for user_profile in users:
-        user_activated = reactivate_user_if_soft_deactivated(user_profile)
-        if user_activated:
-            users_soft_activated.append(user_activated)
-    return users_soft_activated
+    return [
+        user_activated
+        for user_profile in users
+        if (user_activated := reactivate_user_if_soft_deactivated(user_profile)) is not None
+    ]
 
 
 def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> List[UserProfile]:
