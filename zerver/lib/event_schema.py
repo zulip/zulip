@@ -1093,7 +1093,7 @@ custom_profile_field_type = DictType(
     required_keys=[
         # vertical formatting
         ("id", int),
-        ("value", str),
+        ("value", OptionalType(str)),
     ],
     optional_keys=[
         # vertical formatting

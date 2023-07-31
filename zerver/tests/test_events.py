@@ -24,6 +24,7 @@ from zerver.actions.bots import (
 )
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
+    check_remove_custom_profile_field_value,
     do_remove_realm_custom_profile_field,
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
@@ -1122,6 +1123,13 @@ class NormalActionsTest(BaseAction):
         }
         events = self.verify_action(
             lambda: do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
+        )
+        check_realm_user_update("events[0]", events[0], "custom_profile_field")
+        self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
+
+        # Test event for removing custom profile data
+        events = self.verify_action(
+            lambda: check_remove_custom_profile_field_value(self.user_profile, field_id)
         )
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
