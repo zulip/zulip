@@ -108,6 +108,7 @@ select = [
     "INT", # gettext
     "ISC", # string concatenation
     "N", # naming
+    "PERF", # performance
     "PGH", # pygrep-hooks
     "PIE", # miscellaneous
     "PL", # pylint
@@ -139,6 +140,7 @@ ignore = [
     "E731", # Do not assign a lambda expression, use a def
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
+    "PERF203", # `try`-`except` within a loop incurs performance overhead
     "PLC1901", # `s == ""` can be simplified to `not s` as an empty string is falsey
     "PLR0911", # Too many return statements
     "PLR0912", # Too many branches
