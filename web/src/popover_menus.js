@@ -31,7 +31,7 @@ import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as flatpickr from "./flatpickr";
 import * as giphy from "./giphy";
-import {$t, $t_html} from "./i18n";
+import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
@@ -48,6 +48,7 @@ import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
 import * as timerender from "./timerender";
+import {show_copied_confirmation} from "./tippyjs";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
@@ -784,16 +785,8 @@ export function initialize() {
                 instance.hide();
             });
 
-            new ClipboardJS($popper.find(".copy_link")[0]).on("success", (e) => {
-                // e.trigger returns the DOM element triggering the copy action
-                const message_id = e.trigger.dataset.messageId;
-                const $row = $(`[zid='${CSS.escape(message_id)}']`);
-                $row.find(".alert-msg")
-                    .text($t({defaultMessage: "Copied!"}))
-                    .css("display", "block")
-                    .delay(1000)
-                    .fadeOut(300);
-
+            new ClipboardJS($popper.find(".copy_link")[0]).on("success", () => {
+                show_copied_confirmation($(instance.reference).closest(".message_controls")[0]);
                 setTimeout(() => {
                     // The Clipboard library works by focusing to a hidden textarea.
                     // We unfocus this so keyboard shortcuts, etc., will work again.
