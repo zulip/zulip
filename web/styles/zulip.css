@@ -1161,16 +1161,6 @@ td.pointer {
     animation: rotate 1s infinite linear;
 }
 
-/* The way this overrides the menus with a background-color and a high
-   z-index is kinda hacky, and requires some annoying color-matching,
-   but it works. */
-.alert-msg {
-    color: hsl(170deg 48% 54%);
-    z-index: 999;
-    font-weight: 400;
-    display: none;
-}
-
 .status-time {
     top: 8px !important;
 }
@@ -1582,10 +1572,6 @@ td.pointer {
 
 .message_row.private-message {
     background-color: var(--color-background-private-message-content);
-
-    .alert-msg {
-        background-color: hsl(192deg 20% 95%);
-    }
 
     .date_row {
         background-color: var(--color-background-private-message-content);

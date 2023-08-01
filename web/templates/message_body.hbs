@@ -26,8 +26,6 @@
     {{/if}}
 </span>
 
-<span class="alert-msg"></span>
-
 <a {{#unless msg/locally_echoed}}href="{{ msg/url }}"{{/unless}} class="message_time{{#if status_message}} status-time{{/if}}">
     {{#unless include_sender}}
     <span class="copy-paste-text">&nbsp;</span>

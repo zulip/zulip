@@ -409,10 +409,6 @@
         color: inherit !important;
     }
 
-    .private-message .alert-msg {
-        background-color: hsl(208deg 17% 29%);
-    }
-
     .active_private_messages_section {
         #private_messages_section,
         #private_messages_list,
