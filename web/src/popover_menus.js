@@ -156,7 +156,7 @@ export const default_popover_props = {
        to generate the required html */
 };
 
-const left_sidebar_tippy_options = {
+export const left_sidebar_tippy_options = {
     placement: "right",
     popperOptions: {
         modifiers: [

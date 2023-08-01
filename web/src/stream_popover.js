@@ -14,6 +14,8 @@ import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
+import * as popover_menus from "./popover_menus";
+import {left_sidebar_tippy_options} from "./popover_menus";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as settings_data from "./settings_data";
@@ -27,7 +29,7 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
-let current_stream_sidebar_elem;
+let stream_popover_instance = null;
 let stream_widget_value;
 let $stream_header_colorblock;
 
@@ -47,16 +49,17 @@ function get_popover_menu_items(sidebar_elem) {
         return undefined;
     }
 
-    const popover_data = $(sidebar_elem).data("popover");
-    if (!popover_data) {
+    const $popover = $(sidebar_elem.popper);
+    if (!$popover) {
         blueslip.error("Cannot find popover data for stream sidebar menu.");
         return undefined;
     }
-    return $("li:not(.divider):visible > a", popover_data.$tip);
+
+    return $("li:not(.divider):visible > a", $popover);
 }
 
 export function stream_sidebar_menu_handle_keyboard(key) {
-    const items = get_popover_menu_items(current_stream_sidebar_elem);
+    const items = get_popover_menu_items(stream_popover_instance);
     popovers.popover_items_handle_keyboard(key, items);
 }
 
@@ -71,14 +74,14 @@ export function elem_to_stream_id($elem) {
 }
 
 export function is_open() {
-    return current_stream_sidebar_elem !== undefined;
+    return Boolean(stream_popover_instance);
 }
 
 export function hide_stream_popover() {
     if (is_open()) {
-        $(current_stream_sidebar_elem).popover("destroy");
         hide_left_sidebar_menu_icon();
-        current_stream_sidebar_elem = undefined;
+        stream_popover_instance.destroy();
+        stream_popover_instance = null;
     }
 }
 
@@ -102,69 +105,36 @@ function stream_popover_sub(e) {
     return sub;
 }
 
-// This little function is a workaround for the fact that
-// Bootstrap popovers don't properly handle being resized --
-// so after resizing our popover to add in the spectrum color
-// picker, we need to adjust its height accordingly.
-function update_spectrum($popover, update_func) {
-    const initial_height = $popover[0].offsetHeight;
-
-    const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
-    update_func($colorpicker);
-    const after_height = $popover[0].offsetHeight;
-
-    const $popover_root = $popover.closest(".popover");
-    const current_top_px = Number.parseFloat($popover_root.css("top").replace("px", ""));
-    const height_delta = after_height - initial_height;
-    let top = current_top_px - height_delta / 2;
-
-    if (top < 0) {
-        top = 0;
-        $popover_root.find("div.arrow").hide();
-    } else if (top + after_height > $(window).height() - 20) {
-        top = $(window).height() - after_height - 20;
-        if (top < 0) {
-            top = 0;
-        }
-        $popover_root.find("div.arrow").hide();
-    }
-
-    $popover_root.css("top", top + "px");
-}
-
 function build_stream_popover(opts) {
-    const elt = opts.elt;
-    const stream_id = opts.stream_id;
+    const {elt, stream_id} = opts;
 
-    if (stream_popped() && current_stream_sidebar_elem === elt) {
-        // If the popover is already shown, clicking again should toggle it.
-        hide_stream_popover();
+    // This will allow the user to close the popover by clicking
+    // on the reference element if the popover is already open.
+    if (stream_popover_instance?.reference === elt) {
         return;
     }
 
     popovers.hide_all_except_sidebars();
-
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
     });
 
-    $(elt).popover({
-        content,
-        html: true,
-        trigger: "manual",
-        fixed: true,
-        fix_positions: true,
+    popover_menus.toggle_popover_menu(elt, {
+        ...left_sidebar_tippy_options,
+        onCreate(instance) {
+            stream_popover_instance = instance;
+            const $popover = $(instance.popper);
+            $popover.addClass("stream-popover-root");
+            instance.setContent(ui_util.parse_html(content));
+        },
+        onMount() {
+            show_left_sidebar_menu_icon(elt);
+            register_stream_handlers();
+        },
+        onHidden() {
+            hide_stream_popover();
+        },
     });
-
-    $(elt).popover("show");
-    const $popover = $(`.streams_popover[data-stream-id="${CSS.escape(stream_id)}"]`);
-
-    update_spectrum($popover, ($colorpicker) => {
-        $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
-    });
-
-    current_stream_sidebar_elem = elt;
-    show_left_sidebar_menu_icon(elt);
 }
 
 export function build_move_topic_to_stream_popover(
@@ -434,8 +404,6 @@ export function build_move_topic_to_stream_popover(
 
 export function register_click_handlers() {
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
-        e.stopPropagation();
-
         const elt = e.currentTarget;
         const $stream_li = $(elt).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
@@ -444,14 +412,14 @@ export function register_click_handlers() {
             elt,
             stream_id,
         });
-    });
 
-    register_stream_handlers();
+        e.stopPropagation();
+    });
 }
 
 export function register_stream_handlers() {
     // Stream settings
-    $("body").on("click", ".open_stream_settings", (e) => {
+    $("body").one("click", ".open_stream_settings", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
 
@@ -460,7 +428,7 @@ export function register_stream_handlers() {
     });
 
     // Pin/unpin
-    $("body").on("click", ".pin_to_top", (e) => {
+    $("body").one("click", ".pin_to_top", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
         stream_settings_ui.toggle_pin_to_top_stream(sub);
@@ -468,7 +436,7 @@ export function register_stream_handlers() {
     });
 
     // Mark all messages in stream as read
-    $("body").on("click", ".mark_stream_as_read", (e) => {
+    $("body").one("click", ".mark_stream_as_read", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
         unread_ops.mark_stream_as_read(sub.stream_id);
@@ -476,7 +444,7 @@ export function register_stream_handlers() {
     });
 
     // Mute/unmute
-    $("body").on("click", ".toggle_stream_muted", (e) => {
+    $("body").one("click", ".toggle_stream_muted", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
         stream_settings_ui.set_muted(sub, !sub.is_muted);
@@ -484,7 +452,7 @@ export function register_stream_handlers() {
     });
 
     // New topic in stream menu
-    $("body").on("click", ".popover_new_topic_button", (e) => {
+    $("body").one("click", ".popover_new_topic_button", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
 
@@ -498,7 +466,7 @@ export function register_stream_handlers() {
     });
 
     // Unsubscribe
-    $("body").on("click", ".popover_sub_unsub_button", function (e) {
+    $("body").one("click", ".popover_sub_unsub_button", function (e) {
         $(this).toggleClass("unsub");
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
@@ -509,19 +477,19 @@ export function register_stream_handlers() {
     });
 
     // Choose a different color.
-    $("body").on("click", ".choose_stream_color", (e) => {
-        update_spectrum($(e.target).closest(".streams_popover"), ($colorpicker) => {
-            $(".colorpicker-container").show();
-            $colorpicker.spectrum("destroy");
-            $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
-            // In theory this should clean up the old color picker,
-            // but this seems a bit flaky -- the new colorpicker
-            // doesn't fire until you click a button, but the buttons
-            // have been hidden.  We work around this by just manually
-            // fixing it up here.
-            $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
-            $(e.target).hide();
-        });
+    $("body").one("click", ".choose_stream_color", (e) => {
+        const $popover = $(e.target).closest(".streams_popover");
+        const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
+        $(".colorpicker-container").show();
+        $colorpicker.spectrum("destroy");
+        $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
+        // In theory this should clean up the old color picker,
+        // but this seems a bit flaky -- the new colorpicker
+        // doesn't fire until you click a button, but the buttons
+        // have been hidden.  We work around this by just manually
+        // fixing it up here.
+        $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
+        $(e.target).hide();
 
         $(".streams_popover").on("click", "a.sp-cancel", () => {
             hide_stream_popover();
@@ -530,5 +498,6 @@ export function register_stream_handlers() {
             $(".popover-inner").hide().fadeIn(300);
             $(".popover").addClass("colorpicker-popover");
         }
+        e.stopPropagation();
     });
 }
