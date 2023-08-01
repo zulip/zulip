@@ -282,7 +282,8 @@ class EditMessageTest(EditMessageTestCase):
             self.send_stream_message(self.notification_bot(realm), stream_name, "Message three")
         )
         messages = [
-            Message.objects.select_related().get(id=message_id) for message_id in message_ids
+            Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED).get(id=message_id)
+            for message_id in message_ids
         ]
 
         # Check number of queries performed
