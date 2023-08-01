@@ -596,7 +596,7 @@ class MessageDict:
             # of going to the DB here should be overshadowed by the cost of rendering
             # and updating the row.
             # TODO: see #1379 to eliminate Markdown dependencies
-            message = Message.objects.select_related().get(id=message_id)
+            message = Message.objects.select_related("sender", "sender__realm").get(id=message_id)
 
             assert message is not None  # Hint for mypy.
             # It's unfortunate that we need to have side effects on the message
@@ -776,7 +776,7 @@ def access_message(
     pass lock_message when inside a @transaction.atomic block.
     """
     try:
-        base_query = Message.objects.select_related()
+        base_query = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
         if lock_message:
             # We want to lock only the `Message` row, and not the related fields
             # because the `Message` row only has a possibility of races.
@@ -808,7 +808,7 @@ def access_web_public_message(
         raise MissingAuthenticationError
 
     try:
-        message = Message.objects.select_related().get(id=message_id)
+        message = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED).get(id=message_id)
     except Message.DoesNotExist:
         raise MissingAuthenticationError
 

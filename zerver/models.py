@@ -3015,6 +3015,8 @@ class Message(AbstractMessage):
 
     search_tsvector = SearchVectorField(null=True)
 
+    DEFAULT_SELECT_RELATED = ["sender", "sender__realm", "realm", "recipient", "sending_client"]
+
     def topic_name(self) -> str:
         """
         Please start using this helper to facilitate an
