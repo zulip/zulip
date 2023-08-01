@@ -161,7 +161,7 @@ export function handle_narrow_activated(filter) {
         unhighlight_all_private_messages_view();
     }
     if (narrow_to_private_messages_section) {
-        const current_user_ids_string = pm_list_data.get_active_user_ids_string();
+        const {user_ids_string: current_user_ids_string} = pm_list_data.get_active_user_ids();
         const $active_filter_li = $(
             `li[data-user-ids-string='${CSS.escape(current_user_ids_string)}']`,
         );

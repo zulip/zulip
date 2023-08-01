@@ -179,15 +179,22 @@ test("get_conversations bot", ({override}) => {
     assert.deepEqual(pm_data, expected_data);
 });
 
-test("get_active_user_ids_string", () => {
-    assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
+test("get_active_user_ids", () => {
+    assert.deepEqual(pm_list_data.get_active_user_ids(), {
+        user_ids_string: undefined,
+        user_ids_array: undefined,
+    });
 
     const stream_filter = new Filter([{operator: "stream", operand: "test"}]);
     narrow_state.set_current_filter(stream_filter);
-    assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
+    assert.deepEqual(pm_list_data.get_active_user_ids(), {
+        user_ids_string: undefined,
+        user_ids_array: undefined,
+    });
 
     set_pm_with_filter("bob@zulip.com,alice@zulip.com");
-    assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
+    assert.equal(pm_list_data.get_active_user_ids().user_ids_string, "101,102");
+    assert.deepEqual(pm_list_data.get_active_user_ids().user_ids_array, [101, 102]);
 });
 
 test("get_list_info_unread_messages", ({override}) => {
