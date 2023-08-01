@@ -131,7 +131,7 @@ def add_emoji_to_message() -> Dict[str, object]:
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"
 
-    message = Message.objects.select_related().get(id=message_id)
+    message = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED).get(id=message_id)
     do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
 
     return {}
