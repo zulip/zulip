@@ -160,7 +160,9 @@ def update_messages_for_topic_edit(
     if propagate_mode == "change_later":
         propagate_query = propagate_query & Q(id__gt=edited_message.id)
 
-    messages = Message.objects.filter(propagate_query).select_related()
+    messages = Message.objects.filter(propagate_query).select_related(
+        *Message.DEFAULT_SELECT_RELATED
+    )
 
     update_fields = ["edit_history", "last_edit_time"]
 
