@@ -1454,7 +1454,8 @@ class MessageAccessTests(ZulipTestCase):
 
         message_ids = [message_one_id, message_two_id]
         messages = [
-            Message.objects.select_related().get(id=message_id) for message_id in message_ids
+            Message.objects.select_related("recipient").get(id=message_id)
+            for message_id in message_ids
         ]
 
         with self.assert_database_query_count(2):
@@ -1512,7 +1513,8 @@ class MessageAccessTests(ZulipTestCase):
 
         message_ids = [message_one_id, message_two_id]
         messages = [
-            Message.objects.select_related().get(id=message_id) for message_id in message_ids
+            Message.objects.select_related("recipient").get(id=message_id)
+            for message_id in message_ids
         ]
 
         # All public stream messages are always accessible
