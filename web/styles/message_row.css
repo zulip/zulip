@@ -243,12 +243,6 @@ $time_column_min_width: 50px; /* + padding */
             margin-top: $distance_of_non_text_elements_from_message_box;
         }
 
-        .alert-msg {
-            /* Span both the controls and time columns */
-            grid-row: controls-start;
-            grid-column: controls-start / time-end;
-        }
-
         .message_length_controller {
             grid-area: more;
         }
