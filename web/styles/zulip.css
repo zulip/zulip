@@ -2175,6 +2175,7 @@ div.focused-message-list {
             font-size: 14px;
             position: relative;
             top: 1px;
+            margin-right: 0;
         }
     }
 

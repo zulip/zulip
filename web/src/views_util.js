@@ -23,9 +23,8 @@ export function show(opts) {
         return;
     }
 
-    // Hide selected elements in the left sidebar.
-    opts.highlight_view_in_left_sidebar();
     stream_list.handle_message_view_deactivated();
+    opts.highlight_view_in_left_sidebar();
     pm_list.handle_message_view_deactivated();
 
     // Hide "middle-column" which has html for rendering

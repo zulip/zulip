@@ -74,6 +74,11 @@ export function by_stream_url(stream_id: number): string {
     return internal_url.by_stream_url(stream_id, sub_store.maybe_get_stream_name);
 }
 
+export function recent_by_stream_url(stream_id: number): string {
+    // Wrapper for web use of internal_url.recent_by_stream_url
+    return internal_url.recent_by_stream_url(stream_id, sub_store.maybe_get_stream_name);
+}
+
 export function by_stream_topic_url(stream_id: number, topic: string): string {
     // Wrapper for web use of internal_url.by_stream_topic_url
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
@@ -82,11 +87,11 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
 // Encodes an operator list into the
 // corresponding hash: the # component
 // of the narrow URL
-export function operators_to_hash(operators?: Operator[]): string {
+export function operators_to_hash(operators?: Operator[], recent_view?: boolean): string {
     let hash = "#";
 
     if (operators !== undefined) {
-        hash = "#narrow";
+        hash = recent_view ? "#recent" : "#narrow";
 
         for (const elem of operators) {
             // Support legacy tuples.

@@ -81,6 +81,14 @@ export function save_narrow(operators) {
     changehash(new_hash);
 }
 
+function set_recent_view(operators) {
+    if (browser_history.state.changing_hash) {
+        return;
+    }
+    const new_hash = hash_util.operators_to_hash(operators, true);
+    changehash(new_hash);
+}
+
 export function activate(raw_operators, opts) {
     /* Main entry point for switching to a new view / message list.
        Note that for historical reasons related to the current
@@ -178,6 +186,7 @@ export function activate(raw_operators, opts) {
 
         const filter = new Filter(raw_operators);
         const operators = filter.operators();
+        const narrowing_to_recent_stream_topics = opts.is_recent_view;
 
         // These two narrowing operators specify what message should be
         // selected and should be the center of the narrow.
@@ -321,7 +330,7 @@ export function activate(raw_operators, opts) {
         // recursively.
         reset_ui_state();
 
-        if (coming_from_recent_view) {
+        if (coming_from_recent_view && !narrowing_to_recent_stream_topics) {
             recent_view_ui.hide();
         } else if (coming_from_inbox) {
             inbox_ui.hide();
@@ -345,6 +354,23 @@ export function activate(raw_operators, opts) {
             trigger: opts ? opts.trigger : undefined,
             previous_id: message_lists.current.selected_id(),
         });
+
+        if (narrowing_to_recent_stream_topics) {
+            const stream_name = operators[0].operand;
+            const stream_id = stream_data.get_sub(stream_name).stream_id;
+            recent_view_ui.show(stream_id);
+            compose_closed_ui.update_buttons_for_stream_views();
+            compose_closed_ui.update_reply_recipient_label();
+            left_sidebar_navigation_area.handle_narrow_activated(filter);
+            pm_list.handle_narrow_activated(filter);
+            stream_list.handle_narrow_activated(filter);
+            message_view_header.render_title_area(filter);
+            narrow_state.reset_current_filter();
+            if (opts.change_hash) {
+                set_recent_view(operators);
+            }
+            return;
+        }
 
         if (opts.then_select_id > 0) {
             // We override target_id in this case, since the user could be

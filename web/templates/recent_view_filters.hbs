@@ -1,5 +1,5 @@
 <button data-filter="all" type="button" class="btn btn-default btn-recent-filters">{{t 'All' }}</button>
-<button data-filter="include_private" type="button" class="btn btn-default btn-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="true">
+<button data-filter="include_private" type="button" class="btn btn-default btn-recent-filters include-private-filter {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="true">
     {{#if filter_pm}}
     <i class="fa fa-check-square-o"></i>
     {{else}}
@@ -23,7 +23,7 @@
     {{/if}}
     {{t 'Unread' }}
 </button>
-<button data-filter="participated" type="button" class="btn btn-default btn-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="false">
+<button data-filter="participated" type="button" class="btn btn-default btn-recent-filters include-participated-filter {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="false">
     {{#if filter_participated}}
     <i class="fa fa-check-square-o"></i>
     {{else}}

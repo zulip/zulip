@@ -93,6 +93,7 @@ mock_esm("../src/compose_closed_ui", {
 });
 mock_esm("../src/hash_util", {
     by_stream_url: test_url,
+    recent_by_stream_url: test_url,
     by_stream_topic_url: test_url,
     by_conversation_and_time_url: test_url,
 });
@@ -1007,6 +1008,14 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
+    );
+
+    // Test filtering by stream id, now only getting topics from stream 1
+    const stream_topics = rt_data.get_topics_for_stream_id(1);
+    assert.equal(stream_topics.size, 7);
+    assert.equal(
+        [...stream_topics.keys()].toString(),
+        "1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
 
     // Process direct message

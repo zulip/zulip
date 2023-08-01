@@ -45,6 +45,12 @@ run_test("test by_stream_url", () => {
     assert.equal(result, "#narrow/stream/123-a-test-stream");
 });
 
+run_test("test recent_by_stream_url", () => {
+    const maybe_get_stream_name = () => "a test stream";
+    const result = internal_url.recent_by_stream_url(123, maybe_get_stream_name);
+    assert.equal(result, "#recent/stream/123-a-test-stream");
+});
+
 run_test("test by_stream_topic_url", () => {
     const maybe_get_stream_name = () => "a test stream";
     const result = internal_url.by_stream_topic_url(123, "test topic", maybe_get_stream_name);

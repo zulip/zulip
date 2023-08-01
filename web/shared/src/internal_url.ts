@@ -57,6 +57,13 @@ export function by_stream_url(
     return `#narrow/stream/${encode_stream_id(stream_id, maybe_get_stream_name)}`;
 }
 
+export function recent_by_stream_url(
+    stream_id: number,
+    maybe_get_stream_name: MaybeGetStreamName,
+): string {
+    return `#recent/stream/${encode_stream_id(stream_id, maybe_get_stream_name)}`;
+}
+
 export function by_stream_topic_url(
     stream_id: number,
     topic: string,

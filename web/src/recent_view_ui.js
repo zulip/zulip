@@ -25,8 +25,16 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
-import {get, process_message, topics} from "./recent_view_data";
-import {get_key_from_message, get_topic_key, is_visible, set_visible} from "./recent_view_util";
+import {get, get_topics_for_stream_id, process_message, topics} from "./recent_view_data";
+import {
+    get_key_from_message,
+    get_stream_view_id,
+    get_topic_key,
+    is_main_view_visible,
+    is_stream_view_visible,
+    is_visible,
+    set_visible,
+} from "./recent_view_util";
 import * as scroll_util from "./scroll_util";
 import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
@@ -478,7 +486,7 @@ function format_conversation(conversation_data) {
         context.stream_id = last_msg.stream_id;
         context.stream_name = stream_data.get_stream_name_from_id(last_msg.stream_id);
         context.stream_color = stream_info.color;
-        context.stream_url = hash_util.by_stream_url(context.stream_id);
+        context.stream_url = hash_util.recent_by_stream_url(context.stream_id);
         context.invite_only = stream_info.invite_only;
         context.is_web_public = stream_info.is_web_public;
         // Topic info
@@ -806,6 +814,10 @@ export function update_filters_view() {
     show_selected_filters();
 
     topics_widget.hard_redraw();
+    if (is_stream_view_visible()) {
+        $(".include-private-filter").hide();
+        $(".include-participated-filter").hide();
+    }
 }
 
 function sort_comparator(a, b) {
@@ -939,14 +951,30 @@ export function complete_rerender() {
         return;
     }
 
+    const is_stream_view = is_stream_view_visible();
+
     // Show topics list
-    const mapped_topic_values = [...get().values()];
+    let mapped_topic_values;
+    if (is_stream_view) {
+        mapped_topic_values = [...get_topics_for_stream_id(get_stream_view_id()).values()];
+    } else {
+        mapped_topic_values = [...get().values()];
+    }
 
     if (topics_widget) {
+        if (is_stream_view) {
+            $(".include-private-filter").hide();
+            $(".include-participated-filter").hide();
+        } else {
+            $(".include-private-filter").show();
+            $(".include-participated-filter").show();
+        }
         topics_widget.replace_list_data(mapped_topic_values);
         return;
     }
 
+    // TODO: Potentially store a separate set of filters per Recent
+    // Conversations view (i.e. one for all messages, one for each stream).
     const rendered_body = render_recent_view_body({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
@@ -955,6 +983,10 @@ export function complete_rerender() {
         search_val: $("#recent_view_search").val() || "",
         is_spectator: page_params.is_spectator,
     });
+    if (is_stream_view) {
+        $(".include-private-filter").hide();
+        $(".include-participated-filter").hide();
+    }
     $("#recent_view_table").html(rendered_body);
 
     // `show_selected_filters` needs to be called after the Recent
@@ -1003,17 +1035,25 @@ export function complete_rerender() {
     });
 }
 
-export function show() {
+export function show(for_stream_id = null) {
     views_util.show({
-        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_recent_view,
+        highlight_view_in_left_sidebar() {
+            if (for_stream_id === null) {
+                left_sidebar_navigation_area.highlight_recent_view();
+            }
+            // TODO: When showing for a specific stream, we might want to highlight
+            // the current stream in the left sidebar.
+        },
         $view: $("#recent_view"),
         // We want to show `new stream message` instead of
         // `new topic`, which we are already doing in this
         // function. So, we reuse it here.
         update_compose: compose_closed_ui.update_buttons_for_non_stream_views,
         is_recent_view: true,
-        is_visible,
-        set_visible,
+        is_visible: () =>
+            for_stream_id ? is_stream_view_visible(for_stream_id) : is_main_view_visible(),
+        reset_current_filter: for_stream_id === null,
+        set_visible: (value) => set_visible(value, for_stream_id),
         complete_rerender,
     });
 }

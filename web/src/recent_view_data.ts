@@ -53,13 +53,24 @@ export function process_message(msg: Message): boolean {
     return conversation_data_updated;
 }
 
-function get_sorted_topics(): Map<string | undefined, TopicData> {
+function get_sorted_topics(topic_map: Map<string, TopicData>): Map<string | undefined, TopicData> {
     // Sort all recent topics by last message time.
-    return new Map([...topics.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id));
+    return new Map([...topic_map.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id));
 }
 
 export function get(): Map<string | undefined, TopicData> {
-    return get_sorted_topics();
+    return get_sorted_topics(topics);
+}
+
+export function get_topics_for_stream_id(stream_id: number): Map<string | undefined, TopicData> {
+    const stream_topics = new Map(
+        [...topics.entries()].filter(
+            (topic) =>
+                // TODO: It would be great if the map had the stream_id directly accessible.
+                topic[1].type === "stream" && topic[0].startsWith(`${stream_id.toString()}:`),
+        ),
+    );
+    return get_sorted_topics(stream_topics);
 }
 
 export function reify_message_id_if_available(opts: {old_id: number; new_id: number}): boolean {

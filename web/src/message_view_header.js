@@ -20,7 +20,7 @@ function get_formatted_sub_count(sub_count) {
 
 function make_message_view_header(filter) {
     const message_view_header = {};
-    if (recent_view_util.is_visible()) {
+    if (recent_view_util.is_main_view_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
             icon: "clock-o",
@@ -40,6 +40,9 @@ function make_message_view_header(filter) {
     }
     message_view_header.title = filter.get_title();
     filter.add_icon_data(message_view_header);
+    if (recent_view_util.is_stream_view_visible()) {
+        message_view_header.recent_view = true;
+    }
     if (filter.has_operator("stream") && !filter._sub) {
         message_view_header.sub_count = "0";
         message_view_header.formatted_sub_count = "0";
@@ -110,8 +113,8 @@ export function initialize() {
     render_title_area();
 }
 
-export function render_title_area() {
-    const filter = narrow_state.filter();
+export function render_title_area(narrow_filter = null) {
+    const filter = narrow_filter ?? narrow_state.filter();
     build_message_view_header(filter);
 }
 

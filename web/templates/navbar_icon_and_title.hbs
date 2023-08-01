@@ -1,6 +1,15 @@
-{{#if zulip_icon}}
-<i class="zulip-icon zulip-icon-{{zulip_icon}}" aria-hidden="true"></i>
-{{else if icon}}
-<i class="fa fa-{{icon}}" aria-hidden="true"></i>
-{{/if}}
+{{#if recent_view}}
+{{#tr}}
+    Recent in <z-stream-name></z-stream-name>
+    {{#*inline "z-stream-name"}}
+        {{#if zulip_icon}}
+            <i class="zulip-icon zulip-icon-{{zulip_icon}}" aria-hidden="true"></i>
+        {{else if icon}}
+            <i class="fa fa-{{icon}}" aria-hidden="true"></i>
+        {{/if}}
+        {{title}}
+    {{/inline}}
+{{/tr}}
+{{else}}
 {{title}}
+{{/if}}

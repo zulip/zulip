@@ -124,7 +124,17 @@ function do_hashchange_normal(from_reload) {
     // be #ABCD.
     const hash = window.location.hash.split("/");
 
+    // Do this before the switch statement to differentiate between
+    // recent topics for all messages and recent topics for a specific
+    // stream.
+    if (hash.length === 1 && hash[0] === "#recent") {
+        maybe_hide_inbox();
+        recent_view_ui.show();
+        return false;
+    }
+
     switch (hash[0]) {
+        case "#recent":
         case "#narrow": {
             hide_non_message_list_views();
             let operators;
@@ -166,6 +176,7 @@ function do_hashchange_normal(from_reload) {
                 narrow_opts.then_select_id = location_data_for_hash.narrow_pointer;
                 narrow_opts.then_select_offset = location_data_for_hash.narrow_offset;
             }
+            narrow_opts.is_recent_view = hash[0] === "#recent";
             narrow.activate(operators, narrow_opts);
             return true;
         }
@@ -183,10 +194,6 @@ function do_hashchange_normal(from_reload) {
             // this detail in the browser's forward/back session history.
             recent_view_ui.show();
             window.location.replace("#recent");
-            break;
-        case "#recent":
-            maybe_hide_inbox();
-            recent_view_ui.show();
             break;
         case "#inbox":
             maybe_hide_recent_view();
