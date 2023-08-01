@@ -1120,10 +1120,10 @@ def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
 
     # Mark all Huddles whose recipient ID contains a cross-realm user.
     unsafe_huddle_recipient_ids = set()
-    for sub in Subscription.objects.select_related().filter(
+    for sub in Subscription.objects.select_related("user_profile").filter(
         recipient__in=realm_huddle_recipient_ids
     ):
-        if sub.user_profile.realm != realm:
+        if sub.user_profile.realm_id != realm.id:
             # In almost every case the other realm will be zulip.com
             unsafe_huddle_recipient_ids.add(sub.recipient_id)
 
