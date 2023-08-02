@@ -145,6 +145,7 @@ test("process_new_message", () => {
         display_recipient: "Zoolippy",
         topic: "cool thing",
         subject: "the_subject",
+        flags: [],
         id: 2068,
     };
 
@@ -294,6 +295,7 @@ test("update_property", () => {
         stream_id: devel.stream_id,
         stream: devel.name,
         display_recipient: devel.name,
+        flags: [],
         id: 100,
     };
     const raw_message2 = {
@@ -304,6 +306,7 @@ test("update_property", () => {
         stream_id: denmark.stream_id,
         stream: denmark.name,
         display_recipient: denmark.name,
+        flags: [],
         id: 101,
     };
     const message1 = message_helper.process_new_message(raw_message1);
