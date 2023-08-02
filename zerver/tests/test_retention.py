@@ -673,20 +673,16 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._create_attachments()
         realm_id = get_realm("zulip").id
         host = get_realm("zulip").host
-        body1 = """Some files here ...[zulip.txt](
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
-        """.format(
-            id=realm_id, host=host
-        )
-        body2 = """Some files here
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
-        """.format(
-            id=realm_id, host=host
-        )
+        body1 = f"""Some files here ...[zulip.txt](
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
+        """
+        body2 = f"""Some files here
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+        """
 
         msg_ids = [
             self.send_personal_message(self.sender, self.recipient, body1),

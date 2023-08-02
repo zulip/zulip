@@ -2543,12 +2543,12 @@ class MarkdownTest(ZulipTestCase):
             render_markdown(msg, content).rendered_content,
             "<p>Look to "
             '<a class="stream" '
-            'data-stream-id="{denmark.id}" '
-            'href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a> and '
+            f'data-stream-id="{denmark.id}" '
+            f'href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a> and '
             '<a class="stream" '
-            'data-stream-id="{scotland.id}" '
-            'href="/#narrow/stream/{scotland.id}-Scotland">#{scotland.name}</a>, '
-            "there something</p>".format(denmark=denmark, scotland=scotland),
+            f'data-stream-id="{scotland.id}" '
+            f'href="/#narrow/stream/{scotland.id}-Scotland">#{scotland.name}</a>, '
+            "there something</p>",
         )
 
     def test_stream_case_sensitivity(self) -> None:
@@ -2622,14 +2622,14 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
             "<p>This has two links: "
-            '<a class="stream-topic" data-stream-id="{denmark.id}" '
-            'href="/#narrow/stream/{denmark.id}-{denmark.name}/topic/some.20topic">'
-            "#{denmark.name} &gt; some topic</a>"
+            f'<a class="stream-topic" data-stream-id="{denmark.id}" '
+            f'href="/#narrow/stream/{denmark.id}-{denmark.name}/topic/some.20topic">'
+            f"#{denmark.name} &gt; some topic</a>"
             " and "
-            '<a class="stream-topic" data-stream-id="{scotland.id}" '
-            'href="/#narrow/stream/{scotland.id}-{scotland.name}/topic/other.20topic">'
-            "#{scotland.name} &gt; other topic</a>"
-            ".</p>".format(denmark=denmark, scotland=scotland),
+            f'<a class="stream-topic" data-stream-id="{scotland.id}" '
+            f'href="/#narrow/stream/{scotland.id}-{scotland.name}/topic/other.20topic">'
+            f"#{scotland.name} &gt; other topic</a>"
+            ".</p>",
         )
 
     def test_possible_stream_names(self) -> None:
@@ -2652,10 +2652,7 @@ class MarkdownTest(ZulipTestCase):
         href = f"/#narrow/stream/{uni.id}-{quoted_name}"
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
-            '<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
-                s=uni,
-                href=href,
-            ),
+            f'<p><a class="stream" data-stream-id="{uni.id}" href="{href}">#{uni.name}</a></p>',
         )
 
     def test_stream_atomic_string(self) -> None:
