@@ -827,7 +827,13 @@ class MissedMessageHookTest(ZulipTestCase):
             )
 
     def test_followed_topic_email_and_push_notify(self) -> None:
-        # By default, messages sent in followed topics should send notifications.
+        # messages sent in followed topics should send both email and push notifications.
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_email_notifications", True, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_push_notifications", True, acting_user=None
+        )
         do_set_user_topic_visibility_policy(
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
