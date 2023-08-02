@@ -1,7 +1,7 @@
 import _ from "lodash";
 
+import type {Message} from "./message_store";
 import * as people from "./people";
-import type {Message} from "./types";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.

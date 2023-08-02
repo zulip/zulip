@@ -1,4 +1,4 @@
-import type {Message} from "./types";
+import type {Message} from "./message_store";
 
 let is_view_visible = false;
 

@@ -17,6 +17,7 @@ exports.test_user = test_user;
 
 exports.test_message = {
     sender_id: test_user.user_id,
+    flags: [],
     id: 99,
 };
 

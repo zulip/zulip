@@ -1,10 +1,10 @@
 import * as internal_url from "../shared/src/internal_url";
 
+import type {Message} from "./message_store";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
-import type {Message} from "./types";
 import type {UserGroup} from "./user_groups";
 
 type Operator = {operator: string; operand: string; negated?: boolean};
