@@ -102,30 +102,35 @@ export function update_booleans(message, flags) {
     message.alerted = convert_flag("has_alert_word");
 }
 
-export function update_property(property, value, info) {
-    switch (property) {
-        case "sender_full_name":
-        case "small_avatar_url":
-            for (const msg of stored_messages.values()) {
-                if (msg.sender_id && msg.sender_id === info.user_id) {
-                    msg[property] = value;
-                }
-            }
-            break;
-        case "stream_name":
-            for (const msg of stored_messages.values()) {
-                if (msg.stream_id && msg.stream_id === info.stream_id) {
-                    msg.display_recipient = value;
-                }
-            }
-            break;
-        case "status_emoji_info":
-            for (const msg of stored_messages.values()) {
-                if (msg.sender_id && msg.sender_id === info.user_id) {
-                    msg[property] = value;
-                }
-            }
-            break;
+export function update_stream_name(value, info) {
+    for (const msg of stored_messages.values()) {
+        if (msg.stream_id && msg.stream_id === info.stream_id) {
+            msg.display_recipient = value;
+        }
+    }
+}
+
+export function update_status_emoji_info(value, info) {
+    for (const msg of stored_messages.values()) {
+        if (msg.sender_id && msg.sender_id === info.user_id) {
+            msg.status_emoji_info = value;
+        }
+    }
+}
+
+export function update_sender_full_name(value, info) {
+    for (const msg of stored_messages.values()) {
+        if (msg.sender_id && msg.sender_id === info.user_id) {
+            msg.sender_full_name = value;
+        }
+    }
+}
+
+export function update_small_avatar_url(value, info) {
+    for (const msg of stored_messages.values()) {
+        if (msg.sender_id && msg.sender_id === info.user_id) {
+            msg.small_avatar_url = value;
+        }
     }
 }
 
