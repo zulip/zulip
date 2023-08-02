@@ -1177,14 +1177,18 @@ class UserProfileTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
 
-        cordelia.default_language = "de"
-        cordelia.default_view = "all_messages"
-        cordelia.emojiset = "twitter"
-        cordelia.timezone = "America/Phoenix"
-        cordelia.color_scheme = UserProfile.COLOR_SCHEME_NIGHT
-        cordelia.enable_offline_email_notifications = False
-        cordelia.enable_stream_push_notifications = True
-        cordelia.enter_sends = False
+        do_change_user_setting(cordelia, "default_language", "de", acting_user=None)
+        do_change_user_setting(cordelia, "default_view", "all_messages", acting_user=None)
+        do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
+        do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
+        do_change_user_setting(
+            cordelia, "color_scheme", UserProfile.COLOR_SCHEME_NIGHT, acting_user=None
+        )
+        do_change_user_setting(
+            cordelia, "enable_offline_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(cordelia, "enable_stream_push_notifications", True, acting_user=None)
+        do_change_user_setting(cordelia, "enter_sends", False, acting_user=None)
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
 
@@ -1805,12 +1809,10 @@ class RecipientInfoTest(ZulipTestCase):
         # These tests were written with the old default for
         # enable_online_push_notifications; that default is better for
         # testing the full code path anyway.
-        hamlet.enable_online_push_notifications = False
-        cordelia.enable_online_push_notifications = False
-        othello.enable_online_push_notifications = False
-        hamlet.save()
-        cordelia.save()
-        othello.save()
+        for user in [hamlet, cordelia, othello]:
+            do_change_user_setting(
+                user, "enable_online_push_notifications", False, acting_user=None
+            )
 
         realm = hamlet.realm
 
@@ -1863,9 +1865,10 @@ class RecipientInfoTest(ZulipTestCase):
 
         self.assertEqual(info, expected_info)
 
-        hamlet.enable_offline_email_notifications = False
-        hamlet.enable_offline_push_notifications = False
-        hamlet.save()
+        do_change_user_setting(
+            hamlet, "enable_offline_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(hamlet, "enable_offline_push_notifications", False, acting_user=None)
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
@@ -1875,14 +1878,11 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.pm_mention_email_disabled_user_ids, {hamlet.id})
         self.assertEqual(info.pm_mention_push_disabled_user_ids, {hamlet.id})
-        hamlet.enable_offline_email_notifications = True
-        hamlet.enable_offline_push_notifications = True
-        hamlet.save()
+        do_change_user_setting(hamlet, "enable_offline_email_notifications", True, acting_user=None)
+        do_change_user_setting(hamlet, "enable_offline_push_notifications", True, acting_user=None)
 
-        cordelia.wildcard_mentions_notify = False
-        cordelia.save()
-        hamlet.enable_stream_push_notifications = True
-        hamlet.save()
+        do_change_user_setting(cordelia, "wildcard_mentions_notify", False, acting_user=None)
+        do_change_user_setting(hamlet, "enable_stream_push_notifications", True, acting_user=None)
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
@@ -1966,8 +1966,7 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.stream_push_user_ids, set())
 
-        hamlet.enable_stream_push_notifications = False
-        hamlet.save()
+        do_change_user_setting(hamlet, "enable_stream_push_notifications", False, acting_user=None)
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = True
         sub.save()
