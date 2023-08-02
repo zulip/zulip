@@ -8,22 +8,22 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
-export function process_new_message(message) {
+export function process_new_message(raw_message) {
     // Call this function when processing a new message.  After
     // a message is processed and inserted into the message store
     // cache, most modules use message_store.get to look at
     // messages.
-    const cached_msg = message_store.get_cached_message(message.id);
+    const cached_msg = message_store.get_cached_message(raw_message.id);
     if (cached_msg !== undefined) {
         // Copy the match topic and content over if they exist on
         // the new message
-        if (util.get_match_topic(message) !== undefined) {
-            util.set_match_data(cached_msg, message);
+        if (util.get_match_topic(raw_message) !== undefined) {
+            util.set_match_data(cached_msg, raw_message);
         }
         return cached_msg;
     }
 
-    message_store.set_message_booleans(message);
+    const message = message_store.set_message_booleans(raw_message);
     message.sent_by_me = people.is_current_user(message.sender_email);
 
     people.extract_people_from_message(message);
