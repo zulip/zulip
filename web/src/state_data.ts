@@ -2,11 +2,7 @@ import {z} from "zod";
 
 import {server_add_bot_schema} from "./bot_types.ts";
 import {realm_default_settings_schema} from "./realm_user_settings_defaults.ts";
-import {
-    api_stream_subscription_schema,
-    never_subscribed_stream_schema,
-    stream_schema,
-} from "./stream_types.ts";
+import {api_stream_subscription_schema, never_subscribed_stream_schema} from "./stream_types.ts";
 import {group_setting_value_schema} from "./types.ts";
 import {user_settings_schema} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
@@ -477,7 +473,7 @@ export const state_data_schema = z
                 subscriptions: z.array(api_stream_subscription_schema),
                 unsubscribed: z.array(api_stream_subscription_schema),
                 never_subscribed: z.array(never_subscribed_stream_schema),
-                realm_default_streams: z.array(stream_schema),
+                realm_default_streams: z.array(z.number()),
             })
             .transform((stream_data) => ({stream_data})),
     )

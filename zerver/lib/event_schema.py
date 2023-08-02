@@ -228,7 +228,7 @@ check_default_stream_groups = make_checker(default_stream_groups_event)
 default_streams_event = event_dict_type(
     required_keys=[
         ("type", Equals("default_streams")),
-        ("default_streams", ListType(DictType(default_stream_fields))),
+        ("default_streams", ListType(int)),
     ]
 )
 check_default_streams = make_checker(default_streams_event)

@@ -165,7 +165,7 @@ exports.fixtures = {
 
     default_streams: {
         type: "default_streams",
-        default_streams: [streams.devel, streams.test],
+        default_streams: [streams.devel.stream_id, streams.test.stream_id],
     },
 
     delete_message: {
