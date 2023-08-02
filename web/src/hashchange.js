@@ -95,7 +95,6 @@ export function changehash(newhash) {
     if (browser_history.state.changing_hash) {
         return;
     }
-    maybe_hide_recent_topics();
     message_viewport.stop_auto_scrolling();
     set_hash(newhash);
 }
