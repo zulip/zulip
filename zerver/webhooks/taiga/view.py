@@ -9,6 +9,7 @@ should be in bold.
 from typing import Dict, List, Optional, Tuple, Union
 
 from django.http import HttpRequest, HttpResponse
+from typing_extensions import TypeAlias
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
@@ -17,8 +18,8 @@ from zerver.lib.validator import WildValue, check_bool, check_none_or, check_str
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-EventType = Dict[str, Union[str, Dict[str, Optional[Union[str, bool]]]]]
-ReturnType = Tuple[WildValue, WildValue]
+EventType: TypeAlias = Dict[str, Union[str, Dict[str, Optional[Union[str, bool]]]]]
+ReturnType: TypeAlias = Tuple[WildValue, WildValue]
 
 
 @webhook_view("Taiga")

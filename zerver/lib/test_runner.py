@@ -14,6 +14,7 @@ from django.db import ProgrammingError, connections
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
+from typing_extensions import TypeAlias
 
 from scripts.lib.zulip_tools import (
     TEMPLATE_DATABASE_DIR,
@@ -103,8 +104,8 @@ def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
         func(call)
 
 
-SerializedSubsuite = Tuple[Type[TestSuite], List[str]]
-SubsuiteArgs = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool, bool]
+SerializedSubsuite: TypeAlias = Tuple[Type[TestSuite], List[str]]
+SubsuiteArgs: TypeAlias = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool, bool]
 
 
 def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:

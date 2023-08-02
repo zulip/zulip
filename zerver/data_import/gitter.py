@@ -7,6 +7,7 @@ import orjson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from zerver.data_import.import_util import (
     ZerverFieldsT,
@@ -29,7 +30,7 @@ from zerver.models import Recipient, UserProfile
 from zproject.backends import GitHubAuthBackend
 
 # stubs
-GitterDataT = List[Dict[str, Any]]
+GitterDataT: TypeAlias = List[Dict[str, Any]]
 
 realm_id = 0
 

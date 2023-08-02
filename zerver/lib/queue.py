@@ -17,12 +17,13 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.spec import Basic
 from tornado import ioloop
+from typing_extensions import TypeAlias
 
 from zerver.lib.utils import assert_is_not_none
 
 MAX_REQUEST_RETRIES = 3
 ChannelT = TypeVar("ChannelT", Channel, BlockingChannel)
-Consumer = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, bytes], None]
+Consumer: TypeAlias = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, bytes], None]
 
 
 # This simple queuing library doesn't expose much of the power of

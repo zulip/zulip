@@ -47,6 +47,7 @@ from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from soupsieve import escape as css_escape
 from tlds import tld_set
+from typing_extensions import TypeAlias
 
 from zerver.lib import mention
 from zerver.lib.cache import cache_with_key
@@ -148,7 +149,7 @@ class DbData:
 version = 1
 
 _T = TypeVar("_T")
-ElementStringNone = Union[Element, Optional[str]]
+ElementStringNone: TypeAlias = Union[Element, Optional[str]]
 
 EMOJI_REGEX = r"(?P<syntax>:[\w\-\+]+:)"
 

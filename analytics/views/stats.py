@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from typing_extensions import TypeAlias
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
@@ -242,7 +243,7 @@ def get_chart_data(
     remote_realm_id: Optional[int] = None,
     server: Optional["RemoteZulipServer"] = None,
 ) -> HttpResponse:
-    TableType = Union[
+    TableType: TypeAlias = Union[
         Type["RemoteInstallationCount"],
         Type[InstallationCount],
         Type["RemoteRealmCount"],

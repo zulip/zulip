@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Mapping, Type, Union
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
@@ -147,7 +148,7 @@ class Command(BaseCommand):
         with open(IMAGE_FILE_PATH, "rb") as fp:
             upload_message_attachment_from_request(UploadedFile(fp), shylock, file_size)
 
-        FixtureData = Mapping[Union[str, int, None], List[int]]
+        FixtureData: TypeAlias = Mapping[Union[str, int, None], List[int]]
 
         def insert_fixture_data(
             stat: CountStat,

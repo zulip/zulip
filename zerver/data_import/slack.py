@@ -16,6 +16,7 @@ import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from zerver.data_import.import_util import (
     ZerverFieldsT,
@@ -56,11 +57,11 @@ from zerver.models import (
     UserProfile,
 )
 
-SlackToZulipUserIDT = Dict[str, int]
-AddedChannelsT = Dict[str, Tuple[str, int]]
-AddedMPIMsT = Dict[str, Tuple[str, int]]
-DMMembersT = Dict[str, Tuple[str, str]]
-SlackToZulipRecipientT = Dict[str, int]
+SlackToZulipUserIDT: TypeAlias = Dict[str, int]
+AddedChannelsT: TypeAlias = Dict[str, Tuple[str, int]]
+AddedMPIMsT: TypeAlias = Dict[str, Tuple[str, int]]
+DMMembersT: TypeAlias = Dict[str, Tuple[str, str]]
+SlackToZulipRecipientT: TypeAlias = Dict[str, int]
 # Generic type for SlackBotEmail class
 SlackBotEmailT = TypeVar("SlackBotEmailT", bound="SlackBotEmail")
 

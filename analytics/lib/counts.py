@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import connection, models
 from django.db.models import F
 from psycopg2.sql import SQL, Composable, Identifier, Literal
+from typing_extensions import TypeAlias
 
 from analytics.models import (
     BaseCount,
@@ -346,7 +347,7 @@ def do_drop_single_stat(property: str) -> None:
 
 ## DataCollector-level operations ##
 
-QueryFn = Callable[[Dict[str, Composable]], Composable]
+QueryFn: TypeAlias = Callable[[Dict[str, Composable]], Composable]
 
 
 def do_pull_by_sql_query(

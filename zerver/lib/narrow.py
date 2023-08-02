@@ -43,6 +43,7 @@ from sqlalchemy.sql import (
 )
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
+from typing_extensions import TypeAlias
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -207,9 +208,9 @@ class BadNarrowOperatorError(JsonableError):
         return _("Invalid narrow operator: {desc}")
 
 
-ConditionTransform = Callable[[ClauseElement], ClauseElement]
+ConditionTransform: TypeAlias = Callable[[ClauseElement], ClauseElement]
 
-OptionalNarrowListT = Optional[List[Dict[str, Any]]]
+OptionalNarrowListT: TypeAlias = Optional[List[Dict[str, Any]]]
 
 # These delimiters will not appear in rendered messages or HTML-escaped topics.
 TS_START = "<ts-match>"

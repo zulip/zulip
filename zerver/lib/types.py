@@ -3,17 +3,17 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
 from django_stubs_ext import StrPromise
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, TypeAlias
 
 # See zerver/lib/validator.py for more details of Validators,
 # including many examples
 ResultT = TypeVar("ResultT")
-Validator = Callable[[str, object], ResultT]
-ExtendedValidator = Callable[[str, str, object], str]
-RealmUserValidator = Callable[[int, object, bool], List[int]]
+Validator: TypeAlias = Callable[[str, object], ResultT]
+ExtendedValidator: TypeAlias = Callable[[str, str, object], str]
+RealmUserValidator: TypeAlias = Callable[[int, object, bool], List[int]]
 
 
-ProfileDataElementValue = Union[str, List[int]]
+ProfileDataElementValue: TypeAlias = Union[str, List[int]]
 
 
 class ProfileDataElementBase(TypedDict, total=False):
@@ -36,13 +36,17 @@ class ProfileDataElementUpdateDict(TypedDict):
     value: ProfileDataElementValue
 
 
-ProfileData = List[ProfileDataElement]
+ProfileData: TypeAlias = List[ProfileDataElement]
 
-FieldElement = Tuple[int, StrPromise, Validator[ProfileDataElementValue], Callable[[Any], Any], str]
-ExtendedFieldElement = Tuple[int, StrPromise, ExtendedValidator, Callable[[Any], Any], str]
-UserFieldElement = Tuple[int, StrPromise, RealmUserValidator, Callable[[Any], Any], str]
+FieldElement: TypeAlias = Tuple[
+    int, StrPromise, Validator[ProfileDataElementValue], Callable[[Any], Any], str
+]
+ExtendedFieldElement: TypeAlias = Tuple[
+    int, StrPromise, ExtendedValidator, Callable[[Any], Any], str
+]
+UserFieldElement: TypeAlias = Tuple[int, StrPromise, RealmUserValidator, Callable[[Any], Any], str]
 
-ProfileFieldData = Dict[str, Union[Dict[str, str], str]]
+ProfileFieldData: TypeAlias = Dict[str, Union[Dict[str, str], str]]
 
 
 class UserDisplayRecipient(TypedDict):
@@ -52,7 +56,7 @@ class UserDisplayRecipient(TypedDict):
     is_mirror_dummy: bool
 
 
-DisplayRecipientT = Union[str, List[UserDisplayRecipient]]
+DisplayRecipientT: TypeAlias = Union[str, List[UserDisplayRecipient]]
 
 
 class LinkifierDict(TypedDict):

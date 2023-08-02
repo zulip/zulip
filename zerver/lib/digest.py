@@ -7,6 +7,7 @@ from typing import Any, Collection, Dict, List, Set, Tuple
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context
@@ -34,7 +35,7 @@ log_to_file(logger, settings.DIGEST_LOG_PATH)
 DIGEST_CUTOFF = 5
 MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST = 4
 
-TopicKey = Tuple[int, str]
+TopicKey: TypeAlias = Tuple[int, str]
 
 
 class DigestTopic:

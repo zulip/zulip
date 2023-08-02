@@ -3,10 +3,11 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, TypeV
 
 from psycopg2.extensions import connection, cursor
 from psycopg2.sql import Composable
+from typing_extensions import TypeAlias
 
 CursorObj = TypeVar("CursorObj", bound=cursor)
-Query = Union[str, bytes, Composable]
-Params = Union[Sequence[object], Mapping[str, object], None]
+Query: TypeAlias = Union[str, bytes, Composable]
+Params: TypeAlias = Union[Sequence[object], Mapping[str, object], None]
 ParamsT = TypeVar("ParamsT")
 
 

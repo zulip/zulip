@@ -1,10 +1,12 @@
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
+from typing_extensions import TypeAlias
+
 # stubs
-ZerverFieldsT = Dict[str, Any]
-SlackToZulipUserIDT = Dict[str, int]
-AddedChannelsT = Dict[str, Tuple[str, int]]
+ZerverFieldsT: TypeAlias = Dict[str, Any]
+SlackToZulipUserIDT: TypeAlias = Dict[str, int]
+AddedChannelsT: TypeAlias = Dict[str, Tuple[str, int]]
 
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
 LINK_REGEX = r"""

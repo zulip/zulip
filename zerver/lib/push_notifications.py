@@ -17,6 +17,7 @@ from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from typing_extensions import TypeAlias
 
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
@@ -47,7 +48,7 @@ logger = logging.getLogger(__name__)
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
-DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
+DeviceToken: TypeAlias = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
 
 # We store the token as b64, but apns-client wants hex strings
