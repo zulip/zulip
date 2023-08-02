@@ -2085,34 +2085,19 @@ paths:
                                 default_streams:
                                   type: array
                                   description: |
-                                    An array of dictionaries where each dictionary
-                                    contains details about a single default channel.
+                                    An array of IDs of all the [default channels](/help/set-default-streams-for-new-users)
+                                    in the organization.
+
+                                    **Changes**: Before Zulip 10.0 (feature level 330),
+                                    we sent array of dictionaries where each dictionary
+                                    contained details about a single default stream for
+                                    the Zulip organization.
                                   items:
-                                    $ref: "#/components/schemas/DefaultChannel"
+                                    type: integer
                               example:
                                 {
                                   "type": "default_streams",
-                                  "default_streams":
-                                    [
-                                      {
-                                        "name": "Scotland",
-                                        "stream_id": 3,
-                                        "is_archived": false,
-                                        "description": "Located in the United Kingdom",
-                                        "rendered_description": "<p>Located in the United Kingdom</p>",
-                                        "date_created": 1691057093,
-                                        "creator_id": 8,
-                                        "invite_only": false,
-                                        "is_web_public": false,
-                                        "stream_post_policy": 1,
-                                        "history_public_to_subscribers": true,
-                                        "first_message_id": 1,
-                                        "is_recently_active": true,
-                                        "message_retention_days": null,
-                                        "is_announcement_only": false,
-                                        "can_remove_subscribers_group": 2,
-                                      },
-                                    ],
+                                  "default_streams": [2, 3],
                                   "id": 0,
                                 }
                             - type: object
@@ -15104,13 +15089,16 @@ paths:
                       realm_default_streams:
                         type: array
                         items:
-                          $ref: "#/components/schemas/DefaultChannel"
+                          type: integer
                         description: |
                           Present if `default_streams` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary contains details
-                          about a single [default channel](/help/set-default-channels-for-new-users)
-                          for the Zulip organization.
+                          An array of IDs of all the [default channels](/help/set-default-streams-for-new-users)
+                          in the organization.
+
+                          **Changes**: Before Zulip 10.0 (feature level 330), we sent
+                          array of dictionaries where each dictionary contained details
+                          about a single default stream for the Zulip organization.
                       realm_default_stream_groups:
                         type: array
                         items:

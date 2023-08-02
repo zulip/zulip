@@ -20,7 +20,7 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
-from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
+from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.integrations import (
@@ -713,7 +713,7 @@ def fetch_initial_state_data(
             # doesn't have any.
             state["realm_default_streams"] = []
         else:
-            state["realm_default_streams"] = get_default_streams_for_realm_as_dicts(realm.id)
+            state["realm_default_streams"] = list(get_default_stream_ids_for_realm(realm.id))
 
     if want("default_stream_groups"):
         if settings_user.is_guest:
@@ -1020,8 +1020,8 @@ def apply_event(
                     if state["is_guest"]:
                         state["realm_default_streams"] = []
                     else:
-                        state["realm_default_streams"] = get_default_streams_for_realm_as_dicts(
-                            user_profile.realm_id
+                        state["realm_default_streams"] = list(
+                            get_default_stream_ids_for_realm(user_profile.realm_id)
                         )
 
                 for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:

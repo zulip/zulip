@@ -199,7 +199,7 @@ test("basics", () => {
     assert.equal(sub_store.maybe_get_stream_name(social.stream_id), "social");
     assert.equal(sub_store.maybe_get_stream_name(42), undefined);
 
-    stream_data.set_realm_default_streams([denmark]);
+    stream_data.set_realm_default_streams([denmark.stream_id]);
     assert.ok(stream_data.is_default_stream_id(denmark.stream_id));
     assert.ok(!stream_data.is_default_stream_id(social.stream_id));
     assert.ok(!stream_data.is_default_stream_id(999999));
@@ -647,7 +647,7 @@ test("default_stream_names", () => {
         invite_only: false,
     };
 
-    stream_data.set_realm_default_streams([announce, general]);
+    stream_data.set_realm_default_streams([announce.stream_id, general.stream_id]);
     stream_data.add_sub(announce);
     stream_data.add_sub(public_stream);
     stream_data.add_sub(private_stream);
@@ -934,7 +934,7 @@ test("remove_default_stream", () => {
     };
 
     stream_data.add_sub(remove_me);
-    stream_data.set_realm_default_streams([remove_me]);
+    stream_data.set_realm_default_streams([remove_me.stream_id]);
     stream_data.remove_default_stream(remove_me.stream_id);
     assert.ok(!stream_data.is_default_stream_id(remove_me.stream_id));
 });
@@ -1093,7 +1093,7 @@ test("get_invite_stream_data", ({override}) => {
     override(current_user, "is_admin", true);
 
     stream_data.add_sub(orie);
-    stream_data.set_realm_default_streams([orie]);
+    stream_data.set_realm_default_streams([orie.stream_id]);
 
     const expected_list = [
         {

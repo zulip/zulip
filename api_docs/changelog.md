@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 330**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Default channels data only includes channel IDs now instead of full
+  channel data.
+
 **Feature level 329**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
