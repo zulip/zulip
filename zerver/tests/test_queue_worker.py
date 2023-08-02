@@ -15,6 +15,7 @@ import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import override_settings
+from typing_extensions import TypeAlias
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -43,7 +44,7 @@ from zerver.worker.queue_processors import (
     get_active_worker_queues,
 )
 
-Event = Dict[str, Any]
+Event: TypeAlias = Dict[str, Any]
 
 
 class FakeClient:

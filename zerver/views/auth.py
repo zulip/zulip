@@ -27,7 +27,7 @@ from django.views.decorators.http import require_safe
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import Concatenate, ParamSpec, TypeAlias
 
 from confirmation.models import (
     Confirmation,
@@ -103,7 +103,7 @@ if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
 
 ParamT = ParamSpec("ParamT")
-ExtraContext = Optional[Dict[str, Any]]
+ExtraContext: TypeAlias = Optional[Dict[str, Any]]
 
 EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS = 3600
 

@@ -25,6 +25,7 @@ import orjson
 import requests
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -43,7 +44,7 @@ from zerver.models import (
 from zproject.backends import all_implemented_backend_names
 
 # stubs
-ZerverFieldsT = Dict[str, Any]
+ZerverFieldsT: TypeAlias = Dict[str, Any]
 
 
 class SubscriberHandler:

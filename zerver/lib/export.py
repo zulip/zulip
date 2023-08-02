@@ -24,6 +24,7 @@ from django.db.models import Exists, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from mypy_boto3_s3.service_resource import Object
+from typing_extensions import TypeAlias
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
@@ -74,17 +75,17 @@ from zerver.models import (
 )
 
 # Custom mypy types follow:
-Record = Dict[str, Any]
+Record: TypeAlias = Dict[str, Any]
 TableName = str
-TableData = Dict[TableName, List[Record]]
+TableData: TypeAlias = Dict[TableName, List[Record]]
 Field = str
 Path = str
-Context = Dict[str, Any]
-FilterArgs = Dict[str, Any]
-IdSource = Tuple[TableName, Field]
-SourceFilter = Callable[[Record], bool]
+Context: TypeAlias = Dict[str, Any]
+FilterArgs: TypeAlias = Dict[str, Any]
+IdSource: TypeAlias = Tuple[TableName, Field]
+SourceFilter: TypeAlias = Callable[[Record], bool]
 
-CustomFetch = Callable[[TableData, Context], None]
+CustomFetch: TypeAlias = Callable[[TableData, Context], None]
 
 
 class MessagePartial(TypedDict):

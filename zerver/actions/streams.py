@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from django_stubs_ext import ValuesQuerySet
+from typing_extensions import TypeAlias
 
 from zerver.actions.default_streams import (
     do_remove_default_stream,
@@ -560,7 +561,7 @@ def send_peer_subscriber_events(
             send_event_on_commit(realm, event, peer_user_ids)
 
 
-SubT = Tuple[List[SubInfo], List[SubInfo]]
+SubT: TypeAlias = Tuple[List[SubInfo], List[SubInfo]]
 
 
 def bulk_add_subscriptions(
@@ -729,7 +730,9 @@ def notify_subscriptions_removed(
     send_event(realm, event, [user_profile.id])
 
 
-SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+SubAndRemovedT: TypeAlias = Tuple[
+    List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]
+]
 
 
 def send_subscription_remove_events(

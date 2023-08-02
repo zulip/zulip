@@ -7,6 +7,7 @@ from django.urls import URLResolver, path
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 from django_stubs_ext import StrPromise
+from typing_extensions import TypeAlias
 
 from zerver.lib.storage import static_path
 
@@ -31,7 +32,7 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-OptionValidator = Callable[[str, str], Optional[str]]
+OptionValidator: TypeAlias = Callable[[str, str], Optional[str]]
 
 META_CATEGORY: Dict[str, StrPromise] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
