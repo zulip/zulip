@@ -6,7 +6,6 @@ import * as message_fetch from "./message_fetch";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
-import * as recent_topics_util from "./recent_topics_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -82,7 +81,7 @@ export function scroll_finished() {
     message_lists.current.view.update_sticky_recipient_headers();
     hide_scroll_to_bottom();
 
-    if (recent_topics_util.is_visible()) {
+    if (!narrow_state.is_message_feed_visible()) {
         return;
     }
 
