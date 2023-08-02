@@ -121,8 +121,8 @@ export function get_by_user_id(user_id: number): User {
 }
 
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
-export function maybe_get_user_by_id(user_id: number): User | undefined {
-    if (!people_by_user_id_dict.has(user_id)) {
+export function maybe_get_user_by_id(user_id: number, ignore_missing = false): User | undefined {
+    if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
         blueslip.error("Unknown user_id in maybe_get_user_by_id", {user_id});
         return undefined;
     }
