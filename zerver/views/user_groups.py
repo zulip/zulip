@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union
 
 from django.conf import settings
 from django.db import transaction
@@ -60,7 +60,7 @@ def add_user_group(
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
 
-    group_settings_map = {}
+    group_settings_map: Dict[str, Union[str, UserGroup]] = {}
     request_settings_dict = locals()
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
         setting_group_id_name = permission_config.id_field_name
@@ -70,6 +70,10 @@ def add_user_group(
 
         if request_settings_dict[setting_group_id_name] is not None:
             setting_value_group_id_or_str = request_settings_dict[setting_group_id_name]
+            if setting_value_group_id_or_str == "created_group":
+                group_settings_map[setting_name] = "created_group"
+                continue
+
             setting_value_group = access_user_group_for_setting(
                 setting_value_group_id_or_str,
                 user_profile,

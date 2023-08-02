@@ -576,6 +576,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertTrue(marketing_group.can_manage_group.is_system_group)
         self.assert_user_membership(marketing_group.can_manage_group, [hamlet])
 
+        params = {
+            "name": "backend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Backend team",
+            "can_manage_group": orjson.dumps("created_group").decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        backend_group = UserGroup.objects.get(name="backend", realm=hamlet.realm)
+        self.assertEqual(backend_group.can_manage_group, backend_group)
+
     def test_user_group_get(self) -> None:
         # Test success
         user_profile = self.example_user("hamlet")
@@ -919,7 +930,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         admins_group = UserGroup.objects.get(
             realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
         )
-        with self.assert_database_query_count(4):
+        with self.assert_database_query_count(5):
             user_group = create_user_group_in_database(
                 name="backend",
                 members=[hamlet, cordelia, *original_users],
@@ -931,7 +942,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Default value for can_manage_group is system group corresponding to acting user.
         # So, a single member system group corresponding to hamlet will also be created.
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(12):
             user_group = create_user_group_in_database(
                 name="support",
                 members=[hamlet, cordelia, *original_users],

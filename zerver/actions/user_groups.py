@@ -38,15 +38,23 @@ def create_user_group_in_database(
     *,
     acting_user: Optional[UserProfile],
     description: str = "",
-    group_settings_map: Mapping[str, UserGroup] = {},
+    group_settings_map: Mapping[str, Union[str, UserGroup]] = {},
     is_system_group: bool = False,
 ) -> UserGroup:
     user_group = UserGroup(
         name=name, realm=realm, description=description, is_system_group=is_system_group
     )
 
+    # Initializing all the group settings fields with a dummy value.
+    for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
+        setattr(user_group, setting_name + "_id", -1)
+    user_group.save()
+
     for setting_name, setting_value in group_settings_map.items():
-        setattr(user_group, setting_name, setting_value)
+        if setting_value == "created_group":
+            setattr(user_group, setting_name, user_group)
+        else:
+            setattr(user_group, setting_name, setting_value)
 
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     user_group = set_defaults_for_group_settings(
@@ -183,7 +191,7 @@ def check_add_user_group(
     name: str,
     initial_members: List[UserProfile],
     description: str = "",
-    group_settings_map: Mapping[str, UserGroup] = {},
+    group_settings_map: Mapping[str, Union[str, UserGroup]] = {},
     *,
     acting_user: Optional[UserProfile],
 ) -> UserGroup:
