@@ -1719,9 +1719,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('action="/register/"', result)
         self.assert_in_response(
-            "Your email address, {}, is not "
+            f"Your email address, {email}, is not "
             "in one of the domains that are allowed to register "
-            "for accounts in this organization.".format(email),
+            "for accounts in this organization.",
             result,
         )
 

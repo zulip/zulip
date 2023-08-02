@@ -598,7 +598,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.subscribe(hamlet, "test")
         body = (
             f"[f1.txt](http://{host}/user_uploads/" + f1_path_id + ") "
-            "[f2.txt](http://{}/user_uploads/".format(host) + f2_path_id + ")"
+            f"[f2.txt](http://{host}/user_uploads/" + f2_path_id + ")"
         )
         msg_id = self.send_stream_message(hamlet, "test", body, "test")
 
@@ -608,7 +608,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         new_body = (
             f"[f3.txt](http://{host}/user_uploads/" + f3_path_id + ") "
-            "[f2.txt](http://{}/user_uploads/".format(host) + f2_path_id + ")"
+            f"[f2.txt](http://{host}/user_uploads/" + f2_path_id + ")"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
