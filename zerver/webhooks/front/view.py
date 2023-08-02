@@ -41,20 +41,16 @@ def get_target_name(payload: WildValue) -> str:
 def get_inbound_message_body(payload: WildValue) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
     return (
-        "[Inbound message]({link}) from **{outbox}** to **{inbox}**:\n"
-        "```quote\n*Subject*: {subject}\n```".format(
-            link=link, outbox=outbox, inbox=inbox, subject=subject
-        )
+        f"[Inbound message]({link}) from **{outbox}** to **{inbox}**:\n"
+        f"```quote\n*Subject*: {subject}\n```"
     )
 
 
 def get_outbound_message_body(payload: WildValue) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
     return (
-        "[Outbound message]({link}) from **{inbox}** to **{outbox}**:\n"
-        "```quote\n*Subject*: {subject}\n```".format(
-            link=link, inbox=inbox, outbox=outbox, subject=subject
-        )
+        f"[Outbound message]({link}) from **{inbox}** to **{outbox}**:\n"
+        f"```quote\n*Subject*: {subject}\n```"
     )
 
 

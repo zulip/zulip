@@ -339,7 +339,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.assertEqual(
                 repr(message),
                 "<Message: recip /  / "
-                "<UserProfile: {} {!r}>>".format(user_profile.email, user_profile.realm),
+                f"<UserProfile: {user_profile.email} {user_profile.realm!r}>>",
             )
 
             user_message = most_recent_usermessage(user_profile)

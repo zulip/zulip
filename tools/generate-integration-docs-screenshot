@@ -130,8 +130,8 @@ def custom_headers(headers_json: str) -> Dict[str, str]:
         return orjson.loads(headers_json)
     except orjson.JSONDecodeError as ve:
         raise argparse.ArgumentTypeError(
-            "Encountered an error while attempting to parse custom headers: {}\n"
-            "Note: all strings must be enclosed within \"\" instead of ''".format(ve)
+            f"Encountered an error while attempting to parse custom headers: {ve}\n"
+            "Note: all strings must be enclosed within \"\" instead of ''"
         )
 
 
@@ -156,10 +156,8 @@ def send_bot_mock_message(
         client.send_message(request)
     except KeyError:
         print(
-            "{} contains invalid configuration. "
-            'Fields "subject" and "body" are required for non-webhook integrations.'.format(
-                fixture_path
-            )
+            f"{fixture_path} contains invalid configuration. "
+            'Fields "subject" and "body" are required for non-webhook integrations.'
         )
         sys.exit(1)
 
