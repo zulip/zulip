@@ -14,7 +14,7 @@ export function highlight_toggle(tab_name) {
 }
 
 export function initialize() {
-    let buttonValues = [{label: $t({defaultMessage: "Personal"}), key: "settings"},];
+    const buttonValues = [{label: $t({defaultMessage: "Personal"}), key: "settings"},];
     if (page_params.is_owner || page_params.is_admin || page_params.is_moderator) {
         buttonValues.push({label: $t({defaultMessage: "Organization"}), key: "organization"});
     }

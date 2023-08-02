@@ -621,7 +621,8 @@ def remote_user_jwt(request: HttpRequest, token: str = REQ(default="")) -> HttpR
 @csrf_exempt
 @log_view_func
 def remote_user_jwt_get(request: HttpRequest) -> HttpResponse:
-    email, realm = get_email_and_realm_from_jwt_authentication_request(request)
+    token = request.GET.get("token")
+    email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
     if user_profile is None:
         result = ExternalAuthResult(
