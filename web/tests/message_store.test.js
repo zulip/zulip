@@ -97,7 +97,7 @@ function test(label, f) {
 }
 
 test("process_new_message", () => {
-    let message = {
+    let raw_message = {
         sender_email: "me@example.com",
         sender_id: me.user_id,
         type: "private",
@@ -106,7 +106,7 @@ test("process_new_message", () => {
         is_me_message: false,
         id: 2067,
     };
-    message_helper.process_new_message(message);
+    let message = message_helper.process_new_message(raw_message);
 
     assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
 
@@ -125,12 +125,12 @@ test("process_new_message", () => {
     assert.equal(retrieved_message, message);
 
     // access cached previous message, and test match subject/content
-    message = {
+    raw_message = {
         id: 2067,
         match_subject: "topic foo",
         match_content: "bar content",
     };
-    message = message_helper.process_new_message(message);
+    message = message_helper.process_new_message(raw_message);
 
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
     assert.equal(message.to_user_ids, "103,104");
@@ -138,7 +138,7 @@ test("process_new_message", () => {
     assert.equal(util.get_match_topic(message), "topic foo");
     assert.equal(message.match_content, "bar content");
 
-    message = {
+    raw_message = {
         sender_email: denise.email,
         sender_id: denise.user_id,
         type: "stream",
@@ -148,7 +148,7 @@ test("process_new_message", () => {
         id: 2068,
     };
 
-    message_helper.process_new_message(message);
+    message = message_helper.process_new_message(raw_message);
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
@@ -166,9 +166,9 @@ test("message_booleans_parity", () => {
     // This test asserts that both have identical behavior for the
     // flags common between them.
     const assert_bool_match = (flags, expected_message) => {
-        const set_message = {topic: "set_message_booleans", flags};
+        const raw_set_message = {topic: "set_message_booleans", flags};
         const update_message = {topic: "update_booleans"};
-        message_store.set_message_booleans(set_message);
+        const set_message = message_store.set_message_booleans(raw_set_message);
         message_store.update_booleans(update_message, flags);
         for (const key of Object.keys(expected_message)) {
             assert.equal(
@@ -307,7 +307,7 @@ test("update_booleans", () => {
 });
 
 test("update_property", () => {
-    const message1 = {
+    const raw_message1 = {
         type: "stream",
         sender_full_name: alice.full_name,
         sender_id: alice.user_id,
@@ -316,7 +316,7 @@ test("update_property", () => {
         display_recipient: devel.name,
         id: 100,
     };
-    const message2 = {
+    const raw_message2 = {
         type: "stream",
         sender_full_name: bob.full_name,
         sender_id: bob.user_id,
@@ -325,9 +325,8 @@ test("update_property", () => {
         display_recipient: denmark.name,
         id: 101,
     };
-    for (const message of [message1, message2]) {
-        message_helper.process_new_message(message);
-    }
+    const message1 = message_helper.process_new_message(raw_message1);
+    const message2 = message_helper.process_new_message(raw_message2);
 
     assert.equal(message1.sender_full_name, alice.full_name);
     assert.equal(message2.sender_full_name, bob.full_name);

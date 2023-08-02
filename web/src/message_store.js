@@ -58,30 +58,33 @@ export function get_pm_full_names(message) {
     return names.join(", ");
 }
 
-export function set_message_booleans(message) {
-    const flags = message.flags || [];
+export function set_message_booleans(raw_message) {
+    const {flags, ...raw_message_without_flags} = raw_message;
 
     function convert_flag(flag_name) {
-        return flags.includes(flag_name);
+        return flags?.includes(flag_name) || false;
     }
 
-    message.unread = !convert_flag("read");
-    message.historical = convert_flag("historical");
-    message.starred = convert_flag("starred");
-    message.mentioned =
-        convert_flag("mentioned") ||
-        convert_flag("stream_wildcard_mentioned") ||
-        convert_flag("topic_wildcard_mentioned");
-    message.mentioned_me_directly = convert_flag("mentioned");
-    message.stream_wildcard_mentioned = convert_flag("stream_wildcard_mentioned");
-    message.topic_wildcard_mentioned = convert_flag("topic_wildcard_mentioned");
-    message.collapsed = convert_flag("collapsed");
-    message.alerted = convert_flag("has_alert_word");
+    const message = {
+        ...raw_message_without_flags,
+        unread: !convert_flag("read"),
+        historical: convert_flag("historical"),
+        starred: convert_flag("starred"),
+        mentioned:
+            convert_flag("mentioned") ||
+            convert_flag("stream_wildcard_mentioned") ||
+            convert_flag("topic_wildcard_mentioned"),
+        mentioned_me_directly: convert_flag("mentioned"),
+        stream_wildcard_mentioned: convert_flag("stream_wildcard_mentioned"),
+        topic_wildcard_mentioned: convert_flag("topic_wildcard_mentioned"),
+        collapsed: convert_flag("collapsed"),
+        alerted: convert_flag("has_alert_word"),
+    };
 
     // Once we have set boolean flags here, the `flags` attribute is
     // just a distraction, so we delete it.  (All the downstream code
     // uses booleans.)
-    delete message.flags;
+    return message;
 }
 
 export function update_booleans(message, flags) {

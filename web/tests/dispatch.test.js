@@ -13,7 +13,7 @@ const {page_params, realm_user_settings_defaults, user_settings} = require("./li
 const noop = () => {};
 
 const event_fixtures = events.fixtures;
-const test_message = events.test_message;
+const raw_test_message = events.test_message;
 const test_user = events.test_user;
 const typing_person1 = events.typing_person1;
 
@@ -131,7 +131,7 @@ function dispatch(ev) {
 people.init();
 people.add_active_user(test_user);
 
-message_helper.process_new_message(test_message);
+const test_message = message_helper.process_new_message(raw_test_message);
 
 const realm_emoji = {};
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
