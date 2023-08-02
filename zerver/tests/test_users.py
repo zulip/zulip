@@ -1176,7 +1176,6 @@ class UserProfileTest(ZulipTestCase):
         iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
-        hamlet.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
 
         cordelia.default_language = "de"
         cordelia.default_view = "all_messages"
@@ -1225,7 +1224,7 @@ class UserProfileTest(ZulipTestCase):
 
         self.assertEqual(iago.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
         self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
-        self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_LIGHT)
+        self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_AUTOMATIC)
 
         self.assertEqual(iago.enable_offline_email_notifications, False)
         self.assertEqual(cordelia.enable_offline_email_notifications, False)
