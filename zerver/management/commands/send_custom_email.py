@@ -1,9 +1,10 @@
 from argparse import ArgumentParser
-from typing import Any, List
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from django.conf import settings
 from django.db.models import Q, QuerySet
 
+from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.send_email import send_custom_email
 from zerver.models import Realm, UserProfile
@@ -79,6 +80,9 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: str) -> None:
         target_emails: List[str] = []
         users: QuerySet[UserProfile] = UserProfile.objects.none()
+        add_context: Optional[
+            Callable[[Dict[str, Union[List[str], str]], UserProfile], None]
+        ] = None
 
         if options["entire_server"]:
             users = UserProfile.objects.filter(
@@ -95,6 +99,13 @@ class Command(ZulipBaseCommand):
                 enable_marketing_emails=True,
                 long_term_idle=False,
             ).distinct("delivery_email")
+
+            def add_marketing_unsubscribe(
+                context: Dict[str, Union[List[str], str]], user: UserProfile
+            ) -> None:
+                context["unsubscribe_link"] = one_click_unsubscribe_link(user, "marketing")
+
+            add_context = add_marketing_unsubscribe
         elif options["remote_servers"]:
             from zilencer.models import RemoteZulipServer
 
@@ -129,7 +140,9 @@ class Command(ZulipBaseCommand):
             users = users.exclude(
                 Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
             )
-        send_custom_email(users, target_emails=target_emails, options=options)
+        send_custom_email(
+            users, target_emails=target_emails, options=options, add_context=add_context
+        )
 
         if options["dry_run"]:
             print("Would send the above email to:")
