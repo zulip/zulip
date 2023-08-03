@@ -49,6 +49,12 @@
         visibility: hidden;
     }
 
+    /* Try to keep the message header with the messages
+       that follow in interleaved views. */
+    .message_header_stream {
+        break-after: avoid;
+    }
+
     /* Don't highlight the selected message. */
     .selected_message .messagebox-content {
         outline: 0;
