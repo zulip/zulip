@@ -16,9 +16,8 @@ account and how users access their accounts:
   to sign up (default), or you can [allow anyone to
   join](#set-whether-invitations-are-required-to-join) without an invitation.
 
-* You can [restrict who can invite users](#change-who-can-send-invitations) to
-  your organization. To protect your organization, creating *reusable* invite
-  links is always limited to administrators.
+* You can [restrict the ability to invite new users](#change-who-can-send-invitations) to
+ join your Zulip organzation to specific [roles](/help/roles-and-permissions).
 
 Regardless of whether invitations are required, you can:
 
@@ -49,19 +48,13 @@ Regardless of whether invitations are required, you can:
 
 ## Change who can send invitations
 
-{!owner-only.md!}
-
-You can restrict the ability to invite new users to join your Zulip organization
-to specific [roles](/help/roles-and-permissions). To protect your organization,
-while permission to send out individual email invitations is configurable, creating
-*reusable* invitation links is always limited to administrators.
-
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
 1. Under **Joining the organization**, configure
-   **Who can send email invitations to new users**.
+   **Who can send email invitations to new users** and
+   **Who can create reusable invitation links**.
 
 {!save-changes.md!}
 

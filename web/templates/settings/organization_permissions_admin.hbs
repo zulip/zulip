@@ -23,6 +23,11 @@
                     </select>
                 </div>
 
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_create_multiuse_invite_group"
+                  label=(t 'Who can create reusable invitation links')
+                  value_type="number"}}
+
                 <div class="input-group">
                     <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users?" }}</label>
                     <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element settings_select bootstrap-focus-style">

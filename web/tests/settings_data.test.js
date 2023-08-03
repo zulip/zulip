@@ -8,6 +8,7 @@ const {page_params, user_settings} = require("./lib/zpage_params");
 
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
+const user_groups = zrequire("user_groups");
 
 /*
     Some methods in settings_data are fairly
@@ -330,4 +331,43 @@ run_test("user_email_not_configured", () => {
 
     page_params.delivery_email = "name@example.com";
     assert.equal(user_email_not_configured(), false);
+});
+
+run_test("user_can_create_multiuse_invite", () => {
+    const admin_user_id = 1;
+    const moderator_user_id = 2;
+    const member_user_id = 3;
+
+    const admins = {
+        name: "Admins",
+        id: 1,
+        members: new Set([admin_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const moderators = {
+        name: "Moderators",
+        id: 2,
+        members: new Set([moderator_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    };
+
+    user_groups.initialize({realm_user_groups: [admins, moderators]});
+
+    assert.equal(settings_data.user_can_create_multiuse_invite(), false);
+
+    page_params.realm_create_multiuse_invite_group = 1;
+    page_params.user_id = admin_user_id;
+    assert.equal(settings_data.user_can_create_multiuse_invite(), true);
+
+    page_params.user_id = moderator_user_id;
+    assert.equal(settings_data.user_can_create_multiuse_invite(), false);
+
+    page_params.realm_create_multiuse_invite_group = 2;
+    page_params.user_id = moderator_user_id;
+    assert.equal(settings_data.user_can_create_multiuse_invite(), true);
+
+    page_params.user_id = member_user_id;
+    assert.equal(settings_data.user_can_create_multiuse_invite(), false);
 });

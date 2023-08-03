@@ -25,6 +25,7 @@ export const page_params: {
     promote_sponsoring_zulip: boolean;
     realm_add_custom_emoji_policy: number;
     realm_avatar_changes_disabled: boolean;
+    realm_create_multiuse_invite_group: number;
     realm_create_private_stream_policy: number;
     realm_create_public_stream_policy: number;
     realm_create_web_public_stream_policy: number;

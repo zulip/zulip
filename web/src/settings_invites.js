@@ -296,7 +296,10 @@ export function update_invite_users_setting_tip() {
 
 export function update_invite_user_panel() {
     update_invite_users_setting_tip();
-    if (!settings_data.user_can_invite_users_by_email()) {
+    if (
+        !settings_data.user_can_invite_users_by_email() &&
+        !settings_data.user_can_create_multiuse_invite()
+    ) {
         $("#admin-invites-list .invite-user-link").hide();
     } else {
         $("#admin-invites-list .invite-user-link").show();

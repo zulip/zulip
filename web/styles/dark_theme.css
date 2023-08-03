@@ -420,7 +420,8 @@
     /* these are converting grey things to "new grey" */
     :disabled,
     input:not([type="radio"]):read-only,
-    textarea:read-only {
+    textarea:read-only,
+    #org-join-settings .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
     }
@@ -479,7 +480,8 @@
     .pill-container,
     .user-status-content-wrapper,
     #custom-expiration-time-input,
-    #searchbox #search_query {
+    #searchbox #search_query,
+    #org-join-settings .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;

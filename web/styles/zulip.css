@@ -2521,6 +2521,10 @@ select.invite-as {
 .invite_type_radio_section {
     margin: 2px 2px 2px 5px;
 
+    & div {
+        width: fit-content;
+    }
+
     & input[type="radio"] {
         cursor: pointer;
 
@@ -2533,10 +2537,6 @@ select.invite-as {
         pointer-events: none;
         cursor: not-allowed;
     }
-}
-
-#generate_multiuse_invite_radio_container {
-    width: fit-content;
 }
 
 #custom-expiration-time-input {

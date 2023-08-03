@@ -197,6 +197,7 @@ export function dispatch_normal_event(event) {
                 user_group_edit_policy: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
+                create_multiuse_invite_group: noop,
                 create_public_stream_policy: noop,
                 create_private_stream_policy: noop,
                 create_web_public_stream_policy: noop,
@@ -277,6 +278,12 @@ export function dispatch_normal_event(event) {
                                 page_params["realm_" + key] = value;
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
+                                }
+
+                                if (key === "create_multiuse_invite_group") {
+                                    settings_invites.update_invite_user_panel();
+                                    ui_init.update_invite_user_option();
+                                    gear_menu.initialize();
                                 }
 
                                 if (key === "edit_topic_policy") {

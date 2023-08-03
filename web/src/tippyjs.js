@@ -374,6 +374,18 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ["#email_invite_radio_container.disabled_setting_tooltip"],
+        content: $t({
+            defaultMessage:
+                "You do not have permissions to send email invitations in this organization.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: "#pm_tooltip_container",
         onShow(instance) {
             if ($(".private_messages_container").hasClass("zoom-in")) {

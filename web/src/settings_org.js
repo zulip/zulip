@@ -28,6 +28,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
+import * as user_groups from "./user_groups";
 
 const meta = {
     loaded: false,
@@ -53,7 +54,7 @@ export function maybe_disable_widgets() {
         $(".deactivate_realm_button").prop("disabled", true);
         $("#deactivate_realm_button_container").addClass("disabled_setting_tooltip");
         $("#org-message-retention").find("input, select").prop("disabled", true);
-        $("#org-join-settings").find("input, select").prop("disabled", true);
+        $("#org-join-settings").find("input, select, button").prop("disabled", true);
         $("#id_realm_invite_required_label").parent().addClass("control-label-disabled");
         return;
     }
@@ -608,6 +609,7 @@ function update_dependent_subsettings(property_name) {
 export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
+export let create_multiuse_invite_group_widget = null;
 
 export function get_widget_for_dropdown_list_settings(property_name) {
     switch (property_name) {
@@ -617,6 +619,8 @@ export function get_widget_for_dropdown_list_settings(property_name) {
             return signup_notifications_stream_widget;
         case "realm_default_code_block_language":
             return default_code_language_widget;
+        case "realm_create_multiuse_invite_group":
+            return create_multiuse_invite_group_widget;
         case "can_remove_subscribers_group":
             return stream_edit.can_remove_subscribers_group_widget;
         default:
@@ -655,6 +659,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_signup_notifications_stream_id":
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
+        case "realm_create_multiuse_invite_group":
             set_dropdown_list_widget_setting_value(property_name, property_value);
             break;
         case "realm_default_language":
@@ -971,6 +976,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
         case "realm_signup_notifications_stream_id":
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
+        case "realm_create_multiuse_invite_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "email_notifications_batching_period_seconds":
@@ -1157,6 +1163,31 @@ export function init_dropdown_widgets() {
         },
     });
     default_code_language_widget.setup();
+
+    create_multiuse_invite_group_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "realm_create_multiuse_invite_group",
+        get_options: () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "create_multiuse_invite_group",
+            ),
+        $events_container: $("#settings_overlay_container #organization-permissions"),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            create_multiuse_invite_group_widget.render();
+            save_discard_widget_status_handler($("#org-join-settings"));
+        },
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: page_params.realm_create_multiuse_invite_group,
+        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+    });
+    create_multiuse_invite_group_widget.setup();
 }
 
 function check_maximum_valid_value($custom_input_elem, property_name) {
