@@ -130,9 +130,7 @@ from zerver.views.registration import (
     realm_register,
     signup_send_confirm,
 )
-from zerver.views.report import (
-    report_csp_violations,
-)
+from zerver.views.report import report_csp_violations
 from zerver.views.scheduled_messages import (
     create_scheduled_message_backend,
     delete_scheduled_messages,

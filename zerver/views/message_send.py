@@ -22,13 +22,7 @@ from zerver.lib.topic import REQ_topic
 from zerver.lib.validator import check_string_in, to_float
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
-from zerver.models import (
-    Client,
-    Message,
-    RealmDomain,
-    UserProfile,
-    get_user_including_cross_realm,
-)
+from zerver.models import Client, Message, RealmDomain, UserProfile, get_user_including_cross_realm
 
 
 class InvalidMirrorInputError(Exception):

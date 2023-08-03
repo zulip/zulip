@@ -37,11 +37,7 @@ from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_real
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
-from zerver.lib.send_email import (
-    FromAddress,
-    deliver_scheduled_emails,
-    send_future_email,
-)
+from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_future_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email
 from zerver.models import (
