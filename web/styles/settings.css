@@ -1549,22 +1549,35 @@ $option_title_width: 180px;
         padding-left: 2px;
         vertical-align: middle;
     }
-
-    & input,
-    input[type="url"] {
-        /* Override undesired Bootstrap default. */
-        margin-bottom: 0;
-    }
 }
 
 #edit-user-form {
     .person_picker {
         min-width: 206px;
+        margin-top: 5px;
     }
 
     & textarea {
         width: max(206px, 25vw);
         max-width: 320px;
+    }
+}
+
+#manage-profile-tab {
+    #edit-user-form,
+    #bot-edit-form {
+        .name-setting {
+            margin-bottom: 10px;
+        }
+    }
+
+    & input,
+    input[type="url"],
+    & textarea,
+    & select {
+        /* Override undesired Bootstrap default. */
+        margin-bottom: 0;
+        margin-top: 5px;
     }
 }
 
