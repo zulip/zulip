@@ -20,24 +20,41 @@ class Command(ZulipBaseCommand):
     document used to generate the email, or on the command line."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument(
+        targets = parser.add_mutually_exclusive_group(required=True)
+        targets.add_argument(
             "--entire-server", action="store_true", help="Send to every user on the server."
         )
-        parser.add_argument(
-            "--all-sponsored-org-admins",
-            action="store_true",
-            help="Send to all organization administrators of sponsored organizations.",
-        )
-        parser.add_argument(
+        targets.add_argument(
             "--marketing",
             action="store_true",
             help="Send to active users and realm owners with the enable_marketing_emails setting enabled.",
         )
-        parser.add_argument(
+        targets.add_argument(
             "--remote-servers",
             action="store_true",
             help="Send to registered contact email addresses for remote Zulip servers.",
         )
+        targets.add_argument(
+            "--all-sponsored-org-admins",
+            action="store_true",
+            help="Send to all organization administrators of sponsored organizations.",
+        )
+        self.add_user_list_args(
+            targets,
+            help="Email addresses of user(s) to send emails to.",
+            all_users_help="Send to every user on the realm.",
+        )
+        # Realm is only required for --users and --all-users, so it is
+        # not mutually exclusive with the rest of the above.
+        self.add_realm_args(parser)
+
+        # This is an additional filter which is composed with the above
+        parser.add_argument(
+            "--admins-only",
+            help="Filter recipients selected via other options to to only organization administrators",
+            action="store_true",
+        )
+
         parser.add_argument(
             "--markdown-template-path",
             "--path",
@@ -53,21 +70,12 @@ class Command(ZulipBaseCommand):
             help="From line for the email. It can be declared in Markdown file in headers",
         )
         parser.add_argument("--reply-to", help="Optional reply-to line for the email")
-        parser.add_argument(
-            "--admins-only", help="Send only to organization administrators", action="store_true"
-        )
+
         parser.add_argument(
             "--dry-run",
             action="store_true",
             help="Prints emails of the recipients and text of the email.",
         )
-
-        self.add_user_list_args(
-            parser,
-            help="Email addresses of user(s) to send emails to.",
-            all_users_help="Send to every user on the realm.",
-        )
-        self.add_realm_args(parser)
 
     def handle(self, *args: Any, **options: str) -> None:
         target_emails: List[str] = []
@@ -115,14 +123,7 @@ class Command(ZulipBaseCommand):
             ).distinct("delivery_email")
         else:
             realm = self.get_realm(options)
-            try:
-                users = self.get_users(options, realm, is_bot=False)
-            except CommandError as error:
-                if str(error) == "You have to pass either -u/--users or -a/--all-users.":
-                    raise CommandError(
-                        "You have to pass -u/--users or -a/--all-users or --entire-server."
-                    )
-                raise error
+            users = self.get_users(options, realm, is_bot=False)
 
         # Only email users who've agreed to the terms of service.
         if settings.TERMS_OF_SERVICE_VERSION is not None:
