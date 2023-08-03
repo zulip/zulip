@@ -556,8 +556,8 @@ export function can_access_topic_history(sub: StreamSubscription): boolean {
     return sub.is_web_public || can_toggle_subscription(sub);
 }
 
-export function can_preview(sub: StreamSubscription): boolean | undefined {
-    return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
+export function can_preview(sub: StreamSubscription): boolean {
+    return sub.subscribed || !sub.invite_only || sub.previously_subscribed === true;
 }
 
 export function can_change_permissions(sub: StreamSubscription): boolean {
@@ -650,14 +650,14 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
     return true;
 }
 
-export function is_subscribed_by_name(stream_name: string): boolean | undefined {
+export function is_subscribed_by_name(stream_name: string): boolean {
     const sub = get_sub(stream_name);
-    return sub?.subscribed;
+    return sub ? sub.subscribed : false;
 }
 
-export function is_subscribed(stream_id: number): boolean | undefined {
+export function is_subscribed(stream_id: number): boolean {
     const sub = sub_store.get(stream_id);
-    return sub?.subscribed;
+    return sub ? sub.subscribed : false;
 }
 
 export function get_stream_privacy_policy(stream_id: number): string {
@@ -675,9 +675,9 @@ export function get_stream_privacy_policy(stream_id: number): string {
     return stream_privacy_policy_values.private_with_public_history.code;
 }
 
-export function is_web_public(stream_id: number): boolean | undefined {
+export function is_web_public(stream_id: number): boolean {
     const sub = sub_store.get(stream_id);
-    return sub?.is_web_public;
+    return sub ? sub.is_web_public : false;
 }
 
 export function is_invite_only_by_stream_name(stream_name: string): boolean {
