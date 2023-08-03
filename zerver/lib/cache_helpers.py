@@ -23,13 +23,7 @@ from zerver.lib.cache import (
 from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
-from zerver.models import (
-    Client,
-    Huddle,
-    UserProfile,
-    get_client_cache_key,
-    huddle_hash_cache_key,
-)
+from zerver.models import Client, Huddle, UserProfile, get_client_cache_key, huddle_hash_cache_key
 
 
 def user_cache_items(

@@ -13,11 +13,7 @@ from django_otp.middleware import is_verified
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.cache import (
-    cache_with_key,
-    get_cross_realm_dicts_key,
-    realm_user_dict_fields,
-)
+from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key, realm_user_dict_fields
 from zerver.lib.exceptions import (
     JsonableError,
     OrganizationAdministratorRequiredError,
