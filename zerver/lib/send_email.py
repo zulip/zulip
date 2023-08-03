@@ -8,7 +8,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import backoff
 import css_inline
@@ -506,7 +506,11 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
 
 
 def send_custom_email(
-    users: QuerySet[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
+    users: QuerySet[UserProfile],
+    *,
+    target_emails: Sequence[str] = [],
+    options: Dict[str, Any],
+    add_context: Optional[Callable[[Dict[str, Union[List[str], str]], UserProfile], None]] = None,
 ) -> None:
     """
     Helper for `manage.py send_custom_email`.
@@ -558,11 +562,13 @@ def send_custom_email(
     for user_profile in users.select_related("realm"):
         if options.get("admins_only") and not user_profile.is_realm_admin:
             continue
-        context = {
+        context: Dict[str, Union[List[str], str]] = {
             "realm_uri": user_profile.realm.uri,
             "realm_name": user_profile.realm.name,
             "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
         }
+        if add_context is not None:
+            add_context(context, user_profile)
         with suppress(EmailNotDeliveredError):
             send_email(
                 email_id,
