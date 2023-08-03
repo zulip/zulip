@@ -7,10 +7,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_topics import (
-    get_topic_mutes,
-    topic_has_visibility_policy,
-)
+from zerver.lib.user_topics import get_topic_mutes, topic_has_visibility_policy
 from zerver.models import UserProfile, UserTopic, get_stream
 
 

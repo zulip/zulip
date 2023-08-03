@@ -18,16 +18,10 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 
 from confirmation import settings as confirmation_settings
-from confirmation.models import (
-    Confirmation,
-    one_click_unsubscribe_link,
-)
+from confirmation.models import Confirmation, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import add_new_user_history
-from zerver.actions.default_streams import (
-    do_add_default_stream,
-    do_create_default_stream_group,
-)
+from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_realm_authentication_methods,
@@ -50,11 +44,7 @@ from zerver.lib.mobile_auth_otp import (
     xor_hex_strings,
 )
 from zerver.lib.name_restrictions import is_disposable_domain
-from zerver.lib.send_email import (
-    EmailNotDeliveredError,
-    FromAddress,
-    send_future_email,
-)
+from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_future_email
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.subdomains import is_root_domain_available

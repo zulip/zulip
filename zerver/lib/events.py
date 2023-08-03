@@ -8,9 +8,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.actions.default_streams import (
-    default_stream_groups_to_dicts_sorted,
-)
+from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words

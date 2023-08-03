@@ -178,3 +178,4 @@ extend-function-names = ["gettext_lazy"]
 
 [tool.ruff.isort]
 known-third-party = ["zulip"]
+split-on-trailing-comma = false
