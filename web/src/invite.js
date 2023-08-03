@@ -273,7 +273,7 @@ function open_invite_user_modal(e) {
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
         $("#email_invite_radio").prop("checked", true);
 
-        if (!page_params.is_admin) {
+        if (!settings_data.user_can_create_multiuse_invite()) {
             $("#generate_multiuse_invite_radio").prop("disabled", true);
             $("#generate_multiuse_invite_radio_container").addClass("control-label-disabled");
             $("#generate_multiuse_invite_radio_container").addClass("disabled_setting_tooltip");
@@ -358,6 +358,16 @@ function open_invite_user_modal(e) {
 
         if (!user_has_email_set) {
             $("#invite-user-form :input").prop("disabled", !user_has_email_set);
+        }
+
+        if (!settings_data.user_can_invite_users_by_email()) {
+            $("#email_invite_radio").prop("disabled", true);
+            $("#email_invite_radio_container").addClass(
+                "control-label-disabled disabled_setting_tooltip",
+            );
+
+            $("#generate_multiuse_invite_radio").prop("checked", true);
+            $("#generate_multiuse_invite_radio").trigger("change");
         }
     }
 
