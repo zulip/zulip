@@ -33,8 +33,8 @@ class BinaryDict {
             - autocomplete stream in compose
     */
 
-    trues = new FoldDict();
-    falses = new FoldDict();
+    trues = new Map();
+    falses = new Map();
 
     constructor(pred) {
         this.pred = pred;
