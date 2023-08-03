@@ -542,7 +542,13 @@ def send_custom_email(
     # And then extend it with our standard email headers.
     with open(html_template_path, "w") as f:
         with open(markdown_email_base_template_path) as base_template:
-            f.write(base_template.read())
+            # We use an ugly string substitution here, because we want to:
+            #  1. Only run Jinja once on the supplied content
+            #  2. Allow the supplied content to have jinja interpolation in it
+            #  3. Have that interpolation happen in the context of
+            #     each individual email we send, so the contents can
+            #     vary user-to-user
+            f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
     with open(subject_path, "w") as f:
         f.write(get_header(options.get("subject"), parsed_email_template.get("subject"), "subject"))
@@ -555,7 +561,6 @@ def send_custom_email(
             "realm_uri": user_profile.realm.uri,
             "realm_name": user_profile.realm.name,
             "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
-            "rendered_input": rendered_input,
         }
         with suppress(EmailNotDeliveredError):
             send_email(

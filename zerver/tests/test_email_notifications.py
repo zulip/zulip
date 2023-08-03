@@ -54,9 +54,12 @@ class TestCustomEmails(ZulipTestCase):
         self.assertNotIn("{% block content %}", msg.body)
         self.assertIn("# Some heading", msg.body)
         self.assertIn("Zulip Dev", msg.body)
+        self.assertNotIn("{{ realm_name }}", msg.body)
+        self.assertNotIn("</div>", msg.body)
 
         assert isinstance(msg, EmailMultiAlternatives)
         self.assertIn("Some heading</h1>", str(msg.alternatives[0][0]))
+        self.assertNotIn("{{ realm_name }}", str(msg.alternatives[0][0]))
 
     def test_send_custom_email_remote_server(self) -> None:
         email_subject = "subject_test"
