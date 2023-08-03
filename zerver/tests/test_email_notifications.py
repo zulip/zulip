@@ -1,5 +1,6 @@
 import tempfile
 from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Union
 from unittest.mock import patch
 
 import ldap
@@ -104,6 +105,48 @@ class TestCustomEmails(ZulipTestCase):
         self.assertEqual(msg.subject, "Test subject")
         self.assertFalse(msg.reply_to)
         self.assertEqual("Test body", msg.body)
+
+    def test_send_custom_email_context(self) -> None:
+        hamlet = self.example_user("hamlet")
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
+        )
+        send_custom_email(
+            UserProfile.objects.filter(id=hamlet.id),
+            options={
+                "markdown_template_path": markdown_template_path,
+                "dry_run": False,
+            },
+        )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+
+        # We default to not including an unsubscribe link in the headers
+        self.assertEqual(msg.extra_headers.get("X-Auto-Response-Suppress"), "All")
+        self.assertIsNone(msg.extra_headers.get("List-Unsubscribe"))
+
+        mail.outbox = []
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+        )
+
+        def add_context(context: Dict[str, Union[List[str], str]], user: UserProfile) -> None:
+            context["unsubscribe_link"] = "some@email"
+            context["custom"] = str(user.id)
+
+        send_custom_email(
+            UserProfile.objects.filter(id=hamlet.id),
+            options={
+                "markdown_template_path": markdown_template_path,
+                "dry_run": False,
+            },
+            add_context=add_context,
+        )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.extra_headers.get("X-Auto-Response-Suppress"), "All")
+        self.assertEqual(msg.extra_headers.get("List-Unsubscribe"), "<some@email>")
+        self.assertIn(f"Test body with {hamlet.id} value", msg.body)
 
     def test_send_custom_email_no_argument(self) -> None:
         hamlet = self.example_user("hamlet")
