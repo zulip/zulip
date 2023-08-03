@@ -2,12 +2,14 @@
 import logging
 from argparse import ArgumentParser, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
-from typing import Any, Collection, Dict, Optional
+from functools import reduce
+from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.db.models import Q, QuerySet
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Client, Realm, UserProfile, get_client
@@ -115,7 +117,7 @@ server via `ps -ef` or reading bash history. Prefer
         realm: Optional[Realm],
         is_bot: Optional[bool] = None,
         include_deactivated: bool = False,
-    ) -> Collection[UserProfile]:
+    ) -> QuerySet[UserProfile]:
         if "all_users" in options:
             all_users = options["all_users"]
 
@@ -137,9 +139,23 @@ server via `ps -ef` or reading bash history. Prefer
                 return user_profiles
 
         if options["users"] is None:
-            return []
+            return UserProfile.objects.none()
         emails = {email.strip() for email in options["users"].split(",")}
-        return [self.get_user(email, realm) for email in emails]
+        # This is inefficient, but we fetch (and throw away) the
+        # get_user of each email, so that we verify that the email
+        # address/realm returned only one result; it may return more
+        # if realm is not specified but email address was.
+        for email in emails:
+            self.get_user(email, realm)
+
+        user_profiles = UserProfile.objects.all().select_related("realm")
+        if realm is not None:
+            user_profiles = user_profiles.filter(realm=realm)
+        email_matches = [Q(delivery_email__iexact=e) for e in emails]
+        user_profiles = user_profiles.filter(reduce(lambda a, b: a | b, email_matches))
+
+        # Return the single query, for ease of composing.
+        return user_profiles
 
     def get_user(self, email: str, realm: Optional[Realm]) -> UserProfile:
         # If a realm is specified, try to find the user there, and

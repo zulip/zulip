@@ -18,12 +18,7 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    Realm,
-    ScheduledEmail,
-    UserProfile,
-    get_realm,
-)
+from zerver.models import Realm, ScheduledEmail, UserProfile, get_realm
 
 
 class TestCustomEmails(ZulipTestCase):
@@ -37,7 +32,7 @@ class TestCustomEmails(ZulipTestCase):
             markdown_template.write(b"# Some heading\n\nSome content\n{{ realm_name }}")
             markdown_template.flush()
             send_custom_email(
-                [hamlet],
+                UserProfile.objects.filter(id=hamlet.id),
                 options={
                     "markdown_template_path": markdown_template.name,
                     "reply_to": reply_to,
@@ -68,7 +63,7 @@ class TestCustomEmails(ZulipTestCase):
         contact_email = "zulip-admin@example.com"
         markdown_template_path = "templates/corporate/policies/index.md"
         send_custom_email(
-            [],
+            UserProfile.objects.none(),
             target_emails=[contact_email],
             options={
                 "markdown_template_path": markdown_template_path,
@@ -98,7 +93,7 @@ class TestCustomEmails(ZulipTestCase):
             "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.html"
         )
         send_custom_email(
-            [hamlet],
+            UserProfile.objects.filter(id=hamlet.id),
             options={
                 "markdown_template_path": markdown_template_path,
                 "dry_run": False,
@@ -123,7 +118,7 @@ class TestCustomEmails(ZulipTestCase):
         self.assertRaises(
             NoEmailArgumentError,
             send_custom_email,
-            [hamlet],
+            UserProfile.objects.filter(id=hamlet.id),
             options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
@@ -134,7 +129,7 @@ class TestCustomEmails(ZulipTestCase):
         self.assertRaises(
             NoEmailArgumentError,
             send_custom_email,
-            [hamlet],
+            UserProfile.objects.filter(id=hamlet.id),
             options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
@@ -155,7 +150,7 @@ class TestCustomEmails(ZulipTestCase):
         self.assertRaises(
             DoubledEmailArgumentError,
             send_custom_email,
-            [hamlet],
+            UserProfile.objects.filter(id=hamlet.id),
             options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
@@ -166,7 +161,7 @@ class TestCustomEmails(ZulipTestCase):
         self.assertRaises(
             DoubledEmailArgumentError,
             send_custom_email,
-            [hamlet],
+            UserProfile.objects.filter(id=hamlet.id),
             options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
@@ -184,7 +179,7 @@ class TestCustomEmails(ZulipTestCase):
             "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.html"
         )
         send_custom_email(
-            [admin_user, non_admin_user],
+            UserProfile.objects.filter(id__in=(admin_user.id, non_admin_user.id)),
             options={
                 "markdown_template_path": markdown_template_path,
                 "admins_only": True,
@@ -202,7 +197,7 @@ class TestCustomEmails(ZulipTestCase):
         markdown_template_path = "templates/zerver/tests/markdown/test_nested_code_blocks.md"
         with patch("builtins.print") as _:
             send_custom_email(
-                [hamlet],
+                UserProfile.objects.filter(id=hamlet.id),
                 options={
                     "markdown_template_path": markdown_template_path,
                     "reply_to": reply_to,
