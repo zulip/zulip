@@ -53,12 +53,8 @@ class BinaryDict {
     }
 
     *values() {
-        for (const value of this.trues.values()) {
-            yield value;
-        }
-        for (const value of this.falses.values()) {
-            yield value;
-        }
+        yield* this.trues.values();
+        yield* this.falses.values();
     }
 
     get(k) {

@@ -266,11 +266,7 @@ function FakeElement(selector, opts) {
                 f.call(child);
             }
         };
-        $self[Symbol.iterator] = function* () {
-            for (const child of opts.children) {
-                yield child;
-            }
-        };
+        $self[Symbol.iterator] = () => opts.children.values();
 
         for (const [i, child] of opts.children.entries()) {
             $self[i] = child;
