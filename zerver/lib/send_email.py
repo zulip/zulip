@@ -8,7 +8,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import backoff
 import css_inline
@@ -20,6 +20,7 @@ from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.template import loader
 from django.utils.timezone import now as timezone_now
@@ -505,7 +506,7 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
 
 
 def send_custom_email(
-    users: Iterable[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
+    users: QuerySet[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
 ) -> None:
     """
     Helper for `manage.py send_custom_email`.
@@ -554,7 +555,7 @@ def send_custom_email(
         f.write(get_header(options.get("subject"), parsed_email_template.get("subject"), "subject"))
 
     # Finally, we send the actual emails.
-    for user_profile in users:
+    for user_profile in users.select_related("realm"):
         if options.get("admins_only") and not user_profile.is_realm_admin:
             continue
         context = {

@@ -78,13 +78,12 @@ class Command(ZulipBaseCommand):
             realm = self.get_realm(options)
             user_profiles = self.get_users(options, realm, is_bot=False, include_deactivated=True)
         else:
-            user_profile_query = UserProfile.objects.select_related("realm").filter(is_bot=False)
+            user_profiles = UserProfile.objects.select_related("realm").filter(is_bot=False)
 
-            if not user_profile_query.exists():
+            if not user_profiles.exists():
                 # This case provides a special error message if one
                 # tries setting up LDAP sync before creating a realm.
                 raise CommandError("Zulip server contains no users. Have you created a realm?")
-            user_profiles = list(user_profile_query)
 
         if len(user_profiles) == 0:
             # We emphasize that this error is purely about the
