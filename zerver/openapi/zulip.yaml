@@ -11584,8 +11584,8 @@ paths:
                                   type: integer
                                   nullable: true
                                   description: |
-                                    The average number of messages sent to the stream in recent weeks,
-                                    rounded to the nearest integer.
+                                    The average number of messages sent to the stream per week, as
+                                    estimated based on recent weeks, rounded to the nearest integer.
 
                                     If `null`, the stream was recently created and there is
                                     insufficient data to estimate the average traffic.
@@ -17745,8 +17745,8 @@ components:
           type: integer
           nullable: true
           description: |
-            The average number of messages sent to the stream in recent weeks,
-            rounded to the nearest integer.
+            The average number of messages sent to the stream per week, as
+            estimated based on recent weeks, rounded to the nearest integer.
 
             If `null`, the stream was recently created and there is
             insufficient data to estimate the average traffic.
