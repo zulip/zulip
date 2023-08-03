@@ -25,6 +25,9 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
   Default channels data only includes channel IDs now instead of full
   channel data.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Default channel groups data only includes channel IDs now instead of
+  full channel data.
 
 **Feature level 329**
 

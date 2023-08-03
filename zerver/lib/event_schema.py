@@ -213,7 +213,7 @@ _check_stream_group = DictType(
         ("name", str),
         ("id", int),
         ("description", str),
-        ("streams", ListType(DictType(default_stream_fields))),
+        ("streams", ListType(int)),
     ]
 )
 
