@@ -25,6 +25,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     "zerver/lib/send_email.py",
     "zerver/tests/test_new_users.py",
     "zerver/tests/test_email_mirror.py",
+    "zerver/tests/test_message_notification_emails.py",
     "zerver/tests/test_email_notifications.py",
     # This uses subject in authentication protocols sense:
     "zerver/tests/test_auth_backends.py",
