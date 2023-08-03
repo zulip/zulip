@@ -155,7 +155,7 @@
             </li>
             {{/if}}
             <li class="divider hidden-for-spectators" role="presentation"></li>
-            {{#if can_invite_users_by_email}}
+            {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
             <li role="presentation">
                 <a class="invite-user-link" role="menuitem">
                     <i class="fa fa-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}

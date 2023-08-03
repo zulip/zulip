@@ -57,8 +57,6 @@ permission to invite users.
 
 ## Create a reusable invitation link
 
-{!admin-only.md!}
-
 {start_tabs}
 
 {!invite-users.md!}

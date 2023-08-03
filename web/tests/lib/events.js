@@ -374,6 +374,7 @@ exports.fixtures = {
             allow_message_editing: true,
             message_content_edit_limit_seconds: 5,
             edit_topic_policy: 4,
+            create_multiuse_invite_group: 3,
             authentication_methods: {
                 Google: true,
             },

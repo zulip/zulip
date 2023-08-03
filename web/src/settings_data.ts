@@ -1,5 +1,6 @@
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
+import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 
 let user_join_date: Date;
@@ -139,6 +140,16 @@ export function user_can_invite_users_by_email(): boolean {
         return false;
     }
     return user_has_permission(page_params.realm_invite_to_realm_policy);
+}
+
+export function user_can_create_multiuse_invite(): boolean {
+    if (!page_params.user_id) {
+        return false;
+    }
+    return user_groups.is_user_in_group(
+        page_params.realm_create_multiuse_invite_group,
+        page_params.user_id,
+    );
 }
 
 export function user_can_subscribe_other_users(): boolean {

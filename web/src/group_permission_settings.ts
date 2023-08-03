@@ -15,6 +15,15 @@ const group_permission_config_dict = new Map<string, GroupPermissionSetting>([
             allow_nobody_group: false,
         },
     ],
+    [
+        "create_multiuse_invite_group",
+        {
+            require_system_group: true,
+            allow_internet_group: false,
+            allow_owners_group: false,
+            allow_nobody_group: true,
+        },
+    ],
 ]);
 
 export function get_group_permission_setting_config(

@@ -775,6 +775,24 @@ input[type="checkbox"] {
     margin: 20px 0 0;
 }
 
+#org-join-settings {
+    .dropdown-widget-button {
+        width: 325px;
+        color: hsl(0deg 0% 33%);
+
+        & i {
+            font-size: 10px;
+            margin-right: -3px;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0deg 0% 93%);
+            opacity: 0.7;
+        }
+    }
+}
+
 .progressive-table-wrapper {
     position: relative;
     max-height: calc(95vh - 220px);
