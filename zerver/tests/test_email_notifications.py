@@ -90,7 +90,7 @@ class TestCustomEmails(ZulipTestCase):
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
         )
         send_custom_email(
             UserProfile.objects.filter(id=hamlet.id),
@@ -110,7 +110,7 @@ class TestCustomEmails(ZulipTestCase):
         from_name = "from_name_test"
         email_subject = "subject_test"
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.md"
         )
 
         from zerver.lib.send_email import NoEmailArgumentError
@@ -142,7 +142,7 @@ class TestCustomEmails(ZulipTestCase):
         from_name = "from_name_test"
         email_subject = "subject_test"
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
         )
 
         from zerver.lib.send_email import DoubledEmailArgumentError
@@ -176,7 +176,7 @@ class TestCustomEmails(ZulipTestCase):
         non_admin_user = self.example_user("cordelia")
 
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
         )
         send_custom_email(
             UserProfile.objects.filter(id__in=(admin_user.id, non_admin_user.id)),
