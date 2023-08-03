@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any, Callable, Dict, List, Optional, Union
 
+import orjson
 from django.conf import settings
 from django.db.models import Q, QuerySet
 
@@ -38,6 +39,11 @@ class Command(ZulipBaseCommand):
             "--all-sponsored-org-admins",
             action="store_true",
             help="Send to all organization administrators of sponsored organizations.",
+        )
+        targets.add_argument(
+            "--json-file",
+            help="Load the JSON file, and send to the users whose ids are the keys in that dict; "
+            "the context for each email will be extended by each value in the dict.",
         )
         self.add_user_list_args(
             targets,
@@ -131,6 +137,18 @@ class Command(ZulipBaseCommand):
                 realm__deactivated=False,
                 realm__in=sponsored_realms,
             ).distinct("delivery_email")
+        elif options["json_file"]:
+            with open(options["json_file"]) as f:
+                user_data: Dict[str, Dict[str, Union[List[str], str]]] = orjson.loads(f.read())
+            users = UserProfile.objects.filter(id__in=[int(user_id) for user_id in user_data])
+
+            def add_context_from_dict(
+                context: Dict[str, Union[List[str], str]], user: UserProfile
+            ) -> None:
+                context.update(user_data.get(str(user.id), {}))
+
+            add_context = add_context_from_dict
+
         else:
             realm = self.get_realm(options)
             users = self.get_users(options, realm, is_bot=False)
