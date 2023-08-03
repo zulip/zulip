@@ -1,9 +1,8 @@
 from argparse import ArgumentParser
-from typing import Any, Collection, List
+from typing import Any, List
 
 from django.conf import settings
-from django.core.management.base import CommandError
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.send_email import send_custom_email
@@ -79,7 +78,7 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args: Any, **options: str) -> None:
         target_emails: List[str] = []
-        users: Collection[UserProfile] = []
+        users: QuerySet[UserProfile] = UserProfile.objects.none()
 
         if options["entire_server"]:
             users = UserProfile.objects.filter(
@@ -127,14 +126,8 @@ class Command(ZulipBaseCommand):
 
         # Only email users who've agreed to the terms of service.
         if settings.TERMS_OF_SERVICE_VERSION is not None:
-            # We need to do a new query because the `get_users` path
-            # passes us a list rather than a QuerySet.
-            users = (
-                UserProfile.objects.select_related("realm")
-                .filter(id__in=[u.id for u in users])
-                .exclude(
-                    Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
-                )
+            users = users.exclude(
+                Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
             )
         send_custom_email(users, target_emails=target_emails, options=options)
 
