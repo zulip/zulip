@@ -87,7 +87,6 @@ subscription_fields: Sequence[Tuple[str, object]] = [
 
 value_type = UnionType(
     [
-        # force vertical formatting
         bool,
         int,
         str,
@@ -96,7 +95,6 @@ value_type = UnionType(
 
 optional_value_type = UnionType(
     [
-        # force vertical formatting
         bool,
         int,
         str,
@@ -106,7 +104,6 @@ optional_value_type = UnionType(
 
 alert_words_event = event_dict_type(
     required_keys=[
-        # force vertical formatting
         ("type", Equals("alert_words")),
         ("alert_words", ListType(str)),
     ]
@@ -115,7 +112,6 @@ check_alert_words = make_checker(alert_words_event)
 
 attachment_message_type = DictType(
     required_keys=[
-        # force vertical
         ("id", int),
         ("date_sent", int),
     ]
@@ -195,7 +191,6 @@ _check_stream_group = DictType(
 
 default_stream_groups_event = event_dict_type(
     required_keys=[
-        # force vertical
         ("type", Equals("default_stream_groups")),
         ("default_stream_groups", ListType(_check_stream_group)),
     ]
@@ -216,7 +211,6 @@ check_default_streams = make_checker(default_streams_event)
 # are conditional on private vs. stream messages.
 delete_message_event = event_dict_type(
     required_keys=[
-        # force vertical
         ("type", Equals("delete_message")),
         ("message_type", EnumType(["private", "stream"])),
     ],
@@ -263,7 +257,6 @@ def check_delete_message(
 
 has_zoom_token_event = event_dict_type(
     required_keys=[
-        # force vertical
         ("type", Equals("has_zoom_token")),
         ("value", bool),
     ]
@@ -272,7 +265,6 @@ _check_has_zoom_token = make_checker(has_zoom_token_event)
 
 
 def check_has_zoom_token(
-    # force vertical
     var_name: str,
     event: Dict[str, object],
     value: bool,
@@ -283,7 +275,6 @@ def check_has_zoom_token(
 
 heartbeat_event = event_dict_type(
     required_keys=[
-        # force vertical
         ("type", Equals("heartbeat")),
     ]
 )
@@ -291,7 +282,6 @@ _check_heartbeat = make_checker(heartbeat_event)
 
 
 def check_heartbeat(
-    # force vertical
     var_name: str,
     event: Dict[str, object],
 ) -> None:
@@ -300,7 +290,6 @@ def check_heartbeat(
 
 _hotspot = DictType(
     required_keys=[
-        # force vertical
         ("name", str),
         ("title", str),
         ("description", str),
@@ -310,7 +299,6 @@ _hotspot = DictType(
 
 hotspots_event = event_dict_type(
     required_keys=[
-        # force vertical
         ("type", Equals("hotspots")),
         (
             "hotspots",
@@ -432,7 +420,6 @@ presence_event = event_dict_type(
         ("presence", StringDictType(presence_type)),
     ],
     optional_keys=[
-        # force vertical
         ("email", str),
     ],
 )
@@ -463,7 +450,6 @@ def check_presence(
 # to support the modern API.
 reaction_legacy_user_type = DictType(
     required_keys=[
-        # force vertical
         ("email", str),
         ("full_name", str),
         ("user_id", int),
@@ -511,7 +497,6 @@ check_realm_deactivated = make_checker(realm_deactivated_event)
 
 bot_services_outgoing_type = DictType(
     required_keys=[
-        # force vertical
         ("base_url", UrlType()),
         ("interface", int),
         ("token", str),
@@ -522,7 +507,6 @@ config_data_schema = StringDictType(str)
 
 bot_services_embedded_type = DictType(
     required_keys=[
-        # force vertical
         ("service_name", str),
         ("config_data", config_data_schema),
     ]
@@ -533,7 +517,6 @@ bot_services_embedded_type = DictType(
 bot_services_type = ListType(
     UnionType(
         [
-            # force vertical
             bot_services_outgoing_type,
             bot_services_embedded_type,
         ]
@@ -559,7 +542,6 @@ bot_type = DictType(
 
 realm_bot_add_event = event_dict_type(
     required_keys=[
-        # force vertical
         ("type", Equals("realm_bot")),
         ("op", Equals("add")),
         ("bot", bot_type),
@@ -628,7 +610,6 @@ check_realm_bot_remove = make_checker(realm_bot_remove_event)
 
 bot_type_for_update = DictType(
     required_keys=[
-        # force vertical
         ("user_id", int),
     ],
     optional_keys=[
@@ -668,7 +649,6 @@ def check_realm_bot_update(
 
 realm_domain_type = DictType(
     required_keys=[
-        # force vertical
         ("domain", str),
         ("allow_subdomains", bool),
     ]
@@ -769,7 +749,6 @@ export_type = DictType(
 
 realm_export_event = event_dict_type(
     required_keys=[
-        # force vertical
         ("type", Equals("realm_export")),
         (
             "exports",
@@ -822,7 +801,6 @@ check_realm_linkifiers = make_checker(realm_linkifiers_event)
 
 plan_type_extra_data_type = DictType(
     required_keys=[
-        # force vertical
         ("upload_quota", int),
     ]
 )
@@ -840,7 +818,6 @@ realm_update_event = event_dict_type(
         ("value", value_type),
     ],
     optional_keys=[
-        # force vertical
         ("extra_data", plan_type_extra_data_type),
     ],
 )
@@ -937,7 +914,6 @@ authentication_data = DictType(
 
 icon_data = DictType(
     required_keys=[
-        # force vertical
         ("icon_url", str),
         ("icon_source", str),
     ]
@@ -945,7 +921,6 @@ icon_data = DictType(
 
 logo_data = DictType(
     required_keys=[
-        # force vertical
         ("logo_url", str),
         ("logo_source", str),
     ]
@@ -971,7 +946,6 @@ edit_topic_policy_data = DictType(
 
 night_logo_data = DictType(
     required_keys=[
-        # force vertical
         ("night_logo_url", str),
         ("night_logo_source", str),
     ]
@@ -979,7 +953,6 @@ night_logo_data = DictType(
 
 update_dict_data = UnionType(
     [
-        # force vertical
         allow_message_editing_data,
         authentication_data,
         edit_topic_policy_data,
@@ -1074,7 +1047,6 @@ check_realm_user_add = make_checker(realm_user_add_event)
 
 removed_user_type = DictType(
     required_keys=[
-        # force vertical
         ("user_id", int),
         ("full_name", str),
     ]
@@ -1091,12 +1063,10 @@ check_realm_user_remove = make_checker(realm_user_remove_event)
 
 custom_profile_field_type = DictType(
     required_keys=[
-        # vertical formatting
         ("id", int),
         ("value", str),
     ],
     optional_keys=[
-        # vertical formatting
         ("rendered_value", str),
     ],
 )
@@ -1116,21 +1086,18 @@ realm_user_person_types = dict(
     ),
     bot_owner_id=DictType(
         required_keys=[
-            # vertical formatting
             ("user_id", int),
             ("bot_owner_id", int),
         ],
     ),
     custom_profile_field=DictType(
         required_keys=[
-            # vertical formatting
             ("user_id", int),
             ("custom_profile_field", custom_profile_field_type),
         ],
     ),
     delivery_email=DictType(
         required_keys=[
-            # vertical formatting
             ("user_id", int),
             ("delivery_email", OptionalType(str)),
         ],
@@ -1143,21 +1110,18 @@ realm_user_person_types = dict(
     ),
     full_name=DictType(
         required_keys=[
-            # vertical formatting
             ("user_id", int),
             ("full_name", str),
         ],
     ),
     is_billing_admin=DictType(
         required_keys=[
-            # vertical formatting
             ("user_id", int),
             ("is_billing_admin", bool),
         ],
     ),
     role=DictType(
         required_keys=[
-            # vertical formatting
             ("user_id", int),
             ("role", EnumType(UserProfile.ROLE_TYPES)),
         ],
@@ -1302,7 +1266,6 @@ submessage_event = event_dict_type(
 check_submessage = make_checker(submessage_event)
 
 single_subscription_type = DictType(
-    # force vertical
     required_keys=subscription_fields,
 )
 
@@ -1427,7 +1390,6 @@ update_display_settings_event = event_dict_type(
         ("user", str),
     ],
     optional_keys=[
-        # force vertical
         ("language_name", str),
     ],
 )
@@ -1441,7 +1403,6 @@ user_settings_update_event = event_dict_type(
         ("value", value_type),
     ],
     optional_keys=[
-        # force vertical
         ("language_name", str),
     ],
 )
@@ -1734,7 +1695,6 @@ check_user_group_remove_members = make_checker(user_group_remove_members_event)
 user_group_data_type = DictType(
     required_keys=[],
     optional_keys=[
-        # force vertical
         ("name", str),
         ("description", str),
         ("can_mention_group", int),
@@ -1784,12 +1744,10 @@ check_user_group_remove_subgroups = make_checker(user_group_remove_subgroups_eve
 
 user_status_event = event_dict_type(
     required_keys=[
-        # force vertical
         ("type", Equals("user_status")),
         ("user_id", int),
     ],
     optional_keys=[
-        # force vertical
         ("away", bool),
         ("status_text", str),
         ("emoji_name", str),
