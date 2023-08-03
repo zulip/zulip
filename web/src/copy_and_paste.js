@@ -1,3 +1,4 @@
+import isUrl from "is-url";
 import $ from "jquery";
 import TurndownService from "turndown";
 
@@ -341,7 +342,25 @@ export function paste_handler(event) {
     }
 
     if (clipboardData.getData) {
+        const $textarea = $(event.currentTarget);
+        const paste_text = clipboardData.getData("text");
         const paste_html = clipboardData.getData("text/html");
+        // Trim the paste_text to accommodate sloppy copying
+        const trimmed_paste_text = paste_text.trim();
+        const range = $textarea.range();
+
+        // Only try to generate formatted links when dealing with a URL
+        // and a range selection. Note that even clipboards with "text/html"
+        // have a "text" equivalent, so we need an if statement that checks
+        // for more than a value on `trimmed_paste_text`
+        if (isUrl(trimmed_paste_text) && range.text) {
+            event.preventDefault();
+            event.stopPropagation();
+            const url = trimmed_paste_text;
+            compose_ui.format_text($textarea, "linked", url);
+            return;
+        }
+
         if (paste_html && page_params.development_environment) {
             const text = paste_handler_converter(paste_html);
             const mdImageRegex = /^!\[.*]\(.*\)$/;
@@ -359,5 +378,5 @@ export function paste_handler(event) {
 
 export function initialize() {
     $("#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", ".message_edit_form", paste_handler);
+    $("body").on("paste", ".message_edit_content", paste_handler);
 }

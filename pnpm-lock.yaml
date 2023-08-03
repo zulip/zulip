@@ -134,6 +134,9 @@ dependencies:
   intl-messageformat:
     specifier: ^10.3.0
     version: 10.5.0
+  is-url:
+    specifier: ^1.2.4
+    version: 1.2.4
   jquery:
     specifier: ^3.6.3
     version: 3.7.0
@@ -7453,6 +7456,10 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       unc-path-regex: 0.1.2
+    dev: false
+
+  /is-url@1.2.4:
+    resolution: {integrity: sha512-ITvGim8FhRiYe4IQ5uHSkj7pVaPDrCTkNd3yq3cV7iZAcJdHTUMPMEHcqSOy9xZ9qFenQCvi+2wjH9a1nXqHww==}
     dev: false
 
   /is-utf8@0.2.1:
