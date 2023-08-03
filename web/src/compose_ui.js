@@ -343,7 +343,7 @@ export function handle_keyup(_event, $textarea) {
     rtl.set_rtl_class_for_textarea($textarea);
 }
 
-export function format_text($textarea, type) {
+export function format_text($textarea, type, inserted_content) {
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
@@ -505,6 +505,14 @@ export function format_text($textarea, type) {
             const new_start = range.end + "[](".length;
             const new_end = new_start + "url".length;
             field.setSelectionRange(new_start, new_end);
+            break;
+        }
+        case "linked": {
+            // From a paste event with a URL as inserted content
+            wrapSelection(field, "[", `](${inserted_content})`);
+            // Put the cursor at the end of the selection range
+            // and all wrapped material
+            $textarea.caret(range.end + `[](${inserted_content})`.length);
             break;
         }
     }
