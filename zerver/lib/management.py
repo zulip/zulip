@@ -1,6 +1,6 @@
 # Library code for use in management commands
 import logging
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import ArgumentParser, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
 from typing import Any, Collection, Dict, Optional
 
@@ -84,7 +84,7 @@ server via `ps -ef` or reading bash history. Prefer
 
     def add_user_list_args(
         self,
-        parser: ArgumentParser,
+        parser: _ActionsContainer,
         help: str = "A comma-separated list of email addresses.",
         all_users_help: str = "All users in realm.",
     ) -> None:
