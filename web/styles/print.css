@@ -4,6 +4,7 @@
     #streamlist-toggle,
     #left-sidebar-container,
     #right-sidebar-container,
+    .column-left,
     .top-messages-logo,
     #userlist-toggle,
     .message_length_controller,
@@ -12,8 +13,15 @@
     #message_feed_errors_container,
     #bottom_whitespace,
     #mark_read_on_scroll_state_banner,
+    .trailing_bookend,
     #compose {
         display: none;
+    }
+
+    /* Allow printer to set the margins, and
+       prevent Safari from using screen-based ones. */
+    .column-middle {
+        margin: 0;
     }
 
     /* Prevent headers from running on every page. */
