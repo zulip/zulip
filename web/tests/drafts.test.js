@@ -67,7 +67,6 @@ const messages_overlay_ui = zrequire("messages_overlay_ui");
 const timerender = zrequire("timerender");
 
 const draft_1 = {
-    stream: "stream",
     stream_id: 30,
     topic: "topic",
     type: "stream",
@@ -80,7 +79,6 @@ const draft_2 = {
     content: "Test direct message",
 };
 const short_msg = {
-    stream: "stream",
     stream_id: 30,
     topic: "topic",
     type: "stream",
@@ -180,7 +178,7 @@ test("snapshot_message", ({override_rewire}) => {
 
     const stream = {
         stream_id: draft_1.stream_id,
-        name: draft_1.stream,
+        name: "stream name",
     };
     stream_data.add_sub(stream);
     compose_state.set_stream_id(stream.stream_id);
@@ -221,7 +219,6 @@ test("initialize", ({override_rewire}) => {
 
 test("remove_old_drafts", () => {
     const draft_3 = {
-        stream: "stream",
         topic: "topic",
         type: "stream",
         content: "Test stream message",
@@ -325,7 +322,6 @@ test("rename_stream_recipient", ({override_rewire}) => {
     stream_data.add_sub(stream_B);
 
     const draft_1 = {
-        stream: stream_A.name,
         stream_id: stream_A.stream_id,
         topic: "a",
         type: "stream",
@@ -333,7 +329,6 @@ test("rename_stream_recipient", ({override_rewire}) => {
         updatedAt: Date.now(),
     };
     const draft_2 = {
-        stream: stream_A.name,
         stream_id: stream_A.stream_id,
         topic: "b",
         type: "stream",
@@ -341,7 +336,6 @@ test("rename_stream_recipient", ({override_rewire}) => {
         updatedAt: Date.now(),
     };
     const draft_3 = {
-        stream: stream_B.name,
         stream_id: stream_B.stream_id,
         topic: "a",
         type: "stream",
@@ -349,7 +343,6 @@ test("rename_stream_recipient", ({override_rewire}) => {
         updatedAt: Date.now(),
     };
     const draft_4 = {
-        stream: stream_B.name,
         stream_id: stream_B.stream_id,
         topic: "c",
         type: "stream",
@@ -361,39 +354,39 @@ test("rename_stream_recipient", ({override_rewire}) => {
     ls.set("drafts", data);
 
     const draft_model = drafts.draft_model;
-    function assert_draft(draft_id, stream_name, topic_name) {
+    function assert_draft(draft_id, stream_id, topic_name) {
         const draft = draft_model.getDraft(draft_id);
         assert.equal(draft.topic, topic_name);
-        assert.equal(draft.stream, stream_name);
+        assert.equal(draft.stream_id, stream_id);
     }
 
     // There are no drafts in B>b, so moving messages from there doesn't change drafts
     drafts.rename_stream_recipient(stream_B.stream_id, "b", undefined, "c");
-    assert_draft("id1", "A", "a");
-    assert_draft("id2", "A", "b");
-    assert_draft("id3", "B", "a");
-    assert_draft("id4", "B", "c");
+    assert_draft("id1", stream_A.stream_id, "a");
+    assert_draft("id2", stream_A.stream_id, "b");
+    assert_draft("id3", stream_B.stream_id, "a");
+    assert_draft("id4", stream_B.stream_id, "c");
 
     // Update with both stream and topic changes Bc -> Aa
     drafts.rename_stream_recipient(stream_B.stream_id, "c", stream_A.stream_id, "a");
-    assert_draft("id1", "A", "a");
-    assert_draft("id2", "A", "b");
-    assert_draft("id3", "B", "a");
-    assert_draft("id4", "A", "a");
+    assert_draft("id1", stream_A.stream_id, "a");
+    assert_draft("id2", stream_A.stream_id, "b");
+    assert_draft("id3", stream_B.stream_id, "a");
+    assert_draft("id4", stream_A.stream_id, "a");
 
     // Update with only stream change Aa -> Ba
     drafts.rename_stream_recipient(stream_A.stream_id, "a", stream_B.stream_id, undefined);
-    assert_draft("id1", "B", "a");
-    assert_draft("id2", "A", "b");
-    assert_draft("id3", "B", "a");
-    assert_draft("id4", "B", "a");
+    assert_draft("id1", stream_B.stream_id, "a");
+    assert_draft("id2", stream_A.stream_id, "b");
+    assert_draft("id3", stream_B.stream_id, "a");
+    assert_draft("id4", stream_B.stream_id, "a");
 
     // Update with only topic change, affecting three messages
     drafts.rename_stream_recipient(stream_B.stream_id, "a", undefined, "e");
-    assert_draft("id1", "B", "e");
-    assert_draft("id2", "A", "b");
-    assert_draft("id3", "B", "e");
-    assert_draft("id4", "B", "e");
+    assert_draft("id1", stream_B.stream_id, "e");
+    assert_draft("id2", stream_A.stream_id, "b");
+    assert_draft("id3", stream_B.stream_id, "e");
+    assert_draft("id4", stream_B.stream_id, "e");
 });
 
 // There were some buggy drafts that had their topics
@@ -415,7 +408,6 @@ test("catch_buggy_draft_error", () => {
     stream_data.add_sub(stream_B);
 
     const buggy_draft = {
-        stream: stream_B.name,
         stream_id: stream_B.stream_id,
         topic: undefined,
         type: "stream",
@@ -436,7 +428,7 @@ test("catch_buggy_draft_error", () => {
         "new_topic",
     );
     const draft = draft_model.getDraft("id1");
-    assert.equal(draft.stream, stream_B.name);
+    assert.equal(draft.stream_id, stream_B.stream_id);
     assert.equal(draft.topic, undefined);
 });
 
@@ -444,7 +436,6 @@ test("fix_buggy_draft", ({override_rewire}) => {
     override_rewire(drafts, "set_count", noop);
 
     const buggy_draft = {
-        stream: "stream name",
         stream_id: 1,
         // This is the bug: topic never be undefined for a stream
         // message draft.
@@ -460,7 +451,7 @@ test("fix_buggy_draft", ({override_rewire}) => {
 
     drafts.fix_drafts_with_undefined_topics();
     const draft = draft_model.getDraft("id1");
-    assert.equal(draft.stream, "stream name");
+    assert.equal(draft.stream_id, buggy_draft.stream_id);
     assert.equal(draft.topic, "");
 });
 
@@ -489,7 +480,6 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     }
 
     const draft_1 = {
-        stream: "stream",
         topic: "topic",
         type: "stream",
         content: "Test stream message",
@@ -504,9 +494,9 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         updatedAt: date(-1),
     };
     const draft_3 = {
-        stream: "stream 2",
         topic: "topic",
         type: "stream",
+        stream_id: 40,
         content: "Test stream message 2",
         updatedAt: date(-10),
     };
@@ -564,12 +554,12 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id3",
             is_stream: true,
             stream_name: "stream 2",
+            stream_id: 40,
             recipient_bar_color: "#ebebeb",
             stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
-            stream_id: undefined,
             invite_only: false,
             is_web_public: false,
         },
@@ -589,8 +579,11 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     );
 
     override_rewire(sub_store, "get", (stream_id) => {
-        assert.equal(stream_id, 30);
-        return {name: "stream"};
+        assert.ok([30, 40].includes(stream_id));
+        if (stream_id === 30) {
+            return {name: "stream", stream_id};
+        }
+        return {name: "stream 2", stream_id, invite_only: false, is_web_public: false};
     });
 
     override_rewire(user_pill, "get_user_ids", () => []);
@@ -618,8 +611,11 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     $("#draft_overlay").css = () => {};
 
     override_rewire(sub_store, "get", (stream_id) => {
-        assert.equal(stream_id, 30);
-        return {name: "stream-rename"};
+        assert.ok([30, 40].includes(stream_id));
+        if (stream_id === 30) {
+            return {name: "stream-rename", stream_id};
+        }
+        return {name: "stream 2", stream_id, invite_only: false, is_web_public: false};
     });
 
     expected[0].stream_name = "stream-rename";
@@ -641,7 +637,6 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
     }
 
     const stream_draft_1 = {
-        stream: "stream",
         topic: "topic",
         type: "stream",
         content: "Test stream message",
@@ -656,9 +651,9 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         updatedAt: date(-1),
     };
     const stream_draft_2 = {
-        stream: "stream 2", // TODO_STREAM_ID
         topic: "topic",
         type: "stream",
+        stream_id: 40,
         content: "Test stream message 2",
         updatedAt: date(-10),
     };
@@ -719,7 +714,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id3",
             is_stream: true,
             stream_name: "stream 2",
-            stream_id: undefined,
+            stream_id: 40,
             recipient_bar_color: "#ebebeb",
             stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",
@@ -750,8 +745,11 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
     );
 
     override_rewire(sub_store, "get", (stream_id) => {
-        assert.equal(stream_id, 30);
-        return {name: "stream", invite_only: false, is_web_public: false};
+        assert.ok([30, 40].includes(stream_id));
+        if (stream_id === 30) {
+            return {name: "stream", stream_id, invite_only: false, is_web_public: false};
+        }
+        return {name: "stream 2", stream_id, invite_only: false, is_web_public: false};
     });
 
     mock_template("draft_table_body.hbs", false, (data) => {
