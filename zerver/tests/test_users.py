@@ -1845,8 +1845,8 @@ class RecipientInfoTest(ZulipTestCase):
         expected_info = RecipientInfoResult(
             active_user_ids=all_user_ids,
             online_push_user_ids=set(),
-            pm_mention_email_disabled_user_ids=set(),
-            pm_mention_push_disabled_user_ids=set(),
+            dm_mention_email_disabled_user_ids=set(),
+            dm_mention_push_disabled_user_ids=set(),
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             topic_wildcard_mention_user_ids=set(),
@@ -1876,8 +1876,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_stream_wildcard_mention=False,
         )
-        self.assertEqual(info.pm_mention_email_disabled_user_ids, {hamlet.id})
-        self.assertEqual(info.pm_mention_push_disabled_user_ids, {hamlet.id})
+        self.assertEqual(info.dm_mention_email_disabled_user_ids, {hamlet.id})
+        self.assertEqual(info.dm_mention_push_disabled_user_ids, {hamlet.id})
         do_change_user_setting(hamlet, "enable_offline_email_notifications", True, acting_user=None)
         do_change_user_setting(hamlet, "enable_offline_push_notifications", True, acting_user=None)
 

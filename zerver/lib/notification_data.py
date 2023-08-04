@@ -11,8 +11,8 @@ from zerver.models import NotificationTriggers, UserGroup, UserProfile, UserTopi
 class UserMessageNotificationsData:
     user_id: int
     online_push_enabled: bool
-    pm_email_notify: bool
-    pm_push_notify: bool
+    dm_email_notify: bool
+    dm_push_notify: bool
     mention_email_notify: bool
     mention_push_notify: bool
     topic_wildcard_mention_email_notify: bool
@@ -32,7 +32,7 @@ class UserMessageNotificationsData:
 
     def __post_init__(self) -> None:
         # Check that there's no dubious data.
-        if self.pm_email_notify or self.pm_push_notify:
+        if self.dm_email_notify or self.dm_push_notify:
             assert not (
                 self.stream_email_notify
                 or self.stream_push_notify
@@ -46,7 +46,7 @@ class UserMessageNotificationsData:
             or self.followed_topic_email_notify
             or self.followed_topic_push_notify
         ):
-            assert not (self.pm_email_notify or self.pm_push_notify)
+            assert not (self.dm_email_notify or self.dm_push_notify)
 
     @classmethod
     def from_user_id_sets(
@@ -57,8 +57,8 @@ class UserMessageNotificationsData:
         private_message: bool,
         disable_external_notifications: bool,
         online_push_user_ids: Set[int],
-        pm_mention_push_disabled_user_ids: Set[int],
-        pm_mention_email_disabled_user_ids: Set[int],
+        dm_mention_push_disabled_user_ids: Set[int],
+        dm_mention_email_disabled_user_ids: Set[int],
         stream_push_user_ids: Set[int],
         stream_email_user_ids: Set[int],
         topic_wildcard_mention_user_ids: Set[int],
@@ -74,11 +74,11 @@ class UserMessageNotificationsData:
             # Don't send any notifications to bots
             return cls(
                 user_id=user_id,
-                pm_email_notify=False,
+                dm_email_notify=False,
                 mention_email_notify=False,
                 topic_wildcard_mention_email_notify=False,
                 stream_wildcard_mention_email_notify=False,
-                pm_push_notify=False,
+                dm_push_notify=False,
                 mention_push_notify=False,
                 topic_wildcard_mention_push_notify=False,
                 stream_wildcard_mention_push_notify=False,
@@ -99,62 +99,62 @@ class UserMessageNotificationsData:
         # `stream_wildcard_mention_in_followed_topic_user_ids` and `topic_wildcard_mention_in_followed_topic_user_ids`
         # are those user IDs for whom stream or topic wildcard mentions should obey notification
         # settings for personal mentions. Hence, it isn't an independent notification setting and acts as a wrapper.
-        pm_email_notify = user_id not in pm_mention_email_disabled_user_ids and private_message
+        dm_email_notify = user_id not in dm_mention_email_disabled_user_ids and private_message
         mention_email_notify = (
-            user_id not in pm_mention_email_disabled_user_ids and "mentioned" in flags
+            user_id not in dm_mention_email_disabled_user_ids and "mentioned" in flags
         )
         topic_wildcard_mention_email_notify = (
             user_id in topic_wildcard_mention_user_ids
-            and user_id not in pm_mention_email_disabled_user_ids
+            and user_id not in dm_mention_email_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
         stream_wildcard_mention_email_notify = (
             user_id in stream_wildcard_mention_user_ids
-            and user_id not in pm_mention_email_disabled_user_ids
+            and user_id not in dm_mention_email_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
         topic_wildcard_mention_in_followed_topic_email_notify = (
             user_id in topic_wildcard_mention_in_followed_topic_user_ids
-            and user_id not in pm_mention_email_disabled_user_ids
+            and user_id not in dm_mention_email_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
         stream_wildcard_mention_in_followed_topic_email_notify = (
             user_id in stream_wildcard_mention_in_followed_topic_user_ids
-            and user_id not in pm_mention_email_disabled_user_ids
+            and user_id not in dm_mention_email_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
 
-        pm_push_notify = user_id not in pm_mention_push_disabled_user_ids and private_message
+        dm_push_notify = user_id not in dm_mention_push_disabled_user_ids and private_message
         mention_push_notify = (
-            user_id not in pm_mention_push_disabled_user_ids and "mentioned" in flags
+            user_id not in dm_mention_push_disabled_user_ids and "mentioned" in flags
         )
         topic_wildcard_mention_push_notify = (
             user_id in topic_wildcard_mention_user_ids
-            and user_id not in pm_mention_push_disabled_user_ids
+            and user_id not in dm_mention_push_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
         stream_wildcard_mention_push_notify = (
             user_id in stream_wildcard_mention_user_ids
-            and user_id not in pm_mention_push_disabled_user_ids
+            and user_id not in dm_mention_push_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
         topic_wildcard_mention_in_followed_topic_push_notify = (
             user_id in topic_wildcard_mention_in_followed_topic_user_ids
-            and user_id not in pm_mention_push_disabled_user_ids
+            and user_id not in dm_mention_push_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
         stream_wildcard_mention_in_followed_topic_push_notify = (
             user_id in stream_wildcard_mention_in_followed_topic_user_ids
-            and user_id not in pm_mention_push_disabled_user_ids
+            and user_id not in dm_mention_push_disabled_user_ids
             and "wildcard_mentioned" in flags
         )
         return cls(
             user_id=user_id,
-            pm_email_notify=pm_email_notify,
+            dm_email_notify=dm_email_notify,
             mention_email_notify=mention_email_notify,
             topic_wildcard_mention_email_notify=topic_wildcard_mention_email_notify,
             stream_wildcard_mention_email_notify=stream_wildcard_mention_email_notify,
-            pm_push_notify=pm_push_notify,
+            dm_push_notify=dm_push_notify,
             mention_push_notify=mention_push_notify,
             topic_wildcard_mention_push_notify=topic_wildcard_mention_push_notify,
             stream_wildcard_mention_push_notify=stream_wildcard_mention_push_notify,
@@ -208,7 +208,7 @@ class UserMessageNotificationsData:
         # The order here is important. If, for example, both
         # `mention_push_notify` and `stream_push_notify` are True, we
         # want to classify it as a mention, since that's more salient.
-        if self.pm_push_notify:
+        if self.dm_push_notify:
             return NotificationTriggers.DIRECT_MESSAGE
         elif self.mention_push_notify:
             return NotificationTriggers.MENTION
@@ -240,7 +240,7 @@ class UserMessageNotificationsData:
         # The order here is important. If, for example, both
         # `mention_email_notify` and `stream_email_notify` are True, we
         # want to classify it as a mention, since that's more salient.
-        if self.pm_email_notify:
+        if self.dm_email_notify:
             return NotificationTriggers.DIRECT_MESSAGE
         elif self.mention_email_notify:
             return NotificationTriggers.MENTION

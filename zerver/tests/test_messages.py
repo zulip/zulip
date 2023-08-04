@@ -46,8 +46,8 @@ class MissedMessageTest(ZulipTestCase):
                 ),
             )
 
-        hamlet_notifications_data.pm_push_notify = True
-        othello_notifications_data.pm_push_notify = True
+        hamlet_notifications_data.dm_push_notify = True
+        othello_notifications_data.dm_push_notify = True
         assert_active_presence_idle_user_ids([hamlet.id, othello.id])
 
         # We have already thoroughly tested the `is_notifiable` function elsewhere,
@@ -56,8 +56,8 @@ class MissedMessageTest(ZulipTestCase):
         # at `private_message` and the `mentioned` flag, not stream level notifications.
         # Simulate Hamlet has turned on notifications for the stream, and test that he's
         # in the list.
-        hamlet_notifications_data.pm_push_notify = False
-        othello_notifications_data.pm_push_notify = False
+        hamlet_notifications_data.dm_push_notify = False
+        othello_notifications_data.dm_push_notify = False
         hamlet_notifications_data.stream_email_notify = True
         assert_active_presence_idle_user_ids([hamlet.id])
 
@@ -72,8 +72,8 @@ class MissedMessageTest(ZulipTestCase):
         # Hamlet is active now, so only Othello should be in the list for a huddle
         # message.
         hamlet_notifications_data.stream_email_notify = False
-        hamlet_notifications_data.pm_push_notify = False
-        othello_notifications_data.pm_push_notify = True
+        hamlet_notifications_data.dm_push_notify = False
+        othello_notifications_data.dm_push_notify = True
         assert_active_presence_idle_user_ids([othello.id])
 
 

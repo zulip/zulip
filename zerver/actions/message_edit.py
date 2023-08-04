@@ -472,8 +472,8 @@ def do_update_message(
         )
 
         event["online_push_user_ids"] = list(info.online_push_user_ids)
-        event["pm_mention_push_disabled_user_ids"] = list(info.pm_mention_push_disabled_user_ids)
-        event["pm_mention_email_disabled_user_ids"] = list(info.pm_mention_email_disabled_user_ids)
+        event["dm_mention_push_disabled_user_ids"] = list(info.dm_mention_push_disabled_user_ids)
+        event["dm_mention_email_disabled_user_ids"] = list(info.dm_mention_email_disabled_user_ids)
         event["stream_push_user_ids"] = list(info.stream_push_user_ids)
         event["stream_email_user_ids"] = list(info.stream_email_user_ids)
         event["followed_topic_push_user_ids"] = list(info.followed_topic_push_user_ids)

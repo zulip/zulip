@@ -1749,8 +1749,8 @@ Output:
         return UserMessageNotificationsData(
             user_id=user_id,
             online_push_enabled=kwargs.get("online_push_enabled", False),
-            pm_email_notify=kwargs.get("pm_email_notify", False),
-            pm_push_notify=kwargs.get("pm_push_notify", False),
+            dm_email_notify=kwargs.get("dm_email_notify", False),
+            dm_push_notify=kwargs.get("dm_push_notify", False),
             mention_email_notify=kwargs.get("mention_email_notify", False),
             mention_push_notify=kwargs.get("mention_push_notify", False),
             topic_wildcard_mention_email_notify=kwargs.get(
