@@ -465,6 +465,7 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
     return JSON.stringify(proposed_value);
 }
 
+export let new_group_can_manage_group_widget: DropdownWidget | null = null;
 export let new_group_can_mention_group_widget: DropdownWidget | null = null;
 
 const dropdown_widget_map = new Map<string, DropdownWidget | null>([
@@ -475,6 +476,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_create_multiuse_invite_group", null],
     ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
+    ["can_manage_group", null],
     ["can_mention_group", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
@@ -508,6 +510,10 @@ export function set_dropdown_setting_widget(property_name: string, widget: Dropd
 
 export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
     new_group_can_mention_group_widget = widget;
+}
+
+export function set_new_group_can_manage_group_widget(widget: DropdownWidget): void {
+    new_group_can_manage_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(
@@ -868,6 +874,7 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
     const current_val = get_group_property_value(property_name, group);
     let proposed_val;
     switch (property_name) {
+        case "can_manage_group":
         case "can_mention_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
@@ -1054,10 +1061,12 @@ export function populate_data_for_group_request(
         if (check_group_property_changed(input_elem, group)) {
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
-                const property_name = extract_property_name($input_elem);
+                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                const property_name = extract_property_name($input_elem) as keyof UserGroup;
+                const old_value = get_group_property_value(property_name, group);
                 data[property_name] = JSON.stringify({
                     new: input_value,
-                    old: group.can_mention_group,
+                    old: old_value,
                 });
             }
         }
