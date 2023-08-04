@@ -1118,6 +1118,10 @@ div.overlay {
     outline: none;
     color: var(--color-text-default);
 
+    .dropdown_widget_value {
+        max-height: 23px;
+    }
+
     .fa-chevron-down {
         position: relative;
         top: -1px;

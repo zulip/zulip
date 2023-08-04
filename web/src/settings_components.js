@@ -246,6 +246,8 @@ export let can_remove_subscribers_group_widget = null;
 export let can_access_all_users_group_widget = null;
 export let can_mention_group_widget = null;
 export let new_group_can_mention_group_widget = null;
+export let can_manage_group_widget = null;
+export let new_group_can_manage_group_widget = null;
 
 export function get_widget_for_dropdown_list_settings(property_name) {
     switch (property_name) {
@@ -263,6 +265,8 @@ export function get_widget_for_dropdown_list_settings(property_name) {
             return can_access_all_users_group_widget;
         case "can_mention_group":
             return can_mention_group_widget;
+        case "can_manage_group":
+            return can_manage_group_widget;
         default:
             blueslip.error("No dropdown list widget for property", {property_name});
             return null;
@@ -299,6 +303,14 @@ export function set_can_mention_group_widget(widget) {
 
 export function set_new_group_can_mention_group_widget(widget) {
     new_group_can_mention_group_widget = widget;
+}
+
+export function set_can_manage_group_widget(widget) {
+    can_manage_group_widget = widget;
+}
+
+export function set_new_group_can_manage_group_widget(widget) {
+    new_group_can_manage_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(property_name, value) {
@@ -510,6 +522,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
         case "can_mention_group":
+        case "can_manage_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "email_notifications_batching_period_seconds":

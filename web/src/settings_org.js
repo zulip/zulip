@@ -481,6 +481,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
         case "can_mention_group":
+        case "can_manage_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,

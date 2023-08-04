@@ -6,6 +6,7 @@ import render_dropdown_disabled_state from "../templates/dropdown_disabled_state
 import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import * as ListWidget from "./list_widget";
@@ -19,6 +20,7 @@ const noop = () => {};
 export const DATA_TYPES = {
     NUMBER: "number",
     STRING: "string",
+    NUMBER_OR_STRING: "number_or_string",
 };
 
 export class DropdownWidget {
@@ -271,6 +273,11 @@ export class DropdownWidget {
                     this.current_value = $(event.currentTarget).attr("data-unique-id");
                     if (this.unique_id_type === DATA_TYPES.NUMBER) {
                         this.current_value = Number.parseInt(this.current_value, 10);
+                    } else if (this.unique_id_type === DATA_TYPES.NUMBER_OR_STRING) {
+                        const parsed_value = Number.parseInt(this.current_value, 10);
+                        if (!Number.isNaN(parsed_value)) {
+                            this.current_value = parsed_value;
+                        }
                     }
                     this.item_click_callback(event, instance, this);
                 });
@@ -340,6 +347,12 @@ export class DropdownWidget {
                     stream: option.stream,
                     show_colored_icon: true,
                 }),
+            );
+        } else if (option.user) {
+            $(this.widget_value_selector).html(
+                `<div class='pill-container pill-container-btn'>${render_input_pill(
+                    option.user,
+                )}</div>`,
             );
         } else {
             $(this.widget_value_selector).text(option.name);
