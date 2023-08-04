@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = {
+module.exports = (api) => ({
     plugins: [
         [
             "formatjs",
@@ -9,6 +9,13 @@ module.exports = {
                 overrideIdFn: (_id, defaultMessage) => defaultMessage,
             },
         ],
+        ...(api.env("test")
+            ? [
+                  ...(process.env.USING_INSTRUMENTED_CODE ? [["istanbul", {exclude: []}]] : []),
+                  "rewire-ts",
+                  ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
+              ]
+            : []),
     ],
     presets: [
         [
@@ -22,4 +29,4 @@ module.exports = {
         "@babel/typescript",
     ],
     sourceType: "unambiguous",
-};
+});

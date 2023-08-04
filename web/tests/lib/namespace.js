@@ -6,34 +6,16 @@ const path = require("path");
 
 const callsites = require("callsites");
 
-const $ = require("./zjquery");
-
-const new_globals = new Set();
-let old_globals = {};
-
-let actual_load;
-const module_mocks = new Map();
 const template_mocks = new Map();
-const used_module_mocks = new Set();
 const used_templates = new Set();
 
-const jquery_path = require.resolve("jquery");
-const real_jquery_path = require.resolve("./real_jquery.js");
-
 let in_mid_render = false;
-let jquery_function;
 
-const template_path = "/web/templates/";
+const template_path = path.resolve(path.dirname(__filename), "..", "..", "templates");
 
 /* istanbul ignore next */
 function need_to_mock_template_error(filename) {
-    const i = filename.indexOf(template_path);
-
-    if (i < 0) {
-        throw new Error("programming error");
-    }
-
-    const fn = filename.slice(i + template_path.length);
+    const fn = path.relative(template_path, filename);
 
     return `
         Please use mock_template if your test needs to render ${fn}
@@ -71,28 +53,11 @@ function need_to_mock_template_error(filename) {
     `;
 }
 
-function load(request, parent, isMain) {
-    const filename = Module._resolveFilename(request, parent, isMain);
-    if (module_mocks.has(filename)) {
-        used_module_mocks.add(filename);
-        const obj = module_mocks.get(filename);
-        return obj;
+exports.template_stub = function ({filename, actual_render}) {
+    if (!filename.startsWith(template_path + path.sep)) {
+        return actual_render;
     }
 
-    if (filename.endsWith(".hbs") && filename.includes(template_path)) {
-        const actual_render = actual_load(request, parent, isMain);
-
-        return template_stub({filename, actual_render});
-    }
-
-    if (filename === jquery_path && parent.filename !== real_jquery_path) {
-        return jquery_function || $;
-    }
-
-    return actual_load(request, parent, isMain);
-}
-
-function template_stub({filename, actual_render}) {
     return function render(...args) {
         // If our template is being rendered as a partial, always
         // use the actual implementation.
@@ -126,12 +91,6 @@ function template_stub({filename, actual_render}) {
 
         return f(data);
     };
-}
-
-exports.start = () => {
-    assert.equal(actual_load, undefined, "namespace.start was called twice in a row.");
-    actual_load = Module._load;
-    Module._load = load;
 };
 
 // We provide `mock_cjs` for mocking a CommonJS module, and `mock_esm` for
@@ -170,25 +129,19 @@ exports.mock_cjs = (module_path, obj, {callsite = callsites()[1]} = {}) => {
         "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
     );
 
-    const filename = Module._resolveFilename(
-        module_path,
-        require.cache[callsite.getFileName()],
-        false,
-    );
-
-    assert.ok(!module_mocks.has(filename), `You already set up a mock for ${filename}`);
+    const filename = Module.createRequire(callsite.getFileName()).resolve(module_path);
 
     assert.ok(
         !(filename in require.cache),
         `It is too late to mock ${filename}; call this earlier.`,
     );
 
-    module_mocks.set(filename, obj);
+    jest.doMock(filename, () => obj);
     return obj;
 };
 
 exports.mock_jquery = ($) => {
-    jquery_function = $; // eslint-disable-line no-jquery/variable-pattern
+    jest.doMock("jquery", () => $);
     return $;
 };
 
@@ -208,15 +161,8 @@ exports._finish_template_mocking = () => {
     used_templates.clear();
 };
 
-exports._mock_template = (fn, exercise_template, f, {callsite = callsites()[1]} = {}) => {
-    const path = "../.." + template_path + fn;
-
-    const resolved_path = Module._resolveFilename(
-        path,
-        require.cache[callsite.getFileName()],
-        false,
-    );
-
+exports._mock_template = (fn, exercise_template, f) => {
+    const resolved_path = path.join(template_path, fn);
     template_mocks.set(resolved_path, {exercise_template, f});
 };
 
@@ -226,32 +172,12 @@ exports.mock_esm = (module_path, obj = {}, {callsite = callsites()[1]} = {}) => 
 };
 
 exports.unmock_module = (module_path, {callsite = callsites()[1]} = {}) => {
-    const filename = Module._resolveFilename(
-        module_path,
-        require.cache[callsite.getFileName()],
-        false,
-    );
-
-    assert.ok(module_mocks.has(filename), `Cannot unmock ${filename}, which was not mocked`);
-
-    assert.ok(
-        used_module_mocks.has(filename),
-        `You asked to mock ${filename} but we never saw it during compilation.`,
-    );
-
-    module_mocks.delete(filename);
-    used_module_mocks.delete(filename);
+    const filename = Module.createRequire(callsite.getFileName()).resolve(module_path);
+    jest.unmock(filename);
 };
 
 exports.set_global = function (name, val) {
     assert.notEqual(val, null, `We try to avoid using null in our codebase.`);
-
-    if (!(name in old_globals)) {
-        if (!(name in global)) {
-            new_globals.add(name);
-        }
-        old_globals[name] = global[name];
-    }
     global[name] = val;
     return val;
 };
@@ -269,49 +195,6 @@ exports.zrequire = function (short_fn) {
     );
 
     return require(`../../src/${short_fn}`);
-};
-
-const webPath = path.resolve(__dirname, "../..") + path.sep;
-const testsLibPath = __dirname + path.sep;
-
-exports.complain_about_unused_mocks = function () {
-    for (const filename of module_mocks.keys()) {
-        /* istanbul ignore if */
-        if (!used_module_mocks.has(filename)) {
-            console.error(`You asked to mock ${filename} but we never saw it during compilation.`);
-        }
-    }
-};
-
-exports.finish = function () {
-    /*
-        Handle cleanup tasks after we've run one module.
-
-        Note that we currently do lazy compilation of modules,
-        so we need to wait till the module tests finish
-        running to do things like detecting pointless mocks
-        and resetting our _load hook.
-    */
-    jquery_function = undefined;
-
-    assert.notEqual(actual_load, undefined, "namespace.finish was called without namespace.start.");
-    Module._load = actual_load;
-    actual_load = undefined;
-
-    module_mocks.clear();
-    used_module_mocks.clear();
-
-    for (const path of Object.keys(require.cache)) {
-        if (path.startsWith(webPath) && !path.startsWith(testsLibPath)) {
-            delete require.cache[path];
-        }
-    }
-    Object.assign(global, old_globals);
-    old_globals = {};
-    for (const name of new_globals) {
-        delete global[name];
-    }
-    new_globals.clear();
 };
 
 exports.with_overrides = function (test_function) {

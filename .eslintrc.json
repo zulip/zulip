@@ -130,6 +130,9 @@
     "overrides": [
         {
             "files": ["web/tests/**"],
+            "env": {
+                "jest": true
+            },
             "rules": {
                 "no-jquery/no-selector-prop": "off"
             }
