@@ -164,14 +164,6 @@ export function rename_stream_recipient(old_stream_id, old_topic, new_stream_id,
             // If new_stream_id is undefined, that means the stream wasn't updated.
             if (new_stream_id !== undefined) {
                 draft.stream_id = new_stream_id;
-                // TODO: For now we need both a stream_id and stream (stream name)
-                // because there can be partial input in the stream field.
-                // Once we complete our UI plan to change the stream input field
-                // to a dropdown_list_widget, there will no longer be the possibility
-                // of invalid partial input in the stream field, and we can have the
-                // drafts system ignore the legacy `stream` field, using only `stream_id`.
-                // After enough drafts are autodeleted, we'd no longer have a `stream` field.
-                draft.stream = sub_store.get(new_stream_id).name;
             }
             // If new_topic is undefined, that means the topic wasn't updated.
             if (new_topic !== undefined) {
@@ -213,9 +205,11 @@ export function restore_message(draft) {
     let compose_args;
 
     if (draft.type === "stream") {
+        const stream_name = stream_data.get_stream_name_from_id(draft.stream_id);
         compose_args = {
             type: "stream",
             stream_id: draft.stream_id,
+            stream_name,
             topic: draft.topic,
             content: draft.content,
         };
@@ -293,10 +287,10 @@ export function restore_draft(draft_id) {
     const compose_args = restore_message(draft);
 
     if (compose_args.type === "stream") {
-        if (draft.stream !== "" && draft.topic !== "") {
+        if (draft.stream_id !== "" && draft.topic !== "") {
             narrow.activate(
                 [
-                    {operator: "stream", operand: compose_args.stream},
+                    {operator: "stream", operand: compose_args.stream_name},
                     {operator: "topic", operand: compose_args.topic},
                 ],
                 {trigger: "restore draft"},
@@ -344,25 +338,22 @@ export function format_draft(draft) {
     if (draft.type === "stream") {
         // In case there is no stream for the draft, we need a
         // single space char for proper rendering of the stream label
-        const space_string = new Handlebars.SafeString("&nbsp;");
-        let stream_name = draft.stream.length > 0 ? draft.stream : space_string;
+        let stream_name = new Handlebars.SafeString("&nbsp;");
+        let sub;
         if (draft.stream_id) {
-            const sub = sub_store.get(draft.stream_id);
-            if (sub) {
-                invite_only = sub.invite_only;
-                is_web_public = sub.is_web_public;
-
-                if (sub.name !== stream_name) {
-                    stream_name = sub.name;
-                    draft.stream = stream_name;
-                    draft_model.editDraft(id, draft);
-                }
-            }
-        } else {
+            sub = sub_store.get(draft.stream_id);
+        } else if (draft.stream && draft.stream.length > 0) {
+            // draft.stream is deprecated but might still exist on old drafts
+            stream_name = draft.stream;
             const sub = stream_data.get_sub(stream_name);
-            if (sub !== undefined) {
+            if (sub) {
                 draft.stream_id = sub.stream_id;
             }
+        }
+        if (sub) {
+            stream_name = sub.name;
+            invite_only = sub.invite_only;
+            is_web_public = sub.is_web_public;
         }
         const draft_topic = draft.topic || compose.empty_topic_placeholder();
         const draft_stream_color = stream_data.get_color(draft.stream_id);
