@@ -11,6 +11,7 @@ export type UserGroup = {
     is_system_group: boolean;
     direct_subgroup_ids: Set<number>;
     can_mention_group: number;
+    can_manage_group: number;
 };
 
 // The members field is a number array which we convert
@@ -40,6 +41,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         is_system_group: user_group_raw.is_system_group,
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
         can_mention_group: user_group_raw.can_mention_group,
+        can_manage_group: user_group_raw.can_manage_group,
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -74,6 +76,12 @@ export function update(event: UserGroupUpdateEvent): void {
 
     if (event.data.can_mention_group !== undefined) {
         group.can_mention_group = event.data.can_mention_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
+    if (event.data.can_manage_group !== undefined) {
+        group.can_manage_group = event.data.can_manage_group;
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }

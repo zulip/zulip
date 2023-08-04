@@ -350,6 +350,7 @@ const hamletcharacters = {
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
     can_mention_group: 2,
+    can_manage_group: 2,
 };
 
 const backend = {
@@ -360,6 +361,7 @@ const backend = {
     is_system_group: false,
     direct_subgroup_ids: new Set([1]),
     can_mention_group: 1,
+    can_manage_group: 2,
 };
 
 const call_center = {
@@ -370,6 +372,7 @@ const call_center = {
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
     can_mention_group: 2,
+    can_manage_group: 1,
 };
 
 const make_emoji = (emoji_dict) => ({
