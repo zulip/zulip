@@ -1510,7 +1510,7 @@ def content_has_only_emoji_syntax(content: Optional[str]) -> bool:
     if content is not None:
         text = translate_emoticons(content.replace("\n", " "))
         text = translate_unicode_emoji(text)
-        if re.fullmatch(fr" *(?:{EMOJI_REGEX} *)+", text):
+        if re.fullmatch(rf" *(?:{EMOJI_REGEX} *)+", text):
             return True
     return False
 
