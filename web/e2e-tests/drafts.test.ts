@@ -117,7 +117,7 @@ async function test_restore_message_draft_via_draft_overlay(page: Page): Promise
     await page.waitForSelector("#stream_message_recipient_topic", {visible: true});
     await page.waitForSelector("#preview_message_area", {hidden: true});
     await common.check_compose_state(page, {
-        stream: "Denmark",
+        stream_name: "Denmark",
         topic: "tests",
         content: "Test stream message.",
     });

@@ -133,19 +133,19 @@ async function copy_paste_test(page: Page): Promise<void> {
     await page.waitForSelector("#zhome .message_row", {visible: true});
 
     await common.send_multiple_messages(page, [
-        {stream: "Verona", topic: "copy-paste-topic #1", content: "copy paste test A"},
+        {stream_name: "Verona", topic: "copy-paste-topic #1", content: "copy paste test A"},
 
-        {stream: "Verona", topic: "copy-paste-topic #1", content: "copy paste test B"},
+        {stream_name: "Verona", topic: "copy-paste-topic #1", content: "copy paste test B"},
 
-        {stream: "Verona", topic: "copy-paste-topic #2", content: "copy paste test C"},
+        {stream_name: "Verona", topic: "copy-paste-topic #2", content: "copy paste test C"},
 
-        {stream: "Verona", topic: "copy-paste-topic #2", content: "copy paste test D"},
+        {stream_name: "Verona", topic: "copy-paste-topic #2", content: "copy paste test D"},
 
-        {stream: "Verona", topic: "copy-paste-topic #2", content: "copy paste test E"},
+        {stream_name: "Verona", topic: "copy-paste-topic #2", content: "copy paste test E"},
 
-        {stream: "Verona", topic: "copy-paste-topic #3", content: "copy paste test F"},
+        {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test F"},
 
-        {stream: "Verona", topic: "copy-paste-topic #3", content: "copy paste test G"},
+        {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test G"},
     ]);
 
     await common.check_messages_sent(page, "zhome", [

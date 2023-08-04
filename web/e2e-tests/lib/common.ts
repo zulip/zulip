@@ -17,7 +17,7 @@ const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 type Message = Record<string, string | boolean> & {
     recipient?: string;
     content: string;
-    stream?: string;
+    stream_name?: string;
 };
 
 let browser: Browser | null = null;
@@ -208,13 +208,13 @@ export async function check_compose_state(
     params: Record<string, string>,
 ): Promise<void> {
     const form_params: Record<string, string> = {content: params.content};
-    if (params.stream) {
+    if (params.stream_name) {
         assert.equal(
             await get_text_from_selector(
                 page,
                 "#compose_select_recipient_widget .dropdown_widget_value",
             ),
-            params.stream,
+            params.stream_name,
         );
     }
     if (params.topic) {
@@ -433,9 +433,9 @@ export async function send_message(
         assert.fail("`send_message` got invalid message type");
     }
 
-    if (params.stream) {
-        await select_stream_in_compose_via_dropdown(page, params.stream);
-        delete params.stream;
+    if (params.stream_name) {
+        await select_stream_in_compose_via_dropdown(page, params.stream_name);
+        delete params.stream_name;
     }
 
     if (params.topic) {
@@ -464,7 +464,7 @@ export async function send_message(
 
 export async function send_multiple_messages(page: Page, msgs: Message[]): Promise<void> {
     for (const msg of msgs) {
-        await send_message(page, msg.stream !== undefined ? "stream" : "private", msg);
+        await send_message(page, msg.stream_name !== undefined ? "stream" : "private", msg);
     }
 }
 
