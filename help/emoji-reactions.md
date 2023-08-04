@@ -38,11 +38,12 @@ message.
 
 {tab|mobile}
 
-1. Long press on a message.
+{!message-long-press-menu.md!}
 
-1. Select **Add a reaction** in the menu that appears.
+1. Tap **Add a reaction**.
 
-1. Select an emoji. Type to search, or tap the emoji you'd like to use.
+1. Start typing the name of the emoji you want to use, and select an emoji from
+   the list of suggestions.
 
 {end_tabs}
 
@@ -55,6 +56,7 @@ message.
 1. Click on an existing emoji reaction to add or remove your reaction.
 
 !!! tip ""
+
     To make it easy to see which reactions you have added, they are
     highlighted in a different color.
 
@@ -65,10 +67,12 @@ message.
 
 {tab|mobile}
 
-1. Click on an existing emoji reaction to add or remove your reaction.
+1. Tap on an existing emoji reaction to add or remove your reaction.
 
 !!! tip ""
-    Reactions you have added are highlighted in a different color.
+
+    To make it easy to see which reactions you have added, they are
+    highlighted in a different color.
 
 {end_tabs}
 
@@ -89,7 +93,14 @@ so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
 
 {tab|mobile}
 
-1. Long-press an emoji reaction to see who reacted with that emoji.
+{!message-long-press-menu.md!}
+
+1. Tap **See who reacted**.
+
+!!! tip ""
+
+    You can also long-press an existing emoji reaction to see who reacted with
+    that emoji.
 
 {end_tabs}
 
