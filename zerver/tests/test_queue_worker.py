@@ -144,18 +144,18 @@ class WorkerTest(ZulipTestCase):
         hamlet_event1 = dict(
             user_profile_id=hamlet.id,
             message_id=hamlet1_msg_id,
-            trigger=NotificationTriggers.PRIVATE_MESSAGE,
+            trigger=NotificationTriggers.DIRECT_MESSAGE,
         )
         hamlet_event2 = dict(
             user_profile_id=hamlet.id,
             message_id=hamlet2_msg_id,
-            trigger=NotificationTriggers.PRIVATE_MESSAGE,
+            trigger=NotificationTriggers.DIRECT_MESSAGE,
             mentioned_user_group_id=4,
         )
         othello_event = dict(
             user_profile_id=othello.id,
             message_id=othello_msg_id,
-            trigger=NotificationTriggers.PRIVATE_MESSAGE,
+            trigger=NotificationTriggers.DIRECT_MESSAGE,
         )
 
         events = [hamlet_event1, hamlet_event2, othello_event]
@@ -176,7 +176,7 @@ class WorkerTest(ZulipTestCase):
         bonus_event_hamlet = dict(
             user_profile_id=hamlet.id,
             message_id=hamlet3_msg_id,
-            trigger=NotificationTriggers.PRIVATE_MESSAGE,
+            trigger=NotificationTriggers.DIRECT_MESSAGE,
         )
 
         def check_row(
@@ -184,7 +184,7 @@ class WorkerTest(ZulipTestCase):
             scheduled_timestamp: datetime.datetime,
             mentioned_user_group_id: Optional[int],
         ) -> None:
-            self.assertEqual(row.trigger, NotificationTriggers.PRIVATE_MESSAGE)
+            self.assertEqual(row.trigger, NotificationTriggers.DIRECT_MESSAGE)
             self.assertEqual(row.scheduled_timestamp, scheduled_timestamp)
             self.assertEqual(row.mentioned_user_group_id, mentioned_user_group_id)
 
