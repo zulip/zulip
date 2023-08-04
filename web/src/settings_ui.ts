@@ -4,9 +4,19 @@ import checkbox_image from "../images/checkbox-green.svg";
 
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
+import type {AjaxRequestHandler} from "./types";
 import * as ui_report from "./ui_report";
 
-export function display_checkmark($elem) {
+type RequestOpts = {
+    success_msg_html?: string;
+    failure_msg_html?: string;
+    success_continuation?: (response_data: unknown) => void;
+    error_continuation?: (xhr: JQuery.jqXHR) => void;
+    sticky?: boolean;
+    $error_msg_element?: JQuery;
+};
+
+export function display_checkmark($elem: JQuery): void {
     const check_mark = document.createElement("img");
     check_mark.src = checkbox_image;
     $elem.prepend(check_mark);
@@ -18,15 +28,14 @@ export const strings = {
     failure_html: $t_html({defaultMessage: "Save failed"}),
     saving: $t({defaultMessage: "Saving"}),
 };
-
 // Generic function for informing users about changes to the settings
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.
 export function do_settings_change(
-    request_method,
-    url,
-    data,
-    status_element,
+    request_method: AjaxRequestHandler,
+    url: string,
+    data: Parameters<AjaxRequestHandler>[0]["data"],
+    status_element: string,
     {
         success_msg_html = strings.success_html,
         failure_msg_html = strings.failure_html,
@@ -34,8 +43,8 @@ export function do_settings_change(
         error_continuation,
         sticky = false,
         $error_msg_element,
-    } = {},
-) {
+    }: RequestOpts = {},
+): void {
     const $spinner = $(status_element).expectOne();
     $spinner.fadeTo(0, 1);
     loading.make_indicator($spinner, {text: strings.saving});
@@ -76,11 +85,11 @@ export function do_settings_change(
 // * disable_on_uncheck is boolean, true if sub setting should be disabled
 //   when main setting unchecked.
 export function disable_sub_setting_onchange(
-    is_checked,
-    sub_setting_id,
-    disable_on_uncheck,
-    include_label,
-) {
+    is_checked: boolean,
+    sub_setting_id: string,
+    disable_on_uncheck: boolean,
+    include_label: boolean,
+): void {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);
         if (include_label) {
