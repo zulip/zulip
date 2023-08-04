@@ -5,6 +5,7 @@ import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as settings_components from "./settings_components";
 import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
@@ -126,6 +127,10 @@ export function show_new_user_group_modal(): void {
     user_group_create_members.build_widgets();
 
     clear_error_display();
+
+    if (!page_params.development_environment) {
+        $("#new_group_can_manage_group_widget_container").hide();
+    }
 }
 
 function create_user_group(): void {
@@ -145,6 +150,14 @@ function create_user_group(): void {
     }
     const user_ids = user_group_create_members.get_principals();
 
+    assert(settings_components.new_group_can_manage_group_widget !== null);
+    const can_manage_group_value = settings_components.new_group_can_manage_group_widget.value();
+    assert(can_manage_group_value !== undefined);
+    const can_manage_group =
+        typeof can_manage_group_value === "number"
+            ? can_manage_group_value
+            : Number.parseInt(can_manage_group_value, 10);
+
     assert(settings_components.new_group_can_mention_group_widget !== null);
     const can_mention_group_value = settings_components.new_group_can_mention_group_widget.value();
     assert(can_mention_group_value !== undefined);
@@ -157,6 +170,7 @@ function create_user_group(): void {
         name: group_name,
         description,
         members: JSON.stringify(user_ids),
+        can_manage_group,
         can_mention_group,
     };
     loading.make_indicator($("#user_group_creating_indicator"), {
@@ -229,5 +243,6 @@ export function set_up_handlers(): void {
         }
     });
 
-    user_group_components.setup_permissions_dropdown(undefined, true);
+    user_group_components.setup_permissions_dropdown("can_manage_group", undefined, true);
+    user_group_components.setup_permissions_dropdown("can_mention_group", undefined, true);
 }
