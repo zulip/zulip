@@ -393,7 +393,7 @@ exports.with_overrides = function (test_function) {
 
         if (typeof value === "function") {
             assert.ok(
-                obj[prop] === undefined || typeof obj[prop] === "function",
+                typeof old_value === "function",
                 `
                     You are overriding a non-function with a function.
                     This is almost certainly an error.
