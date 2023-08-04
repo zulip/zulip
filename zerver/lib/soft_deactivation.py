@@ -418,7 +418,7 @@ def soft_reactivate_if_personal_notification(
     if not user_profile.long_term_idle:
         return
 
-    private_message = NotificationTriggers.PRIVATE_MESSAGE in unique_triggers
+    direct_message = NotificationTriggers.DIRECT_MESSAGE in unique_triggers
     personal_mention = (
         NotificationTriggers.MENTION in unique_triggers and mentioned_user_group_name is None
     )
@@ -429,7 +429,7 @@ def soft_reactivate_if_personal_notification(
             NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         ]
     )
-    if not private_message and not personal_mention and not topic_wildcard_mention:
+    if not direct_message and not personal_mention and not topic_wildcard_mention:
         return
 
     queue_soft_reactivation(user_profile.id)

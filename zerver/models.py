@@ -4276,8 +4276,8 @@ class MissedMessageEmailAddress(models.Model):
 
 
 class NotificationTriggers:
-    # "private_message" is for 1:1 direct messages as well as huddles
-    PRIVATE_MESSAGE = "private_message"
+    # "direct_message" is for 1:1 direct messages as well as huddles
+    DIRECT_MESSAGE = "direct_message"
     MENTION = "mentioned"
     TOPIC_WILDCARD_MENTION = "topic_wildcard_mentioned"
     STREAM_WILDCARD_MENTION = "stream_wildcard_mentioned"
@@ -4300,7 +4300,7 @@ class ScheduledMessageNotificationEmail(models.Model):
     message = models.ForeignKey(Message, on_delete=CASCADE)
 
     EMAIL_NOTIFICATION_TRIGGER_CHOICES = [
-        (NotificationTriggers.PRIVATE_MESSAGE, "Private message"),
+        (NotificationTriggers.DIRECT_MESSAGE, "Direct message"),
         (NotificationTriggers.MENTION, "Mention"),
         (NotificationTriggers.TOPIC_WILDCARD_MENTION, "Topic wildcard mention"),
         (NotificationTriggers.STREAM_WILDCARD_MENTION, "Stream wildcard mention"),

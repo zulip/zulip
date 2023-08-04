@@ -27,7 +27,7 @@ class TestNotificationData(ZulipTestCase):
         user_data = self.create_user_notifications_data_object(user_id=user_id, pm_push_notify=True)
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            NotificationTriggers.PRIVATE_MESSAGE,
+            NotificationTriggers.DIRECT_MESSAGE,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -116,7 +116,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=False),
-            NotificationTriggers.PRIVATE_MESSAGE,
+            NotificationTriggers.DIRECT_MESSAGE,
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=False))
 
@@ -195,7 +195,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            NotificationTriggers.PRIVATE_MESSAGE,
+            NotificationTriggers.DIRECT_MESSAGE,
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 

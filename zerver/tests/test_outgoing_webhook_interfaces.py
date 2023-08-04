@@ -181,7 +181,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             "user_profile_id": 24,
             "service_name": "test-service",
             "command": "test content",
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
             "message": {
                 "sender_id": 3,
                 "sender_realm_str": "zulip",

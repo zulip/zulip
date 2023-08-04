@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 201**
+
+* [`POST /zulip-outgoing-webhook`]: Renamed the notification trigger
+  `private_message` to `direct_message`.
+
 **Feature level 200**
 
 * [`PATCH /streams/{stream_id}`](/api/update-stream): Added
