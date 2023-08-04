@@ -45,7 +45,7 @@ export function translate_emoticons_to_names(text) {
     const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
 
-    const emoticon_replacer = function (match, g1, offset, str) {
+    const emoticon_replacer = function (match, _g1, offset, str) {
         const prev_char = str[offset - 1];
         const next_char = str[offset + match.length];
 
@@ -184,10 +184,10 @@ export function apply_markdown(message) {
         },
         silencedMentionHandler(quote) {
             // Silence quoted mentions.
-            const user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/gm;
-            quote = quote.replace(user_mention_re, (match) => {
-                match = match.replace(/"user-mention"/g, '"user-mention silent"');
-                match = match.replace(/>@/g, ">");
+            const user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/m;
+            quote = quote.replaceAll(user_mention_re, (match) => {
+                match = match.replaceAll(/"user-mention"/, '"user-mention silent"');
+                match = match.replaceAll(/>@/, ">");
                 return match;
             });
             // In most cases, if you are being mentioned in the message you're quoting, you wouldn't
@@ -235,7 +235,7 @@ export function add_topic_links(message) {
     const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g; // Slightly modified from third/marked.js
     const match = topic.match(url_re);
     if (match) {
-        links = links.concat(match);
+        links = [...links, ...match];
     }
 
     message.topic_links = links;
@@ -251,10 +251,9 @@ function translate_unicode_emoji(text) {
             "\uD83D[\uDE80-\uDEFF]|\uD83E[\uDD00-\uDDFF]|" +
             "[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|" +
             "[\u3000-\u303F]|[\u3200-\u32FF])",
-        "g",
     ); // from third/marked.js
 
-    return text.replace(unicode_emoji_regex, (unicode_emoji) => {
+    return text.replaceAll(unicode_emoji_regex, (unicode_emoji) => {
         const codepoint = unicode_emoji.codePointAt(0).toString(16);
         return ":" + emoji.get_emoji_name(codepoint) + ":";
     });
@@ -424,7 +423,7 @@ function python_to_js_filter(pattern, url) {
     // JS regexes only support i (case insensitivity) and m (multiline)
     // flags, so keep those and ignore the rest
     if (match) {
-        const py_flags = match[1].split("");
+        const py_flags = [...match[1]];
 
         for (const flag of py_flags) {
             if ("im".includes(flag)) {
