@@ -514,7 +514,7 @@ def get_service_bot_events(
             trigger = "mention"
         # Direct message triggers for personal and huddle messages
         elif (not is_stream) and (user_profile_id in active_user_ids):
-            trigger = NotificationTriggers.PRIVATE_MESSAGE
+            trigger = NotificationTriggers.DIRECT_MESSAGE
         else:
             return
 

@@ -209,7 +209,7 @@ class UserMessageNotificationsData:
         # `mention_push_notify` and `stream_push_notify` are True, we
         # want to classify it as a mention, since that's more salient.
         if self.pm_push_notify:
-            return NotificationTriggers.PRIVATE_MESSAGE
+            return NotificationTriggers.DIRECT_MESSAGE
         elif self.mention_push_notify:
             return NotificationTriggers.MENTION
         elif self.topic_wildcard_mention_in_followed_topic_push_notify:
@@ -241,7 +241,7 @@ class UserMessageNotificationsData:
         # `mention_email_notify` and `stream_email_notify` are True, we
         # want to classify it as a mention, since that's more salient.
         if self.pm_email_notify:
-            return NotificationTriggers.PRIVATE_MESSAGE
+            return NotificationTriggers.DIRECT_MESSAGE
         elif self.mention_email_notify:
             return NotificationTriggers.MENTION
         elif self.topic_wildcard_mention_in_followed_topic_email_notify:

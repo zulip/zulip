@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                     "trigger",
                     models.TextField(
                         choices=[
-                            ("private_message", "Private message"),
+                            ("direct_message", "Direct message"),
                             ("mentioned", "Mention"),
                             ("topic_wildcard_mentioned", "Topic wildcard mention"),
                             ("stream_wildcard_mentioned", "Stream wildcard mention"),

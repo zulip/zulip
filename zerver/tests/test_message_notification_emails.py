@@ -61,7 +61,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         ) as m:
             handle_missedmessage_emails(
                 cordelia.id,
-                {message.id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)},
+                {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
             )
         m.assert_not_called()
 
@@ -71,7 +71,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         ) as m:
             handle_missedmessage_emails(
                 hamlet.id,
-                {message.id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)},
+                {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
             )
         m.assert_called_once()
 
@@ -88,7 +88,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         ) as m:
             handle_missedmessage_emails(
                 hamlet.id,
-                {message.id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)},
+                {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
             )
         m.assert_not_called()
 
@@ -625,7 +625,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id), {"content": " "})
         self.assert_json_success(result)
         handle_missedmessage_emails(
-            hamlet.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)}
+            hamlet.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)}
         )
         self.assert_length(mail.outbox, 0)
 
@@ -645,11 +645,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id), {"content": " "})
         self.assert_json_success(result)
         handle_missedmessage_emails(
-            hamlet.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)}
+            hamlet.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)}
         )
         self.assert_length(mail.outbox, 0)
         handle_missedmessage_emails(
-            iago.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE)}
+            iago.id, {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)}
         )
         self.assert_length(mail.outbox, 0)
 
@@ -1292,7 +1292,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             {
                 msg_id_1: MissedMessageData(trigger=NotificationTriggers.MENTION),
                 msg_id_2: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
-                msg_id_3: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE),
+                msg_id_3: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE),
             },
         )
 
@@ -1335,8 +1335,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         handle_missedmessage_emails(
             hamlet.id,
             {
-                msg_id_1: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE),
-                msg_id_2: MissedMessageData(trigger=NotificationTriggers.PRIVATE_MESSAGE),
+                msg_id_1: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE),
+                msg_id_2: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE),
             },
         )
         self.assert_length(mail.outbox, 2)
@@ -1660,7 +1660,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 hamlet.id,
                 {
                     personal_message_id: MissedMessageData(
-                        trigger=NotificationTriggers.PRIVATE_MESSAGE
+                        trigger=NotificationTriggers.DIRECT_MESSAGE
                     )
                 },
             )

@@ -1106,7 +1106,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
@@ -1168,7 +1168,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
@@ -1227,7 +1227,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             "user_profile_id": self.user_profile.id,
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/notify"
@@ -1257,7 +1257,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
 
         # If the message is unread, we should send push notifications.
@@ -1297,7 +1297,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
         missed_message = {
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         # Now, delete the message the normal way
         do_delete_messages(user_profile.realm, [message])
@@ -1330,7 +1330,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
         missed_message = {
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         # Now delete the message forcefully, so it just doesn't exist.
         message.delete()
@@ -1366,7 +1366,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), mock.patch(
             "zerver.lib.push_notifications.get_message_payload_apns", return_value={"apns": True}
@@ -1416,7 +1416,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.get_message_payload_apns", return_value={"apns": True}
@@ -1679,7 +1679,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 self.user_profile.id,
                 {
                     "message_id": personal_message_id,
-                    "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+                    "trigger": NotificationTriggers.DIRECT_MESSAGE,
                 },
             )
 
@@ -1789,7 +1789,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         handle_push_notification(user_profile.id, missed_message)
         mock_push_notifications.assert_called_once()
@@ -1962,7 +1962,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         )
         message = Message.objects.get(id=message_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
             "alert": {
@@ -1997,7 +1997,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         )
         message = Message.objects.get(id=message_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
             "alert": {
@@ -2271,7 +2271,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         )
         message = Message.objects.get(id=message_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
             "alert": {
@@ -2392,7 +2392,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "King Hamlet mentioned everyone in #Verona",
         )
 
-    def test_get_message_payload_gcm_private_message(self) -> None:
+    def test_get_message_payload_gcm_direct_message(self) -> None:
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,
@@ -2400,7 +2400,7 @@ class TestGetGCMPayload(PushNotificationTest):
         )
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, NotificationTriggers.PRIVATE_MESSAGE
+            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
         )
         self.assertDictEqual(
             payload,

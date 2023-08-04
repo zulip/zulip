@@ -660,12 +660,12 @@ def get_gcm_alert(
     display_recipient = get_display_recipient(message.recipient)
     if (
         message.recipient.type == Recipient.HUDDLE
-        and trigger == NotificationTriggers.PRIVATE_MESSAGE
+        and trigger == NotificationTriggers.DIRECT_MESSAGE
     ):
         return f"New direct group message from {sender_str}"
     elif (
         message.recipient.type == Recipient.PERSONAL
-        and trigger == NotificationTriggers.PRIVATE_MESSAGE
+        and trigger == NotificationTriggers.DIRECT_MESSAGE
     ):
         return f"New direct message from {sender_str}"
     elif message.is_stream_message() and trigger == NotificationTriggers.MENTION:
@@ -1135,6 +1135,12 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     # Remove this when one can no longer directly upgrade from 7.x to main.
     if trigger == "followed_topic_wildcard_mentioned":
         trigger = NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC  # nocoverage
+
+    # TODO/compatibility: Translation code for the rename of
+    # `private_message` to `direct_message`. Remove this when
+    # one can no longer directly upgrade from 7.x to main.
+    if trigger == "private_message":
+        trigger = NotificationTriggers.DIRECT_MESSAGE  # nocoverage
 
     mentioned_user_group_name = None
     # mentioned_user_group_id will be None if the user is personally mentioned
