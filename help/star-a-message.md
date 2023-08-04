@@ -12,17 +12,25 @@ tasks you need to go back to or documents you reference often.
 
 1. Click the **star** (<i class="fa fa-star-o"></i>) icon.
 
+!!! tip ""
+
+    Starred messages have a filled in star (<i class="fa fa-star"></i>) to their
+    right. You can unstar a message using the same instructions used to star it.
+
 {tab|mobile}
 
-1. Long press on a message.
+{!message-long-press-menu.md!}
 
-1. Select **Star message** in the menu that appears.
+1. Tap **Star message**.
+
+!!! tip ""
+
+    Starred messages have a "starred" label in the bottom right corner of the
+    message. You can unstar a message by tapping **Unstar message** in the
+    long-press menu.
 
 {end_tabs}
 
-Starred messages have a filled in star (<i class="fa fa-star"></i>) to
-their right.  You can unstar a message using the same instructions
-used to star it.
 
 ## View your starred messages
 
