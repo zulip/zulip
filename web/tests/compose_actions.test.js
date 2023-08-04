@@ -75,9 +75,6 @@ const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
-compose_recipient.update_narrow_to_recipient_visibility = noop;
-compose_recipient.on_compose_select_recipient_update = noop;
-
 function assert_visible(sel) {
     assert.ok($(sel).visible());
 }
@@ -351,6 +348,8 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
 });
 
 test("quote_and_reply", ({disallow, override, override_rewire}) => {
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+
     mock_banners();
     mock_stream_header_colorblock();
     compose_state.set_message_type("stream");

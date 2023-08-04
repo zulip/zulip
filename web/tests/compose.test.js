@@ -374,7 +374,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $(".compose-submit-button .loader").hide();
         $("#compose-textarea").off("select");
         $("#compose-textarea").val("");
-        compose_ui.compose_spinner_visible = false;
+        override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
         assert.equal(res, false);
         assert.ok(!$("#compose_banners .recipient_not_subscribed").visible());
@@ -388,7 +388,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
-        compose_ui.compose_spinner_visible = false;
+        override_rewire(compose_ui, "compose_spinner_visible", false);
         compose_state.set_message_type("private");
         override(compose_pm_pill, "get_emails", () => "bob@example.com");
         override(compose_pm_pill, "get_user_ids", () => []);
@@ -754,11 +754,9 @@ test_ui("create_message_object", ({override, override_rewire}) => {
     assert.equal(message.to_user_ids, "31,32");
     assert.equal(message.content, "burrito");
 
-    const {email_list_to_user_ids_string} = people;
     override_rewire(people, "email_list_to_user_ids_string", () => undefined);
     message = compose.create_message_object();
     assert.deepEqual(message.to, [alice.email, bob.email]);
-    people.email_list_to_user_ids_string = email_list_to_user_ids_string;
 });
 
 test_ui("DM policy disabled", ({override, override_rewire}) => {

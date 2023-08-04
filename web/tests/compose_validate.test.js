@@ -389,18 +389,16 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 
-    peer_data.get_subscriber_count = (stream_id) => {
+    override_rewire(peer_data, "get_subscriber_count", (stream_id) => {
         assert.equal(stream_id, 101);
         return 16;
-    };
+    });
     let wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
     mock_template("compose_banner/wildcard_warning.hbs", false, (data) => {
         wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
     });
-
-    compose_banner.update_or_append_banner = () => {};
 
     override_rewire(compose_validate, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");

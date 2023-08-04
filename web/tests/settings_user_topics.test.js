@@ -22,7 +22,7 @@ const frontend = {
 };
 stream_data.add_sub(frontend);
 
-run_test("settings", ({override}) => {
+run_test("settings", ({override, override_rewire}) => {
     user_topics.update_user_topics(
         frontend.stream_id,
         "js",
@@ -83,12 +83,16 @@ run_test("settings", ({override}) => {
     };
 
     let user_topic_visibility_policy_changed = false;
-    user_topics.set_user_topic_visibility_policy = (stream_id, topic, visibility_policy) => {
-        assert.equal(stream_id, frontend.stream_id);
-        assert.equal(topic, "js");
-        assert.equal(visibility_policy, user_topics.all_visibility_policies.UNMUTED);
-        user_topic_visibility_policy_changed = true;
-    };
+    override_rewire(
+        user_topics,
+        "set_user_topic_visibility_policy",
+        (stream_id, topic, visibility_policy) => {
+            assert.equal(stream_id, frontend.stream_id);
+            assert.equal(topic, "js");
+            assert.equal(visibility_policy, user_topics.all_visibility_policies.UNMUTED);
+            user_topic_visibility_policy_changed = true;
+        },
+    );
     $topic_fake_this.value = user_topics.all_visibility_policies.UNMUTED;
     topic_change_handler.call($topic_fake_this, event);
     assert.ok(user_topic_visibility_policy_changed);

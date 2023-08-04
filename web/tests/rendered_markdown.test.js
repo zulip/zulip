@@ -165,7 +165,7 @@ run_test("user-mention PM (wildcard)", () => {
     assert.ok($mention.hasClass("user-mention-me"));
 });
 
-run_test("user-mention Stream subbed (wildcard)", () => {
+run_test("user-mention Stream subbed (wildcard)", ({override_rewire}) => {
     // Setup
     const $content = get_content_element();
     const $mention = $.create("mention");
@@ -173,14 +173,14 @@ run_test("user-mention Stream subbed (wildcard)", () => {
     $content.set_find_results(".user-mention", $array([$mention]));
     const attr = () => stream.stream_id;
     set_closest_dot_find_result($content, {attr, length: 1});
-    stream_data.is_user_subscribed = () => true;
+    override_rewire(stream_data, "is_user_subscribed", () => true);
 
     assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
     assert.ok($mention.hasClass("user-mention-me"));
 });
 
-run_test("user-mention Stream not subbed (wildcard)", () => {
+run_test("user-mention Stream not subbed (wildcard)", ({override_rewire}) => {
     // Setup
     const $content = get_content_element();
     const $mention = $.create("mention");
@@ -188,7 +188,7 @@ run_test("user-mention Stream not subbed (wildcard)", () => {
     $content.set_find_results(".user-mention", $array([$mention]));
     const attr = () => 1;
     set_closest_dot_find_result($content, {attr, length: 1});
-    stream_data.is_user_subscribed = () => false;
+    override_rewire(stream_data, "is_user_subscribed", () => false);
 
     // Don't add user-mention-me class.
     assert.ok(!$mention.hasClass("user-mention-me"));

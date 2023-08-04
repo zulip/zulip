@@ -2,15 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
+mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
+
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
-const spoilers = zrequire("spoilers");
-spoilers.hide_spoilers_in_notification = () => {};
 
 const notifications = zrequire("notifications");
 
