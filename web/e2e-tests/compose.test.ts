@@ -6,7 +6,7 @@ import * as common from "./lib/common";
 
 async function check_compose_form_empty(page: Page): Promise<void> {
     await common.check_compose_state(page, {
-        stream: "",
+        stream_name: "",
         topic: "",
         content: "",
     });
@@ -31,7 +31,7 @@ async function test_send_messages(page: Page): Promise<void> {
     const initial_msgs_count = (await page.$$("#zhome .message_row")).length;
 
     await common.send_multiple_messages(page, [
-        {stream: "Verona", topic: "Reply test", content: "Compose stream reply test"},
+        {stream_name: "Verona", topic: "Reply test", content: "Compose stream reply test"},
         {recipient: "cordelia@zulip.com", content: "Compose direct message reply test"},
     ]);
 
@@ -64,7 +64,7 @@ async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): 
     // we chose only the last element make sure we don't click on any duplicates.
     await stream_message.click();
     await common.check_compose_state(page, {
-        stream: "Verona",
+        stream_name: "Verona",
         topic: "Reply test",
         content: "",
     });
@@ -91,7 +91,7 @@ async function test_reply_with_r_shortcut(page: Page): Promise<void> {
     await page.keyboard.press("KeyK");
     await page.keyboard.press("KeyR");
     await common.check_compose_state(page, {
-        stream: "Verona",
+        stream_name: "Verona",
         topic: "Reply test",
         content: "",
     });

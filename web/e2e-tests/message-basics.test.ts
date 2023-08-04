@@ -482,14 +482,14 @@ async function message_basic_tests(page: Page): Promise<void> {
 
     console.log("Sending messages");
     await common.send_multiple_messages(page, [
-        {stream: "Verona", topic: "test", content: "verona test a"},
-        {stream: "Verona", topic: "test", content: "verona test b"},
-        {stream: "Verona", topic: "other topic", content: "verona other topic c"},
-        {stream: "Denmark", topic: "test", content: "denmark message"},
+        {stream_name: "Verona", topic: "test", content: "verona test a"},
+        {stream_name: "Verona", topic: "test", content: "verona test b"},
+        {stream_name: "Verona", topic: "other topic", content: "verona other topic c"},
+        {stream_name: "Denmark", topic: "test", content: "denmark message"},
         {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message a"},
         {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message b"},
         {recipient: "cordelia@zulip.com", content: "direct message c"},
-        {stream: "Verona", topic: "test", content: "verona test d"},
+        {stream_name: "Verona", topic: "test", content: "verona test d"},
         {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message d"},
         {recipient: "cordelia@zulip.com", content: "direct message e"},
     ]);

@@ -31,7 +31,7 @@ async function edit_stream_message(page: Page, content: string): Promise<void> {
 
 async function test_stream_message_edit(page: Page): Promise<void> {
     await common.send_message(page, "stream", {
-        stream: "Verona",
+        stream_name: "Verona",
         topic: "edits",
         content: "test editing",
     });
@@ -45,7 +45,7 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
     const last_message_xpath = `(//*[@id="zhome"]//*[${common.has_class_x("messagebox")}])[last()]`;
 
     await common.send_message(page, "stream", {
-        stream: "Verona",
+        stream_name: "Verona",
         topic: "edits",
         content: "/me test editing a message with me",
     });

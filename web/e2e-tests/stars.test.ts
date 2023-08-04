@@ -41,7 +41,7 @@ async function stars_test(page: Page): Promise<void> {
     await page.click(".top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
     await common.send_message(page, "stream", {
-        stream: "Verona",
+        stream_name: "Verona",
         topic: "stars",
         content: message,
     });
