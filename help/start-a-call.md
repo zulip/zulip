@@ -4,8 +4,11 @@
 
 {!start-composing.md!}
 
-1. Click the **video camera** (<i class="fa fa-video-camera"></i>) at the bottom of
-the compose box. This will insert a **Join video call.** link into your message.
+{tab|desktop-web}
+
+1. Click the **video camera** (<i class="fa fa-video-camera"></i>) icon at the
+   bottom of the compose box. This will insert a **Join video call.** link into
+   your message.
 
 1. Send the message.
 
@@ -13,7 +16,29 @@ the compose box. This will insert a **Join video call.** link into your message.
 
 !!! tip ""
 
-    You can replace the "Join video call." label for the link with any text you like.
+    You can replace the "Join video call." label for the link with any text you
+    like.
+
+{tab|mobile}
+
+1. Navigate to a stream, topic, or direct message view.
+
+1. Tap the **video camera**
+   (<img src="/static/images/help/mobile-video-icon.svg" alt="video" class="mobile-icon"/>)
+   button at the bottom of the app. This will insert a **Click to join video call**
+   link into your message.
+
+1. If you are in a stream view, choose a destination topic by tapping the
+   compose box and selecting an existing topic or typing a new topic name.
+
+1. Send the message.
+
+1. Tap the link in the message to start or join the call.
+
+!!! tip ""
+
+    You can replace the "Click to join video call" label for the link with any
+    text you like.
 
 {end_tabs}
 
