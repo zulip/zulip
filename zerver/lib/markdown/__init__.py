@@ -1447,7 +1447,7 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
 
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        db_data = self.zmd.zulip_db_data
+        db_data = self.md.zulip_db_data
         content: Optional[str] = None
         if db_data is not None:
             content = db_data.content
