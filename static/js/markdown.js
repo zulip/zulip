@@ -261,7 +261,7 @@ function translate_unicode_emoji(text) {
 }
 
 function is_only_emoji_message(message) {
-    const colon_emoji_regex = /^(\s*:([\w+-]+?):\s*)*$/;
+    const colon_emoji_regex = /^(?:\s*:[\w+-]+?:\s*)+$/;
     return colon_emoji_regex.test(translate_unicode_emoji(message));
 }
 
@@ -531,7 +531,7 @@ export function initialize(realm_filters, helper_config) {
     // Disable _emphasis_ (keeping *emphasis*)
     // Text inside ** must start and end with a word character
     // to prevent mis-parsing things like "char **x = (char **)y"
-    marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\S\s])+?)(\S)\*(?!\*)/;
+    marked.InlineLexer.rules.zulip.em = /^\*\*\w.*\w\*\*/;
 
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, "autolink");
