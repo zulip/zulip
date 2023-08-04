@@ -17,6 +17,7 @@ run_test("user_groups", () => {
         members: new Set([1, 2]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5]),
+        can_manage_group: 1,
         can_mention_group: 2,
     };
 
@@ -35,6 +36,7 @@ run_test("user_groups", () => {
         members: new Set([3]),
         is_system_group: false,
         direct_subgroup_ids: new Set([]),
+        can_manage_group: 1,
         can_mention_group: 2,
     };
     const all = {
@@ -43,6 +45,7 @@ run_test("user_groups", () => {
         members: new Set([1, 2, 3]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5, 6]),
+        can_manage_group: 1,
         can_mention_group: 1,
     };
 

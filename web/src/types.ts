@@ -12,6 +12,7 @@ export type UserGroupUpdateEvent = {
     data: {
         name?: string;
         description?: string;
+        can_manage_group?: number;
         can_mention_group?: number;
     };
 };

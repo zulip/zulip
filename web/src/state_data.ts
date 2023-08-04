@@ -133,6 +133,7 @@ export const user_group_schema = z.object({
     members: z.array(z.number()),
     is_system_group: z.boolean(),
     direct_subgroup_ids: z.array(z.number()),
+    can_manage_group: z.number(),
     can_mention_group: z.number(),
 });
 
