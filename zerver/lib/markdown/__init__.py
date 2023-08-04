@@ -141,6 +141,7 @@ class DbData:
     sent_by_bot: bool
     stream_names: Dict[str, int]
     translate_emoticons: bool
+    content: Optional[str]
 
 
 # Format version of the Markdown rendering; stored along with rendered
@@ -1437,7 +1438,7 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
         if db_data is None or not db_data.translate_emoticons:
             return None
 
-        content = db_data["content"]
+        content = db_data.content
         emoticon = match.group("emoticon")
         translated = translate_emoticons(emoticon)
         name = translated[1:-1]
@@ -1446,10 +1447,10 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
 
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        db_data = self.md.zulip_db_data
+        db_data = self.zmd.zulip_db_data
         content: Optional[str] = None
         if db_data is not None:
-            content = db_data["content"]
+            content = db_data.content
         orig_syntax = match.group("syntax")
         codepoint = unicode_emoji_to_codepoint(orig_syntax)
         if codepoint in codepoint_to_name:
