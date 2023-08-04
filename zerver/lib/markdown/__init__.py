@@ -1503,7 +1503,7 @@ def get_colon_syntax(text: str) -> str:
 
 
 def translate_unicode_emoji(text: str) -> str:
-    return re.sub(unicode_emoji_regex, lambda emoji: get_colon_syntax(emoji.group("syntax")), text)
+    return re.sub(UNICODE_EMOJI_RE, lambda emoji: get_colon_syntax(emoji.group("syntax")), text)
 
 
 def content_has_only_emoji_syntax(content: Optional[str]) -> bool:
