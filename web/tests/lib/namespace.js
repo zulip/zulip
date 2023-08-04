@@ -23,17 +23,11 @@ const real_jquery_path = require.resolve("./real_jquery.js");
 let in_mid_render = false;
 let jquery_function;
 
-const template_path = "/web/templates/";
+const template_path = path.resolve(__dirname, "../../templates");
 
 /* istanbul ignore next */
 function need_to_mock_template_error(filename) {
-    const i = filename.indexOf(template_path);
-
-    if (i < 0) {
-        throw new Error("programming error");
-    }
-
-    const fn = filename.slice(i + template_path.length);
+    const fn = path.relative(template_path, filename);
 
     return `
         Please use mock_template if your test needs to render ${fn}
@@ -79,7 +73,7 @@ function load(request, parent, isMain) {
         return obj;
     }
 
-    if (filename.endsWith(".hbs") && filename.includes(template_path)) {
+    if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
         const actual_render = actual_load(request, parent, isMain);
 
         return template_stub({filename, actual_render});
@@ -208,16 +202,8 @@ exports._finish_template_mocking = () => {
     used_templates.clear();
 };
 
-exports._mock_template = (fn, exercise_template, f, {callsite = callsites()[1]} = {}) => {
-    const path = "../.." + template_path + fn;
-
-    const resolved_path = Module._resolveFilename(
-        path,
-        require.cache[callsite.getFileName()],
-        false,
-    );
-
-    template_mocks.set(resolved_path, {exercise_template, f});
+exports._mock_template = (fn, exercise_template, f) => {
+    template_mocks.set(path.join(template_path, fn), {exercise_template, f});
 };
 
 exports.mock_esm = (module_path, obj = {}, {callsite = callsites()[1]} = {}) => {
