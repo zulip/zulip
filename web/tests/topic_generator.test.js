@@ -5,24 +5,24 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
-const user_topics = mock_esm("../src/user_topics");
+const pm_conversations = mock_esm("../src/pm_conversations", {
+    recent: {},
+});
 const stream_data = mock_esm("../src/stream_data");
+const stream_list_sort = mock_esm("../src/stream_list_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 const unread = mock_esm("../src/unread");
+const user_topics = mock_esm("../src/user_topics");
 
-const pm_conversations = zrequire("pm_conversations");
-pm_conversations.recent = {};
-
-const stream_list_sort = zrequire("stream_list_sort");
 const tg = zrequire("topic_generator");
 
-run_test("streams", () => {
+run_test("streams", ({override}) => {
     function assert_next_stream(curr_stream, expected) {
         const actual = tg.get_next_stream(curr_stream);
         assert.equal(actual, expected);
     }
 
-    stream_list_sort.get_streams = () => ["announce", "muted", "devel", "test here"];
+    override(stream_list_sort, "get_streams", () => ["announce", "muted", "devel", "test here"]);
 
     assert_next_stream(undefined, "announce");
     assert_next_stream("NOT THERE", "announce");
@@ -76,7 +76,7 @@ run_test("topics", ({override}) => {
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_list_sort/unread.
 
-    stream_list_sort.get_streams = () => ["announce", "muted", "devel", "test here"];
+    override(stream_list_sort, "get_streams", () => ["announce", "muted", "devel", "test here"]);
 
     const muted_stream_id = 400;
     const devel_stream_id = 401;
@@ -121,7 +121,7 @@ run_test("topics", ({override}) => {
 });
 
 run_test("get_next_unread_pm_string", ({override}) => {
-    pm_conversations.recent.get_strings = () => ["1", "read", "2,3", "4", "unk"];
+    override(pm_conversations.recent, "get_strings", () => ["1", "read", "2,3", "4", "unk"]);
 
     override(unread, "num_unread_for_user_ids_string", (user_ids_string) => {
         if (user_ids_string === "unk") {

@@ -21,6 +21,7 @@ const channel = mock_esm("../src/channel");
 const confirm_dialog = mock_esm("../src/confirm_dialog");
 const dialog_widget = mock_esm("../src/dialog_widget");
 const input_pill = mock_esm("../src/input_pill");
+const settings_data = mock_esm("../src/settings_data");
 const typeahead_helper = mock_esm("../src/typeahead_helper");
 const user_groups = mock_esm("../src/user_groups", {
     get_user_group_from_id: noop,
@@ -30,7 +31,6 @@ const user_groups = mock_esm("../src/user_groups", {
 const ui_report = mock_esm("../src/ui_report");
 
 const people = zrequire("people");
-const settings_data = zrequire("settings_data");
 const settings_user_groups_legacy = zrequire("settings_user_groups_legacy");
 const user_pill = zrequire("user_pill");
 
@@ -49,11 +49,11 @@ function test_ui(label, f) {
     run_test(label, f, {sloppy_$: true});
 }
 
-test_ui("can_edit", () => {
-    settings_data.user_can_edit_user_groups = () => false;
+test_ui("can_edit", ({override}) => {
+    override(settings_data, "user_can_edit_user_groups", () => false);
     assert.ok(!settings_user_groups_legacy.can_edit(1));
 
-    settings_data.user_can_edit_user_groups = () => true;
+    override(settings_data, "user_can_edit_user_groups", () => true);
     user_groups.is_direct_member_of = (user_id, group_id) => {
         assert.equal(group_id, 1);
         assert.equal(user_id, undefined);
@@ -85,7 +85,9 @@ const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-test_ui("populate_user_groups", ({mock_template}) => {
+test_ui("populate_user_groups", ({mock_template, override, override_rewire}) => {
+    override(settings_data, "user_can_edit_user_groups", () => true);
+
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -112,7 +114,7 @@ test_ui("populate_user_groups", ({mock_template}) => {
     people.add_active_user(alice);
     people.add_active_user(bob);
 
-    people.get_realm_users = () => [iago, alice, bob];
+    override_rewire(people, "get_realm_users", () => [iago, alice, bob]);
 
     user_groups.get_realm_user_groups = () => [realm_user_group];
 
@@ -133,7 +135,7 @@ test_ui("populate_user_groups", ({mock_template}) => {
     };
 
     let get_by_user_id_called = false;
-    people.get_by_user_id = (user_id) => {
+    override_rewire(people, "get_by_user_id", (user_id) => {
         if (user_id === iago.user_id) {
             return iago;
         }
@@ -141,10 +143,12 @@ test_ui("populate_user_groups", ({mock_template}) => {
         blueslip.expect("warn", "Undefined user in function append_user");
         get_by_user_id_called = true;
         return undefined;
-    };
-    people.is_known_user = function () {
-        return people.get_by_user_id !== undefined && people.get_by_user_id !== noop;
-    };
+    });
+    override_rewire(
+        people,
+        "is_known_user",
+        () => people.get_by_user_id !== undefined && people.get_by_user_id !== noop,
+    );
 
     page_params.is_admin = true;
 
@@ -266,7 +270,7 @@ test_ui("populate_user_groups", ({mock_template}) => {
     };
 
     let get_by_email_called = false;
-    people.get_by_email = (user_email) => {
+    override_rewire(people, "get_by_email", (user_email) => {
         get_by_email_called = true;
         switch (user_email) {
             case iago.email:
@@ -277,7 +281,7 @@ test_ui("populate_user_groups", ({mock_template}) => {
             default:
                 throw new Error("Expected user email to be of Iago or Bob here.");
         }
-    };
+    });
 
     function test_create_item(handler) {
         (function test_rejection_path() {
@@ -331,7 +335,7 @@ test_ui("populate_user_groups", ({mock_template}) => {
         "function",
     );
 });
-test_ui("with_external_user", ({override_rewire, mock_template}) => {
+test_ui("with_external_user", ({disallow_rewire, override_rewire, mock_template}) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -341,9 +345,8 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
 
     user_groups.get_realm_user_groups = () => [realm_user_group];
 
-    // We return [] because these are already tested, so we skip them
-    /* istanbul ignore next */
-    people.get_realm_users = () => [];
+    // These are already tested, so we skip them
+    disallow_rewire(people, "get_realm_users");
 
     mock_template(
         "settings/admin_user_group_list.hbs",
@@ -351,7 +354,7 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
         () => "settings/admin_user_group_list.hbs",
     );
 
-    people.get_by_user_id = () => "user stub";
+    override_rewire(people, "get_by_user_id", () => "user stub");
 
     override_rewire(user_pill, "append_person", noop);
 
@@ -489,7 +492,8 @@ test_ui("reset", () => {
     assert.equal(result, undefined);
 });
 
-test_ui("on_events", ({override_rewire, mock_template}) => {
+test_ui("on_events", ({mock_template, override, override_rewire}) => {
+    override(settings_data, "user_can_edit_user_groups", () => true);
     mock_template("confirm_dialog/confirm_delete_user.hbs", false, (data) => {
         assert.deepEqual(data, {
             group_name: "Mobile",

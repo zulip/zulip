@@ -9,6 +9,7 @@ const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
+const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_ui = mock_esm("../src/compose_ui");
 const upload = mock_esm("../src/upload");
 mock_esm("../src/resize", {
@@ -26,7 +27,6 @@ set_global(
 );
 
 const server_events_dispatch = zrequire("server_events_dispatch");
-const compose_closed = zrequire("compose_closed_ui");
 const compose = zrequire("compose");
 function stub_out_video_calls() {
     const $elem = $("#below-compose-content .video_link");
@@ -207,7 +207,7 @@ test("videos", ({override}) => {
         page_params.realm_video_chat_provider =
             realm_available_video_chat_providers.big_blue_button.id;
 
-        compose_closed.get_recipient_label = () => "a";
+        override(compose_closed_ui, "get_recipient_label", () => "a");
 
         channel.get = (options) => {
             assert.equal(options.url, "/json/calls/bigbluebutton/create");

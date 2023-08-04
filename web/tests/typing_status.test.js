@@ -22,7 +22,7 @@ function returns_time(secs) {
 }
 
 run_test("basics", ({override, override_rewire}) => {
-    typing_status.state = null;
+    assert.equal(typing_status.state, null);
 
     // invalid conversation basically does nothing
     let worker = {};

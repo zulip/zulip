@@ -13,7 +13,6 @@ const blueslip = zrequire("blueslip");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const user_pill = zrequire("user_pill");
 const people = zrequire("people");
-const compose_fade = zrequire("compose_fade");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
 const sub_store = zrequire("sub_store");
@@ -158,18 +157,16 @@ test("snapshot_message", ({override_rewire}) => {
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
-    compose_recipient.set_compose_recipient_id = () => {};
     mock_banners();
 
-    stream_data.get_sub = (stream_name) => {
+    override_rewire(stream_data, "get_sub", (stream_name) => {
         assert.equal(stream_name, "stream");
         return {stream_id: 30};
-    };
+    });
 
     $(".narrow_to_compose_recipients").toggleClass = noop;
 
     mock_stream_header_colorblock();
-    compose_fade.update_all = noop;
 
     let curr_draft;
 
@@ -177,7 +174,7 @@ test("snapshot_message", ({override_rewire}) => {
         compose_state.set_message_type(curr_draft.type);
         compose_state.message_content(curr_draft.content);
         if (curr_draft.type === "private") {
-            compose_recipient.set_compose_recipient_id(compose_recipient.DIRECT_MESSAGE_ID);
+            compose_state.set_compose_recipient_id(compose_recipient.DIRECT_MESSAGE_ID);
         } else {
             compose_state.set_stream_name(curr_draft.stream);
         }
@@ -486,7 +483,7 @@ test("delete_all_drafts", () => {
 });
 
 test("format_drafts", ({override_rewire, mock_template}) => {
-    stream_data.get_color = () => "#FFFFFF";
+    override_rewire(stream_data, "get_color", () => "#FFFFFF");
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
@@ -595,10 +592,10 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         stub_render_now(time, new Date(1549958107000)),
     );
 
-    sub_store.get = function (stream_id) {
+    override_rewire(sub_store, "get", (stream_id) => {
         assert.equal(stream_id, 30);
         return {name: "stream"};
-    };
+    });
 
     override_rewire(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
@@ -623,10 +620,10 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     $.create("#drafts_table .draft-row", {children: []});
     $("#draft_overlay").css = () => {};
 
-    sub_store.get = function (stream_id) {
+    override_rewire(sub_store, "get", (stream_id) => {
         assert.equal(stream_id, 30);
         return {name: "stream-rename"};
-    };
+    });
 
     expected[0].stream_name = "stream-rename";
 
@@ -636,6 +633,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 });
 
 test("filter_drafts", ({override_rewire, mock_template}) => {
+    override_rewire(stream_data, "get_color", () => "#FFFFFF");
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
@@ -753,10 +751,10 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         stub_render_now(time, new Date(1549958107000)),
     );
 
-    sub_store.get = function (stream_id) {
+    override_rewire(sub_store, "get", (stream_id) => {
         assert.equal(stream_id, 30);
         return {name: "stream", invite_only: false, is_web_public: false};
-    };
+    });
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.

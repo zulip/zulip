@@ -27,9 +27,6 @@ const compose_recipient = zrequire("compose_recipient");
 const compose_fade_helper = zrequire("compose_fade_helper");
 const compose_state = zrequire("compose_state");
 
-compose_recipient.selected_stream_name = "social";
-compose_recipient.is_direct_message_selected = false;
-
 const me = {
     email: "me@example.com",
     user_id: 30,
@@ -55,6 +52,9 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 
 run_test("set_focused_recipient", ({override_rewire}) => {
+    override_rewire(compose_recipient, "selected_stream_name", "social");
+    override_rewire(compose_recipient, "is_direct_message_selected", false);
+
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     const sub = {
         stream_id: 101,
