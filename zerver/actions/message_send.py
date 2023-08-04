@@ -163,8 +163,8 @@ def render_incoming_message(
 class RecipientInfoResult:
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
-    pm_mention_email_disabled_user_ids: Set[int]
-    pm_mention_push_disabled_user_ids: Set[int]
+    dm_mention_email_disabled_user_ids: Set[int]
+    dm_mention_push_disabled_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     topic_wildcard_mention_user_ids: Set[int]
@@ -404,10 +404,10 @@ def get_recipient_info(
     # We deal with only the users who have disabled this setting, since that
     # will usually be much smaller a set than those who have enabled it (which
     # is the default)
-    pm_mention_email_disabled_user_ids = get_ids_for(
+    dm_mention_email_disabled_user_ids = get_ids_for(
         lambda r: not r["enable_offline_email_notifications"]
     )
-    pm_mention_push_disabled_user_ids = get_ids_for(
+    dm_mention_push_disabled_user_ids = get_ids_for(
         lambda r: not r["enable_offline_push_notifications"]
     )
 
@@ -448,8 +448,8 @@ def get_recipient_info(
     return RecipientInfoResult(
         active_user_ids=active_user_ids,
         online_push_user_ids=online_push_user_ids,
-        pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
-        pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
+        dm_mention_email_disabled_user_ids=dm_mention_email_disabled_user_ids,
+        dm_mention_push_disabled_user_ids=dm_mention_push_disabled_user_ids,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
         topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
@@ -650,8 +650,8 @@ def build_message_send_dict(
         rendering_result=rendering_result,
         active_user_ids=info.active_user_ids,
         online_push_user_ids=info.online_push_user_ids,
-        pm_mention_email_disabled_user_ids=info.pm_mention_email_disabled_user_ids,
-        pm_mention_push_disabled_user_ids=info.pm_mention_push_disabled_user_ids,
+        dm_mention_email_disabled_user_ids=info.dm_mention_email_disabled_user_ids,
+        dm_mention_push_disabled_user_ids=info.dm_mention_push_disabled_user_ids,
         stream_push_user_ids=info.stream_push_user_ids,
         stream_email_user_ids=info.stream_email_user_ids,
         followed_topic_push_user_ids=info.followed_topic_push_user_ids,
@@ -969,8 +969,8 @@ def do_send_messages(
                 private_message=(message_type == "private"),
                 disable_external_notifications=send_request.disable_external_notifications,
                 online_push_user_ids=send_request.online_push_user_ids,
-                pm_mention_push_disabled_user_ids=send_request.pm_mention_push_disabled_user_ids,
-                pm_mention_email_disabled_user_ids=send_request.pm_mention_email_disabled_user_ids,
+                dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,
+                dm_mention_email_disabled_user_ids=send_request.dm_mention_email_disabled_user_ids,
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
@@ -997,9 +997,9 @@ def do_send_messages(
             message_dict=wide_message_dict,
             presence_idle_user_ids=presence_idle_user_ids,
             online_push_user_ids=list(send_request.online_push_user_ids),
-            pm_mention_push_disabled_user_ids=list(send_request.pm_mention_push_disabled_user_ids),
-            pm_mention_email_disabled_user_ids=list(
-                send_request.pm_mention_email_disabled_user_ids
+            dm_mention_push_disabled_user_ids=list(send_request.dm_mention_push_disabled_user_ids),
+            dm_mention_email_disabled_user_ids=list(
+                send_request.dm_mention_email_disabled_user_ids
             ),
             stream_push_user_ids=list(send_request.stream_push_user_ids),
             stream_email_user_ids=list(send_request.stream_email_user_ids),

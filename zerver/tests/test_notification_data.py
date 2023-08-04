@@ -24,7 +24,7 @@ class TestNotificationData(ZulipTestCase):
         self.assertFalse(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
         # Direct message
-        user_data = self.create_user_notifications_data_object(user_id=user_id, pm_push_notify=True)
+        user_data = self.create_user_notifications_data_object(user_id=user_id, dm_push_notify=True)
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
             NotificationTriggers.DIRECT_MESSAGE,
@@ -103,7 +103,7 @@ class TestNotificationData(ZulipTestCase):
 
         # Now, test the `online_push_enabled` property
         # Test no notifications when not idle
-        user_data = self.create_user_notifications_data_object(user_id=user_id, pm_push_notify=True)
+        user_data = self.create_user_notifications_data_object(user_id=user_id, dm_push_notify=True)
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=False),
             None,
@@ -112,7 +112,7 @@ class TestNotificationData(ZulipTestCase):
 
         # Test notifications are sent when not idle but `online_push_enabled = True`
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, online_push_enabled=True, pm_push_notify=True
+            user_id=user_id, online_push_enabled=True, dm_push_notify=True
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=False),
@@ -125,8 +125,8 @@ class TestNotificationData(ZulipTestCase):
         user_data = self.create_user_notifications_data_object(
             user_id=user_id,
             sender_is_muted=True,
-            pm_push_notify=True,
-            pm_email_notify=True,
+            dm_push_notify=True,
+            dm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
             topic_wildcard_mention_push_notify=True,
@@ -143,8 +143,8 @@ class TestNotificationData(ZulipTestCase):
         # Message sender is the user the object corresponds to.
         user_data = self.create_user_notifications_data_object(
             user_id=acting_user_id,
-            pm_push_notify=True,
-            pm_email_notify=True,
+            dm_push_notify=True,
+            dm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
             topic_wildcard_mention_push_notify=True,
@@ -161,8 +161,8 @@ class TestNotificationData(ZulipTestCase):
         # 'disable_external_notifications' takes precedence over other flags.
         user_data = self.create_user_notifications_data_object(
             user_id=user_id,
-            pm_push_notify=True,
-            pm_email_notify=True,
+            dm_push_notify=True,
+            dm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
             topic_wildcard_mention_push_notify=True,
@@ -191,7 +191,7 @@ class TestNotificationData(ZulipTestCase):
 
         # Direct message
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, pm_email_notify=True
+            user_id=user_id, dm_email_notify=True
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -271,7 +271,7 @@ class TestNotificationData(ZulipTestCase):
 
         # Test no notifications when not idle
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, pm_email_notify=True
+            user_id=user_id, dm_email_notify=True
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=False),
@@ -284,8 +284,8 @@ class TestNotificationData(ZulipTestCase):
         user_data = self.create_user_notifications_data_object(
             user_id=user_id,
             sender_is_muted=True,
-            pm_push_notify=True,
-            pm_email_notify=True,
+            dm_push_notify=True,
+            dm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
             topic_wildcard_mention_push_notify=True,
@@ -302,8 +302,8 @@ class TestNotificationData(ZulipTestCase):
         # Message sender is the user the object corresponds to.
         user_data = self.create_user_notifications_data_object(
             user_id=acting_user_id,
-            pm_push_notify=True,
-            pm_email_notify=True,
+            dm_push_notify=True,
+            dm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
             topic_wildcard_mention_push_notify=True,
@@ -320,8 +320,8 @@ class TestNotificationData(ZulipTestCase):
         # Message sender is the welcome bot.
         user_data = self.create_user_notifications_data_object(
             user_id=user_id,
-            pm_push_notify=True,
-            pm_email_notify=True,
+            dm_push_notify=True,
+            dm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
             topic_wildcard_mention_push_notify=True,
@@ -341,7 +341,7 @@ class TestNotificationData(ZulipTestCase):
         # and `is_notifiable` is a simple OR of the email and push functions.
         user_id = self.example_user("hamlet").id
         acting_user_id = self.example_user("cordelia").id
-        user_data = self.create_user_notifications_data_object(user_id=user_id, pm_push_notify=True)
+        user_data = self.create_user_notifications_data_object(user_id=user_id, dm_push_notify=True)
         self.assertTrue(user_data.is_notifiable(acting_user_id=acting_user_id, idle=True))
 
     def test_bot_user_notifiability(self) -> None:
@@ -353,8 +353,8 @@ class TestNotificationData(ZulipTestCase):
                 private_message=True,
                 disable_external_notifications=False,
                 online_push_user_ids=set(),
-                pm_mention_email_disabled_user_ids=set(),
-                pm_mention_push_disabled_user_ids=set(),
+                dm_mention_email_disabled_user_ids=set(),
+                dm_mention_push_disabled_user_ids=set(),
                 all_bot_user_ids={10, 11, 12},
                 muted_sender_user_ids=set(),
                 stream_email_user_ids=set(),

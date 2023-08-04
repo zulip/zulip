@@ -47,7 +47,7 @@ class MaybeEnqueueNotificationsTest(ZulipTestCase):
             "zerver.tornado.event_queue.queue_json_publish"
         ) as mock_queue_json_publish:
             params["user_notifications_data"] = self.create_user_notifications_data_object(
-                user_id=1, pm_push_notify=True, pm_email_notify=True
+                user_id=1, dm_push_notify=True, dm_email_notify=True
             )
             notified = maybe_enqueue_notifications(**params)
             self.assertTrue(mock_queue_json_publish.call_count, 2)
@@ -233,8 +233,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                pm_email_notify=True,
-                pm_push_notify=True,
+                dm_email_notify=True,
+                dm_push_notify=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
 
@@ -254,8 +254,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                pm_email_notify=False,
-                pm_push_notify=True,
+                dm_email_notify=False,
+                dm_push_notify=True,
                 already_notified={"email_notified": False, "push_notified": True},
             )
 
@@ -293,8 +293,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                pm_email_notify=True,
-                pm_push_notify=False,
+                dm_email_notify=True,
+                dm_push_notify=False,
                 already_notified={"email_notified": True, "push_notified": False},
             )
 
@@ -1105,8 +1105,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                pm_push_notify=True,
-                pm_email_notify=True,
+                dm_push_notify=True,
+                dm_email_notify=True,
                 sender_is_muted=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -1161,8 +1161,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                pm_email_notify=True,
-                pm_push_notify=True,
+                dm_email_notify=True,
+                dm_push_notify=True,
                 disable_external_notifications=True,
                 # disable_external_notifications parameter set to False would have resulted in
                 # already_notified={"email_notified": True, "push_notified": True}

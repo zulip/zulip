@@ -775,6 +775,24 @@ def missedmessage_hook(
         sender_id = event["message"]["sender_id"]
 
         # TODO/compatibility: Translation code for the rename of
+        # `pm_push_notify` to `dm_push_notify`. Remove this when
+        # one can no longer directly upgrade from 7.x to main.
+        dm_push_notify = False
+        if "dm_push_notify" in internal_data:
+            dm_push_notify = internal_data.get("dm_push_notify")
+        elif "pm_push_notify" in internal_data:
+            dm_push_notify = internal_data.get("pm_push_notify")
+
+        # TODO/compatibility: Translation code for the rename of
+        # `pm_email_notify` to `dm_email_notify`. Remove this when
+        # one can no longer directly upgrade from 7.x to main.
+        dm_email_notify = False
+        if "dm_email_notify" in internal_data:
+            dm_email_notify = internal_data.get("dm_email_notify")
+        elif "pm_email_notify" in internal_data:
+            dm_email_notify = internal_data.get("pm_email_notify")
+
+        # TODO/compatibility: Translation code for the rename of
         # `wildcard_mention_push_notify` to `stream_wildcard_mention_push_notify`.
         # Remove this when one can no longer directly upgrade from 7.x to main.
         stream_wildcard_mention_push_notify = False
@@ -801,8 +819,8 @@ def missedmessage_hook(
         user_notifications_data = UserMessageNotificationsData(
             user_id=user_profile_id,
             sender_is_muted=internal_data.get("sender_is_muted", False),
-            pm_push_notify=internal_data.get("pm_push_notify", False),
-            pm_email_notify=internal_data.get("pm_email_notify", False),
+            dm_push_notify=dm_push_notify,
+            dm_email_notify=dm_email_notify,
             mention_push_notify=internal_data.get("mention_push_notify", False),
             mention_email_notify=internal_data.get("mention_email_notify", False),
             topic_wildcard_mention_push_notify=internal_data.get(
@@ -973,12 +991,33 @@ def process_message_event(
 
     presence_idle_user_ids = set(event_template.get("presence_idle_user_ids", []))
     online_push_user_ids = set(event_template.get("online_push_user_ids", []))
-    pm_mention_push_disabled_user_ids = set(
-        event_template.get("pm_mention_push_disabled_user_ids", [])
-    )
-    pm_mention_email_disabled_user_ids = set(
-        event_template.get("pm_mention_email_disabled_user_ids", [])
-    )
+
+    # TODO/compatibility: Translation code for the rename of
+    # `pm_mention_push_disabled_user_ids` to `dm_mention_push_disabled_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    dm_mention_push_disabled_user_ids = set()
+    if "dm_mention_push_disabled_user_ids" in event_template:
+        dm_mention_push_disabled_user_ids = set(
+            event_template.get("dm_mention_push_disabled_user_ids", [])
+        )
+    elif "pm_mention_push_disabled_user_ids" in event_template:
+        dm_mention_push_disabled_user_ids = set(
+            event_template.get("pm_mention_push_disabled_user_ids", [])
+        )
+
+    # TODO/compatibility: Translation code for the rename of
+    # `pm_mention_email_disabled_user_ids` to `dm_mention_email_disabled_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    dm_mention_email_disabled_user_ids = set()
+    if "dm_mention_email_disabled_user_ids" in event_template:
+        dm_mention_email_disabled_user_ids = set(
+            event_template.get("dm_mention_email_disabled_user_ids", [])
+        )
+    elif "pm_mention_email_disabled_user_ids" in event_template:
+        dm_mention_email_disabled_user_ids = set(
+            event_template.get("pm_mention_email_disabled_user_ids", [])
+        )
+
     stream_push_user_ids = set(event_template.get("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.get("stream_email_user_ids", []))
     topic_wildcard_mention_user_ids = set(event_template.get("topic_wildcard_mention_user_ids", []))
@@ -1047,8 +1086,8 @@ def process_message_event(
             private_message=private_message,
             disable_external_notifications=disable_external_notifications,
             online_push_user_ids=online_push_user_ids,
-            pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
-            pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
+            dm_mention_push_disabled_user_ids=dm_mention_push_disabled_user_ids,
+            dm_mention_email_disabled_user_ids=dm_mention_email_disabled_user_ids,
             stream_push_user_ids=stream_push_user_ids,
             stream_email_user_ids=stream_email_user_ids,
             topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
@@ -1199,12 +1238,33 @@ def process_message_update_event(
     event_template = dict(orig_event)
     prior_mention_user_ids = set(event_template.pop("prior_mention_user_ids", []))
     presence_idle_user_ids = set(event_template.pop("presence_idle_user_ids", []))
-    pm_mention_push_disabled_user_ids = set(
-        event_template.pop("pm_mention_push_disabled_user_ids", [])
-    )
-    pm_mention_email_disabled_user_ids = set(
-        event_template.pop("pm_mention_email_disabled_user_ids", [])
-    )
+
+    # TODO/compatibility: Translation code for the rename of
+    # `pm_mention_push_disabled_user_ids` to `dm_mention_push_disabled_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    dm_mention_push_disabled_user_ids = set()
+    if "dm_mention_push_disabled_user_ids" in event_template:
+        dm_mention_push_disabled_user_ids = set(
+            event_template.pop("dm_mention_push_disabled_user_ids")
+        )
+    elif "pm_mention_push_disabled_user_ids" in event_template:
+        dm_mention_push_disabled_user_ids = set(
+            event_template.pop("pm_mention_push_disabled_user_ids")
+        )
+
+    # TODO/compatibility: Translation code for the rename of
+    # `pm_mention_email_disabled_user_ids` to `dm_mention_email_disabled_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    dm_mention_email_disabled_user_ids = set()
+    if "dm_mention_email_disabled_user_ids" in event_template:
+        dm_mention_email_disabled_user_ids = set(
+            event_template.pop("dm_mention_email_disabled_user_ids")
+        )
+    elif "pm_mention_email_disabled_user_ids" in event_template:
+        dm_mention_email_disabled_user_ids = set(
+            event_template.pop("pm_mention_email_disabled_user_ids")
+        )
+
     stream_push_user_ids = set(event_template.pop("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
     topic_wildcard_mention_user_ids = set(event_template.pop("topic_wildcard_mention_user_ids", []))
@@ -1283,8 +1343,8 @@ def process_message_update_event(
                 private_message=(stream_name is None),
                 disable_external_notifications=disable_external_notifications,
                 online_push_user_ids=online_push_user_ids,
-                pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
-                pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
+                dm_mention_push_disabled_user_ids=dm_mention_push_disabled_user_ids,
+                dm_mention_email_disabled_user_ids=dm_mention_email_disabled_user_ids,
                 stream_push_user_ids=stream_push_user_ids,
                 stream_email_user_ids=stream_email_user_ids,
                 topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
