@@ -679,8 +679,8 @@ export function is_web_public(stream_id: number): boolean {
     return sub ? sub.is_web_public : false;
 }
 
-export function is_invite_only_by_stream_name(stream_name: string): boolean {
-    const sub = get_sub(stream_name);
+export function is_invite_only_by_stream_id(stream_id: number): boolean {
+    const sub = get_sub_by_id(stream_id);
     if (sub === undefined) {
         return false;
     }
