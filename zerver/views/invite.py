@@ -14,7 +14,7 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
-from zerver.decorator import require_member_or_admin, require_realm_admin
+from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -140,7 +140,7 @@ def revoke_user_invite(
     return json_success(request)
 
 
-@require_realm_admin
+@require_member_or_admin
 @has_request_variables
 def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, invite_id: int
@@ -153,7 +153,8 @@ def revoke_multiuse_invite(
     if invite.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
 
-    check_role_based_permissions(invite.invited_as, user_profile, require_admin=True)
+    if invite.referred_by_id != user_profile.id:
+        check_role_based_permissions(invite.invited_as, user_profile, require_admin=True)
 
     if invite.status == confirmation_settings.STATUS_REVOKED:
         raise JsonableError(_("Invitation has already been revoked"))

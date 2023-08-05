@@ -1747,8 +1747,11 @@ class InvitationsTestCase(InviteUserBase):
         do_create_multiuse_invite_link(
             user_profile, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
         )
-        self.assert_length(do_get_invites_controlled_by_user(user_profile), 5)
-        self.assert_length(do_get_invites_controlled_by_user(hamlet), 1)
+        do_create_multiuse_invite_link(
+            hamlet, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+        )
+        self.assert_length(do_get_invites_controlled_by_user(user_profile), 6)
+        self.assert_length(do_get_invites_controlled_by_user(hamlet), 2)
         self.assert_length(do_get_invites_controlled_by_user(othello), 1)
 
     def test_successful_get_open_invitations(self) -> None:
@@ -1994,6 +1997,26 @@ class InvitationsTestCase(InviteUserBase):
         self.login("desdemona")
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assert_json_success(result)
+        self.assertEqual(
+            MultiuseInvite.objects.get(id=multiuse_invite.id).status,
+            confirmation_settings.STATUS_REVOKED,
+        )
+
+        # Test non-admins can only delete invitations created by them.
+        multiuse_invite = MultiuseInvite.objects.create(
+            referred_by=self.example_user("hamlet"), realm=zulip_realm
+        )
+        create_confirmation_link(
+            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
+        )
+
+        self.login("cordelia")
+        error_result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
+        self.assert_json_error(error_result, "Must be an organization administrator")
+
+        self.login("hamlet")
+        result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
+        self.assertEqual(result.status_code, 200)
         self.assertEqual(
             MultiuseInvite.objects.get(id=multiuse_invite.id).status,
             confirmation_settings.STATUS_REVOKED,
