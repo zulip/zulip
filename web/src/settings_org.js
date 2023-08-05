@@ -1043,6 +1043,7 @@ export function init_dropdown_widgets() {
         },
         default_id: page_params.realm_notifications_stream_id,
         unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        show_disabled_if_current_value_not_in_options: true,
     });
     notifications_stream_widget.setup();
 
@@ -1062,6 +1063,7 @@ export function init_dropdown_widgets() {
         },
         default_id: page_params.realm_signup_notifications_stream_id,
         unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        show_disabled_if_current_value_not_in_options: true,
     });
     signup_notifications_stream_widget.setup();
 

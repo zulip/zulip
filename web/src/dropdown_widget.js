@@ -41,6 +41,8 @@ export class DropdownWidget {
         // NOTE: Any value other than `null` will be rendered when class is initialized.
         default_id = null,
         unique_id_type = null,
+        // Show disabled state if the default_id is not in `get_options()`.
+        show_disabled_if_current_value_not_in_options = false,
     }) {
         this.widget_name = widget_name;
         this.widget_id = `#${CSS.escape(widget_name)}_widget`;
@@ -62,6 +64,8 @@ export class DropdownWidget {
         this.current_value = default_id;
         this.unique_id_type = unique_id_type;
         this.$events_container = $events_container;
+        this.show_disabled_if_current_value_not_in_options =
+            show_disabled_if_current_value_not_in_options;
     }
 
     init() {
@@ -254,7 +258,19 @@ export class DropdownWidget {
             this.current_value = value;
         }
 
-        const option = this.get_options().find((option) => option.unique_id === this.current_value);
+        const all_options = this.get_options();
+        let option = all_options.find((option) => option.unique_id === this.current_value);
+
+        // Show disabled if cannot find current option.
+        if (!option && this.show_disabled_if_current_value_not_in_options) {
+            option = all_options.find((option) => option.is_setting_disabled === true);
+        }
+
+        if (!option) {
+            blueslip.error(`Cannot find current value: ${this.current_value} in provided options.`);
+            return;
+        }
+
         if (option.is_setting_disabled) {
             $(this.widget_value_selector).html(render_dropdown_disabled_state({name: option.name}));
         } else if (option.stream) {
