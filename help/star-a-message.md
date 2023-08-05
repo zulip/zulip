@@ -31,11 +31,17 @@ tasks you need to go back to or documents you reference often.
 
 {end_tabs}
 
-
 ## View your starred messages
 
-You can view your starred messages by clicking **Starred messages** in the
-left sidebar, or by [searching](/help/search-for-messages) for `is:starred`.
+{start_tabs}
+
+{tab|desktop}
+
+{relative|message|starred}
+
+{end_tabs}
+
+## Toggle starred messages counter
 
 By default, Zulip displays the number of starred messages in the left
 sidebar; this allows you to use them as an inbox of messages you'd
@@ -44,6 +50,8 @@ else and would prefer not to see the count in your left sidebar, you
 can disable that feature.
 
 {start_tabs}
+
+{tab|desktop-web}
 
 {settings_tab|preferences}
 
@@ -55,3 +63,4 @@ can disable that feature.
 
 * [Marking messages as unread](/help/marking-messages-as-unread)
 * [Reading strategies](/help/reading-strategies)
+* [Searching for messages](/help/search-for-messages)
