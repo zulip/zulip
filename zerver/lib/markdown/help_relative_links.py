@@ -96,11 +96,17 @@ all_instructions = """
    sidebar or use the <kbd>A</kbd> keyboard shortcut.
 """
 
+starred_instructions = """
+1. Click on <i class="fa fa-star"></i> **Starred messages** in the left
+   sidebar, or by [searching](/help/search-for-messages) for `is:starred`.
+"""
+
 message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
     "recent": ["Recent conversations", "/#recent", recent_instructions],
     "all": ["All messages", "/#all_messages", all_instructions],
+    "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
 }
 
 
