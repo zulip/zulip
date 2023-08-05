@@ -6,9 +6,8 @@ import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import marked from "../third/marked/lib/marked";
 
-import * as message_store from "./message_store";
-
 import * as blueslip from "./blueslip";
+import * as message_store from "./message_store";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
