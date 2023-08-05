@@ -2505,6 +2505,22 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p><span class="highlight">KEYWORDMATCH</span> and should work</p>',
         )
 
+        narrow = [
+            dict(operator="search", operand="KEYWORDMATCH"),
+            dict(operator="search", operand="work"),
+        ]
+
+        raw_params = dict(msg_ids=msg_ids, narrow=narrow)
+        params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
+        result = self.client_get("/json/messages/matches_narrow", params)
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(list(messages.keys()), 1)
+        message = messages[str(good_id)]
+        self.assertEqual(
+            message["match_content"],
+            '<p><span class="highlight">KEYWORDMATCH</span> and should <span class="highlight">work</span></p>',
+        )
+
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search(self) -> None:
         self.login("cordelia")
