@@ -8,6 +8,8 @@ import marked from "../third/marked/lib/marked";
 
 import * as message_store from "./message_store";
 
+import * as blueslip from "./blueslip";
+
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering Markdown client-side is
