@@ -36,10 +36,15 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event
 
 
-def notify_invites_changed(realm: Realm) -> None:
+def notify_invites_changed(
+    realm: Realm, *, changed_invite_referrer: Optional[UserProfile] = None
+) -> None:
     event = dict(type="invites_changed")
     admin_ids = [user.id for user in realm.get_admin_users_and_bots()]
-    send_event(realm, event, admin_ids)
+    recipient_ids = admin_ids
+    if changed_invite_referrer and changed_invite_referrer.id not in recipient_ids:
+        recipient_ids.append(changed_invite_referrer.id)
+    send_event(realm, event, recipient_ids)
 
 
 def do_send_confirmation_email(
@@ -321,7 +326,7 @@ def do_invite_users(
             skipped,
             sent_invitations=True,
         )
-    notify_invites_changed(user_profile.realm)
+    notify_invites_changed(user_profile.realm, changed_invite_referrer=user_profile)
 
 
 def get_invitation_expiry_date(confirmation_obj: Confirmation) -> Optional[int]:
@@ -446,7 +451,7 @@ def do_create_multiuse_invite_link(
         invite.streams.set(streams)
     invite.invited_as = invited_as
     invite.save()
-    notify_invites_changed(referred_by.realm)
+    notify_invites_changed(referred_by.realm, changed_invite_referrer=referred_by)
     return create_confirmation_link(
         invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=invite_expires_in_minutes
     )
@@ -466,7 +471,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
         Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
         prereg_user.delete()
         clear_scheduled_invitation_emails(email)
-    notify_invites_changed(realm)
+    notify_invites_changed(realm, changed_invite_referrer=prereg_user.referred_by)
 
 
 def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
@@ -479,7 +484,7 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
         ).delete()
         multiuse_invite.status = confirmation_settings.STATUS_REVOKED
         multiuse_invite.save(update_fields=["status"])
-    notify_invites_changed(realm)
+    notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:

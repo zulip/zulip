@@ -273,7 +273,7 @@ def process_new_human_user(
         ).update(status=confirmation_settings.STATUS_REVOKED)
 
     if prereg_user is not None and prereg_user.referred_by is not None:
-        notify_invites_changed(user_profile.realm)
+        notify_invites_changed(user_profile.realm, changed_invite_referrer=prereg_user.referred_by)
 
     notify_new_user(user_profile)
     # Clear any scheduled invitation emails to prevent them
