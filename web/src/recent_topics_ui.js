@@ -521,11 +521,11 @@ export function process_topic_edit(old_stream_id, old_topic, new_topic, new_stre
     process_messages(new_topic_msgs);
 }
 
-export function topic_in_search_results(keyword, stream, topic) {
+export function topic_in_search_results(keyword, stream_name, topic) {
     if (keyword === "") {
         return true;
     }
-    const text = (stream + " " + topic).toLowerCase();
+    const text = (stream_name + " " + topic).toLowerCase();
     const search_words = keyword.toLowerCase().split(/\s+/);
     return search_words.every((word) => text.includes(word));
 }
