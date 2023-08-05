@@ -33,6 +33,15 @@ format used by the Zulip server that they are interacting with.
   to create reusable invitation links. Previously, this endpoint was
   restricted to admin users only.
 
+* `GET /invites`: Endpoint response for non-admin users now includes both
+  email invitations and reusable invitation links that they have created.
+  Previously, non-admin users could only create email invitations, and
+  therefore the response did not include reusable invitation links for these users.
+
+* `DELETE /invites/multiuse/{invite_id}`: Non-admin users can now revoke
+  reusable invitation links they have created. Previously, only admin users could
+  create and revoke reusable invitation links.
+
 **Feature level 208**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),
