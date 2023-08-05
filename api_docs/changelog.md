@@ -42,6 +42,11 @@ format used by the Zulip server that they are interacting with.
   reusable invitation links they have created. Previously, only admin users could
   create and revoke reusable invitation links.
 
+* [`GET /events`](/api/get-events): When the set of invitations in an
+  organization changes, an `invites_changed` event is now sent to the
+  creator of the changed invitation, as well as all admin users.
+  Previously, this event was only sent to admin users.
+
 **Feature level 208**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),
