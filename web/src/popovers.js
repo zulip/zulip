@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
+import url_template_lib from "url-template";
 
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
@@ -19,7 +20,6 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
-import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -668,7 +668,7 @@ export function user_info_popover_manage_menu_handle_keyboard(key) {
 
 export function show_sender_info() {
     const $message = $(".selected_message");
-    let $sender = $message.find(".inline_profile_picture");
+    let $sender = $message.find(".message-avatar");
     if ($sender.length === 0) {
         // Messages without an avatar have an invisible message_sender
         // element that's roughly in the right place.
@@ -731,17 +731,13 @@ export function hide_playground_links_popover() {
 }
 
 export function register_click_handlers() {
-    $("#main_div").on(
-        "click",
-        ".sender_name, .sender_name-in-status, .inline_profile_picture",
-        function (e) {
-            const $row = $(this).closest(".message_row");
-            e.stopPropagation();
-            const message = message_lists.current.get(rows.id($row));
-            const user = people.get_by_user_id(message.sender_id);
-            show_user_info_popover_for_message(this, user, message);
-        },
-    );
+    $("#main_div").on("click", ".sender_name, .message-avatar", function (e) {
+        const $row = $(this).closest(".message_row");
+        e.stopPropagation();
+        const message = message_lists.current.get(rows.id($row));
+        const user = people.get_by_user_id(message.sender_id);
+        show_user_info_popover_for_message(this, user, message);
+    });
 
     $("#main_div").on("click", ".user-mention", function (e) {
         const id_string = $(this).attr("data-user-id");
@@ -788,20 +784,21 @@ export function register_click_handlers() {
             const playground_info = realm_playground.get_playground_info_for_languages(
                 $codehilite_div.data("code-language"),
             );
-            // We do the code extraction here and set the target href combining the url_prefix
-            // and the extracted code. Depending on whether the language has multiple playground
-            // links configured, a popover is show.
+            // We do the code extraction here and set the target href expanding
+            // the url_template with the extracted code. Depending on whether
+            // the language has multiple playground links configured, a popover
+            // is shown.
             const extracted_code = $codehilite_div.find("code").text();
             if (playground_info.length === 1) {
-                const url_prefix = playground_info[0].url_prefix;
+                const url_template = url_template_lib.parse(playground_info[0].url_template);
                 $view_in_playground_button.attr(
                     "href",
-                    url_prefix + encodeURIComponent(extracted_code),
+                    url_template.expand({code: extracted_code}),
                 );
             } else {
                 for (const $playground of playground_info) {
-                    $playground.playground_url =
-                        $playground.url_prefix + encodeURIComponent(extracted_code);
+                    const url_template = url_template_lib.parse($playground.url_template);
+                    $playground.playground_url = url_template.expand({code: extracted_code});
                 }
                 toggle_playground_link_popover(this, playground_info);
             }
@@ -1088,7 +1085,6 @@ export function hide_all_except_sidebars(opts) {
         hideAll();
     }
     emoji_picker.hide_emoji_popover();
-    giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();

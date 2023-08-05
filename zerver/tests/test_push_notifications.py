@@ -26,7 +26,8 @@ from analytics.models import InstallationCount, RealmCount
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.user_settings import do_regenerate_api_key
+from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -71,6 +72,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserMessage,
+    UserTopic,
     get_client,
     get_display_recipient,
     get_realm,
@@ -1104,7 +1106,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
@@ -1166,7 +1168,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
@@ -1225,7 +1227,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             "user_profile_id": self.user_profile.id,
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/notify"
@@ -1255,7 +1257,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
 
         # If the message is unread, we should send push notifications.
@@ -1295,7 +1297,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
         # Now, delete the message the normal way
         do_delete_messages(user_profile.realm, [message])
@@ -1328,7 +1330,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
         # Now delete the message forcefully, so it just doesn't exist.
         message.delete()
@@ -1364,7 +1366,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), mock.patch(
             "zerver.lib.push_notifications.get_message_payload_apns", return_value={"apns": True}
@@ -1414,7 +1416,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.get_message_payload_apns", return_value={"apns": True}
@@ -1612,7 +1614,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {
             "message_id": message_id,
-            "trigger": "stream_push_notify",
+            "trigger": NotificationTriggers.STREAM_PUSH,
         }
 
         android_devices = list(
@@ -1663,7 +1665,10 @@ class HandlePushNotificationTest(PushNotificationTest):
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
                 self.user_profile.id,
-                {"message_id": stream_mentioned_message_id, "trigger": "mentioned"},
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.MENTION,
+                },
             )
 
         # Direct message should soft reactivate the user
@@ -1672,7 +1677,37 @@ class HandlePushNotificationTest(PushNotificationTest):
             personal_message_id = self.send_personal_message(othello, self.user_profile, "Message")
             handle_push_notification(
                 self.user_profile.id,
-                {"message_id": personal_message_id, "trigger": "private_message"},
+                {
+                    "message_id": personal_message_id,
+                    "trigger": NotificationTriggers.PRIVATE_MESSAGE,
+                },
+            )
+
+        # User FOLLOWS the topic.
+        # 'wildcard_mentions_notify' is disabled to verify the corner case when only
+        # 'enable_followed_topic_wildcard_mentions_notify' is enabled (True by default).
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+        )
+
+        # Topic wildcard mention in followed topic should soft reactivate the user
+        # user should be a topic participant
+        self.send_stream_message(self.user_profile, "Denmark", "topic paticipant")
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+                },
             )
 
         # Stream wildcard mention in followed topic should NOT soft reactivate the user
@@ -1683,30 +1718,54 @@ class HandlePushNotificationTest(PushNotificationTest):
                 self.user_profile.id,
                 {
                     "message_id": stream_mentioned_message_id,
-                    "trigger": "stream_wildcard_mentioned_in_followed_topic",
+                    "trigger": NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+                },
+            )
+
+        # Reset
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+        )
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", True, acting_user=None
+        )
+
+        # Topic Wildcard mention should soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
                 },
             )
 
         # Stream Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
-            # Soft reactivate the user by sending a personal message
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
                 self.user_profile.id,
-                {"message_id": stream_mentioned_message_id, "trigger": "stream_wildcard_mentioned"},
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.STREAM_WILDCARD_MENTION,
+                },
             )
 
         # Group mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
-            # Soft reactivate the user by sending a personal message
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
                 self.user_profile.id,
                 {
                     "message_id": stream_mentioned_message_id,
-                    "trigger": "mentioned",
+                    "trigger": NotificationTriggers.MENTION,
                     "mentioned_user_group_id": large_user_group.id,
                 },
             )
@@ -1730,7 +1789,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.PRIVATE_MESSAGE,
         }
         handle_push_notification(user_profile.id, missed_message)
         mock_push_notifications.assert_called_once()
@@ -2070,6 +2129,41 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    def test_get_message_payload_apns_topic_wildcard_mention_in_followed_topic(self) -> None:
+        user_profile = self.example_user("othello")
+        stream = Stream.objects.filter(name="Verona").get()
+        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
+        payload = get_message_payload_apns(
+            user_profile,
+            message,
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+        )
+        expected = {
+            "alert": {
+                "title": "#Verona > Test topic",
+                "subtitle": "TODO - 2",
+                "body": message.content,
+            },
+            "sound": "default",
+            "badge": 0,
+            "custom": {
+                "zulip": {
+                    "message_ids": [message.id],
+                    "recipient_type": "stream",
+                    "sender_email": self.sender.email,
+                    "sender_id": self.sender.id,
+                    "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
+                    "topic": message.topic_name(),
+                    "server": settings.EXTERNAL_HOST,
+                    "realm_id": self.sender.realm.id,
+                    "realm_uri": self.sender.realm.uri,
+                    "user_id": user_profile.id,
+                },
+            },
+        }
+        self.assertDictEqual(payload, expected)
+
     def test_get_message_payload_apns_stream_wildcard_mention_in_followed_topic(self) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
@@ -2081,6 +2175,39 @@ class TestGetAPNsPayload(PushNotificationTest):
             "alert": {
                 "title": "#Verona > Test topic",
                 "subtitle": "TODO",
+                "body": message.content,
+            },
+            "sound": "default",
+            "badge": 0,
+            "custom": {
+                "zulip": {
+                    "message_ids": [message.id],
+                    "recipient_type": "stream",
+                    "sender_email": self.sender.email,
+                    "sender_id": self.sender.id,
+                    "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
+                    "topic": message.topic_name(),
+                    "server": settings.EXTERNAL_HOST,
+                    "realm_id": self.sender.realm.id,
+                    "realm_uri": self.sender.realm.uri,
+                    "user_id": user_profile.id,
+                },
+            },
+        }
+        self.assertDictEqual(payload, expected)
+
+    def test_get_message_payload_apns_topic_wildcard_mention(self) -> None:
+        user_profile = self.example_user("othello")
+        stream = Stream.objects.filter(name="Verona").get()
+        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.TOPIC_WILDCARD_MENTION
+        )
+        expected = {
+            "alert": {
+                "title": "#Verona > Test topic",
+                "subtitle": "King Hamlet mentioned all topic participants:",
                 "body": message.content,
             },
             "sound": "default",
@@ -2230,27 +2357,39 @@ class TestGetGCMPayload(PushNotificationTest):
 
     def test_get_message_payload_gcm_personal_mention(self) -> None:
         self._test_get_message_payload_gcm_mentions(
-            "mentioned", "King Hamlet mentioned you in #Verona"
+            NotificationTriggers.MENTION, "King Hamlet mentioned you in #Verona"
         )
 
     def test_get_message_payload_gcm_user_group_mention(self) -> None:
         # Note that the @mobile_team user group doesn't actually
         # exist; this test is just verifying the formatting logic.
         self._test_get_message_payload_gcm_mentions(
-            "mentioned",
+            NotificationTriggers.MENTION,
             "King Hamlet mentioned @mobile_team in #Verona",
             mentioned_user_group_id=3,
             mentioned_user_group_name="mobile_team",
         )
 
+    def test_get_message_payload_gcm_topic_wildcard_mention_in_followed_topic(self) -> None:
+        self._test_get_message_payload_gcm_mentions(
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC, "TODO - 2"
+        )
+
     def test_get_message_payload_gcm_stream_wildcard_mention_in_followed_topic(self) -> None:
         self._test_get_message_payload_gcm_mentions(
-            "stream_wildcard_mentioned_in_followed_topic", "TODO"
+            NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC, "TODO"
+        )
+
+    def test_get_message_payload_gcm_topic_wildcard_mention(self) -> None:
+        self._test_get_message_payload_gcm_mentions(
+            NotificationTriggers.TOPIC_WILDCARD_MENTION,
+            "King Hamlet mentioned all topic participants in #Verona > Test topic",
         )
 
     def test_get_message_payload_gcm_stream_wildcard_mention(self) -> None:
         self._test_get_message_payload_gcm_mentions(
-            "stream_wildcard_mentioned", "King Hamlet mentioned everyone in #Verona"
+            NotificationTriggers.STREAM_WILDCARD_MENTION,
+            "King Hamlet mentioned everyone in #Verona",
         )
 
     def test_get_message_payload_gcm_private_message(self) -> None:

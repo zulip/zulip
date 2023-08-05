@@ -19,7 +19,7 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid email '{}'").format(email))
+            raise JsonableError(_("Invalid email '{email}'").format(email=email))
         user_profiles.append(user_profile)
     return user_profiles
 
@@ -30,7 +30,7 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
         try:
             user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user ID {}").format(user_id))
+            raise JsonableError(_("Invalid user ID {user_id}").format(user_id=user_id))
         user_profiles.append(user_profile)
     return user_profiles
 
@@ -118,9 +118,9 @@ class Addressee:
                 # This is a hack to deal with the fact that we still support
                 # default streams (and the None will be converted later in the
                 # call path).
-                if sender.default_sending_stream:
+                if sender.default_sending_stream_id:
                     # Use the user's default stream
-                    stream_name_or_id = sender.default_sending_stream.id
+                    stream_name_or_id = sender.default_sending_stream_id
                 else:
                     raise JsonableError(_("Missing stream"))
 

@@ -9,15 +9,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.lib.validator import (
-    check_url,
-    to_wild_value,
-)
+from zerver.lib.validator import check_url, to_wild_value
 
 
 class SentryTunnelSession(OutgoingSession):
     def __init__(self) -> None:
-        super().__init__(role="sentry_tunnel", timeout=5)
+        super().__init__(role="sentry_tunnel", timeout=1)
 
 
 @csrf_exempt

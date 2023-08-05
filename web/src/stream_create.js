@@ -259,7 +259,7 @@ function create_stream() {
         stream_settings_ui.new_stream_can_remove_subscribers_group_widget.value(),
         10,
     );
-    data.can_remove_subscribers_group_id = can_remove_subscribers_group_id;
+    data.can_remove_subscribers_group = can_remove_subscribers_group_id;
 
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating stream..."}),
@@ -280,8 +280,7 @@ function create_stream() {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr) {
-            const msg = JSON.parse(xhr.responseText).msg;
-            if (msg.includes("access")) {
+            if (xhr.responseJSON?.msg?.includes("access")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
                 //

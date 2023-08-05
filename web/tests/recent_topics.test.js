@@ -43,7 +43,7 @@ let expected_data_to_replace_in_list_widget;
 
 const ListWidget = mock_esm("../src/list_widget", {
     modifier: noop,
-
+    generic_sort_functions: noop,
     create(_container, mapped_topic_values, opts) {
         const formatted_topics = [];
         ListWidget.modifier = opts.modifier;
@@ -155,7 +155,7 @@ mock_esm("../src/sub_store", {
         };
     },
 });
-mock_esm("../src/top_left_corner", {
+mock_esm("../src/left_sidebar_navigation_area", {
     narrow_to_recent_topics: noop,
 });
 mock_esm("../src/unread", {
@@ -517,7 +517,7 @@ test("test_filter_pm", ({mock_template}) => {
         assert.deepEqual(data, expected);
     });
 
-    mock_template("user_with_status_icon", false, (data) => {
+    mock_template("user_with_status_icon.hbs", false, (data) => {
         assert.deepEqual(data, expected_user_with_icon[i]);
         i += 1;
     });

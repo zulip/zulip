@@ -9,7 +9,7 @@
     {{/if}}
     <div class="unread_marker message_unread_marker"><div class="unread-marker-fill"></div></div>
     <div class="messagebox">
-        <div class="messagebox-content">
+        <div class="messagebox-content {{#if status_message}}is-me-message{{/if}}">
             {{> message_body}}
         </div>
     </div>

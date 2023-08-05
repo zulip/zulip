@@ -5,14 +5,14 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import type {User, UserGroupUpdateEvent} from "./types";
 
-type UserGroup = {
+export type UserGroup = {
     description: string;
     id: number;
     name: string;
     members: Set<number>;
     is_system_group: boolean;
     direct_subgroup_ids: Set<number>;
-    can_mention_group_id: number;
+    can_mention_group: number;
 };
 
 // The members field is a number array which we convert
@@ -21,7 +21,7 @@ type UserGroupRaw = Omit<UserGroup, "members"> & {members: number[]};
 
 type UserGroupForDropdownListWidget = {
     name: string;
-    value: string;
+    unique_id: number;
 };
 
 let user_group_name_dict: FoldDict<UserGroup>;
@@ -46,7 +46,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
-        can_mention_group_id: user_group_raw.can_mention_group_id,
+        can_mention_group: user_group_raw.can_mention_group,
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -96,7 +96,7 @@ export function get_user_groups_allowed_to_mention(): UserGroup[] {
 
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
-        const can_mention_group_id = group.can_mention_group_id;
+        const can_mention_group_id = group.can_mention_group;
         return (
             page_params.user_id !== undefined &&
             is_user_in_group(can_mention_group_id, page_params.user_id)
@@ -236,15 +236,15 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 
     const system_user_groups = settings_config.system_user_groups_list
         .filter((group) => {
-            if (!allow_internet_group && group.name === "@role:internet") {
+            if (!allow_internet_group && group.name === "role:internet") {
                 return false;
             }
 
-            if (!allow_owners_group && group.name === "@role:owners") {
+            if (!allow_owners_group && group.name === "role:owners") {
                 return false;
             }
 
-            if (!allow_nobody_group && group.name === "@role:nobody") {
+            if (!allow_nobody_group && group.name === "role:nobody") {
                 return false;
             }
 
@@ -257,7 +257,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             }
             return {
                 name: group.display_name,
-                value: user_group.id.toString(),
+                unique_id: user_group.id,
             };
         });
 
@@ -267,7 +267,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 
     const user_groups_excluding_system_groups = get_realm_user_groups().map((group) => ({
         name: group.name,
-        value: group.id.toString(),
+        unique_id: group.id,
     }));
 
     return [...system_user_groups, ...user_groups_excluding_system_groups];

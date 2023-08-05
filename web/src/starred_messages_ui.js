@@ -3,13 +3,13 @@ import render_confirm_unstar_all_messages_in_topic from "../templates/confirm_di
 
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_flags from "./message_flags";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as popover_menus from "./popover_menus";
 import * as starred_messages from "./starred_messages";
 import * as sub_store from "./sub_store";
-import * as top_left_corner from "./top_left_corner";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
@@ -65,7 +65,7 @@ export function rerender_ui() {
 
     popover_menus.get_topic_menu_popover()?.hide();
     popover_menus.get_starred_messages_popover()?.hide();
-    top_left_corner.update_starred_count(count);
+    left_sidebar_navigation_area.update_starred_count(count);
 }
 
 export function confirm_unstar_all_messages() {

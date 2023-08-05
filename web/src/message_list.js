@@ -382,7 +382,11 @@ export class MessageList {
             return;
         }
         $row.find(".message_edit_form").append(edit_obj.$form);
-        $row.find(".message_content, .status-message, .message_controls").hide();
+        // Hide the original message with visibility: hidden,
+        // so its baseline is still detectable on other columns
+        // in the grid for a consistent layout in the edit state
+        $row.find(".message_content").css("visibility", "hidden");
+        $row.find(".status-message, .message_controls").hide();
         $row.find(".sender-status").toggleClass("sender-status-edit");
         $row.find(".messagebox-content").addClass("content_edit_mode");
         $row.find(".message_edit").css("display", "block");
@@ -390,7 +394,8 @@ export class MessageList {
     }
 
     hide_edit_message($row) {
-        $row.find(".message_content, .status-message, .message_controls").show();
+        $row.find(".message_content").css("visibility", "visible");
+        $row.find(".status-message, .message_controls").show();
         $row.find(".sender-status").toggleClass("sender-status-edit");
         $row.find(".message_edit_form").empty();
         $row.find(".messagebox-content").removeClass("content_edit_mode");
@@ -405,6 +410,10 @@ export class MessageList {
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
         $recipient_row.find(".always_visible_topic_edit").hide();
+        $recipient_row.find(".on_hover_topic_resolve").hide();
+        $recipient_row.find(".on_hover_topic_unresolve").hide();
+        $recipient_row.find(".on_hover_topic_mute").hide();
+        $recipient_row.find(".on_hover_topic_unmute").hide();
     }
 
     hide_edit_topic_on_recipient_row($recipient_row) {
@@ -414,6 +423,10 @@ export class MessageList {
         $recipient_row.find(".topic_edit_form").empty();
         $recipient_row.find(".topic_edit").hide();
         $recipient_row.find(".always_visible_topic_edit").show();
+        $recipient_row.find(".on_hover_topic_resolve").show();
+        $recipient_row.find(".on_hover_topic_unresolve").show();
+        $recipient_row.find(".on_hover_topic_mute").show();
+        $recipient_row.find(".on_hover_topic_unmute").show();
     }
 
     reselect_selected_id() {

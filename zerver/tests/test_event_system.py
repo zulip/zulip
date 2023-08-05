@@ -585,9 +585,9 @@ class GetEventsTest(ZulipTestCase):
             self.assert_json_success(result)
             self.assert_length(events, 1)
 
-            pronouns_field = [
+            [pronouns_field] = (
                 field for field in events[0]["fields"] if field["id"] == profile_field.id
-            ][0]
+            )
             if pronouns_field_type_supported:
                 expected_type = CustomProfileField.PRONOUNS
             else:
@@ -794,9 +794,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("custom_profile_fields", result)
         custom_profile_fields = result["custom_profile_fields"]
-        pronouns_field = [field for field in custom_profile_fields if field["name"] == "Pronouns"][
-            0
-        ]
+        [pronouns_field] = (field for field in custom_profile_fields if field["name"] == "Pronouns")
         self.assertEqual(pronouns_field["type"], CustomProfileField.SHORT_TEXT)
 
         result = fetch_initial_state_data(
@@ -805,9 +803,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("custom_profile_fields", result)
         custom_profile_fields = result["custom_profile_fields"]
-        pronouns_field = [field for field in custom_profile_fields if field["name"] == "Pronouns"][
-            0
-        ]
+        [pronouns_field] = (field for field in custom_profile_fields if field["name"] == "Pronouns")
         self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
 
 

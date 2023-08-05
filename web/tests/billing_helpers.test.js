@@ -160,7 +160,7 @@ run_test("create_ajax_request", ({override}) => {
         assert.equal(state.free_trial_alert_message_show, 0);
         assert.ok(success_callback_called);
 
-        error({responseText: '{"msg": "response_message"}'});
+        error({responseJSON: {msg: "response_message"}});
 
         assert.equal(state.form_loading_hide, 2);
         assert.equal(state.form_error_show, 1);

@@ -66,10 +66,12 @@ function make_list_widget({$parent_container, name, user_ids}) {
 
     return ListWidget.create($list_container, users, {
         name,
+        get_item: ListWidget.default_get_item,
         $parent_container,
         sort_fields: {
             email: settings_users.sort_email,
             id: settings_users.sort_user_id,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         modifier(item) {
             return format_member_list_elem(item);
@@ -221,9 +223,12 @@ function add_new_members({pill_user_ids}) {
     }
 
     function invite_failure(xhr) {
-        const error = JSON.parse(xhr.responseText);
+        let message = "Failed to subscribe user!";
+        if (xhr.responseJSON?.msg) {
+            message = xhr.responseJSON.msg;
+        }
         show_user_group_membership_request_result({
-            message: error.msg,
+            message,
             add_class: "text-error",
             remove_class: "text-success",
         });

@@ -63,8 +63,7 @@ function composing_to_current_private_message_narrow() {
 export function update_narrow_to_recipient_visibility() {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
-        const stream_name = compose_state.stream_name();
-        const stream_exists = Boolean(stream_data.get_stream_id(stream_name));
+        const stream_exists = Boolean(compose_state.stream_id());
 
         if (
             stream_exists &&
@@ -166,9 +165,11 @@ function switch_message_type(message_type) {
 function update_recipient_label(stream_name) {
     const stream = stream_data.get_sub_by_name(stream_name);
     if (stream === undefined) {
-        $("#compose_select_recipient_name").text($t({defaultMessage: "Select a stream"}));
+        $("#compose_select_recipient_widget .dropdown_widget_value").text(
+            $t({defaultMessage: "Select a stream"}),
+        );
     } else {
-        $("#compose_select_recipient_name").html(
+        $("#compose_select_recipient_widget .dropdown_widget_value").html(
             render_inline_decorated_stream_name({stream, show_colored_icon: true}),
         );
     }
@@ -193,7 +194,7 @@ export function update_compose_for_message_type(message_type, opts) {
         // the "DM" button display string so we wouldn't have to manually change
         // it here.
         const direct_message_label = $t({defaultMessage: "DM"});
-        $("#compose_select_recipient_name").html(
+        $("#compose_select_recipient_widget .dropdown_widget_value").html(
             `<i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> ${direct_message_label}`,
         );
     }
@@ -217,7 +218,7 @@ export function on_compose_select_recipient_update() {
     if (curr_message_type === "stream") {
         // Update stream name in the recipient box.
         const $stream_header_colorblock = $(
-            "#compose_recipient_selection_dropdown .stream_header_colorblock",
+            "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
         );
         const stream_name = compose_state.stream_name();
         update_recipient_label(stream_name);
@@ -246,22 +247,7 @@ function item_click_callback(event, dropdown) {
 }
 
 function get_options_for_recipient_widget() {
-    const options = stream_data
-        .subscribed_subs()
-        .map((stream) => ({
-            name: stream.name,
-            unique_id: stream.stream_id,
-            stream,
-        }))
-        .sort((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
+    const options = stream_data.get_options_for_dropdown_widget();
 
     const direct_messages_option = {
         is_direct_message: true,
@@ -286,7 +272,7 @@ function compose_recipient_dropdown_on_show(dropdown) {
     const window_height = window.innerHeight;
     const search_box_and_padding_height = 50;
     // pixels above compose box.
-    const recipient_input_top = $("#compose_recipient_selection_dropdown").get_offset_to_window()
+    const recipient_input_top = $("#compose_select_recipient_widget_wrapper").get_offset_to_window()
         .top;
     const top_space = recipient_input_top - top_offset - search_box_and_padding_height;
     // pixels below compose starting from top of compose box.
@@ -312,7 +298,7 @@ export function open_compose_recipient_dropdown() {
 }
 
 function focus_compose_recipient() {
-    $("#compose_recipient_selection_dropdown").trigger("focus");
+    $("#compose_select_recipient_widget_wrapper").trigger("focus");
 }
 
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
@@ -332,28 +318,17 @@ function on_hidden_callback() {
 }
 
 export function initialize() {
-    dropdown_widget.setup(
-        {
-            target: "#compose_select_recipient_widget",
-        },
-        get_options_for_recipient_widget,
+    new dropdown_widget.DropdownWidget({
+        widget_name: "compose_select_recipient",
+        get_options: get_options_for_recipient_widget,
         item_click_callback,
-        {
-            on_show_callback: compose_recipient_dropdown_on_show,
-            on_exit_with_escape_callback: focus_compose_recipient,
-            // We want to focus on topic box if dropdown was closed via selecting an item.
-            focus_target_on_hidden: false,
-            on_hidden_callback,
-        },
-    );
-
-    $("#compose_recipient_selection_dropdown").on("keydown", (e) => {
-        if (e.key === "Enter") {
-            open_compose_recipient_dropdown();
-            e.stopPropagation();
-            e.preventDefault();
-        }
-    });
+        $events_container: $("body"),
+        on_show_callback: compose_recipient_dropdown_on_show,
+        on_exit_with_escape_callback: focus_compose_recipient,
+        // We want to focus on topic box if dropdown was closed via selecting an item.
+        focus_target_on_hidden: false,
+        on_hidden_callback,
+    }).setup();
 
     // `keyup` isn't relevant for streams since it registers as a change only
     // when an item in the dropdown is selected.

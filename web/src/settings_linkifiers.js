@@ -73,8 +73,7 @@ function open_linkifier_edit_form(linkifier_id) {
             },
             error_continuation(xhr) {
                 $change_linkifier_button.prop("disabled", false);
-                const response_text = JSON.parse(xhr.responseText);
-                if (response_text.errors !== undefined) {
+                if (xhr.responseJSON?.errors) {
                     handle_linkifier_api_error(
                         xhr,
                         $pattern_status,
@@ -113,17 +112,17 @@ function handle_linkifier_api_error(xhr, pattern_status, template_status, linkif
     // The endpoint uses the Django ValidationError system for error
     // handling, which returns somewhat complicated error
     // dictionaries. This logic parses them.
-    const errors = JSON.parse(xhr.responseText).errors;
+    const errors = xhr.responseJSON.errors;
     if (errors.pattern !== undefined) {
-        xhr.responseText = JSON.stringify({msg: errors.pattern});
+        xhr.responseJSON.msg = errors.pattern;
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
     }
     if (errors.url_template !== undefined) {
-        xhr.responseText = JSON.stringify({msg: errors.url_template});
+        xhr.responseJSON.msg = errors.url_template;
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, template_status);
     }
     if (errors.__all__ !== undefined) {
-        xhr.responseText = JSON.stringify({msg: errors.__all__});
+        xhr.responseJSON.msg = errors.__all__;
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
     }
 }
@@ -136,6 +135,7 @@ export function populate_linkifiers(linkifiers_data) {
     const $linkifiers_table = $("#admin_linkifiers_table").expectOne();
     ListWidget.create($linkifiers_table, linkifiers_data, {
         name: "linkifiers_list",
+        get_item: ListWidget.default_get_item,
         modifier(linkifier) {
             return render_admin_linkifier_list({
                 linkifier: {
@@ -159,7 +159,7 @@ export function populate_linkifiers(linkifiers_data) {
             },
         },
         $parent_container: $("#linkifier-settings").expectOne(),
-        init_sort: [sort_pattern],
+        init_sort: sort_pattern,
         sort_fields: {
             pattern: sort_pattern,
             url: sort_url,
@@ -238,12 +238,14 @@ export function build_page() {
                 },
                 error(xhr) {
                     $add_linkifier_button.prop("disabled", false);
-                    handle_linkifier_api_error(
-                        xhr,
-                        $pattern_status,
-                        $template_status,
-                        $linkifier_status,
-                    );
+                    if (xhr.responseJSON?.errors) {
+                        handle_linkifier_api_error(
+                            xhr,
+                            $pattern_status,
+                            $template_status,
+                            $linkifier_status,
+                        );
+                    }
                 },
             });
         });

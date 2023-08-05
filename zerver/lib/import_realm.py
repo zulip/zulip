@@ -194,7 +194,7 @@ def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Real
         name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
     )
     for stream in data[table]:
-        stream["can_remove_subscribers_group_id"] = admins_group.id
+        stream["can_remove_subscribers_group"] = admins_group
 
 
 def create_subscription_events(data: TableData, realm_id: int) -> None:
@@ -938,6 +938,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     logging.info("Importing realm data from %s", realm_data_filename)
     with open(realm_data_filename, "rb") as f:
         data = orjson.loads(f.read())
+
+    # Merge in zerver_userprofile_mirrordummy
+    data["zerver_userprofile"] = data["zerver_userprofile"] + data["zerver_userprofile_mirrordummy"]
+    del data["zerver_userprofile_mirrordummy"]
+    data["zerver_userprofile"].sort(key=lambda r: r["id"])
+
     remove_denormalized_recipient_column_from_data(data)
 
     sort_by_date = data.get("sort_by_date", False)
@@ -986,6 +992,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         fix_datetime_fields(data, "zerver_stream")
         re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
         if role_system_groups_dict is not None:
+            # Because the system user groups are missing, we manually set up
+            # the defaults for can_remove_subscribers_group for all the
+            # streams.
             fix_streams_can_remove_subscribers_group_column(data, realm)
         else:
             re_map_foreign_keys(
@@ -1009,11 +1018,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
         new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
         update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
-
-    # Merge in zerver_userprofile_mirrordummy
-    data["zerver_userprofile"] = data["zerver_userprofile"] + data["zerver_userprofile_mirrordummy"]
-    del data["zerver_userprofile_mirrordummy"]
-    data["zerver_userprofile"].sort(key=lambda r: r["id"])
 
     # To remap foreign key for UserProfile.last_active_message_id
     update_message_foreign_keys(import_dir=import_dir, sort_by_date=sort_by_date)
@@ -1126,6 +1130,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             data, "zerver_realmauditlog", "acting_user", related_table="user_profile"
         )
         re_map_foreign_keys(data, "zerver_realmauditlog", "modified_stream", related_table="stream")
+        re_map_foreign_keys(
+            data, "zerver_realmauditlog", "modified_user_group", related_table="usergroup"
+        )
         update_model_ids(RealmAuditLog, data, related_table="realmauditlog")
         bulk_import_model(data, RealmAuditLog)
     else:
@@ -1671,3 +1678,15 @@ def add_users_to_system_user_groups(
                 UserGroupMembership(user_profile=user_profile, user_group=full_members_system_group)
             )
     UserGroupMembership.objects.bulk_create(usergroup_memberships)
+    now = timezone_now()
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=realm,
+            modified_user=membership.user_profile,
+            modified_user_group=membership.user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=now,
+            acting_user=None,
+        )
+        for membership in usergroup_memberships
+    )

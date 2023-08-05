@@ -130,7 +130,11 @@ def check_settings_values(
         and notification_sound not in get_available_notification_sounds()
         and notification_sound != "none"
     ):
-        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
+        raise JsonableError(
+            _("Invalid notification sound '{notification_sound}'").format(
+                notification_sound=notification_sound
+            )
+        )
 
     if email_notifications_batching_period_seconds is not None and (
         email_notifications_batching_period_seconds <= 0
@@ -138,8 +142,8 @@ def check_settings_values(
     ):
         # We set a limit of one week for the batching period
         raise JsonableError(
-            _("Invalid email batching period: {} seconds").format(
-                email_notifications_batching_period_seconds
+            _("Invalid email batching period: {seconds} seconds").format(
+                seconds=email_notifications_batching_period_seconds
             )
         )
 
@@ -275,8 +279,8 @@ def json_change_settings(
             assert e.secs_to_freedom is not None
             secs_to_freedom = int(e.secs_to_freedom)
             raise JsonableError(
-                _("You're making too many attempts! Try again in {} seconds.").format(
-                    secs_to_freedom
+                _("You're making too many attempts! Try again in {seconds} seconds.").format(
+                    seconds=secs_to_freedom
                 ),
             )
 
@@ -359,13 +363,13 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
-    user_file = list(request.FILES.values())[0]
+    [user_file] = request.FILES.values()
     assert isinstance(user_file, UploadedFile)
     assert user_file.size is not None
     if (settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024) < user_file.size:
         raise JsonableError(
-            _("Uploaded file is larger than the allowed limit of {} MiB").format(
-                settings.MAX_AVATAR_FILE_SIZE_MIB,
+            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
             )
         )
     upload_avatar_image(user_file, user_profile, user_profile)

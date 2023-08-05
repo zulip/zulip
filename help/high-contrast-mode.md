@@ -5,9 +5,9 @@ buttons, links and unread counts) are intentionally light. **High contrast mode*
 increases the contrast of these elements to meet the AA level of the
 W3C's Web Content Accessibility Guidelines.
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
-2. Under **Display settings**, select **High contrast mode**.
+2. Under **Preferences**, select **High contrast mode**.
 
 ## Related articles
 

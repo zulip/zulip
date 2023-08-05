@@ -55,10 +55,8 @@ def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
     new_config_size = old_config_size + (new_entry_size - old_entry_size)
     if new_config_size > config_size_limit:
         raise ConfigError(
-            "Cannot store configuration. Request would require {} characters. "
-            "The current configuration size limit is {} characters.".format(
-                new_config_size, config_size_limit
-            )
+            f"Cannot store configuration. Request would require {new_config_size} characters. "
+            f"The current configuration size limit is {config_size_limit} characters."
         )
     obj, created = BotConfigData.objects.get_or_create(
         bot_profile=bot_profile, key=key, defaults={"value": value}

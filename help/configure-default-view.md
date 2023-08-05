@@ -29,7 +29,7 @@ organization settings:
 
 {start_tabs}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Advanced**, click on the **Default view** dropdown
    and select a view.
@@ -57,7 +57,7 @@ shortcut.
 
 {start_tabs}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Advanced**, toggle **Escape key navigates to
    default view**, as desired.

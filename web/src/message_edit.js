@@ -32,7 +32,6 @@ import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
-import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -42,6 +41,7 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
+const upload_objects_by_row = new Map();
 
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
@@ -409,31 +409,6 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
     });
 }
 
-export function get_available_streams_for_moving_messages(current_stream_id) {
-    return stream_data
-        .subscribed_subs()
-        .filter((stream) => {
-            if (stream.stream_id === current_stream_id) {
-                return true;
-            }
-            return stream_data.can_post_messages_in_stream(stream);
-        })
-        .map((stream) => ({
-            name: stream.name,
-            value: stream.stream_id.toString(),
-            stream,
-        }))
-        .sort((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
-}
-
 function edit_message($row, raw_content) {
     $row.find(".message_reactions").hide();
     condense.hide_message_expander($row);
@@ -578,11 +553,12 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
     if (edit_box_open_callback) {
         edit_box_open_callback();
     }
-
-    upload.setup_upload({
+    const row_id = rows.id($row);
+    const upload_object = upload.setup_upload({
         mode: "edit",
-        row: rows.id($row),
+        row: row_id,
     });
+    upload_objects_by_row.set(row_id, upload_object);
 }
 
 export function start($row, edit_box_open_callback) {
@@ -717,14 +693,15 @@ export function toggle_resolve_topic(message_id, old_topic_name, report_errors_i
         url: "/json/messages/" + message_id,
         data: request,
         error(xhr) {
-            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
-                handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
-                return;
-            }
+            if (xhr.responseJSON) {
+                if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+                    handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
+                    return;
+                }
 
-            if (report_errors_in_global_banner) {
-                const error_msg = JSON.parse(xhr.responseText).msg;
-                ui_report.generic_embed_error(error_msg, 3500);
+                if (report_errors_in_global_banner) {
+                    ui_report.generic_embed_error(xhr.responseJSON.msg, 3500);
+                }
             }
         },
     });
@@ -762,8 +739,21 @@ export function end_inline_topic_edit($row) {
     message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
+function remove_uploads_from_row(row_id) {
+    const uploads_for_row = upload_objects_by_row.get(row_id);
+    // We need to cancel all uploads, reset their progress,
+    // and clear the files upon ending the edit.
+    uploads_for_row?.cancelAll();
+    // Since we removed all the uploads from the row, we should
+    // now remove the corresponding upload object from the store.
+    upload_objects_by_row.delete(row_id);
+}
+
 export function end_message_row_edit($row) {
-    const message = message_lists.current.get(rows.id($row));
+    const row_id = rows.id($row);
+    remove_uploads_from_row(row_id);
+
+    const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         const scroll_by = currently_editing_messages.get(message.id).scrolled_by;
         const original_scrollTop = message_viewport.scrollTop();
@@ -854,7 +844,7 @@ export function save_inline_topic_edit($row) {
         },
         error(xhr) {
             const $spinner = $row.find(".topic_edit_spinner");
-            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+            if (xhr.responseJSON?.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                 const allowed_message_id = xhr.responseJSON.first_message_id_allowed_to_move;
                 const send_notification_to_old_thread = false;
                 const send_notification_to_new_thread = false;
@@ -1235,7 +1225,7 @@ export function move_topic_containing_message_to_stream(
         },
         error(xhr) {
             reset_modal_ui();
-            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+            if (xhr.responseJSON?.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                 const allowed_message_id = xhr.responseJSON.first_message_id_allowed_to_move;
                 function handle_confirm() {
                     move_topic_containing_message_to_stream(

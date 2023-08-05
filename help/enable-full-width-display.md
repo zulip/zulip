@@ -11,7 +11,7 @@ You can instead configure Zulip to use the full width of wide screens.
 
 {start_tabs}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Advanced**, select **Use full width on wide screens**.
 

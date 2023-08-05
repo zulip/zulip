@@ -6,9 +6,10 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import lxml.html
 from bs4 import BeautifulSoup
@@ -450,19 +451,29 @@ def do_send_missedmessage_events_reply_in_zulip(
     unique_triggers = set(triggers)
 
     personal_mentioned = any(
-        message["trigger"] == "mentioned" and message["mentioned_user_group_id"] is None
+        message["trigger"] == NotificationTriggers.MENTION
+        and message["mentioned_user_group_id"] is None
         for message in missed_messages
     )
 
+    mention = (
+        NotificationTriggers.MENTION in unique_triggers
+        or NotificationTriggers.TOPIC_WILDCARD_MENTION in unique_triggers
+        or NotificationTriggers.STREAM_WILDCARD_MENTION in unique_triggers
+        or NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC in unique_triggers
+        or NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC in unique_triggers
+    )
+
     context.update(
-        mention="mentioned" in unique_triggers
-        or "stream_wildcard_mentioned" in unique_triggers
-        or "stream_wildcard_mentioned_in_followed_topic" in unique_triggers,
+        mention=mention,
         personal_mentioned=personal_mentioned,
-        stream_wildcard_mentioned="stream_wildcard_mentioned" in unique_triggers,
-        stream_email_notify="stream_email_notify" in unique_triggers,
-        followed_topic_email_notify="followed_topic_email_notify" in unique_triggers,
-        stream_wildcard_mentioned_in_followed_topic="stream_wildcard_mentioned_in_followed_topic"
+        topic_wildcard_mentioned=NotificationTriggers.TOPIC_WILDCARD_MENTION in unique_triggers,
+        stream_wildcard_mentioned=NotificationTriggers.STREAM_WILDCARD_MENTION in unique_triggers,
+        stream_email_notify=NotificationTriggers.STREAM_EMAIL in unique_triggers,
+        followed_topic_email_notify=NotificationTriggers.FOLLOWED_TOPIC_EMAIL in unique_triggers,
+        topic_wildcard_mentioned_in_followed_topic=NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+        in unique_triggers,
+        stream_wildcard_mentioned_in_followed_topic=NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
         in unique_triggers,
         mentioned_user_group_name=mentioned_user_group_name,
     )
@@ -525,10 +536,14 @@ def do_send_missedmessage_events_reply_in_zulip(
                 {
                     m["message"].sender
                     for m in missed_messages
-                    if m["trigger"] == NotificationTriggers.MENTION
-                    or m["trigger"] == NotificationTriggers.STREAM_WILDCARD_MENTION
-                    or m["trigger"]
-                    == NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+                    if m["trigger"]
+                    in [
+                        NotificationTriggers.MENTION,
+                        NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                        NotificationTriggers.STREAM_WILDCARD_MENTION,
+                        NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+                        NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+                    ]
                 }
             )
         message = missed_messages[0]["message"]
@@ -604,17 +619,15 @@ def do_send_missedmessage_events_reply_in_zulip(
     user_profile.save(update_fields=["last_reminder"])
 
 
-def handle_missedmessage_emails(
-    user_profile_id: int, missed_email_events: Iterable[Dict[str, Any]]
-) -> None:
-    message_ids = {
-        event.get("message_id"): {
-            "trigger": event.get("trigger"),
-            "mentioned_user_group_id": event.get("mentioned_user_group_id"),
-        }
-        for event in missed_email_events
-    }
+@dataclass
+class MissedMessageData:
+    trigger: str
+    mentioned_user_group_id: Optional[int] = None
 
+
+def handle_missedmessage_emails(
+    user_profile_id: int, message_ids: Dict[int, MissedMessageData]
+) -> None:
     user_profile = get_user_profile_by_id(user_profile_id)
     if user_profile.is_bot:  # nocoverage
         # We don't expect to reach here for bot users. However, this code exists
@@ -679,8 +692,8 @@ def handle_missedmessage_emails(
             message_info = message_ids.get(m.id)
             unique_messages[m.id] = dict(
                 message=m,
-                trigger=message_info["trigger"] if message_info else None,
-                mentioned_user_group_id=message_info.get("mentioned_user_group_id")
+                trigger=message_info.trigger if message_info else None,
+                mentioned_user_group_id=message_info.mentioned_user_group_id
                 if message_info is not None
                 else None,
             )
@@ -756,38 +769,37 @@ def get_org_type_zulip_guide(realm: Realm) -> Tuple[Any, str]:
     return (None, "")
 
 
-def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> None:
-    from zerver.context_processors import common_context
-
+def welcome_sender_information() -> Tuple[Optional[str], str]:
     if settings.WELCOME_EMAIL_SENDER is not None:
-        # line break to avoid triggering lint rule
         from_name = settings.WELCOME_EMAIL_SENDER["name"]
         from_address = settings.WELCOME_EMAIL_SENDER["email"]
     else:
         from_name = None
         from_address = FromAddress.support_placeholder
 
-    other_account_count = (
-        UserProfile.objects.filter(delivery_email__iexact=user.delivery_email)
-        .exclude(id=user.id)
-        .count()
-    )
-    unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
+    return (from_name, from_address)
+
+
+def send_account_registered_email(user: UserProfile, realm_creation: bool = False) -> None:
+    # Imported here to avoid import cycles.
+    from zerver.context_processors import common_context
+
+    from_name, from_address = welcome_sender_information()
     realm_url = user.realm.uri
 
-    followup_day1_context = common_context(user)
-    followup_day1_context.update(
+    account_registered_context = common_context(user)
+    account_registered_context.update(
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.is_realm_admin,
         is_demo_org=user.realm.demo_organization_scheduled_deletion_date is not None,
     )
 
-    followup_day1_context["getting_organization_started_link"] = (
+    account_registered_context["getting_organization_started_link"] = (
         realm_url + "/help/getting-your-organization-started-with-zulip"
     )
 
-    followup_day1_context["getting_user_started_link"] = (
+    account_registered_context["getting_user_started_link"] = (
         realm_url + "/help/getting-started-with-zulip"
     )
 
@@ -795,13 +807,13 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
     from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap
 
     if email_belongs_to_ldap(user.realm, user.delivery_email):
-        followup_day1_context["ldap"] = True
+        account_registered_context["ldap"] = True
         for backend in get_backends():
             # If the user is doing authentication via LDAP, Note that
             # we exclude ZulipLDAPUserPopulator here, since that
             # isn't used for authentication.
             if isinstance(backend, ZulipLDAPAuthBackend):
-                followup_day1_context["ldap_username"] = backend.django_to_ldap_username(
+                account_registered_context["ldap_username"] = backend.django_to_ldap_username(
                     user.delivery_email
                 )
                 break
@@ -812,8 +824,22 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         to_user_ids=[user.id],
         from_name=from_name,
         from_address=from_address,
-        context=followup_day1_context,
+        context=account_registered_context,
     )
+
+
+def enqueue_welcome_emails(user: UserProfile) -> None:
+    # Imported here to avoid import cycles.
+    from zerver.context_processors import common_context
+
+    from_name, from_address = welcome_sender_information()
+    other_account_count = (
+        UserProfile.objects.filter(delivery_email__iexact=user.delivery_email)
+        .exclude(id=user.id)
+        .count()
+    )
+    unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
+    realm_url = user.realm.uri
 
     # Any emails scheduled below should be added to the logic in get_onboarding_email_schedule
     # to determine how long to delay sending the email based on when the user signed up.

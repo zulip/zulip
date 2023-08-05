@@ -275,7 +275,6 @@ test("is_subscriber_subset", () => {
     blueslip.reset();
 
     // Warn about hypothetical undefined stream_ids.
-    blueslip.expect("error", "You must pass ids as numbers to peer_data");
     blueslip.expect("warn", "We called get_user_set for an untracked stream: undefined");
     peer_data.is_subscriber_subset(undefined, sub_a.stream_id);
     blueslip.reset();

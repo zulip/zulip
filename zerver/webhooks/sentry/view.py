@@ -95,7 +95,7 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
 def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     """Handle either an exception type event or a message type event payload."""
 
-    subject = event["title"]
+    topic = event["title"]
     platform_name = event["platform"]
     syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
     if syntax_highlight_as == "":  # nocoverage
@@ -110,7 +110,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         if ["sample_event", "yes"] not in tags:
             raise UnsupportedWebhookEventTypeError("Raven SDK")
     context = {
-        "title": subject,
+        "title": topic,
         "level": event["level"],
         "web_link": event["web_url"],
         "datetime": event["datetime"].split(".")[0].replace("T", " "),
@@ -157,11 +157,11 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                 )
 
                 body = EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK.format(**context)
-                return (subject, body)
+                return (topic, body)
 
         context.update(filename=filename)  # nocoverage
         body = EXCEPTION_EVENT_TEMPLATE.format(**context)  # nocoverage
-        return (subject, body)  # nocoverage
+        return (topic, body)  # nocoverage
 
     elif "logentry" in event:
         # The event was triggered by a sentry.capture_message() call
@@ -171,14 +171,14 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     else:
         raise UnsupportedWebhookEventTypeError("unknown-event type")
 
-    return (subject, body)
+    return (topic, body)
 
 
 def handle_issue_payload(
     action: str, issue: Dict[str, Any], actor: Dict[str, Any]
 ) -> Tuple[str, str]:
     """Handle either an issue type event."""
-    subject = issue["title"]
+    topic = issue["title"]
     datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
 
     if issue["assignedTo"]:
@@ -191,7 +191,7 @@ def handle_issue_payload(
 
     if action == "created":
         context = {
-            "title": subject,
+            "title": topic,
             "level": issue["level"],
             "datetime": datetime,
             "assignee": assignee,
@@ -200,14 +200,14 @@ def handle_issue_payload(
 
     elif action == "resolved":
         context = {
-            "title": subject,
+            "title": topic,
             "actor": actor["name"],
         }
         body = ISSUE_RESOLVED_MESSAGE_TEMPLATE.format(**context)
 
     elif action == "assigned":
         context = {
-            "title": subject,
+            "title": topic,
             "assignee": assignee,
             "actor": actor["name"],
         }
@@ -215,7 +215,7 @@ def handle_issue_payload(
 
     elif action == "ignored":
         context = {
-            "title": subject,
+            "title": topic,
             "actor": actor["name"],
         }
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
@@ -223,17 +223,17 @@ def handle_issue_payload(
     else:
         raise UnsupportedWebhookEventTypeError("unknown-issue-action type")
 
-    return (subject, body)
+    return (topic, body)
 
 
 def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
-    subject = "{}".format(payload.get("project_name"))
+    topic = "{}".format(payload.get("project_name"))
     body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
         level=payload["level"].upper(),
         url=payload.get("url"),
         message=payload.get("message"),
     )
-    return (subject, body)
+    return (topic, body)
 
 
 def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -274,13 +274,13 @@ def api_sentry_webhook(
     # We currently support two types of payloads: events and issues.
     if data:
         if "event" in data:
-            subject, body = handle_event_payload(data["event"])
+            topic, body = handle_event_payload(data["event"])
         elif "issue" in data:
-            subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
+            topic, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
         else:
             raise UnsupportedWebhookEventTypeError(str(list(data.keys())))
     else:
-        subject, body = handle_deprecated_payload(payload)
+        topic, body = handle_deprecated_payload(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)

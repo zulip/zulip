@@ -18,17 +18,10 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 
 from confirmation import settings as confirmation_settings
-from confirmation.models import (
-    Confirmation,
-    one_click_unsubscribe_link,
-)
+from confirmation.models import Confirmation, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import add_new_user_history
-from zerver.actions.default_streams import (
-    do_add_default_stream,
-    do_create_default_stream_group,
-    get_default_streams_for_realm,
-)
+from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_realm_authentication_methods,
@@ -38,6 +31,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
+from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.initial_password import initial_password
@@ -50,11 +44,7 @@ from zerver.lib.mobile_auth_otp import (
     xor_hex_strings,
 )
 from zerver.lib.name_restrictions import is_disposable_domain
-from zerver.lib.send_email import (
-    EmailNotDeliveredError,
-    FromAddress,
-    send_future_email,
-)
+from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_future_email
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.subdomains import is_root_domain_available
@@ -268,10 +258,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.example_user("hamlet"), streams[0].name, "test"
         )
 
-        # Overwrite ONBOARDING_UNREAD_MESSAGES to 2
-        ONBOARDING_UNREAD_MESSAGES = 2
+        # Overwrite MAX_NUM_ONBOARDING_UNREAD_MESSAGES to 2
+        MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 2
         with patch(
-            "zerver.actions.create_user.ONBOARDING_UNREAD_MESSAGES", ONBOARDING_UNREAD_MESSAGES
+            "zerver.actions.create_user.MAX_NUM_ONBOARDING_UNREAD_MESSAGES",
+            MAX_NUM_ONBOARDING_UNREAD_MESSAGES,
         ):
             add_new_user_history(user_profile, streams)
 
@@ -291,7 +282,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             ).flags.read.is_set
         )
 
-        # Verify that the ONBOARDING_UNREAD_MESSAGES latest messages
+        # Verify that the MAX_NUM_ONBOARDING_UNREAD_MESSAGES latest messages
         # that weren't the race message are marked as unread.
         latest_messages = (
             UserMessage.objects.filter(
@@ -299,7 +290,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
                 message__recipient__type=Recipient.STREAM,
             )
             .exclude(message_id=race_message_id)
-            .order_by("-message_id")[0:ONBOARDING_UNREAD_MESSAGES]
+            .order_by("-message_id")[0:MAX_NUM_ONBOARDING_UNREAD_MESSAGES]
         )
         self.assert_length(latest_messages, 2)
         for msg in latest_messages:
@@ -312,7 +303,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
                 message__recipient__type=Recipient.STREAM,
             )
             .exclude(message_id=race_message_id)
-            .order_by("-message_id")[ONBOARDING_UNREAD_MESSAGES : ONBOARDING_UNREAD_MESSAGES + 1]
+            .order_by("-message_id")[
+                MAX_NUM_ONBOARDING_UNREAD_MESSAGES : MAX_NUM_ONBOARDING_UNREAD_MESSAGES + 1
+            ]
         )
         self.assertGreater(len(older_messages), 0)
         for msg in older_messages:
@@ -339,7 +332,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.assertEqual(
                 repr(message),
                 "<Message: recip /  / "
-                "<UserProfile: {} {!r}>>".format(user_profile.email, user_profile.realm),
+                f"<UserProfile: {user_profile.email} {user_profile.realm!r}>>",
             )
 
             user_message = most_recent_usermessage(user_profile)
@@ -936,7 +929,7 @@ class LoginTest(ZulipTestCase):
         ContentType.objects.clear_cache()
 
         # Ensure the number of queries we make is not O(streams)
-        with self.assert_database_query_count(102), cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(104), cache_tries_captured() as cache_tries:
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -944,7 +937,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assert_length(cache_tries, 20)
+        self.assert_length(cache_tries, 19)
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -1131,9 +1124,9 @@ class EmailUnsubscribeTests(ZulipTestCase):
         click even when logged out to stop receiving them.
         """
         user_profile = self.example_user("hamlet")
-        # Simulate a new user signing up, which enqueues 3 welcome e-mails.
+        # Simulate scheduling welcome e-mails for a new user.
         enqueue_welcome_emails(user_profile)
-        self.assertEqual(3, ScheduledEmail.objects.filter(users=user_profile).count())
+        self.assertEqual(2, ScheduledEmail.objects.filter(users=user_profile).count())
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
@@ -3690,9 +3683,10 @@ class UserSignUpTest(ZulipTestCase):
         stream_name = "Rome"
         realm = get_realm("zulip")
         stream = get_stream(stream_name, realm)
-        default_streams = get_default_streams_for_realm(realm.id)
-        default_streams_name = [stream.name for stream in default_streams]
-        self.assertNotIn(stream_name, default_streams_name)
+        default_stream_names = {
+            stream["name"] for stream in get_default_streams_for_realm_as_dicts(realm.id)
+        }
+        self.assertNotIn(stream_name, default_stream_names)
 
         # Invite user.
         self.ldap_invite_and_signup_as(

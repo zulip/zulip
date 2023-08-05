@@ -105,11 +105,13 @@ def events_register_backend(
         # These parameters must be false for anonymous requests.
         if client_gravatar:
             raise JsonableError(
-                _("Invalid '{}' parameter for anonymous request").format("client_gravatar")
+                _("Invalid '{key}' parameter for anonymous request").format(key="client_gravatar")
             )
         if include_subscribers:
             raise JsonableError(
-                _("Invalid '{}' parameter for anonymous request").format("include_subscribers")
+                _("Invalid '{key}' parameter for anonymous request").format(
+                    key="include_subscribers"
+                )
             )
 
         # Language set by spectator to be passed down to clients as user_settings.

@@ -112,6 +112,7 @@ function make_list_widget({$parent_container, name, user_ids, user_can_remove_su
 
     return ListWidget.create($list_container, users, {
         name,
+        get_item: ListWidget.default_get_item,
         modifier(item) {
             return format_member_list_elem(item, user_can_remove_subscribers);
         },
@@ -128,6 +129,7 @@ function make_list_widget({$parent_container, name, user_ids, user_can_remove_su
         sort_fields: {
             email: settings_users.sort_email,
             id: settings_users.sort_user_id,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container,
     });
@@ -194,9 +196,12 @@ function subscribe_new_users({pill_user_ids}) {
     }
 
     function invite_failure(xhr) {
-        const error = JSON.parse(xhr.responseText);
+        let message = "Failed to subscribe user!";
+        if (xhr.responseJSON?.msg) {
+            message = xhr.responseJSON.msg;
+        }
         show_stream_subscription_request_result({
-            message: error.msg,
+            message,
             add_class: "text-error",
             remove_class: "text-success",
         });

@@ -80,7 +80,7 @@ def validate_display_in_profile_summary_field(
     # The LONG_TEXT field type doesn't make sense visually for profile
     # field summaries. The USER field type will require some further
     # client support.
-    if field_type == CustomProfileField.LONG_TEXT or field_type == CustomProfileField.USER:
+    if field_type in (CustomProfileField.LONG_TEXT, CustomProfileField.USER):
         raise JsonableError(_("Field type not supported for display in profile summary."))
 
 

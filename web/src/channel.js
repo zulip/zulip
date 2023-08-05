@@ -105,19 +105,16 @@ function call(args) {
                 return;
             }
         } else if (xhr.status === 403) {
-            try {
-                if (
-                    JSON.parse(xhr.responseText).code === "CSRF_FAILED" &&
-                    reload_state.csrf_failed_handler !== undefined
-                ) {
-                    reload_state.csrf_failed_handler();
-                }
-            } catch (error) {
-                blueslip.error(
-                    "Unexpected 403 response from server",
-                    {xhr: xhr.responseText, args},
-                    error,
-                );
+            if (xhr.responseJSON === undefined) {
+                blueslip.error("Unexpected 403 response from server", {
+                    xhr: xhr.responseText,
+                    args,
+                });
+            } else if (
+                xhr.responseJSON.code === "CSRF_FAILED" &&
+                reload_state.csrf_failed_handler !== undefined
+            ) {
+                reload_state.csrf_failed_handler();
             }
         }
         orig_error(xhr, error_type, xhn);
@@ -189,10 +186,10 @@ export function patch(options) {
 }
 
 export function xhr_error_message(message, xhr) {
-    if (xhr.status.toString().charAt(0) === "4") {
+    if (xhr.status.toString().charAt(0) === "4" && xhr.responseJSON?.msg) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        const server_response_html = _.escape(JSON.parse(xhr.responseText).msg);
+        const server_response_html = _.escape(xhr.responseJSON.msg);
         if (message) {
             message += ": " + server_response_html;
         } else {

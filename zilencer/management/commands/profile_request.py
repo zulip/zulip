@@ -27,6 +27,7 @@ def profile_request(request: HttpRequest) -> HttpResponseBase:
     prof = cProfile.Profile()
     with tempfile.NamedTemporaryFile(prefix="profile.data.", delete=False) as stats_file:
         response = LogRequests(get_response)(request)
+        assert isinstance(response, HttpResponseBase)  # async responses not supported here for now
         prof.dump_stats(stats_file.name)
         logging.info("Profiling data written to %s", stats_file.name)
     return response

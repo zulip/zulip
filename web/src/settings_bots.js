@@ -20,11 +20,13 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
+import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as user_profile from "./user_profile";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
+export let bot_owner_dropdown_widget;
 
 const focus_tab = {
     active_bots_tab() {
@@ -292,10 +294,7 @@ export function add_a_new_bot() {
         });
     }
 
-    function validate_input(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
+    function validate_input() {
         const bot_short_name = $("#create_bot_short_name").val();
 
         if (is_local_part(bot_short_name)) {
@@ -373,9 +372,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("full_name", $full_name.val());
         formData.append("role", JSON.stringify(role));
-        const new_bot_owner_id = $("#bot_owner_dropdown_widget .bot_owner_name").attr(
-            "data-user-id",
-        );
+        const new_bot_owner_id = bot_owner_dropdown_widget.value();
         if (new_bot_owner_id) {
             formData.append("bot_owner_id", new_bot_owner_id);
         }
@@ -418,7 +415,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
 
         function get_options() {
-            const user_ids = people.get_active_human_ids();
+            const user_ids = people.get_realm_active_human_user_ids();
             return user_ids.map((user_id) => ({
                 name: people.get_full_name(user_id),
                 unique_id: user_id,
@@ -426,29 +423,26 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         }
 
         function item_click_callback(event, dropdown) {
-            const $user = $(event.currentTarget);
-            const user_full_name = $user.attr("data-name");
-            const new_bot_owner_id = Number.parseInt($user.attr("data-unique-id"), 10);
-            const $bot_owner = $("#bot_owner_dropdown_widget .bot_owner_name");
-            $bot_owner.text(user_full_name);
-            $bot_owner.attr("data-user-id", new_bot_owner_id);
-            $("#edit_bot_modal .bot_owner_id").val(new_bot_owner_id).trigger("input");
+            bot_owner_dropdown_widget.render();
+            // Let dialog_wigdet know that there was a change in value.
+            $(bot_owner_dropdown_widget.widget_id).trigger("input");
             dropdown.hide();
             event.stopPropagation();
             event.preventDefault();
         }
 
-        dropdown_widget.setup(
-            {
-                target: "#bot_owner_dropdown_widget",
-                placement: "bottom-start",
-            },
+        bot_owner_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: "edit_bot_owner",
             get_options,
             item_click_callback,
-            {
-                show_on_target_enter_keypress: true,
+            $events_container: $("#bot-edit-form"),
+            tippy_props: {
+                placement: "bottom-start",
             },
-        );
+            default_id: owner_id,
+            unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        });
+        bot_owner_dropdown_widget.setup();
 
         $("#bot-role-select").val(bot.role);
         if (!page_params.is_owner) {
@@ -583,8 +577,10 @@ export function set_up() {
                 $row.find("api_key_error").hide();
             },
             error(xhr) {
-                const $row = $(e.currentTarget).closest("li");
-                $row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
+                if (xhr.responseJSON?.msg) {
+                    const $row = $(e.currentTarget).closest("li");
+                    $row.find(".api_key_error").text(xhr.responseJSON.msg).show();
+                }
             },
         });
     });
@@ -611,7 +607,7 @@ export function set_up() {
         user_profile.show_user_profile(bot, "user-profile-streams-tab");
     });
 
-    new ClipboardJS("#copy_zuliprc", {
+    const clipboard = new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
@@ -619,6 +615,11 @@ export function set_up() {
             const data = generate_zuliprc_content(bot);
             return data;
         },
+    });
+
+    // Show a tippy tooltip when the bot zuliprc is copied
+    clipboard.on("success", (e) => {
+        show_copied_confirmation(e.trigger);
     });
 
     $("#bots_lists_navbar .active-bots-tab").on("click", (e) => {

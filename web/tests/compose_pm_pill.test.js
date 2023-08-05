@@ -15,7 +15,7 @@ let pills = {
     pill: {},
 };
 
-run_test("pills", ({override}) => {
+run_test("pills", ({override, override_rewire}) => {
     const othello = {
         user_id: 1,
         email: "othello@example.com",
@@ -74,7 +74,7 @@ run_test("pills", ({override}) => {
     };
 
     let get_by_email_called = false;
-    people.get_by_email = (user_email) => {
+    override_rewire(people, "get_by_email", (user_email) => {
         get_by_email_called = true;
         switch (user_email) {
             case iago.email:
@@ -85,10 +85,10 @@ run_test("pills", ({override}) => {
             default:
                 throw new Error(`Unknown user email ${user_email}`);
         }
-    };
+    });
 
     let get_by_user_id_called = false;
-    people.get_by_user_id = (id) => {
+    override_rewire(people, "get_by_user_id", (id) => {
         get_by_user_id_called = true;
         switch (id) {
             case othello.user_id:
@@ -99,7 +99,7 @@ run_test("pills", ({override}) => {
             default:
                 throw new Error(`Unknown user ID ${id}`);
         }
-    };
+    });
 
     function test_create_item(handler) {
         (function test_rejection_path() {

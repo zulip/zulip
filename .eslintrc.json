@@ -50,6 +50,7 @@
         "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
+        "import/no-duplicates": "error",
         "import/no-self-import": "error",
         "import/no-unresolved": "off",
         "import/no-useless-path-segments": "error",
@@ -64,7 +65,6 @@
         "no-catch-shadow": "error",
         "no-constant-condition": ["error", {"checkLoops": false}],
         "no-div-regex": "error",
-        "no-duplicate-imports": "error",
         "no-else-return": "error",
         "no-eq-null": "error",
         "no-eval": "error",
@@ -169,7 +169,6 @@
             },
             "rules": {
                 // Disable base rule to avoid conflict
-                "no-duplicate-imports": "off",
                 "no-use-before-define": "off",
 
                 "@typescript-eslint/consistent-type-definitions": ["error", "type"],
@@ -179,9 +178,7 @@
                     {"allowExpressions": true}
                 ],
                 "@typescript-eslint/member-ordering": "error",
-                "@typescript-eslint/no-duplicate-imports": "error",
                 "@typescript-eslint/no-non-null-assertion": "off",
-                "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-condition": "off",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
                 "@typescript-eslint/no-unsafe-argument": "off",
@@ -194,6 +191,7 @@
                     {"args": "all", "argsIgnorePattern": "^_", "ignoreRestSiblings": true}
                 ],
                 "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
+                "@typescript-eslint/parameter-properties": "error",
                 "@typescript-eslint/promise-function-async": "error",
                 "import/no-cycle": "error",
                 "no-undef": "error"

@@ -624,6 +624,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             expected_count: int,
             *,
             possible_stream_wildcard_mention: bool = False,
+            topic_participant_user_ids: AbstractSet[int] = set(),
             possibly_mentioned_user_ids: AbstractSet[int] = set(),
         ) -> None:
             self.assertEqual(
@@ -633,6 +634,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                         stream_id=stream_id,
                         topic_name=topic_name,
                         possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                        topic_participant_user_ids=topic_participant_user_ids,
                         possibly_mentioned_user_ids=possibly_mentioned_user_ids,
                     )
                 ),
@@ -643,11 +645,13 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             content: str,
             *,
             possible_stream_wildcard_mention: bool = False,
+            topic_participant_user_ids: AbstractSet[int] = set(),
             possibly_mentioned_user_ids: AbstractSet[int] = set(),
         ) -> None:
             assert_num_possible_users(
                 expected_count=3,
                 possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                topic_participant_user_ids=topic_participant_user_ids,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
             general_user_msg_count = len(get_user_messages(cordelia))
@@ -767,6 +771,17 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             "Test @**stream** mention", possible_stream_wildcard_mention=True
         )
         assert_stream_message_not_sent_to_idle_user("Test @**bogus** mention")
+
+        # Test UserMessage row is created while user is deactivated if
+        # there is a topic wildcard mention i.e. @topic
+        do_soft_activate_users([long_term_idle_user])
+        self.send_stream_message(long_term_idle_user, stream_name, "Hi", topic_name)
+        topic_participant_user_ids = {long_term_idle_user.id}
+
+        do_soft_deactivate_users([long_term_idle_user])
+        assert_stream_message_sent_to_idle_user(
+            "Test @**topic** mention", topic_participant_user_ids=topic_participant_user_ids
+        )
 
         # Test UserMessage row is created while user is deactivated if there
         # is a alert word in message.

@@ -11,13 +11,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
     def change_mode_setting(
         setting_name: str, switch_command: str, setting: str, setting_value: int
     ) -> str:
-        msg = (
-            "Changed to {setting_name}! To revert "
-            "{setting_name}, type `/{switch_command}`.".format(
-                setting_name=setting_name,
-                switch_command=switch_command,
-            )
-        )
+        msg = f"Changed to {setting_name}! To revert {setting_name}, type `/{switch_command}`."
         do_change_user_setting(
             user_profile=user_profile,
             setting_name=setting,
@@ -76,4 +70,4 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
                 setting_value=False,
             )
         )
-    raise JsonableError(_("No such command: {}").format(command))
+    raise JsonableError(_("No such command: {command}").format(command=command))

@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
+import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as user_topics from "./user_topics";
@@ -25,11 +26,13 @@ export function populate_list() {
 
     ListWidget.create($user_topics_table, all_user_topics, {
         name: "user-topics-list",
+        get_item: ListWidget.default_get_item,
         modifier(user_topic) {
             const context = {
                 user_topic,
                 user_topic_visibility_policy_values:
                     settings_config.user_topic_visibility_policy_values,
+                development: page_params.development_environment,
             };
             return render_user_topic_ui_row(context);
         },
@@ -44,7 +47,11 @@ export function populate_list() {
                 );
             },
         },
-        init_sort: ["numeric", "date_updated"],
+        init_sort: "date_updated_numeric",
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["stream", "topic"]),
+            ...ListWidget.generic_sort_functions("numeric", ["date_updated", "visibility_policy"]),
+        },
         initially_descending_sort: true,
         $parent_container: $("#user-topic-settings"),
         $simplebar_container: $("#user-topic-settings .progressive-table-wrapper"),

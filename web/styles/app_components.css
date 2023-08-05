@@ -480,7 +480,8 @@ div.overlay {
 
 .stream-selection-header-colorblock {
     /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
-    box-shadow: inset 0 2px 1px -2px hsl(0deg 0% 20%),
+    box-shadow:
+        inset 0 2px 1px -2px hsl(0deg 0% 20%),
         inset 2px 0 1px -2px hsl(0deg 0% 20%),
         inset 0 -2px 1px -2px hsl(0deg 0% 20%);
     width: 10px;
@@ -783,7 +784,7 @@ div.overlay {
             }
 
             .save-discard-widget-button-icon {
-                font-weight: lighter;
+                font-weight: 400;
                 color: hsl(0deg 0% 100%);
             }
 
@@ -816,7 +817,7 @@ div.overlay {
             vertical-align: middle;
             margin-right: 3px;
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         .save-discard-widget-button-text {
@@ -948,19 +949,21 @@ div.overlay {
         }
 
         .messagebox-content {
-            grid-template-rows: auto;
-            grid-template-columns: auto max-content;
+            grid-template: auto / auto max-content;
+            grid-template-areas:
+                "message controls"
+                "message .       ";
+            /* to space from restore draft button */
+            column-gap: 5px;
             padding: 10px;
 
             .message_content {
                 cursor: pointer;
-                grid-column: 1 / 2;
-                /* to space from restore draft button */
-                margin-right: 5px;
+                grid-area: message;
             }
 
             .message_top_line {
-                grid-column: 2 / 3;
+                grid-area: controls;
             }
         }
 
@@ -1020,9 +1023,79 @@ div.overlay {
     align-items: center;
     justify-content: space-between;
     outline: none;
+    color: var(--color-text-default);
 
     .fa-chevron-down {
         position: relative;
         top: -1px;
+    }
+}
+
+.setting-disabled-option {
+    color: hsl(38deg 46% 54%);
+
+    & i {
+        /* Values set to match text alignment in stream dropdown. */
+        padding: 0 5px 0 1px;
+    }
+}
+
+.filter_text_input {
+    padding: 4px 6px;
+    color: hsl(0deg 0% 33%);
+    border: 1px solid hsl(0deg 0% 80%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    border-radius: 4px;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+/* Icon-based tab picker used for topics popover. */
+.tabs-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    height: 27px;
+    background-color: hsl(0deg 0% 0% / 7%);
+    position: relative;
+    border-radius: 5px;
+
+    & i {
+        z-index: 2;
+        color: hsl(200deg 100% 40%);
+        font-size: 17px;
+    }
+
+    .selected-tab {
+        background-color: hsl(0deg 0% 100%);
+        border: 1px solid hsl(0deg 0% 0% / 30%);
+        z-index: 1;
+    }
+
+    .tab-option {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        border-radius: 5px;
+
+        &:hover:not(.selected-tab) {
+            background-color: hsl(0deg 0% 100%);
+            border: 1px solid hsl(0deg 0% 0% / 30%);
+        }
     }
 }

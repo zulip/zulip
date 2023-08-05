@@ -5,7 +5,7 @@ from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.actions.default_streams import get_default_streams_for_realm
+from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
     JsonableError,
     OrganizationAdministratorRequiredError,
@@ -110,9 +110,9 @@ def render_stream_description(text: str, realm: Realm) -> str:
     return markdown_convert(text, message_realm=realm, no_previews=True).rendered_content
 
 
-def send_stream_creation_event(stream: Stream, user_ids: List[int]) -> None:
+def send_stream_creation_event(realm: Realm, stream: Stream, user_ids: List[int]) -> None:
     event = dict(type="stream", op="create", streams=[stream.to_dict()])
-    send_event(stream.realm, event, user_ids)
+    send_event(realm, event, user_ids)
 
 
 def create_stream_if_needed(
@@ -172,10 +172,10 @@ def create_stream_if_needed(
             )
     if created:
         if stream.is_public():
-            send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
+            send_stream_creation_event(realm, stream, active_non_guest_user_ids(stream.realm_id))
         else:
             realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
-            send_stream_creation_event(stream, realm_admin_ids)
+            send_stream_creation_event(realm, stream, realm_admin_ids)
 
     return stream, created
 
@@ -298,7 +298,9 @@ def access_stream_for_send_message(
         return
 
     # All other cases are an error.
-    raise JsonableError(_("Not authorized to send to stream '{}'").format(stream.name))
+    raise JsonableError(
+        _("Not authorized to send to stream '{stream_name}'").format(stream_name=stream.name)
+    )
 
 
 def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[str]) -> None:
@@ -456,7 +458,9 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(_("Stream name '{}' is already taken.").format(name))
+        raise JsonableError(
+            _("Stream name '{stream_name}' is already taken.").format(stream_name=name)
+        )
     except Stream.DoesNotExist:
         pass
 
@@ -464,7 +468,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 def access_stream_by_name(
     user_profile: UserProfile, stream_name: str, allow_realm_admin: bool = False
 ) -> Tuple[Stream, Optional[Subscription]]:
-    error = _("Invalid stream name '{}'").format(stream_name)
+    error = _("Invalid stream name '{stream_name}'").format(stream_name=stream_name)
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
     except Stream.DoesNotExist:
@@ -584,7 +588,7 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
 
     if stream.is_history_public_to_subscribers():
         # In this case, we check if the user is subscribed.
-        error = _("Invalid stream name '{}'").format(stream.name)
+        error = _("Invalid stream name '{stream_name}'").format(stream_name=stream.name)
         try:
             access_stream_common(user_profile, stream, error)
         except JsonableError:
@@ -728,8 +732,10 @@ def list_to_streams(
 
         if not autocreate:
             raise JsonableError(
-                _("Stream(s) ({}) do not exist").format(
-                    ", ".join(stream_dict["name"] for stream_dict in missing_stream_dicts),
+                _("Stream(s) ({stream_names}) do not exist").format(
+                    stream_names=", ".join(
+                        stream_dict["name"] for stream_dict in missing_stream_dicts
+                    ),
                 )
             )
 
@@ -764,7 +770,9 @@ def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStr
     try:
         return DefaultStreamGroup.objects.get(realm=realm, id=group_id)
     except DefaultStreamGroup.DoesNotExist:
-        raise JsonableError(_("Default stream group with id '{}' does not exist.").format(group_id))
+        raise JsonableError(
+            _("Default stream group with id '{group_id}' does not exist.").format(group_id=group_id)
+        )
 
 
 def get_stream_by_narrow_operand_access_unchecked(operand: Union[str, int], realm: Realm) -> Stream:
@@ -889,11 +897,8 @@ def do_get_streams(
     streams.sort(key=lambda elt: elt["name"])
 
     if include_default:
-        is_default = {}
-        default_streams = get_default_streams_for_realm(user_profile.realm_id)
-        for default_stream in default_streams:
-            is_default[default_stream.id] = True
+        default_stream_ids = get_default_stream_ids_for_realm(user_profile.realm_id)
         for stream in streams:
-            stream["is_default"] = is_default.get(stream["stream_id"], False)
+            stream["is_default"] = stream["stream_id"] in default_stream_ids
 
     return streams

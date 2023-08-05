@@ -24,13 +24,13 @@ def api_json_webhook(
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    subject = get_subject_for_http_request(payload)
+    topic = get_topic_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)
 
 
-def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
+def get_topic_for_http_request(payload: Dict[str, Any]) -> str:
     return "JSON"
 
 

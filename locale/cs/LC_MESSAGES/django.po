@@ -834,7 +834,7 @@ msgstr "Souhlasím s <a href=\"%(root_domain_url)s/policies/terms\" target=\"_bl
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
-msgstr ""
+msgstr "Pokračovat"
 
 #: templates/zerver/accounts_home.html:5
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:154
@@ -938,7 +938,7 @@ msgstr "Zulip"
 
 #: templates/zerver/change_email_address_visibility_modal.html:6
 msgid "Configure email address privacy"
-msgstr ""
+msgstr "Nastavit soukromí adresy elektronické pošty"
 
 #: templates/zerver/change_email_address_visibility_modal.html:8
 msgid "Close modal"

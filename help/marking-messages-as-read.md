@@ -19,7 +19,7 @@ are at your computer. You will still be able to
 
 {tab|desktop-web}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Advanced**, click on the **Automatically mark messages as
    read** dropdown, and select **Always**, **Never** or **Only in
@@ -73,7 +73,7 @@ stream or topic as read**.
 
 {tab|via-recent-conversations}
 
-{!open-recent-conversations.md!}
+{relative|message|recent}
 
 1. Click on an unread messages counter in the **Topic** column to mark all
    messages in that topic as read.

@@ -140,13 +140,20 @@ function get_messages_success(data, opts) {
     process_result(data, opts);
 }
 
-// This function modifies the data.narrow filters to use user IDs
-// instead of emails string if it is supported. We currently don't set
-// or convert the emails string to user IDs directly into the Filter code
-// because doing so breaks the app in various modules that expect emails string.
+// This function modifies the data.narrow filters to use integer IDs
+// instead of strings if it is supported. We currently don't set or
+// convert user emails to user IDs directly in the Filter code
+// because doing so breaks the app in various modules that expect a
+// string of user emails.
 function handle_operators_supporting_id_based_api(data) {
     const operators_supporting_ids = new Set(["dm", "pm-with"]);
-    const operators_supporting_id = new Set(["sender", "group-pm-with", "stream", "dm-including"]);
+    const operators_supporting_id = new Set([
+        "id",
+        "stream",
+        "sender",
+        "group-pm-with",
+        "dm-including",
+    ]);
 
     if (data.narrow === undefined) {
         return data;
@@ -159,6 +166,12 @@ function handle_operators_supporting_id_based_api(data) {
         }
 
         if (operators_supporting_id.has(filter.operator)) {
+            if (filter.operator === "id") {
+                // The message ID may not exist locally,
+                // so send the filter to the server as is.
+                return filter;
+            }
+
             if (filter.operator === "stream") {
                 const stream_id = stream_data.get_stream_id(filter.operand);
                 if (stream_id !== undefined) {

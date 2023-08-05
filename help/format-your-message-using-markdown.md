@@ -23,15 +23,17 @@ whenever you need a reminder of the formatting syntax below.
 * [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mention a user or group](#mention-a-user-or-group)
-* [Status messages](#status-messages)
+* [/me action messages](#me-action-messages)
 * [Global times](#global-times)
 * [Tables](#tables)
-* [To-do lists](#to-do-lists)
-* [Paragraphs and lines](#paragraphs-and-lines)
+* [Collaborative to-do lists](#collaborative-to-do-lists)
+* [Paragraph and section formatting](#paragraph-and-section-formatting)
 
 ## Text emphasis
 
-{!emphasis.md!}
+{!emphasis-intro.md!}
+
+{!emphasis-examples.md!}
 
 !!! tip ""
     You can also use buttons or keyboard shortcuts (<kbd>Ctrl</kbd> +
@@ -92,84 +94,35 @@ whenever you need a reminder of the formatting syntax below.
 
 {!mentions-examples.md!}
 
-## Status messages
+## /me action messages
 
-```
-/me is away
-```
+{!me-action-messages-intro.md!}
 
-![Markdown status](/static/images/help/markdown-status.png)
+{!me-action-messages-examples.md!}
 
 ## Global times
 
-When collaborating with people in another time zone, you often need to
-express a specific time clearly. Rather than typing out your time zone
-and having everyone translate the time in their heads, in Zulip, you
-can mention a time, and it'll be displayed to each user in their own
-time zone (just like the timestamps on Zulip messages).
+{!global-times-intro.md!}
 
-A date picker will appear once you type `<time`.
-
-```
-Our next meeting is scheduled for <time:2020-05-28T13:30:00+05:30>
-```
-
-A person in San Francisco will see:
-
-> Our next meeting is scheduled for *Thu, May 28 2020, 1:00 AM*.
-
-While someone in India will see:
-
-> Our next meeting is scheduled for *Thu, May 28 2020, 1:30 PM*.
-
-You can also use other formats such as UNIX timestamps or human readable
-dates, for example, `<time:May 28 2020, 1:30 PM IST>`.
+{!global-times-examples.md!}
 
 ## Tables
 
-The initial pipes (`|`) are optional if every entry in the first column is non-empty.
-The header separators (`---`) must be at least three dashes long.
+{!tables-intro.md!}
 
-```
-|| yes | no | maybe
-|---|---|:---:|------:
-| A | left-aligned | centered | right-aligned
-| B |     extra      spaces      |  are |  ok
-| C | **bold** *italic* ~~strikethrough~~  :smile:  ||
-```
+{!tables-examples.md!}
 
-![Markdown table](/static/images/help/markdown-table.png)
+## Collaborative to-do lists
 
-## To-do lists
+{!to-do-lists-intro.md!}
 
-Sending a message with the text `/todo` creates a simple collaborative
-to-do list. Any user who can access the message can add tasks by
-entering the task's title and description and clicking "Add task". Once
-created, task titles and descriptions cannot be edited.
+{!to-do-lists-examples.md!}
 
-Tasks can be marked (and unmarked) as completed by clicking the
-checkboxes on the left.
+## Paragraph and section formatting
 
-![Markdown todo-lists](/static/images/help/markdown-todo.png)
+{!paragraphs-and-sections-intro.md!}
 
-
-## Paragraphs and lines
-
-```
-One blank space for a new paragraph
-New line, same paragraph
-
-New paragraph
-
----, ***, or ___ for a horizontal line
-Over the line
-
----
-
-Under the line
-```
-
-![Markdown paragraph](/static/images/help/markdown-paragraph.png)
+{!paragraphs-and-sections-examples.md!}
 
 ## Message formatting reference
 
@@ -177,10 +130,13 @@ A summary of the formatting syntax above is available in the Zulip app.
 
 {start_tabs}
 
-{!start-composing.md!}
+{relative|gear|message-formatting}
 
-1. Click the **question mark** (<i class="fa fa-question"></i>) icon at the
-   bottom of the compose box.
+!!! tip ""
+
+    You can also [open the compose box](/help/open-the-compose-box), and click
+    the **question mark** (<i class="fa fa-question"></i>) icon at the bottom of
+    the compose box.
 
 {end_tabs}
 

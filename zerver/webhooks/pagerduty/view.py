@@ -213,23 +213,20 @@ def send_formatted_pagerduty(
         "incident.unacknowledged",
     ):
         template = INCIDENT_WITH_SERVICE_AND_ASSIGNEE
-    elif (
-        message_type == "incident.resolve" or message_type == "incident.resolved"
-    ) and format_dict.get("agent_info") is not None:
-        template = INCIDENT_RESOLVED_WITH_AGENT
-    elif (
-        message_type == "incident.resolve" or message_type == "incident.resolved"
-    ) and format_dict.get("agent_info") is None:
-        template = INCIDENT_RESOLVED
-    elif message_type == "incident.assign" or message_type == "incident.reassigned":
+    elif message_type in ("incident.resolve", "incident.resolved"):
+        if "agent_info" in format_dict:
+            template = INCIDENT_RESOLVED_WITH_AGENT
+        else:
+            template = INCIDENT_RESOLVED
+    elif message_type in ("incident.assign", "incident.reassigned"):
         template = INCIDENT_ASSIGNED
     else:
         template = INCIDENT_WITH_ASSIGNEE
 
-    subject = "Incident {incident_num_title}".format(**format_dict)
+    topic = "Incident {incident_num_title}".format(**format_dict)
     body = template.format(**format_dict)
     assert isinstance(format_dict["action"], str)
-    check_send_webhook_message(request, user_profile, subject, body, format_dict["action"])
+    check_send_webhook_message(request, user_profile, topic, body, format_dict["action"])
 
 
 @webhook_view("PagerDuty", all_event_types=ALL_EVENT_TYPES)

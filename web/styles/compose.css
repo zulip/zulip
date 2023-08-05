@@ -76,6 +76,7 @@
 
 .autocomplete_secondary {
     opacity: 0.8;
+    font-size: 85%;
 }
 
 .active .autocomplete_secondary {
@@ -292,7 +293,8 @@
         flex-grow: 1;
     }
 
-    .main-view-banner-action-button {
+    .main-view-banner-action-button,
+    .upload_banner_cancel_button {
         border: none;
         border-radius: 4px;
         padding: 5px 10px;
@@ -431,7 +433,8 @@
             }
         }
 
-        .main-view-banner-action-button {
+        .main-view-banner-action-button,
+        .upload_banner_cancel_button {
             background-color: hsl(204deg 49% 29% / 10%);
             color: inherit;
 
@@ -464,8 +467,13 @@
         bottom: 0;
     }
 
+    .upload_msg {
+        flex-grow: 1;
+    }
+
     .upload_msg,
-    .main-view-banner-close-button {
+    .main-view-banner-close-button,
+    .upload_banner_cancel_button {
         z-index: 1;
         position: relative;
     }
@@ -668,22 +676,32 @@ input.recipient_box {
     min-height: var(--compose-recipient-box-min-height);
 }
 
-.tippy-content .compose_control_buttons_container {
-    .compose_gif_icon {
-        bottom: 5px;
-    }
-}
-
 .compose_control_buttons_container {
     margin-right: auto;
     display: flex;
     gap: 4px;
     align-items: center;
 
-    .compose_gif_icon {
+    /* We use the selector in this manner to maintain specificity. */
+    .compose_control_button_container .compose_gif_icon {
         font-size: 22px;
-        height: 18px;
-        line-height: 18px;
+
+        /* Remove top and bottom padding. This is necessary
+         * because `compose_gif_icon` is no longer a flex item.  */
+        padding: 0 5px;
+    }
+
+    .compose_control_button {
+        padding: 5px;
+        opacity: 0.7;
+        color: inherit;
+        text-decoration: none;
+        font-size: 17px;
+        text-align: center;
+
+        &:hover {
+            opacity: 1;
+        }
     }
 
     .fa-eye {
@@ -728,7 +746,7 @@ input.recipient_box {
     .compose_draft_button {
         font-size: 15px;
         font-weight: 600;
-        font-family: "Source Sans 3", sans-serif;
+        font-family: "Source Sans 3 VF", sans-serif;
         padding: 0 5px;
         position: relative;
         top: 0.7px;
@@ -755,27 +773,6 @@ input.recipient_box {
             background-color: hsl(0deg 0% 65%);
         }
     }
-}
-
-a.compose_control_button {
-    padding: 5px;
-    opacity: 0.7;
-    color: inherit;
-    text-decoration: none;
-    font-size: 17px;
-    text-align: center;
-
-    &:hover {
-        opacity: 1;
-    }
-}
-
-/* This is used to override the
- * properties of `a.compose_control_button`
- * without using `!important`.
- */
-a.compose_control_button.hide {
-    display: none;
 }
 
 .drag {
@@ -808,7 +805,7 @@ a.compose_control_button.hide {
     margin: auto;
 }
 
-#compose_recipient_selection_dropdown {
+#compose_select_recipient_widget_wrapper {
     display: flex;
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
@@ -817,26 +814,7 @@ a.compose_control_button.hide {
         margin: 0;
     }
 
-    .dropdown-toggle {
-        border-radius: 0 4px 4px 0 !important;
-        display: flex;
-        min-width: 0;
-    }
-
-    .dropdown-menu {
-        /* The Bootstrap default of 160px wraps too early.
-           TODO: Replace this with a max-width and natural scaling? */
-        width: 200px;
-        top: auto;
-        left: -10px;
-    }
-
-    .dropup .dropdown-menu {
-        bottom: 100%;
-        margin-bottom: 17px;
-    }
-
-    #compose_select_recipient_name {
+    .dropdown_widget_value {
         flex-grow: 1;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -852,12 +830,7 @@ a.compose_control_button.hide {
         }
     }
 
-    .dropdown-list-body .list_item a {
-        white-space: normal;
-    }
-
     .fa-chevron-down {
-        float: right;
         padding-left: 5px;
         color: hsl(0deg 0% 58%);
         font-weight: lighter;

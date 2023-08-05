@@ -406,19 +406,34 @@ test("marked", () => {
                 '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
-            input: "Wildcard mention: @**all**\nWildcard silent mention: @_**all**",
+            input: "Stream Wildcard mention: @**all**\nStream Wildcard silent mention: @_**all**",
             expected:
-                '<p>Wildcard mention: <span class="user-mention" data-user-id="*">@all</span><br>\nWildcard silent mention: <span class="user-mention silent" data-user-id="*">all</span></p>',
+                '<p>Stream Wildcard mention: <span class="user-mention" data-user-id="*">@all</span><br>\nStream Wildcard silent mention: <span class="user-mention silent" data-user-id="*">all</span></p>',
         },
         {
-            input: "> Wildcard mention in quote: @**all**\n\n> Another wildcard mention in quote: @_**all**",
+            input: "> Stream Wildcard mention in quote: @**all**\n\n> Another stream wildcard mention in quote: @_**all**",
             expected:
-                '<blockquote>\n<p>Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+                '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
         },
         {
-            input: "```quote\nWildcard mention in quote: @**all**\n```\n\n```quote\nAnother wildcard mention in quote: @_**all**\n```",
+            input: "```quote\nStream Wildcard mention in quote: @**all**\n```\n\n```quote\nAnother stream wildcard mention in quote: @_**all**\n```",
             expected:
-                '<blockquote>\n<p>Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+                '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+        },
+        {
+            input: "Topic Wildcard mention: @**topic**\nTopic Wildcard silent mention: @_**topic**",
+            expected:
+                '<p>Topic Wildcard mention: <span class="topic-mention">@topic</span><br>\nTopic Wildcard silent mention: <span class="topic-mention silent">topic</span></p>',
+        },
+        {
+            input: "> Topic Wildcard mention in quote: @**topic**\n\n> Another topic wildcard mention in quote: @_**topic**",
+            expected:
+                '<blockquote>\n<p>Topic Wildcard mention in quote: <span class="topic-mention silent">topic</span></p>\n</blockquote>\n<blockquote>\n<p>Another topic wildcard mention in quote: <span class="topic-mention silent">topic</span></p>\n</blockquote>',
+        },
+        {
+            input: "```quote\nTopic Wildcard mention in quote: @**topic**\n```\n\n```quote\nAnother topic wildcard mention in quote: @_**topic**\n```",
+            expected:
+                '<blockquote>\n<p>Topic Wildcard mention in quote: <span class="topic-mention silent">topic</span></p>\n</blockquote>\n<blockquote>\n<p>Another topic wildcard mention in quote: <span class="topic-mention silent">topic</span></p>\n</blockquote>',
         },
         {
             input: "User group mention: @*backend*\nUser group silent mention: @_*hamletcharacters*",
@@ -696,10 +711,10 @@ test("message_flags", () => {
     input = "testing this @**all** @**Cordelia, Lear's daughter**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-
     assert.equal(message.is_me_message, false);
     assert.equal(message.flags.includes("mentioned"), true);
     assert.equal(message.flags.includes("wildcard_mentioned"), true);
+
     input = "test @**everyone**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
@@ -714,6 +729,13 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("wildcard_mentioned"), true);
     assert.equal(message.flags.includes("mentioned"), false);
 
+    input = "test @**topic**";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.is_me_message, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), true);
+    assert.equal(message.flags.includes("mentioned"), false);
+
     input = "test @all";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
@@ -721,6 +743,12 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @everyone";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
+
+    input = "test @topic";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.flags.includes("wildcard_mentioned"), false);
@@ -763,6 +791,18 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @**all**";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
+
+    input = "test @_**topic**";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
+
+    input = "> test @**topic**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.flags.includes("wildcard_mentioned"), false);

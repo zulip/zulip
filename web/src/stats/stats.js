@@ -1101,7 +1101,9 @@ function get_chart_data(data, callback) {
             update_last_full_update(data.end_times);
         },
         error(xhr) {
-            $("#id_stats_errors").show().text(JSON.parse(xhr.responseText).msg);
+            if (xhr.responseJSON?.msg) {
+                $("#id_stats_errors").show().text(xhr.responseJSON.msg);
+            }
         },
     });
 }

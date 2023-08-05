@@ -13,12 +13,7 @@ from django_otp.middleware import is_verified
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.cache import (
-    bulk_cached_fetch,
-    realm_user_dict_fields,
-    user_profile_by_id_cache_key,
-    user_profile_cache_key_id,
-)
+from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key, realm_user_dict_fields
 from zerver.lib.exceptions import (
     JsonableError,
     OrganizationAdministratorRequiredError,
@@ -92,13 +87,15 @@ def check_valid_bot_config(
                 config_options = {c[1]: c[2] for c in integration.config_options}
                 break
         if not config_options:
-            raise JsonableError(_("Invalid integration '{}'.").format(service_name))
+            raise JsonableError(
+                _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
+            )
 
         missing_keys = set(config_options.keys()) - set(config_data.keys())
         if missing_keys:
             raise JsonableError(
-                _("Missing configuration parameters: {}").format(
-                    missing_keys,
+                _("Missing configuration parameters: {keys}").format(
+                    keys=missing_keys,
                 )
             )
 
@@ -106,7 +103,11 @@ def check_valid_bot_config(
             value = config_data[key]
             error = validator(key, value)
             if error is not None:
-                raise JsonableError(_("Invalid {} value {} ({})").format(key, value, error))
+                raise JsonableError(
+                    _("Invalid {key} value {value} ({error})").format(
+                        key=key, value=value, error=error
+                    )
+                )
 
     elif bot_type == UserProfile.EMBEDDED_BOT:
         try:
@@ -167,74 +168,42 @@ def is_administrator_role(role: int) -> bool:
     return role in {UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER}
 
 
-def bulk_get_users(
-    emails: List[str], realm: Optional[Realm], base_query: Optional[QuerySet[UserProfile]] = None
-) -> Dict[str, UserProfile]:
-    if base_query is None:
-        assert realm is not None
-        query = UserProfile.objects.filter(realm=realm, is_active=True)
-        realm_id = realm.id
-    else:
-        # WARNING: Currently, this code path only really supports one
-        # version of `base_query` being used (because otherwise,
-        # they'll share the cache, which can screw up the filtering).
-        # If you're using this flow, you'll need to re-do any filters
-        # in base_query in the code itself; base_query is just a perf
-        # optimization.
-        query = base_query
-        realm_id = 0
+def bulk_get_cross_realm_bots() -> Dict[str, UserProfile]:
+    emails = list(settings.CROSS_REALM_BOT_EMAILS)
 
-    def fetch_users_by_email(emails: List[str]) -> QuerySet[UserProfile]:
-        # This should be just
-        #
-        # UserProfile.objects.select_related("realm").filter(email__iexact__in=emails,
-        #                                                    realm=realm)
-        #
-        # But chaining __in and __iexact doesn't work with Django's
-        # ORM, so we have the following hack to construct the relevant where clause
-        where_clause = "upper(zerver_userprofile.email::text) IN (SELECT upper(email) FROM unnest(%s) AS email)"
-        return query.select_related("realm").extra(where=[where_clause], params=(emails,))
-
-    def user_to_email(user_profile: UserProfile) -> str:
-        return user_profile.email.lower()
-
-    return bulk_cached_fetch(
-        # Use a separate cache key to protect us from conflicts with
-        # the get_user cache.
-        lambda email: "bulk_get_users:" + user_profile_cache_key_id(email, realm_id),
-        fetch_users_by_email,
-        [email.lower() for email in emails],
-        id_fetcher=user_to_email,
+    # This should be just
+    #
+    # UserProfile.objects.select_related("realm").filter(email__iexact__in=emails,
+    #                                                    realm=realm)
+    #
+    # But chaining __in and __iexact doesn't work with Django's
+    # ORM, so we have the following hack to construct the relevant where clause
+    where_clause = (
+        "upper(zerver_userprofile.email::text) IN (SELECT upper(email) FROM unnest(%s) AS email)"
+    )
+    users = list(
+        UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM).extra(
+            where=[where_clause], params=(emails,)
+        )
     )
 
-
-def get_user_id(user: UserProfile) -> int:
-    return user.id
+    return {user.email.lower(): user for user in users}
 
 
 def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile]:
     # TODO: Consider adding a flag to control whether deactivated
     # users should be included.
 
-    def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
-        return list(UserProfile.objects.filter(id__in=user_ids).select_related())
-
-    user_profiles_by_id: Dict[int, UserProfile] = bulk_cached_fetch(
-        cache_key_function=user_profile_by_id_cache_key,
-        query_function=fetch_users_by_id,
-        object_ids=user_ids,
-        id_fetcher=get_user_id,
+    user_profiles = list(
+        UserProfile.objects.filter(id__in=user_ids, realm=realm).select_related("realm")
     )
 
-    found_user_ids = user_profiles_by_id.keys()
-    missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
-    if missed_user_ids:
-        raise JsonableError(_("Invalid user ID: {}").format(missed_user_ids[0]))
+    found_user_ids = {user_profile.id for user_profile in user_profiles}
 
-    user_profiles = list(user_profiles_by_id.values())
-    for user_profile in user_profiles:
-        if user_profile.realm != realm:
-            raise JsonableError(_("Invalid user ID: {}").format(user_profile.id))
+    for user_id in user_ids:
+        if user_id not in found_user_ids:
+            raise JsonableError(_("Invalid user ID: {user_id}").format(user_id=user_id))
+
     return user_profiles
 
 
@@ -316,14 +285,14 @@ def access_user_by_email(
     return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
 
 
-class Accounts(TypedDict):
+class Account(TypedDict):
     realm_name: str
     realm_id: int
     full_name: str
     avatar: Optional[str]
 
 
-def get_accounts_for_email(email: str) -> List[Accounts]:
+def get_accounts_for_email(email: str) -> List[Account]:
     profiles = (
         UserProfile.objects.select_related("realm")
         .filter(
@@ -334,7 +303,7 @@ def get_accounts_for_email(email: str) -> List[Accounts]:
         )
         .order_by("date_joined")
     )
-    accounts: List[Accounts] = []
+    accounts: List[Account] = []
     for profile in profiles:
         accounts.append(
             dict(
@@ -420,7 +389,7 @@ def can_access_delivery_email(
 
 
 def format_user_row(
-    realm: Realm,
+    realm_id: int,
     acting_user: Optional[UserProfile],
     row: Dict[str, Any],
     client_gravatar: bool,
@@ -483,7 +452,7 @@ def format_user_row(
     if include_avatar_url:
         result["avatar_url"] = get_avatar_field(
             user_id=row["id"],
-            realm_id=realm.id,
+            realm_id=realm_id,
             email=row["delivery_email"],
             avatar_source=row["avatar_source"],
             avatar_version=row["avatar_version"],
@@ -532,19 +501,12 @@ def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
     return user_row
 
 
+@cache_with_key(get_cross_realm_dicts_key)
 def get_cross_realm_dicts() -> List[Dict[str, Any]]:
-    users = bulk_get_users(
-        list(settings.CROSS_REALM_BOT_EMAILS),
-        None,
-        base_query=UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM),
-    ).values()
+    user_dict = bulk_get_cross_realm_bots()
+    users = sorted(user_dict.values(), key=lambda user: user.full_name)
     result = []
     for user in users:
-        # Important: We filter here, is addition to in
-        # `base_query`, because of how bulk_get_users shares its
-        # cache with other UserProfile caches.
-        if user.realm.string_id != settings.SYSTEM_BOT_REALM:  # nocoverage
-            continue
         user_row = user_profile_to_user_row(user)
         # Because we want to avoid clients being exposed to the
         # implementation detail that these bots are self-owned, we
@@ -553,7 +515,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
 
         result.append(
             format_user_row(
-                user.realm,
+                user.realm_id,
                 acting_user=user,
                 row=user_row,
                 client_gravatar=False,
@@ -623,7 +585,7 @@ def get_raw_user_data(
             and row["email_address_visibility"] == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         )
         result[row["id"]] = format_user_row(
-            realm,
+            realm.id,
             acting_user=acting_user,
             row=row,
             client_gravatar=client_gravatar_for_user,

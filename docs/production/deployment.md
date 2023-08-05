@@ -483,7 +483,7 @@ that your Zulip server sits at `https://10.10.10.10:443`; see
            location / {
                    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
                    proxy_set_header        X-Forwarded-Proto $scheme;
-                   proxy_set_header        Host $http_host;
+                   proxy_set_header        Host $host;
                    proxy_http_version      1.1;
                    proxy_buffering         off;
                    proxy_read_timeout      20m;
@@ -907,6 +907,19 @@ Number of concurrent disk reads to use when taking backups. Defaults to 1; you
 may wish to increase this if you are taking backups on a replica, so can afford
 to affect other disk I/O, and have an SSD which is good at parallel random
 reads.
+
+#### `backups_storage_class`
+
+What [storage class](https://aws.amazon.com/s3/storage-classes/) to use when
+uploading database backups. Defaults to `STANDARD`, meaning "[S3
+standard][s3-standard]", but many deployments will have overall lower costs if
+"[S3 Standard - Infrequent Access][s3-ia]" is used, via the `STANDARD_IA`
+value. Also supported is "[S3 Reduced Redundancy][s3-rr]", by setting
+`REDUCED_REDUNDANCY`, but this is not suggested for production use.
+
+[s3-standard]: https://aws.amazon.com/s3/storage-classes/#General_purpose
+[s3-ia]: https://aws.amazon.com/s3/storage-classes/#Infrequent_access
+[s3-rr]: https://aws.amazon.com/s3/reduced-redundancy/
 
 #### `missing_dictionaries`
 

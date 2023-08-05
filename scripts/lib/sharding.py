@@ -44,7 +44,7 @@ def write_updated_configs() -> None:
             sharding_json_f.write("{}\n")
             return
 
-        nginx_sharding_conf_f.write("map $http_host $tornado_server {\n")
+        nginx_sharding_conf_f.write("map $host $tornado_server {\n")
         nginx_sharding_conf_f.write("    default http://tornado9800;\n")
         shard_map: Dict[str, Union[int, List[int]]] = {}
         shard_regexes: List[Tuple[str, Union[int, List[int]]]] = []

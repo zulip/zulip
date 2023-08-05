@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
 
@@ -8,16 +9,16 @@ import * as browser_history from "./browser_history";
 import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dialog_widget from "./dialog_widget";
-import {DropdownListWidget} from "./dropdown_list_widget";
+import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
 import * as message_edit from "./message_edit";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
+import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -26,7 +27,7 @@ import * as unread_ops from "./unread_ops";
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
 let current_stream_sidebar_elem;
-let stream_widget;
+let stream_widget_value;
 let $stream_header_colorblock;
 
 // Keep the menu icon over which the popover is based off visible.
@@ -251,7 +252,7 @@ export function build_move_topic_to_stream_popover(
         if (only_topic_edit) {
             select_stream_id = undefined;
         } else {
-            select_stream_id = stream_widget.value();
+            select_stream_id = stream_widget_value;
         }
 
         let {
@@ -326,15 +327,39 @@ export function build_move_topic_to_stream_popover(
 
     function set_stream_topic_typeahead() {
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
-        const new_stream_id = Number(stream_widget.value(), 10);
+        const new_stream_id = Number(stream_widget_value, 10);
         const new_stream_name = sub_store.get(new_stream_id).name;
         $topic_input.data("typeahead").unlisten();
         composebox_typeahead.initialize_topic_edit_typeahead($topic_input, new_stream_name, false);
     }
 
-    function move_topic_on_update() {
-        update_submit_button_disabled_state(stream_widget.value());
+    function render_selected_stream() {
+        const stream_name = sub_store.maybe_get_stream_name(
+            Number.parseInt(stream_widget_value, 10),
+        );
+        stream_bar.decorate(stream_name, $stream_header_colorblock);
+        const stream = stream_data.get_sub_by_name(stream_name);
+        if (stream === undefined) {
+            $("#move_topic_to_stream_widget .dropdown_widget_value").text(
+                $t({defaultMessage: "Select a stream"}),
+            );
+        } else {
+            $("#move_topic_to_stream_widget .dropdown_widget_value").html(
+                render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+            );
+        }
+    }
+
+    function move_topic_on_update(event, dropdown) {
+        stream_widget_value = $(event.currentTarget).attr("data-unique-id");
+
+        update_submit_button_disabled_state(stream_widget_value);
         set_stream_topic_typeahead();
+        render_selected_stream();
+
+        dropdown.hide();
+        event.preventDefault();
+        event.stopPropagation();
     }
 
     function move_topic_post_render() {
@@ -360,24 +385,31 @@ export function build_move_topic_to_stream_popover(
         $stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
             ".stream_header_colorblock",
         );
-        stream_bar.decorate(current_stream_name, $stream_header_colorblock);
-        const streams_list =
-            message_edit.get_available_streams_for_moving_messages(current_stream_id);
-        const opts = {
-            widget_name: "select_stream",
-            data: streams_list,
-            default_text: $t({defaultMessage: "No streams"}),
-            include_current_item: false,
-            value: current_stream_id,
-            on_update: move_topic_on_update,
-        };
-        stream_widget = new DropdownListWidget(opts);
+        stream_widget_value = current_stream_id;
+        const streams_list_options = () =>
+            stream_data.get_options_for_dropdown_widget().filter((stream) => {
+                if (stream.stream_id === current_stream_id) {
+                    return true;
+                }
+                return stream_data.can_post_messages_in_stream(stream);
+            });
 
-        stream_widget.setup();
+        new dropdown_widget.DropdownWidget({
+            widget_name: "move_topic_to_stream",
+            get_options: streams_list_options,
+            item_click_callback: move_topic_on_update,
+            $events_container: $("#move_topic_modal"),
+            tippy_props: {
+                // Overlap dropdown search input with stream selection button.
+                placement: "bottom-start",
+                offset: [0, -30],
+            },
+        }).setup();
 
+        render_selected_stream();
         $("#select_stream_widget .dropdown-toggle").prop("disabled", disable_stream_input);
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
-            update_submit_button_disabled_state(stream_widget.value());
+            update_submit_button_disabled_state(stream_widget_value);
         });
     }
 
@@ -413,21 +445,6 @@ export function register_click_handlers() {
             elt,
             stream_id,
         });
-    });
-
-    $("body").on("click keypress", ".move-topic-dropdown .list_item", (e) => {
-        // We want the dropdown to collapse once any of the list item is pressed
-        // and thus don't want to kill the natural bubbling of event.
-        e.preventDefault();
-
-        if (e.type === "keypress" && !keydown_util.is_enter_event(e)) {
-            return;
-        }
-        const stream_name = sub_store.maybe_get_stream_name(
-            Number.parseInt(stream_widget.value(), 10),
-        );
-
-        stream_bar.decorate(stream_name, $stream_header_colorblock);
     });
 
     register_stream_handlers();

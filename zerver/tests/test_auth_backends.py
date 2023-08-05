@@ -1719,9 +1719,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('action="/register/"', result)
         self.assert_in_response(
-            "Your email address, {}, is not "
+            f"Your email address, {email}, is not "
             "in one of the domains that are allowed to register "
-            "for accounts in this organization.".format(email),
+            "for accounts in this organization.",
             result,
         )
 
@@ -3698,7 +3698,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         account_data_dict = self.get_account_data_dict(email=email, name=name)
 
         oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
-        idp_settings_dict = list(oidc_setting_dict.values())[0]
+        [idp_settings_dict] = oidc_setting_dict.values()
         idp_settings_dict["auto_signup"] = True
         with mock.patch.object(GenericOpenIdConnectBackend, "settings_dict", new=idp_settings_dict):
             result = self.social_auth_test(
@@ -3748,7 +3748,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
 
         mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
-        idp_config_dict = list(mock_oidc_setting_dict.values())[0]
+        [idp_config_dict] = mock_oidc_setting_dict.values()
         del idp_config_dict["client_id"]
         with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict):
             result = self.social_auth_test(
@@ -3763,7 +3763,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
 
         mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
-        idp_config_dict = list(mock_oidc_setting_dict.values())[0]
+        [idp_config_dict] = mock_oidc_setting_dict.values()
         mock_oidc_setting_dict["secondprovider"] = idp_config_dict
         with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict):
             result = self.social_auth_test(

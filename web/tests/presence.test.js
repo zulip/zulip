@@ -77,11 +77,11 @@ people.add_active_user(jane);
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, (helpers) => {
         page_params.server_presence_offline_threshold_seconds = OFFLINE_THRESHOLD_SECS;
         user_settings.presence_enabled = true;
         presence.clear_internal_data();
-        f({override});
+        f(helpers);
     });
 }
 
@@ -95,7 +95,6 @@ test("unknown user", ({override}) => {
     const presences = {};
     presences[unknown_user_id.toString()] = "does-not-matter";
 
-    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id", 3);
     blueslip.expect("error", "Unknown user ID in presence data");
     presence.set_info(presences, now);
 
@@ -264,7 +263,7 @@ test("falsy values", () => {
     }
 });
 
-test("big realms", () => {
+test("big realms", ({override_rewire}) => {
     const presences = {};
     const now = 5000;
 
@@ -275,12 +274,10 @@ test("big realms", () => {
     // Make it seem like realm has a lot of people, in
     // which case we will not provide default values for
     // users that aren't in our presences payload.
-    const get_active_human_count = people.get_active_human_count;
-    people.get_active_human_count = () => 1000;
+    override_rewire(people, "get_active_human_count", () => 1000);
     presence.set_info(presences, now);
     assert.ok(presence.presence_info.has(sally.user_id));
     assert.ok(!presence.presence_info.has(zoe.user_id));
-    people.get_active_human_count = get_active_human_count;
 });
 
 test("last_active_date", () => {

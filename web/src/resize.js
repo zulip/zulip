@@ -19,15 +19,15 @@ function get_bottom_whitespace_height() {
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
-    const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
+    const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").outerHeight(true) ?? 0;
 
     res.stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        $("#global_filters").safeOuterHeight(true) -
-        $("#private_messages_sticky_header").safeOuterHeight(true);
+        ($("#global_filters").outerHeight(true) ?? 0) -
+        ($("#private_messages_sticky_header").outerHeight(true) ?? 0);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
@@ -37,8 +37,8 @@ function get_new_heights() {
     const usable_height =
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
-        $("#userlist-header").safeOuterHeight(true) -
-        $("#user_search_section").safeOuterHeight(true) -
+        ($("#userlist-header").outerHeight(true) ?? 0) -
+        ($("#user_search_section").outerHeight(true) ?? 0) -
         right_sidebar_shortcuts_height;
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
@@ -146,7 +146,7 @@ export function resize_sidebars() {
 }
 
 export function update_recent_topics_filters_height() {
-    const recent_topics_filters_height = $("#recent_topics_filter_buttons").safeOuterHeight(true);
+    const recent_topics_filters_height = $("#recent_topics_filter_buttons").outerHeight(true) ?? 0;
     $("html").css("--recent-topics-filters-height", `${recent_topics_filters_height}px`);
 }
 
@@ -176,7 +176,7 @@ export function handler() {
     compose_ui.autosize_textarea($("#compose-textarea"));
     update_recent_topics_filters_height();
 
-    // Re-compute and display/remove [More] links to messages
+    // Re-compute and display/remove 'Show more' buttons to messages
     condense.condense_and_collapse(message_lists.all_current_message_rows());
 
     // This function might run onReady (if we're in a narrow window),

@@ -105,7 +105,7 @@ def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
     for narrow_term in narrow:
         operator = narrow_term.operator
         if operator not in ["stream", "topic", "sender", "is"]:
-            raise JsonableError(_("Operator {} not supported.").format(operator))
+            raise JsonableError(_("Operator {operator} not supported.").format(operator=operator))
 
 
 def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
@@ -751,11 +751,17 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
             return dict(operator=elem[0], operand=elem[1])
 
         if isinstance(elem, dict):
-            # Make sure to sync this list to frontend also when adding a new operator.
-            # that supports user IDs. Relevant code is located in web/src/message_fetch.js
-            # in handle_operators_supporting_id_based_api function where you will need to update
-            # operators_supporting_id, or operators_supporting_ids array.
-            operators_supporting_id = ["sender", "group-pm-with", "stream", "dm-including"]
+            # Make sure to sync this list to frontend also when adding a new operator that
+            # supports integer IDs. Relevant code is located in web/src/message_fetch.js
+            # in handle_operators_supporting_id_based_api function where you will need to
+            # update operators_supporting_id, or operators_supporting_ids array.
+            operators_supporting_id = [
+                "id",
+                "stream",
+                "sender",
+                "group-pm-with",
+                "dm-including",
+            ]
             operators_supporting_ids = ["pm-with", "dm"]
             operators_non_empty_operand = {"search"}
 

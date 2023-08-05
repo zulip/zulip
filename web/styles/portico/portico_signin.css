@@ -33,7 +33,7 @@ html {
 .bottom-text {
     text-align: center;
     margin-top: 20px;
-    font-weight: 500;
+    font-weight: 400;
     font-size: 0.9em;
 
     & a {
@@ -55,7 +55,7 @@ html {
 .bottom-text-large {
     text-align: center;
     margin-top: 20px;
-    font-weight: 500;
+    font-weight: 400;
     font-size: 1.2em;
 
     & a {
@@ -203,7 +203,9 @@ html {
         margin: 0;
         width: auto;
 
-        transition: color 0.3s ease, border 0.3s ease;
+        transition:
+            color 0.3s ease,
+            border 0.3s ease;
 
         &:hover {
             color: hsl(156deg 62% 61%);
@@ -406,7 +408,7 @@ html {
         vertical-align: top;
         padding: 13px 22px;
 
-        font-family: "Source Sans 3", sans-serif;
+        font-family: "Source Sans 3 VF", sans-serif;
 
         font-size: 1.2rem;
         font-weight: 400;
@@ -453,7 +455,7 @@ html {
         padding: 10px;
         margin: 10px 0;
         font-size: 1rem;
-        font-weight: 500;
+        font-weight: 400;
         line-height: 1.5;
         color: hsl(0deg 0% 27%);
 
@@ -517,7 +519,7 @@ html {
             padding: 10px 32px 10px 12px;
             margin: 25px 0 5px;
 
-            font-family: "Source Sans 3", sans-serif;
+            font-family: "Source Sans 3 VF", sans-serif;
             font-size: 1.2rem;
             line-height: normal;
             height: auto;
@@ -837,7 +839,9 @@ button.login-social-button {
     background-repeat: no-repeat;
     background-position: 13px 50%;
     background-color: hsl(0deg 0% 100%);
-    box-shadow: 0 1px 3px hsl(0deg 0% 0% / 30%), 0 0 5px hsl(0deg 0% 0% / 10%);
+    box-shadow:
+        0 1px 3px hsl(0deg 0% 0% / 30%),
+        0 0 5px hsl(0deg 0% 0% / 10%);
     margin-left: 0;
     margin-top: 0;
 
@@ -1192,7 +1196,7 @@ button#register_auth_button_gitlab {
 
         .email {
             font-size: 0.95em;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         & img,

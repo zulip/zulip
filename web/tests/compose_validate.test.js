@@ -389,18 +389,16 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 
-    peer_data.get_subscriber_count = (stream_id) => {
+    override_rewire(peer_data, "get_subscriber_count", (stream_id) => {
         assert.equal(stream_id, 101);
         return 16;
-    };
+    });
     let wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
     mock_template("compose_banner/wildcard_warning.hbs", false, (data) => {
         wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
     });
-
-    compose_banner.update_or_append_banner = () => {};
 
     override_rewire(compose_validate, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
@@ -631,7 +629,9 @@ test_ui("needs_subscribe_warning", () => {
     assert.equal(compose_validate.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
+test_ui("warn_if_private_stream_is_linked", ({mock_template, override_rewire}) => {
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
+
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     const test_sub = {
@@ -642,7 +642,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     stream_data.add_sub(test_sub);
     peer_data.set_subscribers(test_sub.stream_id, [1, 2]);
 
-    let denmark = {
+    const denmark = {
         stream_id: 100,
         name: "Denmark",
     };
@@ -674,14 +674,17 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     $("#compose_private").hide();
     compose_state.set_message_type("stream");
 
-    denmark = {
+    // Not everyone is subscribed to secret_stream in denmark, so the
+    // warning is rendered.
+    compose_recipient.set_selected_recipient_id(denmark.stream_id);
+    const secret_stream = {
         invite_only: true,
         name: "Denmark",
         stream_id: 22,
     };
-    stream_data.add_sub(denmark);
+    stream_data.add_sub(secret_stream);
     banner_rendered = false;
-    compose_validate.warn_if_private_stream_is_linked(denmark, $textarea);
+    compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
     assert.ok(banner_rendered);
 });
 
@@ -762,7 +765,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
         ({
             "user-id": "34",
             "stream-id": "111",
-        }[key]);
+        })[key];
     $("#compose_banners .recipient_not_subscribed").length = 1;
     $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
 

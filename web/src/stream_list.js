@@ -147,14 +147,13 @@ function get_search_term() {
 
 export function add_sidebar_row(sub) {
     create_sidebar_row(sub);
-    build_stream_list();
-    stream_cursor.redraw();
+    update_streams_sidebar();
 }
 
 export function remove_sidebar_row(stream_id) {
     stream_sidebar.remove_row(stream_id);
-    build_stream_list();
-    stream_cursor.redraw();
+    const force_rerender = stream_id === topic_list.active_stream_id();
+    update_streams_sidebar(force_rerender);
 }
 
 export function create_initial_sidebar_rows() {
@@ -198,7 +197,7 @@ export function build_stream_list(force_rerender) {
         elems.push(sidebar_row.get_li());
     }
 
-    topic_list.clear();
+    topic_zoom.clear_topics();
     $parent.empty();
 
     const any_pinned_streams =

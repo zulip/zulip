@@ -61,15 +61,15 @@ def api_lidarr_webhook(
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    subject = get_subject_for_http_request(payload)
+    topic = get_topic_for_http_request(payload)
 
     check_send_webhook_message(
-        request, user_profile, subject, body, payload["eventType"].tame(check_string)
+        request, user_profile, topic, body, payload["eventType"].tame(check_string)
     )
     return json_success(request)
 
 
-def get_subject_for_http_request(payload: WildValue) -> str:
+def get_topic_for_http_request(payload: WildValue) -> str:
     if payload["eventType"].tame(check_string) == "Test":
         topic = LIDARR_TOPIC_TEMPLATE_TEST
     else:

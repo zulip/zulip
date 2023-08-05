@@ -193,6 +193,25 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "[sbansal1999](https://github.com/sbansal1999) removed the bug label from [Issue #9](https://github.com/sbansal1999/testing-gh/issues/9)."
         self.check_webhook("issues__unlabeled", expected_topic, expected_message)
 
+    def test_issue_milestoned(self) -> None:
+        expected_topic = "testing-gh / issue #6 This is a sample issue to test GH I..."
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) to [issue #6](https://github.com/sbansal1999/testing-gh/issues/6)."
+
+        self.check_webhook("issues__milestoned", expected_topic, expected_message)
+
+    def test_issue_milestoned_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) to [issue #6 This is a sample issue to test GH Integration Func](https://github.com/sbansal1999/testing-gh/issues/6)."
+
+        self.check_webhook("issues__milestoned", expected_topic, expected_message)
+
+    def test_issue_demilestoned(self) -> None:
+        expected_topic = "testing-gh / issue #6 This is a sample issue to test GH I..."
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) removed milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) from [issue #6](https://github.com/sbansal1999/testing-gh/issues/6)."
+
+        self.check_webhook("issues__demilestoned", expected_topic, expected_message)
+
     def test_membership_msg(self) -> None:
         expected_message = (
             "baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."
@@ -546,7 +565,7 @@ A temporary team so that I can get some webhook fixtures!
         stack_info = m.call_args[1]["stack_info"]
 
         self.assertIn(
-            "The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook",
+            "The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook; ignoring",
             msg,
         )
         self.assertTrue(stack_info)

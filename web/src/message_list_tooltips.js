@@ -1,11 +1,13 @@
 import $ from "jquery";
 import {delegate} from "tippy.js";
 
+import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
+import {page_params} from "./page_params";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
@@ -230,6 +232,36 @@ export function initialize() {
 
     message_list_tooltip(".view_user_card_tooltip", {
         delay: LONG_HOVER_DELAY,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_edit_notice", {
+        trigger: "mouseenter",
+        delay: LONG_HOVER_DELAY,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const edited_notice_str = $elem.attr("data-tippy-content");
+            instance.setContent(
+                parse_html(
+                    render_message_edit_notice_tooltip({
+                        edited_notice_str,
+                        realm_allow_edit_history: page_params.realm_allow_edit_history,
+                    }),
+                ),
+            );
+        },
         onHidden(instance) {
             instance.destroy();
         },

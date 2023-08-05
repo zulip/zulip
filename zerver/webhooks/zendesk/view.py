@@ -25,9 +25,9 @@ def api_zendesk_webhook(
 ) -> HttpResponse:
     """
     Zendesk uses triggers with message templates. This webhook uses the
-    ticket_id and ticket_title to create a subject. And passes with zendesk
+    ticket_id and ticket_title to create a topic. And passes with zendesk
     user's configured message to zulip.
     """
-    subject = truncate(f"#{ticket_id}: {ticket_title}", 60)
-    check_send_webhook_message(request, user_profile, subject, message)
+    topic = truncate(f"#{ticket_id}: {ticket_title}", 60)
+    check_send_webhook_message(request, user_profile, topic, message)
     return json_success(request)

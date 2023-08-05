@@ -335,6 +335,9 @@ export function tokenize_compose_str(s) {
 }
 
 export function broadcast_mentions() {
+    if (!compose_validate.wildcard_mention_allowed()) {
+        return [];
+    }
     const wildcard_mention_array = ["all", "everyone"];
     let wildcard_string = "";
     if (compose_state.get_message_type() === "private") {
@@ -1031,7 +1034,7 @@ function get_header_html() {
             tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
             break;
         case "syntax":
-            if (page_params.realm_default_code_block_language !== null) {
+            if (page_params.realm_default_code_block_language !== "") {
                 tip_text = $t(
                     {defaultMessage: "Default is {language}. Use 'text' to disable highlighting."},
                     {language: page_params.realm_default_code_block_language},

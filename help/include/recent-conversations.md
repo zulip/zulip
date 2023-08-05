@@ -6,7 +6,7 @@ for catching up on messages sent while you were away.
 
 {start_tabs}
 
-{!open-recent-conversations.md!}
+{relative|message|recent}
 
 1. The filters at the top help you quickly find relevant conversations.
    For example, select **Participated** to narrow to the topics you

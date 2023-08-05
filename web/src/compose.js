@@ -22,6 +22,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
+import * as message_events from "./message_events";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -214,7 +215,7 @@ export function send_message(request = create_message_object()) {
     let local_id;
     let locally_echoed;
 
-    const message = echo.try_deliver_locally(request);
+    const message = echo.try_deliver_locally(request, message_events.insert_new_messages);
     if (message) {
         // We are rendering this message locally with an id
         // like 92l99.01 that corresponds to a reasonable
@@ -516,11 +517,11 @@ export function initialize() {
         (event) => {
             event.preventDefault();
 
-            const stream_name = compose_state.stream_name();
-            if (stream_name === "") {
+            const stream_id = compose_state.stream_id();
+            if (stream_id === "") {
                 return;
             }
-            const sub = stream_data.get_sub(stream_name);
+            const sub = stream_data.get_sub_by_id(stream_id);
             stream_settings_ui.sub_or_unsub(sub);
             $(user_not_subscribed_selector).remove();
         },
@@ -582,20 +583,19 @@ export function initialize() {
                 $invite_row.remove();
             }
 
-            function failure(error_msg) {
+            function xhr_failure(xhr) {
+                let error_message = "Failed to subscribe user!";
+                if (xhr.responseJSON?.msg) {
+                    error_message = xhr.responseJSON.msg;
+                }
                 clear_invites();
                 compose_banner.show_error_message(
-                    error_msg,
+                    error_message,
                     compose_banner.CLASSNAMES.generic_compose_error,
                     $banner_container,
                     $("#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);
-            }
-
-            function xhr_failure(xhr) {
-                const error = JSON.parse(xhr.responseText);
-                failure(error.msg);
             }
 
             const sub = sub_store.get(stream_id);
@@ -734,8 +734,8 @@ export function initialize() {
                 on_timestamp_selection,
                 get_timestamp_for_flatpickr(),
                 {
-                    // place the time picker above the icon and center it horizontally
-                    position: "above center",
+                    // place the time picker wherever there is space and center it horizontally
+                    position: "auto center",
                 },
             );
         }

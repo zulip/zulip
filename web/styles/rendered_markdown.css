@@ -98,10 +98,8 @@
     /* Formatting for blockquotes */
     & blockquote {
         padding-left: 5px;
-        margin-left: 10px;
-        margin-top: 5px;
-        margin-bottom: 6px;
-        border-left-color: hsl(0deg 0% 87%);
+        margin: 5px 0 6px 10px;
+        border-left: 5px solid hsl(0deg 0% 87%);
 
         & p {
             line-height: inherit;
@@ -161,7 +159,8 @@
     }
 
     .user-group-mention,
-    .user-mention {
+    .user-mention,
+    .topic-mention {
         font-size: 14px;
         line-height: 17px;
         padding: 0 3px;
@@ -170,7 +169,8 @@
         display: inline-block;
     }
 
-    .user-mention {
+    .user-mention,
+    .topic-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-direct-mention);
 
@@ -252,14 +252,18 @@
         .spoiler-content {
             overflow: hidden;
             border-top: hsl(0deg 0% 50%) 0 solid;
-            transition: height 0.4s ease-in-out, border-top 0.4s step-end,
+            transition:
+                height 0.4s ease-in-out,
+                border-top 0.4s step-end,
                 padding 0.4s step-end;
             padding: 0;
             height: 0;
 
             &.spoiler-content-open {
                 border-top: hsl(0deg 0% 50%) 1px solid;
-                transition: height 0.4s ease-in-out, border-top 0.4s step-start,
+                transition:
+                    height 0.4s ease-in-out,
+                    border-top 0.4s step-start,
                     padding 0.4s step-start;
                 padding: 5px;
                 height: auto;

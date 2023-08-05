@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-version="3.0.3"
-sha256=0c54af17afcf7c18e1a3aafadd5d5f7706a9fbcaebd56f4a38664847608e5c97
+version="3.1.0"
+sha256=fd020a911ec223f5288e99131c91abb437a9a0aa9d5e51b8fdb96d633bd61fb9
 
 tmpdir="$(mktemp -d)"
 trap 'rm -r "$tmpdir"' EXIT

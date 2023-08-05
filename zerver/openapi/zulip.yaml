@@ -660,7 +660,7 @@ paths:
                                         "in_home_view": true,
                                         "email_address": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
                                         "stream_weekly_traffic": null,
-                                        "can_remove_subscribers_group_id": 2,
+                                        "can_remove_subscribers_group": 2,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1168,8 +1168,17 @@ paths:
                                 the new stream exists (for private streams, only subscribers and
                                 organization administrators will receive this event).
 
+                                This event is also sent when a user gains access to a stream they
+                                previously [could not access](/help/stream-permissions), such as
+                                when a private stream is made public, or when a [guest user](/help/roles-and-permissions)
+                                is subscribed to a public (or private) stream.
+
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the stream; just that it exists.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 192), this event was
+                                not sent when guest users gained access to a public stream by being
+                                subscribed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1208,7 +1217,7 @@ paths:
                                         "first_message_id": null,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
-                                        "can_remove_subscribers_group_id": 2,
+                                        "can_remove_subscribers_group": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -1254,7 +1263,7 @@ paths:
                                         "first_message_id": null,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
-                                        "can_remove_subscribers_group_id": 2,
+                                        "can_remove_subscribers_group": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -1820,7 +1829,7 @@ paths:
                                               "first_message_id": 1,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
-                                              "can_remove_subscribers_group_id": 2,
+                                              "can_remove_subscribers_group": 2,
                                             },
                                             {
                                               "name": "Denmark",
@@ -1834,7 +1843,7 @@ paths:
                                               "first_message_id": 4,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
-                                              "can_remove_subscribers_group_id": 2,
+                                              "can_remove_subscribers_group": 2,
                                             },
                                             {
                                               "name": "Verona",
@@ -1848,7 +1857,7 @@ paths:
                                               "first_message_id": 6,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
-                                              "can_remove_subscribers_group_id": 2,
+                                              "can_remove_subscribers_group": 2,
                                             },
                                           ],
                                       },
@@ -1893,7 +1902,7 @@ paths:
                                         "first_message_id": 1,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
-                                        "can_remove_subscribers_group_id": 2,
+                                        "can_remove_subscribers_group": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -2906,7 +2915,7 @@ paths:
                                       "description": "Backend team",
                                       "id": 2,
                                       "is_system_group": false,
-                                      "can_mention_group_id": 11,
+                                      "can_mention_group": 11,
                                     },
                                   "id": 0,
                                 }
@@ -2946,13 +2955,17 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
-                                    can_mention_group_id:
+                                    can_mention_group:
                                       type: integer
                                       description: |
                                         ID of the new user group whose members are allowed to mention the
                                         group.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+                                        **Changes**: Before Zulip 8.0 (feature level 198),
+                                        the `can_mention_group` setting
+                                        was named `can_mention_group_id`.
+
+                                        New in Zulip 8.0 (feature level 191). Previously, groups
                                         could be mentioned if and only if they were not system groups.
                               example:
                                 {
@@ -3296,7 +3309,7 @@ paths:
                                         "id": 1,
                                         "name": "Python playground",
                                         "pygments_language": "Python",
-                                        "url_prefix": "https://python.example.com",
+                                        "url_template": "https://python.example.com",
                                       },
                                     ],
                                   "id": 0,
@@ -3952,10 +3965,17 @@ paths:
                                         **Changes**: New in Zulip 5.0 (feature level 103).
                                     default_code_block_language:
                                       type: string
-                                      nullable: true
                                       description: |
-                                        The default pygments language code to be used for a code blocks
-                                        in this organization. If `null`, no default has been set.
+                                        The default pygments language code to be used for code blocks in this
+                                        organization. If an empty string, no default has been set.
+
+                                        **Changes**: Prior to Zulip 8.0 (feature level 195), a server bug meant
+                                        that both `null` and an empty string could represent that no default was
+                                        set for this realm setting in the [`POST /register`](/api/register-queue)
+                                        response. The documentation for both that endpoint and this event
+                                        incorrectly stated that the only representation for no default language
+                                        was `null`. This event in fact uses the empty string to indicate that no
+                                        default has been set in all server versions.
                                     default_language:
                                       type: string
                                       description: |
@@ -6671,17 +6691,30 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "result": "error",
-                        "msg": "Invalid emoji code",
-                        "code": "BAD_REQUEST",
-                      }
-                    description: |
-                      An example JSON error response for when the emoji code is invalid:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid emoji code",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response for when the emoji code is invalid:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Reaction already exists.",
+                            "code": "REACTION_ALREADY_EXISTS",
+                          }
+                        description: |
+                          An example JSON error response for when the reaction already exists.
 
+                          **Changes**: New in Zulip 8.0 (feature level 193). Previously, this
+                          error returned the `"BAD_REQUEST"` code.
     delete:
       operationId: remove-reaction
       summary: Remove an emoji reaction
@@ -6720,16 +6753,30 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "result": "error",
-                        "msg": "Invalid message(s)",
-                        "code": "BAD_REQUEST",
-                      }
-                    description: |
-                      An example JSON error response for when the emoji code is invalid:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid emoji code",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response for when the emoji code is invalid:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Reaction doesn't exist.",
+                            "code": "REACTION_DOES_NOT_EXIST",
+                          }
+                        description: |
+                          An example JSON error response for when the reaction does not exist.
+
+                          **Changes**: New in Zulip 8.0 (feature level 193). Previously, this
+                          error returned the `"BAD_REQUEST"` code.
 
   /messages/{message_id}/read_receipts:
     get:
@@ -8797,17 +8844,21 @@ paths:
         - Users can unsubscribe any user from a stream if they [have
           access](/help/stream-permissions) to the stream and are a
           member of the [user group](/api/get-user-groups) specified
-          by the [`can_remove_subscribers_group_id`][can-remove-parameter]
+          by the [`can_remove_subscribers_group`][can-remove-parameter]
           for the stream.
 
-        **Changes**: Before Zulip 7.0 (feature level 161), the
+        **Changes**: Before Zulip 8.0 (feature level 197),
+        the `can_remove_subscribers_group` setting
+        was named `can_remove_subscribers_group_id`.
+
+        Before Zulip 7.0 (feature level 161), the
         `can_remove_subscribers_group_id` for all streams was always
         the system group for organization administrators.
 
         Before Zulip 6.0 (feature level 145), users had no special
         privileges for managing bots that they own.
 
-        [can-remove-parameter]: /api/subscribe#parameter-can_remove_subscribers_group_id
+        [can-remove-parameter]: /api/subscribe#parameter-can_remove_subscribers_group
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -10673,13 +10724,20 @@ paths:
             type: string
           example: Python
           required: true
-        - name: url_prefix
+        - name: url_template
           in: query
           description: |
-            The url prefix for the playground.
+            The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html)
+            compliant URL template for the playground. The template should
+            contain exactly one variable named `code`, which determines how the
+            extracted code should be substituted in the playground URL.
+
+            **Changes**: New in Zulip 8.0 (feature level 196). This replaced the
+            `url_prefix` parameter, which was used to construct URLs by just
+            concatenating `url_prefix` and `code`.
           schema:
             type: string
-          example: https://python.example.com
+          example: https://python.example.com?code={code}
           required: true
       responses:
         "200":
@@ -11521,7 +11579,7 @@ paths:
                                 first_message_id:
                                   nullable: true
                                 is_announcement_only: {}
-                                can_remove_subscribers_group_id: {}
+                                can_remove_subscribers_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -13303,12 +13361,16 @@ paths:
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_default_code_block_language:
                         type: string
-                        nullable: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The default pygments language code to be used for a code blocks
-                          in this organization. If `null`, no default has been set.
+                          The default pygments language code to be used for code blocks in this
+                          organization. If an empty string, no default has been set.
+
+                          **Changes**: Prior to Zulip 8.0 (feature level 195), a server bug meant
+                          that both `null` and an empty string could represent that no default was
+                          set for this realm setting. Clients supporting older server versions
+                          should treat either value (`null` or `""`) as no default being set.
                       realm_message_content_delete_limit_seconds:
                         type: integer
                         nullable: true
@@ -15626,7 +15688,7 @@ paths:
                                 first_message_id:
                                   nullable: true
                                 is_announcement_only: {}
-                                can_remove_subscribers_group_id: {}
+                                can_remove_subscribers_group: {}
                                 is_default:
                                   type: boolean
                                   description: |
@@ -15738,7 +15800,7 @@ paths:
                             "rendered_description": "<p>A Scandinavian country</p>",
                             "stream_id": 7,
                             "stream_post_policy": 1,
-                            "can_remove_subscribers_group_id": 2,
+                            "can_remove_subscribers_group": 2,
                           },
                       }
         "400":
@@ -16172,16 +16234,19 @@ paths:
                   type: integer
               example: [1, 2, 3, 4]
           required: true
-        - name: can_mention_group_id
+        - name: can_mention_group
           in: query
           description: |
             ID of the user group whose members are allowed to mention the new
             user group.
 
-            This setting cannot be set to `"@role:internet"` and `"@role:owners"`
+            This setting cannot be set to `"role:internet"` and `"role:owners"`
             system groups.
 
-            **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+            **Changes**: Before Zulip 8.0 (feature level 198),
+            the `can_mention_group` setting was named `can_mention_group_id`.
+
+            New in Zulip 8.0 (feature level 191). Previously, groups
             could be mentioned if and only if they were not system groups.
           schema:
             type: integer
@@ -16309,16 +16374,19 @@ paths:
           schema:
             type: string
           example: The marketing team.
-        - name: can_mention_group_id
+        - name: can_mention_group
           in: query
           description: |
             ID of the new user group whose members are allowed to mention the
             group.
 
-            This setting cannot be set to `"@role:internet"` and `"@role:owners"`
+            This setting cannot be set to `"role:internet"` and `"role:owners"`
             system groups.
 
-            **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+            **Changes**: Before Zulip 8.0 (feature level 198),
+            the `can_mention_group` setting was named `can_mention_group_id`.
+
+            New in Zulip 8.0 (feature level 191). Previously, groups
             could be mentioned if and only if they were not system groups.
           schema:
             type: integer
@@ -16440,12 +16508,15 @@ paths:
                                 modified by users.
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
-                            can_mention_group_id:
+                            can_mention_group:
                               type: integer
                               description: |
                                 ID of the user group whose members are allowed to mention the group.
 
-                                **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+                                **Changes**: Before Zulip 8.0 (feature level 198),
+                                the `can_mention_group` setting was named `can_mention_group_id`.
+
+                                New in Zulip 8.0 (feature level 191). Previously, groups
                                 could be mentioned if and only if they were not system groups.
                         description: |
                           A list of `user_group` objects.
@@ -16458,20 +16529,20 @@ paths:
                             {
                               "description": "Owners of this organization",
                               "id": 1,
-                              "name": "@role:owners",
+                              "name": "role:owners",
                               "members": [1],
                               "direct_subgroup_ids": [],
                               "is_system_group": true,
-                              "can_mention_group_id": 11,
+                              "can_mention_group": 11,
                             },
                             {
                               "description": "Administrators of this organization, including owners",
                               "id": 2,
-                              "name": "@role:administrators",
+                              "name": "role:administrators",
                               "members": [2],
                               "direct_subgroup_ids": [1],
                               "is_system_group": true,
-                              "can_mention_group_id": 12,
+                              "can_mention_group": 12,
                             },
                             {
                               "description": "Characters of Hamlet",
@@ -16480,7 +16551,7 @@ paths:
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
-                              "can_mention_group_id": 13,
+                              "can_mention_group": 13,
                             },
                           ],
                       }
@@ -16923,7 +16994,7 @@ components:
             first_message_id:
               nullable: true
             is_announcement_only: {}
-            can_remove_subscribers_group_id: {}
+            can_remove_subscribers_group: {}
     BasicStreamBase:
       type: object
       description: |
@@ -17025,13 +17096,17 @@ components:
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
             should use `stream_post_policy` instead.
-        can_remove_subscribers_group_id:
+        can_remove_subscribers_group:
           type: integer
           description: |
             ID of the user group whose members are allowed to unsubscribe others
             from the stream.
 
-            **Changes**: New in Zulip 6.0 (feature level 142).
+            **Changes**: Before Zulip 8.0 (feature level 197),
+            the `can_remove_subscribers_group` setting
+            was named `can_remove_subscribers_group_id`.
+
+            New in Zulip 6.0 (feature level 142).
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -17361,10 +17436,17 @@ components:
           description: |
             The name of the Pygments language lexer for that
             programming language.
-        url_prefix:
+        url_template:
           type: string
           description: |
-            The url prefix for the playground.
+            The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html)
+            compliant URL template for the playground. The template contains
+            exactly one variable named `code`, which determines how the
+            extracted code should be substituted in the playground URL.
+
+            **Changes**: New in Zulip 8.0 (feature level 196). This replaced the
+            `url_prefix` parameter, which was used to construct URLs by just
+            concatenating url_prefix and code.
     RealmExport:
       type: object
       additionalProperties: false
@@ -17448,12 +17530,15 @@ components:
             directly modified by users.
 
             **Changes**: New in Zulip 5.0 (feature level 93).
-        can_mention_group_id:
+        can_mention_group:
           type: integer
           description: |
             ID of the user group whose members are allowed to mention the group.
 
-            **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+            **Changes**: Before Zulip 8.0 (feature level 198),
+            the `can_mention_group` setting was named `can_mention_group_id`.
+
+            New in Zulip 8.0 (feature level 191). Previously, groups
             could be mentioned if and only if they were not system groups.
     Subscriptions:
       type: object
@@ -17665,13 +17750,17 @@ components:
 
             If `null`, the stream was recently created and there is
             insufficient data to estimate the average traffic.
-        can_remove_subscribers_group_id:
+        can_remove_subscribers_group:
           type: integer
           description: |
             ID of the user group whose members are allowed to unsubscribe others
             from the stream.
 
-            **Changes**: New in Zulip 6.0 (feature level 142).
+            **Changes**: Before Zulip 8.0 (feature level 197),
+            the `can_remove_subscribers_group` setting
+            was named `can_remove_subscribers_group_id`.
+
+            New in Zulip 6.0 (feature level 142).
     DefaultStreamGroup:
       type: object
       description: |
@@ -18080,7 +18169,7 @@ components:
                 type: integer
                 description: |
                   The ID of the user who sent the message.
-              submessage_id:
+              id:
                 type: integer
                 description: |
                   The ID of the submessage.
@@ -19252,7 +19341,7 @@ components:
       example: "20"
       required: false
     CanRemoveSubscribersGroupId:
-      name: can_remove_subscribers_group_id
+      name: can_remove_subscribers_group
       in: query
       description: |
         ID of the [user group](/api/get-user-groups) whose members are
@@ -19263,9 +19352,13 @@ components:
 
         This setting can currently only be set to user groups that are
         system groups, except for the system groups named
-        `"@role:internet"` and `"@role:owners"`.
+        `"role:internet"` and `"role:owners"`.
 
-        **Changes**: New in Zulip 7.0 (feature level 161).
+        **Changes**: Before Zulip 8.0 (feature level 197),
+        the `can_remove_subscribers_group` setting
+        was named `can_remove_subscribers_group_id`.
+
+        New in Zulip 7.0 (feature level 161).
       schema:
         type: integer
       example: 20

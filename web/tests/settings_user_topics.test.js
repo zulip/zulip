@@ -6,13 +6,15 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-const list_widget = mock_esm("../src/list_widget");
+const noop = () => {};
+
+const list_widget = mock_esm("../src/list_widget", {
+    generic_sort_functions: noop,
+});
 
 const settings_user_topics = zrequire("settings_user_topics");
 const stream_data = zrequire("stream_data");
 const user_topics = zrequire("user_topics");
-
-const noop = () => {};
 
 const frontend = {
     stream_id: 101,
@@ -20,7 +22,7 @@ const frontend = {
 };
 stream_data.add_sub(frontend);
 
-run_test("settings", ({override}) => {
+run_test("settings", ({override, override_rewire}) => {
     user_topics.update_user_topics(
         frontend.stream_id,
         "js",
@@ -81,12 +83,16 @@ run_test("settings", ({override}) => {
     };
 
     let user_topic_visibility_policy_changed = false;
-    user_topics.set_user_topic_visibility_policy = (stream_id, topic, visibility_policy) => {
-        assert.equal(stream_id, frontend.stream_id);
-        assert.equal(topic, "js");
-        assert.equal(visibility_policy, user_topics.all_visibility_policies.UNMUTED);
-        user_topic_visibility_policy_changed = true;
-    };
+    override_rewire(
+        user_topics,
+        "set_user_topic_visibility_policy",
+        (stream_id, topic, visibility_policy) => {
+            assert.equal(stream_id, frontend.stream_id);
+            assert.equal(topic, "js");
+            assert.equal(visibility_policy, user_topics.all_visibility_policies.UNMUTED);
+            user_topic_visibility_policy_changed = true;
+        },
+    );
     $topic_fake_this.value = user_topics.all_visibility_policies.UNMUTED;
     topic_change_handler.call($topic_fake_this, event);
     assert.ok(user_topic_visibility_policy_changed);

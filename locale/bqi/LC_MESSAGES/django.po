@@ -2174,7 +2174,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:14
 msgid "Integrations"
-msgstr ""
+msgstr "ya jur kerdênā"
 
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
@@ -2708,7 +2708,7 @@ msgstr ""
 
 #: templates/zerver/register.html:158
 msgid "Password strength"
-msgstr ""
+msgstr "qoďratê razm"
 
 #: templates/zerver/register.html:167
 msgid "What are you interested in?"
@@ -2742,7 +2742,7 @@ msgstr ""
 
 #: templates/zerver/reset_confirm.html:52
 msgid "Confirm password"
-msgstr ""
+msgstr "taiďê razm"
 
 #: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used."
@@ -3092,7 +3092,7 @@ msgstr ""
 #: zerver/actions/message_flags.py:333 zerver/lib/message.py:758
 #: zerver/lib/message.py:764
 msgid "Invalid message(s)"
-msgstr ""
+msgstr "payom (ā) nazêbāl"
 
 #: zerver/actions/message_send.py:156
 msgid "Unable to render message"
@@ -3428,7 +3428,7 @@ msgstr ""
 
 #: zerver/lib/addressee.py:145 zerver/lib/outgoing_webhook.py:215
 msgid "Invalid message type"
-msgstr ""
+msgstr "no'ê payom zêbāl nî"
 
 #: zerver/lib/attachments.py:24
 msgid "Invalid attachment"
@@ -3501,11 +3501,11 @@ msgstr ""
 
 #: zerver/lib/email_validation.py:100
 msgid "Invalid address."
-msgstr ""
+msgstr "ādrês zêbāl nî."
 
 #: zerver/lib/email_validation.py:105
 msgid "Outside your domain."
-msgstr ""
+msgstr "dar zê dāmanê isā hêď."
 
 #: zerver/lib/email_validation.py:109 zerver/views/users.py:708
 msgid "Email addresses containing + are not allowed."
@@ -4032,7 +4032,7 @@ msgstr ""
 #. error
 #: zerver/lib/push_notifications.py:575 zilencer/views.py:205
 msgid "Token does not exist"
-msgstr ""
+msgstr "nêšovêi nî"
 
 #: zerver/lib/push_notifications.py:746
 msgid ""
@@ -4292,12 +4292,12 @@ msgstr ""
 
 #: zerver/lib/users.py:245 zerver/lib/users.py:247
 msgid "No such bot"
-msgstr ""
+msgstr "činow robāti nî"
 
 #: zerver/lib/users.py:271 zerver/lib/users.py:298 zerver/lib/users.py:314
 #: zerver/views/presence.py:44
 msgid "No such user"
-msgstr ""
+msgstr "činow mêntori nî"
 
 #: zerver/lib/users.py:273
 msgid "User is deactivated"
@@ -4823,7 +4823,7 @@ msgstr ""
 
 #: zerver/views/message_send.py:201
 msgid "Missing sender"
-msgstr ""
+msgstr "fêšnāko pati hêď"
 
 #: zerver/views/message_send.py:208
 msgid "Mirroring not allowed with recipient user IDs"
@@ -5174,7 +5174,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:258
 msgid "Wrong password!"
-msgstr ""
+msgstr "razm zêbāl nî!"
 
 #: zerver/views/user_settings.py:263
 msgid "You're making too many attempts! Try again in {} seconds."

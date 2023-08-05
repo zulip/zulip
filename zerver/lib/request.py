@@ -1,4 +1,3 @@
-import threading
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import wraps
@@ -440,7 +439,9 @@ def has_request_variables(
                 except orjson.JSONDecodeError:
                     if param.argument_type == "body":
                         raise InvalidJSONError(_("Malformed JSON"))
-                    raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
+                    raise JsonableError(
+                        _('Argument "{name}" is not valid JSON.').format(name=post_var_name)
+                    )
 
                 try:
                     val = param.json_validator(post_var_name, val)
@@ -490,25 +491,3 @@ def has_request_variables(
         return return_value
 
     return _wrapped_req_func
-
-
-local = threading.local()
-
-
-def get_current_request() -> Optional[HttpRequest]:
-    """Returns the current HttpRequest object; this should only be used by
-    logging frameworks, which have no other access to the current
-    request.  All other codepaths should pass through the current
-    request object, rather than rely on this thread-local global.
-
-    """
-    return getattr(local, "request", None)
-
-
-def set_request(req: HttpRequest) -> None:
-    local.request = req
-
-
-def unset_request() -> None:
-    if hasattr(local, "request"):
-        del local.request

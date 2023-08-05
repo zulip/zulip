@@ -11,17 +11,23 @@ const {page_params, user_settings} = require("./lib/zpage_params");
 
 const noop = () => {};
 
+let autosize_called;
+
+mock_esm("../src/compose_ui", {
+    autosize_textarea() {
+        autosize_called = true;
+    },
+});
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
     warn_if_topic_resolved: noop,
+    wildcard_mention_allowed: () => true,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
-
-let autosize_called;
 
 let set_timeout_called;
 set_global("setTimeout", (f, time) => {
@@ -43,7 +49,6 @@ const stream_data = zrequire("stream_data");
 const stream_list_sort = zrequire("stream_list_sort");
 const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
-const compose_ui = zrequire("compose_ui");
 const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
@@ -70,6 +75,11 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     assert.equal(mention_all.special_item_text, "all (translated: Notify stream)");
     assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify stream)");
     assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
+
+    compose_validate.wildcard_mention_allowed = () => false;
+    const mentionNobody = ct.broadcast_mentions();
+    assert.equal(mentionNobody.length, 0);
+    compose_validate.wildcard_mention_allowed = () => true;
 });
 
 run_test("verify wildcard mentions typeahead for direct message", () => {
@@ -246,8 +256,11 @@ emoji.initialize({
     realm_emoji: {},
     emoji_codes,
 });
-emoji.active_realm_emojis = new Map();
-emoji.emojis_by_name = emojis_by_name;
+emoji.active_realm_emojis.clear();
+emoji.emojis_by_name.clear();
+for (const [key, val] of emojis_by_name.entries()) {
+    emoji.emojis_by_name.set(key, val);
+}
 
 const ali = {
     email: "ali@zulip.com",
@@ -325,7 +338,7 @@ const hamletcharacters = {
     members: new Set([100, 104]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
-    can_mention_group_id: 2,
+    can_mention_group: 2,
 };
 
 const backend = {
@@ -335,7 +348,7 @@ const backend = {
     members: new Set([101]),
     is_system_group: false,
     direct_subgroup_ids: new Set([1]),
-    can_mention_group_id: 1,
+    can_mention_group: 1,
 };
 
 const call_center = {
@@ -345,7 +358,7 @@ const call_center = {
     members: new Set([102]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
-    can_mention_group_id: 2,
+    can_mention_group: 2,
 };
 
 const make_emoji = (emoji_dict) => ({
@@ -405,10 +418,6 @@ test("topics_seen_for", ({override, override_rewire}) => {
 });
 
 test("content_typeahead_selected", ({override}) => {
-    compose_ui.autosize_textarea = () => {
-        autosize_called = true;
-    };
-
     const fake_this = {
         query: "",
         $element: {},
@@ -689,6 +698,8 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
+const sweden_topics_to_show = ["<&>", "even more ice", "furniture", "ice", "kronor", "more ice"];
+
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_stream_header_colorblock();
     mock_banners();
@@ -728,16 +739,15 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
     let topic_typeahead_called = false;
     $("#stream_message_recipient_topic").typeahead = (options) => {
-        const topics = ["<&>", "even more ice", "furniture", "ice", "kronor", "more ice"];
-        stream_topic_history.get_recent_topic_names = (stream_id) => {
+        override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
             assert.equal(stream_id, sweden_stream.stream_id);
-            return topics;
-        };
+            return sweden_topics_to_show;
+        });
 
         compose_state.set_stream_name("Sweden");
         let actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
-        let expected_value = topics;
+        let expected_value = sweden_topics_to_show;
         assert.deepEqual(actual_value, expected_value);
 
         // options.highlighter()
@@ -1228,6 +1238,10 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 });
 
 test("begins_typeahead", ({override, override_rewire}) => {
+    override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
+        assert.equal(stream_id, sweden_stream.stream_id);
+        return sweden_topics_to_show;
+    });
     override(stream_topic_history_util, "get_server_history", () => {});
 
     const begin_typehead_this = {
@@ -1403,7 +1417,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
 
     // topic_list
     // includes "more ice"
-    const sweden_topics_to_show = stream_topic_history.get_recent_topic_names(1);
     assert_typeahead_equals("#**Sweden>more ice", sweden_topics_to_show);
     sweden_topics_to_show.push("totally new topic");
     assert_typeahead_equals("#**Sweden>totally new topic", sweden_topics_to_show);

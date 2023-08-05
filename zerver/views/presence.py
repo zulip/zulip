@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from zerver.actions.presence import update_user_presence
 from zerver.actions.user_status import do_update_user_status
 from zerver.decorator import human_users_only
-from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
+from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -91,15 +91,17 @@ def update_user_status_backend(
         emoji_type = UserStatus.UNICODE_EMOJI
 
     elif emoji_name is not None:
-        if emoji_code is None:
-            # The emoji_code argument is only required for rare corner
-            # cases discussed in the long block comment below.  For simple
-            # API clients, we allow specifying just the name, and just
-            # look up the code using the current name->code mapping.
-            emoji_code = emoji_name_to_emoji_code(user_profile.realm, emoji_name)[0]
+        if emoji_code is None or emoji_type is None:
+            emoji_data = get_emoji_data(user_profile.realm_id, emoji_name)
+            if emoji_code is None:
+                # The emoji_code argument is only required for rare corner
+                # cases discussed in the long block comment below.  For simple
+                # API clients, we allow specifying just the name, and just
+                # look up the code using the current name->code mapping.
+                emoji_code = emoji_data.emoji_code
 
-        if emoji_type is None:
-            emoji_type = emoji_name_to_emoji_code(user_profile.realm, emoji_name)[1]
+            if emoji_type is None:
+                emoji_type = emoji_data.reaction_type
 
     elif emoji_type or emoji_code:
         raise JsonableError(
@@ -141,7 +143,7 @@ def update_active_status_backend(
 ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
-        raise JsonableError(_("Invalid status: {}").format(status))
+        raise JsonableError(_("Invalid status: {status}").format(status=status))
     elif user_profile.presence_enabled:
         client = RequestNotes.get_notes(request).client
         assert client is not None

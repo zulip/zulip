@@ -70,7 +70,13 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import EmojiInfo, Message, Realm, linkifiers_for_realm
+from zerver.models import (
+    EmojiInfo,
+    Message,
+    Realm,
+    get_name_keyed_dict_for_active_realm_emoji,
+    linkifiers_for_realm,
+)
 
 ReturnT = TypeVar("ReturnT")
 
@@ -113,6 +119,7 @@ class LinkInfo(TypedDict):
 @dataclass
 class MessageRenderingResult:
     rendered_content: str
+    mentions_topic_wildcard: bool
     mentions_stream_wildcard: bool
     mentions_user_ids: Set[int]
     mentions_user_group_ids: Set[int]
@@ -120,6 +127,9 @@ class MessageRenderingResult:
     links_for_preview: Set[str]
     user_ids_with_alert_words: Set[int]
     potential_attachment_path_ids: List[str]
+
+    def has_wildcard_mention(self) -> bool:
+        return self.mentions_stream_wildcard or self.mentions_topic_wildcard
 
 
 @dataclass
@@ -698,13 +708,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
         parsed_url = urllib.parse.urlparse(url)
-        if parsed_url.netloc.lower().endswith(".wikipedia.org"):
+        if parsed_url.netloc.lower().endswith(".wikipedia.org") and parsed_url.path.startswith(
+            "/wiki/File:"
+        ):
             # Redirecting from "/wiki/File:" to "/wiki/Special:FilePath/File:"
             # A possible alternative, that avoids the redirect after hitting "Special:"
             # is using the first characters of md5($filename) to generate the URL
-            domain = parsed_url.scheme + "://" + parsed_url.netloc
-            correct_url = domain + parsed_url.path[:6] + "Special:FilePath" + parsed_url.path[5:]
-            return correct_url
+            newpath = parsed_url.path.replace("/wiki/File:", "/wiki/Special:FilePath/File:", 1)
+            return parsed_url._replace(path=newpath).geturl()
         if parsed_url.netloc == "linx.li":
             return "https://linx.li/s" + parsed_url.path
         return None
@@ -1129,20 +1140,21 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return insertion_index
 
             uncle = grandparent[insertion_index]
-            inline_image_classes = [
+            inline_image_classes = {
                 "message_inline_image",
                 "message_inline_ref",
                 "inline-preview-twitter",
-            ]
+            }
             if (
                 uncle.tag != "div"
                 or "class" not in uncle.keys()
-                or uncle.attrib["class"] not in inline_image_classes
+                or not (set(uncle.attrib["class"].split()) & inline_image_classes)
             ):
                 return insertion_index
 
-            uncle_link = list(uncle.iter(tag="a"))[0].attrib["href"]
-            if uncle_link not in parent_links:
+            uncle_link = uncle.find("a")
+            assert uncle_link is not None
+            if uncle_link.attrib["href"] not in parent_links:
                 return insertion_index
 
     def run(self, root: Element) -> None:
@@ -1776,6 +1788,7 @@ class UserMentionPattern(CompiledInlineProcessor):
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is not None:
+            topic_wildcard = mention.user_mention_matches_topic_wildcard(name)
             stream_wildcard = mention.user_mention_matches_stream_wildcard(name)
 
             # For @**|id** and @**name|id** mention syntaxes.
@@ -1795,10 +1808,14 @@ class UserMentionPattern(CompiledInlineProcessor):
                 # For @**name** syntax.
                 user = db_data.mention_data.get_user_by_name(name)
 
+            user_id = None
             if stream_wildcard:
                 if not silent:
                     self.zmd.zulip_rendering_result.mentions_stream_wildcard = True
                 user_id = "*"
+            elif topic_wildcard:
+                if not silent:
+                    self.zmd.zulip_rendering_result.mentions_topic_wildcard = True
             elif user is not None:
                 assert isinstance(user, FullNameInfo)
 
@@ -1811,13 +1828,16 @@ class UserMentionPattern(CompiledInlineProcessor):
                 return None, None, None
 
             el = Element("span")
-            el.set("data-user-id", user_id)
-            text = f"{name}"
-            if silent:
-                el.set("class", "user-mention silent")
+            if user_id:
+                el.set("data-user-id", user_id)
+            text = f"@{name}"
+            if topic_wildcard:
+                el.set("class", "topic-mention")
             else:
                 el.set("class", "user-mention")
-                text = f"@{text}"
+            if silent:
+                el.set("class", el.get("class", "") + " silent")
+                text = f"{name}"
             el.text = markdown.util.AtomicString(text)
             return el, m.start(), m.end()
         return None, None, None
@@ -2491,6 +2511,7 @@ def do_convert(
     # Filters such as UserMentionPattern need a message.
     rendering_result: MessageRenderingResult = MessageRenderingResult(
         rendered_content="",
+        mentions_topic_wildcard=False,
         mentions_stream_wildcard=False,
         mentions_user_ids=set(),
         mentions_user_group_ids=set(),
@@ -2526,7 +2547,7 @@ def do_convert(
         stream_name_info = mention_data.get_stream_name_map(stream_names)
 
         if content_has_emoji_syntax(content):
-            active_realm_emoji = message_realm.get_active_emoji()
+            active_realm_emoji = get_name_keyed_dict_for_active_realm_emoji(message_realm.id)
         else:
             active_realm_emoji = {}
 
@@ -2559,9 +2580,6 @@ def do_convert(
         return rendering_result
     except Exception:
         cleaned = privacy_clean_markdown(content)
-        # NOTE: Don't change this message without also changing the
-        # logic in logging_handlers.py or we can create recursive
-        # exceptions.
         markdown_logger.exception(
             "Exception in Markdown parser; input (sanitized) was: %s\n (message %s)",
             cleaned,

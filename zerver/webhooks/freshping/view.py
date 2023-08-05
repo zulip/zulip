@@ -28,7 +28,7 @@ def api_freshping_webhook(
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    subject = get_subject_for_http_request(payload)
+    topic = get_topic_for_http_request(payload)
     check_state_name = payload["webhook_event_data"]["check_state_name"].tame(check_string)
     if check_state_name not in CHECK_STATE_NAME_TO_EVENT_TYPE:
         raise UnsupportedWebhookEventTypeError(check_state_name)
@@ -36,22 +36,22 @@ def api_freshping_webhook(
     check_send_webhook_message(
         request,
         user_profile,
-        subject,
+        topic,
         body,
         CHECK_STATE_NAME_TO_EVENT_TYPE[check_state_name],
     )
     return json_success(request)
 
 
-def get_subject_for_http_request(payload: WildValue) -> str:
+def get_topic_for_http_request(payload: WildValue) -> str:
     webhook_event_data = payload["webhook_event_data"]
     if webhook_event_data["application_name"].tame(check_string) == "Webhook test":
-        subject = FRESHPING_TOPIC_TEMPLATE_TEST
+        topic = FRESHPING_TOPIC_TEMPLATE_TEST
     else:
-        subject = FRESHPING_TOPIC_TEMPLATE.format(
+        topic = FRESHPING_TOPIC_TEMPLATE.format(
             check_name=webhook_event_data["check_name"].tame(check_string)
         )
-    return subject
+    return topic
 
 
 def get_body_for_http_request(payload: WildValue) -> str:

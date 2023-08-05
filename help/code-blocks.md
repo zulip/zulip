@@ -67,14 +67,23 @@ prefix**.
 {end_tabs}
 
 For example, to configure code playgrounds for languages like Python or
-JavaScript, you could specify the language and URL prefix fields as:
+JavaScript, you could specify the language and URL templates as:
 
-* `Python` and `https://replit.com/languages/python3/?code=`
-* `JavaScript` and `https://replit.com/languages/javascript/?code=`
+* `Python` and `https://replit.com/languages/python3/code={code}`
+* `JavaScript` and `https://replit.com/languages/javascript/code={code}`
 
 When a code block is labeled as Python or JavaScript (either explicitly or by
 organization default), users would get a on-hover option to open the code block
 in the specified code playground.
+
+!!! tip ""
+
+    Code playgrounds use [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html)
+    compliant URL templates to describe how links should be generated. Zulip's
+    rendering engine will pass the URL-encoded code from the code block as the
+    `code` parameter, denoted as `{code}` in this URL template, in order to
+    generate the URL. You can refer to parts of the documentation on URL
+    templates from [adding a custom linkifier](/help/add-a-custom-linkifier).
 
 ### Technical details
 
@@ -87,8 +96,9 @@ to these human-readable Pygments names; e.g., `py3` and `py` are mapped to
 `Python`. One can use the typeahead (which appears when you type something
 or just click on the language field) to look up the Pygments name.
 
-* The links for opening code playgrounds are always constructed by concatenating
-the provided URL prefix with the URL-encoded contents of the code block.
+* The links for opening code playgrounds are always constructed by substituting
+the URL-encoded contents of the code block into `code` variable in the URL template.
+The URL template is required to contain exactly one variable named `code`.
 
 * Code playground sites do not always clearly document their URL format; often
 you can just get the prefix from your browser's URL bar.

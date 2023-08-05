@@ -705,7 +705,7 @@ class Attacher {
     }
 }
 
-export function get_search_result(_base_query, query) {
+export function get_search_result(query) {
     let suggestion;
 
     // search_operators correspond to the operators for the query in the input.
@@ -749,7 +749,16 @@ export function get_search_result(_base_query, query) {
     // `has` and `is` operators work only on predefined categories. Default suggestion
     // is not displayed in that case. e.g. `messages that contain abc` as
     // a suggestion for `has:abc`does not make sense.
-    if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
+    if (last.operator === "search") {
+        suggestion = {
+            search_string: last.operand,
+            description_html: `search for <strong>${Handlebars.Utils.escapeExpression(
+                last.operand,
+            )}</strong>`,
+        };
+        attacher.prepend_base(suggestion);
+        attacher.push(suggestion);
+    } else if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
         suggestion = get_default_suggestion(search_operators);
         attacher.push(suggestion);
     }
@@ -808,8 +817,8 @@ export function get_search_result(_base_query, query) {
     return attacher.result.slice(0, max_items);
 }
 
-export function get_suggestions(base_query, query) {
-    const result = get_search_result(base_query, query);
+export function get_suggestions(query) {
+    const result = get_search_result(query);
     return finalize_search_result(result);
 }
 

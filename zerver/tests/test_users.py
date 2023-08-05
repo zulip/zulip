@@ -27,7 +27,7 @@ from zerver.actions.users import (
     do_delete_user,
     do_delete_user_preserving_messages,
 )
-from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_field, get_gravatar_url
 from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
@@ -48,19 +48,27 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
+from zerver.lib.users import (
+    Account,
+    access_user_by_id,
+    get_accounts_for_email,
+    get_cross_realm_dicts,
+    user_ids_to_users,
+)
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
     InvalidFakeEmailDomainError,
     Message,
     PreregistrationUser,
+    RealmAuditLog,
     RealmDomain,
     RealmUserDefault,
     Recipient,
     ScheduledEmail,
     Stream,
     Subscription,
+    UserGroup,
     UserGroupMembership,
     UserHotspot,
     UserProfile,
@@ -786,7 +794,7 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(91):
+        with self.assert_database_query_count(93):
             with cache_tries_captured() as cache_tries:
                 with self.capture_send_event_calls(expected_num_events=11) as events:
                     fred = do_create_user(
@@ -798,7 +806,7 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(cache_tries, 26)
+        self.assert_length(cache_tries, 24)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
         notifications = set()
@@ -850,13 +858,42 @@ class BulkCreateUserTest(ZulipTestCase):
             ("Cher", "cher@zulip.com"),
         ]
 
+        now = timezone_now()
+        expected_user_group_names = {
+            UserGroup.MEMBERS_GROUP_NAME,
+            UserGroup.FULL_MEMBERS_GROUP_NAME,
+        }
         create_users(realm, name_list)
         bono = get_user_by_delivery_email("bono@zulip.com", realm)
         self.assertEqual(bono.email, "bono@zulip.com")
         self.assertEqual(bono.delivery_email, "bono@zulip.com")
+        user_group_names = set(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                modified_user=bono,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time__gte=now,
+            ).values_list("modified_user_group__name", flat=True)
+        )
+        self.assertSetEqual(
+            user_group_names,
+            expected_user_group_names,
+        )
 
         cher = get_user_by_delivery_email("cher@zulip.com", realm)
         self.assertEqual(cher.full_name, "Cher")
+        user_group_names = set(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                modified_user=cher,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time__gte=now,
+            ).values_list("modified_user_group__name", flat=True)
+        )
+        self.assertSetEqual(
+            user_group_names,
+            expected_user_group_names,
+        )
 
 
 class AdminCreateUserTest(ZulipTestCase):
@@ -1070,32 +1107,10 @@ class UserProfileTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             user_ids_to_users(real_user_ids, get_realm("zephyr"))
 
-    def test_bulk_get_users(self) -> None:
-        from zerver.lib.users import bulk_get_users
-
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        webhook_bot = self.example_user("webhook_bot")
-        result = bulk_get_users(
-            [hamlet.email, cordelia.email],
-            get_realm("zulip"),
-        )
-        self.assertEqual(result[hamlet.email].email, hamlet.email)
-        self.assertEqual(result[cordelia.email].email, cordelia.email)
-
-        result = bulk_get_users(
-            [hamlet.email, cordelia.email, webhook_bot.email],
-            None,
-            base_query=UserProfile.objects.all(),
-        )
-        self.assertEqual(result[hamlet.email].email, hamlet.email)
-        self.assertEqual(result[cordelia.email].email, cordelia.email)
-        self.assertEqual(result[webhook_bot.email].email, webhook_bot.email)
-
     def test_get_accounts_for_email(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        def check_account_present_in_accounts(user: UserProfile, accounts: List[Accounts]) -> None:
+        def check_account_present_in_accounts(user: UserProfile, accounts: List[Account]) -> None:
             for account in accounts:
                 realm = user.realm
                 if (
@@ -1281,6 +1296,71 @@ class UserProfileTest(ZulipTestCase):
         # cross-realm bot, UserProfile.DoesNotExist is raised
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_by_id_in_realm_including_cross_realm(hamlet.id, None)
+
+    def test_cross_realm_dicts(self) -> None:
+        def user_row(email: str) -> Dict[str, object]:
+            user = UserProfile.objects.get(email=email)
+            avatar_url = get_avatar_field(
+                user_id=user.id,
+                realm_id=user.realm_id,
+                email=user.delivery_email,
+                avatar_source=user.avatar_source,
+                avatar_version=1,
+                medium=False,
+                client_gravatar=False,
+            )
+            return dict(
+                # bot-specific fields
+                avatar_url=avatar_url,
+                date_joined=user.date_joined.isoformat(),
+                delivery_email=email,
+                email=email,
+                full_name=user.full_name,
+                user_id=user.id,
+                # common fields
+                avatar_version=1,
+                bot_owner_id=None,
+                bot_type=1,
+                is_active=True,
+                is_admin=False,
+                is_billing_admin=False,
+                is_bot=True,
+                is_guest=False,
+                is_owner=False,
+                is_system_bot=True,
+                role=400,
+                timezone="",
+            )
+
+        expected_emails = [
+            "emailgateway@zulip.com",
+            "notification-bot@zulip.com",
+            "welcome-bot@zulip.com",
+        ]
+
+        expected_dicts = [user_row(email) for email in expected_emails]
+
+        with self.assert_database_query_count(1):
+            actual_dicts = get_cross_realm_dicts()
+
+        self.assertEqual(actual_dicts, expected_dicts)
+
+        # Now it should be cached.
+        with self.assert_database_query_count(0, keep_cache_warm=True):
+            actual_dicts = get_cross_realm_dicts()
+
+        self.assertEqual(actual_dicts, expected_dicts)
+
+        # Test cache invalidation
+        welcome_bot = UserProfile.objects.get(email="welcome-bot@zulip.com")
+        welcome_bot.full_name = "fred"
+        welcome_bot.save()
+
+        with self.assert_database_query_count(1, keep_cache_warm=True):
+            actual_dicts = get_cross_realm_dicts()
+
+        expected_dicts = [user_row(email) for email in expected_emails]
+        self.assertEqual(actual_dicts, expected_dicts)
 
     def test_get_user_subscription_status(self) -> None:
         self.login("hamlet")
@@ -1618,7 +1698,7 @@ class ActivateTest(ZulipTestCase):
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user("hamlet")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             user.realm,
             to_user_ids=[user.id],
             delay=datetime.timedelta(hours=1),
@@ -1631,7 +1711,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1647,7 +1727,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1662,7 +1742,7 @@ class ActivateTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1688,7 +1768,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         to_user_ids = [hamlet.id, iago.id]
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=to_user_ids,
             delay=datetime.timedelta(hours=1),
@@ -1711,7 +1791,7 @@ class ActivateTest(ZulipTestCase):
             [
                 f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
                 "had empty users and address attributes: "
-                "{'template_prefix': 'zerver/emails/followup_day1', 'from_name': None, "
+                "{'template_prefix': 'zerver/emails/followup_day2', 'from_name': None, "
                 "'from_address': None, 'language': None, 'context': {}}"
             ],
         )
@@ -1755,6 +1835,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
+            possible_topic_wildcard_mention=False,
             possible_stream_wildcard_mention=False,
         )
 
@@ -1767,9 +1848,11 @@ class RecipientInfoTest(ZulipTestCase):
             pm_mention_push_disabled_user_ids=set(),
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
+            topic_wildcard_mention_user_ids=set(),
             stream_wildcard_mention_user_ids=set(),
             followed_topic_push_user_ids=set(),
             followed_topic_email_user_ids=set(),
+            topic_wildcard_mention_in_followed_topic_user_ids=set(),
             stream_wildcard_mention_in_followed_topic_user_ids=set(),
             muted_sender_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
@@ -1819,6 +1902,59 @@ class RecipientInfoTest(ZulipTestCase):
             possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+
+        do_change_user_setting(
+            hamlet,
+            "wildcard_mentions_notify",
+            True,
+            acting_user=None,
+        )
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=False,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
+        self.assertEqual(info.topic_wildcard_mention_user_ids, set())
+
+        # User who sent a message to the topic, or reacted to a message on the topic
+        # is only considered as a possible user to be notified for topic mention.
+        self.send_stream_message(hamlet, stream_name, content="test message", topic_name=topic_name)
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=False,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=False,
+            possible_stream_wildcard_mention=True,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+        self.assertEqual(info.topic_wildcard_mention_user_ids, set())
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=True,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
 
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = False
@@ -2071,7 +2207,7 @@ class BulkUsersTest(ZulipTestCase):
             data = dict(client_gravatar=orjson.dumps(client_gravatar).decode())
             result = self.client_get("/json/users", data)
             rows = self.assert_json_success(result)["members"]
-            hamlet_data = [row for row in rows if row["user_id"] == hamlet.id][0]
+            [hamlet_data] = (row for row in rows if row["user_id"] == hamlet.id)
             return hamlet_data["avatar_url"]
 
         self.assertEqual(

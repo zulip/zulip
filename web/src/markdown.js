@@ -117,13 +117,28 @@ function parse_with_options({raw_content, helper_config, options}) {
                     classes = "user-mention silent";
                     display_text = mention;
                 } else {
-                    // Wildcard mention
+                    // Stream Wildcard mention
                     mentioned_wildcard = true;
                     display_text = "@" + mention;
                     classes = "user-mention";
                 }
 
                 return `<span class="${classes}" data-user-id="*">${_.escape(display_text)}</span>`;
+            }
+            if (mention === "topic") {
+                let classes;
+                let display_text;
+                if (silently) {
+                    classes = "topic-mention silent";
+                    display_text = mention;
+                } else {
+                    // Topic Wildcard mention
+                    mentioned_wildcard = true;
+                    display_text = "@" + mention;
+                    classes = "topic-mention";
+                }
+
+                return `<span class="${classes}">${_.escape(display_text)}</span>`;
             }
 
             let full_name;
@@ -231,11 +246,14 @@ function parse_with_options({raw_content, helper_config, options}) {
             return undefined;
         },
         silencedMentionHandler(quote) {
-            // Silence quoted mentions.
+            // Silence quoted personal and stream wildcard mentions.
             quote = quote.replaceAll(
                 /(<span class="user-mention)(" data-user-id="(\d+|\*)">)@/g,
                 "$1 silent$2",
             );
+
+            // Silence quoted topic wildcard mentions.
+            quote = quote.replaceAll(/(<span class="topic-mention)(">)@/g, "$1 silent$2");
 
             // Silence quoted user group mentions.
             quote = quote.replaceAll(

@@ -69,7 +69,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import access_stream_for_send_message, ensure_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.topic import filter_by_exact_message_topic
+from zerver.lib.topic import filter_by_exact_message_topic, participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.validator import check_widget_content
@@ -77,6 +77,7 @@ from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
     Message,
+    NotificationTriggers,
     Realm,
     Recipient,
     Stream,
@@ -166,9 +167,11 @@ class RecipientInfoResult:
     pm_mention_push_disabled_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
+    topic_wildcard_mention_user_ids: Set[int]
     stream_wildcard_mention_user_ids: Set[int]
     followed_topic_email_user_ids: Set[int]
     followed_topic_push_user_ids: Set[int]
+    topic_wildcard_mention_in_followed_topic_user_ids: Set[int]
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
@@ -195,13 +198,16 @@ def get_recipient_info(
     sender_id: int,
     stream_topic: Optional[StreamTopicTarget],
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
+    possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
 ) -> RecipientInfoResult:
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
+    topic_wildcard_mention_user_ids: Set[int] = set()
     stream_wildcard_mention_user_ids: Set[int] = set()
     followed_topic_push_user_ids: Set[int] = set()
     followed_topic_email_user_ids: Set[int] = set()
+    topic_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
 
@@ -217,12 +223,23 @@ def get_recipient_info(
         # of this function for different message types.
         assert stream_topic is not None
 
+        topic_participant_user_ids: Set[int] = set()
+        if possible_topic_wildcard_mention:
+            # A topic participant is anyone who either sent or reacted to messages in the topic.
+            # It is expensive to call `participants_for_topic` if the topic has a large number
+            # of messages. But it is fine to call it here, as this gets called only if the message
+            # has syntax that might be a @topic mention without having confirmed the syntax isn't, say,
+            # in a code block.
+            topic_participant_user_ids = participants_for_topic(
+                recipient.id, stream_topic.topic_name
+            )
         subscription_rows = (
             get_subscriptions_for_send_message(
                 realm_id=realm_id,
                 stream_id=stream_topic.stream_id,
                 topic_name=stream_topic.topic_name,
                 possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                topic_participant_user_ids=topic_participant_user_ids,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
             .annotate(
@@ -293,14 +310,31 @@ def get_recipient_info(
         )
         followed_topic_push_user_ids = followed_topic_notification_recipients("push_notifications")
 
-        if possible_stream_wildcard_mention:
-            # We calculate `stream_wildcard_mention_user_ids` and `followed_topic_wildcard_mention_user_ids`
-            # only if there's a possible stream wildcard mention in the message. This is important so as
-            # to avoid unnecessarily sending huge user ID lists with thousands of elements to the
-            # event queue (which can happen because these settings are `True` by default for new users.)
-            stream_wildcard_mention_user_ids = notification_recipients("wildcard_mentions_notify")
-            stream_wildcard_mention_in_followed_topic_user_ids = (
+        if possible_stream_wildcard_mention or possible_topic_wildcard_mention:
+            # We calculate `wildcard_mentions_notify_user_ids` and `followed_topic_wildcard_mentions_notify_user_ids`
+            # only if there's a possible stream or topic wildcard mention in the message.
+            # This is important so as to avoid unnecessarily sending huge user ID lists with
+            # thousands of elements to the event queue (which can happen because these settings
+            # are `True` by default for new users.)
+            wildcard_mentions_notify_user_ids = notification_recipients("wildcard_mentions_notify")
+            followed_topic_wildcard_mentions_notify_user_ids = (
                 followed_topic_notification_recipients("wildcard_mentions_notify")
+            )
+
+        if possible_stream_wildcard_mention:
+            stream_wildcard_mention_user_ids = wildcard_mentions_notify_user_ids
+            stream_wildcard_mention_in_followed_topic_user_ids = (
+                followed_topic_wildcard_mentions_notify_user_ids
+            )
+
+        if possible_topic_wildcard_mention:
+            topic_wildcard_mention_user_ids = topic_participant_user_ids.intersection(
+                wildcard_mentions_notify_user_ids
+            )
+            topic_wildcard_mention_in_followed_topic_user_ids = (
+                topic_participant_user_ids.intersection(
+                    followed_topic_wildcard_mentions_notify_user_ids
+                )
             )
 
     elif recipient.type == Recipient.HUDDLE:
@@ -418,9 +452,11 @@ def get_recipient_info(
         pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
+        topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
         stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
         followed_topic_push_user_ids=followed_topic_push_user_ids,
         followed_topic_email_user_ids=followed_topic_email_user_ids,
+        topic_wildcard_mention_in_followed_topic_user_ids=topic_wildcard_mention_in_followed_topic_user_ids,
         stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
         muted_sender_user_ids=muted_sender_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
@@ -478,7 +514,7 @@ def get_service_bot_events(
             trigger = "mention"
         # Direct message triggers for personal and huddle messages
         elif (not is_stream) and (user_profile_id in active_user_ids):
-            trigger = "private_message"
+            trigger = NotificationTriggers.PRIVATE_MESSAGE
         else:
             return
 
@@ -541,6 +577,7 @@ def build_message_send_dict(
         sender_id=message.sender_id,
         stream_topic=stream_topic,
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
+        possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
     )
 
@@ -570,9 +607,9 @@ def build_message_send_dict(
         members = mention_data.get_group_members(group_id)
         rendering_result.mentions_user_ids.update(members)
 
-    # Only send data to Tornado about stream wildcard mentions if message
-    # rendering determined the message had an actual stream wildcard
-    # mention in it (and not e.g. stream wildcard mention syntax inside a
+    # Only send data to Tornado about stream or topic wildcard mentions if message
+    # rendering determined the message had an actual stream or topic wildcard
+    # mention in it (and not e.g. stream or topic wildcard mention syntax inside a
     # code block).
     if rendering_result.mentions_stream_wildcard:
         stream_wildcard_mention_user_ids = info.stream_wildcard_mention_user_ids
@@ -583,6 +620,14 @@ def build_message_send_dict(
         stream_wildcard_mention_user_ids = set()
         stream_wildcard_mention_in_followed_topic_user_ids = set()
 
+    if rendering_result.mentions_topic_wildcard:
+        topic_wildcard_mention_user_ids = info.topic_wildcard_mention_user_ids
+        topic_wildcard_mention_in_followed_topic_user_ids = (
+            info.topic_wildcard_mention_in_followed_topic_user_ids
+        )
+    else:
+        topic_wildcard_mention_user_ids = set()
+        topic_wildcard_mention_in_followed_topic_user_ids = set()
     """
     Once we have the actual list of mentioned ids from message
     rendering, we can patch in "default bots" (aka normal bots)
@@ -617,7 +662,9 @@ def build_message_send_dict(
         default_bot_user_ids=info.default_bot_user_ids,
         service_bot_tuples=info.service_bot_tuples,
         all_bot_user_ids=info.all_bot_user_ids,
+        topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
         stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
+        topic_wildcard_mention_in_followed_topic_user_ids=topic_wildcard_mention_in_followed_topic_user_ids,
         stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
@@ -641,12 +688,17 @@ def create_user_messages(
     mark_as_read_user_ids: Set[int],
     limit_unread_user_ids: Optional[Set[int]],
     scheduled_message_to_self: bool,
+    topic_wildcard_mention_user_ids: Set[int],
+    topic_wildcard_mention_in_followed_topic_user_ids: Set[int],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
     sender_id = message.sender.id
     is_stream_message = message.is_stream_message()
+    all_topic_wildcard_mention_user_ids = topic_wildcard_mention_user_ids.union(
+        topic_wildcard_mention_in_followed_topic_user_ids
+    )
 
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
@@ -693,6 +745,11 @@ def create_user_messages(
             flags |= UserMessage.flags.mentioned
         if user_profile_id in ids_with_alert_words:
             flags |= UserMessage.flags.has_alert_word
+        if (
+            rendering_result.mentions_topic_wildcard
+            and user_profile_id in all_topic_wildcard_mention_user_ids
+        ):
+            flags |= UserMessage.flags.wildcard_mentioned
 
         if (
             user_profile_id in long_term_idle_user_ids
@@ -818,6 +875,8 @@ def do_send_messages(
                 mark_as_read_user_ids=mark_as_read_user_ids,
                 limit_unread_user_ids=send_request.limit_unread_user_ids,
                 scheduled_message_to_self=scheduled_message_to_self,
+                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
+                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
             )
 
             for um in user_messages:
@@ -914,9 +973,11 @@ def do_send_messages(
                 pm_mention_email_disabled_user_ids=send_request.pm_mention_email_disabled_user_ids,
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
+                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
                 stream_wildcard_mention_user_ids=send_request.stream_wildcard_mention_user_ids,
                 followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
                 followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
                 stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=send_request.muted_sender_user_ids,
                 all_bot_user_ids=send_request.all_bot_user_ids,
@@ -942,9 +1003,13 @@ def do_send_messages(
             ),
             stream_push_user_ids=list(send_request.stream_push_user_ids),
             stream_email_user_ids=list(send_request.stream_email_user_ids),
+            topic_wildcard_mention_user_ids=list(send_request.topic_wildcard_mention_user_ids),
             stream_wildcard_mention_user_ids=list(send_request.stream_wildcard_mention_user_ids),
             followed_topic_push_user_ids=list(send_request.followed_topic_push_user_ids),
             followed_topic_email_user_ids=list(send_request.followed_topic_email_user_ids),
+            topic_wildcard_mention_in_followed_topic_user_ids=list(
+                send_request.topic_wildcard_mention_in_followed_topic_user_ids
+            ),
             stream_wildcard_mention_in_followed_topic_user_ids=list(
                 send_request.stream_wildcard_mention_in_followed_topic_user_ids
             ),
@@ -1483,7 +1548,7 @@ def check_message(
 
     if (
         stream is not None
-        and message_send_dict.rendering_result.mentions_stream_wildcard
+        and message_send_dict.rendering_result.has_wildcard_mention()
         and not wildcard_mention_allowed(sender, stream)
     ):
         raise JsonableError(

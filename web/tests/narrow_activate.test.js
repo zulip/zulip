@@ -14,6 +14,7 @@ const all_messages_data = mock_esm("../src/all_messages_data");
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_banner = mock_esm("../src/compose_banner");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
+const compose_recipient = mock_esm("../src/compose_recipient");
 const hashchange = mock_esm("../src/hashchange");
 const message_fetch = mock_esm("../src/message_fetch");
 const message_list = mock_esm("../src/message_list");
@@ -29,7 +30,7 @@ const message_feed_loading = mock_esm("../src/message_feed_loading");
 const message_view_header = mock_esm("../src/message_view_header");
 const notifications = mock_esm("../src/notifications");
 const stream_list = mock_esm("../src/stream_list");
-const top_left_corner = mock_esm("../src/top_left_corner");
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area");
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
 mock_esm("../src/recent_topics_util", {
@@ -55,8 +56,6 @@ mock_esm("../src/user_topics", {
     is_topic_muted: () => false,
 });
 
-const compose_recipient = zrequire("compose_recipient");
-const util = zrequire("util");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const narrow = zrequire("narrow");
@@ -70,13 +69,13 @@ const denmark = {
 };
 stream_data.add_sub(denmark);
 
-function test_helper() {
+function test_helper({override}) {
     const events = [];
 
     function stub(module, func_name) {
-        module[func_name] = () => {
+        override(module, func_name, () => {
             events.push([module, func_name]);
-        };
+        });
     }
 
     stub(compose_banner, "clear_message_sent_banners");
@@ -84,12 +83,11 @@ function test_helper() {
     stub(compose_closed_ui, "update_reply_recipient_label");
     stub(hashchange, "save_narrow");
     stub(message_feed_loading, "hide_indicators");
-    stub(message_feed_loading, "show_loading_older");
     stub(message_feed_top_notices, "hide_top_of_narrow_notices");
     stub(notifications, "redraw_title");
     stub(stream_list, "handle_narrow_activated");
     stub(message_view_header, "render_title_area");
-    stub(top_left_corner, "handle_narrow_activated");
+    stub(left_sidebar_navigation_area, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
     stub(compose_recipient, "update_narrow_to_recipient_visibility");
     stub(unread_ops, "process_visible");
@@ -131,10 +129,10 @@ function stub_message_list() {
     };
 }
 
-run_test("basics", () => {
+run_test("basics", ({override}) => {
     stub_message_list();
 
-    const helper = test_helper();
+    const helper = test_helper({override});
     const terms = [{operator: "stream", operand: "Denmark"}];
 
     const selected_id = 1000;
@@ -192,7 +190,7 @@ run_test("basics", () => {
         [compose_closed_ui, "update_buttons_for_stream"],
         [compose_closed_ui, "update_reply_recipient_label"],
         [compose_actions, "on_narrow"],
-        [top_left_corner, "handle_narrow_activated"],
+        [left_sidebar_navigation_area, "handle_narrow_activated"],
         [stream_list, "handle_narrow_activated"],
         [typing_events, "render_notifications_for_narrow"],
         [message_view_header, "render_title_area"],
@@ -201,7 +199,6 @@ run_test("basics", () => {
 
     message_lists.current.selected_id = () => -1;
     message_lists.current.get_row = () => row;
-    util.sorted_ids = () => [];
 
     narrow.activate([{operator: "is", operand: "private"}], {
         then_select_id: selected_id,

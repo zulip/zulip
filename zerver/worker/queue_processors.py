@@ -14,7 +14,7 @@ import threading
 import time
 import urllib
 from abc import ABC, abstractmethod
-from collections import deque
+from collections import defaultdict, deque
 from email.message import EmailMessage
 from functools import wraps
 from types import FrameType
@@ -64,8 +64,7 @@ from zerver.lib.email_mirror import (
     rate_limit_mirror_by_realm,
 )
 from zerver.lib.email_mirror import process_message as mirror_email
-from zerver.lib.email_notifications import handle_missedmessage_emails
-from zerver.lib.error_notify import do_report_error
+from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
@@ -590,6 +589,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         logging.debug("Processing missedmessage_emails event: %s", event)
         # When we consume an event, check if there are existing pending emails
         # for that user, and if so use the same scheduled timestamp.
+
         user_profile_id: int = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
         batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
@@ -657,56 +657,69 @@ class MissedMessageWorker(QueueProcessingWorker):
 
     def work(self) -> None:
         while True:
-            with self.cv:
+            try:
+                finished = self.background_loop()
+                if finished:
+                    break
+            except Exception:
+                logging.exception(
+                    "Exception in MissedMessage background worker; restarting the loop",
+                    stack_info=True,
+                )
+
+    def background_loop(self) -> bool:
+        with self.cv:
+            if self.stopping:
+                return True
+            # There are three conditions which we wait for:
+            #
+            #  1. We are being explicitly asked to stop; see the
+            #     notify() call in stop()
+            #
+            #  2. We have no ScheduledMessageNotificationEmail
+            #     objects currently (has_timeout = False) and the
+            #     first one was just enqueued; see the notify()
+            #     call in consume().  We break out so that we can
+            #     come back around the loop and re-wait with a
+            #     timeout (see next condition).
+            #
+            #  3. One or more ScheduledMessageNotificationEmail
+            #     exist in the database, so we need to re-check
+            #     them regularly; this happens by hitting the
+            #     timeout and calling maybe_send_batched_emails().
+            #     There is no explicit notify() for this.
+            timeout: Optional[int] = None
+            if ScheduledMessageNotificationEmail.objects.exists():
+                timeout = self.CHECK_FREQUENCY_SECONDS
+            self.has_timeout = timeout is not None
+
+            def wait_condition() -> bool:
                 if self.stopping:
-                    return
-                # There are three conditions which we wait for:
-                #
-                #  1. We are being explicitly asked to stop; see the
-                #     notify() call in stop()
-                #
-                #  2. We have no ScheduledMessageNotificationEmail
-                #     objects currently (has_timeout = False) and the
-                #     first one was just enqueued; see the notify()
-                #     call in consume().  We break out so that we can
-                #     come back around the loop and re-wait with a
-                #     timeout (see next condition).
-                #
-                #  3. One or more ScheduledMessageNotificationEmail
-                #     exist in the database, so we need to re-check
-                #     them regularly; this happens by hitting the
-                #     timeout and calling maybe_send_batched_emails().
-                #     There is no explicit notify() for this.
-                timeout: Optional[int] = None
-                if ScheduledMessageNotificationEmail.objects.exists():
-                    timeout = self.CHECK_FREQUENCY_SECONDS
-                self.has_timeout = timeout is not None
+                    # Condition (1)
+                    return True
+                if timeout is None:
+                    # Condition (2).  We went to sleep with no
+                    # ScheduledMessageNotificationEmail existing,
+                    # and one has just been made.  We re-check
+                    # that is still true now that we have the
+                    # lock, and if we see it, we stop waiting.
+                    return ScheduledMessageNotificationEmail.objects.exists()
+                # This should only happen at the start or end of
+                # the wait, when we haven't been notified, but are
+                # re-checking the condition.
+                return False
 
-                def wait_condition() -> bool:
-                    if self.stopping:
-                        # Condition (1)
-                        return True
-                    if timeout is None:
-                        # Condition (2).  We went to sleep with no
-                        # ScheduledMessageNotificationEmail existing,
-                        # and one has just been made.  We re-check
-                        # that is still true now that we have the
-                        # lock, and if we see it, we stop waiting.
-                        return ScheduledMessageNotificationEmail.objects.exists()
-                    # This should only happen at the start or end of
-                    # the wait, when we haven't been notified, but are
-                    # re-checking the condition.
-                    return False
+            was_notified = self.cv.wait_for(wait_condition, timeout=timeout)
 
-                was_notified = self.cv.wait_for(wait_condition, timeout=timeout)
+        # Being notified means that we are in conditions (1) or
+        # (2), above.  In neither case do we need to look at if
+        # there are batches to send -- (2) means that the
+        # ScheduledMessageNotificationEmail was _just_ created, so
+        # there is no need to check it now.
+        if not was_notified:
+            self.maybe_send_batched_emails()
 
-            # Being notified means that we are in conditions (1) or
-            # (2), above.  In neither case do we need to look at if
-            # there are batches to send -- (2) means that the
-            # ScheduledMessageNotificationEmail was _just_ created, so
-            # there is no need to check it now.
-            if not was_notified:
-                self.maybe_send_batched_emails()
+        return False
 
     def maybe_send_batched_emails(self) -> None:
         current_time = timezone_now()
@@ -714,24 +727,17 @@ class MissedMessageWorker(QueueProcessingWorker):
         with transaction.atomic():
             events_to_process = ScheduledMessageNotificationEmail.objects.filter(
                 scheduled_timestamp__lte=current_time
-            ).select_related()
+            ).select_for_update()
 
             # Batch the entries by user
-            events_by_recipient: Dict[int, List[Dict[str, Any]]] = {}
+            events_by_recipient: Dict[int, Dict[int, MissedMessageData]] = defaultdict(dict)
             for event in events_to_process:
-                entry = dict(
-                    user_profile_id=event.user_profile_id,
-                    message_id=event.message_id,
-                    trigger=event.trigger,
-                    mentioned_user_group_id=event.mentioned_user_group_id,
+                events_by_recipient[event.user_profile_id][event.message_id] = MissedMessageData(
+                    trigger=event.trigger, mentioned_user_group_id=event.mentioned_user_group_id
                 )
-                if event.user_profile_id in events_by_recipient:
-                    events_by_recipient[event.user_profile_id].append(entry)
-                else:
-                    events_by_recipient[event.user_profile_id] = [entry]
 
             for user_profile_id in events_by_recipient:
-                events: List[Dict[str, Any]] = events_by_recipient[user_profile_id]
+                events = events_by_recipient[user_profile_id]
 
                 logging.info(
                     "Batch-processing %s missedmessage_emails events for user %s",
@@ -823,24 +829,6 @@ class PushNotificationsWorker(QueueProcessingWorker):
                 )
 
             retry_event(self.queue_name, event, failure_processor)
-
-
-@assign_queue("error_reports")
-class ErrorReporter(QueueProcessingWorker):
-    def consume(self, event: Mapping[str, Any]) -> None:
-        error_types = ["browser", "server"]
-        assert event["type"] in error_types
-
-        # Drop any old remaining browser-side errors; these now use
-        # Sentry.
-        if event["type"] == "browser":
-            return
-
-        if not settings.ERROR_REPORTING:
-            return
-
-        logging.info("Processing traceback for %s", event.get("user_email"))
-        do_report_error(event["report"])
 
 
 @assign_queue("digest_emails")

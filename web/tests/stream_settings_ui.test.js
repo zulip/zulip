@@ -43,7 +43,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1],
         stream_weekly_traffic: null,
         color: "red",
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
     const poland = {
         elem: "poland",
@@ -54,7 +54,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2, 3],
         stream_weekly_traffic: 13,
         color: "red",
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
     const pomona = {
         elem: "pomona",
@@ -65,7 +65,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [],
         stream_weekly_traffic: 0,
         color: "red",
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
     const cpp = {
         elem: "cpp",
@@ -76,7 +76,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2],
         stream_weekly_traffic: 6,
         color: "red",
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
     const zzyzx = {
         elem: "zzyzx",
@@ -87,7 +87,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2],
         stream_weekly_traffic: 6,
         color: "red",
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
 
     const sub_row_data = [denmark, poland, pomona, cpp, zzyzx];

@@ -162,7 +162,6 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 MIDDLEWARE = [
     "zerver.middleware.TagRequests",
     "zerver.middleware.SetRemoteAddrFromRealIpHeader",
-    "zerver.middleware.RequestContext",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # Important: All middleware before LogRequests should be
@@ -693,11 +692,8 @@ if IS_WORKER:
 else:
     FILE_LOG_PATH = SERVER_LOG_PATH
 
-# This is disabled in a few tests.
-LOGGING_ENABLED = True
-
 DEFAULT_ZULIP_HANDLERS = [
-    *(["zulip_admins"] if ERROR_REPORTING else []),
+    *(["mail_admins"] if ERROR_REPORTING else []),
     "console",
     "file",
     "errors_file",
@@ -745,9 +741,6 @@ LOGGING: Dict[str, Any] = {
         "nop": {
             "()": "zerver.lib.logging_util.ReturnTrue",
         },
-        "require_logging_enabled": {
-            "()": "zerver.lib.logging_util.ReturnEnabled",
-        },
         "require_really_deployed": {
             "()": "zerver.lib.logging_util.RequireReallyDeployed",
         },
@@ -761,15 +754,14 @@ LOGGING: Dict[str, Any] = {
         },
     },
     "handlers": {
-        "zulip_admins": {
+        "mail_admins": {
             "level": "ERROR",
-            "class": "zerver.logging_handlers.AdminNotifyHandler",
+            "class": "django.utils.log.AdminEmailHandler",
             "filters": (
                 ["ZulipLimiter", "require_debug_false", "require_really_deployed"]
                 if not DEBUG_ERROR_REPORTING
                 else []
             ),
-            "formatter": "default",
         },
         "auth_file": {
             "level": "DEBUG",
@@ -857,7 +849,6 @@ LOGGING: Dict[str, Any] = {
         # root logger
         "": {
             "level": "INFO",
-            "filters": ["require_logging_enabled"],
             "handlers": DEFAULT_ZULIP_HANDLERS,
         },
         # Django, alphabetized
@@ -966,12 +957,6 @@ LOGGING: Dict[str, Any] = {
         },
         "zulip.soft_deactivation": {
             "handlers": ["file", "errors_file"],
-            "propagate": False,
-        },
-        # This logger is used only for automated tests validating the
-        # error-handling behavior of the zulip_admins handler.
-        "zulip.test_zulip_admins_handler": {
-            "handlers": ["zulip_admins"],
             "propagate": False,
         },
         "zulip.zerver.webhooks": {

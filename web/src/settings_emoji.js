@@ -111,6 +111,7 @@ export function populate_emoji() {
     const $emoji_table = $("#admin_emoji_table").expectOne();
     ListWidget.create($emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
+        get_item: ListWidget.default_get_item,
         modifier(item) {
             if (item.deactivated !== true) {
                 return render_admin_emoji_list({
@@ -137,8 +138,9 @@ export function populate_emoji() {
         $parent_container: $("#emoji-settings").expectOne(),
         sort_fields: {
             author_full_name: sort_author_full_name,
+            ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
         },
-        init_sort: ["alphabetic", "name"],
+        init_sort: "name_alphabetic",
         $simplebar_container: $("#emoji-settings .progressive-table-wrapper"),
     });
 
@@ -200,10 +202,7 @@ export function add_custom_emoji_post_render() {
 function show_modal() {
     const html_body = render_add_emoji();
 
-    function add_custom_emoji(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
+    function add_custom_emoji() {
         dialog_widget.show_dialog_spinner();
 
         const $emoji_status = $("#dialog_error");
@@ -222,8 +221,6 @@ function show_modal() {
                 error(xhr) {
                     $("#dialog_error").hide();
                     dialog_widget.hide_dialog_spinner();
-                    const errors = JSON.parse(xhr.responseText).msg;
-                    xhr.responseText = JSON.stringify({msg: errors});
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $emoji_status);
                 },
             });

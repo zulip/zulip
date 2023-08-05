@@ -109,14 +109,17 @@ def validate_licenses(
 
     if licenses is None or (not exempt_from_license_number_check and licenses < min_licenses):
         raise BillingError(
-            "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
+            "not enough licenses",
+            _("You must invoice for at least {min_licenses} users.").format(
+                min_licenses=min_licenses
+            ),
         )
 
     if max_licenses is not None and licenses > max_licenses:
         message = _(
-            "Invoices with more than {} licenses can't be processed from this page. To complete "
-            "the upgrade, please contact {}."
-        ).format(max_licenses, settings.ZULIP_ADMINISTRATOR)
+            "Invoices with more than {max_licenses} licenses can't be processed from this page. To"
+            " complete the upgrade, please contact {email}."
+        ).format(max_licenses=max_licenses, email=settings.ZULIP_ADMINISTRATOR)
         raise BillingError("too many licenses", message)
 
 

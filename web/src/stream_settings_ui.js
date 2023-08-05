@@ -15,7 +15,7 @@ import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
-import {DropdownListWidget} from "./dropdown_list_widget";
+import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -247,7 +247,7 @@ export function update_message_retention_setting(sub, new_value) {
 
 export function update_can_remove_subscribers_group_id(sub, new_value) {
     stream_data.update_can_remove_subscribers_group_id(sub, new_value);
-    stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group_id");
+    stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group");
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
 
@@ -589,6 +589,32 @@ export function switch_stream_sort(tab_name) {
 
 export let new_stream_can_remove_subscribers_group_widget = null;
 
+function dropdown_setup() {
+    new_stream_can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "new_stream_can_remove_subscribers_group",
+        get_options: () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "can_remove_subscribers_group",
+            ),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            new_stream_can_remove_subscribers_group_widget.render();
+        },
+        $events_container: $("#subscription_overlay"),
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+        default_text: $t({defaultMessage: "No user groups"}),
+        default_id: user_groups.get_user_group_from_name("role:administrators").id,
+        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+    });
+}
+
 export function setup_page(callback) {
     // We should strongly consider only setting up the page once,
     // but I am writing these comments write before a big release,
@@ -664,17 +690,6 @@ export function setup_page(callback) {
     function populate_and_fill() {
         $("#streams_overlay_container").empty();
 
-        const opts = {
-            widget_name: "new_stream_can_remove_subscribers_group_id",
-            data: user_groups.get_realm_user_groups_for_dropdown_list_widget(
-                "can_remove_subscribers_group",
-            ),
-            default_text: $t({defaultMessage: "No user groups"}),
-            include_current_item: false,
-            value: user_groups.get_user_group_from_name("@role:administrators").id,
-        };
-        new_stream_can_remove_subscribers_group_widget = new DropdownListWidget(opts);
-
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
         const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
@@ -711,6 +726,7 @@ export function setup_page(callback) {
 
         render_left_panel_superset();
         initialize_components();
+        dropdown_setup();
         redraw_left_panel();
         stream_create.set_up_handlers();
 
@@ -957,7 +973,7 @@ function ajaxSubscribe(stream, color, $stream_row) {
                 $("#create_stream_name").val("");
             }
 
-            const res = JSON.parse(xhr.responseText);
+            const res = xhr.responseJSON;
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];

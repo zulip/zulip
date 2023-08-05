@@ -48,7 +48,7 @@ function get_focus_area(msg_type, opts) {
     }
 
     if (msg_type === "stream") {
-        return "#compose_select_recipient_widget";
+        return "#compose_select_recipient_widget_wrapper";
     }
     return "#private_message_recipient";
 }
@@ -57,10 +57,12 @@ function get_focus_area(msg_type, opts) {
 export const _get_focus_area = get_focus_area;
 
 export function set_focus(msg_type, opts) {
+    // Called mainly when opening the compose box or switching the
+    // message type to set the focus in the first empty input in the
+    // compose box.
     if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
         const focus_area = get_focus_area(msg_type, opts);
-        const $elt = $(focus_area);
-        $elt.trigger("focus").trigger("select");
+        $(focus_area).trigger("focus");
     }
 }
 
@@ -189,7 +191,9 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-t
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
     // for details.
 
+    const old_text = $textarea.val();
     replace($textarea[0], old_syntax, () => new_syntax, "after-replacement");
+    const new_text = $textarea.val();
 
     // When replacing content in a textarea, we need to move the cursor
     // to preserve its logical position if and only if the content we
@@ -207,6 +211,9 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-t
         // Otherwise we simply restore it to it's original position
         $textarea.caret(prev_caret);
     }
+
+    // Return if anything was actually replaced.
+    return old_text !== new_text;
 }
 
 export function compute_placeholder_text(opts) {

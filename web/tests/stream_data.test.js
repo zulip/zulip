@@ -169,6 +169,35 @@ test("basics", () => {
     assert.equal(sub_store.get(-3), undefined);
     assert.equal(sub_store.get(undefined), undefined);
     assert.equal(sub_store.get(1), denmark);
+
+    assert.deepEqual(stream_data.get_options_for_dropdown_widget(), [
+        {
+            name: "social",
+            stream: {
+                color: "red",
+                history_public_to_subscribers: false,
+                invite_only: true,
+                is_muted: false,
+                name: "social",
+                stream_id: 2,
+                stream_post_policy: 2,
+                subscribed: true,
+            },
+            unique_id: 2,
+        },
+        {
+            name: "test",
+            stream: {
+                color: "yellow",
+                invite_only: false,
+                is_muted: true,
+                name: "test",
+                stream_id: 3,
+                subscribed: true,
+            },
+            unique_id: 3,
+        },
+    ]);
 });
 
 test("get_subscribed_streams_for_user", () => {
@@ -257,7 +286,7 @@ test("admin_options", () => {
             stream_id: 1,
             is_muted: true,
             invite_only: false,
-            can_remove_subscribers_group_id: admins_group.id,
+            can_remove_subscribers_group: admins_group.id,
         };
         stream_data.add_sub(sub);
         return sub;
@@ -310,7 +339,7 @@ test("stream_settings", () => {
         color: "cinnamon",
         subscribed: true,
         invite_only: false,
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
 
     const blue = {
@@ -319,7 +348,7 @@ test("stream_settings", () => {
         color: "blue",
         subscribed: false,
         invite_only: false,
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
 
     const amber = {
@@ -331,7 +360,7 @@ test("stream_settings", () => {
         history_public_to_subscribers: true,
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
         message_retention_days: 10,
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -369,7 +398,7 @@ test("stream_settings", () => {
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
-    assert.equal(sub.can_remove_subscribers_group_id, moderators_group.id);
+    assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
@@ -415,7 +444,7 @@ test("default_stream_names", () => {
     stream_data.add_sub(general);
 
     const names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names.sort(), ["public"]);
+    assert.deepEqual(names.sort(), [{name: "public", unique_id: "102"}]);
 
     const default_stream_ids = stream_data.get_default_stream_ids();
     assert.deepEqual(default_stream_ids.sort(), [announce.stream_id, general.stream_id]);
@@ -941,7 +970,7 @@ test("can_unsubscribe_others", () => {
         subscribed: true,
         color: "red",
         stream_id: 1,
-        can_remove_subscribers_group_id: admins.id,
+        can_remove_subscribers_group: admins.id,
     };
     stream_data.add_sub(sub);
 
@@ -950,7 +979,7 @@ test("can_unsubscribe_others", () => {
     people.initialize_current_user(moderator_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
-    sub.can_remove_subscribers_group_id = moderators.id;
+    sub.can_remove_subscribers_group = moderators.id;
     people.initialize_current_user(admin_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     people.initialize_current_user(moderator_user_id);
@@ -958,7 +987,7 @@ test("can_unsubscribe_others", () => {
     people.initialize_current_user(member_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
-    sub.can_remove_subscribers_group_id = all.id;
+    sub.can_remove_subscribers_group = all.id;
     people.initialize_current_user(admin_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     people.initialize_current_user(moderator_user_id);
@@ -967,7 +996,7 @@ test("can_unsubscribe_others", () => {
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
     // Even with the nobody system group, admins can still unsubscribe others.
-    sub.can_remove_subscribers_group_id = nobody.id;
+    sub.can_remove_subscribers_group = nobody.id;
     page_params.is_admin = true;
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     page_params.is_admin = false;
@@ -980,4 +1009,104 @@ test("can_unsubscribe_others", () => {
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     page_params.is_admin = false;
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
+});
+
+test("options for dropdown widget", () => {
+    const denmark = {
+        subscribed: true,
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+        is_muted: true,
+        invite_only: true,
+        history_public_to_subscribers: true,
+    };
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: true,
+        history_public_to_subscribers: false,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+    const test = {
+        subscribed: true,
+        color: "yellow",
+        name: "test",
+        stream_id: 3,
+        is_muted: true,
+        invite_only: false,
+    };
+    const web_public_stream = {
+        subscribed: true,
+        color: "yellow",
+        name: "web_public_stream",
+        stream_id: 4,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: true,
+        is_web_public: true,
+    };
+    stream_data.add_sub(denmark);
+    stream_data.add_sub(social);
+    stream_data.add_sub(web_public_stream);
+    stream_data.add_sub(test);
+
+    assert.deepEqual(stream_data.get_options_for_dropdown_widget(), [
+        {
+            name: "Denmark",
+            stream: {
+                subscribed: true,
+                color: "blue",
+                name: "Denmark",
+                stream_id: 1,
+                is_muted: true,
+                invite_only: true,
+                history_public_to_subscribers: true,
+            },
+            unique_id: 1,
+        },
+        {
+            name: "social",
+            stream: {
+                color: "red",
+                history_public_to_subscribers: false,
+                invite_only: true,
+                is_muted: false,
+                name: "social",
+                stream_id: 2,
+                stream_post_policy: 2,
+                subscribed: true,
+            },
+            unique_id: 2,
+        },
+        {
+            name: "test",
+            stream: {
+                color: "yellow",
+                invite_only: false,
+                is_muted: true,
+                name: "test",
+                stream_id: 3,
+                subscribed: true,
+            },
+            unique_id: 3,
+        },
+        {
+            name: "web_public_stream",
+            stream: {
+                subscribed: true,
+                color: "yellow",
+                name: "web_public_stream",
+                stream_id: 4,
+                is_muted: false,
+                invite_only: false,
+                history_public_to_subscribers: true,
+                is_web_public: true,
+            },
+            unique_id: 4,
+        },
+    ]);
 });

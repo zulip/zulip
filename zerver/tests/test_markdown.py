@@ -50,6 +50,8 @@ from zerver.lib.mention import (
     get_possible_mentions_info,
     possible_mentions,
     possible_user_group_mentions,
+    stream_wildcards,
+    topic_wildcards,
 )
 from zerver.lib.message import render_markdown
 from zerver.lib.test_classes import ZulipTestCase
@@ -281,6 +283,11 @@ class MarkdownMiscTest(ZulipTestCase):
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
         mention_data = MentionData(mention_backend, content)
         self.assertTrue(mention_data.message_has_stream_wildcards())
+
+        self.assertFalse(mention_data.message_has_topic_wildcards())
+        content = "@**King Hamlet** @**Cordelia, lear's daughter** @**topic**"
+        mention_data = MentionData(mention_backend, content)
+        self.assertTrue(mention_data.message_has_topic_wildcards())
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
@@ -757,6 +764,11 @@ class MarkdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
+        content = "https://en.wikipedia.org/static/images/icons/wikipedia.png"
+        expected = '<div class="message_inline_image"><a href="https://en.wikipedia.org/static/images/icons/wikipedia.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fstatic%2Fimages%2Ficons%2Fwikipedia.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fstatic%2Fimages%2Ficons%2Fwikipedia.png&amp;size=thumbnail"></a></div>'
+        converted = render_markdown(msg, content)
+        self.assertEqual(converted.rendered_content, expected)
+
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled(self) -> None:
         ret = image_preview_enabled()
@@ -926,6 +938,14 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             converted,
             f"""<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="{get_camo_url("https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg")}"></a></div><p>Sample text</p>\n<p><a href="https://www.youtube.com/watch?v=lXFO2ULktEI">https://www.youtube.com/watch?v=lXFO2ULktEI</a></p>\n<div class="youtube-video message_inline_image"><a data-id="lXFO2ULktEI" href="https://www.youtube.com/watch?v=lXFO2ULktEI"><img src="{get_camo_url("https://i.ytimg.com/vi/lXFO2ULktEI/default.jpg")}"></a></div>""",
+        )
+
+        # Test order of YouTube inline previews in same paragraph.
+        msg = "https://www.youtube.com/watch?v=0c46YHS3RY8\nhttps://www.youtube.com/watch?v=lXFO2ULktEI"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            f"""<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a><br>\n<a href="https://www.youtube.com/watch?v=lXFO2ULktEI">https://www.youtube.com/watch?v=lXFO2ULktEI</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="{get_camo_url("https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg")}"></a></div><div class="youtube-video message_inline_image"><a data-id="lXFO2ULktEI" href="https://www.youtube.com/watch?v=lXFO2ULktEI"><img src="{get_camo_url("https://i.ytimg.com/vi/lXFO2ULktEI/default.jpg")}"></a></div>""",
         )
 
     def test_twitter_id_extraction(self) -> None:
@@ -1753,7 +1773,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_default_code_block_language(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual(realm.default_code_block_language, None)
+        self.assertEqual(realm.default_code_block_language, "")
         text = "```{}\nconsole.log('Hello World');\n```\n"
 
         # Render without default language
@@ -1783,7 +1803,7 @@ class MarkdownTest(ZulipTestCase):
         msg_without_language_default_math = markdown_convert_wrapper(text.format(""))
 
         # Render without default language
-        do_set_realm_property(realm, "default_code_block_language", None, acting_user=None)
+        do_set_realm_property(realm, "default_code_block_language", "", acting_user=None)
         msg_without_language_final = markdown_convert_wrapper(text.format(""))
 
         self.assertTrue(msg_with_js == msg_without_language_default_js)
@@ -1802,66 +1822,62 @@ class MarkdownTest(ZulipTestCase):
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertTrue(with_language == without_language)
 
-        do_set_realm_property(realm, "default_code_block_language", None, acting_user=None)
+        do_set_realm_property(realm, "default_code_block_language", "", acting_user=None)
         rendered = markdown_convert_wrapper(nested_text)
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertFalse(with_language == without_language)
 
-    def test_mention_wildcard(self) -> None:
+    def test_mention_topic_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        content = "@**all** test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(
-            rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">@all</span> test</p>',
-        )
-        self.assertTrue(rendering_result.mentions_stream_wildcard)
+        for topic_wildcard in topic_wildcards:
+            content = f"@**{topic_wildcard}** test"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(
+                rendering_result.rendered_content,
+                f'<p><span class="topic-mention">@{topic_wildcard}</span> test</p>',
+            )
+            self.assertTrue(rendering_result.mentions_topic_wildcard)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
 
-    def test_mention_everyone(self) -> None:
+    def test_mention_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        content = "@**everyone** test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(
-            rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">@everyone</span> test</p>',
-        )
-        self.assertTrue(rendering_result.mentions_stream_wildcard)
+        for stream_wildcard in stream_wildcards:
+            content = f"@**{stream_wildcard}** test"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(
+                rendering_result.rendered_content,
+                f'<p><span class="user-mention" data-user-id="*">@{stream_wildcard}</span> test</p>',
+            )
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
+            self.assertTrue(rendering_result.mentions_stream_wildcard)
 
-    def test_mention_stream(self) -> None:
+    def test_mention_at_topic_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        content = "@**stream** test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(
-            rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">@stream</span> test</p>',
-        )
-        self.assertTrue(rendering_result.mentions_stream_wildcard)
+        for topic_wildcard in topic_wildcards:
+            content = f"@{topic_wildcard} test"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(rendering_result.rendered_content, f"<p>@{topic_wildcard} test</p>")
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertEqual(rendering_result.mentions_user_ids, set())
 
-    def test_mention_at_wildcard(self) -> None:
+    def test_mention_at_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        content = "@all test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(rendering_result.rendered_content, "<p>@all test</p>")
-        self.assertFalse(rendering_result.mentions_stream_wildcard)
-        self.assertEqual(rendering_result.mentions_user_ids, set())
-
-    def test_mention_at_everyone(self) -> None:
-        user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
-
-        content = "@everyone test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(rendering_result.rendered_content, "<p>@everyone test</p>")
-        self.assertFalse(rendering_result.mentions_stream_wildcard)
-        self.assertEqual(rendering_result.mentions_user_ids, set())
+        for stream_wildcard in stream_wildcards:
+            content = f"@{stream_wildcard} test"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(rendering_result.rendered_content, f"<p>@{stream_wildcard} test</p>")
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_mention_word_starting_with_at_wildcard(self) -> None:
         user_profile = self.example_user("othello")
@@ -1953,12 +1969,11 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
-    def test_silent_wildcard_mention(self) -> None:
+    def test_silent_stream_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        wildcards = ["all", "everyone", "stream"]
-        for wildcard in wildcards:
+        for wildcard in stream_wildcards:
             content = f"@_**{wildcard}**"
             rendering_result = render_markdown(msg, content)
             self.assertEqual(
@@ -1966,6 +1981,19 @@ class MarkdownTest(ZulipTestCase):
                 f'<p><span class="user-mention silent" data-user-id="*">{wildcard}</span></p>',
             )
             self.assertFalse(rendering_result.mentions_stream_wildcard)
+
+    def test_silent_topic_wildcard_mention(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        for wildcard in topic_wildcards:
+            content = f"@_**{wildcard}**"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(
+                rendering_result.rendered_content,
+                f'<p><span class="topic-mention silent">{wildcard}</span></p>',
+            )
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
 
     def test_mention_invalid_followed_by_valid(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2031,12 +2059,17 @@ class MarkdownTest(ZulipTestCase):
 
     def test_possible_mentions(self) -> None:
         def assert_mentions(
-            content: str, names: Set[str], has_stream_wildcards: bool = False
+            content: str,
+            names: Set[str],
+            has_topic_wildcards: bool = False,
+            has_stream_wildcards: bool = False,
         ) -> None:
             self.assertEqual(
                 possible_mentions(content),
                 PossibleMentions(
-                    mention_texts=names, message_has_stream_wildcards=has_stream_wildcards
+                    mention_texts=names,
+                    message_has_topic_wildcards=has_topic_wildcards,
+                    message_has_stream_wildcards=has_stream_wildcards,
                 ),
             )
 
@@ -2044,12 +2077,14 @@ class MarkdownTest(ZulipTestCase):
 
         assert_mentions("", set())
         assert_mentions("boring", set())
-        assert_mentions("@**all**", set(), True)
+        assert_mentions("@**topic**", set(), True)
+        assert_mentions("@**all**", set(), False, True)
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
             f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234** @**all**",
             {"King Hamlet", f"|{aaron.id}", "Cordelia, Lear's daughter", "Foo van Barson|1234"},
+            False,
             True,
         )
 
@@ -2119,7 +2154,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.rendered_content, expected)
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
-    def test_wildcard_mention_in_quotes(self) -> None:
+    def test_stream_wildcard_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
         message = Message(sender=user_profile, sending_client=get_client("test"))
 
@@ -2132,9 +2167,30 @@ class MarkdownTest(ZulipTestCase):
             rendering_result = render_markdown(message, content)
             self.assertEqual(rendering_result.rendered_content, expected)
             self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
 
-        wildcards = ["all", "everyone", "stream"]
-        for wildcard in wildcards:
+        for wildcard in stream_wildcards:
+            assert_silent_mention(f"> @**{wildcard}**", wildcard)
+            assert_silent_mention(f"> @_**{wildcard}**", wildcard)
+            assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
+            assert_silent_mention(f"```quote\n@_**{wildcard}**\n```", wildcard)
+
+    def test_topic_wildcard_mention_in_quotes(self) -> None:
+        user_profile = self.example_user("othello")
+        message = Message(sender=user_profile, sending_client=get_client("test"))
+
+        def assert_silent_mention(content: str, wildcard: str) -> None:
+            expected = (
+                "<blockquote>\n<p>"
+                f'<span class="topic-mention silent">{wildcard}</span>'
+                "</p>\n</blockquote>"
+            )
+            rendering_result = render_markdown(message, content)
+            self.assertEqual(rendering_result.rendered_content, expected)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
+
+        for wildcard in topic_wildcards:
             assert_silent_mention(f"> @**{wildcard}**", wildcard)
             assert_silent_mention(f"> @_**{wildcard}**", wildcard)
             assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
@@ -2487,12 +2543,12 @@ class MarkdownTest(ZulipTestCase):
             render_markdown(msg, content).rendered_content,
             "<p>Look to "
             '<a class="stream" '
-            'data-stream-id="{denmark.id}" '
-            'href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a> and '
+            f'data-stream-id="{denmark.id}" '
+            f'href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a> and '
             '<a class="stream" '
-            'data-stream-id="{scotland.id}" '
-            'href="/#narrow/stream/{scotland.id}-Scotland">#{scotland.name}</a>, '
-            "there something</p>".format(denmark=denmark, scotland=scotland),
+            f'data-stream-id="{scotland.id}" '
+            f'href="/#narrow/stream/{scotland.id}-Scotland">#{scotland.name}</a>, '
+            "there something</p>",
         )
 
     def test_stream_case_sensitivity(self) -> None:
@@ -2566,14 +2622,14 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
             "<p>This has two links: "
-            '<a class="stream-topic" data-stream-id="{denmark.id}" '
-            'href="/#narrow/stream/{denmark.id}-{denmark.name}/topic/some.20topic">'
-            "#{denmark.name} &gt; some topic</a>"
+            f'<a class="stream-topic" data-stream-id="{denmark.id}" '
+            f'href="/#narrow/stream/{denmark.id}-{denmark.name}/topic/some.20topic">'
+            f"#{denmark.name} &gt; some topic</a>"
             " and "
-            '<a class="stream-topic" data-stream-id="{scotland.id}" '
-            'href="/#narrow/stream/{scotland.id}-{scotland.name}/topic/other.20topic">'
-            "#{scotland.name} &gt; other topic</a>"
-            ".</p>".format(denmark=denmark, scotland=scotland),
+            f'<a class="stream-topic" data-stream-id="{scotland.id}" '
+            f'href="/#narrow/stream/{scotland.id}-{scotland.name}/topic/other.20topic">'
+            f"#{scotland.name} &gt; other topic</a>"
+            ".</p>",
         )
 
     def test_possible_stream_names(self) -> None:
@@ -2596,10 +2652,7 @@ class MarkdownTest(ZulipTestCase):
         href = f"/#narrow/stream/{uni.id}-{quoted_name}"
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
-            '<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
-                s=uni,
-                href=href,
-            ),
+            f'<p><a class="stream" data-stream-id="{uni.id}" href="{href}">#{uni.name}</a></p>',
         )
 
     def test_stream_atomic_string(self) -> None:

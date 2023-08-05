@@ -31,7 +31,7 @@ const hotspots = mock_esm("../src/hotspots");
 const linkifiers = mock_esm("../src/linkifiers");
 const message_events = mock_esm("../src/message_events");
 const message_lists = mock_esm("../src/message_lists");
-const muted_topics_ui = mock_esm("../src/muted_topics_ui");
+const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const notifications = mock_esm("../src/notifications");
 const pm_list = mock_esm("../src/pm_list");
@@ -71,7 +71,7 @@ const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
     update_announce_stream_option() {},
 });
 const submessage = mock_esm("../src/submessage");
-mock_esm("../src/top_left_corner", {
+mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
 });
@@ -322,7 +322,7 @@ run_test("muted_topics", ({override}) => {
     const event = event_fixtures.user_topic;
 
     const stub = make_stub();
-    override(muted_topics_ui, "handle_topic_updates", stub.f);
+    override(user_topics_ui, "handle_topic_updates", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("user_topic");

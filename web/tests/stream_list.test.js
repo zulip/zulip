@@ -142,6 +142,8 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
     create_social_sidebar_row({mock_template});
     create_stream_subheader({mock_template});
 
+    topic_list.get_stream_li = noop;
+
     const $pinned_subheader = $("<pinned-subheader-stub>");
     const $active_subheader = $("<active-subheader-stub>");
     const $devel_sidebar = $("<devel-sidebar-row-stub>");
@@ -152,14 +154,14 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
         appended_elems = elems;
     };
 
-    let topic_list_cleared;
-    topic_list.clear = () => {
-        topic_list_cleared = true;
+    let topics_closed;
+    topic_list.close = () => {
+        topics_closed = true;
     };
 
     stream_list.build_stream_list();
 
-    assert.ok(topic_list_cleared);
+    assert.ok(topics_closed);
     const expected_elems = [
         $pinned_subheader.html(), // separator
         $devel_sidebar, // pinned
@@ -377,7 +379,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     };
     stream_list.initialize_stream_cursor();
 
-    mock_template("filter_topics", false, () => "filter-topics-stub");
+    mock_template("filter_topics.hbs", false, () => "filter-topics-stub");
     let filter_topics_appended = false;
     $stream_li1.children = () => ({
         append(html) {

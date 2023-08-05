@@ -24,13 +24,13 @@ def api_appveyor_webhook(
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    subject = get_subject_for_http_request(payload)
+    topic = get_topic_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)
 
 
-def get_subject_for_http_request(payload: WildValue) -> str:
+def get_topic_for_http_request(payload: WildValue) -> str:
     event_data = payload["eventData"]
     return APPVEYOR_TOPIC_TEMPLATE.format(project_name=event_data["projectName"].tame(check_string))
 

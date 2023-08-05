@@ -18,6 +18,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
+import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
@@ -25,7 +26,6 @@ import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -47,6 +47,7 @@ import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+import * as user_topics_ui from "./user_topics_ui";
 
 function do_narrow_action(action) {
     action(message_lists.current.selected_id(), {trigger: "hotkey"});
@@ -432,12 +433,12 @@ export function process_enter_key(e) {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
-        drafts.handle_keyboard_events(e, "enter");
+        drafts.handle_keyboard_events("enter");
         return true;
     }
 
     if (overlays.scheduled_messages_open()) {
-        scheduled_messages_overlay_ui.handle_keyboard_events(e, "enter");
+        scheduled_messages_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
 
@@ -497,9 +498,25 @@ export function process_enter_key(e) {
         return false;
     }
 
-    // If we got this far, then we're presumably in the message
-    // view, so in that case "Enter" is the hotkey to respond to a message.
-    // Note that "r" has same effect, but that is handled in process_hotkey().
+    if (!narrow_state.is_message_feed_visible()) {
+        return false;
+    }
+
+    // For search views, renarrow to the current message's
+    // conversation.
+    const current_filter = narrow_state.filter();
+    if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+        const message = message_lists.current.selected_message();
+
+        if (message === undefined) {
+            // No selected message.
+            return false;
+        }
+
+        window.location = hash_util.by_conversation_and_time_url(message);
+        return true;
+    }
+
     compose_actions.respond_to_message({trigger: "hotkey enter"});
     return true;
 }
@@ -645,11 +662,11 @@ export function process_hotkey(e, hotkey) {
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
-                drafts.handle_keyboard_events(e, event_name);
+                drafts.handle_keyboard_events(event_name);
                 return true;
             }
             if (overlays.scheduled_messages_open()) {
-                scheduled_messages_overlay_ui.handle_keyboard_events(e, event_name);
+                scheduled_messages_overlay_ui.handle_keyboard_events(event_name);
                 return true;
             }
     }
@@ -846,10 +863,10 @@ export function process_hotkey(e, hotkey) {
             narrow.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic();
+            narrow.narrow_to_next_topic({trigger: "hotkey"});
             return true;
         case "p_key":
-            narrow.narrow_to_next_pm_string();
+            narrow.narrow_to_next_pm_string({trigger: "hotkey"});
             return true;
         case "open_recent_topics":
             browser_history.go_to_location("#recent");
@@ -942,6 +959,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     const msg = message_lists.current.selected_message();
+
     // Shortcuts that operate on a message
     switch (event_name) {
         case "message_actions":
@@ -974,9 +992,15 @@ export function process_hotkey(e, hotkey) {
         case "show_sender_info":
             popovers.show_sender_info();
             return true;
-        case "toggle_reactions_popover": // ':': open reactions to message
-            reactions.open_reactions_popover();
+        // ':': open reactions to message
+        case "toggle_reactions_popover": {
+            const $row = message_lists.current.selected_row();
+            emoji_picker.toggle_emoji_popover(
+                msg.sent_by_me ? $row.find(".actions_hover")[0] : $row.find(".reaction_button")[0],
+                msg.id,
+            );
             return true;
+        }
         case "thumbs_up_emoji": {
             // '+': reacts with thumbs up emoji on selected message
             // Use canonical name.
@@ -1003,7 +1027,7 @@ export function process_hotkey(e, hotkey) {
             return true;
         }
         case "toggle_topic_visibility_policy":
-            muted_topics_ui.toggle_topic_visibility_policy(msg);
+            user_topics_ui.toggle_topic_visibility_policy(msg);
             return true;
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);

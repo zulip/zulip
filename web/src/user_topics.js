@@ -46,6 +46,10 @@ export function get_topic_visibility_policy(stream_id, topic) {
     return all_visibility_policies.INHERIT;
 }
 
+export function is_topic_followed(stream_id, topic) {
+    return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.FOLLOWED;
+}
+
 export function is_topic_unmuted(stream_id, topic) {
     return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.UNMUTED;
 }
@@ -134,6 +138,12 @@ export function set_user_topic_visibility_policy(
             }
         },
     });
+}
+
+export function set_visibility_policy_for_element($elt, visibility_policy) {
+    const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+    const topic = $elt.attr("data-topic-name");
+    set_user_topic_visibility_policy(stream_id, topic, visibility_policy);
 }
 
 export function set_user_topic(user_topic) {

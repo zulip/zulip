@@ -14,7 +14,7 @@ from zerver.actions.create_user import do_create_user
 from zerver.actions.presence import update_user_presence
 from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_linkifiers import do_add_linkifier
-from zerver.actions.realm_playgrounds import do_add_realm_playground
+from zerver.actions.realm_playgrounds import check_add_realm_playground
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
@@ -296,18 +296,19 @@ def add_realm_playground() -> Dict[str, object]:
     return {
         "name": "Python2 playground",
         "pygments_language": "Python2",
-        "url_prefix": "https://python2.example.com",
+        "url_template": "https://python2.example.com?code={code}",
     }
 
 
 @openapi_param_value_generator(["/realm/playgrounds/{playground_id}:delete"])
 def remove_realm_playground() -> Dict[str, object]:
-    playground_info = dict(
+    playground_id = check_add_realm_playground(
+        get_realm("zulip"),
+        acting_user=None,
         name="Python playground",
         pygments_language="Python",
-        url_prefix="https://python.example.com",
+        url_template="https://python.example.com?code={code}",
     )
-    playground_id = do_add_realm_playground(get_realm("zulip"), acting_user=None, **playground_info)
     return {
         "playground_id": playground_id,
     }

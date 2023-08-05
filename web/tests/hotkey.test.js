@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
+const $ = require("./lib/zjquery");
 
 // Important note on these tests:
 
@@ -37,6 +38,7 @@ const condense = mock_esm("../src/condense");
 const drafts = mock_esm("../src/drafts");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     reactions_popped: () => false,
+    toggle_emoji_popover() {},
 });
 const gear_menu = mock_esm("../src/gear_menu", {
     is_open: () => false,
@@ -45,7 +47,7 @@ const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
-const muted_topics_ui = mock_esm("../src/muted_topics_ui");
+const user_topics_ui = mock_esm("../src/user_topics_ui");
 const narrow = mock_esm("../src/narrow");
 const narrow_state = mock_esm("../src/narrow_state", {
     is_message_feed_visible: () => true,
@@ -96,6 +98,11 @@ message_lists.current = {
     },
     selected_id() {
         return 42;
+    },
+    selected_row() {
+        const $row = $.create("selected-row-stub");
+        $row.set_find_results(".actions_hover", []);
+        return $row;
     },
     selected_message() {
         return {
@@ -371,7 +378,7 @@ run_test("misc", ({override}) => {
     assert_mapping("K", navigate, "page_up");
     assert_mapping("u", popovers, "show_sender_info");
     assert_mapping("i", popover_menus, "toggle_message_actions_menu");
-    assert_mapping(":", reactions, "open_reactions_popover", true);
+    assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
 
@@ -418,7 +425,7 @@ run_test("emoji picker", ({override}) => {
 run_test("G/M keys", () => {
     // TODO: move
     assert_mapping("G", navigate, "to_end");
-    assert_mapping("M", muted_topics_ui, "toggle_topic_visibility_policy");
+    assert_mapping("M", user_topics_ui, "toggle_topic_visibility_policy");
 });
 
 run_test("n/p keys", () => {

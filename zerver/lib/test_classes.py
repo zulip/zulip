@@ -36,7 +36,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase, TransactionTestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
@@ -138,9 +138,13 @@ class UploadSerializeMixin(SerializeMixin):
         super().setUpClass()
 
 
-class ZulipTestCase(TestCase):
+class ZulipTestCaseMixin(SimpleTestCase):
     # Ensure that the test system just shows us diffs
     maxDiff: Optional[int] = None
+    # This bypasses BAN_CONSOLE_OUTPUT for the test case when set.
+    # Override this to verify if the given extra console output matches the
+    # expectation.
+    expected_console_output: Optional[str] = None
 
     def setUp(self) -> None:
         super().setUp()
@@ -170,7 +174,7 @@ class ZulipTestCase(TestCase):
             self.mock_initialize.stop()
 
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
-        if not settings.BAN_CONSOLE_OUTPUT:
+        if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
         extra_output_finder = ExtraConsoleOutputFinder()
         with tee_stderr_and_find_extra_console_output(
@@ -180,6 +184,11 @@ class ZulipTestCase(TestCase):
         if extra_output_finder.full_extra_output and (
             test_result is None or test_result.wasSuccessful()
         ):
+            extra_output = extra_output_finder.full_extra_output.decode(errors="replace")
+            if self.expected_console_output is not None:
+                self.assertEqual(extra_output, self.expected_console_output)
+                return test_result
+
             exception_message = f"""
 ---- UNEXPECTED CONSOLE OUTPUT DETECTED ----
 
@@ -196,7 +205,7 @@ You should be able to quickly reproduce this failure with:
 ./tools/test-backend --ban-console-output {self.id()}
 
 Output:
-{extra_output_finder.full_extra_output.decode(errors="replace")}
+{extra_output}
 --------------------------------------------
 """
             raise ExtraConsoleOutputInTestError(exception_message)
@@ -308,6 +317,7 @@ Output:
         follow: bool = False,
         secure: bool = False,
         intentionally_undocumented: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -317,7 +327,9 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.patch(url, encoded, follow=follow, secure=secure, **extra)
+        result = django_client.patch(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "patch",
@@ -336,6 +348,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -351,7 +364,13 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         result = django_client.patch(
-            url, encoded, content_type=MULTIPART_CONTENT, follow=follow, secure=secure, **extra
+            url,
+            encoded,
+            content_type=MULTIPART_CONTENT,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            **extra,
         )
         self.validate_api_response_openapi(
             url,
@@ -376,7 +395,13 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.patch(
-            url, data=data, content_type="application/json", follow=follow, secure=secure, **extra
+            url,
+            data=data,
+            content_type="application/json",
+            follow=follow,
+            secure=secure,
+            headers=None,
+            **extra,
         )
 
     @instrument_url
@@ -387,13 +412,16 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         encoded = urllib.parse.urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.put(url, encoded, follow=follow, secure=secure, **extra)
+        return django_client.put(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
 
     def json_put(
         self,
@@ -402,13 +430,20 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.put(
-            url, data=data, content_type="application/json", follow=follow, secure=secure, **extra
+            url,
+            data=data,
+            content_type="application/json",
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            **extra,
         )
 
     @instrument_url
@@ -419,6 +454,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -426,7 +462,9 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.delete(url, encoded, follow=follow, secure=secure, **extra)
+        result = django_client.delete(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "delete",
@@ -445,11 +483,14 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.options(url, dict(info), follow=follow, secure=secure, **extra)
+        return django_client.options(
+            url, dict(info), follow=follow, secure=secure, headers=headers, **extra
+        )
 
     @instrument_url
     def client_head(
@@ -459,11 +500,12 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.head(url, info, follow=follow, secure=secure, **extra)
+        return django_client.head(url, info, follow=follow, secure=secure, headers=headers, **extra)
 
     @instrument_url
     def client_post(
@@ -473,12 +515,15 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.post(url, info, follow=follow, secure=secure, **extra)
+        result = django_client.post(
+            url, info, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "post",
@@ -511,12 +556,15 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.get(url, info, follow=follow, secure=secure, **extra)
+        result = django_client.get(
+            url, info, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url, "get", result, info, extra, intentionally_undocumented=intentionally_undocumented
         )
@@ -662,6 +710,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -802,6 +851,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -900,6 +950,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -918,6 +969,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -932,6 +984,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -951,6 +1004,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -965,6 +1019,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -979,6 +1034,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1411,6 +1467,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1485,7 +1542,8 @@ Output:
         return values
 
     def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
-        return [r for r in data if r["id"] == db_id][0]
+        [r] = (r for r in data if r["id"] == db_id)
+        return r
 
     def init_default_ldap_database(self) -> None:
         """
@@ -1685,30 +1743,6 @@ Output:
             realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
         )
 
-    @contextmanager
-    def capture_send_event_calls(
-        self, expected_num_events: int
-    ) -> Iterator[List[Mapping[str, Any]]]:
-        lst: List[Mapping[str, Any]] = []
-
-        # process_notification takes a single parameter called 'notice'.
-        # lst.append takes a single argument called 'object'.
-        # Some code might call process_notification using keyword arguments,
-        # so mypy doesn't allow assigning lst.append to process_notification
-        # So explicitly change parameter name to 'notice' to work around this problem
-        with mock.patch(
-            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
-        ):
-            # Some `send_event` calls need to be executed only after the current transaction
-            # commits (using `on_commit` hooks). Because the transaction in Django tests never
-            # commits (rather, gets rolled back after the test completes), such events would
-            # never be sent in tests, and we would be unable to verify them. Hence, we use
-            # this helper to make sure the `send_event` calls actually run.
-            with self.captureOnCommitCallbacks(execute=True):
-                yield lst
-
-        self.assert_length(lst, expected_num_events)
-
     def create_user_notifications_data_object(
         self, *, user_id: int, **kwargs: Any
     ) -> UserMessageNotificationsData:
@@ -1719,6 +1753,12 @@ Output:
             pm_push_notify=kwargs.get("pm_push_notify", False),
             mention_email_notify=kwargs.get("mention_email_notify", False),
             mention_push_notify=kwargs.get("mention_push_notify", False),
+            topic_wildcard_mention_email_notify=kwargs.get(
+                "topic_wildcard_mention_email_notify", False
+            ),
+            topic_wildcard_mention_push_notify=kwargs.get(
+                "topic_wildcard_mention_push_notify", False
+            ),
             stream_wildcard_mention_email_notify=kwargs.get(
                 "stream_wildcard_mention_email_notify", False
             ),
@@ -1729,6 +1769,12 @@ Output:
             stream_push_notify=kwargs.get("stream_push_notify", False),
             followed_topic_email_notify=kwargs.get("followed_topic_email_notify", False),
             followed_topic_push_notify=kwargs.get("followed_topic_push_notify", False),
+            topic_wildcard_mention_in_followed_topic_email_notify=kwargs.get(
+                "topic_wildcard_mention_in_followed_topic_email_notify", False
+            ),
+            topic_wildcard_mention_in_followed_topic_push_notify=kwargs.get(
+                "topic_wildcard_mention_in_followed_topic_push_notify", False
+            ),
             stream_wildcard_mention_in_followed_topic_email_notify=kwargs.get(
                 "stream_wildcard_mention_in_followed_topic_email_notify", False
             ),
@@ -1819,6 +1865,96 @@ Output:
             # Prevent from using the old user object
             user.refresh_from_db()
             self.assertEqual(user.long_term_idle, expected)
+
+
+class ZulipTestCase(ZulipTestCaseMixin, TestCase):
+    @contextmanager
+    def capture_send_event_calls(
+        self, expected_num_events: int
+    ) -> Iterator[List[Mapping[str, Any]]]:
+        lst: List[Mapping[str, Any]] = []
+
+        # process_notification takes a single parameter called 'notice'.
+        # lst.append takes a single argument called 'object'.
+        # Some code might call process_notification using keyword arguments,
+        # so mypy doesn't allow assigning lst.append to process_notification
+        # So explicitly change parameter name to 'notice' to work around this problem
+        with mock.patch(
+            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
+        ):
+            # Some `send_event` calls need to be executed only after the current transaction
+            # commits (using `on_commit` hooks). Because the transaction in Django tests never
+            # commits (rather, gets rolled back after the test completes), such events would
+            # never be sent in tests, and we would be unable to verify them. Hence, we use
+            # this helper to make sure the `send_event` calls actually run.
+            with self.captureOnCommitCallbacks(execute=True):
+                yield lst
+
+        self.assert_length(lst, expected_num_events)
+
+
+def get_row_ids_in_all_tables() -> (
+    Iterator[Tuple[str, Set[int]]]
+):  # nocoverage # Will be tested with the UserGroup transaction test case
+    all_models = apps.get_models(include_auto_created=True)
+    ignored_tables = {"django_session"}
+
+    for model in all_models:
+        table_name = model._meta.db_table
+        if table_name in ignored_tables:
+            continue
+        ids = model.objects.all().values_list("id", flat=True)
+        yield table_name, set(ids)
+
+
+class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
+    """The default Django TestCase wraps each test in a transaction. This
+    is invaluable for being able to rollback the transaction and thus
+    efficiently do many tests containing database changes, but it
+    prevents testing certain transaction-related races and locking
+    bugs.
+
+    This test class is intended to be used (sparingly!) for tests that
+    need to verify transaction related behavior, like locking with
+    select_for_update or transaction.atomic(durable=True).
+
+    Unlike ZulipTestCase, ZulipTransactionTestCase has the following traits:
+    1. Does not offer isolation between tests by wrapping them inside an atomic transaction.
+    2. Changes are committed to the current worker's test database, so side effects carry on.
+
+    All ZulipTransactionTestCase tests must be carefully written to
+    avoid side effects on the database; while Django runs
+    TransactionTestCase after all normal TestCase tests on a given
+    test worker to avoid pollution, they can break other
+    ZulipTransactionTestCase tests if they leak state.
+    """
+
+    def setUp(self) -> None:  # nocoverage # Will be tested with the UserGroup transaction test case
+        super().setUp()
+        self.models_ids_set = dict(get_row_ids_in_all_tables())
+
+    def tearDown(
+        self,
+    ) -> None:  # nocoverage # Will be tested with the UserGroup transaction test case
+        """Verifies that the test did not adjust the set of rows in the test
+        database. This is a sanity check to help ensure that tests
+        using this class do not have unintended side effects on the
+        test database.
+        """
+        super().tearDown()
+        for table_name, ids in get_row_ids_in_all_tables():
+            self.assertSetEqual(
+                self.models_ids_set[table_name],
+                ids,
+                f"{table_name} got a different set of ids after this test",
+            )
+
+    def _fixture_teardown(self) -> None:
+        """We override the default _fixture_teardown method defined on
+        TransactionTestCase, so that the test database does not get
+        flushed/deleted after each test using this class.
+        """
+        # nocoverage # Will be tested with the UserGroup transaction test case
 
 
 class WebhookTestCase(ZulipTestCase):

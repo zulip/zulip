@@ -76,6 +76,12 @@ export function update_settings_button_for_sub(sub) {
 
     // This is for the Subscribe/Unsubscribe button in the right panel.
     const $settings_button = stream_settings_ui.settings_button_for_sub(sub);
+
+    if (!$settings_button.length) {
+        // `subscribe` button hasn't been rendered yet while we are processing the event.
+        return;
+    }
+
     if (sub.subscribed) {
         $settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
     } else {

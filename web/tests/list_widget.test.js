@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, mock_jquery, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
+const $ = require("./lib/zjquery");
 
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects
@@ -157,6 +158,7 @@ run_test("scrolling", () => {
 
     const opts = {
         modifier: (item) => item,
+        get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
 
@@ -205,6 +207,7 @@ run_test("not_scrolling", () => {
 
     const opts = {
         modifier: (item) => item,
+        get_item: (item) => item,
         $simplebar_container: $scroll_container,
         is_scroll_position_for_render: () => false,
         post_scroll__pre_render_callback,
@@ -243,6 +246,7 @@ run_test("filtering", () => {
             predicate: (item, value) => item.includes(value),
         },
         modifier: (item) => div(item),
+        get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
 
@@ -288,6 +292,7 @@ run_test("no filtering", () => {
         callback_after_render() {
             callback_called = true;
         },
+        get_item: (item) => item,
     };
     const widget = ListWidget.create($container, ["apple", "banana"], opts);
     widget.render();
@@ -362,6 +367,7 @@ run_test("wire up filter element", () => {
             $element: $filter_element,
         },
         modifier: (s) => "(" + s + ")",
+        get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
 
@@ -392,8 +398,13 @@ run_test("sorting", () => {
         name: "sorting-list",
         $parent_container: $sort_container,
         modifier: (item) => div(item.name) + div(item.salary),
+        get_item: (item) => item,
         filter: {
             predicate: () => true,
+        },
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
+            ...ListWidget.generic_sort_functions("numeric", ["salary"]),
         },
         $simplebar_container: $scroll_container,
     };
@@ -492,11 +503,12 @@ run_test("custom sort", () => {
     ListWidget.create($container, list, {
         name: "custom-sort-list",
         modifier: (n) => "(" + n.x + ", " + n.y + ")",
+        get_item: (item) => item,
         sort_fields: {
             product: sort_by_product,
             x_value: sort_by_x,
         },
-        init_sort: [sort_by_product],
+        init_sort: sort_by_product,
         $simplebar_container: $scroll_container,
     });
 
@@ -529,6 +541,7 @@ run_test("clear_event_handlers", () => {
         name: "list-we-create-twice",
         $parent_container: $sort_container,
         modifier() {},
+        get_item() {},
         filter: {
             $element: $filter_element,
             predicate: /* istanbul ignore next */ () => true,
@@ -547,63 +560,6 @@ run_test("clear_event_handlers", () => {
     assert.equal($sort_container.cleared, true);
     assert.equal($scroll_container.cleared, true);
     assert.equal($filter_element.cleared, true);
-});
-
-run_test("errors", () => {
-    // We don't care about actual data for this test.
-    const list = ["stub"];
-    const $container = make_container();
-    const $scroll_container = make_scroll_container();
-
-    blueslip.expect("error", "Need opts to create widget.");
-    ListWidget.create($container, list);
-    blueslip.reset();
-
-    blueslip.expect("error", "$simplebar_container is missing.");
-    ListWidget.create($container, list, {
-        modifier: "hello world",
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "get_item should be a function");
-    ListWidget.create($container, list, {
-        get_item: "not a function",
-        $simplebar_container: $scroll_container,
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "Filter predicate is not a function.");
-    ListWidget.create($container, list, {
-        filter: {
-            predicate: "wrong type",
-        },
-        $simplebar_container: $scroll_container,
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "Filterer and predicate are mutually exclusive.");
-    ListWidget.create($container, list, {
-        filter: {
-            filterer: /* istanbul ignore next */ () => true,
-            predicate: /* istanbul ignore next */ () => true,
-        },
-        $simplebar_container: $scroll_container,
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "Filter filterer is not a function (or missing).");
-    ListWidget.create($container, list, {
-        filter: {},
-        $simplebar_container: $scroll_container,
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "List item is not a string");
-    ListWidget.create($container, list, {
-        modifier: () => 999,
-        $simplebar_container: $scroll_container,
-    });
-    blueslip.reset();
 });
 
 run_test("sort helpers", () => {
@@ -638,6 +594,7 @@ run_test("replace_list_data w/filter update", () => {
     ListWidget.create($container, list, {
         name: "replace-list",
         modifier: (n) => "(" + n.toString() + ")",
+        get_item: (item) => item,
         filter: {
             predicate: (n) => n % 2 === 0,
             onupdate() {
@@ -706,7 +663,8 @@ run_test("render item", () => {
     const $scroll_container = make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
     let called = false;
-    $scroll_container.find = (query) => {
+    $scroll_container.find = (element) => {
+        const query = element.selector;
         const expected_queries = [
             `tr[data-item='${INITIAL_RENDER_COUNT}']`,
             `tr[data-item='${INITIAL_RENDER_COUNT - 1}']`,
@@ -716,7 +674,10 @@ run_test("render item", () => {
         const regex = new RegExp(`\\<tr data-item=${item}\\>.*?<\\/tr\\>`);
         assert.ok(expected_queries.includes(query));
         if (query.includes(`data-item='${INITIAL_RENDER_COUNT}'`)) {
-            return undefined; // This item is not rendered, so we find nothing
+            // This item is not rendered, so we find nothing so return an empty stub.
+            return {
+                length: 0,
+            };
         }
         return {
             // Return a JQuery stub for the original HTML.
@@ -727,6 +688,7 @@ run_test("render item", () => {
                 called = true;
                 $container.$appended_data.replace(regex, new_html);
             },
+            length: 1,
         };
     };
 
@@ -739,7 +701,7 @@ run_test("render item", () => {
         name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item,
-        html_selector: (item) => `tr[data-item='${item}']`,
+        html_selector: (item) => $(`tr[data-item='${item.value}']`),
         $simplebar_container: $scroll_container,
     });
     const item = INITIAL_RENDER_COUNT - 1;
@@ -748,7 +710,7 @@ run_test("render item", () => {
     assert.ok($container.$appended_data.html().includes("<tr data-item=3>initial: 3</tr>"));
     text = "updated";
     called = false;
-    widget.render_item(INITIAL_RENDER_COUNT - 1);
+    widget.render_item(get_item(INITIAL_RENDER_COUNT - 1));
     assert.ok(called);
     assert.ok($container.$appended_data.html().includes("<tr data-item=2>initial: 2</tr>"));
     assert.ok(
@@ -764,23 +726,12 @@ run_test("render item", () => {
             ),
     );
     called = false;
-    widget.render_item(INITIAL_RENDER_COUNT);
+    widget.render_item(get_item(INITIAL_RENDER_COUNT));
     assert.ok(!called);
-    widget.render_item(INITIAL_RENDER_COUNT - 1);
+    widget.render_item(get_item(INITIAL_RENDER_COUNT - 1));
     assert.ok(called);
 
     // Tests below this are for the corner cases, where we abort the rerender.
-
-    blueslip.expect("error", "html_selector should be a function.");
-    ListWidget.create($container, list, {
-        name: "replace-list",
-        modifier: /* istanbul ignore next */ (item) =>
-            `<tr data-item=${item.value}>${item.text}</tr>\n`,
-        get_item,
-        html_selector: "hello world",
-        $simplebar_container: $scroll_container,
-    });
-    blueslip.reset();
 
     let get_item_called;
     const widget_2 = ListWidget.create($container, list, {
@@ -792,6 +743,7 @@ run_test("render item", () => {
         },
         $simplebar_container: $scroll_container,
     });
+
     get_item_called = false;
     widget_2.render_item(item);
     // Test that we didn't try to render the item.
@@ -802,7 +754,7 @@ run_test("render item", () => {
         name: "replace-list",
         modifier: (item) => (rendering_item ? undefined : `${item}\n`),
         get_item,
-        html_selector: (item) => `tr[data-item='${item}']`,
+        html_selector: (item) => $(`tr[data-item='${item}']`),
         $simplebar_container: $scroll_container,
     });
     // Once we have initially rendered the widget, change the
@@ -873,6 +825,7 @@ run_test("Multiselect dropdown retain_selected_items", () => {
     const widget = ListWidget.create($container, list, {
         name: "replace-list",
         modifier: (item) => `<li data-value="${item.value}">${item.name}</li>\n`,
+        get_item: (item) => item,
         multiselect: {
             selected_items: data,
         },

@@ -582,7 +582,8 @@ button {
             font-size: 1.5em;
             font-weight: 300;
             line-height: 1.4;
-            text-shadow: 0 0 5px hsl(164deg 74% 15% / 30%),
+            text-shadow:
+                0 0 5px hsl(164deg 74% 15% / 30%),
                 0 0 20px hsl(0deg 0% 100% / 20%);
         }
 
@@ -600,7 +601,7 @@ button {
             border: 2px solid hsl(0deg 0% 100%);
 
             font-size: 1.2em;
-            font-weight: 500;
+            font-weight: 400;
             color: hsl(148deg 23% 51%);
 
             box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
@@ -831,7 +832,7 @@ button {
                 top: 3px;
 
                 font-size: 2.5rem;
-                font-weight: 500;
+                font-weight: 400;
                 line-height: 0.9;
 
                 opacity: 0.4;
@@ -872,7 +873,7 @@ button {
         min-width: 650px;
 
         .number {
-            font-weight: 800;
+            font-weight: 700;
 
             &.one {
                 color: hsl(0deg 0% 100% / 40%);
@@ -1543,6 +1544,7 @@ button {
     line-height: 1.6;
     text-align: left;
     border: none;
+    margin: 0 0 20px;
 
     opacity: 0.8;
 }
@@ -1960,7 +1962,7 @@ button {
 
     font-size: 0.8rem;
     font-weight: 600;
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     margin-top: 10px;
 }
 
@@ -2027,9 +2029,9 @@ button {
 
 .portico-landing.why-page .main blockquote {
     background-color: hsl(0deg 0% 100%);
-    border-color: hsl(168deg 24% 51%);
+    border-left: 5px solid hsl(168deg 24% 51%);
     padding: 20px 30px;
-    margin-top: 20px;
+    margin: 20px 0;
     font-size: 1.05em;
 
     & p {
@@ -2146,62 +2148,6 @@ button {
 .portico-landing.why-page .bg-pycon .content {
     position: relative;
     z-index: 1;
-}
-
-.portico-landing.why-page .testimonials {
-    background-color: hsl(168deg 43% 24%);
-    color: hsl(0deg 0% 100%);
-    margin-bottom: 40px;
-}
-
-.portico-landing.why-page .testimonials .quote-container {
-    width: 98%;
-    margin: 30px auto 20px;
-    padding-left: 2%;
-
-    font-size: 1.2rem;
-}
-
-.portico-landing.why-page .testimonials .carousel-quotes {
-    width: 60%;
-    margin: auto;
-}
-
-.portico-landing.why-page .testimonials .carousel-inner {
-    width: 100%;
-    left: -2%;
-}
-
-.portico-landing.why-page .testimonials blockquote::before {
-    content: "“";
-    margin-left: -10px;
-    margin-right: -3px;
-}
-
-.portico-landing.why-page .testimonials blockquote::after {
-    content: "”";
-}
-
-.portico-landing.why-page .testimonials blockquote + cite {
-    display: block;
-    margin-top: 5px;
-    margin-bottom: 30px;
-
-    color: hsl(0deg 0% 100%);
-    opacity: 0.7;
-    font-weight: 400;
-    line-height: 140%;
-}
-
-.portico-landing.why-page .testimonials blockquote {
-    padding: 0;
-
-    font-weight: 400;
-    line-height: 1.6;
-    text-align: left;
-    border: none;
-
-    opacity: 0.8;
 }
 
 /* -- hello page styling -- */
@@ -2440,7 +2386,7 @@ button {
     padding: 10px 0 10px 25px;
 
     font-size: 0.9em;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .pricing-model .pricing-container ul.feature-list li::before {
@@ -2940,19 +2886,6 @@ button {
 
     .portico-landing.why-page .padded-content {
         padding: 50px 20px;
-    }
-
-    .portico-landing.why-page .testimonials .padded-content {
-        padding: 50px;
-    }
-
-    .portico-landing.why-page .testimonials .carousel-quotes {
-        width: 90%;
-    }
-
-    .portico-landing.why-page .testimonials .quote-container {
-        padding-left: 4%;
-        font-size: 1em;
     }
 
     .platform.image {
@@ -3531,6 +3464,18 @@ button {
     margin: auto;
 }
 
+blockquote.twitter-tweet {
+    padding: 0 0 0 15px;
+    border-left: 5px solid hsl(0deg 0% 93%);
+
+    & p {
+        margin-bottom: 0;
+        font-size: 17.5px;
+        font-weight: 300;
+        line-height: 1.25;
+    }
+}
+
 .discounts-section {
     text-align: center;
 
@@ -3572,9 +3517,11 @@ button {
     letter-spacing: 2px;
     text-transform: uppercase;
     overflow: hidden;
-    transition: border-color 0.3s, background-color 0.3s;
+    transition:
+        border-color 0.3s,
+        background-color 0.3s;
     transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
-    font-weight: 800;
+    font-weight: 700;
     padding: 15px 5px;
 
     &:focus {
@@ -3623,11 +3570,14 @@ button {
 
     & blockquote {
         font-size: 18px;
+        padding: 0 0 0 15px;
+        border-left: 5px solid hsl(0deg 0% 93%);
     }
 
     & blockquote::before {
         font-size: 20px;
-        font-weight: 800;
+        font-weight: 700;
+        content: "";
     }
 
     & cite {
@@ -3644,10 +3594,7 @@ button {
         position: relative;
         background: hsl(0deg 0% 93%);
         padding: 20px;
-    }
-
-    & blockquote::after {
-        content: "";
+        margin: 0 0 20px;
     }
 
     .author {
@@ -3668,7 +3615,7 @@ button {
         margin: 40px auto;
         font-size: 20px;
         text-align: center;
-        font-weight: bolder;
+        font-weight: 400;
         opacity: 0.9;
     }
 
@@ -3807,7 +3754,7 @@ button {
                     margin: 0 0 -10px;
                     width: 100%;
                     text-align: center;
-                    font-weight: 550;
+                    font-weight: 600;
                     color: hsl(169deg 46% 33%);
                 }
             }
@@ -4016,7 +3963,8 @@ button {
                 flex-direction: column;
                 width: 40vw;
                 height: 350px;
-                box-shadow: 0 1px 1px 0 hsl(193deg 100% 7.1% / 30%),
+                box-shadow:
+                    0 1px 1px 0 hsl(193deg 100% 7.1% / 30%),
                     1px 1px 1px 0 hsl(193deg 100% 7.1% / 15%),
                     -1px 1px 1px 0 hsl(193deg 100% 7.1% / 15%);
 
@@ -4031,7 +3979,7 @@ button {
                 }
 
                 & h1 {
-                    font-weight: 550;
+                    font-weight: 600;
                     font-size: clamp(24px, 2.5vw, 32px);
                 }
 

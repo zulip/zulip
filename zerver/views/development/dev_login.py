@@ -30,11 +30,13 @@ def get_dev_users(realm: Optional[Realm] = None, extra_users_count: int = 10) ->
     # it still makes sense to limit how many extra users we render to
     # support performance testing with DevAuthBackend.
     if realm is not None:
-        users_query = UserProfile.objects.select_related().filter(
+        users_query = UserProfile.objects.select_related("realm").filter(
             is_bot=False, is_active=True, realm=realm
         )
     else:
-        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+        users_query = UserProfile.objects.select_related("realm").filter(
+            is_bot=False, is_active=True
+        )
 
     shakespearian_users = users_query.exclude(email__startswith="extrauser").order_by("email")
     extra_users = users_query.filter(email__startswith="extrauser").order_by("email")

@@ -213,7 +213,7 @@ test("basics", () => {
     operators = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(!filter.can_mark_messages_read());
     assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
@@ -361,11 +361,7 @@ function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
 
     is_operator = [{operator: "is", operand: "mentioned"}];
     filter = new Filter([...additional_operators_to_test, ...is_operator]);
-    if (additional_operators_to_test.length === 0) {
-        assert.ok(filter.can_mark_messages_read());
-    } else {
-        assert.ok(!filter.can_mark_messages_read());
-    }
+    assert.ok(!filter.can_mark_messages_read());
 
     is_operator = [{operator: "is", operand: "mentioned", negated: true}];
     filter = new Filter([...additional_operators_to_test, ...is_operator]);
@@ -1156,9 +1152,10 @@ test("unparse", () => {
     assert.deepEqual(Filter.unparse(operators), string);
 });
 
-test("describe", () => {
+test("describe", ({mock_template}) => {
     let narrow;
     let string;
+    mock_template("search_description.hbs", true, (_data, html) => html);
 
     narrow = [{operator: "streams", operand: "public"}];
     string = "streams public";
@@ -1186,7 +1183,7 @@ test("describe", () => {
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "JS"},
     ];
-    string = "stream devel &gt; JS";
+    string = "stream devel > JS";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [

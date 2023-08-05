@@ -3,7 +3,7 @@
 }
 
 .billing-upgrade-page {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     background-color: hsl(0deg 0% 98%);
     height: 100vh;
 
@@ -63,7 +63,7 @@
         a:hover,
         a:visited {
             color: hsl(170deg 47% 33%);
-            font-weight: 500;
+            font-weight: 400;
         }
     }
 
@@ -151,7 +151,7 @@
         & span {
             background: 0;
             box-shadow: none;
-            font-family: "Source Sans 3", sans-serif;
+            font-family: "Source Sans 3 VF", sans-serif;
             line-height: 20px;
         }
     }
@@ -328,26 +328,6 @@
     textarea {
         font-family: inherit;
     }
-
-    #license-manual-section,
-    #licensechange-input-section {
-        & input {
-            padding: 4px 6px;
-            border-radius: 4px;
-            border: 1px solid hsl(0deg 0% 80%);
-            color: hsl(0deg 0% 33%);
-            margin-bottom: 10px;
-            transition: border linear 0.2s, box-shadow linear 0.2s;
-            box-shadow: inset 0 1px 1px hsla(0deg 0 0 / 7.5%);
-
-            &:focus {
-                border-color: hsl(206deg 80% 62% / 80%);
-                outline: 0;
-                box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-                    0 0 8px hsl(206.494deg 80% 62% / 60%);
-            }
-        }
-    }
 }
 
 input[type="number"]::-webkit-outer-spin-button,
@@ -360,10 +340,34 @@ input[name="licenses"] {
     appearance: textfield;
 }
 
+#license-manual-section,
+#licensechange-input-section,
+#sponsorship-form,
+#invoice-form {
+    & input {
+        padding: 4px 6px;
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        color: hsl(0deg 0% 33%);
+        margin-bottom: 10px;
+        transition:
+            border linear 0.2s,
+            box-shadow linear 0.2s;
+        box-shadow: inset 0 1px 1px hsla(0deg 0 0 / 7.5%);
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206.494deg 80% 62% / 60%);
+        }
+    }
+}
+
 #sponsorship-form {
     & input {
         box-sizing: border-box;
-        height: 30px;
     }
 
     & textarea {
@@ -378,13 +382,16 @@ input[name="licenses"] {
         line-height: 20px;
 
         box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-        transition: border linear 0.2s, box-shadow linear 0.2s;
+        transition:
+            border linear 0.2s,
+            box-shadow linear 0.2s;
 
         &:focus {
             border-color: hsl(206.5deg 80% 62% / 80%);
             outline: 0;
 
-            box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
                 0 0 8px hsl(206.5deg 80% 62% / 60%);
 
             &:invalid {

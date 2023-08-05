@@ -26,6 +26,7 @@ from zerver.lib.user_groups import (
     access_user_group_by_id,
     access_user_group_for_setting,
     access_user_groups_as_potential_subgroups,
+    check_user_group_name,
     get_direct_memberships_of_users,
     get_recursive_subgroups_for_groups,
     get_subgroup_ids,
@@ -48,9 +49,12 @@ def add_user_group(
     name: str = REQ(),
     members: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
     description: str = REQ(),
-    can_mention_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    can_mention_group_id: Optional[int] = REQ(
+        "can_mention_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
+    name = check_user_group_name(name)
 
     group_settings_map = {}
     request_settings_dict = locals()
@@ -99,7 +103,9 @@ def edit_user_group(
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
     name: Optional[str] = REQ(default=None),
     description: Optional[str] = REQ(default=None),
-    can_mention_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    can_mention_group_id: Optional[int] = REQ(
+        "can_mention_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     if name is None and description is None and can_mention_group_id is None:
         raise JsonableError(_("No new data supplied"))
@@ -107,6 +113,7 @@ def edit_user_group(
     user_group = access_user_group_by_id(user_group_id, user_profile)
 
     if name is not None and name != user_group.name:
+        name = check_user_group_name(name)
         do_update_user_group_name(user_group, name, acting_user=user_profile)
 
     if description is not None and description != user_group.description:
@@ -262,7 +269,9 @@ def remove_members_from_group_backend(
     group_member_ids = get_user_group_direct_member_ids(user_group)
     for member in members:
         if member not in group_member_ids:
-            raise JsonableError(_("There is no member '{}' in this user group").format(member))
+            raise JsonableError(
+                _("There is no member '{user_id}' in this user group").format(user_id=member)
+            )
 
     user_profile_ids = [user.id for user in user_profiles]
     remove_members_from_user_group(user_group, user_profile_ids, acting_user=user_profile)

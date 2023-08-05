@@ -311,7 +311,7 @@ def filter_footer(text: str) -> str:
         # isn't a trivial footer structure.
         return text
 
-    return re.split(r"^\s*--\s*$", text, 1, flags=re.MULTILINE)[0].strip()
+    return re.split(r"^\s*--\s*$", text, maxsplit=1, flags=re.MULTILINE)[0].strip()
 
 
 def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: UserProfile) -> str:

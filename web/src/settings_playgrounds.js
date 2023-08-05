@@ -35,12 +35,13 @@ export function populate_playgrounds(playgrounds_data) {
     const $playgrounds_table = $("#admin_playgrounds_table").expectOne();
     ListWidget.create($playgrounds_table, playgrounds_data, {
         name: "playgrounds_list",
+        get_item: ListWidget.default_get_item,
         modifier(playground) {
             return render_admin_playground_list({
                 playground: {
                     playground_name: playground.name,
                     pygments_language: playground.pygments_language,
-                    url_prefix: playground.url_prefix,
+                    url_template: playground.url_template,
                     id: playground.id,
                 },
                 can_modify: page_params.is_admin,
@@ -59,7 +60,14 @@ export function populate_playgrounds(playgrounds_data) {
             },
         },
         $parent_container: $("#playground-settings").expectOne(),
-        init_sort: ["alphabetic", "pygments_language"],
+        init_sort: "pygments_language_alphabetic",
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", [
+                "pygments_language",
+                "name",
+                "url_template",
+            ]),
+        },
         $simplebar_container: $("#playground-settings .progressive-table-wrapper"),
     });
 }
@@ -102,7 +110,7 @@ function build_page() {
             const data = {
                 name: $("#playground_name").val(),
                 pygments_language: $("#playground_pygments_language").val(),
-                url_prefix: $("#playground_url_prefix").val(),
+                url_template: $("#playground_url_template").val(),
             };
             channel.post({
                 url: "/json/realm/playgrounds",
@@ -110,7 +118,7 @@ function build_page() {
                 success() {
                     $("#playground_pygments_language").val("");
                     $("#playground_name").val("");
-                    $("#playground_url_prefix").val("");
+                    $("#playground_url_template").val("");
                     $add_playground_button.prop("disabled", false);
                     ui_report.success(
                         $t_html({defaultMessage: "Custom playground added!"}),

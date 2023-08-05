@@ -80,7 +80,8 @@ class PagerDutyHookTests(WebhookTestCase):
         for version in range(1, 4):
             payload = self.get_body(f"unsupported_v{version}")
             result = self.client_post(self.url, payload, content_type="application/json")
-            self.assert_json_error(
+            self.assert_json_success(result)
+            self.assert_in_response(
+                "The 'incident.unsupported' event isn't currently supported by the PagerDuty webhook; ignoring",
                 result,
-                "The 'incident.unsupported' event isn't currently supported by the PagerDuty webhook",
             )

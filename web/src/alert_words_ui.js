@@ -23,11 +23,15 @@ export function rerender_alert_words_ui() {
 
     ListWidget.create($word_list, words, {
         name: "alert-words-list",
+        get_item: ListWidget.default_get_item,
         modifier(alert_word) {
             return render_alert_word_settings_item({alert_word});
         },
         $parent_container: $("#alert-word-settings"),
         $simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["word"]),
+        },
     });
 }
 
@@ -42,10 +46,7 @@ function update_alert_word_status(status_text, is_error) {
     $alert_word_status.show();
 }
 
-function add_alert_word(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
+function add_alert_word() {
     const alert_word = $("#add-alert-word-name").val().trim();
 
     if (alert_words.has_alert_word(alert_word)) {

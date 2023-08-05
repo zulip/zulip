@@ -21,6 +21,7 @@ export function populate_list() {
 
     ListWidget.create($muted_users_table, all_muted_users, {
         name: "muted-users-list",
+        get_item: ListWidget.default_get_item,
         modifier(muted_user) {
             return render_muted_user_ui_row({muted_user});
         },
@@ -34,6 +35,10 @@ export function populate_list() {
                     $muted_users_table.closest(".progressive-table-wrapper"),
                 );
             },
+        },
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["user_name"]),
+            ...ListWidget.generic_sort_functions("numeric", ["date_muted"]),
         },
         $parent_container: $("#muted-user-settings"),
         $simplebar_container: $("#muted-user-settings .progressive-table-wrapper"),

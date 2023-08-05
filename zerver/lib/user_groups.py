@@ -1,13 +1,22 @@
 from typing import Dict, Iterable, List, Mapping, Sequence, TypedDict
 
+import orjson
 from django.db import transaction
 from django.db.models import F, QuerySet
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import With
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.lib.exceptions import JsonableError
-from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
+from zerver.models import (
+    GroupGroupMembership,
+    Realm,
+    RealmAuditLog,
+    UserGroup,
+    UserGroupMembership,
+    UserProfile,
+)
 
 
 class UserGroupDict(TypedDict):
@@ -17,7 +26,7 @@ class UserGroupDict(TypedDict):
     members: List[int]
     direct_subgroup_ids: List[int]
     is_system_group: bool
-    can_mention_group_id: int
+    can_mention_group: int
 
 
 def access_user_group_by_id(
@@ -54,7 +63,9 @@ def access_user_groups_as_potential_subgroups(
     valid_group_ids = [group.id for group in user_groups]
     invalid_group_ids = [group_id for group_id in user_group_ids if group_id not in valid_group_ids]
     if invalid_group_ids:
-        raise JsonableError(_("Invalid user group ID: {}").format(invalid_group_ids[0]))
+        raise JsonableError(
+            _("Invalid user group ID: {group_id}").format(group_id=invalid_group_ids[0])
+        )
 
     return list(user_groups)
 
@@ -72,24 +83,49 @@ def access_user_group_for_setting(
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
 
     if require_system_group and not user_group.is_system_group:
-        raise JsonableError(_("'{}' must be a system user group.").format(setting_name))
+        raise JsonableError(
+            _("'{setting_name}' must be a system user group.").format(setting_name=setting_name)
+        )
 
     if not allow_internet_group and user_group.name == UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME:
         raise JsonableError(
-            _("'{}' setting cannot be set to '@role:internet' group.").format(setting_name)
+            _("'{setting_name}' setting cannot be set to 'role:internet' group.").format(
+                setting_name=setting_name
+            )
         )
 
     if not allow_owners_group and user_group.name == UserGroup.OWNERS_GROUP_NAME:
         raise JsonableError(
-            _("'{}' setting cannot be set to '@role:owners' group.").format(setting_name)
+            _("'{setting_name}' setting cannot be set to 'role:owners' group.").format(
+                setting_name=setting_name
+            )
         )
 
     if not allow_nobody_group and user_group.name == UserGroup.NOBODY_GROUP_NAME:
         raise JsonableError(
-            _("'{}' setting cannot be set to '@role:nobody' group.").format(setting_name)
+            _("'{setting_name}' setting cannot be set to 'role:nobody' group.").format(
+                setting_name=setting_name
+            )
         )
 
     return user_group
+
+
+def check_user_group_name(group_name: str) -> str:
+    if len(group_name) > UserGroup.MAX_NAME_LENGTH:
+        raise JsonableError(
+            _("User group name cannot exceed {max_length} characters.").format(
+                max_length=UserGroup.MAX_NAME_LENGTH
+            )
+        )
+
+    for invalid_prefix in UserGroup.INVALID_NAME_PREFIXES:
+        if group_name.startswith(invalid_prefix):
+            raise JsonableError(
+                _("User group name cannot start with '{prefix}'.").format(prefix=invalid_prefix)
+            )
+
+    return group_name
 
 
 def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
@@ -108,7 +144,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
             members=[],
             direct_subgroup_ids=[],
             is_system_group=user_group.is_system_group,
-            can_mention_group_id=user_group.can_mention_group_id,
+            can_mention_group=user_group.can_mention_group_id,
         )
 
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
@@ -305,6 +341,8 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         can_mention_group_id=initial_group_setting_value,
     )
     # Order of this list here is important to create correct GroupGroupMembership objects
+    # Note that because we do not create user memberships here, no audit log entries for
+    # user memberships are populated either.
     system_user_groups_list = [
         nobody_system_group,
         role_system_groups_dict[UserProfile.ROLE_REALM_OWNER],
@@ -316,23 +354,72 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         everyone_on_internet_system_group,
     ]
 
+    creation_time = timezone_now()
     UserGroup.objects.bulk_create(system_user_groups_list)
+    realmauditlog_objects = [
+        RealmAuditLog(
+            realm=realm,
+            acting_user=None,
+            event_type=RealmAuditLog.USER_GROUP_CREATED,
+            event_time=creation_time,
+            modified_user_group=user_group,
+        )
+        for user_group in system_user_groups_list
+    ]
 
     groups_with_updated_settings = []
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for group in system_user_groups_list:
         user_group = set_defaults_for_group_settings(group, {}, system_groups_name_dict)
         groups_with_updated_settings.append(group)
+        realmauditlog_objects.append(
+            RealmAuditLog(
+                realm=realm,
+                acting_user=None,
+                event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+                event_time=creation_time,
+                modified_user_group=user_group,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: None,
+                        RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
+                        "property": "can_mention_group",
+                    }
+                ).decode(),
+            )
+        )
     UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
 
-    subgroup_objects = []
+    subgroup_objects: List[GroupGroupMembership] = []
     # "Nobody" system group is not a subgroup of any user group, since it is already empty.
     subgroup, remaining_groups = system_user_groups_list[1], system_user_groups_list[2:]
     for supergroup in remaining_groups:
         subgroup_objects.append(GroupGroupMembership(subgroup=subgroup, supergroup=supergroup))
+        now = timezone_now()
+        realmauditlog_objects.extend(
+            [
+                RealmAuditLog(
+                    realm=realm,
+                    modified_user_group=supergroup,
+                    event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                    event_time=now,
+                    acting_user=None,
+                    extra_data=orjson.dumps({"subgroup_ids": [subgroup.id]}).decode(),
+                ),
+                RealmAuditLog(
+                    realm=realm,
+                    modified_user_group=subgroup,
+                    event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                    event_time=now,
+                    acting_user=None,
+                    extra_data=orjson.dumps({"supergroup_ids": [supergroup.id]}).decode(),
+                ),
+            ]
+        )
         subgroup = supergroup
 
     GroupGroupMembership.objects.bulk_create(subgroup_objects)
+    RealmAuditLog.objects.bulk_create(realmauditlog_objects)
 
     return role_system_groups_dict
 

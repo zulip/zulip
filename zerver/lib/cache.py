@@ -30,8 +30,6 @@ from django.http import HttpRequest
 from django_stubs_ext import QuerySetAny
 from typing_extensions import ParamSpec
 
-from zerver.lib.utils import make_safe_digest
-
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
@@ -190,7 +188,7 @@ def validate_cache_key(key: str) -> None:
     # and only "control" characters are strictly disallowed, see:
     # https://github.com/memcached/memcached/blob/master/doc/protocol.txt
     # However, limiting the characters we allow in keys simiplifies things,
-    # and anyway we use make_safe_digest when forming some keys to ensure
+    # and anyway we use a hash function when forming some keys to ensure
     # the resulting keys fit the regex below.
     # The regex checks "all characters between ! and ~ in the ascii table",
     # which happens to be the set of all "nice" ascii characters.
@@ -397,25 +395,6 @@ def generic_bulk_cached_fetch(
     }
 
 
-def transformed_bulk_cached_fetch(
-    cache_key_function: Callable[[ObjKT], str],
-    query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
-    object_ids: Sequence[ObjKT],
-    *,
-    id_fetcher: Callable[[ItemT], ObjKT],
-    cache_transformer: Callable[[ItemT], CacheItemT],
-) -> Dict[ObjKT, CacheItemT]:
-    return generic_bulk_cached_fetch(
-        cache_key_function,
-        query_function,
-        object_ids,
-        extractor=lambda obj: obj,
-        setter=lambda obj: obj,
-        id_fetcher=id_fetcher,
-        cache_transformer=cache_transformer,
-    )
-
-
 def bulk_cached_fetch(
     cache_key_function: Callable[[ObjKT], str],
     query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
@@ -423,31 +402,31 @@ def bulk_cached_fetch(
     *,
     id_fetcher: Callable[[ItemT], ObjKT],
 ) -> Dict[ObjKT, ItemT]:
-    return transformed_bulk_cached_fetch(
+    return generic_bulk_cached_fetch(
         cache_key_function,
         query_function,
         object_ids,
         id_fetcher=id_fetcher,
+        extractor=lambda obj: obj,
+        setter=lambda obj: obj,
         cache_transformer=lambda obj: obj,
     )
 
 
 def preview_url_cache_key(url: str) -> str:
-    return f"preview_url:{make_safe_digest(url)}"
+    return f"preview_url:{hashlib.sha1(url.encode()).hexdigest()}"
 
 
 def display_recipient_cache_key(recipient_id: int) -> str:
     return f"display_recipient_dict:{recipient_id}"
 
 
-def display_recipient_bulk_get_users_by_id_cache_key(user_id: int) -> str:
-    # Cache key function for a function for bulk fetching users, used internally
-    # by display_recipient code.
-    return "bulk_fetch_display_recipients:" + user_profile_by_id_cache_key(user_id)
+def single_user_display_recipient_cache_key(user_id: int) -> str:
+    return f"single_user_display_recipient:{user_id}"
 
 
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
-    return f"user_profile:{make_safe_digest(email.strip())}:{realm_id}"
+    return f"user_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
 
 def user_profile_cache_key(email: str, realm: "Realm") -> str:
@@ -455,11 +434,11 @@ def user_profile_cache_key(email: str, realm: "Realm") -> str:
 
 
 def user_profile_delivery_email_cache_key(delivery_email: str, realm: "Realm") -> str:
-    return f"user_profile_by_delivery_email:{make_safe_digest(delivery_email.strip())}:{realm.id}"
+    return f"user_profile_by_delivery_email:{hashlib.sha1(delivery_email.strip().encode()).hexdigest()}:{realm.id}"
 
 
 def bot_profile_cache_key(email: str, realm_id: int) -> str:
-    return f"bot_profile:{make_safe_digest(email.strip())}"
+    return f"bot_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}"
 
 
 def user_profile_by_id_cache_key(user_profile_id: int) -> str:
@@ -468,6 +447,13 @@ def user_profile_by_id_cache_key(user_profile_id: int) -> str:
 
 def user_profile_by_api_key_cache_key(api_key: str) -> str:
     return f"user_profile_by_api_key:{api_key}"
+
+
+def get_cross_realm_dicts_key() -> str:
+    emails = list(settings.CROSS_REALM_BOT_EMAILS)
+    raw_key = ",".join(sorted(emails))
+    digest = hashlib.sha1(raw_key.encode()).hexdigest()
+    return f"get_cross_realm_dicts:{digest}"
 
 
 realm_user_dict_fields: List[str] = [
@@ -531,11 +517,7 @@ def bot_dicts_in_realm_cache_key(realm_id: int) -> str:
     return f"bot_dicts_in_realm:{realm_id}"
 
 
-def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
-    return f"stream_by_realm_and_name:{realm_id}:{make_safe_digest(stream_name.strip().lower())}"
-
-
-def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
+def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm: "Realm") -> None:
     # Imported here to avoid cyclic dependency.
     from zerver.lib.users import get_all_api_keys
     from zerver.models import is_cross_realm_bot_email
@@ -545,13 +527,12 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
         keys.append(user_profile_by_id_cache_key(user_profile.id))
         for api_key in get_all_api_keys(user_profile):
             keys.append(user_profile_by_api_key_cache_key(api_key))
-        keys.append(user_profile_cache_key(user_profile.email, user_profile.realm))
-        keys.append(
-            user_profile_delivery_email_cache_key(user_profile.delivery_email, user_profile.realm)
-        )
+        keys.append(user_profile_cache_key(user_profile.email, realm))
+        keys.append(user_profile_delivery_email_cache_key(user_profile.delivery_email, realm))
         if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.
-            keys.append(bot_profile_cache_key(user_profile.email, user_profile.realm_id))
+            keys.append(bot_profile_cache_key(user_profile.email, realm.id))
+            keys.append(get_cross_realm_dicts_key())
 
     cache_delete_many(keys)
 
@@ -563,7 +544,7 @@ def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
         "recipient_id", flat=True
     )
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
-    keys.append(display_recipient_bulk_get_users_by_id_cache_key(user_profile.id))
+    keys.append(single_user_display_recipient_cache_key(user_profile.id))
     cache_delete_many(keys)
 
 
@@ -585,7 +566,7 @@ def flush_user_profile(
     **kwargs: object,
 ) -> None:
     user_profile = instance
-    delete_user_profile_caches([user_profile])
+    delete_user_profile_caches([user_profile], user_profile.realm)
 
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
@@ -625,7 +606,7 @@ def flush_realm(
 ) -> None:
     realm = instance
     users = realm.get_active_users()
-    delete_user_profile_caches(users)
+    delete_user_profile_caches(users, realm)
 
     if (
         from_deletion
@@ -672,13 +653,6 @@ def flush_stream(
     from zerver.models import UserProfile
 
     stream = instance
-    items_for_remote_cache = {}
-
-    if update_fields is None:
-        cache_delete(get_stream_cache_key(stream.name, stream.realm_id))
-    else:
-        items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
-        cache_set_many(items_for_remote_cache)
 
     if (
         update_fields is None
@@ -711,7 +685,9 @@ def to_dict_cache_key(message: "Message", realm_id: Optional[int] = None) -> str
 
 
 def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> str:
-    return "open_graph_description_path:{}".format(make_safe_digest(request.META["PATH_INFO"]))
+    return "open_graph_description_path:{}".format(
+        hashlib.sha1(request.META["PATH_INFO"].encode()).hexdigest()
+    )
 
 
 def flush_message(*, instance: "Message", **kwargs: object) -> None:

@@ -553,8 +553,8 @@ const keyboard_handling_context = {
     id_attribute_name: "data-draft-id",
 };
 
-export function handle_keyboard_events(e, event_key) {
-    messages_overlay_ui.modals_handle_events(e, event_key, keyboard_handling_context);
+export function handle_keyboard_events(event_key) {
+    messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
 export function launch() {

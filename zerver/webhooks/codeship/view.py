@@ -29,14 +29,14 @@ def api_codeship_webhook(
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     payload = payload["build"]
-    subject = get_subject_for_http_request(payload)
+    topic = get_topic_for_http_request(payload)
     body = get_body_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)
 
 
-def get_subject_for_http_request(payload: WildValue) -> str:
+def get_topic_for_http_request(payload: WildValue) -> str:
     return CODESHIP_TOPIC_TEMPLATE.format(
         project_name=payload["project_name"].tame(check_string),
     )

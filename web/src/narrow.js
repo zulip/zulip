@@ -15,6 +15,7 @@ import {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_edit from "./message_edit";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
@@ -23,7 +24,6 @@ import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
 import * as narrow_banner from "./narrow_banner";
@@ -40,7 +40,6 @@ import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
-import * as top_left_corner from "./top_left_corner";
 import * as topic_generator from "./topic_generator";
 import * as typing_events from "./typing_events";
 import * as unread from "./unread";
@@ -543,7 +542,7 @@ export function activate(raw_operators, opts) {
 
         const current_filter = narrow_state.filter();
 
-        top_left_corner.handle_narrow_activated(current_filter);
+        left_sidebar_navigation_area.handle_narrow_activated(current_filter);
         pm_list.handle_narrow_activated(current_filter);
         stream_list.handle_narrow_activated(current_filter);
         typing_events.render_notifications_for_narrow();
@@ -833,7 +832,7 @@ export function stream_cycle_forward() {
     activate_stream_for_cycle_hotkey(stream_name);
 }
 
-export function narrow_to_next_topic() {
+export function narrow_to_next_topic(opts = {}) {
     const curr_info = {
         stream: narrow_state.stream(),
         topic: narrow_state.topic(),
@@ -850,10 +849,10 @@ export function narrow_to_next_topic() {
         {operator: "topic", operand: next_narrow.topic},
     ];
 
-    activate(filter_expr, {});
+    activate(filter_expr, opts);
 }
 
-export function narrow_to_next_pm_string() {
+export function narrow_to_next_pm_string(opts = {}) {
     const current_direct_message = narrow_state.pm_ids_string();
 
     const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
@@ -869,11 +868,12 @@ export function narrow_to_next_pm_string() {
     const filter_expr = [{operator: "dm", operand: direct_message}];
 
     // force_close parameter is true to not auto open compose_box
-    const opts = {
+    const updated_opts = {
+        ...opts,
         force_close: true,
     };
 
-    activate(filter_expr, opts);
+    activate(filter_expr, updated_opts);
 }
 
 // Activate narrowing with a single operator.
@@ -991,7 +991,7 @@ export function to_compose_target() {
 function handle_post_narrow_deactivate_processes() {
     compose_fade.update_message_list();
 
-    top_left_corner.handle_narrow_deactivated();
+    left_sidebar_navigation_area.handle_narrow_deactivated();
     pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
     compose_closed_ui.update_buttons_for_stream();
@@ -1003,7 +1003,7 @@ function handle_post_narrow_deactivate_processes() {
     message_feed_top_notices.update_top_of_narrow_notices(message_lists.home);
 }
 
-export function deactivate(coming_from_recent_topics = false) {
+export function deactivate(coming_from_recent_topics = false, is_actively_scrolling = false) {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -1027,7 +1027,7 @@ export function deactivate(coming_from_recent_topics = false) {
     }
     blueslip.debug("Unnarrowed");
 
-    if (message_scroll.is_actively_scrolling()) {
+    if (is_actively_scrolling) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
         // on an unnarrow. Wait a bit and try again once the scrolling is over.

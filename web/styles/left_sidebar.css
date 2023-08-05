@@ -21,14 +21,14 @@ $before_unread_count_padding: 3px;
             content: "#";
             line-height: 0;
             font-size: 18px;
-            font-weight: 800;
+            font-weight: 700;
         }
     }
 }
 
 .stream-privacy {
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 700;
     min-width: $left_col_size;
     text-align: center;
 
@@ -113,6 +113,10 @@ li.show-more-topics {
 
         & input {
             width: calc(100% - 50px);
+        }
+
+        .clear_search_button {
+            margin-left: -1px;
         }
     }
 
@@ -714,8 +718,17 @@ li.topic-list-item {
     top: -0.5px;
     z-index: 1;
 
-    & input {
-        padding-right: 20px;
+    .input-append {
+        white-space: nowrap;
+        margin-bottom: 10px;
+
+        & input {
+            padding-right: 20px;
+        }
+
+        .clear_search_button {
+            margin-left: -1px;
+        }
     }
 }
 

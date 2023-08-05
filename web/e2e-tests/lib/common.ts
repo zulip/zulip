@@ -210,7 +210,10 @@ export async function check_compose_state(
     const form_params: Record<string, string> = {content: params.content};
     if (params.stream) {
         assert.equal(
-            await get_text_from_selector(page, "#compose_select_recipient_name"),
+            await get_text_from_selector(
+                page,
+                "#compose_select_recipient_widget .dropdown_widget_value",
+            ),
             params.stream,
         );
     }
@@ -495,9 +498,9 @@ export async function get_rendered_messages(
             }
 
             const messages = await Promise.all(
-                (
-                    await element.$$(".message_row .message_content")
-                ).map(async (message_row) => (await get_element_text(message_row)).trim()),
+                (await element.$$(".message_row .message_content")).map(async (message_row) =>
+                    (await get_element_text(message_row)).trim(),
+                ),
             );
 
             return [key, messages];

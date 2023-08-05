@@ -40,7 +40,13 @@ export function get_item(key, config, file_id) {
                 return `#compose_banners .upload_banner.file_${CSS.escape(file_id)}`;
             case "upload_banner":
                 return $(`#compose_banners .upload_banner.file_${CSS.escape(file_id)}`);
-            case "upload_banner_close_button":
+            case "upload_banner_cancel_button":
+                return $(
+                    `#compose_banners .upload_banner.file_${CSS.escape(
+                        file_id,
+                    )} .upload_banner_cancel_button`,
+                );
+            case "upload_banner_hide_button":
                 return $(
                     `#compose_banners .upload_banner.file_${CSS.escape(
                         file_id,
@@ -67,9 +73,7 @@ export function get_item(key, config, file_id) {
             case "textarea":
                 return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`);
             case "send_button":
-                return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`)
-                    .closest(".message_edit_form")
-                    .find(".message_edit_save");
+                return $(`#edit_form_${CSS.escape(config.row)}`).find(".message_edit_save");
             case "banner_container":
                 return $(`#edit_form_${CSS.escape(config.row)} .edit_form_banners`);
             case "upload_banner_identifier":
@@ -82,7 +86,13 @@ export function get_item(key, config, file_id) {
                         file_id,
                     )}`,
                 );
-            case "upload_banner_close_button":
+            case "upload_banner_cancel_button":
+                return $(
+                    `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
+                        file_id,
+                    )} .upload_banner_cancel_button`,
+                );
+            case "upload_banner_hide_button":
                 return $(
                     `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
                         file_id,
@@ -117,9 +127,16 @@ export function hide_upload_banner(uppy, config, file_id) {
     }
 }
 
-function add_upload_banner(config, banner_type, banner_text, file_id) {
+function add_upload_banner(
+    config,
+    banner_type,
+    banner_text,
+    file_id,
+    is_upload_process_tracker = false,
+) {
     const new_banner = render_upload_banner({
         banner_type,
+        is_upload_process_tracker,
         banner_text,
         file_id,
     });
@@ -199,8 +216,9 @@ export async function upload_files(uppy, config, files) {
             "info",
             $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name}),
             file.id,
+            true,
         );
-        get_item("upload_banner_close_button", config, file.id).one("click", () => {
+        get_item("upload_banner_cancel_button", config, file.id).one("click", () => {
             compose_ui.replace_syntax(
                 get_translated_status(file),
                 "",
@@ -210,6 +228,9 @@ export async function upload_files(uppy, config, files) {
             get_item("textarea", config).trigger("focus");
 
             uppy.removeFile(file.id);
+            hide_upload_banner(uppy, config, file.id);
+        });
+        get_item("upload_banner_hide_button", config, file.id).one("click", () => {
             hide_upload_banner(uppy, config, file.id);
         });
     }
@@ -318,12 +339,17 @@ export function setup_upload(config) {
         const split_url = url.split("/");
         const filename = split_url.at(-1);
         const filename_url = "[" + filename + "](" + url + ")";
-        compose_ui.replace_syntax(
+        const $text_area = get_item("textarea", config);
+        const replacement_successful = compose_ui.replace_syntax(
             get_translated_status(file),
             filename_url,
-            get_item("textarea", config),
+            $text_area,
         );
-        compose_ui.autosize_textarea(get_item("textarea", config));
+        if (!replacement_successful) {
+            compose_ui.insert_syntax_and_focus(filename_url, $text_area);
+        }
+
+        compose_ui.autosize_textarea($text_area);
 
         // The uploaded files should be removed since uppy doesn't allow files in the store
         // to be re-uploaded again.

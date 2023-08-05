@@ -207,10 +207,7 @@ function get_events({dont_block = false} = {}) {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
                 // garbage collected, immediately reload.
-                if (
-                    xhr.status === 400 &&
-                    JSON.parse(xhr.responseText).code === "BAD_EVENT_QUEUE_ID"
-                ) {
+                if (xhr.status === 400 && xhr.responseJSON?.code === "BAD_EVENT_QUEUE_ID") {
                     page_params.event_queue_expired = true;
                     reload.initiate({
                         immediate: true,

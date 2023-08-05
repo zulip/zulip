@@ -287,10 +287,17 @@ export class MessageListView {
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
             const today = new Date();
+            let date = timerender.render_date(last_edit_time, today)[0].textContent;
+            // If the date is today or yesterday, we don't want to show the date as capitalized.
+            // Thus, we need to check if the date string contains a digit or not using regex,
+            // since any other date except today/yesterday will contain a digit.
+            if (date && !/\d/.test(date)) {
+                date = date.toLowerCase();
+            }
             return $t(
                 {defaultMessage: "{date} at {time}"},
                 {
-                    date: timerender.render_date(last_edit_time, today)[0].textContent,
+                    date,
                     time: timerender.stringify_time(last_edit_time),
                 },
             );
@@ -1208,7 +1215,9 @@ export class MessageListView {
 
     _rerender_header(message_containers) {
         // Given a list of messages that are in the **same** message group,
-        // rerender the header / recipient bar of the messages
+        // rerender the header / recipient bar of the messages. This method
+        // should only be called with rerender_messages as the rerendered
+        // header may need to be updated for the "sticky_header" class.
         if (message_containers.length === 0) {
             return;
         }
@@ -1314,6 +1323,10 @@ export class MessageListView {
 
         for (const messages_in_group of message_groups) {
             this._rerender_header(messages_in_group, message_content_edited);
+        }
+
+        if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
+            this.update_sticky_recipient_headers();
         }
     }
 

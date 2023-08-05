@@ -56,10 +56,8 @@ module = [
     "bmemcached.*",
     "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
     "circuitbreaker.*",
-    "coverage.*", # https://github.com/nedbat/coveragepy/issues/1434
     "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
-    "disposable_email_domains.*",
     "django_auth_ldap.*",
     "django_bmemcached.*",
     "django_cte.*",
@@ -98,6 +96,7 @@ select = [
     "ANN", # annotations
     "B", # bugbear
     "C4", # comprehensions
+    "COM", # trailing comma
     "DJ", # Django
     "DTZ", # naive datetime
     "E", # style errors
@@ -131,6 +130,7 @@ ignore = [
     "B023", # Function definition does not bind loop variable
     "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
     "C408", # Unnecessary `dict` call (rewrite as a literal)
+    "COM812", # Trailing comma missing
     "DJ001", # Avoid using `null=True` on string-based fields
     "DJ008", # Model does not define `__str__` method
     "E402", # Module level import not at top of file
@@ -150,6 +150,7 @@ ignore = [
     "RUF001", # String contains ambiguous unicode character
     "RUF002", # Docstring contains ambiguous unicode character
     "RUF003", # Comment contains ambiguous unicode character
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
     "S101", # Use of `assert` detected
     "S105", # Possible hardcoded password
     "S106", # Possible hardcoded password
@@ -177,3 +178,4 @@ extend-function-names = ["gettext_lazy"]
 
 [tool.ruff.isort]
 known-third-party = ["zulip"]
+split-on-trailing-comma = false

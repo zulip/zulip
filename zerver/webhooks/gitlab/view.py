@@ -89,7 +89,9 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
     # Filter out multiline hidden comments
     if description:
         stringified_description = description.tame(check_string)
-        stringified_description = re.sub("<!--.*?-->", "", stringified_description, 0, re.DOTALL)
+        stringified_description = re.sub(
+            "<!--.*?-->", "", stringified_description, count=0, flags=re.DOTALL
+        )
         stringified_description = stringified_description.rstrip()
     else:
         stringified_description = None
@@ -436,7 +438,7 @@ def api_gitlab_webhook(
             project_url = f"[{get_repo_name(payload)}]({get_project_homepage(payload)})"
             body = f"[{project_url}] {body}"
 
-        topic = get_subject_based_on_event(event, payload, use_merge_request_title)
+        topic = get_topic_based_on_event(event, payload, use_merge_request_title)
         check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success(request)
 
@@ -445,12 +447,10 @@ def get_body_based_on_event(event: str) -> EventFunction:
     return EVENT_FUNCTION_MAPPER[event]
 
 
-def get_subject_based_on_event(
-    event: str, payload: WildValue, use_merge_request_title: bool
-) -> str:
+def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_title: bool) -> str:
     if event == "Push Hook":
         return f"{get_repo_name(payload)} / {get_branch_name(payload)}"
-    elif event == "Job Hook" or event == "Build Hook":
+    elif event in ("Job Hook", "Build Hook"):
         return "{} / {}".format(
             payload["repository"]["name"].tame(check_string), get_branch_name(payload)
         )
@@ -475,7 +475,7 @@ def get_subject_based_on_event(
             id=payload["object_attributes"]["iid"].tame(check_int),
             title=payload["object_attributes"]["title"].tame(check_string),
         )
-    elif event == "Note Hook Issue" or event == "Confidential Note Hook Issue":
+    elif event in ("Note Hook Issue", "Confidential Note Hook Issue"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="issue",

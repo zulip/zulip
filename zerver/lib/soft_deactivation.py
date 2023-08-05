@@ -14,6 +14,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
+    NotificationTriggers,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -355,7 +356,7 @@ def get_users_for_soft_deactivation(
     return users_to_deactivate
 
 
-def do_soft_activate_users(users: Iterable[UserProfile]) -> List[UserProfile]:
+def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
     users_soft_activated = []
     for user_profile in users:
         user_activated = reactivate_user_if_soft_deactivated(user_profile)
@@ -382,7 +383,7 @@ def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> List[Use
 
 
 def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> QuerySet[UserProfile]:
-    users_to_catch_up = UserProfile.objects.select_related().filter(
+    users_to_catch_up = UserProfile.objects.filter(
         long_term_idle=True,
         is_active=True,
         is_bot=False,
@@ -417,9 +418,18 @@ def soft_reactivate_if_personal_notification(
     if not user_profile.long_term_idle:
         return
 
-    private_message = "private_message" in unique_triggers
-    personal_mention = "mentioned" in unique_triggers and mentioned_user_group_name is None
-    if not private_message and not personal_mention:
+    private_message = NotificationTriggers.PRIVATE_MESSAGE in unique_triggers
+    personal_mention = (
+        NotificationTriggers.MENTION in unique_triggers and mentioned_user_group_name is None
+    )
+    topic_wildcard_mention = any(
+        trigger in unique_triggers
+        for trigger in [
+            NotificationTriggers.TOPIC_WILDCARD_MENTION,
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+        ]
+    )
+    if not private_message and not personal_mention and not topic_wildcard_mention:
         return
 
     queue_soft_reactivation(user_profile.id)

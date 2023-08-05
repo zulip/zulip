@@ -66,7 +66,7 @@ from zerver.actions.realm_linkifiers import (
     do_update_linkifier,
 )
 from zerver.actions.realm_logo import do_change_logo_source
-from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
+from zerver.actions.realm_playgrounds import check_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import (
     do_change_realm_org_type,
     do_change_realm_plan_type,
@@ -452,6 +452,13 @@ class NormalActionsTest(BaseAction):
 
         for i in range(3):
             content = "mentioning... @**" + user.full_name + "** hello " + str(i)
+            self.verify_action(
+                lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
+            )
+
+    def test_topic_wildcard_mentioned_send_message_events(self) -> None:
+        for i in range(3):
+            content = "mentioning... @**topic** hello " + str(i)
             self.verify_action(
                 lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
             )
@@ -1073,9 +1080,9 @@ class NormalActionsTest(BaseAction):
             pronouns_field_type_supported=True,
         )
         check_custom_profile_fields("events[0]", events[0])
-        pronouns_field = [
+        [pronouns_field] = (
             field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
-        ][0]
+        )
         self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
 
         hint = "What pronouns should people use to refer you?"
@@ -1084,9 +1091,9 @@ class NormalActionsTest(BaseAction):
             pronouns_field_type_supported=False,
         )
         check_custom_profile_fields("events[0]", events[0])
-        pronouns_field = [
+        [pronouns_field] = (
             field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
-        ][0]
+        )
         self.assertEqual(pronouns_field["type"], CustomProfileField.SHORT_TEXT)
 
     def test_custom_profile_field_data_events(self) -> None:
@@ -1400,14 +1407,14 @@ class NormalActionsTest(BaseAction):
 
         # Test can_mention_group setting update
         moderators_group = UserGroup.objects.get(
-            name="@role:moderators", realm=self.user_profile.realm, is_system_group=True
+            name="role:moderators", realm=self.user_profile.realm, is_system_group=True
         )
         events = self.verify_action(
             lambda: do_change_user_group_permission_setting(
                 backend, "can_mention_group", moderators_group, acting_user=None
             )
         )
-        check_user_group_update("events[0]", events[0], "can_mention_group_id")
+        check_user_group_update("events[0]", events[0], "can_mention_group")
 
         # Test add members
         hamlet = self.example_user("hamlet")
@@ -2215,14 +2222,13 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["domain"], "zulip.org")
 
     def test_realm_playground_events(self) -> None:
-        playground_info = dict(
-            name="Python playground",
-            pygments_language="Python",
-            url_prefix="https://python.example.com",
-        )
         events = self.verify_action(
-            lambda: do_add_realm_playground(
-                self.user_profile.realm, acting_user=None, **playground_info
+            lambda: check_add_realm_playground(
+                self.user_profile.realm,
+                acting_user=None,
+                name="Python playground",
+                pygments_language="Python",
+                url_template="https://python.example.com{code}",
             )
         )
         check_realm_playgrounds("events[0]", events[0])
@@ -3260,6 +3266,18 @@ class SubscribeActionTest(BaseAction):
             events[0]["streams"][0]["message_retention_days"],
             10,
         )
+
+        stream.invite_only = False
+        stream.save()
+
+        # Subscribe as a guest to a public stream.
+        self.user_profile = self.example_user("polonius")
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.user_profile], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_stream_create("events[0]", events[0])
+        check_subscription_add("events[1]", events[1])
 
 
 class DraftActionTest(BaseAction):

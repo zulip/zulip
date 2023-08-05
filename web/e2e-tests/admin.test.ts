@@ -30,58 +30,33 @@ async function submit_notifications_stream_settings(page: Page): Promise<void> {
 }
 
 async function test_change_new_stream_notifications_setting(page: Page): Promise<void> {
-    await page.click("#realm_notifications_stream_id_widget button.dropdown-toggle");
-    await page.waitForSelector("#realm_notifications_stream_id_widget ul.dropdown-menu", {
+    await page.click("#realm_notifications_stream_id_widget.dropdown-widget-button");
+    await page.waitForSelector(".dropdown-list-container", {
         visible: true,
     });
 
-    await page.type(
-        "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
-        "rome",
-    );
+    await page.type(".dropdown-list-search-input", "rome");
 
     const rome_in_dropdown = await page.waitForSelector(
-        `xpath///*[@id="realm_notifications_stream_id_widget"]//*[${common.has_class_x(
-            "dropdown-list-body",
-        )} and count(li)=1]/li[normalize-space()="Rome"]`,
+        `xpath///*[${common.has_class_x("list-item")}][normalize-space()="Rome"]`,
         {visible: true},
     );
     assert.ok(rome_in_dropdown);
     await rome_in_dropdown.click();
 
     await submit_notifications_stream_settings(page);
-
-    const disable_stream_notifications =
-        "#realm_notifications_stream_id_widget  .dropdown_list_reset_button";
-    await page.waitForSelector(disable_stream_notifications, {visible: true});
-    await page.click(disable_stream_notifications);
-    await submit_notifications_stream_settings(page);
 }
 
 async function test_change_signup_notifications_stream(page: Page): Promise<void> {
     console.log('Changing signup notifications stream to Verona by filtering with "verona"');
 
-    await page.click("#id_realm_signup_notifications_stream_id > button.dropdown-toggle");
-    await page.waitForSelector(
-        "#realm_signup_notifications_stream_id_widget  .dropdown-search > input[type=text]",
-        {visible: true},
-    );
+    await page.click("#realm_signup_notifications_stream_id_widget");
+    await page.waitForSelector(".dropdown-list-search-input", {visible: true});
 
-    await page.type(
-        "#realm_signup_notifications_stream_id_widget  .dropdown-search > input[type=text]",
-        "verona",
-    );
-    await page.waitForSelector(
-        "#realm_signup_notifications_stream_id_widget  .dropdown-list-body > li.list_item",
-        {visible: true},
-    );
+    await page.type(".dropdown-list-search-input", "verona");
+    await page.waitForSelector(".dropdown-list .list-item", {visible: true});
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
-    await submit_notifications_stream_settings(page);
-
-    const disable_signup_notifications =
-        "#realm_signup_notifications_stream_id_widget  .dropdown_list_reset_button";
-    await page.click(disable_signup_notifications);
     await submit_notifications_stream_settings(page);
 }
 
@@ -218,18 +193,30 @@ async function test_custom_realm_emoji(page: Page): Promise<void> {
     await test_delete_emoji(page);
 }
 
-async function test_add_default_stream(
-    page: Page,
-    stream_name: string,
-    row: string,
-): Promise<void> {
-    // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona
-    // etc). 'O' is used to make sure that it works even if there are multiple suggestions.
-    // Uppercase 'O' is used instead of the lowercase version to make sure that the suggestions
-    // are case insensitive.
-    await common.select_item_via_typeahead(page, ".create_default_stream", "O", stream_name);
-    await page.click(".default-stream-form #do_submit_stream");
+async function test_add_default_stream(page: Page): Promise<void> {
+    const streams = ["Denmark", "Venice"];
+    for (let i = 0; i < 2; i += 1) {
+        await page.click(`#select_default_stream_${i}_widget`);
+        await page.waitForSelector(".dropdown-list-container .list-item", {
+            visible: true,
+        });
 
+        const stream_to_select = `.dropdown-list-container .list-item[data-name="${streams[i]}"]`;
+        await page.waitForSelector(stream_to_select, {visible: true});
+        await page.click(stream_to_select);
+        assert((await page.$(".dropdown-list-container")) === null);
+    }
+
+    await page.click("#add-default-stream-modal .dialog_submit_button");
+
+    await common.wait_for_micromodal_to_close(page);
+
+    let stream_id = await common.get_stream_id(page, "Denmark");
+    let row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
+    await page.waitForSelector(row, {visible: true});
+
+    stream_id = await common.get_stream_id(page, "Venice");
+    row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
     await page.waitForSelector(row, {visible: true});
 }
 
@@ -242,13 +229,14 @@ async function test_remove_default_stream(page: Page, row: string): Promise<void
 
 async function test_default_streams(page: Page): Promise<void> {
     await page.click("li[data-section='default-streams-list']");
-    await page.waitForSelector(".create_default_stream", {visible: true});
+    await page.click("#show-add-default-streams-modal");
+    await common.wait_for_micromodal_to_open(page);
 
-    const stream_name = "Scotland";
+    const stream_name = "Denmark";
     const stream_id = await common.get_stream_id(page, stream_name);
     const row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
 
-    await test_add_default_stream(page, stream_name, row);
+    await test_add_default_stream(page);
     await test_remove_default_stream(page, row);
 }
 

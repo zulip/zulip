@@ -2,6 +2,7 @@ import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
 import django.db.utils
+import orjson
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -15,6 +16,7 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     GroupGroupMembership,
     Realm,
+    RealmAuditLog,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -56,6 +58,42 @@ def create_user_group_in_database(
     UserGroupMembership.objects.bulk_create(
         UserGroupMembership(user_profile=member, user_group=user_group) for member in members
     )
+
+    creation_time = timezone_now()
+    audit_log_entries = [
+        RealmAuditLog(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_GROUP_CREATED,
+            event_time=creation_time,
+            modified_user_group=user_group,
+        ),
+        RealmAuditLog(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time=creation_time,
+            modified_user_group=user_group,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: None,
+                    RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
+                    "property": "can_mention_group",
+                }
+            ).decode(),
+        ),
+    ] + [
+        RealmAuditLog(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=creation_time,
+            modified_user=member,
+            modified_user_group=user_group,
+        )
+        for member in members
+    ]
+    RealmAuditLog.objects.bulk_create(audit_log_entries)
     return user_group
 
 
@@ -145,7 +183,7 @@ def do_send_create_user_group_event(
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
-            can_mention_group_id=user_group.can_mention_group_id,
+            can_mention_group=user_group.can_mention_group_id,
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -172,7 +210,7 @@ def check_add_user_group(
         do_send_create_user_group_event(user_group, initial_members)
         return user_group
     except django.db.utils.IntegrityError:
-        raise JsonableError(_("User group '{}' already exists.").format(name))
+        raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
 
 
 def do_send_user_group_update_event(
@@ -182,22 +220,52 @@ def do_send_user_group_update_event(
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
+@transaction.atomic(savepoint=False)
 def do_update_user_group_name(
     user_group: UserGroup, name: str, *, acting_user: Optional[UserProfile]
 ) -> None:
     try:
+        old_value = user_group.name
         user_group.name = name
         user_group.save(update_fields=["name"])
+        RealmAuditLog.objects.create(
+            realm=user_group.realm,
+            modified_user_group=user_group,
+            event_type=RealmAuditLog.USER_GROUP_NAME_CHANGED,
+            event_time=timezone_now(),
+            acting_user=acting_user,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: name,
+                }
+            ).decode(),
+        )
     except django.db.utils.IntegrityError:
-        raise JsonableError(_("User group '{}' already exists.").format(name))
+        raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
     do_send_user_group_update_event(user_group, dict(name=name))
 
 
+@transaction.atomic(savepoint=False)
 def do_update_user_group_description(
     user_group: UserGroup, description: str, *, acting_user: Optional[UserProfile]
 ) -> None:
+    old_value = user_group.description
     user_group.description = description
     user_group.save(update_fields=["description"])
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group=user_group,
+        event_type=RealmAuditLog.USER_GROUP_DESCRIPTION_CHANGED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: description,
+            }
+        ).decode(),
+    )
     do_send_user_group_update_event(user_group, dict(description=description))
 
 
@@ -217,6 +285,18 @@ def bulk_add_members_to_user_group(
         for user_id in user_profile_ids
     ]
     UserGroupMembership.objects.bulk_create(memberships)
+    now = timezone_now()
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=user_group.realm,
+            modified_user_id=user_id,
+            modified_user_group=user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=now,
+            acting_user=acting_user,
+        )
+        for user_id in user_profile_ids
+    )
 
     do_send_user_group_members_update_event("add_members", user_group, user_profile_ids)
 
@@ -228,6 +308,18 @@ def remove_members_from_user_group(
     UserGroupMembership.objects.filter(
         user_group_id=user_group.id, user_profile_id__in=user_profile_ids
     ).delete()
+    now = timezone_now()
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=user_group.realm,
+            modified_user_id=user_id,
+            modified_user_group=user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+            event_time=now,
+            acting_user=acting_user,
+        )
+        for user_id in user_profile_ids
+    )
 
     do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
 
@@ -251,6 +343,30 @@ def add_subgroups_to_user_group(
     GroupGroupMembership.objects.bulk_create(group_memberships)
 
     subgroup_ids = [subgroup.id for subgroup in subgroups]
+    now = timezone_now()
+    audit_log_entries = [
+        RealmAuditLog(
+            realm=user_group.realm,
+            modified_user_group=user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+            event_time=now,
+            acting_user=acting_user,
+            extra_data=orjson.dumps({"subgroup_ids": subgroup_ids}).decode(),
+        )
+    ]
+    for subgroup_id in subgroup_ids:
+        audit_log_entries.append(
+            RealmAuditLog(
+                realm=user_group.realm,
+                modified_user_group_id=subgroup_id,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                event_time=now,
+                acting_user=acting_user,
+                extra_data=orjson.dumps({"supergroup_ids": [user_group.id]}).decode(),
+            )
+        )
+    RealmAuditLog.objects.bulk_create(audit_log_entries)
+
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
 
 
@@ -261,6 +377,30 @@ def remove_subgroups_from_user_group(
     GroupGroupMembership.objects.filter(supergroup=user_group, subgroup__in=subgroups).delete()
 
     subgroup_ids = [subgroup.id for subgroup in subgroups]
+    now = timezone_now()
+    audit_log_entries = [
+        RealmAuditLog(
+            realm=user_group.realm,
+            modified_user_group=user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
+            event_time=now,
+            acting_user=acting_user,
+            extra_data=orjson.dumps({"subgroup_ids": subgroup_ids}).decode(),
+        )
+    ]
+    for subgroup_id in subgroup_ids:
+        audit_log_entries.append(
+            RealmAuditLog(
+                realm=user_group.realm,
+                modified_user_group_id=subgroup_id,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED,
+                event_time=now,
+                acting_user=acting_user,
+                extra_data=orjson.dumps({"supergroup_ids": [user_group.id]}).decode(),
+            )
+        )
+    RealmAuditLog.objects.bulk_create(audit_log_entries)
+
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
 
 
@@ -277,6 +417,7 @@ def check_delete_user_group(
     do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)
 
 
+@transaction.atomic(savepoint=False)
 def do_change_user_group_permission_setting(
     user_group: UserGroup,
     setting_name: str,
@@ -284,11 +425,23 @@ def do_change_user_group_permission_setting(
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
+    old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
     user_group.save()
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+        event_time=timezone_now(),
+        modified_user_group=user_group,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_value.id,
+                RealmAuditLog.NEW_VALUE: setting_value_group.id,
+                "property": setting_name,
+            }
+        ).decode(),
+    )
 
-    # RealmAuditLog changes are being done in a separate PR and will be
-    # added here once that is merged.
-    setting_id_name = setting_name + "_id"
-    event_data_dict: Dict[str, Union[str, int]] = {setting_id_name: setting_value_group.id}
+    event_data_dict: Dict[str, Union[str, int]] = {setting_name: setting_value_group.id}
     do_send_user_group_update_event(user_group, event_data_dict)

@@ -768,11 +768,8 @@ test("render_emoji", ({mock_template}) => {
         emoji_name: "thumbs_up",
         emoji_code: "1f44d",
     };
-    emoji.active_realm_emojis = new Map(
-        Object.entries({
-            realm_emoji: "TBD",
-        }),
-    );
+    emoji.active_realm_emojis.clear();
+    emoji.active_realm_emojis.set("realm_emoji", "TBD");
 
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.deepEqual(args, expected_template_data);

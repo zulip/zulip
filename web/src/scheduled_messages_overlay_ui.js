@@ -16,7 +16,8 @@ import * as timerender from "./timerender";
 export const keyboard_handling_context = {
     get_items_ids() {
         const scheduled_messages_ids = [];
-        for (const message of scheduled_messages.scheduled_messages_data) {
+        const sorted_messages = sort_scheduled_messages(scheduled_messages.scheduled_messages_data);
+        for (const message of sorted_messages) {
             scheduled_messages_ids.push(message.scheduled_message_id);
         }
         return scheduled_messages_ids;
@@ -47,13 +48,21 @@ export const keyboard_handling_context = {
     id_attribute_name: "data-scheduled-message-id",
 };
 
-export function handle_keyboard_events(e, event_key) {
-    messages_overlay_ui.modals_handle_events(e, event_key, keyboard_handling_context);
+function sort_scheduled_messages(scheduled_messages) {
+    const sorted_messages = Object.values(scheduled_messages).sort(
+        (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
+    );
+    return sorted_messages;
+}
+
+export function handle_keyboard_events(event_key) {
+    messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
 function format(scheduled_messages) {
     const formatted_msgs = [];
-    for (const msg of scheduled_messages) {
+    const sorted_messages = sort_scheduled_messages(scheduled_messages);
+    for (const msg of sorted_messages) {
         const msg_render_context = {...msg};
         if (msg.type === "stream") {
             msg_render_context.is_stream = true;

@@ -13,7 +13,7 @@ from zerver.actions.message_send import (
     internal_send_private_message,
 )
 from zerver.actions.reactions import do_add_reaction
-from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.emoji import get_emoji_data
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
@@ -41,12 +41,10 @@ def create_if_missing_realm_internal_bots() -> None:
 
 def send_initial_direct_message(user: UserProfile) -> None:
     # We adjust the initial Welcome Bot direct message for education organizations.
-    education_organization = False
-    if (
-        user.realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
-        or user.realm.org_type == Realm.ORG_TYPES["education"]["id"]
-    ):
-        education_organization = True
+    education_organization = user.realm.org_type in (
+        Realm.ORG_TYPES["education_nonprofit"]["id"],
+        Realm.ORG_TYPES["education"]["id"],
+    )
 
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API
@@ -164,7 +162,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         )
     elif human_response_lower == "theme":
         return _(
-            "Go to [Display settings](#settings/display-settings) "
+            "Go to [Preferences](#settings/preferences) "
             "to [switch between the light and dark themes](/help/dark-theme), "
             "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
             "[change your language](/help/change-your-language), "
@@ -355,5 +353,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     turtle_message = Message.objects.select_for_update().get(
         id__in=message_ids, content__icontains="cute/turtle.png"
     )
-    (emoji_code, reaction_type) = emoji_name_to_emoji_code(realm, "turtle")
-    do_add_reaction(welcome_bot, turtle_message, "turtle", emoji_code, reaction_type)
+    emoji_data = get_emoji_data(realm.id, "turtle")
+    do_add_reaction(
+        welcome_bot, turtle_message, "turtle", emoji_data.emoji_code, emoji_data.reaction_type
+    )

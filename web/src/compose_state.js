@@ -72,6 +72,14 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
 
 // NOTE: See `selected_recipient_id` in compose_recipient to for
 // documentation on the variable and how it is used.
+export function stream_id() {
+    const stream_id = compose_recipient.selected_recipient_id;
+    if (typeof stream_id === "number") {
+        return stream_id;
+    }
+    return "";
+}
+
 export function stream_name() {
     const stream_id = compose_recipient.selected_recipient_id;
     if (typeof stream_id === "number") {
@@ -97,11 +105,9 @@ export function set_stream_name(stream_name) {
     compose_recipient.set_selected_recipient_id(stream_id);
 }
 
-export function set_compose_recipient_id(value) {
-    let recipient_id = compose_recipient.DIRECT_MESSAGE_ID;
-    if (typeof value === "number") {
-        // value is stream name
-        recipient_id = sub_store.maybe_get_stream_name(value) || "";
+export function set_compose_recipient_id(recipient_id) {
+    if (typeof recipient_id !== "number") {
+        recipient_id = compose_recipient.DIRECT_MESSAGE_ID;
     }
     compose_recipient.set_selected_recipient_id(recipient_id);
 }
@@ -156,7 +162,7 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
             return private_message_recipient().length === 0;
         case "stream_message_recipient_topic":
             return topic() === "";
-        case "compose_select_recipient_name":
+        case "compose_select_recipient_widget_wrapper":
             return stream_name() === "";
     }
 

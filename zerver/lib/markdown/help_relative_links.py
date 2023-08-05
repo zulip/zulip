@@ -25,7 +25,9 @@ gear_info = {
     "stats": ["Usage statistics", "/stats"],
     "plans": ["Plans and pricing", "/plans/"],
     "billing": ["Billing", "/billing/"],
-    "invite": ["Invite users", "/#invite"],
+    "keyboard-shortcuts": ["Keyboard shortcuts (?)", "/#keyboard-shortcuts"],
+    "message-formatting": ["Message formatting", "/#message-formatting"],
+    "search-filters": ["Search filters", "/#search-operators"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
@@ -66,9 +68,44 @@ def stream_handle_match(key: str) -> str:
     return stream_instructions_no_link
 
 
+draft_instructions = """
+1. Click on <i class="fa fa-pencil"></i> **Drafts** in the left sidebar.
+"""
+
+scheduled_instructions = """
+1. Click on <i class="fa fa-calendar"></i> **Scheduled messages** in the left
+   sidebar. If you do not see this link, you have no scheduled messages.
+"""
+
+recent_instructions = """
+1. Click on <i class="fa fa-clock-o"></i> **Recent conversations** in the left
+   sidebar.
+"""
+
+all_instructions = """
+1. Click on <i class="fa fa-align-left"></i> **All messages** in the left
+   sidebar or use the <kbd>A</kbd> keyboard shortcut.
+"""
+
+message_info = {
+    "drafts": ["Drafts", "/#drafts", draft_instructions],
+    "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
+    "recent": ["Recent conversations", "/#recent", recent_instructions],
+    "all": ["All messages", "/#all_messages", all_instructions],
+}
+
+
+def message_handle_match(key: str) -> str:
+    if relative_help_links:
+        return f"1. Go to [{message_info[key][0]}]({message_info[key][1]})."
+    else:
+        return message_info[key][2]
+
+
 LINK_TYPE_HANDLERS = {
     "gear": gear_handle_match,
     "stream": stream_handle_match,
+    "message": message_handle_match,
 }
 
 

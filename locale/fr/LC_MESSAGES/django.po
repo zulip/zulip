@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Alexandre de Lespinasse <alex.del@ik.me>, 2018
+# Alex Vandiver <alexmv@zulip.com>, 2023
 # Benjamin Somers <benjamin.somers@telecom-bretagne.eu>, 2019
 # BRANDON THIBEAUX <thibeaux01@gmail.com>, 2021
 # David Cachau <cachaudavid@gmail.com>, 2019
@@ -33,7 +34,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Sylvain R., 2023\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>, 2023\n"
 "Language-Team: French (http://app.transifex.com/zulip/zulip/language/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2325,7 +2326,7 @@ msgstr "Blog"
 
 #: templates/zerver/footer.html:95
 msgid "Support Zulip"
-msgstr "A propos de Zulip"
+msgstr "Supporter Zulip"
 
 #: templates/zerver/footer.html:105
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"

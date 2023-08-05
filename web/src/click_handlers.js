@@ -22,8 +22,8 @@ import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
@@ -114,7 +114,7 @@ export function initialize() {
         }
 
         // Widget for adjusting the height of a message.
-        if ($target.is("div.message_length_controller")) {
+        if ($target.is("button.message_expander") || $target.is("button.message_condenser")) {
             return true;
         }
 
@@ -182,6 +182,21 @@ export function initialize() {
 
         if (message_edit.is_editing(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
+            return;
+        }
+
+        // Clicks on a message from search results should bring the
+        // user to the message's near view instead of opening the
+        // compose box.
+        const current_filter = narrow_state.filter();
+        if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+            const message = message_store.get(id);
+
+            if (message === undefined) {
+                // This might happen for locally echoed messages, for example.
+                return;
+            }
+            window.location = hash_util.by_conversation_and_time_url(message);
             return;
         }
 
@@ -388,7 +403,7 @@ export function initialize() {
     // Mute topic in a unmuted stream
     $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.MUTED,
         );
@@ -397,7 +412,7 @@ export function initialize() {
     // Unmute topic in a unmuted stream
     $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.INHERIT,
         );
@@ -406,7 +421,7 @@ export function initialize() {
     // Unmute topic in a muted stream
     $("body").on("click", ".message_header .stream_muted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.UNMUTED,
         );
@@ -415,7 +430,7 @@ export function initialize() {
     // Mute topic in a muted stream
     $("body").on("click", ".message_header .stream_muted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.INHERIT,
         );
@@ -694,7 +709,7 @@ export function initialize() {
         }
 
         // The dropdown menu needs to process clicks to open and close.
-        if ($target.parents("#compose_recipient_selection_dropdown").length > 0) {
+        if ($target.parents("#compose_select_recipient_widget_wrapper").length > 0) {
             return;
         }
 

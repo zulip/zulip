@@ -19,7 +19,6 @@ from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_streams_from_default_stream_group,
-    get_default_streams_for_realm,
 )
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import (
@@ -47,6 +46,7 @@ from zerver.decorator import (
     require_post,
     require_realm_admin,
 )
+from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -140,7 +140,7 @@ def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) 
     owned by the current user"""
     if user_profile == target:
         return True
-    if target.is_bot and target.bot_owner == user_profile:
+    if target.is_bot and target.bot_owner_id == user_profile.id:
         return True
     return False
 
@@ -269,7 +269,9 @@ def update_stream_backend(
     message_retention_days: Optional[Union[int, str]] = REQ(
         json_validator=check_string_or_int, default=None
     ),
-    can_remove_subscribers_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    can_remove_subscribers_group_id: Optional[int] = REQ(
+        "can_remove_subscribers_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -317,7 +319,7 @@ def update_stream_backend(
 
     if is_private is not None:
         # Default streams cannot be made private.
-        default_stream_ids = {s.id for s in get_default_streams_for_realm(stream.realm_id)}
+        default_stream_ids = get_default_stream_ids_for_realm(stream.realm_id)
         if is_private and stream.id in default_stream_ids:
             raise JsonableError(_("Default streams cannot be made private."))
 
@@ -393,7 +395,7 @@ def update_stream_backend(
 
         if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
             setting_group_id_name
-        ] != getattr(stream, setting_name):
+        ] != getattr(stream, setting_group_id_name):
             if sub is None and stream.invite_only:
                 # Admins cannot change this setting for unsubscribed private streams.
                 raise JsonableError(_("Invalid stream ID"))
@@ -570,7 +572,9 @@ def add_subscriptions_backend(
     message_retention_days: Union[str, int] = REQ(
         json_validator=check_string_or_int, default=RETENTION_DEFAULT
     ),
-    can_remove_subscribers_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    can_remove_subscribers_group_id: Optional[int] = REQ(
+        "can_remove_subscribers_group", json_validator=check_int, default=None
+    ),
     announce: bool = REQ(json_validator=check_bool, default=False),
     principals: Union[Sequence[str], Sequence[int]] = REQ(
         json_validator=check_principals,
@@ -591,11 +595,11 @@ def add_subscriptions_backend(
             allow_nobody_group=False,
         )
     else:
-        can_remove_subscribers_group_default = Stream.stream_permission_group_settings[
+        can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
             "can_remove_subscribers_group"
         ].default_group_name
         can_remove_subscribers_group = UserGroup.objects.get(
-            name=can_remove_subscribers_group_default,
+            name=can_remove_subscribers_group_default_name,
             realm=user_profile.realm,
             is_system_group=True,
         )
@@ -1052,11 +1056,15 @@ def update_subscription_properties_backend(
         value = change["value"]
 
         if property not in property_converters:
-            raise JsonableError(_("Unknown subscription property: {}").format(property))
+            raise JsonableError(
+                _("Unknown subscription property: {property}").format(property=property)
+            )
 
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
-            raise JsonableError(_("Not subscribed to stream id {}").format(stream_id))
+            raise JsonableError(
+                _("Not subscribed to stream id {stream_id}").format(stream_id=stream_id)
+            )
 
         try:
             value = property_converters[property](property, value)

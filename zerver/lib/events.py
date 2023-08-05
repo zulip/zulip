@@ -8,17 +8,14 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.actions.default_streams import (
-    default_stream_groups_to_dicts_sorted,
-    get_default_streams_for_realm,
-    streams_to_dicts_sorted,
-)
+from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
+from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.hotspots import get_next_hotspots
@@ -68,6 +65,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
     custom_profile_fields_for_realm,
+    get_all_custom_emoji_for_realm,
     get_default_stream_groups,
     get_realm_domains,
     get_realm_playgrounds,
@@ -385,7 +383,7 @@ def fetch_initial_state_data(
         state["realm_domains"] = get_realm_domains(realm)
 
     if want("realm_emoji"):
-        state["realm_emoji"] = realm.get_emoji()
+        state["realm_emoji"] = get_all_custom_emoji_for_realm(realm.id)
 
     if want("realm_linkifiers"):
         if linkifier_url_template:
@@ -583,9 +581,8 @@ def fetch_initial_state_data(
             # doesn't have any.
             state["realm_default_streams"] = []
         else:
-            state["realm_default_streams"] = streams_to_dicts_sorted(
-                get_default_streams_for_realm(realm.id)
-            )
+            state["realm_default_streams"] = get_default_streams_for_realm_as_dicts(realm.id)
+
     if want("default_stream_groups"):
         if settings_user.is_guest:
             state["realm_default_stream_groups"] = []
@@ -904,8 +901,8 @@ def apply_event(
                     if state["is_guest"]:
                         state["realm_default_streams"] = []
                     else:
-                        state["realm_default_streams"] = streams_to_dicts_sorted(
-                            get_default_streams_for_realm(user_profile.realm_id)
+                        state["realm_default_streams"] = get_default_streams_for_realm_as_dicts(
+                            user_profile.realm_id
                         )
 
                 for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:

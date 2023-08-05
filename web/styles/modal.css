@@ -124,7 +124,7 @@
     transform: scale(1.05);
 }
 
-.dialog_cancel_button {
+.dialog_exit_button {
     background: hsl(0deg 0% 100%);
     border: 1px solid hsl(300deg 2% 11% / 30%);
 
@@ -146,6 +146,10 @@
 #read_receipts_error,
 #dialog_error {
     margin-bottom: 10px;
+}
+
+#archive-stream-modal .notification_stream_archive_warning {
+    margin-bottom: 0;
 }
 
 #read_receipts_modal {
@@ -351,26 +355,29 @@
     }
 }
 
-.dropdown-widget-button,
-.modal_text_input {
+.dropdown-widget-button {
     width: 206px;
 }
 
 .modal_password_input,
-.modal_url_input {
+.modal_url_input,
+.modal_text_input {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-    transition: border linear 0.2s, box-shadow linear 0.2s;
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
     margin-bottom: 10px;
     width: 206px;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
         outline: 0;
-        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
 }

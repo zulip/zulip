@@ -1,9 +1,11 @@
-from typing import Any, List, Optional
+from typing import List, Optional
 
 import orjson
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.exceptions import ValidationFailureError
 from zerver.lib.types import RealmPlaygroundDict
 from zerver.models import (
     Realm,
@@ -22,14 +24,28 @@ def notify_realm_playgrounds(realm: Realm, realm_playgrounds: List[RealmPlaygrou
 
 
 @transaction.atomic(durable=True)
-def do_add_realm_playground(
-    realm: Realm, *, acting_user: Optional[UserProfile], **kwargs: Any
+def check_add_realm_playground(
+    realm: Realm,
+    *,
+    acting_user: Optional[UserProfile],
+    name: str,
+    pygments_language: str,
+    url_template: str,
 ) -> int:
-    realm_playground = RealmPlayground(realm=realm, **kwargs)
-    # We expect full_clean to always pass since a thorough input validation
-    # is performed in the view (using check_url, check_pygments_language, etc)
-    # before calling this function.
-    realm_playground.full_clean()
+    realm_playground = RealmPlayground(
+        realm=realm,
+        name=name,
+        pygments_language=pygments_language,
+        url_template=url_template,
+    )
+    # The additional validations using url_template_validaton
+    # check_pygments_language, etc are included in full_clean.
+    # Because we want to avoid raising ValidationError from this check_*
+    # function, we do error handling here to turn it into a JsonableError.
+    try:
+        realm_playground.full_clean()
+    except ValidationError as e:
+        raise ValidationFailureError(e)
     realm_playground.save()
     realm_playgrounds = get_realm_playgrounds(realm)
     RealmAuditLog.objects.create(
@@ -44,7 +60,7 @@ def do_add_realm_playground(
                     id=realm_playground.id,
                     name=realm_playground.name,
                     pygments_language=realm_playground.pygments_language,
-                    url_prefix=realm_playground.url_prefix,
+                    url_template=realm_playground.url_template,
                 ),
             }
         ).decode(),
@@ -60,7 +76,7 @@ def do_remove_realm_playground(
     removed_playground = {
         "name": realm_playground.name,
         "pygments_language": realm_playground.pygments_language,
-        "url_prefix": realm_playground.url_prefix,
+        "url_template": realm_playground.url_template,
     }
 
     realm_playground.delete()

@@ -70,20 +70,25 @@
         padding-right: 40px;
         border: none;
         border-radius: 0;
-        font-family: "Source Sans 3", sans-serif;
+        font-family: "Source Sans 3 VF", sans-serif;
         font-weight: 300;
         line-height: var(--header-height);
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
         padding-left: 35px;
+        color: hsl(0deg 0% 33%);
+
+        &:focus {
+            outline: 0;
+        }
 
         @media (width < $sm_min) {
             vertical-align: text-bottom;
         }
     }
 
-    #search_arrows:focus {
+    #searchbox-input-container:focus {
         box-shadow: inset 0 0 0 2px hsl(204deg 20% 74%);
     }
 
@@ -127,7 +132,7 @@
         left: 0;
     }
 
-    #search_arrows {
+    #searchbox-input-container {
         font-size: 90%;
         letter-spacing: normal;
         padding-left: 0;

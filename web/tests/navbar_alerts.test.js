@@ -4,32 +4,33 @@ const {strict: assert} = require("assert");
 
 const {addDays} = require("date-fns");
 
-const {zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {page_params} = require("./lib/zpage_params");
 
 page_params.is_spectator = false;
 
+const notifications = mock_esm("../src/notifications");
+const util = mock_esm("../src/util");
+
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");
-const notifications = zrequire("notifications");
-const util = zrequire("util");
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, (helpers) => {
         window.localStorage.clear();
-        f({override});
+        f(helpers);
     });
 }
 
-test("allow_notification_alert", () => {
+test("allow_notification_alert", ({disallow, override}) => {
     const ls = localstorage();
 
     // Show alert.
     assert.equal(ls.get("dontAskForNotifications"), undefined);
-    util.is_mobile = () => false;
-    notifications.granted_desktop_notifications_permission = () => false;
-    notifications.permission_state = () => "granted";
+    override(util, "is_mobile", () => false);
+    override(notifications, "granted_desktop_notifications_permission", () => false);
+    override(notifications, "permission_state", () => "granted");
     assert.equal(navbar_alerts.should_show_notifications(ls), true);
 
     // Avoid showing if the user said to never show alert on this computer again.
@@ -39,28 +40,24 @@ test("allow_notification_alert", () => {
     // Avoid showing if device is mobile.
     ls.set("dontAskForNotifications", undefined);
     assert.equal(navbar_alerts.should_show_notifications(ls), true);
-    util.is_mobile = () => true;
+    override(util, "is_mobile", () => true);
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Avoid showing if notification permission is denied.
-    util.is_mobile = () => false;
+    override(util, "is_mobile", () => false);
     assert.equal(navbar_alerts.should_show_notifications(ls), true);
-    notifications.permission_state = () => "denied";
+    override(notifications, "permission_state", () => "denied");
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Avoid showing if notification is already granted.
-    /* istanbul ignore next */
-    notifications.permission_state = () => "granted";
-    notifications.granted_desktop_notifications_permission = () => "granted";
+    disallow(notifications, "permission_state");
+    override(notifications, "granted_desktop_notifications_permission", () => "granted");
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Don't ask for permission to spectator.
-    /* istanbul ignore next */
-    util.is_mobile = () => false;
-    /* istanbul ignore next */
-    notifications.granted_desktop_notifications_permission = () => false;
-    /* istanbul ignore next */
-    notifications.permission_state = () => "granted";
+    disallow(util, "is_mobile");
+    disallow(notifications, "granted_desktop_notifications_permission");
+    disallow(notifications, "permission_state");
     page_params.is_spectator = true;
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 });

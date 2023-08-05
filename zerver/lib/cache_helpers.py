@@ -17,21 +17,13 @@ from zerver.lib.cache import (
     cache_set_many,
     get_remote_cache_requests,
     get_remote_cache_time,
-    get_stream_cache_key,
     user_profile_by_api_key_cache_key,
     user_profile_cache_key,
 )
 from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
-from zerver.models import (
-    Client,
-    Huddle,
-    Stream,
-    UserProfile,
-    get_client_cache_key,
-    huddle_hash_cache_key,
-)
+from zerver.models import Client, Huddle, UserProfile, get_client_cache_key, huddle_hash_cache_key
 
 
 def user_cache_items(
@@ -44,10 +36,6 @@ def user_cache_items(
     )
     # We have other user_profile caches, but none of them are on the
     # core serving path for lots of requests.
-
-
-def stream_cache_items(items_for_remote_cache: Dict[str, Tuple[Stream]], stream: Stream) -> None:
-    items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
 
 
 def client_cache_items(items_for_remote_cache: Dict[str, Tuple[Client]], client: Client) -> None:
@@ -87,20 +75,8 @@ def get_active_realm_ids() -> ValuesQuerySet[RealmCount, int]:
     )
 
 
-def get_streams() -> QuerySet[Stream]:
-    return (
-        Stream.objects.select_related()
-        .filter(realm__in=get_active_realm_ids())
-        .exclude(
-            # We filter out Zephyr realms, because they can easily
-            # have 10,000s of streams with only 1 subscriber.
-            is_in_zephyr_realm=True
-        )
-    )
-
-
 def get_users() -> QuerySet[UserProfile]:
-    return UserProfile.objects.select_related().filter(
+    return UserProfile.objects.select_related("realm", "bot_owner").filter(
         long_term_idle=False, realm__in=get_active_realm_ids()
     )
 
@@ -116,12 +92,11 @@ cache_fillers: Dict[
 ] = {
     "user": (get_users, user_cache_items, 3600 * 24 * 7, 10000),
     "client": (
-        lambda: Client.objects.select_related().all(),
+        lambda: Client.objects.all(),
         client_cache_items,
         3600 * 24 * 7,
         10000,
     ),
-    "stream": (get_streams, stream_cache_items, 3600 * 24 * 7, 10000),
     "huddle": (
         lambda: Huddle.objects.select_related().all(),
         huddle_cache_items,

@@ -2844,9 +2844,8 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     # Hack: We don't yet support multiple IdPs, but we want this
     # module to import if nothing has been configured yet.
-    settings_dict: OIDCIdPConfigDict = list(
-        settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [OIDCIdPConfigDict()]
-    )[0]
+    settings_dict: OIDCIdPConfigDict
+    [settings_dict] = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [OIDCIdPConfigDict()]
 
     display_icon: Optional[str] = settings_dict.get("display_icon", None)
     display_name: str = settings_dict.get("display_name", "OIDC")
@@ -2871,7 +2870,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
             return False
 
         mandatory_config_keys = ["oidc_url", "client_id", "secret"]
-        idp_config_dict = list(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values())[0]
+        [idp_config_dict] = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values()
         if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
             return False
 

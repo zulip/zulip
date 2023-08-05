@@ -852,40 +852,44 @@ export const desktop_icon_count_display_values = {
 
 export const system_user_groups_list = [
     {
-        name: "@role:internet",
+        name: "role:internet",
         display_name: $t({defaultMessage: "Everyone on the internet"}),
     },
     {
-        name: "@role:everyone",
+        name: "role:everyone",
         display_name: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     {
-        name: "@role:members",
+        name: "role:members",
         display_name: $t({defaultMessage: "Admins, moderators and members"}),
     },
     {
-        name: "@role:fullmembers",
+        name: "role:fullmembers",
         display_name: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     {
-        name: "@role:moderators",
+        name: "role:moderators",
         display_name: $t({defaultMessage: "Admins and moderators"}),
     },
     {
-        name: "@role:administrators",
+        name: "role:administrators",
         display_name: $t({defaultMessage: "Admins"}),
     },
     {
-        name: "@role:owners",
+        name: "role:owners",
         display_name: $t({defaultMessage: "Owners"}),
     },
     {
-        name: "@role:nobody",
+        name: "role:nobody",
         display_name: $t({defaultMessage: "Nobody"}),
     },
 ];
 
 export const user_topic_visibility_policy_values = {
+    followed: {
+        code: 3,
+        description: $t({defaultMessage: "Followed"}),
+    },
     muted: {
         code: 1,
         description: $t({defaultMessage: "Muted"}),

@@ -20,6 +20,70 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 198**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  [`GET /user_groups`](/api/get-user-groups),
+  [`POST /user_groups/create`](/api/create-user-group),
+  [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):Renamed
+  group setting `can_mention_group_id` to `can_mention_group`.
+
+**Feature level 197**
+
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream),
+  [`GET users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams),
+  [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Renamed
+  stream setting `can_remove_subscribers_group_id`
+  to `can_remove_subscribers_group`.
+
+**Feature level 196**
+
+* [`POST /realm/playgrounds`](/api/add-code-playground): `url_prefix` is
+  replaced by `url_template`, which only accepts [RFC 6570][rfc6570] compliant
+  URL templates. The old prefix format is no longer supported.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  `url_prefix` is replaced by `url_template` in `realm_playgrounds` events.
+
+**Feature level 195**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  The `default_code_block_language` realm setting is now consistently an
+  empty string when no default pygments language code is set. Previously,
+  the server had a bug that meant it might represent no default for this
+  realm setting as either `null` or an empty string. Clients supporting
+  older server versions should treat either value (`null` or `""`) as no
+  default being set.
+
+**Feature level 194**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /message/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  For [search/narrow filters](/api/construct-narrow) with the `id`
+  operator, added support for encoding the message ID operand as either
+  a string or an integer. Previously, only string encoding was supported.
+
+**Feature level 193**
+
+* [`POST /messages/{message_id}/reactions`](/api/add-reaction),
+  [`DELETE /messages/{message_id}/reactions`](/api/remove-reaction):
+  Endpoints return specific error responses if an emoji reaction
+  already exists when adding a reaction (`"code": "REACTION_ALREADY_EXISTS"`)
+  or if an emoji reaction does not exist when deleting a reaction
+  (`"code": "REACTION_DOES_NOT_EXIST"`). Previously, these errors
+  returned the `"BAD_REQUEST"` code.
+
+**Feature level 192**
+
+* [`GET /events`](/api/get-events): Stream creation events are now
+  sent when guest users gain access to a public stream by being
+  subscribed. Guest users previously only received these events when
+  subscribed to private streams.
+
 **Feature level 191**
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),

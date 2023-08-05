@@ -76,7 +76,7 @@
 .create_user_group_plus_button,
 .create_stream_plus_button {
     font-size: 24px;
-    font-weight: 500;
+    font-weight: 400;
     position: relative;
     top: 2px;
     border: 1px solid hsl(0deg 0% 80%);
@@ -497,6 +497,7 @@ h4.user_group_setting_subsection_title {
 #clear_search_stream_name,
 #clear_search_group_name {
     right: 5px !important;
+    margin-left: -1px;
 }
 
 .stream-title {
@@ -868,7 +869,7 @@ h4.user_group_setting_subsection_title {
             &.hash::after {
                 top: -1px;
                 font-size: 1.09em;
-                font-weight: 800;
+                font-weight: 700;
             }
 
             .zulip-icon {
@@ -1031,12 +1032,12 @@ div.settings-radio-input-parent {
         margin-bottom: 10px;
     }
 
-    .dropdown-list-widget {
-        .dropdown-toggle {
-            margin-bottom: 10px;
-            min-width: 325px;
-            max-width: 100%;
-        }
+    .dropdown-widget-button {
+        /* Match the margin with other input groups around. */
+        margin-bottom: 20px;
+        min-width: 325px;
+        max-width: 100%;
+        height: 30px;
     }
 }
 

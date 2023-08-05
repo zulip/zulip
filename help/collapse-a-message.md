@@ -15,5 +15,5 @@ remove the message content from view.
 {end_tabs}
 
 !!! tip ""
-     To expand a message, click **[More...]** at the bottom of the collapsed
+     To expand a message, click **Show more** at the bottom of the collapsed
      message.

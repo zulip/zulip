@@ -50,7 +50,7 @@
     }
 
     /************************* MODAL DARK THEME *******************/
-    .dialog_cancel_button {
+    .dialog_exit_button {
         background-color: hsl(211deg 29% 14%);
         color: hsl(0deg 0% 100%);
         border: 1px solid hsl(0deg 0% 0% / 60%);
@@ -174,8 +174,10 @@
     .tippy-box[data-theme="dropdown-widget"] {
         background-color: hsl(240deg 5% 16%);
         border: 1px solid hsl(0deg 0% 0%);
-        box-shadow: 0 7px 13px hsl(0deg 0% 0% / 35%),
-            0 5px 8px hsl(0deg 0% 0% / 32%), 0 2px 4px hsl(0deg 0% 0% / 20%);
+        box-shadow:
+            0 7px 13px hsl(0deg 0% 0% / 35%),
+            0 5px 8px hsl(0deg 0% 0% / 32%),
+            0 2px 4px hsl(0deg 0% 0% / 20%);
     }
 
     .dropdown-list-container .dropdown-list .list-item {
@@ -332,7 +334,8 @@
                 }
             }
 
-            .main-view-banner-action-button {
+            .main-view-banner-action-button,
+            .upload_banner_cancel_button {
                 background-color: hsl(205deg 58% 69% / 10%);
                 border-color: transparent;
                 color: hsl(205deg 58% 69%);
@@ -478,7 +481,9 @@
     .new-style .tab-switcher .ind-tab:not(.selected),
     select,
     .pill-container,
-    .user-status-content-wrapper {
+    .user-status-content-wrapper,
+    #custom-expiration-time-input,
+    #searchbox #search_query {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
@@ -520,7 +525,7 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
-    #search_arrows .pill,
+    #searchbox-input-container .pill,
     #compose-direct-recipient.pill-container .pill {
         color: inherit;
         border: 1px solid hsl(0deg 0% 0% / 50%);
@@ -528,7 +533,7 @@
         font-weight: 600;
     }
 
-    #search_arrows .pill:focus,
+    #searchbox-input-container .pill:focus,
     #compose-direct-recipient.pill-container .pill:focus {
         color: hsl(0deg 0% 100%);
         border: 1px solid hsl(176deg 78% 28% / 60%);
@@ -1234,7 +1239,8 @@
             .code-context {
                 color: hsl(314deg 27% 82%);
                 background-color: hsl(312deg 7% 14%);
-                box-shadow: inset 0 11px 10px -10px hsl(0deg 0% 6%),
+                box-shadow:
+                    inset 0 11px 10px -10px hsl(0deg 0% 6%),
                     inset 0 -11px 10px -10px hsl(0deg 0% 6%);
 
                 .line-number {
@@ -1332,21 +1338,6 @@
 
     .top-messages-logo {
         opacity: 0.7;
-    }
-
-    .scheduled-messages-loading-logo,
-    .alert-zulip-logo,
-    .top-messages-logo,
-    .bottom-messages-logo {
-        & svg path {
-            fill: hsl(214deg 27% 18%);
-            stroke: hsl(214deg 27% 18%);
-        }
-
-        & svg circle {
-            fill: hsl(0deg 0% 100%);
-            stroke: hsl(0deg 0% 100%);
-        }
     }
 
     .history-limited-box,
@@ -1540,11 +1531,25 @@
             }
         }
     }
-}
 
-@supports (-moz-appearance: none) {
-    %dark-theme #settings_page select {
-        background-color: hsl(0deg 0% 0% / 20%);
+    .tabs-container {
+        background-color: hsl(0deg 0% 0% / 30%);
+
+        & i {
+            color: hsl(0deg 0% 80%);
+        }
+
+        .selected-tab {
+            background-color: hsl(0deg 0% 17% / 50%);
+            border: 1px solid hsl(0deg 0% 100% / 12%);
+        }
+
+        .tab-option {
+            &:hover:not(.selected-tab) {
+                background-color: hsl(0deg 0% 17% / 50%);
+                border: 1px solid hsl(0deg 0% 100% / 12%);
+            }
+        }
     }
 }
 

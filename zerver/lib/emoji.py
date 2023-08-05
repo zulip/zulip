@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Tuple
+from dataclasses import dataclass
 
 import orjson
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -9,7 +9,14 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
-from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
+from zerver.models import (
+    Reaction,
+    Realm,
+    RealmEmoji,
+    UserProfile,
+    get_all_custom_emoji_for_realm,
+    get_name_keyed_dict_for_active_realm_emoji,
+)
 
 emoji_codes_path = static_path("generated/emoji/emoji_codes.json")
 if not os.path.exists(emoji_codes_path):  # nocoverage
@@ -55,23 +62,40 @@ def translate_emoticons(text: str) -> str:
     return translated
 
 
-def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
-    realm_emojis = realm.get_active_emoji()
-    realm_emoji = realm_emojis.get(emoji_name)
+@dataclass
+class EmojiData:
+    emoji_code: str
+    reaction_type: str
+
+
+def get_emoji_data(realm_id: int, emoji_name: str) -> EmojiData:
+    # Even if emoji_name is either in name_to_codepoint or named "zulip",
+    # we still need to call get_realm_active_emoji.
+    realm_emoji_dict = get_name_keyed_dict_for_active_realm_emoji(realm_id)
+    realm_emoji = realm_emoji_dict.get(emoji_name)
+
     if realm_emoji is not None:
-        return str(realm_emojis[emoji_name]["id"]), Reaction.REALM_EMOJI
+        emoji_code = str(realm_emoji["id"])
+        return EmojiData(emoji_code=emoji_code, reaction_type=Reaction.REALM_EMOJI)
+
     if emoji_name == "zulip":
-        return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
+        return EmojiData(emoji_code=emoji_name, reaction_type=Reaction.ZULIP_EXTRA_EMOJI)
+
     if emoji_name in name_to_codepoint:
-        return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
-    raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
+        emoji_code = name_to_codepoint[emoji_name]
+        return EmojiData(emoji_code=emoji_code, reaction_type=Reaction.UNICODE_EMOJI)
+
+    raise JsonableError(_("Emoji '{emoji_name}' does not exist").format(emoji_name=emoji_name))
 
 
 def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_type: str) -> None:
     # For a given realm and emoji type, checks whether an emoji
     # code is valid for new reactions, or not.
     if emoji_type == "realm_emoji":
-        realm_emojis = realm.get_emoji()
+        # We cache emoji, so this generally avoids a round trip,
+        # but it does require deserializing a bigger data structure
+        # than we need.
+        realm_emojis = get_all_custom_emoji_for_realm(realm.id)
         realm_emoji = realm_emojis.get(emoji_code)
         if realm_emoji is None:
             raise JsonableError(_("Invalid custom emoji."))

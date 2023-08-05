@@ -11,13 +11,13 @@ import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -42,7 +42,6 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
-import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -584,11 +583,11 @@ export function inplace_rerender(topic_key) {
     }
 
     const topic_data = topics.get(topic_key);
-    const topic_row = get_topic_row(topic_data);
+    const $topic_row = get_topic_row(topic_data);
     // We cannot rely on `topic_widget.meta.filtered_list` to know
     // if a topic is rendered since the `filtered_list` might have
     // already been updated via other calls.
-    const is_topic_rendered = topic_row.length;
+    const is_topic_rendered = $topic_row.length;
     // Resorting the topics_widget is important for the case where we
     // are rerendering because of message editing or new messages
     // arriving, since those operations often change the sort key.
@@ -606,7 +605,7 @@ export function inplace_rerender(topic_key) {
         if (row_is_focused && row_focus >= current_topics_list.length) {
             row_focus = current_topics_list.length - 1;
         }
-        topics_widget.remove_rendered_row(topic_row);
+        topics_widget.remove_rendered_row($topic_row);
     } else if (!is_topic_rendered && filters_should_hide_topic(topic_data)) {
         // In case `topic_row` is not present, our job is already done here
         // since it has not been rendered yet and we already removed it from
@@ -617,7 +616,11 @@ export function inplace_rerender(topic_key) {
         topics_widget.render_item(topic_data);
     } else {
         // Final case: !is_topic_rendered && !filters_should_hide_topic(topic_data).
-        topics_widget.insert_rendered_row(topic_data);
+        topics_widget.insert_rendered_row(topic_data, () =>
+            current_topics_list.findIndex(
+                (list_item) => list_item.last_msg_id === topic_data.last_msg_id,
+            ),
+        );
     }
     setTimeout(revive_current_focus, 0);
     return true;
@@ -840,6 +843,7 @@ export function complete_rerender() {
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
         name: "recent_topics_table",
+        get_item: ListWidget.default_get_item,
         $parent_container: $("#recent_topics_table"),
         modifier(item) {
             return render_recent_topic_row(format_conversation(item));
@@ -854,6 +858,7 @@ export function complete_rerender() {
         sort_fields: {
             stream_sort,
             topic_sort,
+            ...ListWidget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
         $simplebar_container: $("#recent_topics_table .table_fix_head"),
@@ -881,7 +886,7 @@ export function show() {
         return;
     }
     // Hide selected elements in the left sidebar.
-    top_left_corner.narrow_to_recent_topics();
+    left_sidebar_navigation_area.narrow_to_recent_topics();
     stream_list.handle_narrow_deactivated();
 
     // Hide "middle-column" which has html for rendering
@@ -1271,7 +1276,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.MUTED);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.MUTED,
+        );
     });
 
     // Unmute topic in a unmuted stream
@@ -1280,7 +1288,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.INHERIT);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     // Unmute topic in a muted stream
@@ -1289,7 +1300,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.UNMUTED);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.UNMUTED,
+        );
     });
 
     // Mute topic in a muted stream
@@ -1298,7 +1312,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.INHERIT);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     $("body").on("click", "#recent_topics_search", (e) => {

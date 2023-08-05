@@ -216,8 +216,6 @@ export function populate_user_groups() {
                     setTimeout(show_saved_button, 200);
                 },
                 error(xhr) {
-                    const errors = JSON.parse(xhr.responseText).msg;
-                    xhr.responseText = JSON.stringify({msg: errors});
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $user_group_status);
                     update_cancel_button();
                     $(`#user-groups #${CSS.escape(data.id)} .name`).text(group_data.name);
@@ -300,10 +298,7 @@ export function populate_user_groups() {
     }
 }
 
-export function add_user_group(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
+export function add_user_group() {
     const $user_group_status = $("#dialog_error");
 
     const group = {
@@ -327,8 +322,6 @@ export function add_user_group(e) {
         },
         error(xhr) {
             $user_group_status.hide();
-            const errors = JSON.parse(xhr.responseText).msg;
-            xhr.responseText = JSON.stringify({msg: errors});
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $user_group_status);
         },
     });

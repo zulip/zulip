@@ -1,13 +1,14 @@
 import ast
 import datetime
+import hashlib
 import secrets
 import time
+from collections import defaultdict
 from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
     TYPE_CHECKING,
-    AbstractSet,
     Any,
     Callable,
     Dict,
@@ -15,7 +16,6 @@ from typing import (
     List,
     Optional,
     Pattern,
-    Sequence,
     Set,
     Tuple,
     TypedDict,
@@ -42,7 +42,7 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
+from django.core.validators import MinLengthValidator, RegexValidator, validate_email
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import CASCADE, Exists, F, OuterRef, Q, QuerySet, Sum
@@ -63,7 +63,6 @@ from zerver.lib.cache import (
     bot_dict_fields,
     bot_dicts_in_realm_cache_key,
     bot_profile_cache_key,
-    bulk_cached_fetch,
     cache_delete,
     cache_set,
     cache_with_key,
@@ -75,7 +74,6 @@ from zerver.lib.cache import (
     flush_used_upload_space_cache,
     flush_user_profile,
     get_realm_used_upload_space_cache_key,
-    get_stream_cache_key,
     realm_alert_words_automaton_cache_key,
     realm_alert_words_cache_key,
     realm_user_dict_fields,
@@ -104,7 +102,7 @@ from zerver.lib.types import (
     UserFieldElement,
     Validator,
 )
-from zerver.lib.utils import generate_api_key, make_safe_digest
+from zerver.lib.utils import generate_api_key
 from zerver.lib.validator import (
     check_date,
     check_int,
@@ -119,8 +117,6 @@ MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 SECONDS_PER_DAY = 86400
-
-STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
 
 if TYPE_CHECKING:
     # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
@@ -245,12 +241,8 @@ def get_recipient_ids(
     return to, recipient_type_str
 
 
-def get_realm_emoji_cache_key(realm_id: int) -> str:
+def get_all_custom_emoji_for_realm_cache_key(realm_id: int) -> str:
     return f"realm_emoji:{realm_id}"
-
-
-def get_active_realm_emoji_cache_key(realm_id: int) -> str:
-    return f"active_realm_emoji:{realm_id}"
 
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
@@ -718,7 +710,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # maximum rating of the GIFs that will be retrieved from GIPHY
     giphy_rating = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
 
-    default_code_block_language = models.TextField(null=True, default=None)
+    default_code_block_language = models.TextField(default="")
 
     # Whether read receipts are enabled in the organization. If disabled,
     # they will not be available regardless of users' personal settings.
@@ -734,7 +726,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         create_private_stream_policy=int,
         create_public_stream_policy=int,
         create_web_public_stream_policy=int,
-        default_code_block_language=(str, type(None)),
+        default_code_block_language=str,
         default_language=str,
         delete_own_message_policy=int,
         description=str,
@@ -843,16 +835,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
                 ret[realm_authentication_method.name] = True
         return ret
 
-    # `realm` instead of `self` here to make sure the parameters of the cache key
-    # function matches the original method.
-    @cache_with_key(lambda realm: get_realm_emoji_cache_key(realm.id), timeout=3600 * 24 * 7)
-    def get_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
-        return get_realm_emoji_uncached(realm.id)
-
-    @cache_with_key(lambda realm: get_active_realm_emoji_cache_key(realm.id), timeout=3600 * 24 * 7)
-    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
-        return get_active_realm_emoji_uncached(realm.id)
-
     def get_admin_users_and_bots(
         self, include_realm_owners: bool = True
     ) -> QuerySet["UserProfile"]:
@@ -897,7 +879,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         )
 
     def get_active_users(self) -> QuerySet["UserProfile"]:
-        return UserProfile.objects.filter(realm=self, is_active=True).select_related()
+        return UserProfile.objects.filter(realm=self, is_active=True)
 
     def get_first_human_user(self) -> Optional["UserProfile"]:
         """A useful value for communications with newly created realms.
@@ -1167,27 +1149,19 @@ class RealmEmoji(models.Model):
         return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
 
-def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
+def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
     # RealmEmoji objects with file_name=None are still in the process
     # of being uploaded, and we expect to be cleaned up by a
     # try/finally block if the upload fails, so it's correct to
     # exclude them.
-    query = (
-        RealmEmoji.objects.filter(realm_id=realm_id)
-        .exclude(
-            file_name=None,
-        )
-        .select_related("author")
+    query = RealmEmoji.objects.filter(realm_id=realm_id).exclude(
+        file_name=None,
     )
-    if only_active_emojis:
-        query = query.filter(deactivated=False)
     d = {}
     from zerver.lib.emoji import get_emoji_url
 
     for realm_emoji in query.all():
-        author_id = None
-        if realm_emoji.author:
-            author_id = realm_emoji.author_id
+        author_id = realm_emoji.author_id
         assert realm_emoji.file_name is not None
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
 
@@ -1214,16 +1188,15 @@ def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Di
     return d
 
 
-def get_realm_emoji_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
-    return get_realm_emoji_dicts(realm_id)
+@cache_with_key(get_all_custom_emoji_for_realm_cache_key, timeout=3600 * 24 * 7)
+def get_all_custom_emoji_for_realm(realm_id: int) -> Dict[str, EmojiInfo]:
+    return get_all_custom_emoji_for_realm_uncached(realm_id)
 
 
-def get_active_realm_emoji_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
-    realm_emojis = get_realm_emoji_dicts(realm_id, only_active_emojis=True)
-    d = {}
-    for emoji_id, emoji_dict in realm_emojis.items():
-        d[emoji_dict["name"]] = emoji_dict
-    return d
+def get_name_keyed_dict_for_active_realm_emoji(realm_id: int) -> Dict[str, EmojiInfo]:
+    # It's important to use the cached version here.
+    realm_emojis = get_all_custom_emoji_for_realm(realm_id)
+    return {row["name"]: row for row in realm_emojis.values() if not row["deactivated"]}
 
 
 def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
@@ -1239,13 +1212,8 @@ def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
         return
     realm_id = instance.realm_id
     cache_set(
-        get_realm_emoji_cache_key(realm_id),
-        get_realm_emoji_uncached(realm_id),
-        timeout=3600 * 24 * 7,
-    )
-    cache_set(
-        get_active_realm_emoji_cache_key(realm_id),
-        get_active_realm_emoji_uncached(realm_id),
+        get_all_custom_emoji_for_realm_cache_key(realm_id),
+        get_all_custom_emoji_for_realm_uncached(realm_id),
         timeout=3600 * 24 * 7,
     )
 
@@ -1264,9 +1232,11 @@ def filter_pattern_validator(value: str) -> Pattern[str]:
     except re2.error as e:
         if len(e.args) >= 1:
             if isinstance(e.args[0], str):  # nocoverage
-                raise ValidationError(_("Bad regular expression: {}").format(e.args[0]))
+                raise ValidationError(_("Bad regular expression: {regex}").format(regex=e.args[0]))
             if isinstance(e.args[0], bytes):
-                raise ValidationError(_("Bad regular expression: {}").format(e.args[0].decode()))
+                raise ValidationError(
+                    _("Bad regular expression: {regex}").format(regex=e.args[0].decode())
+                )
         raise ValidationError(_("Unknown regular expression error"))  # nocoverage
 
     return regex
@@ -1395,7 +1365,7 @@ class RealmPlayground(models.Model):
     MAX_PYGMENTS_LANGUAGE_LENGTH = 40
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    url_prefix = models.TextField(validators=[URLValidator()])
+    url_template = models.TextField(validators=[url_template_validator])
 
     # User-visible display name used when configuring playgrounds in the settings page and
     # when displaying them in the playground links popover.
@@ -1420,6 +1390,33 @@ class RealmPlayground(models.Model):
     def __str__(self) -> str:
         return f"{self.realm.string_id}: {self.pygments_language} {self.name}"
 
+    def clean(self) -> None:
+        """Validate whether the URL template is valid for the playground,
+        ensuring that "code" is the sole variable present in it.
+
+        Django's `full_clean` calls `clean_fields` followed by `clean` method
+        and stores all ValidationErrors from all stages to return as JSON.
+        """
+
+        # Do not continue the check if the url template is invalid to begin
+        # with. The ValidationError for invalid template will only be raised by
+        # the validator set on the url_template field instead of here to avoid
+        # duplicates.
+        if not uri_template.validate(self.url_template):
+            return
+
+        # Extract variables used in the URL template.
+        template_variables = set(uri_template.URITemplate(self.url_template).variable_names)
+
+        if "code" not in template_variables:
+            raise ValidationError(_('Missing the required variable "code" in the URL template'))
+
+        # The URL template should only contain a single variable, which is "code".
+        if len(template_variables) != 1:
+            raise ValidationError(
+                _('"code" should be the only variable present in the URL template'),
+            )
+
 
 def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
     playgrounds: List[RealmPlaygroundDict] = []
@@ -1429,7 +1426,7 @@ def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
                 id=playground.id,
                 name=playground.name,
                 pygments_language=playground.pygments_language,
-                url_prefix=playground.url_prefix,
+                url_template=playground.url_template,
             )
         )
     return playgrounds
@@ -2020,7 +2017,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
 
     def can_admin_user(self, target_user: "UserProfile") -> bool:
         """Returns whether this user has permission to modify target_user"""
-        if target_user.bot_owner == self:
+        if target_user.bot_owner_id == self.id:
             return True
         elif self.is_realm_admin and self.realm == target_user.realm:
             return True
@@ -2041,10 +2038,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
 
     @property
     def is_realm_admin(self) -> bool:
-        return (
-            self.role == UserProfile.ROLE_REALM_ADMINISTRATOR
-            or self.role == UserProfile.ROLE_REALM_OWNER
-        )
+        return self.role in (UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER)
 
     @is_realm_admin.setter
     def is_realm_admin(self, value: bool) -> None:
@@ -2240,8 +2234,11 @@ class PasswordTooWeakError(Exception):
 
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+    MAX_NAME_LENGTH = 100
+    INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
+
     objects: CTEManager = CTEManager()
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=MAX_NAME_LENGTH)
     direct_members = models.ManyToManyField(
         UserProfile, through="UserGroupMembership", related_name="direct_groups"
     )
@@ -2259,14 +2256,14 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
 
     # Names for system groups.
-    FULL_MEMBERS_GROUP_NAME = "@role:fullmembers"
-    EVERYONE_ON_INTERNET_GROUP_NAME = "@role:internet"
-    OWNERS_GROUP_NAME = "@role:owners"
-    ADMINISTRATORS_GROUP_NAME = "@role:administrators"
-    MODERATORS_GROUP_NAME = "@role:moderators"
-    MEMBERS_GROUP_NAME = "@role:members"
-    EVERYONE_GROUP_NAME = "@role:everyone"
-    NOBODY_GROUP_NAME = "@role:nobody"
+    FULL_MEMBERS_GROUP_NAME = "role:fullmembers"
+    EVERYONE_ON_INTERNET_GROUP_NAME = "role:internet"
+    OWNERS_GROUP_NAME = "role:owners"
+    ADMINISTRATORS_GROUP_NAME = "role:administrators"
+    MODERATORS_GROUP_NAME = "role:moderators"
+    MEMBERS_GROUP_NAME = "role:members"
+    EVERYONE_GROUP_NAME = "role:everyone"
+    NOBODY_GROUP_NAME = "role:nobody"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -2711,7 +2708,7 @@ class Stream(models.Model):
 
     def to_dict(self) -> APIStreamDict:
         return APIStreamDict(
-            can_remove_subscribers_group_id=self.can_remove_subscribers_group_id,
+            can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             date_created=datetime_to_timestamp(self.date_created),
             description=self.description,
             first_message_id=self.first_message_id,
@@ -2840,7 +2837,7 @@ def get_client(name: str) -> Client:
 
 
 def get_client_cache_key(name: str) -> str:
-    return f"get_client:{make_safe_digest(name)}"
+    return f"get_client:{hashlib.sha1(name.encode()).hexdigest()}"
 
 
 @cache_with_key(get_client_cache_key, timeout=3600 * 24 * 7)
@@ -2849,9 +2846,8 @@ def get_client_remote_cache(name: str) -> Client:
     return client
 
 
-@cache_with_key(get_stream_cache_key, timeout=3600 * 24 * 7)
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
-    return Stream.objects.select_related().get(name__iexact=stream_name.strip(), realm_id=realm_id)
+    return Stream.objects.get(name__iexact=stream_name.strip(), realm_id=realm_id)
 
 
 def get_active_streams(realm: Realm) -> QuerySet[Stream]:
@@ -2884,8 +2880,8 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related().get(id=stream_id, realm=realm)
 
 
-def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]:
-    def fetch_streams_by_name(stream_names: List[str]) -> QuerySet[Stream]:
+def bulk_get_streams(realm: Realm, stream_names: Set[str]) -> Dict[str, Any]:
+    def fetch_streams_by_name(stream_names: Set[str]) -> QuerySet[Stream]:
         #
         # This should be just
         #
@@ -2897,24 +2893,12 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         where_clause = (
             "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         )
-        return (
-            get_active_streams(realm)
-            .select_related()
-            .extra(where=[where_clause], params=(list(stream_names),))
-        )
+        return get_active_streams(realm).extra(where=[where_clause], params=(list(stream_names),))
 
-    def stream_name_to_cache_key(stream_name: str) -> str:
-        return get_stream_cache_key(stream_name, realm.id)
-
-    def stream_to_lower_name(stream: Stream) -> str:
-        return stream.name.lower()
-
-    return bulk_cached_fetch(
-        stream_name_to_cache_key,
-        fetch_streams_by_name,
-        [stream_name.lower() for stream_name in stream_names],
-        id_fetcher=stream_to_lower_name,
-    )
+    if not stream_names:
+        return {}
+    streams = list(fetch_streams_by_name(stream_names))
+    return {stream.name.lower(): stream for stream in streams}
 
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
@@ -2939,26 +2923,25 @@ def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", 
     )
 
 
-def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]]:
+def bulk_get_huddle_user_ids(recipient_ids: List[int]) -> Dict[int, Set[int]]:
     """
-    Takes a list of huddle-type recipients, returns a dict
+    Takes a list of huddle-type recipient_ids, returns a dict
     mapping recipient id to list of user ids in the huddle.
+
+    We rely on our caller to pass us recipient_ids that correspond
+    to huddles, but technically this function is valid for any type
+    of subscription.
     """
-    assert all(recipient.type == Recipient.HUDDLE for recipient in recipients)
-    if not recipients:
+    if not recipient_ids:
         return {}
 
     subscriptions = Subscription.objects.filter(
-        recipient__in=recipients,
-    ).order_by("user_profile_id")
+        recipient_id__in=recipient_ids,
+    ).only("user_profile_id", "recipient_id")
 
-    result_dict: Dict[int, List[int]] = {}
-    for recipient in recipients:
-        result_dict[recipient.id] = [
-            subscription.user_profile_id
-            for subscription in subscriptions
-            if subscription.recipient_id == recipient.id
-        ]
+    result_dict: Dict[int, Set[int]] = defaultdict(set)
+    for subscription in subscriptions:
+        result_dict[subscription.recipient_id].add(subscription.user_profile_id)
 
     return result_dict
 
@@ -3851,7 +3834,7 @@ class Subscription(models.Model):
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
-    return UserProfile.objects.select_related().get(id=user_profile_id)
+    return UserProfile.objects.select_related("realm", "bot_owner").get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:
@@ -3861,13 +3844,13 @@ def get_user_profile_by_email(email: str) -> UserProfile:
     multiple users with a given (delivery) email address existing on a
     single server (in different realms).
     """
-    return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
+    return UserProfile.objects.select_related("realm").get(delivery_email__iexact=email.strip())
 
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
     try:
-        return UserProfile.objects.select_related().get(api_key=api_key)
+        return UserProfile.objects.select_related("realm", "bot_owner").get(api_key=api_key)
     except UserProfile.DoesNotExist:
         # We will cache failed lookups with None.  The
         # use case here is that broken API clients may
@@ -3891,7 +3874,7 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS security model.  Use get_user in
     those code paths.
     """
-    return UserProfile.objects.select_related().get(
+    return UserProfile.objects.select_related("realm", "bot_owner").get(
         delivery_email__iexact=email.strip(), realm=realm
     )
 
@@ -3928,7 +3911,9 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS.  In those code paths, use
     get_user_by_delivery_email.
     """
-    return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
+    return UserProfile.objects.select_related("realm", "bot_owner").get(
+        email__iexact=email.strip(), realm=realm
+    )
 
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:
@@ -3941,7 +3926,7 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
 
 
 def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
-    return UserProfile.objects.select_related().get(id=uid, realm=realm)
+    return UserProfile.objects.select_related("realm", "bot_owner").get(id=uid, realm=realm)
 
 
 def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
@@ -3969,7 +3954,7 @@ def get_system_bot(email: str, realm_id: int) -> UserProfile:
     the same realm as the one *to* which the message will be sent should be used - because
     cross-realm messages will be eliminated as part of the migration.
     """
-    return UserProfile.objects.select_related().get(email__iexact=email.strip())
+    return UserProfile.objects.select_related("realm").get(email__iexact=email.strip())
 
 
 def get_user_by_id_in_realm_including_cross_realm(
@@ -4077,7 +4062,7 @@ class Huddle(models.Model):
 def get_huddle_hash(id_list: List[int]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
-    return make_safe_digest(hash_key)
+    return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
 def huddle_hash_cache_key(huddle_hash: str) -> str:
@@ -4149,8 +4134,11 @@ class UserActivityInterval(models.Model):
     end = models.DateTimeField("end time", db_index=True)
 
     class Meta:
-        index_together = [
-            ("user_profile", "end"),
+        indexes = [
+            models.Index(
+                fields=["user_profile", "end"],
+                name="zerver_useractivityinterval_user_profile_id_end_bb3bfc37_idx",
+            ),
         ]
 
 
@@ -4190,9 +4178,15 @@ class UserPresence(models.Model):
     LEGACY_STATUS_IDLE_INT = 2
 
     class Meta:
-        index_together = [
-            ("realm", "last_active_time"),
-            ("realm", "last_connected_time"),
+        indexes = [
+            models.Index(
+                fields=["realm", "last_active_time"],
+                name="zerver_userpresence_realm_id_last_active_time_1c5aa9a2_idx",
+            ),
+            models.Index(
+                fields=["realm", "last_connected_time"],
+                name="zerver_userpresence_realm_id_last_connected_time_98d2fc9f_idx",
+            ),
         ]
 
     @staticmethod
@@ -4303,11 +4297,13 @@ class NotificationTriggers:
     # "private_message" is for 1:1 direct messages as well as huddles
     PRIVATE_MESSAGE = "private_message"
     MENTION = "mentioned"
+    TOPIC_WILDCARD_MENTION = "topic_wildcard_mentioned"
     STREAM_WILDCARD_MENTION = "stream_wildcard_mentioned"
     STREAM_PUSH = "stream_push_notify"
     STREAM_EMAIL = "stream_email_notify"
     FOLLOWED_TOPIC_PUSH = "followed_topic_push_notify"
     FOLLOWED_TOPIC_EMAIL = "followed_topic_email_notify"
+    TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC = "topic_wildcard_mentioned_in_followed_topic"
     STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC = "stream_wildcard_mentioned_in_followed_topic"
 
 
@@ -4324,9 +4320,14 @@ class ScheduledMessageNotificationEmail(models.Model):
     EMAIL_NOTIFICATION_TRIGGER_CHOICES = [
         (NotificationTriggers.PRIVATE_MESSAGE, "Private message"),
         (NotificationTriggers.MENTION, "Mention"),
+        (NotificationTriggers.TOPIC_WILDCARD_MENTION, "Topic wildcard mention"),
         (NotificationTriggers.STREAM_WILDCARD_MENTION, "Stream wildcard mention"),
         (NotificationTriggers.STREAM_EMAIL, "Stream notifications enabled"),
         (NotificationTriggers.FOLLOWED_TOPIC_EMAIL, "Followed topic notifications enabled"),
+        (
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+            "Topic wildcard mention in followed topic",
+        ),
         (
             NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
             "Stream wildcard mention in followed topic",
@@ -4570,6 +4571,19 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_PROPERTY_CHANGED = 607
     STREAM_GROUP_BASED_SETTING_CHANGED = 608
 
+    USER_GROUP_CREATED = 701
+    USER_GROUP_DELETED = 702
+    USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED = 703
+    USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED = 704
+    USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED = 705
+    USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED = 706
+    USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED = 707
+    USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED = 708
+    # 709 to 719 reserved for membership changes
+    USER_GROUP_NAME_CHANGED = 720
+    USER_GROUP_DESCRIPTION_CHANGED = 721
+    USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
+
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
@@ -4632,13 +4646,14 @@ class RealmAuditLog(AbstractRealmAuditLog):
     * acting_user is the user who initiated the state change
     * modified_user (if present) is the user being modified
     * modified_stream (if present) is the stream being modified
+    * modified_user_group (if present) is the user group being modified
 
     For example:
     * When a user subscribes another user to a stream, modified_user,
       acting_user, and modified_stream will all be present and different.
     * When an administrator changes an organization's realm icon,
-      acting_user is that administrator and both modified_user and
-      modified_stream will be None.
+      acting_user is that administrator and modified_user,
+      modified_stream and modified_user_group will be None.
     """
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
@@ -4659,6 +4674,11 @@ class RealmAuditLog(AbstractRealmAuditLog):
         null=True,
         on_delete=CASCADE,
     )
+    modified_user_group = models.ForeignKey(
+        UserGroup,
+        null=True,
+        on_delete=CASCADE,
+    )
     event_last_message_id = models.IntegerField(null=True)
 
     def __str__(self) -> str:
@@ -4666,6 +4686,8 @@ class RealmAuditLog(AbstractRealmAuditLog):
             return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
         if self.modified_stream is not None:
             return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
+        if self.modified_user_group is not None:
+            return f"{self.modified_user_group!r} {self.event_type} {self.event_time} {self.id}"
         return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
 
     class Meta:
@@ -4704,13 +4726,15 @@ def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = F
         try:
             user_profile = get_user_profile_by_id_in_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid user ID: {}").format(user_id))
+            raise ValidationError(_("Invalid user ID: {user_id}").format(user_id=user_id))
 
         if not allow_deactivated and not user_profile.is_active:
-            raise ValidationError(_("User with ID {} is deactivated").format(user_id))
+            raise ValidationError(
+                _("User with ID {user_id} is deactivated").format(user_id=user_id)
+            )
 
         if user_profile.is_bot:
-            raise ValidationError(_("User with ID {} is a bot").format(user_id))
+            raise ValidationError(_("User with ID {user_id} is a bot").format(user_id=user_id))
 
     return user_ids
 

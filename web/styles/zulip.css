@@ -24,7 +24,7 @@ body {
     width: 100%;
     font-size: 14px;
     line-height: calc(20 / 14);
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
     transition: background-color 200ms linear;
@@ -81,6 +81,13 @@ body {
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
+
+    /*
+    Message box elements and values.
+    */
+    --message-box-avatar-width: 35px;
+    --message-box-avatar-height: var(--message-box-avatar-width);
+    --message-box-line-height: 1.214;
 
     /*
     Left position of unread marker. Only needs to be tracked if it is negative so that
@@ -163,9 +170,20 @@ body {
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
+    --color-text-show-more-less-button: hsl(240deg 52% 53%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
+
+    /* Message feed loading indicator colors */
+    --color-zulip-logo: hsl(0deg 0% 0% / 34%);
+    --color-zulip-logo-loading: hsl(0deg 0% 27%);
+    --color-zulip-logo-z: hsl(0deg 0% 100%);
+
+    /* Message collapsing/condensing button colors */
+    --color-show-more-less-button-background: hsl(240deg 44% 56% / 8%);
+    --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 15%);
+    --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 20%);
 
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 52% 95%);
@@ -209,9 +227,20 @@ body {
     --color-text-other-mention: hsl(0deg 0% 100% / 80%);
     --color-text-self-direct-mention: hsl(240deg 100% 88% / 100%);
     --color-text-self-group-mention: hsl(184deg 52% 63% / 100%);
+    --color-text-show-more-less-button: hsl(240deg 30% 65%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
+
+    /* Message feed loading indicator colors */
+    --color-zulip-logo: hsl(0deg 0% 100% / 50%);
+    --color-zulip-logo-loading: hsl(0deg 0% 100%);
+    --color-zulip-logo-z: hsl(214deg 27% 18%);
+
+    /* Message collapsing/condensing button colors */
+    --color-show-more-less-button-background: hsla(240deg 44% 56% / 15%);
+    --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 25%);
+    --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 15%);
 
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 13% 20%);
@@ -236,7 +265,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     /* Disable bootstrap size CSS; we want to use our default font size on
        body for input elements. */
     line-height: normal;
@@ -343,14 +372,19 @@ p.n-margin {
 
     & svg {
         & circle {
-            fill: hsl(0deg 0% 27%);
-            stroke: hsl(0deg 0% 27%);
+            fill: var(--color-zulip-logo);
+            stroke: var(--color-zulip-logo);
         }
 
         & path {
-            fill: hsl(0deg 0% 100%);
-            stroke: hsl(0deg 0% 100%);
+            fill: var(--color-zulip-logo-z);
+            stroke: var(--color-zulip-logo-z);
         }
+    }
+
+    &.loading circle {
+        fill: var(--color-zulip-logo-loading);
+        stroke: var(--color-zulip-logo-loading);
     }
 }
 
@@ -720,7 +754,7 @@ body.has-overlay-scrollbar {
 
 textarea,
 input {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
@@ -1061,19 +1095,6 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.include-sender {
-    .message_edit_notice {
-        display: inline-block;
-        vertical-align: top;
-        line-height: 14px;
-        /* A bit of margin here helps these not look associated with the name. */
-        margin-left: 4px;
-        position: static;
-        padding: 0;
-        width: auto;
-    }
-}
-
 .sender-status {
     display: inline-block;
     margin: 8px 0 8px -3px;
@@ -1118,7 +1139,9 @@ td.pointer {
     text-align: right;
     opacity: 0.8;
     color: var(--color-text-default);
-    font-feature-settings: "pnum" on, "lnum" on;
+    font-feature-settings:
+        "pnum" on,
+        "lnum" on;
     letter-spacing: 0.02em;
     /* Disable blue link styling for the message timestamp link. */
     &:hover {
@@ -1151,9 +1174,6 @@ td.pointer {
 }
 
 .message_controls {
-    display: inline-block;
-    z-index: 1;
-
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
        doesn't disturb the layout.  Usually that would be just
@@ -1293,7 +1313,8 @@ td.pointer {
         /* Add box shadow to hide message border (first one) and message
            selected box shadow (second one) that are visible
            due to top borders of sticky recipient bar being curved. */
-        box-shadow: -1px -5px 0 5px var(--color-background),
+        box-shadow:
+            -1px -5px 0 5px var(--color-background),
             1px -5px 0 0 var(--color-background);
 
         & a.message_label_clickable {
@@ -1518,7 +1539,8 @@ td.pointer {
 .message_header_private_message {
     /* This is required for box-shadow appear above the message content. */
     z-index: 1;
-    box-shadow: -1px -5px 0 5px var(--color-background),
+    box-shadow:
+        -1px -5px 0 5px var(--color-background),
         1px -5px 0 0 var(--color-background);
     background-color: var(--color-background);
 
@@ -1588,21 +1610,11 @@ td.pointer {
 .sender_name {
     display: inline-block;
     font-weight: 700;
-}
-
-.sender_name-in-status {
-    margin-right: 3px;
-    font-weight: 700;
-}
-
-.sender_name,
-.sender_name-in-status {
     color: var(--color-text-sender-name);
 }
 
 .sender_name_hovered {
-    .sender_name,
-    .sender_name-in-status {
+    .sender_name {
         color: hsl(200deg 100% 40%);
     }
 }
@@ -1683,7 +1695,7 @@ div.focused_table {
 
 .message_content {
     color: var(--color-text-message-default);
-    line-height: 1.214;
+    line-height: var(--message-box-line-height);
     min-height: 17px;
     display: block;
     position: relative;
@@ -1697,6 +1709,12 @@ div.focused_table {
         max-height: 8.5em;
         min-height: 0;
         overflow: hidden;
+        mask-image: linear-gradient(
+            to top,
+            hsl(0deg 0% 100% / 0%) 0%,
+            hsl(0deg 0% 100%) 60px
+        );
+        mask-size: cover;
     }
 
     &.collapsed {
@@ -1786,6 +1804,20 @@ div.focused_table {
         vertical-align: baseline;
         line-height: 0px;
         box-shadow: none;
+        color: hsl(0deg 0% 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        transition:
+            border linear 0.2s,
+            box-shadow linear 0.2s;
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206deg 80% 62% / 60%);
+        }
     }
 }
 
@@ -1842,15 +1874,30 @@ div.focused_table {
 }
 
 .message_length_controller {
-    display: none;
-    text-align: center;
-    color: hsl(200deg 100% 40%);
+    .message_length_toggle {
+        display: none;
+        width: 100%;
+        height: 24px;
+        margin-bottom: 4px;
+        color: var(--color-text-show-more-less-button);
+        background-color: var(--color-show-more-less-button-background);
+        border-radius: 4px;
+        border: none;
+        outline: none;
+        font-variant: all-small-caps;
 
-    /* to make message-uncollapse easier */
-    margin-top: 10px;
+        &:hover {
+            background-color: var(
+                --color-show-more-less-button-background-hover
+            );
+        }
 
-    &:hover {
-        text-decoration: underline;
+        &:active {
+            background-color: var(
+                --color-show-more-less-button-background-active
+            );
+            scale: 0.98;
+        }
     }
 }
 
@@ -1861,8 +1908,12 @@ div.focused_table {
 
 .inline_profile_picture {
     display: inline-block;
-    width: 35px;
-    height: 35px;
+    width: var(--message-box-avatar-width);
+    height: var(--message-box-avatar-height);
+    /* Don't inherit the line-height from message-avatar;
+       this preserves the dimensions and rounded corners
+       on the image itself. */
+    line-height: 1;
     margin-right: 11px;
     vertical-align: top;
     border-radius: 4px;
@@ -1918,7 +1969,7 @@ div.focused_table {
     }
 
     .sub_count,
-    .stream,
+    .message-header-stream-settings-button,
     & > span {
         white-space: nowrap;
         list-style-type: none;
@@ -1949,13 +2000,12 @@ div.focused_table {
 
             .fa-hashtag {
                 font-size: 1.2rem;
-                /* font-weight: 800; */
                 margin: 0 2px 0 5px;
             }
         }
     }
 
-    .stream {
+    .message-header-stream-settings-button {
         text-overflow: clip;
         color: inherit;
         text-decoration: none;
@@ -2396,13 +2446,16 @@ textarea.invitee_emails {
     padding: 4px 6px;
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-    transition: border linear 0.2s, box-shadow linear 0.2s;
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
 
     &:focus {
         border-color: hsl(206.5deg 80% 62% / 80%);
         outline: 0;
 
-        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206.5deg 80% 62% / 60%);
     }
 
@@ -2412,11 +2465,9 @@ textarea.invitee_emails {
     }
 }
 
-#invite-user-modal {
-    #custom-expiration-time-input,
-    #invite-user-form {
-        margin: 0;
-    }
+#custom-expiration-time-input,
+#invite-user-form {
+    margin: 0;
 }
 
 select.invite-expires-in,
@@ -2469,15 +2520,30 @@ select.invite-as {
     width: fit-content;
 }
 
-#custom-invite-expiration-time {
-    #custom-expiration-time-input {
-        width: 5ch;
-        margin-right: 15px;
-    }
+#custom-expiration-time-input {
+    width: 5ch;
+    margin-right: 15px;
 
-    #custom-expiration-time-unit {
-        width: auto;
+    padding: 4px 6px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
     }
+}
+
+#custom-expiration-time-unit {
+    width: auto;
 }
 
 .empty_feed_notice {
@@ -2647,13 +2713,16 @@ select.invite-as {
         margin-bottom: 10px;
 
         box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-        transition: border linear 0.2s, box-shadow linear 0.2s;
+        transition:
+            border linear 0.2s,
+            box-shadow linear 0.2s;
 
         &:focus {
             border-color: hsl(206.5deg 80% 62% / 80%);
             outline: 0;
 
-            box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
                 0 0 8px hsl(206.5deg 80% 62% / 60%);
         }
 
@@ -2974,18 +3043,10 @@ select.invite-as {
         top: -8px;
     }
 
-    .messagebox-content {
-        padding-right: 15px;
-    }
-
     .include-sender .message_controls {
         background: none !important;
         padding: 0 !important;
         border: none !important;
-    }
-
-    .message_content {
-        padding-right: 50px;
     }
 }
 
@@ -3017,7 +3078,9 @@ select.invite-as {
     right: 0;
     visibility: hidden;
     opacity: 0;
-    transition: visibility 500ms, opacity 500ms ease-in-out;
+    transition:
+        visibility 500ms,
+        opacity 500ms ease-in-out;
 
     &.show {
         visibility: visible;

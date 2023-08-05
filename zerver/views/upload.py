@@ -180,7 +180,7 @@ def serve_file(
     is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
 
     if is_authorized is None:
-        return HttpResponseNotFound(_("<p>File not found.</p>"))
+        return HttpResponseNotFound(_("<p>This file does not exist or has been deleted.</p>"))
     if not is_authorized:
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
     if url_only:
@@ -269,14 +269,14 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     if len(request.FILES) != 1:
         raise JsonableError(_("You may only upload one file at a time"))
 
-    user_file = list(request.FILES.values())[0]
+    [user_file] = request.FILES.values()
     assert isinstance(user_file, UploadedFile)
     file_size = user_file.size
     assert file_size is not None
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
         raise JsonableError(
-            _("Uploaded file is larger than the allowed limit of {} MiB").format(
-                settings.MAX_FILE_UPLOAD_SIZE,
+            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                max_size=settings.MAX_FILE_UPLOAD_SIZE,
             )
         )
     check_upload_within_quota(user_profile.realm, file_size)

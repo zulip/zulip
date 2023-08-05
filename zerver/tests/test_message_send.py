@@ -31,7 +31,6 @@ from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
-from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.streams import create_stream_if_needed
@@ -587,9 +586,7 @@ class MessagePOSTTest(ZulipTestCase):
         message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        self.assert_length(recent_conversations, 1)
-        recent_conversation = list(recent_conversations.values())[0]
-        recipient_id = list(recent_conversations.keys())[0]
+        [(recipient_id, recent_conversation)] = recent_conversations.items()
         self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
         self.assertEqual(recent_conversation["max_message_id"], message_id)
 
@@ -613,8 +610,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         # Now verify we have the appropriate self-pm data structure
         del recent_conversations[recipient_id]
-        recent_conversation = list(recent_conversations.values())[0]
-        recipient_id = list(recent_conversations.keys())[0]
+        [(recipient_id, recent_conversation)] = recent_conversations.items()
         self.assertEqual(set(recent_conversation["user_ids"]), set())
         self.assertEqual(recent_conversation["max_message_id"], self_message_id)
 
@@ -1466,7 +1462,6 @@ class StreamMessagesTest(ZulipTestCase):
         stream_name = "Denmark"
         topic_name = "foo"
         content = "whatever"
-        realm = sender.realm
 
         # To get accurate count of the queries, we should make sure that
         # caches don't come into play. If we count queries while caches are
@@ -1474,7 +1469,6 @@ class StreamMessagesTest(ZulipTestCase):
         # persistent, so our test can also fail if cache is invalidated
         # during the course of the unit test.
         flush_per_request_caches()
-        cache_delete(get_stream_cache_key(stream_name, realm.id))
         with self.assert_database_query_count(13):
             check_send_stream_message(
                 sender=sender,
@@ -1507,8 +1501,7 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(receiving_user_profile)
         self.assertEqual(
             repr(message),
-            "<Message: Denmark / my topic / "
-            "<UserProfile: {} {!r}>>".format(sender.email, sender.realm),
+            f"<Message: Denmark / my topic / <UserProfile: {sender.email} {sender.realm!r}>>",
         )
 
     def test_message_mentions(self) -> None:
@@ -1623,6 +1616,105 @@ class StreamMessagesTest(ZulipTestCase):
         user_message = most_recent_usermessage(normal_bot)
         self.assertEqual(user_message.message.content, content)
         self.assertTrue(user_message.flags.mentioned)
+
+    def send_and_verify_topic_wildcard_mention_message(
+        self, sender_name: str, test_fails: bool = False, sub_count: int = 16
+    ) -> None:
+        sender = self.example_user(sender_name)
+        content = "@**topic** test topic wildcard mention"
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=sub_count):
+            if not test_fails:
+                msg_id = self.send_stream_message(sender, "test_stream", content)
+                result = self.api_get(sender, "/api/v1/messages/" + str(msg_id))
+                self.assert_json_success(result)
+
+            else:
+                with self.assertRaisesRegex(
+                    JsonableError,
+                    "You do not have permission to use wildcard mentions in this stream.",
+                ):
+                    self.send_stream_message(sender, "test_stream", content)
+
+    def test_topic_wildcard_mention_restrictions(self) -> None:
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        polonius = self.example_user("polonius")
+        shiva = self.example_user("shiva")
+        realm = cordelia.realm
+
+        stream_name = "test_stream"
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(polonius, stream_name)
+        self.subscribe(shiva, stream_name)
+
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            acting_user=None,
+        )
+        self.send_and_verify_topic_wildcard_mention_message("polonius")
+
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            acting_user=None,
+        )
+        self.send_and_verify_topic_wildcard_mention_message("polonius", test_fails=True)
+        # There is no restriction on small streams.
+        self.send_and_verify_topic_wildcard_mention_message("polonius", sub_count=10)
+        self.send_and_verify_topic_wildcard_mention_message("cordelia")
+
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            acting_user=None,
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+        iago.date_joined = timezone_now()
+        iago.save()
+        shiva.date_joined = timezone_now()
+        shiva.save()
+        cordelia.date_joined = timezone_now()
+        cordelia.save()
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", sub_count=10)
+        # Administrators and moderators can use wildcard mentions even if they are new.
+        self.send_and_verify_topic_wildcard_mention_message("iago")
+        self.send_and_verify_topic_wildcard_mention_message("shiva")
+
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.save()
+        self.send_and_verify_topic_wildcard_mention_message("cordelia")
+
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            acting_user=None,
+        )
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_topic_wildcard_mention_message("shiva")
+
+        cordelia.date_joined = timezone_now()
+        cordelia.save()
+        do_set_realm_property(
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
+        )
+        self.send_and_verify_topic_wildcard_mention_message("shiva", test_fails=True)
+        # There is no restriction on small streams.
+        self.send_and_verify_topic_wildcard_mention_message("shiva", sub_count=10)
+        self.send_and_verify_topic_wildcard_mention_message("iago")
+
+        do_set_realm_property(
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
+        )
+        self.send_and_verify_topic_wildcard_mention_message("iago", test_fails=True)
+        self.send_and_verify_topic_wildcard_mention_message("iago", sub_count=10)
 
     def send_and_verify_stream_wildcard_mention_message(
         self, sender_name: str, test_fails: bool = False, sub_count: int = 16
@@ -1901,8 +1993,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assert_length(msg_data["huddle_dict"].keys(), 2)
 
         recent_conversations = get_recent_private_conversations(users[1])
-        self.assert_length(recent_conversations, 1)
-        recent_conversation = list(recent_conversations.values())[0]
+        [recent_conversation] = recent_conversations.values()
         self.assertEqual(
             set(recent_conversation["user_ids"]), {user.id for user in users if user != users[1]}
         )

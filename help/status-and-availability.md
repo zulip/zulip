@@ -85,7 +85,7 @@ With the compact option, only status emoji are shown.
 
 {tab|desktop-web}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Advanced**, select **Compact** or **Show status and text** for the
    user list style.

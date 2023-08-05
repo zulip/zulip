@@ -14,7 +14,7 @@ import * as channel from "./channel";
 import * as components from "./components";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {DropdownListWidget} from "./dropdown_list_widget";
+import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -32,6 +32,7 @@ import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
+import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
@@ -192,6 +193,37 @@ export function stream_settings(sub) {
     return settings;
 }
 
+function setup_dropdown(sub, slim_sub) {
+    can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "can_remove_subscribers_group",
+        get_options: () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "can_remove_subscribers_group",
+            ),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            can_remove_subscribers_group_widget.render();
+            settings_org.save_discard_widget_status_handler(
+                $("#stream_permission_settings"),
+                false,
+                slim_sub,
+            );
+        },
+        $events_container: $("#subscription_overlay .subscription_settings"),
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: sub.can_remove_subscribers_group,
+        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+    });
+    can_remove_subscribers_group_widget.setup();
+}
+
 export function show_settings_for(node) {
     const stream_id = get_stream_id(node);
     const slim_sub = sub_store.get(stream_id);
@@ -207,24 +239,6 @@ export function show_settings_for(node) {
         other_settings.push(setting);
         return false;
     });
-
-    const opts = {
-        widget_name: "can_remove_subscribers_group_id",
-        data: user_groups.get_realm_user_groups_for_dropdown_list_widget(
-            "can_remove_subscribers_group",
-        ),
-        default_text: $t({defaultMessage: "No user groups"}),
-        include_current_item: false,
-        value: sub.can_remove_subscribers_group_id,
-        on_update() {
-            settings_org.save_discard_widget_status_handler(
-                $("#stream_permission_settings"),
-                false,
-                slim_sub,
-            );
-        },
-    };
-    can_remove_subscribers_group_widget = new DropdownListWidget(opts);
 
     const html = render_stream_settings({
         sub,
@@ -256,7 +270,7 @@ export function show_settings_for(node) {
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
-    can_remove_subscribers_group_widget.setup();
+    setup_dropdown(sub, slim_sub);
 }
 
 export function setup_stream_settings(node) {
@@ -452,8 +466,6 @@ export function initialize() {
     });
 
     function save_stream_info(e) {
-        e.preventDefault();
-        e.stopPropagation();
         const sub = get_sub_for_target(e.currentTarget);
 
         const url = `/json/streams/${sub.stream_id}`;
@@ -514,16 +526,22 @@ export function initialize() {
             html_body: copy_email_address,
             id: "copy_email_address_modal",
             html_submit_button: $t_html({defaultMessage: "Copy address"}),
+            html_exit_button: $t_html({defaultMessage: "Close"}),
             help_link: "/help/message-a-stream-by-email#configuration-options",
             on_click() {},
-            close_on_submit: true,
+            close_on_submit: false,
         });
         $("#show-sender").prop("checked", true);
 
-        new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
+        const clipboard = new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
             text() {
                 return address;
             },
+        });
+
+        // Show a tippy tooltip when the stream email address copied
+        clipboard.on("success", (e) => {
+            show_copied_confirmation(e.trigger);
         });
 
         $("#copy_email_address_modal .tag-checkbox").on("change", () => {
@@ -603,8 +621,19 @@ export function initialize() {
         const stream = sub_store.get(stream_id);
 
         const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream});
+
+        const is_new_stream_notification_stream =
+            stream_id === page_params.realm_notifications_stream_id;
+        const is_signup_notification_stream =
+            stream_id === page_params.realm_signup_notifications_stream_id;
+        const is_notification_stream =
+            is_new_stream_notification_stream || is_signup_notification_stream;
+
         const html_body = render_settings_deactivation_stream_modal({
             stream_name_with_privacy_symbol_html,
+            is_new_stream_notification_stream,
+            is_signup_notification_stream,
+            is_notification_stream,
         });
 
         confirm_dialog.launch({

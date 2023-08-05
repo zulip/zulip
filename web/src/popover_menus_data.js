@@ -130,6 +130,8 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
     const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
+    const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
+    const all_visibility_policies = user_topics.all_visibility_policies;
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -144,5 +146,8 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         color: sub.color,
         has_starred_messages,
         url,
+        visibility_policy,
+        all_visibility_policies,
+        development: page_params.development_environment,
     };
 }

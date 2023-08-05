@@ -94,6 +94,7 @@ function render_attachments_ui() {
 
     ListWidget.create($uploaded_files_table, attachments, {
         name: "uploaded-files-list",
+        get_item: ListWidget.default_get_item,
         modifier(attachment) {
             return render_uploaded_files_list({attachment});
         },
@@ -109,10 +110,12 @@ function render_attachments_ui() {
             },
         },
         $parent_container: $("#attachments-settings").expectOne(),
-        init_sort: ["numeric", "create_time"],
+        init_sort: "create_time_numeric",
         initially_descending_sort: true,
         sort_fields: {
             mentioned_in: sort_mentioned_in,
+            ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
+            ...ListWidget.generic_sort_functions("numeric", ["create_time", "size"]),
         },
         $simplebar_container: $("#attachments-settings .progressive-table-wrapper"),
     });

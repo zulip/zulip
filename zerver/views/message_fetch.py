@@ -96,8 +96,8 @@ def get_messages_backend(
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         raise JsonableError(
-            _("Too many messages requested (maximum {}).").format(
-                MAX_MESSAGES_PER_FETCH,
+            _("Too many messages requested (maximum {max_messages}).").format(
+                max_messages=MAX_MESSAGES_PER_FETCH,
             )
         )
     if num_before > 0 and num_after > 0 and not include_anchor:

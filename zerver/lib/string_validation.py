@@ -39,13 +39,17 @@ def check_stream_name(stream_name: str) -> None:
 
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
         raise JsonableError(
-            _("Stream name too long (limit: {} characters).").format(Stream.MAX_NAME_LENGTH)
+            _("Stream name too long (limit: {max_length} characters).").format(
+                max_length=Stream.MAX_NAME_LENGTH
+            )
         )
 
     invalid_character_pos = check_string_is_printable(stream_name)
     if invalid_character_pos is not None:
         raise JsonableError(
-            _("Invalid character in stream name, at position {}!").format(invalid_character_pos)
+            _("Invalid character in stream name, at position {position}!").format(
+                position=invalid_character_pos
+            )
         )
 
 
@@ -56,5 +60,7 @@ def check_stream_topic(topic: str) -> None:
     invalid_character_pos = check_string_is_printable(topic)
     if invalid_character_pos is not None:
         raise JsonableError(
-            _("Invalid character in topic, at position {}!").format(invalid_character_pos)
+            _("Invalid character in topic, at position {position}!").format(
+                position=invalid_character_pos
+            )
         )

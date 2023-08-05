@@ -50,7 +50,7 @@ exports.test_streams = {
         is_web_public: false,
         message_retention_days: null,
         stream_post_policy: 1,
-        can_remove_subscribers_group_id: 2,
+        can_remove_subscribers_group: 2,
     },
     test: {
         name: "test",
@@ -65,7 +65,7 @@ exports.test_streams = {
         is_announcement_only: false,
         message_retention_days: null,
         stream_post_policy: 1,
-        can_remove_subscribers_group_id: 2,
+        can_remove_subscribers_group: 2,
     },
 };
 
@@ -518,7 +518,7 @@ exports.fixtures = {
                 id: 1,
                 name: "Lean playground",
                 pygments_language: "Lean",
-                url_prefix: "https://leanprover.github.io/live/latest/#code=",
+                url_template: "https://leanprover.github.io/live/latest/{#code}",
             },
         ],
     },
@@ -795,7 +795,7 @@ exports.fixtures = {
             members: [1],
             is_system_group: false,
             direct_subgroup_ids: [2],
-            can_mention_group_id: 11,
+            can_mention_group: 11,
         },
     },
 

@@ -42,6 +42,7 @@ import * as hotkey from "./hotkey";
 import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
 import * as invite from "./invite";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
 import {localstorage} from "./localstorage";
@@ -104,10 +105,10 @@ import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
-import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
+import * as typeahead_helper from "./typeahead_helper";
 import * as typing from "./typing";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -464,7 +465,7 @@ function initialize_unread_ui() {
         activity.update_dom_with_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
-        top_left_corner.update_dom_with_unread_counts(counts, skip_animations),
+        left_sidebar_navigation_area.update_dom_with_unread_counts(counts, skip_animations),
     );
     unread_ui.register_update_unread_counts_hook((counts) =>
         stream_list.update_dom_with_unread_counts(counts),
@@ -679,7 +680,7 @@ export function initialize_everything() {
     muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
-    top_left_corner.initialize();
+    left_sidebar_navigation_area.initialize();
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
@@ -712,14 +713,19 @@ export function initialize_everything() {
     message_scroll.initialize();
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(page_params.realm_linkifiers);
-    realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
+    realm_playground.initialize({
+        playground_data: page_params.realm_playgrounds,
+        pygments_comparator_func: typeahead_helper.compare_language,
+    });
     compose.initialize();
     // Typeahead must be initialized after compose.initialize()
     composebox_typeahead.initialize({
         on_enter_send: compose.finish,
     });
     compose_textarea.initialize();
-    search.initialize();
+    search.initialize({
+        on_narrow_search: narrow.activate,
+    });
     tutorial.initialize();
     notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
     unread_ops.initialize();
@@ -781,21 +787,21 @@ $(async () => {
             }),
             client_gravatar: false,
         };
-        const {result, msg, ...state} = await new Promise((resolve, reject) => {
-            channel.post({
-                url: "/json/register",
-                data,
-                success: resolve,
-                error(xhr) {
-                    blueslip.error("Spectator failed to register", {
-                        status: xhr.status,
-                        body: xhr.responseText,
-                    });
-                    reject(new Error("Spectator failed to register"));
-                },
-            });
+        channel.post({
+            url: "/json/register",
+            data,
+            success(response_data) {
+                Object.assign(page_params, response_data);
+                initialize_everything();
+            },
+            error() {
+                $("#app-loading-middle-content").hide();
+                $("#app-loading-bottom-content").hide();
+                $(".app").hide();
+                $("#app-loading-error").css({visibility: "visible"});
+            },
         });
-        Object.assign(page_params, state);
+    } else {
+        initialize_everything();
     }
-    initialize_everything();
 });

@@ -6,7 +6,6 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-const narrow = mock_esm("../src/narrow");
 const narrow_state = mock_esm("../src/narrow_state");
 const search_suggestion = mock_esm("../src/search_suggestion");
 
@@ -44,6 +43,8 @@ run_test("initialize", ({mock_template}) => {
     });
 
     search_suggestion.max_num_of_search_results = 999;
+    let operators;
+
     $search_query_box.typeahead = (opts) => {
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
@@ -171,7 +172,6 @@ run_test("initialize", ({mock_template}) => {
         }
 
         {
-            let operators;
             let is_blurred;
             $search_query_box.on("blur", () => {
                 is_blurred = true;
@@ -183,10 +183,6 @@ run_test("initialize", ({mock_template}) => {
                 Filter.parse = (search_string) => {
                     assert.equal(search_string, search_box_val);
                     return operators;
-                };
-                narrow.activate = (raw_operators, options) => {
-                    assert.deepEqual(raw_operators, operators);
-                    assert.deepEqual(options, {trigger: "search"});
                 };
             };
 
@@ -221,7 +217,12 @@ run_test("initialize", ({mock_template}) => {
         }
     };
 
-    search.initialize();
+    search.initialize({
+        on_narrow_search(raw_operators, options) {
+            assert.deepEqual(raw_operators, operators);
+            assert.deepEqual(options, {trigger: "search"});
+        },
+    });
 
     $search_query_box.val("test string");
     narrow_state.search_string = () => "ver";
@@ -257,7 +258,6 @@ run_test("initialize", ({mock_template}) => {
     ev = {
         type: "keyup",
     };
-    let operators;
     let is_blurred;
     $search_query_box.off("blur");
     $search_query_box.on("blur", () => {
@@ -270,10 +270,6 @@ run_test("initialize", ({mock_template}) => {
         Filter.parse = (search_string) => {
             assert.equal(search_string, search_box_val);
             return operators;
-        };
-        narrow.activate = (raw_operators, options) => {
-            assert.deepEqual(raw_operators, operators);
-            assert.deepEqual(options, {trigger: "search"});
         };
     };
 

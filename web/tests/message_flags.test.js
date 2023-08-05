@@ -16,7 +16,7 @@ mock_esm("../src/starred_messages", {
     get_starred_msg_ids: () => [1, 2, 3, 4, 5],
     remove() {},
 });
-mock_esm("../src/top_left_corner", {
+mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
 });
 

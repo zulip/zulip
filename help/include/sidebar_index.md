@@ -45,7 +45,7 @@
 * [Review your settings](/help/review-your-settings)
 * [Deactivate your account](/help/deactivate-your-account)
 
-## Display settings
+## Preferences
 * [Dark theme](/help/dark-theme)
 * [Change your language](/help/change-your-language)
 * [Change your time zone](/help/change-your-timezone)
@@ -63,14 +63,19 @@
 * [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Insert a link](/help/insert-a-link)
 * [Share and upload files](/help/share-and-upload-files)
-* [Add GIFs in your message](/help/animated-gifs-from-giphy)
+* [Animated GIFs](/help/animated-gifs-from-giphy)
 * [Text emphasis](/help/text-emphasis)
+* [Paragraph and section formatting](/help/paragraph-and-section-formatting)
 * [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
+* [Tables](/help/tables)
 * [Code blocks](/help/code-blocks)
 * [LaTeX](/help/latex)
 * [Spoilers](/help/spoilers)
-* [Create a poll](/help/create-a-poll)
-* [Start a video call](/help/start-a-call)
+* [/me action messages](/help/me-action-messages)
+* [Polls](/help/create-a-poll)
+* [Collaborative to-do lists](/help/collaborative-to-do-lists)
+* [Global times](/help/global-times)
+* [Video calls](/help/start-a-call)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)
@@ -80,7 +85,7 @@
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
-* [Message drafts](/help/view-and-edit-your-message-drafts)
+* [Draft messages](/help/view-and-edit-your-message-drafts)
 * [Schedule a message](/help/schedule-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 

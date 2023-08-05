@@ -65,7 +65,7 @@ run_test("blueslip", () => {
     blueslip.expect("warn", "Unknown user ids: 1,2");
     people.user_ids_string_to_emails_string("1,2");
 
-    blueslip.expect("warn", "Unknown emails: " + unknown_email);
+    blueslip.expect("warn", "Unknown emails");
     people.email_list_to_user_ids_string([unknown_email]);
 
     let message = {

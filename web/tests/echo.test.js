@@ -208,7 +208,7 @@ run_test("update_message_lists", () => {
     assert.equal(view_args.new, 402);
 });
 
-run_test("insert_local_message streams", ({override, override_rewire}) => {
+run_test("insert_local_message streams", ({override}) => {
     const fake_now = 555;
     MockDate.set(new Date(fake_now * 1000));
 
@@ -226,14 +226,14 @@ run_test("insert_local_message streams", ({override, override_rewire}) => {
         add_topic_links_called = true;
     });
 
-    override_rewire(echo, "insert_message", (message) => {
+    const insert_new_messages = ([message]) => {
         assert.equal(message.display_recipient, "general");
         assert.equal(message.timestamp, fake_now);
         assert.equal(message.sender_email, "iago@zulip.com");
         assert.equal(message.sender_full_name, "Iago");
         assert.equal(message.sender_id, 123);
         insert_message_called = true;
-    });
+    };
 
     const message_request = {
         type: "stream",
@@ -242,14 +242,14 @@ run_test("insert_local_message streams", ({override, override_rewire}) => {
         sender_full_name: "Iago",
         sender_id: 123,
     };
-    echo.insert_local_message(message_request, local_id_float);
+    echo.insert_local_message(message_request, local_id_float, insert_new_messages);
 
     assert.ok(apply_markdown_called);
     assert.ok(add_topic_links_called);
     assert.ok(insert_message_called);
 });
 
-run_test("insert_local_message direct message", ({override, override_rewire}) => {
+run_test("insert_local_message direct message", ({override}) => {
     const local_id_float = 102.01;
 
     page_params.user_id = 123;
@@ -270,10 +270,10 @@ run_test("insert_local_message direct message", ({override, override_rewire}) =>
     let apply_markdown_called = false;
     let insert_message_called = false;
 
-    override_rewire(echo, "insert_message", (message) => {
+    const insert_new_messages = ([message]) => {
         assert.equal(message.display_recipient.length, 3);
         insert_message_called = true;
-    });
+    };
 
     override(markdown, "apply_markdown", () => {
         apply_markdown_called = true;
@@ -290,18 +290,17 @@ run_test("insert_local_message direct message", ({override, override_rewire}) =>
         sender_full_name: "Iago",
         sender_id: 123,
     };
-    echo.insert_local_message(message_request, local_id_float);
+    echo.insert_local_message(message_request, local_id_float, insert_new_messages);
     assert.ok(add_topic_links_called);
     assert.ok(apply_markdown_called);
     assert.ok(insert_message_called);
 });
 
-run_test("test reify_message_id", ({override, override_rewire}) => {
+run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
     override(markdown, "apply_markdown", () => {});
     override(markdown, "add_topic_links", () => {});
-    override_rewire(echo, "insert_message", () => {});
 
     const message_request = {
         type: "stream",
@@ -311,7 +310,7 @@ run_test("test reify_message_id", ({override, override_rewire}) => {
         sender_id: 123,
         draft_id: 100,
     };
-    echo.insert_local_message(message_request, local_id_float);
+    echo.insert_local_message(message_request, local_id_float, () => {});
 
     let message_store_reify_called = false;
     let notifications_reify_called = false;

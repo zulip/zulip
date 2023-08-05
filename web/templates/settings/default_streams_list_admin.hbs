@@ -1,29 +1,14 @@
 <div id="admin-default-streams-list" class="settings-section" data-name="default-streams-list">
-    <div class="side-padded-container">
-        <p>{{t "Configure the default streams new users are subscribed to when joining your organization." }}</p>
-    </div>
-
-    {{#if is_admin}}
-    <form class="default-stream-form">
-        <div class="add-new-default-stream-box grey-box">
-            <div class="wrapper">
-                <div class="alert" id="admin-default-stream-status"></div>
-                <div class="settings-section-title">{{t "Add new default stream" }}</div>
-                <div class="inline-block" id="default_stream_inputs">
-                    <label for="default_stream_name">{{t "Stream name" }}</label>
-                    <input class="create_default_stream settings_text_input" type="text" placeholder="{{t 'Stream name' }}" name="stream_name" autocomplete="off" />
-                </div>
-                <div class="inline-block">
-                    <button type="submit" id="do_submit_stream" class="button rounded sea-green">{{t "Add stream" }}</button>
-                </div>
-            </div>
-        </div>
-    </form>
-    {{/if}}
+    <p>{{t "Configure the default streams new users are subscribed to when joining your organization." }}</p>
 
     <div class="settings_panel_list_header">
         <h3>{{t "Default streams"}}</h3>
-        <input type="text" class="search" placeholder="{{t 'Filter default streams' }}" aria-label="{{t 'Filter streams' }}"/>
+        <div class="add_default_streams_button_container">
+            {{#if is_admin}}
+                <button type="submit" id="show-add-default-streams-modal" class="button rounded sea-green">{{t "Add stream" }}</button>
+            {{/if}}
+            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter default streams' }}" aria-label="{{t 'Filter streams' }}"/>
+        </div>
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar>

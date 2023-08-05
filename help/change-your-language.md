@@ -11,7 +11,7 @@ messages you receive.
 
 {tab|desktop-web}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **General**, click the button under **Language**.
 

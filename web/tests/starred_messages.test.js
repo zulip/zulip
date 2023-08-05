@@ -7,7 +7,7 @@ const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
 const {user_settings} = require("./lib/zpage_params");
 
-const top_left_corner = mock_esm("../src/top_left_corner", {
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
 });
 const message_store = zrequire("message_store");
@@ -99,7 +99,7 @@ run_test("rerender_ui", () => {
     user_settings.starred_message_counts = true;
     with_overrides(({override}) => {
         const stub = make_stub();
-        override(top_left_corner, "update_starred_count", stub.f);
+        override(left_sidebar_navigation_area, "update_starred_count", stub.f);
         starred_messages_ui.rerender_ui();
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("count");
@@ -109,7 +109,7 @@ run_test("rerender_ui", () => {
     user_settings.starred_message_counts = false;
     with_overrides(({override}) => {
         const stub = make_stub();
-        override(top_left_corner, "update_starred_count", stub.f);
+        override(left_sidebar_navigation_area, "update_starred_count", stub.f);
         starred_messages_ui.rerender_ui();
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("count");
