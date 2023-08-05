@@ -4,6 +4,7 @@ import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
+import * as resolved_topic from "../shared/src/resolved_topic";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity from "./activity";
@@ -386,10 +387,18 @@ export function initialize() {
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
         e.stopPropagation();
+        const element = e.target;
+        const topic_name = $(e.target).attr("data-topic-name");
+        // Update class to show the spinner
+        element.classList.remove("fa-check");
+        element.classList.add("fa-spinner");
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
-        const topic_name = $(e.target).attr("data-topic-name");
         message_edit.toggle_resolve_topic(message_id, topic_name);
+        if (resolved_topic.is_resolved(topic_name)) {
+            element.classList.remove("fa-spinner");
+            element.classList.add("fa-check");
+        }
     });
 
     $("body").on("click", ".message_header .on_hover_topic_unresolve", (e) => {
