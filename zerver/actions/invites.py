@@ -362,13 +362,19 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
             )
         )
 
-    if not user_profile.is_realm_admin:
-        # We do not return multiuse invites to non-admin users.
-        return invites
+    if user_profile.is_realm_admin:
+        multiuse_confirmation_objs = Confirmation.objects.filter(
+            realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE
+        ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
+    else:
+        multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).values_list(
+            "id", flat=True
+        )
+        multiuse_confirmation_objs = Confirmation.objects.filter(
+            type=Confirmation.MULTIUSE_INVITE,
+            object_id__in=multiuse_invite_ids,
+        ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
 
-    multiuse_confirmation_objs = Confirmation.objects.filter(
-        realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE
-    ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
         assert invite is not None
