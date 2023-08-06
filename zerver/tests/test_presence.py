@@ -777,3 +777,20 @@ class FormatLegacyPresenceDictTest(ZulipTestCase):
                 pushable=False,
             ),
         )
+
+        presence = UserPresence(
+            user_profile=hamlet,
+            realm=hamlet.realm,
+            last_active_time=None,
+            last_connected_time=None,
+        )
+        assert presence.last_active_time is None and presence.last_connected_time is None
+        self.assertEqual(
+            format_legacy_presence_dict(presence.last_active_time, presence.last_connected_time),
+            dict(
+                client="website",
+                status=UserPresence.LEGACY_STATUS_IDLE,
+                timestamp=None,
+                pushable=False,
+            ),
+        )
