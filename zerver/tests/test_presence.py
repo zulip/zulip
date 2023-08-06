@@ -790,7 +790,7 @@ class FormatLegacyPresenceDictTest(ZulipTestCase):
             dict(
                 client="website",
                 status=UserPresence.LEGACY_STATUS_IDLE,
-                timestamp=None,
+                timestamp= datetime.timedelta(days=1),
                 pushable=False,
             ),
         )
