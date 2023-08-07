@@ -1339,7 +1339,6 @@
 
     .scheduled-messages-loading-logo,
     .alert-zulip-logo,
-    .top-messages-logo,
     .bottom-messages-logo {
         & svg path {
             fill: hsl(214deg 27% 18%);

@@ -52,7 +52,7 @@
 
 /* Main geometry for this element is in zulip.css */
 #compose-content {
-    background-color: hsl(232deg 30% 92%);
+    background-color: hsla(230.8, 69.9%, 63.5%, 0.18);
     transition: background-color 200ms linear;
     padding: 4px 4px 8px;
     border: 1px solid hsl(0deg 0% 0% / 10%);

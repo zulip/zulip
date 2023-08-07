@@ -159,6 +159,9 @@ body {
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
+    /*    DZ    */
+    --color-background-active-narrow-filter-dz: hsla(230.8, 69.9%, 63.5%, 0.18);
+    --color-background-hover-narrow-filter-dz: hsl(0 5% 5% / 7%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -168,6 +171,8 @@ body {
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
+    /*    DZ    */
+    --color-text-active-narrow-filter-dz: hsl(230.3, 49.6%, 49%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
@@ -339,8 +344,13 @@ p.n-margin {
     display: none;
 }
 
+.top-messages-logo{
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 12px;
+}
+
 .alert-zulip-logo,
-.top-messages-logo,
 .bottom-messages-logo {
     width: 24px;
     height: 24px;
@@ -471,7 +481,7 @@ p.n-margin {
 #userlist-toggle-button,
 .header,
 #message_view_header {
-    background-color: var(--color-background-navbar);
+    background-color: white;
     box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
 }
 

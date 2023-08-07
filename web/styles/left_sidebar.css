@@ -300,7 +300,7 @@ li.show-more-topics {
 :not(.active-sub-filter) {
     &.top_left_row:hover,
     &.bottom_left_row:hover {
-        background-color: var(--color-background-hover-narrow-filter);
+        background-color: var(--color-background-hover-narrow-filter-dz);
         border-radius: 4px;
     }
 }
@@ -434,14 +434,16 @@ li.active-sub-filter {
     font-weight: 600 !important;
     position: relative;
     border-radius: 4px;
-    background-color: var(--color-background-active-narrow-filter);
+    background-color: var(--color-background-active-narrow-filter-dz);
+    color: var(--color-text-active-narrow-filter-dz);
 }
 
 #stream_filters .narrow-filter.active-filter {
     .topic-list .filter-topics,
     > .bottom_left_row {
-        background-color: var(--color-background-active-narrow-filter);
+        background-color: var(--color-background-active-narrow-filter-dz);
         border-radius: 4px;
+        color: var(--color-text-active-narrow-filter-dz);
     }
 }
 
