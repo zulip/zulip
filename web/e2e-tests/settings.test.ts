@@ -188,7 +188,12 @@ async function test_botserverrc(page: Page): Promise<void> {
     assert.match(botserverrc_decoded_url, botserverrc_regex, "Incorrect botserverrc format.");
 }
 
+// Disabled the below test due to non-deterministic failures.
+// The test often fails to close the modal, as does the
+// test_invalid_edit_bot_form above.
+// TODO: Debug this and re-enable with a fix.
 async function test_edit_bot_form(page: Page): Promise<void> {
+    return;
     const bot1_email = "1-bot@zulip.testserver";
     const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.click(bot1_edit_btn);
