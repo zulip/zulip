@@ -43,8 +43,8 @@ def do_claim_attachments(
         if not validate_attachment_request(user_profile, path_id):
             # Technically, there are 2 cases here:
             # * The user put something in their message that has the form
-            # of an upload, but doesn't correspond to a file that doesn't
-            # exist.  validate_attachment_request will return None.
+            # of an upload, but corresponds to a file that doesn't exist.
+            # validate_attachment_request will return None.
             # * The user is trying to send a link to a file they don't have permission to
             # access themselves.  validate_attachment_request will return False.
             #
