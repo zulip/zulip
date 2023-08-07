@@ -830,3 +830,12 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
         )
     ],
 }
+
+
+def get_all_event_types_for_integration(integration: Integration) -> Optional[List[str]]:
+    integration = INTEGRATIONS[integration.name]
+    if isinstance(integration, WebhookIntegration) and hasattr(
+        integration.function, "_all_event_types"
+    ):
+        return integration.function._all_event_types
+    return None
