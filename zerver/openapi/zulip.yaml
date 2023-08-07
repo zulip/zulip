@@ -98,9 +98,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiKeyResponse"
-                  - $ref: "#/components/schemas/SuccessDescription"
+                $ref: "#/components/schemas/ApiKeyResponse"
   /dev_fetch_api_key:
     post:
       operationId: dev-fetch-api-key
@@ -134,9 +132,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiKeyResponse"
-                  - $ref: "#/components/schemas/SuccessDescription"
+                $ref: "#/components/schemas/ApiKeyResponse"
   /events:
     get:
       operationId: get-events
@@ -202,7 +198,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4757,7 +4752,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4810,9 +4804,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonSuccess"
-                      - $ref: "#/components/schemas/SuccessDescription"
+                  - $ref: "#/components/schemas/JsonSuccess"
                   - allOf:
                       - $ref: "#/components/schemas/PartiallyCompleted"
                       - example:
@@ -4886,7 +4878,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4999,7 +4990,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5087,7 +5077,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5214,7 +5203,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5329,7 +5317,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5825,7 +5812,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6097,7 +6083,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6161,7 +6146,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6414,7 +6398,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6565,7 +6548,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     required:
                       - processed_count
@@ -6649,7 +6631,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6821,7 +6802,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6922,7 +6902,6 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
                     properties:
@@ -7005,7 +6984,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7457,7 +7435,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7507,7 +7484,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7558,7 +7534,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7711,7 +7686,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7793,7 +7767,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7857,7 +7830,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -8081,7 +8053,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -8133,7 +8104,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -8201,7 +8171,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -8406,7 +8375,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -8487,7 +8455,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   # TODO: Is this the best way to declare required elements in 200 responses?
                   - required:
                       - subscriptions
@@ -8697,7 +8664,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/AddSubscriptionsResponse"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - example:
                       {
                         "already_subscribed":
@@ -8779,7 +8745,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - required:
                       - subscribed
                       - already_subscribed
@@ -8912,7 +8877,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9190,7 +9154,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9307,7 +9270,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9356,7 +9318,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9420,7 +9381,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9637,7 +9597,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10298,7 +10257,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10388,7 +10346,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10589,7 +10546,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10688,7 +10644,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10797,7 +10752,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -11071,7 +11025,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -14650,16 +14603,6 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
-                    description: |
-                      **Changes**: As of Zulip 7.0 (feature level 167), if any
-                      parameters sent in the request are not supported by this
-                      endpoint, a successful JSON response will include an
-                      [ignored_parameters_unsupported][ignored_params] array.
-
-                      A typical successful JSON response for a single-organization server
-                      may look like:
-
-                      [ignored_params]: /api/rest-error-handling#ignored-parameters
                     properties:
                       result: {}
                       msg: {}
@@ -15608,7 +15551,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -15718,7 +15660,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -15866,7 +15807,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -16142,9 +16082,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonSuccess"
-                      - $ref: "#/components/schemas/SuccessDescription"
+                  - $ref: "#/components/schemas/JsonSuccess"
                   - allOf:
                       - $ref: "#/components/schemas/PartiallyCompleted"
                       - example:
@@ -16438,7 +16376,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -16567,7 +16504,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -16734,7 +16670,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -16769,7 +16704,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -16975,7 +16909,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -18761,16 +18694,6 @@ components:
       properties:
         result:
           type: string
-    SuccessDescription:
-      description: |
-        **Changes**: As of Zulip 7.0 (feature level 167), if any
-        parameters sent in the request are not supported by this
-        endpoint, a successful JSON response will include an
-        [`ignored_parameters_unsupported`][ignored_params] array.
-
-        A typical successful JSON response may look like:
-
-        [ignored_params]: /api/rest-error-handling#ignored-parameters
     JsonSuccess:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -18780,6 +18703,15 @@ components:
             msg: {}
             ignored_parameters_unsupported: {}
     JsonSuccessBase:
+      description: |
+        **Changes**: As of Zulip 7.0 (feature level 167), if any
+        parameters sent in the request are not supported by this
+        endpoint, a successful JSON response will include an
+        [`ignored_parameters_unsupported`][ignored_params] array.
+
+        A typical successful JSON response may look like:
+
+        [ignored_params]: /api/rest-error-handling#ignored-parameters
       allOf:
         - $ref: "#/components/schemas/JsonResponseBase"
         - required:
@@ -19150,9 +19082,7 @@ components:
       content:
         application/json:
           schema:
-            allOf:
-              - $ref: "#/components/schemas/JsonSuccess"
-              - $ref: "#/components/schemas/SuccessDescription"
+            $ref: "#/components/schemas/JsonSuccess"
     SuccessIgnoredParameters:
       description: Success.
       content:
