@@ -53,7 +53,7 @@ a proxy to access the internet.)
 - **Ubuntu LTS**: 20.04 or 22.04
 - **Debian**: 11 or 12
 - **Fedora**: tested for 36
-- **Windows**: Windows 64-bit (Win 10 recommended), hardware
+- **Windows**: Windows 64-bit (Windows 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
 
 Other Linux distributions work great too, but we don't maintain
@@ -212,8 +212,8 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 1. [Create your fork](../git/cloning.md#step-1a-create-your-fork) of
    the [Zulip server repository](https://github.com/zulip/zulip).
 
-1. [Create a new SSH key][create-ssh-key] for the WSL-2 Virtual
-   Machine and add it to your GitHub account. Note that SSH keys
+1. [Create a new SSH key][create-ssh-key] for the WSL 2 virtual
+   machine and add it to your GitHub account. Note that SSH keys
    linked to your Windows computer will not work within the virtual
    machine.
 
@@ -226,7 +226,8 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    ```
 
 1. Run the following to install the Zulip development environment and
-   start it. (If Windows Firewall creates popups to block services, simply click `Allow Access`.)
+   start it. (If Windows Firewall creates popups to block services,
+   simply click **Allow access**.)
 
    ```bash
    # Install/update the Zulip development environment
@@ -249,7 +250,7 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    code .
    ```
 
-   to open VSCode connected to your WSL environment.
+   to open VS Code connected to your WSL environment.
 
 1. You're done! Now you're ready for [Step 4: Developing](#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
@@ -263,7 +264,7 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 ### Step 2: Get Zulip code
 
 1. In your browser, visit <https://github.com/zulip/zulip>
-   and click the `fork` button. You will need to be logged in to GitHub to
+   and click the **Fork** button. You will need to be logged in to GitHub to
    do this.
 2. Open Terminal (macOS/Linux) or Git BASH (Windows; must
    **run as an Administrator**).
@@ -277,13 +278,12 @@ cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
-This will create a 'zulip' directory and download the Zulip code into it.
+This will create a `zulip` directory and download the Zulip code into it.
 
-Don't forget to replace YOURUSERNAME with your Git username. You will see
+Don't forget to replace `YOURUSERNAME` with your Git username. You will see
 something like:
 
 ```console
-christie@win10 ~
 $ git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
 Cloning into 'zulip'...
 remote: Counting objects: 73571, done.
@@ -292,7 +292,7 @@ remote: Total 73571 (delta 1), reused 0 (delta 0), pack-reused 73569
 Receiving objects: 100% (73571/73571), 105.30 MiB | 6.46 MiB/s, done.
 Resolving deltas: 100% (51448/51448), done.
 Checking connectivity... done.
-Checking out files: 100% (1912/1912), done.`
+Checking out files: 100% (1912/1912), done.
 ```
 
 Now you are ready for [Step 3: Start the development
@@ -300,7 +300,7 @@ environment](#step-3-start-the-development-environment).
 
 ### Step 3: Start the development environment
 
-Change into the zulip directory and tell vagrant to start the Zulip
+Change into the zulip directory and tell Vagrant to start the Zulip
 development environment with `vagrant up`:
 
 ```bash
@@ -314,7 +314,7 @@ cd zulip
 vagrant up --provider=docker
 ```
 
-The first time you run this command it will take some time because vagrant
+The first time you run this command it will take some time because Vagrant
 does the following:
 
 - downloads the base Ubuntu 20.04 virtual machine image (for macOS and Windows)
@@ -471,7 +471,7 @@ probably not because Zulip's `main` branch is broken. Instead, this
 is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environment. To update your environment, you'll need to
-re-provision your vagrant machine using `vagrant provision` (this just
+re-provision your Vagrant machine using `vagrant provision` (this just
 runs `tools/provision` from your Zulip checkout inside the Vagrant
 guest); this should complete in about a minute.
 
@@ -509,7 +509,7 @@ it again later use `vagrant halt` or `vagrant suspend`.
 
 You can do this from the same Terminal/Git BASH window that is running
 run-dev by pressing ^C to halt the server and then typing `exit`. Or you
-can halt vagrant from another Terminal/Git BASH window.
+can halt Vagrant from another Terminal/Git BASH window.
 
 From the window where run-dev is running:
 
@@ -610,7 +610,7 @@ The `ESC` stuff are the terminal color codes that make it show as a nice
 blue in the terminal, which unfortunately looks ugly in the logs.
 
 If you encounter an incomplete `/var/log/provision.log file`, you need to
-update your environment. Re-provision your vagrant machine; if the problem
+update your environment. Re-provision your Vagrant machine; if the problem
 persists, please come chat with us (see instructions above) for help.
 
 After you provision successfully, you'll need to exit your `vagrant ssh`
@@ -786,7 +786,7 @@ setting called VT-x (Intel) or (AMD-V).
 If this is already enabled in your BIOS, double-check that you are running a
 64-bit operating system.
 
-For further information about troubleshooting vagrant timeout errors [see
+For further information about troubleshooting Vagrant timeout errors [see
 this post](https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
 
 #### Vagrant was unable to communicate with the guest machine
@@ -950,7 +950,7 @@ UBUNTU_MIRROR http://us.archive.ubuntu.com/ubuntu/
 ### Specifying a proxy
 
 If you need to use a proxy server to access the Internet, you will
-need to specify the proxy settings before running `Vagrant up`.
+need to specify the proxy settings before running `vagrant up`.
 First, install the Vagrant plugin `vagrant-proxyconf`:
 
 ```bash
@@ -1003,7 +1003,7 @@ http://localhost:9971/ to connect to your development server.
 
 If you'd like to be able to connect to your development environment from other
 machines than the VM host, you can manually set the host IP address in the
-'~/.zulip-vagrant-config' file as well. For example, if you set:
+`~/.zulip-vagrant-config` file as well. For example, if you set:
 
 ```text
 HOST_IP_ADDR 0.0.0.0
@@ -1021,10 +1021,10 @@ the guest system (with Docker and other container-based Vagrant
 providers, explicit allocation is unnecessary and the settings
 described here are ignored).
 
-Our default Vagrant settings allocate 2 cpus with 2GiB of memory for
+Our default Vagrant settings allocate 2 CPUs with 2 GiB of memory for
 the guest, which is sufficient to run everything in the development
 environment. If your host system has more CPUs, or you have enough
-RAM that you'd like to allocate more than 2GiB to the guest, you can
+RAM that you'd like to allocate more than 2 GiB to the guest, you can
 improve performance of the Zulip development environment by allocating
 more resources.
 
@@ -1043,7 +1043,7 @@ GUEST_CPUS 4
 GUEST_MEMORY_MB 8192
 ```
 
-would result in an allocation of 4 cpus and 8 GiB of memory to the
+would result in an allocation of 4 CPUs and 8 GiB of memory to the
 guest VM.
 
 After changing the configuration, run `vagrant reload` to reboot the
