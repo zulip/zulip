@@ -52,6 +52,12 @@ table.layout > tbody > tr > td {
     padding: 10px;
 }
 
+/* This class is used to ensure that the images' width
+   does not exceed the actual email layout width. */
+img.responsive-width {
+    max-width: 100%;
+}
+
 /* Our newsletters/marketing emails use a wider content width, to
    support more complex content with text to the side of images. */
 .container.wide-container {
