@@ -214,10 +214,6 @@ h3,
     white-space: normal;
 }
 
-.table-condensed td {
-    vertical-align: middle;
-}
-
 #settings_content {
     & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
         width: 20%;
