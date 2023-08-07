@@ -408,7 +408,6 @@ documentation in `zerver/openapi/zulip.yaml`, e.g.:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
