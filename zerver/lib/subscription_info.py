@@ -431,6 +431,7 @@ def gather_subscriptions_helper(
 
     traffic_stream_ids = {get_stream_id(sub_dict) for sub_dict in sub_dicts}
     recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids)
+    assert recent_traffic is not None
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.

@@ -210,10 +210,7 @@ def do_reactivate_stream(
         event_time=timezone_now(),
     )
 
-    recent_traffic = None
-    if not realm.is_zephyr_mirror_realm:
-        # We do not need stream traffic data for streams in zephyr mirroring realm.
-        recent_traffic = get_streams_traffic({stream.id})
+    recent_traffic = get_streams_traffic({stream.id}, realm)
 
     # All admins always get to know about private streams' existence,
     # but we only subscribe the realm owners.
@@ -443,11 +440,8 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     altered_user_dict: Dict[int, Set[int]],
     altered_guests: Set[int],
 ) -> None:
-    recent_traffic = None
-    if not realm.is_zephyr_mirror_realm:
-        # We do not need stream traffic data for streams in zephyr mirroring realm.
-        stream_ids = set(altered_user_dict.keys())
-        recent_traffic = get_streams_traffic(stream_ids)
+    stream_ids = set(altered_user_dict.keys())
+    recent_traffic = get_streams_traffic(stream_ids, realm)
 
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
@@ -1046,10 +1040,7 @@ def do_change_stream_permission(
         non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
         notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_user_ids
 
-        recent_traffic = None
-        if not realm.is_zephyr_mirror_realm:
-            # We do not need stream traffic data for streams in zephyr mirroing realm.
-            recent_traffic = get_streams_traffic({stream.id})
+        recent_traffic = get_streams_traffic({stream.id}, realm)
         send_stream_creation_event(realm, stream, list(notify_stream_creation_ids), recent_traffic)
 
         # Add subscribers info to the stream object. We need to send peer_add

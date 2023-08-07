@@ -895,10 +895,7 @@ def get_stream_backend(
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
 
-    recent_traffic = None
-    if not user_profile.realm.is_zephyr_mirror_realm:
-        # We do not need stream traffic data in zephyr mirroring realm.
-        recent_traffic = get_streams_traffic({stream.id})
+    recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
     return json_success(request, data={"stream": stream_to_dict(stream, recent_traffic)})
 
 
