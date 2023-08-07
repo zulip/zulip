@@ -941,11 +941,8 @@ def do_get_streams(
             # Don't bother going to the database with no valid sources
             return []
 
-    recent_traffic = None
-    if not user_profile.realm.is_zephyr_mirror_realm:
-        # We do not need stream traffic data for streams in zephyr mirroring realm.
-        stream_ids = {stream.id for stream in streams}
-        recent_traffic = get_streams_traffic(stream_ids)
+    stream_ids = {stream.id for stream in streams}
+    recent_traffic = get_streams_traffic(stream_ids, user_profile.realm)
 
     stream_dicts = [stream_to_dict(stream, recent_traffic) for stream in streams]
     stream_dicts.sort(key=lambda elt: elt["name"])
