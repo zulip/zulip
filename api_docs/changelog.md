@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 207**
+
+* [`POST /register`](/api/register-queue): Added `display_name` and
+  `all_event_types` fields to the `realm_incoming_webhook_bots` object.
+
 **Feature level 206**
 
 * `POST /calls/zoom/create`: Added `is_video_call` parameter

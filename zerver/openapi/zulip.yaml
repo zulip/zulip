@@ -11547,6 +11547,26 @@ paths:
                               type: string
                               description: |
                                 The name of the bot.
+                            display_name:
+                              type: string
+                              description: |
+                                A human-readable display name identifying the integration that this bot implements,
+                                intended to be used in menus for selecting which integration to create.
+
+                                **Changes**: New in Zulip 8.0 (feature level 207).
+                            all_event_types:
+                              type: array
+                              items:
+                                type: string
+                              nullable: true
+                              description: |
+                                For incoming webhook integrations that support the Zulip server filtering incoming
+                                events, the list of event types supported by it.
+
+                                A null value will be present if this incoming webhook integration doesn't support
+                                such filtering.
+
+                                **Changes**: New in Zulip 8.0 (feature level 207).
                             config:
                               $ref: "#/components/schemas/Config"
                       recent_private_conversations:
