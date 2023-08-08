@@ -513,7 +513,7 @@ export function process_enter_key(e) {
             return false;
         }
 
-        window.location = hash_util.by_conversation_and_time_url(message);
+        browser_history.go_to_location(hash_util.by_conversation_and_time_hash(message));
         return true;
     }
 
@@ -1053,7 +1053,7 @@ export function process_hotkey(e, hotkey) {
         }
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
-            // `window.location = hashutil.by_conversation_and_time_url(msg)`
+            // `browser_history.go_to_location(hash_util.hash_by_conversation_and_time_url(msg))`
             // but we use `narrow.activate` to pass in the `trigger` parameter
             switch (msg.type) {
                 case "private":

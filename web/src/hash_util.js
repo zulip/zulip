@@ -144,6 +144,16 @@ export function huddle_with_url(user_ids_string) {
     return "#narrow/dm/" + user_ids_string + "-group";
 }
 
+export function by_conversation_and_time_hash(message) {
+    const suffix = "/near/" + internal_url.encodeHashComponent(message.id);
+
+    if (message.type === "stream") {
+        return by_stream_topic_url(message.stream_id, message.topic) + suffix;
+    }
+
+    return people.pm_perma_link(message) + suffix;
+}
+
 export function by_conversation_and_time_url(message) {
     const absolute_url =
         window.location.protocol +
@@ -152,13 +162,7 @@ export function by_conversation_and_time_url(message) {
         "/" +
         window.location.pathname.split("/")[1];
 
-    const suffix = "/near/" + internal_url.encodeHashComponent(message.id);
-
-    if (message.type === "stream") {
-        return absolute_url + by_stream_topic_url(message.stream_id, message.topic) + suffix;
-    }
-
-    return absolute_url + people.pm_perma_link(message) + suffix;
+    return absolute_url + by_conversation_and_time_hash(message);
 }
 
 export function stream_edit_url(sub) {
