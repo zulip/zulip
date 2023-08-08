@@ -121,18 +121,21 @@ function render_code_sections() {
 }
 
 function scrollToHash(simplebar) {
-    const hash = window.location.hash;
-    const scrollbar = simplebar.getScrollElement();
-    if (hash !== "" && $(hash).length > 0) {
-        const position = $(hash).position().top - $(scrollbar.firstChild).position().top;
-        // Preserve a reference to the scroll target, so it is not lost (and the highlight
-        // along with it) when the page is updated via fetch
-        const $scroll_target = $(hash);
-        $scroll_target.addClass("scroll-target");
-        scrollbar.scrollTop = position;
-    } else {
-        scrollbar.scrollTop = 0;
+    try {
+        const hash = window.location.hash;
+        const scrollbar = simplebar.getScrollElement();
+        if (hash !== "" && $(hash).length > 0) {
+            const position = $(hash).position().top - $(scrollbar.firstChild).position().top;
+            // Preserve a reference to the scroll target, so it is not lost (and the highlight
+            // along with it) when the page is updated via fetch
+            const $scroll_target = $(hash);
+            $scroll_target.addClass("scroll-target");
+            scrollbar.scrollTop = position;
+        } else {
+            scrollbar.scrollTop = 0;
+        }
     }
+    catch(e){}
 }
 
 const cache = new Map();
