@@ -9,6 +9,7 @@ const Sentry = require("@sentry/browser");
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
+const browser_history = require("./browser_history");
 const handlebars = require("./handlebars");
 const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
@@ -104,7 +105,7 @@ test.set_verbose(files.length === 1);
         namespace.start();
         namespace.set_global("window", window);
         namespace.set_global("location", dom.window.location);
-        window.location.href = "http://zulip.zulipdev.com/#";
+        browser_history.go_to_location("http://zulip.zulipdev.com/#");
         namespace.set_global("setTimeout", noop);
         namespace.set_global("setInterval", noop);
         namespace.set_global("localStorage", localStorage);

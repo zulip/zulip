@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
 
+import * as browser_history from "./browser_history";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";
@@ -155,7 +156,7 @@ export function exit_search() {
         close_search_bar_and_open_narrow_description();
     } else {
         // for "searching narrows", we redirect
-        window.location.href = filter.generate_redirect_url();
+        browser_history.go_to_location(filter.generate_redirect_url());
     }
     $(".app").trigger("focus");
 }

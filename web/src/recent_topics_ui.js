@@ -7,6 +7,7 @@ import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
@@ -1364,7 +1365,7 @@ export function initialize() {
         e.stopPropagation();
         const topic_row_index = $(e.target).closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.stream);
-        window.location.href = $(e.currentTarget).find("a").attr("href");
+        browser_history.go_to_location($(e.currentTarget).find("a").attr("href"));
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
@@ -1375,7 +1376,7 @@ export function initialize() {
         const topic_key = $topic_row.attr("id").slice("recent_conversation:".length);
         const topic_row_index = $topic_row.index();
         focus_clicked_element(topic_row_index, COLUMNS.topic, topic_key);
-        window.location.href = $(e.currentTarget).find("a").attr("href");
+        browser_history.go_to_location($(e.currentTarget).find("a").attr("href"));
     });
 
     // Search for all table rows (this combines stream & topic names)

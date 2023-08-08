@@ -9,6 +9,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as confirm_dialog from "./confirm_dialog";
@@ -783,7 +784,7 @@ export function set_up() {
                 success() {
                     dialog_widget.hide_dialog_spinner();
                     dialog_widget.close_modal();
-                    window.location.href = "/login/";
+                    browser_history.go_to_location("/login/");
                 },
                 error(xhr) {
                     const error_last_owner = $t_html({

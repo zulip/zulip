@@ -320,7 +320,7 @@ export function dispatch_normal_event(event) {
                     // with this code, if they didn't have an active
                     // longpoll waiting at the moment the realm was
                     // deactivated.
-                    window.location.href = "/accounts/deactivated/";
+                    browser_history.go_to_location("/accounts/deactivated/");
                     break;
             }
             if (page_params.is_admin) {

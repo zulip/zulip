@@ -87,6 +87,10 @@ export function go_to_hash(hash) {
     window.location.hash = hash;
 }
 
+export function go_to_location(href) {
+    window.location.href = href;
+}
+
 export function update_hash_internally_if_required(hash) {
     if (window.location.hash !== hash) {
         update(hash);

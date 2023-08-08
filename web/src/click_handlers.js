@@ -275,7 +275,7 @@ export function initialize() {
             browser_history.go_to_hash(hash_util.by_stream_url(stream_id));
             return;
         }
-        window.location.href = $(this).attr("href");
+        browser_history.go_to_location($(this).attr("href"));
     });
 
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
@@ -473,7 +473,7 @@ export function initialize() {
     $("body").on("click", ".login_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        window.location.href = hash_util.build_login_link();
+        browser_history.go_to_location(hash_util.build_login_link());
     });
 
     $("#userlist-toggle-button").on("click", (e) => {
