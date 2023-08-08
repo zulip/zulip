@@ -16,17 +16,15 @@
     </div>
 </div>
 
-{{#if is_stream_edit}}
-    <div class="default-stream">
-        {{> ../settings/settings_checkbox
-          prefix="id_"
-          setting_name="is_default_stream"
-          is_checked=check_default_stream
-          label="Default stream for new users"
-          help_link="/help/set-default-streams-for-new-users"
-          }}
-    </div>
-{{/if}}
+<div class="default-stream">
+    {{> ../settings/settings_checkbox
+      prefix="id_"
+      setting_name="is_default_stream"
+      is_checked=check_default_stream
+      label="Default stream for new users"
+      help_link="/help/set-default-streams-for-new-users"
+      }}
+</div>
 
 <div class="input-group">
     <label class="dropdown-title">{{t 'Who can post to the stream?'}}

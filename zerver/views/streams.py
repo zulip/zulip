@@ -578,6 +578,7 @@ def add_subscriptions_backend(
     ),
     invite_only: bool = REQ(json_validator=check_bool, default=False),
     is_web_public: bool = REQ(json_validator=check_bool, default=False),
+    is_default_stream: bool = REQ(json_validator=check_bool, default=False),
     stream_post_policy: int = REQ(
         json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES),
         default=Stream.STREAM_POST_POLICY_EVERYONE,
@@ -660,7 +661,9 @@ def add_subscriptions_backend(
     # Validation of the streams arguments, including enforcement of
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
-    existing_streams, created_streams = list_to_streams(stream_dicts, user_profile, autocreate=True)
+    existing_streams, created_streams = list_to_streams(
+        stream_dicts, user_profile, autocreate=True, is_default_stream=is_default_stream
+    )
     authorized_streams, unauthorized_streams = filter_stream_authorization(
         user_profile, existing_streams
     )
@@ -681,6 +684,10 @@ def add_subscriptions_backend(
         raise JsonableError(
             _("You can only invite other Zephyr mirroring users to private streams.")
         )
+
+    if is_default_stream:
+        for stream in created_streams:
+            do_add_default_stream(stream)
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(
         realm, streams, subscribers, acting_user=user_profile, color_map=color_map

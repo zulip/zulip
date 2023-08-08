@@ -23,8 +23,11 @@ format used by the Zulip server that they are interacting with.
 **Feature level 200**
 
 * [`PATCH /streams/{stream_id}`](/api/update-stream): Added
-  `is_default_stream` parameter to add or remove the stream as a default
-  stream for new users.
+  `is_default_stream` parameter to change whether the stream is a
+  default stream for new users in the organization.
+* [`POST /users/me/subscriptions`](/api/subscribe): Added
+  `is_default_stream` parameter which determines whether any streams
+  created by this request will be default streams for new users.
 
 **Feature level 199**
 

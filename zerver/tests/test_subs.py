@@ -383,6 +383,47 @@ class TestCreateStreams(ZulipTestCase):
             if stream.name == "publictrywithouthistory":
                 self.assertTrue(stream.history_public_to_subscribers)
 
+    def test_add_stream_as_default_on_stream_creation(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "default_stream", "description": "This stream is default for new users"}]
+            ).decode(),
+            "is_default_stream": orjson.dumps(True).decode(),
+        }
+        result = self.api_post(
+            user_profile, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip"
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        result = self.api_post(
+            user_profile, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip"
+        )
+        self.assert_json_success(result)
+        default_stream = get_stream("default_stream", realm)
+        self.assertTrue(default_stream.id in get_default_stream_ids_for_realm(realm.id))
+
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [
+                    {
+                        "name": "private_default_stream",
+                        "description": "This stream is private and default for new users",
+                    }
+                ]
+            ).decode(),
+            "invite_only": orjson.dumps(True).decode(),
+            "is_default_stream": orjson.dumps(True).decode(),
+        }
+        result = self.api_post(
+            user_profile, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip"
+        )
+        self.assert_json_error(result, "A default stream cannot be private.")
+
     def test_history_public_to_subscribers_zephyr_realm(self) -> None:
         realm = get_realm("zephyr")
 

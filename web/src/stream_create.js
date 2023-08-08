@@ -217,6 +217,9 @@ function create_stream() {
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
+    const default_stream = $("#stream_creation_form .is_default_stream").prop("checked");
+    data.is_default_stream = JSON.stringify(default_stream);
+
     const stream_post_policy = Number.parseInt(
         $("#stream_creation_form select[name=stream-post-policy]").val(),
         10,
@@ -370,8 +373,10 @@ export function show_new_stream_modal() {
         true,
     );
 
-    // set default state for "announce stream" option.
+    // set default state for "announce stream" and "default stream" option.
+    $("#stream_creation_form .default-stream input").prop("checked", false);
     update_announce_stream_state();
+    stream_ui_updates.update_default_stream_and_stream_privacy_state($("#stream-creation"));
     clear_error_display();
 }
 
@@ -381,7 +386,14 @@ export function set_up_handlers() {
 
     const $container = $("#stream-creation").expectOne();
 
-    $container.on("change", ".stream-privacy-values input", update_announce_stream_state);
+    $container.on("change", ".stream-privacy-values input", () => {
+        update_announce_stream_state();
+        stream_ui_updates.update_default_stream_and_stream_privacy_state($container);
+    });
+
+    $container.on("change", ".default-stream input", () => {
+        stream_ui_updates.update_default_stream_and_stream_privacy_state($container);
+    });
 
     $container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
