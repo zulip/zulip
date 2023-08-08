@@ -58,6 +58,7 @@ import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
+import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
@@ -400,6 +401,7 @@ export function initialize_kitchen_sink_stuff() {
         const $row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
         $row.addClass("selected_message");
+        narrow_history.save_narrow_state();
 
         if (event.then_scroll) {
             if ($row.length === 0) {

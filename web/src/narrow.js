@@ -27,6 +27,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
 import * as narrow_banner from "./narrow_banner";
+import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -792,6 +793,7 @@ export function update_selection(opts) {
         message_lists.current.view.set_message_offset(select_offset);
     }
     unread_ops.process_visible();
+    narrow_history.save_narrow_state_and_flush();
 }
 
 export function activate_stream_for_cycle_hotkey(stream_name) {

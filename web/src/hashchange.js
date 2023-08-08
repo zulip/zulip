@@ -200,6 +200,12 @@ function do_hashchange_normal(from_reload) {
                     narrow_opts.then_select_offset = page_params.initial_narrow_offset;
                 }
             }
+
+            const location_data_for_hash = history.state;
+            if (location_data_for_hash) {
+                narrow_opts.then_select_id = location_data_for_hash.narrow_pointer;
+                narrow_opts.then_select_offset = location_data_for_hash.narrow_offset;
+            }
             narrow.activate(operators, narrow_opts);
             return true;
         }

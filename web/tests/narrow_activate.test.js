@@ -28,6 +28,7 @@ const message_lists = mock_esm("../src/message_lists", {
 const message_feed_top_notices = mock_esm("../src/message_feed_top_notices");
 const message_feed_loading = mock_esm("../src/message_feed_loading");
 const message_view_header = mock_esm("../src/message_view_header");
+const narrow_history = mock_esm("../src/narrow_history");
 const notifications = mock_esm("../src/notifications");
 const stream_list = mock_esm("../src/stream_list");
 const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area");
@@ -81,6 +82,7 @@ function test_helper({override}) {
     stub(compose_banner, "clear_message_sent_banners");
     stub(compose_actions, "on_narrow");
     stub(compose_closed_ui, "update_reply_recipient_label");
+    stub(narrow_history, "save_narrow_state_and_flush");
     stub(hashchange, "save_narrow");
     stub(message_feed_loading, "hide_indicators");
     stub(message_feed_top_notices, "hide_top_of_narrow_notices");
@@ -186,6 +188,7 @@ run_test("basics", ({override}) => {
         [compose_banner, "clear_message_sent_banners"],
         [notifications, "redraw_title"],
         [unread_ops, "process_visible"],
+        [narrow_history, "save_narrow_state_and_flush"],
         [hashchange, "save_narrow"],
         [compose_closed_ui, "update_buttons_for_stream"],
         [compose_closed_ui, "update_reply_recipient_label"],
