@@ -161,27 +161,32 @@ export function user_can_move_messages_between_streams(): boolean {
     return user_has_permission(page_params.realm_move_messages_between_streams_policy);
 }
 
-export function user_can_edit_user_groups(): boolean {
+export function user_can_edit_user_groups_from_realm_level_permission(): boolean {
     return user_has_permission(page_params.realm_user_group_edit_policy);
 }
 
 export function can_edit_user_group(group_id: number): boolean {
-    if (!page_params.user_id) {
-        return false;
-    }
-
-    if (!user_can_edit_user_groups()) {
-        return false;
-    }
+    let can_edit_from_realm_level_permission: boolean =
+        user_can_edit_user_groups_from_realm_level_permission();
 
     // Admins and moderators are allowed to edit user groups even if they
     // are not a member of that user group. Members can edit user groups
     // only if they belong to that group.
-    if (page_params.is_admin || page_params.is_moderator) {
-        return true;
+    if (
+        !page_params.is_admin &&
+        !page_params.is_moderator &&
+        !user_groups.is_direct_member_of(page_params.user_id, group_id)
+    ) {
+        can_edit_from_realm_level_permission = false;
     }
 
-    return user_groups.is_direct_member_of(page_params.user_id, group_id);
+    const user_group = user_groups.get_user_group_from_id(group_id);
+    const can_edit_from_group_level_permission = user_groups.is_user_in_group(
+        user_group.can_manage_group,
+        page_params.user_id,
+    );
+
+    return can_edit_from_group_level_permission || can_edit_from_realm_level_permission;
 }
 
 export function user_can_create_user_groups(): boolean {
