@@ -467,7 +467,7 @@ ul {
     }
 
     .user_profile_name {
-        margin-right: 10px;
+        margin: 0 10px;
     }
 
     .zulip-icon.zulip-icon-bot {
