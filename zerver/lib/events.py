@@ -363,6 +363,10 @@ def fetch_initial_state_data(
         # Presence system parameters for client behavior.
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
         state["server_presence_offline_threshold_seconds"] = settings.OFFLINE_THRESHOLD_SECS
+        # Typing constants
+        state["typing_started_expiry_period"] = settings.TYPING_STARTED_EXPIRY_PERIOD
+        state["typing_stopped_wait_period"] = settings.TYPING_STOPPED_WAIT_PERIOD
+        state["typing_started_wait_period"] = settings.TYPING_STARTED_WAIT_PERIOD
 
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
