@@ -1123,6 +1123,19 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
                 return
 
     trigger = missed_message["trigger"]
+
+    # TODO/compatibility: Translation code for the rename of
+    # `wildcard_mentioned` to `stream_wildcard_mentioned`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    if trigger == "wildcard_mentioned":
+        trigger = NotificationTriggers.STREAM_WILDCARD_MENTION  # nocoverage
+
+    # TODO/compatibility: Translation code for the rename of
+    # `followed_topic_wildcard_mentioned` to `stream_wildcard_mentioned_in_followed_topic`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    if trigger == "followed_topic_wildcard_mentioned":
+        trigger = NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC  # nocoverage
+
     mentioned_user_group_name = None
     # mentioned_user_group_id will be None if the user is personally mentioned
     # regardless whether they are a member of the mentioned user group in the
