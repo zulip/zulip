@@ -780,7 +780,7 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
 
-            window.location.hash = "narrow/is/dm";
+            browser_history.go_to_location("narrow/is/dm");
         },
     );
 

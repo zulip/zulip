@@ -6,6 +6,7 @@ import tippy from "tippy.js";
 import copy_to_clipboard_svg from "../../templates/copy_to_clipboard_svg.hbs";
 import * as common from "../common";
 
+import * as browser_history from "./browser_history";
 import * as google_analytics from "./google-analytics";
 import {activate_correct_tab} from "./tabbed-instructions";
 
@@ -210,7 +211,7 @@ $(document).on(
     "click",
     ".markdown .content h1, .markdown .content h2, .markdown .content h3",
     function () {
-        window.location.hash = $(this).attr("id");
+        browser_history.go_to_location($(this).attr("id"));
         scrollToHash(markdownSB);
     },
 );

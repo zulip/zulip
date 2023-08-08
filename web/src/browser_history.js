@@ -70,7 +70,7 @@ export function update(new_hash) {
 
     state.old_hash = old_hash;
     state.is_internal_change = true;
-    window.location.hash = new_hash;
+    go_to_location(new_hash);
 }
 
 export function exit_overlay() {
@@ -94,5 +94,5 @@ export function update_hash_internally_if_required(hash) {
 }
 
 export function return_to_web_public_hash() {
-    window.location.hash = state.spectator_old_hash;
+    go_to_location(state.spectator_old_hash);
 }
