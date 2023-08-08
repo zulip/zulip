@@ -1033,7 +1033,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        process_message(incoming_valid_message)
+        with self.assert_database_query_count(19):
+            process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
         user_profile = self.example_user("hamlet")
@@ -1077,7 +1078,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("cordelia")
 
-        process_message(incoming_valid_message)
+        with self.assert_database_query_count(23):
+            process_message(incoming_valid_message)
 
         # Confirm Iago received the message.
         user_profile = self.example_user("iago")
@@ -1128,7 +1130,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
 
-        process_message(incoming_valid_message)
+        with self.assert_database_query_count(18):
+            process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
         user_profile = self.example_user("hamlet")
