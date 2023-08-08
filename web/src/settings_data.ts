@@ -184,6 +184,10 @@ export function can_edit_user_group(group_id: number): boolean {
     return user_groups.is_direct_member_of(page_params.user_id, group_id);
 }
 
+export function user_can_create_user_groups(): boolean {
+    return user_has_permission(page_params.realm_user_group_edit_policy);
+}
+
 export function user_can_add_custom_emoji(): boolean {
     return user_has_permission(page_params.realm_add_custom_emoji_policy);
 }
