@@ -670,6 +670,7 @@ def list_to_streams(
     user_profile: UserProfile,
     autocreate: bool = False,
     unsubscribing_others: bool = False,
+    is_default_stream: bool = False,
 ) -> Tuple[List[Stream], List[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -736,6 +737,10 @@ def list_to_streams(
                 raise JsonableError(_("Insufficient permission"))
             if not invite_only and not user_profile.can_create_public_streams():
                 raise JsonableError(_("Insufficient permission"))
+            if is_default_stream and not user_profile.is_realm_admin:
+                raise JsonableError(_("Insufficient permission"))
+            if invite_only and is_default_stream:
+                raise JsonableError(_("A default stream cannot be private."))
 
         if not autocreate:
             raise JsonableError(

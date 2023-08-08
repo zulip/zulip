@@ -115,6 +115,15 @@ export function update_regular_sub_settings(sub) {
 
 export function update_default_stream_and_stream_privacy_state($container) {
     const $default_stream = $container.find(".default-stream");
+    const is_stream_creation = $container.attr("id") === "stream-creation";
+
+    // In the stream creation UI, if the user is a non-admin hide the
+    // "Default stream for new users" widget
+    if (is_stream_creation && !page_params.is_admin) {
+        $default_stream.hide();
+        return;
+    }
+
     const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
     const is_invite_only =
         privacy_type === "invite-only" || privacy_type === "invite-only-public-history";

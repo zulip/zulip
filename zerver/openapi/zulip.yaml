@@ -8657,6 +8657,21 @@ paths:
             type: boolean
             default: false
           example: true
+        - name: is_default_stream
+          in: query
+          description: |
+            This parameter determines whether any newly created streams will be
+            added as [default streams][default-streams] for new users joining
+            the organization.
+
+            [default-streams]: /help/set-default-streams-for-new-users
+
+            **Changes**: New in Zulip 8.0 (feature level 200). Previously, default stream status
+            could only be changed using the [dedicated API endpoint](/api/add-default-stream).
+          schema:
+            type: boolean
+            default: false
+          example: true
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
