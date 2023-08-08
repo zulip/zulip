@@ -2,12 +2,15 @@
 
 Zulip displays typing notifications when viewing a direct message or
 group direct message conversation to which one of the other
-participants is currently composing a message.
+participants is currently composing a message. In the web and desktop apps,
+typing notifications are also displayed in the
+[all direct messages view](/help/direct-messages#access-all-dms).
 
-Typing notifications are only sent while one is actively editing text
-in the compose box, and they disappear if typing is paused for about
-15 seconds.  Just having the compose box open will not send a typing
-notification.
+Typing notifications are only sent while one is actively editing text in
+the compose box. They disappear if typing is paused for several seconds,
+if all the content of the message is erased, or if the message is
+[saved as a draft](/help/view-and-edit-your-message-drafts#save-a-draft).
+Just having the compose box open will not send a typing notification.
 
 ### Disable typing notifications
 
