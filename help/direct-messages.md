@@ -74,7 +74,7 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 * Open the compose box, and enter a list of users on the **To:**
   line. Type <kbd>Ctrl</kbd> + <kbd>.</kbd> to open that conversation.
 
-## View all direct messages
+## Access all DMs
 
 {start_tabs}
 
