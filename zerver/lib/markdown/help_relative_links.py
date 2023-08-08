@@ -101,12 +101,20 @@ starred_instructions = """
    sidebar, or by [searching](/help/search-for-messages) for `is:starred`.
 """
 
+direct_instructions = """
+1. In the left sidebar, click the **All direct messages**
+   (<i class="fa fa-align-right"></i>) icon to the right of the
+   **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
+   keyboard shortcut.
+"""
+
 message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
     "recent": ["Recent conversations", "/#recent", recent_instructions],
     "all": ["All messages", "/#all_messages", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
+    "direct": ["All direct messages", "/#narrow/is/dm", direct_instructions],
 }
 
 

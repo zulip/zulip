@@ -74,6 +74,16 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 * Open the compose box, and enter a list of users on the **To:**
   line. Type <kbd>Ctrl</kbd> + <kbd>.</kbd> to open that conversation.
 
+## View all direct messages
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|message|direct}
+
+{end_tabs}
+
 ## Related articles
 
 * [Typing notifications](/help/typing-notifications)
