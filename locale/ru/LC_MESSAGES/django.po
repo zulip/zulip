@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Alex Morozov <morozov@podmoskovie.info>, 2016-2017
 # Alya Abbott <alya@zulip.com>, 2022
@@ -2468,8 +2468,8 @@ msgid "Invalid or expired login session."
 msgstr "Неверная или истекшая сессия."
 
 #: templates/zerver/login.html:18
-msgid "Log in to Zulip"
-msgstr "Войти в Zulip"
+msgid "Log in to chat Dom znaniy"
+msgstr "Войти в чат Дом знаний"
 
 #: templates/zerver/login.html:44
 msgid "View without an account"
