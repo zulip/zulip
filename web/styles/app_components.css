@@ -700,9 +700,15 @@ div.overlay {
     margin-bottom: 20px;
     width: 100%;
 
-    &:not(.table-bordered) thead th {
-        border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
-        border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
+    &:not(.table-bordered) {
+        thead th {
+            border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
+            border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
+        }
+
+        tbody tr:first-child td {
+            border-top: 0;
+        }
     }
 
     & thead th {
