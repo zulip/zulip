@@ -258,7 +258,10 @@ export function initialize() {
         // Expanding a message can mean either uncollapsing or
         // uncondensing it.
         const $row = $(this).closest(".message_row");
-        const message = message_lists.current.get(rows.id($row));
+        const id = rows.id($row);
+        const message = message_lists.current.get(id);
+        // Focus on the expanded message.
+        message_lists.current.select_id(id);
         const $content = $row.find(".message_content");
         if (message.collapsed) {
             // Uncollapse.
@@ -276,7 +279,10 @@ export function initialize() {
 
     $("#message_feed_container").on("click", ".message_condenser", function (e) {
         const $row = $(this).closest(".message_row");
-        message_lists.current.get(rows.id($row)).condensed = true;
+        const id = rows.id($row);
+        // Focus on the condensed message.
+        message_lists.current.select_id(id);
+        message_lists.current.get(id).condensed = true;
         condense_row($row);
         e.stopPropagation();
         e.preventDefault();
