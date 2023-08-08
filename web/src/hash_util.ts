@@ -248,7 +248,7 @@ export function validate_group_settings_hash(hash: string): string {
     const hash_components = hash.slice(1).split(/\//);
     const section = hash_components[1];
 
-    const can_create_groups = settings_data.user_can_edit_user_groups();
+    const can_create_groups = settings_data.user_can_create_user_groups();
     if (section === "new" && !can_create_groups) {
         return "#groups/your";
     }

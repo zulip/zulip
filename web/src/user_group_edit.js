@@ -726,7 +726,7 @@ export function setup_page(callback) {
 
     function populate_and_fill() {
         const template_data = {
-            can_create_or_edit_user_groups: settings_data.user_can_edit_user_groups(),
+            can_create_user_groups: settings_data.user_can_create_user_groups(),
             max_user_group_name_length,
         };
 
