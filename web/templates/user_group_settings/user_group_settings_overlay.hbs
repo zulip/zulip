@@ -11,7 +11,7 @@
             <div class="left">
                 <div class="list-toggler-container">
                     <div id="add_new_user_group">
-                        {{#if can_create_or_edit_user_groups}}
+                        {{#if can_create_user_groups}}
                         <button class="create_user_group_button create_user_group_plus_button">
                             <span class="create_button_plus_sign">+</span>
                         </button>
@@ -36,7 +36,7 @@
                     <div class="all_groups_tab_empty_text">
                         <span class="settings-empty-option-text">
                             {{t 'There are no user groups you can view in this organization.'}}
-                            {{#if can_create_or_edit_user_groups}}
+                            {{#if can_create_user_groups}}
                                 <a href="#groups/new">{{t 'Create a user group'}}</a>
                             {{/if}}
                         </span>
@@ -50,7 +50,7 @@
                     <div id="user_group_settings_title" class="user-group-info-title">{{t 'User group settings' }}</div>
                 </div>
                 <div class="nothing-selected">
-                    {{#if can_create_or_edit_user_groups}}
+                    {{#if can_create_user_groups}}
                     <button type="button" class="create_user_group_button animated-purple-button">{{t 'Create user group' }}</button>
                     <span class="settings-empty-option-text">
                         {{#tr}}
