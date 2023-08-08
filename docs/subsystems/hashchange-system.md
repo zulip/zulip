@@ -59,7 +59,7 @@ The main external API lives in `web/src/browser_history.js`:
 - `browser_history.update` is used to update the browser
   history, and it should be called when the app code is taking care
   of updating the UI directly
-- `browser_history.go_to_location` is used when you want the `hashchange`
+- `browser_history.go_to_hash` is used when you want the `hashchange`
   module to actually dispatch building the next page
 
 Internally you have these functions:

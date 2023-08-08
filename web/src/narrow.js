@@ -1005,7 +1005,7 @@ function handle_post_narrow_deactivate_processes() {
 
 export function deactivate(coming_from_recent_topics = false, is_actively_scrolling = false) {
     // NOTE: Never call this function independently,
-    // always use browser_history.go_to_location("#all_messages") to
+    // always use browser_history.go_to_hash("#all_messages") to
     // activate All message narrow.
     /*
       Switches message_lists.current from narrowed_msg_list to

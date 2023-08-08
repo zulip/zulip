@@ -196,7 +196,7 @@ export function initialize() {
                 // This might happen for locally echoed messages, for example.
                 return;
             }
-            browser_history.go_to_location(hash_util.by_conversation_and_time_hash(message));
+            browser_history.go_to_hash(hash_util.by_conversation_and_time_hash(message));
             return;
         }
 
@@ -272,7 +272,7 @@ export function initialize() {
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
-            browser_history.go_to_location(hash_util.by_stream_url(stream_id));
+            browser_history.go_to_hash(hash_util.by_stream_url(stream_id));
             return;
         }
         window.location.href = $(this).attr("href");
@@ -690,7 +690,7 @@ export function initialize() {
 
     $("body").on("click", "[data-overlay-trigger]", function () {
         const target = $(this).attr("data-overlay-trigger");
-        browser_history.go_to_location(target);
+        browser_history.go_to_hash(target);
     });
 
     function handle_compose_click(e) {
@@ -780,7 +780,7 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
 
-            browser_history.go_to_location("narrow/is/dm");
+            browser_history.go_to_hash("narrow/is/dm");
         },
     );
 

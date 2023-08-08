@@ -457,7 +457,7 @@ export function register_stream_handlers() {
         hide_stream_popover();
 
         const stream_edit_hash = hash_util.stream_edit_url(sub);
-        browser_history.go_to_location(stream_edit_hash);
+        browser_history.go_to_hash(stream_edit_hash);
     });
 
     // Pin/unpin

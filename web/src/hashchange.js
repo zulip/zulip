@@ -79,7 +79,7 @@ function set_hash(hash) {
         }
 
         blueslip.error("browser does not support pushState");
-        browser_history.go_to_location(hash);
+        browser_history.go_to_hash(hash);
     }
 }
 
@@ -152,7 +152,7 @@ function show_default_view() {
         // go back in browser history. See
         // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
         // for detailed description of the issue.
-        browser_history.go_to_location(user_settings.default_view);
+        browser_history.go_to_hash(user_settings.default_view);
     }
 }
 

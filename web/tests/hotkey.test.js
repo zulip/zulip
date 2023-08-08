@@ -310,7 +310,7 @@ run_test("streams", ({override}) => {
 });
 
 run_test("basic mappings", () => {
-    assert_mapping("?", browser_history, "go_to_location");
+    assert_mapping("?", browser_history, "go_to_hash");
     assert_mapping("/", search, "initiate_search");
     assert_mapping_rewire("w", activity, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
@@ -338,7 +338,7 @@ run_test("drafts closed w/other overlay", ({override}) => {
 
 run_test("drafts closed launch", ({override}) => {
     override(overlays, "is_active", () => false);
-    assert_mapping("d", browser_history, "go_to_location");
+    assert_mapping("d", browser_history, "go_to_hash");
 });
 
 run_test("modal open", ({override}) => {

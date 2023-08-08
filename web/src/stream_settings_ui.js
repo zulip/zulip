@@ -925,7 +925,7 @@ export function view_stream() {
     if (row_data) {
         const stream_narrow_hash =
             "#narrow/stream/" + hash_util.encode_stream_name(row_data.object.name);
-        browser_history.go_to_location(stream_narrow_hash);
+        browser_history.go_to_hash(stream_narrow_hash);
     }
 }
 

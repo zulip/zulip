@@ -340,7 +340,7 @@ export function register_click_handlers() {
         if (sub.invite_only && people.is_my_user_id(target_user_id)) {
             const new_hash = hash_util.stream_edit_url(sub);
             hide_user_profile();
-            browser_history.go_to_location(new_hash);
+            browser_history.go_to_hash(new_hash);
             return;
         }
         handle_remove_stream_subscription(target_user_id, sub, removal_success, removal_failure);

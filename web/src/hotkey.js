@@ -513,7 +513,7 @@ export function process_enter_key(e) {
             return false;
         }
 
-        browser_history.go_to_location(hash_util.by_conversation_and_time_hash(message));
+        browser_history.go_to_hash(hash_util.by_conversation_and_time_hash(message));
         return true;
     }
 
@@ -854,7 +854,7 @@ export function process_hotkey(e, hotkey) {
             gear_menu.open();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
-            browser_history.go_to_location("keyboard-shortcuts");
+            browser_history.go_to_hash("keyboard-shortcuts");
             return true;
         case "stream_cycle_backward":
             narrow.stream_cycle_backward();
@@ -869,10 +869,10 @@ export function process_hotkey(e, hotkey) {
             narrow.narrow_to_next_pm_string({trigger: "hotkey"});
             return true;
         case "open_recent_topics":
-            browser_history.go_to_location("#recent");
+            browser_history.go_to_hash("#recent");
             return true;
         case "all_messages":
-            browser_history.go_to_location("#all_messages");
+            browser_history.go_to_hash("#all_messages");
             return true;
     }
 
@@ -894,7 +894,7 @@ export function process_hotkey(e, hotkey) {
             }
             return true;
         case "open_drafts":
-            browser_history.go_to_location("drafts");
+            browser_history.go_to_hash("drafts");
             return true;
         case "C_deprecated":
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + C");
@@ -1053,7 +1053,7 @@ export function process_hotkey(e, hotkey) {
         }
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
-            // `browser_history.go_to_location(hash_util.hash_by_conversation_and_time_url(msg))`
+            // `browser_history.go_to_hash(hash_util.hash_by_conversation_and_time_url(msg))`
             // but we use `narrow.activate` to pass in the `trigger` parameter
             switch (msg.type) {
                 case "private":

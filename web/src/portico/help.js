@@ -211,7 +211,7 @@ $(document).on(
     "click",
     ".markdown .content h1, .markdown .content h2, .markdown .content h3",
     function () {
-        browser_history.go_to_location($(this).attr("id"));
+        browser_history.go_to_hash($(this).attr("id"));
         scrollToHash(markdownSB);
     },
 );

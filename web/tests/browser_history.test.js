@@ -24,7 +24,7 @@ function test(label, f) {
 test("basics", () => {
     const hash1 = "#settings/profile";
     const hash2 = "#narrow/is/dm";
-    browser_history.go_to_location(hash1);
+    browser_history.go_to_hash(hash1);
     assert.equal(window.location.hash, hash1);
 
     browser_history.update(hash2);

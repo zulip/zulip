@@ -76,7 +76,7 @@ The "info:" items use our info overlay system
 in web/src/info_overlay.js.  They are dispatched
 using a click handler in web/src/click_handlers.js.
 The click handler uses "[data-overlay-trigger]" as
-the selector and then calls browser_history.go_to_location.
+the selector and then calls browser_history.go_to_hash.
 */
 
 export function version_display_string(): string {
