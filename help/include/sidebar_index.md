@@ -58,6 +58,7 @@
 ## Writing messages
 * [Message formatting](/help/format-your-message-using-markdown)
 * [Mention a user or group](/help/mention-a-user-or-group)
+* [Link to a stream, topic, or message](/help/link-to-a-message-or-conversation)
 * [Format a quote](/help/format-a-quote)
 * [Quote and reply](/help/quote-and-reply)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
