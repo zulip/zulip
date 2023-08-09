@@ -3961,6 +3961,19 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can create bot users in this organization.
+                                    create_multiuse_invite_group:
+                                      type: integer
+                                      description: |
+                                        The ID of the [user group](/api/get-user-groups) whose members are
+                                        allowed to create [reusable invitation
+                                        links](/help/invite-new-users#create-a-reusable-invitation-link)
+                                        to the organization.
+
+                                        This setting can currently only be set to user groups that are
+                                        system groups, except for the system groups named
+                                        `"role:internet"` and `"role:owners"`.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 209).
                                     create_public_stream_policy:
                                       type: integer
                                       description: |
@@ -13258,6 +13271,19 @@ paths:
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                      realm_create_multiuse_invite_group:
+                        type: integer
+                        description: |
+                          The ID of the [user group](/api/get-user-groups) whose members are
+                          allowed to create [reusable invitation
+                          links](/help/invite-new-users#create-a-reusable-invitation-link)
+                          to the organization.
+
+                          This setting can currently only be set to user groups that are
+                          system groups, except for the system groups named
+                          `"role:internet"` and `"role:owners"`.
+
+                          **Changes**: New in Zulip 8.0 (feature level 209).
                       realm_move_messages_between_streams_policy:
                         type: integer
                         description: |

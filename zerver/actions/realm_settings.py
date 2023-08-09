@@ -31,6 +31,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
+    UserGroup,
     UserProfile,
     active_user_ids,
     get_realm,
@@ -99,6 +100,42 @@ def do_set_realm_property(
 
     if name == "waiting_period_threshold":
         update_users_in_full_members_system_group(realm, acting_user=acting_user)
+
+
+@transaction.atomic(durable=True)
+def do_change_realm_permission_group_setting(
+    realm: Realm, setting_name: str, user_group: UserGroup, *, acting_user: Optional[UserProfile]
+) -> None:
+    """Takes in a realm object, the name of an attribute to update, the
+    user_group to update and and the user who initiated the update.
+    """
+    assert setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+    old_user_group_id = getattr(realm, setting_name).id
+
+    setattr(realm, setting_name, user_group)
+    realm.save(update_fields=[setting_name])
+
+    event = dict(
+        type="realm",
+        op="update_dict",
+        property="default",
+        data={setting_name: user_group.id},
+    )
+
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_time=event_time,
+        acting_user=acting_user,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_user_group_id,
+            RealmAuditLog.NEW_VALUE: user_group.id,
+            "property": setting_name,
+        },
+    )
 
 
 def parse_and_set_setting_value_if_required(

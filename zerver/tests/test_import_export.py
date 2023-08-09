@@ -1045,6 +1045,13 @@ class RealmImportExportTest(ExportFile):
         def get_active_stream_names(r: Realm) -> Set[str]:
             return {stream.name for stream in get_active_streams(r)}
 
+        @getter
+        def get_group_names_for_group_settings(r: Realm) -> Set[str]:
+            return {
+                getattr(r, permmission_name).name
+                for permmission_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+            }
+
         # test recipients
         def get_recipient_stream(r: Realm) -> Recipient:
             recipient = Stream.objects.get(name="Verona", realm=r).recipient
@@ -1559,6 +1566,12 @@ class RealmImportExportTest(ExportFile):
         data = read_json("realm.json")
         data.pop("zerver_usergroup")
         data.pop("zerver_realmauditlog")
+
+        # User groups data is missing. So, all the realm group based settings
+        # should be None.
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            data["zerver_realm"][0][setting_name] = None
+
         with open(export_fn("realm.json"), "wb") as f:
             f.write(orjson.dumps(data))
 

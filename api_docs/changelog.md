@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 209**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `create_multiuse_invite_group`
+  realm setting, which is the ID of the user group whose members can
+  create [reusable invitation links](/help/invite-new-users#create-a-reusable-invitation-link)
+  to an organization. Previously, only admin users could create these
+  links.
+
+* `POST /invites/multiuse`: Non-admin users can now use this endpoint
+  to create reusable invitation links. Previously, this endpoint was
+  restricted to admin users only.
+
 **Feature level 208**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),

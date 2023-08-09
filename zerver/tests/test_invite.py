@@ -37,7 +37,11 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     too_many_recent_realm_invites,
 )
-from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_change_realm_plan_type,
+    do_set_realm_property,
+)
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
@@ -55,6 +59,7 @@ from zerver.models import (
     Realm,
     ScheduledEmail,
     Stream,
+    UserGroup,
     UserMessage,
     UserProfile,
     get_realm,
@@ -2444,22 +2449,62 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 1)
         self.check_user_subscribed_only_to_streams("alice", [])
 
-    def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
-        self.login("iago")
-        # Only admins should be able to create multiuse invites even if
-        # invite_to_realm_policy is set to Realm.POLICY_MEMBERS_ONLY.
-        self.realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
-        self.realm.save()
-
-        result = self.client_post(
-            "/json/invites/multiuse", {"invite_expires_in_minutes": 2 * 24 * 60}
+    def test_create_multiuse_invite_group_setting(self) -> None:
+        realm = get_realm("zulip")
+        full_members_system_group = UserGroup.objects.get(
+            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
         )
+        nobody_system_group = UserGroup.objects.get(
+            name=UserGroup.NOBODY_GROUP_NAME, realm=realm, is_system_group=True
+        )
+
+        # Default value of create_multiuse_invite_group is administrators
+        self.login("shiva")
+        result = self.client_post("/json/invites/multiuse")
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login("iago")
+        result = self.client_post("/json/invites/multiuse")
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", full_members_system_group, acting_user=None
+        )
+
         self.login("hamlet")
         result = self.client_post("/json/invites/multiuse")
-        self.assert_json_error(result, "Must be an organization administrator")
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("test1"), invite_link)
+
+        self.login("desdemona")
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", nobody_system_group, acting_user=None
+        )
+        result = self.client_post("/json/invites/multiuse")
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_only_owner_can_change_create_multiuse_invite_group(self) -> None:
+        realm = get_realm("zulip")
+        full_members_system_group = UserGroup.objects.get(
+            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+        )
+
+        self.login("iago")
+        result = self.client_patch(
+            "/json/realm",
+            {"create_multiuse_invite_group": orjson.dumps(full_members_system_group.id).decode()},
+        )
+        self.assert_json_error(result, "Must be an organization owner")
+
+        self.login("desdemona")
+        result = self.client_patch(
+            "/json/realm",
+            {"create_multiuse_invite_group": orjson.dumps(full_members_system_group.id).decode()},
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.create_multiuse_invite_group_id, full_members_system_group.id)
 
     def test_multiuse_link_for_inviting_as_owner(self) -> None:
         self.login("iago")
@@ -2477,6 +2522,78 @@ class MultiuseInviteTest(ZulipTestCase):
             "/json/invites/multiuse",
             {
                 "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["REALM_OWNER"]).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
+
+    def test_multiuse_link_for_inviting_as_admin(self) -> None:
+        realm = get_realm("zulip")
+        full_members_system_group = UserGroup.objects.get(
+            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", full_members_system_group, acting_user=None
+        )
+
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["REALM_ADMIN"]).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        self.login("iago")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["REALM_ADMIN"]).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
+
+    def test_multiuse_link_for_inviting_as_moderator(self) -> None:
+        realm = get_realm("zulip")
+        full_members_system_group = UserGroup.objects.get(
+            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", full_members_system_group, acting_user=None
+        )
+
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["MODERATOR"]).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        self.login("shiva")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["MODERATOR"]).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        self.login("iago")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["REALM_ADMIN"]).decode(),
                 "invite_expires_in_minutes": 2 * 24 * 60,
             },
         )

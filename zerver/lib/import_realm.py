@@ -18,6 +18,7 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
+from zerver.actions.create_realm import set_default_for_realm_permission_group_settings
 from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -906,10 +907,10 @@ def import_uploads(
 # have to import the dependencies first.)
 #
 # * Client [no deps]
-# * Realm [-notifications_stream]
+# * Realm [-notifications_stream,-group_permissions]
 # * UserGroup
 # * Stream [only depends on realm]
-# * Realm's notifications_stream
+# * Realm's notifications_stream and group_permissions
 # * UserProfile, in order by ID to avoid bot loop issues
 # * Now can do all realm_tables
 # * Huddle
@@ -948,12 +949,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     bulk_import_client(data, Client, "zerver_client")
 
-    # We don't import the Stream model yet, since it depends on Realm,
-    # which isn't imported yet.  But we need the Stream model IDs for
-    # notifications_stream.
+    # We don't import the Stream and UserGroup models yet, since
+    # they depend on Realm, which isn't imported yet.
+    # But we need the Stream and UserGroup model IDs for
+    # notifications_stream and group permissions, respectively
     update_model_ids(Stream, data, "stream")
     re_map_foreign_keys(data, "zerver_realm", "notifications_stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realm", "signup_notifications_stream", related_table="stream")
+    if "zerver_usergroup" in data:
+        update_model_ids(UserGroup, data, "usergroup")
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            re_map_foreign_keys(data, "zerver_realm", setting_name, related_table="usergroup")
 
     fix_datetime_fields(data, "zerver_realm")
     # Fix realm subdomain information
@@ -968,10 +974,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     with transaction.atomic(durable=True):
         realm = Realm(**realm_properties)
+        if "zerver_usergroup" not in data:
+            # For now a dummy value of -1 is given to groups fields which
+            # is changed later before the transaction is committed.
+            for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+                setattr(realm, permissions_configuration.id_field_name, -1)
+
         realm.save()
 
         if "zerver_usergroup" in data:
-            update_model_ids(UserGroup, data, "usergroup")
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
             for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
                 re_map_foreign_keys(
@@ -1002,6 +1013,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         for stream in data["zerver_stream"]:
             stream["rendered_description"] = render_stream_description(stream["description"], realm)
         bulk_import_model(data, Stream)
+
+        if "zerver_usergroup" not in data:
+            set_default_for_realm_permission_group_settings(realm)
 
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server

@@ -16,7 +16,10 @@ from zerver.actions.realm_settings import (
 from zerver.lib.bulk_create import create_users
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import ensure_stream, get_signups_stream
-from zerver.lib.user_groups import create_system_user_groups_for_realm
+from zerver.lib.user_groups import (
+    create_system_user_groups_for_realm,
+    get_role_based_system_groups_dict,
+)
 from zerver.models import (
     DefaultStream,
     PreregistrationRealm,
@@ -115,6 +118,17 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
 
 
+@transaction.atomic(savepoint=False)
+def set_default_for_realm_permission_group_settings(realm: Realm) -> None:
+    system_groups_dict = get_role_based_system_groups_dict(realm)
+
+    for setting_name, permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        group_name = permissions_configuration.default_group_name
+        setattr(realm, setting_name, system_groups_dict[group_name])
+
+    realm.save(update_fields=list(Realm.REALM_PERMISSION_GROUP_SETTINGS.keys()))
+
+
 def setup_realm_internal_bots(realm: Realm) -> None:
     """Create this realm's internal bots.
 
@@ -204,6 +218,12 @@ def do_create_realm(
             )
 
         set_realm_permissions_based_on_org_type(realm)
+
+        # For now a dummy value of -1 is given to groups fields which
+        # is changed later before the transaction is committed.
+        for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+            setattr(realm, permissions_configuration.id_field_name, -1)
+
         realm.save()
 
         RealmAuditLog.objects.create(
@@ -230,6 +250,7 @@ def do_create_realm(
         )
 
         create_system_user_groups_for_realm(realm)
+        set_default_for_realm_permission_group_settings(realm)
 
         # We create realms with all authentications methods enabled by default.
         RealmAuthenticationMethod.objects.bulk_create(
