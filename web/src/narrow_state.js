@@ -1,5 +1,6 @@
 import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
+import * as inbox_util from "./inbox_util";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
@@ -34,7 +35,7 @@ export function operators() {
 }
 
 export function is_message_feed_visible() {
-    return !recent_view_util.is_visible();
+    return !recent_view_util.is_visible() && !inbox_util.is_visible();
 }
 
 export function update_email(user_id, new_email) {

@@ -49,6 +49,7 @@ export function deselect_top_left_corner_items() {
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
     remove($(".top_left_recent_view"));
+    remove($(".top_left_inbox"));
 }
 
 export function handle_narrow_activated(filter) {
@@ -91,6 +92,7 @@ export function highlight_recent_view() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
+    remove($(".top_left_inbox"));
     $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -119,4 +121,15 @@ function do_new_messages_animation($li) {
 
 export function initialize() {
     update_scheduled_messages_row();
+}
+
+export function highlight_inbox_view() {
+    remove($(".top_left_all_messages"));
+    remove($(".top_left_starred_messages"));
+    remove($(".top_left_recent_view"));
+    remove($(".top_left_mentions"));
+    $(".top_left_inbox").addClass("active-filter");
+    setTimeout(() => {
+        resize.resize_stream_filters_container();
+    }, 0);
 }
