@@ -2,16 +2,16 @@
     <input type="hidden" name="email_address_visibility" id="email_address_visibility"/>
     <span class="current-selected-option">
         {% if default_email_address_visibility == email_address_visibility_admins_only %}
-            {% trans %}Administrators of this Zulip organization will be able to see this email address.
+            {% trans %}Administrators will be able to see this email address.
             {% endtrans %}
         {% elif default_email_address_visibility == email_address_visibility_moderators %}
-            {% trans %}Administrators and moderators of this Zulip organization will be able to see this email address.
+            {% trans %}Administrators and moderators will be able to see this email address.
             {% endtrans %}
         {% elif default_email_address_visibility == email_address_visibility_nobody %}
-            {% trans %}Nobody in this Zulip organization will be able to see this email address.
+            {% trans %}Nobody will be able to see this email address.
             {% endtrans %}
         {% else %}
-            {% trans %}Other users in this Zulip organization will be able to see this email address.
+            {% trans %}Other users will be able to see this email address.
             {% endtrans %}
         {% endif %}
     </span>

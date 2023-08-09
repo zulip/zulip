@@ -826,8 +826,8 @@ msgid "Accept the Terms of Service"
 msgstr "Принять условия использования"
 
 #: templates/zerver/accounts_accept_terms.html:18
-msgid "Welcome to Zulip"
-msgstr "Добро пожаловать в Zulip."
+msgid "Welcome to Dom znaniy"
+msgstr "Добро пожаловать в Дом знаний."
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/login.html:102 templates/zerver/register.html:79
@@ -1389,8 +1389,8 @@ msgstr "Вы создали новую организацию Zulip:\n   <b>%(re
 
 #: templates/zerver/emails/followup_day1.html:24
 #: templates/zerver/emails/followup_day1.txt:1
-msgid "Welcome to Zulip!"
-msgstr "Добро пожаловать в Zulip!"
+msgid "Welcome to Dom znaniy!"
+msgstr "Добро пожаловать в Дом знаний!"
 
 #: templates/zerver/emails/followup_day1.html:26
 #, python-format
@@ -2509,27 +2509,27 @@ msgstr "Нет учетной записи? У вас должно быть пр
 
 #: templates/zerver/new_user_email_address_visibility.html:5
 msgid ""
-"Administrators of this Zulip organization will be able to see this email address.\n"
+"Administrators will be able to see this email address.\n"
 "            "
-msgstr "Администраторы этой организации Zulip смогут видеть данный адрес электронной почты.\n            "
+msgstr "Администраторы смогут видеть данный адрес электронной почты.\n            "
 
 #: templates/zerver/new_user_email_address_visibility.html:8
 msgid ""
-"Administrators and moderators of this Zulip organization will be able to see this email address.\n"
+"Administrators and moderators will be able to see this email address.\n"
 "            "
-msgstr "Администраторы и модераторы этой организации Zulip смогут видеть данный адрес электронной почты.\n            "
+msgstr "Администраторы и модераторы смогут видеть данный адрес электронной почты.\n            "
 
 #: templates/zerver/new_user_email_address_visibility.html:11
 msgid ""
-"Nobody in this Zulip organization will be able to see this email address.\n"
+"Nobody in this will be able to see this email address.\n"
 "            "
-msgstr "Никто в этой организации Zulip не сможет видеть данный адрес электронной почты.\n            "
+msgstr "Никто не сможет видеть данный адрес электронной почты.\n            "
 
 #: templates/zerver/new_user_email_address_visibility.html:14
 msgid ""
-"Other users in this Zulip organization will be able to see this email address.\n"
+"Other users will be able to see this email address.\n"
 "            "
-msgstr "Другие пользователи в этой организации Zulip смогут видеть данный адрес электронной почты.\n            "
+msgstr "Другие пользователи смогут видеть данный адрес электронной почты.\n            "
 
 #: templates/zerver/new_user_email_address_visibility.html:18
 msgid "Change"

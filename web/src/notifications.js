@@ -116,9 +116,7 @@ export function redraw_title() {
         (unread_count ? "(" + unread_count + ") " : "") +
         narrow.narrow_title +
         " - " +
-        page_params.realm_name +
-        " - " +
-        "Zulip";
+        page_params.realm_name;
 
     document.title = new_title;
 }

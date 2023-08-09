@@ -7,7 +7,7 @@
         <meta charset="UTF-8" />
         {% block title %}
             {% if user_profile and user_profile.realm.name %}
-                <title>{{user_profile.realm.name}} - Zulip</title>
+                <title>{{user_profile.realm.name}}</title>
             {% else %}
                 {% if PAGE_TITLE %}
                 <title>{{ PAGE_TITLE }}</title>
