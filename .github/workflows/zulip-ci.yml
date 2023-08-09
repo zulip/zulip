@@ -115,17 +115,63 @@ jobs:
           source tools/ci/activate-venv
           ./tools/run-codespell
 
-      - name: Run backend lint
+      # We run the tests that are only run in a specific job early, so
+      # that we get feedback to the developer about likely failures as
+      # quickly as possible. Backend/mypy failures that aren't
+      # identical across different versions are much more rare than
+      # frontend linter or node test failures.
+      - name: Run documentation and api tests
+        if: ${{ matrix.include_documentation_tests }}
         run: |
           source tools/ci/activate-venv
-          echo "Test suite is running under $(python --version)."
-          ./tools/lint --groups=backend --skip=gitlint,mypy # gitlint disabled because flaky
+          # In CI, we only test links we control in test-documentation to avoid flakes
+          ./tools/test-documentation --skip-external-links
+          ./tools/test-help-documentation --skip-external-links
+          ./tools/test-api
+
+      - name: Run node tests
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          # Run the node tests first, since they're fast and deterministic
+          ./tools/test-js-with-node --coverage --parallel=1
 
       - name: Run frontend lint
         if: ${{ matrix.include_frontend_tests }}
         run: |
           source tools/ci/activate-venv
           ./tools/lint --groups=frontend --skip=gitlint # gitlint disabled because flaky
+
+      - name: Check schemas
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          # Check that various schemas are consistent. (is fast)
+          ./tools/check-schemas
+
+      - name: Check capitalization of strings
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          ./manage.py makemessages --locale en
+          PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+          PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+
+      - name: Run puppeteer tests
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          ./tools/test-js-with-puppeteer
+
+      - name: Check pnpm dedupe
+        if: ${{ matrix.include_frontend_tests }}
+        run: pnpm dedupe --check
+
+      - name: Run backend lint
+        run: |
+          source tools/ci/activate-venv
+          echo "Test suite is running under $(python --version)."
+          ./tools/lint --groups=backend --skip=gitlint,mypy # gitlint disabled because flaky
 
       - name: Run backend tests
         run: |
@@ -165,47 +211,6 @@ jobs:
           chmod 000 static/generated web/generated
           ./scripts/lib/check-database-compatibility
           chmod 755 static/generated web/generated
-
-      - name: Run documentation and api tests
-        if: ${{ matrix.include_documentation_tests }}
-        run: |
-          source tools/ci/activate-venv
-          # In CI, we only test links we control in test-documentation to avoid flakes
-          ./tools/test-documentation --skip-external-links
-          ./tools/test-help-documentation --skip-external-links
-          ./tools/test-api
-
-      - name: Run node tests
-        if: ${{ matrix.include_frontend_tests }}
-        run: |
-          source tools/ci/activate-venv
-          # Run the node tests first, since they're fast and deterministic
-          ./tools/test-js-with-node --coverage --parallel=1
-
-      - name: Check schemas
-        if: ${{ matrix.include_frontend_tests }}
-        run: |
-          source tools/ci/activate-venv
-          # Check that various schemas are consistent. (is fast)
-          ./tools/check-schemas
-
-      - name: Check capitalization of strings
-        if: ${{ matrix.include_frontend_tests }}
-        run: |
-          source tools/ci/activate-venv
-          ./manage.py makemessages --locale en
-          PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
-          PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
-
-      - name: Run puppeteer tests
-        if: ${{ matrix.include_frontend_tests }}
-        run: |
-          source tools/ci/activate-venv
-          ./tools/test-js-with-puppeteer
-
-      - name: Check pnpm dedupe
-        if: ${{ matrix.include_frontend_tests }}
-        run: pnpm dedupe --check
 
       - name: Check for untracked files
         run: |
