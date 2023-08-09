@@ -98,6 +98,8 @@ EXEMPT_FILES = make_set(
         "web/src/hbs.d.ts",
         "web/src/hotkey.js",
         "web/src/hotspots.js",
+        "web/src/inbox_ui.js",
+        "web/src/inbox_util.js",
         "web/src/info_overlay.js",
         "web/src/invite.js",
         "web/src/lightbox.js",

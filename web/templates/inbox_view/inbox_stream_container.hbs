@@ -1,0 +1,10 @@
+{{#each topics_dict }}
+    <div id="{{@key}}">
+        {{> inbox_row (lookup ../streams_dict @key)}}
+        <div class="inbox-topic-container">
+            {{#each this}}
+                {{>inbox_row this}}
+            {{/each}}
+        </div>
+    </div>
+{{/each}}

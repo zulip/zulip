@@ -7,6 +7,8 @@ import * as browser_history from "./browser_history";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
+import * as inbox_ui from "./inbox_ui";
+import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_lists from "./message_lists";
@@ -91,6 +93,14 @@ function maybe_hide_recent_view() {
     return false;
 }
 
+function maybe_hide_inbox() {
+    if (inbox_util.is_visible()) {
+        inbox_ui.hide();
+        return true;
+    }
+    return false;
+}
+
 export function changehash(newhash) {
     if (browser_history.state.changing_hash) {
         return;
@@ -109,8 +119,9 @@ export function save_narrow(operators) {
 
 function show_all_message_view() {
     const coming_from_recent_view = maybe_hide_recent_view();
+    const coming_from_inbox = maybe_hide_inbox();
     const is_actively_scrolling = message_scroll.is_actively_scrolling();
-    narrow.deactivate(!coming_from_recent_view, is_actively_scrolling);
+    narrow.deactivate(!(coming_from_recent_view || coming_from_inbox), is_actively_scrolling);
     left_sidebar_navigation_area.handle_narrow_deactivated();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
@@ -167,6 +178,7 @@ function do_hashchange_normal(from_reload) {
     switch (hash[0]) {
         case "#narrow": {
             maybe_hide_recent_view();
+            maybe_hide_inbox();
             let operators;
             try {
                 // TODO: Show possible valid URLs to the user.
@@ -225,7 +237,12 @@ function do_hashchange_normal(from_reload) {
             window.location.replace("#recent");
             break;
         case "#recent":
+            maybe_hide_inbox();
             recent_view_ui.show();
+            break;
+        case "#inbox":
+            maybe_hide_recent_view();
+            inbox_ui.show();
             break;
         case "#all_messages":
             show_all_message_view();

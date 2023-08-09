@@ -16,6 +16,8 @@ import {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
+import * as inbox_ui from "./inbox_ui";
+import * as inbox_util from "./inbox_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_edit from "./message_edit";
 import * as message_feed_loading from "./message_feed_loading";
@@ -195,6 +197,7 @@ export function activate(raw_operators, opts) {
     }
 
     const coming_from_recent_view = recent_view_util.is_visible();
+    const coming_from_inbox = inbox_util.is_visible();
 
     // The empty narrow is the home view; so deactivate any narrow if
     // no operators were specified. Take us to all messages when this
@@ -382,11 +385,12 @@ export function activate(raw_operators, opts) {
 
         if (coming_from_recent_view) {
             recent_view_ui.hide();
+        } else if (coming_from_inbox) {
+            inbox_ui.hide();
         } else {
-            // If Recent Conversations was not visible, then we are switching
-            // from another message list view. Save the scroll position in
-            // that message list, so that we can restore it if/when we
-            // later navigate back to that view.
+            // We must instead be switching from another message view.
+            // Save the scroll position in that message list, so that
+            // we can restore it if/when we later navigate back to that view.
             save_pre_narrow_offset_for_reload();
         }
 

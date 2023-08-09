@@ -41,6 +41,7 @@ run_test("narrowing", () => {
     assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_recent_view").hasClass("active-filter"));
+    assert.ok(!$(".top_left_inbox").hasClass("active-filter"));
 
     set_global("setTimeout", (f) => {
         f();
@@ -49,7 +50,16 @@ run_test("narrowing", () => {
     assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_inbox").hasClass("active-filter"));
     assert.ok($(".top_left_recent_view").hasClass("active-filter"));
+
+    left_sidebar_navigation_area.handle_narrow_deactivated();
+    left_sidebar_navigation_area.highlight_inbox_view();
+    assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
+    assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_recent_view").hasClass("active-filter"));
+    assert.ok($(".top_left_inbox").hasClass("active-filter"));
 });
 
 run_test("update_count_in_dom", () => {
