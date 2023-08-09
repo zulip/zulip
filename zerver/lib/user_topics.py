@@ -164,15 +164,18 @@ def bulk_set_user_topic_visibility_policy_in_database(
 
     if user_profiles_without_visibility_policy:
         UserTopic.objects.bulk_create(
-            UserTopic(
-                user_profile=user_profile,
-                stream_id=stream_id,
-                recipient_id=recipient_id,
-                topic_name=topic_name,
-                last_updated=last_updated,
-                visibility_policy=visibility_policy,
-            )
-            for user_profile in user_profiles_without_visibility_policy
+            (
+                UserTopic(
+                    user_profile=user_profile,
+                    stream_id=stream_id,
+                    recipient_id=recipient_id,
+                    topic_name=topic_name,
+                    last_updated=last_updated,
+                    visibility_policy=visibility_policy,
+                )
+                for user_profile in user_profiles_without_visibility_policy
+            ),
+            ignore_conflicts=True,
         )
     return user_profiles_seeking_visibility_policy_update + user_profiles_without_visibility_policy
 
