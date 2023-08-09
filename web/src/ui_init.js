@@ -302,11 +302,8 @@ export function initialize_kitchen_sink_stuff() {
 
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
-        // Except for the stream select dropdown and compose banners, which still needs scroll events.
-        if (
-            $(e.target).closest(".dropdown-list-body").length ||
-            $(e.target).closest("#compose_banners").length
-        ) {
+        // Except for the compose banners, which still need scroll events.
+        if ($(e.target).closest("#compose_banners").length) {
             return;
         }
         e.stopPropagation();

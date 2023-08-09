@@ -1586,44 +1586,6 @@ $option_title_width: 180px;
         margin-top: 0;
         display: block;
     }
-
-    .dropdown-list-body {
-        position: relative;
-        margin-top: 0;
-        display: block;
-
-        /* In bootstrap v2.3.2, we strictly need
-        .dropdown-menu > li > a as the order of the elements
-        for the bootstrap style to be applied.
-        Since we use a combination of dropdown + simplebar here,
-        the structure cannot be possible since simplebar inserts
-        elements of its own, so we copy over that style
-        from bootstrap to here. */
-        & li a {
-            display: block;
-            padding: 3px 20px;
-            clear: both;
-            font-weight: normal;
-            line-height: 20px;
-            color: hsl(0deg 0% 20%);
-            white-space: nowrap;
-
-            &:hover {
-                color: hsl(0deg 0% 100%);
-                text-decoration: none;
-                background-color: hsl(200deg 100% 38%);
-                background-image: linear-gradient(
-                    to bottom,
-                    hsl(200deg 100% 40%),
-                    hsl(200deg 100% 35%)
-                );
-            }
-
-            &:focus {
-                text-decoration: none;
-            }
-        }
-    }
 }
 
 .subsection-failed-status p {
