@@ -409,6 +409,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Who in the organization is allowed to invite other users to organization.
     invite_to_realm_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
+    # UserGroup whose members are allowed to create invite link.
+    create_multiuse_invite_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
@@ -704,6 +709,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # they will not be available regardless of users' personal settings.
     enable_read_receipts = models.BooleanField(default=False)
 
+    # Duplicates of names for system group; TODO: Clean this up.
+    ADMINISTRATORS_GROUP_NAME = "role:administrators"
+
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
@@ -749,6 +757,17 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,
         wildcard_mention_policy=int,
+    )
+
+    REALM_PERMISSION_GROUP_SETTINGS: Dict[str, GroupPermissionSetting] = dict(
+        create_multiuse_invite_group=GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=True,
+            default_group_name=ADMINISTRATORS_GROUP_NAME,
+            id_field_name="create_multiuse_invite_group_id",
+        ),
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -2089,8 +2108,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         return False
 
     def has_permission(self, policy_name: str) -> bool:
+        from zerver.lib.user_groups import is_user_in_group
+
         if policy_name not in [
             "add_custom_emoji_policy",
+            "create_multiuse_invite_group",
             "create_private_stream_policy",
             "create_public_stream_policy",
             "create_web_public_stream_policy",
@@ -2102,6 +2124,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
             "user_group_edit_policy",
         ]:
             raise AssertionError("Invalid policy")
+
+        if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            allowed_user_group = getattr(self.realm, policy_name)
+            return is_user_in_group(allowed_user_group, self)
 
         policy_value = getattr(self.realm, policy_name)
         if policy_value == Realm.POLICY_NOBODY:
@@ -2153,6 +2179,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
 
     def can_invite_others_to_realm(self) -> bool:
         return self.has_permission("invite_to_realm_policy")
+
+    def can_create_multiuse_invite_to_realm(self) -> bool:
+        return self.has_permission("create_multiuse_invite_group")
 
     def can_move_messages_between_streams(self) -> bool:
         return self.has_permission("move_messages_between_streams_policy")

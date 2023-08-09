@@ -955,6 +955,10 @@ night_logo_data = DictType(
     ]
 )
 
+group_setting_update_data_type = DictType(
+    required_keys=[], optional_keys=[("create_multiuse_invite_group", int)]
+)
+
 update_dict_data = UnionType(
     [
         allow_message_editing_data,
@@ -964,6 +968,7 @@ update_dict_data = UnionType(
         logo_data,
         message_content_edit_limit_seconds_data,
         night_logo_data,
+        group_setting_update_data_type,
     ]
 )
 
@@ -996,6 +1001,10 @@ def check_realm_update_dict(
             sub_type = edit_topic_policy_data
         elif "authentication_methods" in event["data"]:
             sub_type = authentication_data
+        elif any(
+            setting_name in event["data"] for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+        ):
+            sub_type = group_setting_update_data_type
         else:
             raise AssertionError("unhandled fields in data")
 
