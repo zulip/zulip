@@ -1338,7 +1338,7 @@
   "Zulip Server {display_version} (patched)": "Zulip Server {display_version} (пропатчен)",
   "Zulip lets you mute topics and streams to avoid receiving notifications messages you are not interested in. Muting a stream effectively mutes all topics in that stream. You can also manually mute a topic in an unmuted stream, or unmute a topic in a muted stream. <z-link>Learn more.</z-link>": "Zulip позволяет заглушать темы и каналы, чтобы избежать получения оповещений о сообщениях, которые вам не интересны. Глушение канала фактически глушит все темы в нем. Вы также можете вручную заглушить тему в незаглушенном канале или отменить глушение темы в заглушенном канале. <z-link>Дополнительная информация.</z-link>",
   "Zulip needs to send email to confirm users' addresses and send notifications.": "Zulip необходимо отправлять электронный письма для подтверждения адресов пользователей и отправки оповещений.",
-  "Zulip needs your permission to <z-link>enable desktop notifications.</z-link>": "Zulip необходимо ваше разрешение, чтобы <z-link>включить всплывающие уведомления.</z-link>",
+  "Zulip needs your permission to <z-link>enable desktop notifications.</z-link>": "Необходимо ваше разрешение, чтобы <z-link>включить всплывающие уведомления.</z-link>",
   "Zulip's translations are contributed by our amazing community of volunteer translators. If you'd like to help, see the <z-link>Zulip translation guidelines</z-link>.": "Перевод Zulip выполняется нашим потрясающим сообществом переводчиков-добровольцев. Если вы хотите помочь, ознакомьтесь с <z-link>рекомендациями по переводу Zulip</z-link>.",
   "[Configure]": "[Настроить]",
   "[Disable]": "[Отключить]",
