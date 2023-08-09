@@ -17176,6 +17176,8 @@ components:
           description: |
             Whether the stream has been configured to allow unauthenticated
             access to its message history from the web.
+
+            **Changes**: New in Zulip 2.1.0.
         stream_post_policy:
           type: integer
           description: |
@@ -17223,6 +17225,8 @@ components:
             has older history that can be accessed.
 
             Is `null` for streams with no message history.
+
+            **Changes**: New in Zulip 2.1.0.
         is_announcement_only:
           type: boolean
           deprecated: true
