@@ -18,7 +18,6 @@ import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
-import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
@@ -415,18 +414,6 @@ export function get_stream_email_address(flags, address) {
 }
 
 export function initialize() {
-    $("#main_div").on("click", ".stream_sub_unsub_button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const sub = narrow_state.stream_sub();
-        if (sub === undefined) {
-            return;
-        }
-
-        stream_settings_ui.sub_or_unsub(sub);
-    });
-
     $("#streams_overlay_container").on("click", "#open_stream_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -571,8 +558,6 @@ export function initialize() {
         stream_setting_changed,
     );
 
-    // This handler isn't part of the normal edit interface; it's the convenient
-    // checkmark in the subscriber list.
     $("#streams_overlay_container").on("click", ".sub_unsub_button", (e) => {
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
