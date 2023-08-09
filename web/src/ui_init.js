@@ -238,7 +238,20 @@ export function initialize_kitchen_sink_stuff() {
 
     $(window).on("resize", _.throttle(resize_handler.handler, 50));
 
-    // Scrolling in overlays. input boxes, and other elements that
+    // Stop propagation of the previous "wheel" event handler for popovers
+    // with scrollable content (e.g. emoji picker, stream picker, giphy) and
+    // message edit form preview/textarea. These aren't handled by the event
+    // handler below because they aren't in the DOM when the web-app is
+    // initialized.
+    message_viewport.$scroll_container.on(
+        "wheel",
+        ".simplebar-content, .scrolling_list, textarea",
+        (e) => {
+            e.stopPropagation();
+        },
+    );
+
+    // Scrolling in overlays, input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
     // propagation in all cases.  Also, ignore the event if the
     // element is already at the top or bottom.  Otherwise we get a
