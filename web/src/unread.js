@@ -260,11 +260,11 @@ class UnreadTopicCounter {
         this.bucketer.delete(msg_id);
     }
 
-    get_counts() {
+    get_counts(include_per_topic_count = false) {
         const res = {};
         res.stream_unread_messages = 0;
         res.stream_count = new Map(); // hash by stream_id -> count
-        for (const [stream_id] of this.bucketer) {
+        for (const [stream_id, per_stream_bucketer] of this.bucketer) {
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
@@ -274,8 +274,24 @@ class UnreadTopicCounter {
                 continue;
             }
 
-            res.stream_count.set(stream_id, this.get_stream_count(stream_id));
-            res.stream_unread_messages += res.stream_count.get(stream_id).unmuted_count;
+            if (include_per_topic_count) {
+                const topic_unread = new Map();
+                let stream_count = 0;
+                for (const [topic, msgs] of per_stream_bucketer) {
+                    const topic_count = msgs.size;
+                    topic_unread.set(topic, topic_count);
+                    stream_count += topic_count;
+                }
+
+                // TODO: These don't agree with the else clause in how
+                // they handle muted streams/topics, and that's
+                // probably a bug.
+                res.stream_count.set(stream_id, topic_unread);
+                res.stream_unread_messages += stream_count;
+            } else {
+                res.stream_count.set(stream_id, this.get_stream_count(stream_id));
+                res.stream_unread_messages += res.stream_count.get(stream_id).unmuted_count;
+            }
         }
 
         return res;
@@ -729,6 +745,17 @@ export function declare_bankruptcy() {
     unread_mentions_counter.clear();
     unread_messages.clear();
     unread_mention_topics.clear();
+}
+
+export function get_unread_pm() {
+    const pm_res = unread_direct_message_counter.get_counts();
+    return pm_res;
+}
+
+export function get_unread_topics() {
+    const include_per_topic_count = true;
+    const topics_res = unread_topic_counter.get_counts(include_per_topic_count);
+    return topics_res;
 }
 
 export function get_counts() {

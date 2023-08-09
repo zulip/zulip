@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_message_view_header from "../templates/message_view_header.hbs";
 
 import {$t} from "./i18n";
+import * as inbox_util from "./inbox_util";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";
 import * as popovers from "./popovers";
@@ -24,6 +25,12 @@ function make_message_view_header(filter) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
             icon: "clock-o",
+        };
+    }
+    if (inbox_util.is_visible()) {
+        return {
+            title: $t({defaultMessage: "Inbox"}),
+            zulip_icon: "inbox",
         };
     }
     if (filter === undefined) {

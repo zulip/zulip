@@ -21,6 +21,8 @@ import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
+import * as inbox_ui from "./inbox_ui";
+import * as inbox_util from "./inbox_util";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
@@ -147,6 +149,7 @@ const keypress_mappings = {
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
     85: {name: "mark_unread", message_view_only: true}, // 'U'
+    84: {name: "open_inbox", message_view_only: true}, // 'T'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
@@ -248,6 +251,10 @@ export function process_escape_key(e) {
         // Recent Conversations uses escape to switch focus from
         // search / filters to the conversations table. If focus is
         // already on the table, it returns false.
+        return true;
+    }
+
+    if (inbox_util.is_in_focus() && inbox_ui.change_focused_element($(e.target), "escape")) {
         return true;
     }
 
@@ -637,6 +644,19 @@ export function process_hotkey(e, hotkey) {
             }
     }
 
+    switch (event_name) {
+        case "up_arrow":
+        case "down_arrow":
+        case "left_arrow":
+        case "right_arrow":
+        case "tab":
+        case "shift_tab":
+        case "escape":
+            if (inbox_util.is_in_focus()) {
+                return inbox_ui.change_focused_element(event_name);
+            }
+    }
+
     // We handle the most complex keys in their own functions.
     switch (event_name) {
         case "escape":
@@ -880,6 +900,9 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "open_recent_view":
             browser_history.go_to_location("#recent");
+            return true;
+        case "open_inbox":
+            browser_history.go_to_location("#inbox");
             return true;
         case "all_messages":
             browser_history.go_to_location("#all_messages");

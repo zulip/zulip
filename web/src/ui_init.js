@@ -41,6 +41,7 @@ import * as hashchange from "./hashchange";
 import * as hotkey from "./hotkey";
 import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
+import * as inbox_ui from "./inbox_ui";
 import * as invite from "./invite";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as lightbox from "./lightbox";
@@ -185,6 +186,7 @@ function initialize_bottom_whitespace() {
 function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
         is_guest: page_params.is_guest,
+        development_environment: page_params.development_environment,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
@@ -682,6 +684,7 @@ export function initialize_everything() {
     realm_logo.initialize();
     message_lists.initialize();
     recent_view_ui.initialize();
+    inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
     scroll_bar.initialize();

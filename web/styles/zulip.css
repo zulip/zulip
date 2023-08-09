@@ -198,6 +198,25 @@ body {
     --color-background-text-hover-direct-mention: hsl(240deg 70% 70% / 30%);
     --color-background-text-group-mention: hsl(183deg 60% 45% / 18%);
     --color-background-text-hover-group-mention: hsl(183deg 60% 45% / 30%);
+
+    /* Inbox view constants - Values from Figma design */
+    --height-inbox-search: 26px;
+    --width-inbox-search: 346px;
+    --color-background-inbox: hsl(0deg 0% 100% / 50%);
+    --color-background-inbox-search: hsl(0deg 0% 0% / 5%);
+    --color-icon-search-inbox: hsl(0deg 0% 0% / 50%);
+    --color-background-inbox-search-focus: hsl(0deg 0% 100%);
+    --color-border-inbox-search-focus: hsl(0deg 0% 100% / 20%);
+    --color-background-inbox-row: hsl(0deg 0% 100%);
+    --color-background-inbox-row-hover: linear-gradient(
+            0deg,
+            hsl(0deg 0% 0% / 5%) 0%,
+            hsl(0deg 0% 0% / 5%) 100%
+        ),
+        hsl(0deg 0% 100%);
+    --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
+    --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
+    --color-border-inbox: hsl(0deg 0% 84.31%);
 }
 
 %dark-theme {
@@ -258,6 +277,23 @@ body {
     --color-background-text-hover-direct-mention: hsl(240deg 52% 60% / 45%);
     --color-background-text-group-mention: hsl(183deg 52% 40% / 20%);
     --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
+
+    /* Inbox view */
+    --color-background-inbox: var(--color-background);
+    --color-background-inbox-search: hsl(0deg 0% 20%);
+    --color-icon-search-inbox: hsl(0deg 0% 100% / 50%);
+    --color-background-inbox-search-focus: hsl(0deg 0% 0%);
+    --color-border-inbox-search-focus: hsl(0deg 0% 0% / 20%);
+    --color-background-inbox-row: hsl(0deg 0% 14%);
+    --color-background-inbox-row-hover: linear-gradient(
+            0deg,
+            hsl(0deg 0% 100% / 5%) 0%,
+            hsl(0deg 0% 100% / 5%) 100%
+        ),
+        hsl(0deg 0% 14.12%);
+    --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
+    --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
+    --color-border-inbox: hsl(0deg 0% 0% / 60%);
 }
 
 @media screen {
@@ -2023,6 +2059,11 @@ div.focused-message-list {
                 font-size: 1.2rem;
                 margin: 0 2px 0 5px;
             }
+        }
+
+        .zulip-icon-inbox {
+            position: relative;
+            top: 2px;
         }
     }
 

@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {Filter} from "./filter";
+import * as inbox_util from "./inbox_util";
 import * as message_list from "./message_list";
 import * as recent_view_util from "./recent_view_util";
 import * as ui_util from "./ui_util";
@@ -28,6 +29,7 @@ export function update_recipient_bar_background_color() {
     for (const msg_list of all_rendered_message_lists()) {
         msg_list.view.update_recipient_bar_background_color();
     }
+    inbox_util.update_stream_colors();
 }
 
 export function initialize() {

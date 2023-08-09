@@ -4,6 +4,7 @@ import mixPlugin from "colord/plugins/mix";
 import $ from "jquery";
 
 import {$t} from "./i18n";
+import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
@@ -84,6 +85,11 @@ function update_message_recipient_color(stream_name, color) {
             stream_name,
             recipient_color,
         );
+    }
+
+    if (inbox_util.is_visible()) {
+        const stream_id = stream_data.get_stream_id(stream_name);
+        $(`#inbox-stream-header-${stream_id}`).css("background", recipient_color);
     }
 }
 
