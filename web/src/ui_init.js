@@ -229,11 +229,15 @@ export function initialize_kitchen_sink_stuff() {
     const throttled_mousewheelhandler = _.throttle((_e, delta) => {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
-        // page, the pointer may still need to move.
+        // page, the selected message may still need to move. And
+        // popovers may still need to be closed to be consistent
+        // with message view behavior in the middle of the feed.
 
         if (delta < 0 && message_viewport.at_top()) {
+            popovers.hide_all();
             navigate.up();
         } else if (delta > 0 && message_viewport.at_bottom()) {
+            popovers.hide_all();
             navigate.down();
         }
 
