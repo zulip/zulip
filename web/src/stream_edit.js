@@ -466,6 +466,36 @@ export function initialize() {
         return true;
     });
 
+    $("#streams_overlay_container").on(
+        "click",
+        ".stream-permissions-warning-banner .main-view-banner-close-button",
+        (event) => {
+            event.preventDefault();
+            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+        },
+    );
+
+    $("#streams_overlay_container").on(
+        "click",
+        ".stream-permissions-warning-banner .main-view-banner-action-button",
+        (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const $target = $(event.target).parents(".main-view-banner");
+            const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
+            // Makes sure we take the correct stream_row.
+            const $stream_row = $(
+                `#streams_overlay_container div.stream-row[data-stream-id='${CSS.escape(
+                    stream_id,
+                )}']`,
+            );
+            const sub = sub_store.get(stream_id);
+            stream_settings_ui.sub_or_unsub(sub, $stream_row);
+            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+        },
+    );
+
     function save_stream_info(e) {
         const sub = get_sub_for_target(e.currentTarget);
 

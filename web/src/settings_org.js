@@ -1,11 +1,13 @@
 import $ from "jquery";
 
 import pygments_data from "../generated/pygments_data.json";
+import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as compose_banner from "./compose_banner";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
@@ -994,6 +996,19 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
     return current_val !== proposed_val;
 }
 
+function switching_to_private(properties_elements, for_realm_default_settings) {
+    for (const elem of properties_elements) {
+        const $elem = $(elem);
+        const property_name = extract_property_name($elem, for_realm_default_settings);
+        if (property_name !== "stream_privacy") {
+            continue;
+        }
+        const proposed_val = get_input_element_value($elem, "radio-group");
+        return proposed_val === "invite-only-public-history" || proposed_val === "invite-only";
+    }
+    return false;
+}
+
 export function save_discard_widget_status_handler($subsection, for_realm_default_settings, sub) {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
@@ -1005,6 +1020,39 @@ export function save_discard_widget_status_handler($subsection, for_realm_defaul
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
     change_save_button_state($save_btn_controls, button_state);
+
+    // If this widget is for a stream, and the stream isn't currently private
+    // but being changed to private, and the user changing this setting isn't
+    // subscribed, we show a warning that they won't be able to access the
+    // stream after making it private unless they subscribe.
+    if (!sub) {
+        return;
+    }
+    if (
+        button_state === "unsaved" &&
+        !sub.invite_only &&
+        !sub.subscribed &&
+        switching_to_private(properties_elements, for_realm_default_settings)
+    ) {
+        if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
+            return;
+        }
+        const context = {
+            banner_type: compose_banner.WARNING,
+            banner_text: $t({
+                defaultMessage:
+                    "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+            }),
+            button_text: $t({defaultMessage: "Subscribe"}),
+            classname: "stream_privacy_warning",
+            stream_id: sub.stream_id,
+        };
+        $("#stream_permission_settings .stream-permissions-warning-banner").append(
+            render_compose_banner(context),
+        );
+    } else {
+        $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+    }
 }
 
 export function init_dropdown_widgets() {
