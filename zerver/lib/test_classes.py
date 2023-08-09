@@ -36,16 +36,18 @@ from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.http.response import ResponseHeaders
+from django.test import Client as TestClient
 from django.test import SimpleTestCase, TestCase, TransactionTestCase
-from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, ClientHandler, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
+from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIResponse
 from requests import PreparedRequest
 from two_factor.plugins.phonenumber.models import PhoneDevice
 from typing_extensions import override
@@ -112,7 +114,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.streams import get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
-from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
+from zerver.openapi.openapi import validate_test_request, validate_test_response
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
@@ -147,6 +149,36 @@ class UploadSerializeMixin(SerializeMixin):
         super().setUpClass()
 
 
+class ZulipClientHandler(ClientHandler):
+    @override
+    def get_response(self, request: HttpRequest) -> HttpResponseBase:
+        request.body  # noqa: B018 # prevents RawPostDataException
+        response = super().get_response(request)
+        if (
+            request.method != "OPTIONS"
+            and isinstance(response, HttpResponse)
+            and not (
+                response.status_code == 302 and response.headers["Location"].startswith("/login/")
+            )
+        ):
+            openapi_request = DjangoOpenAPIRequest(request)
+            openapi_response = DjangoOpenAPIResponse(response)
+            response_validated = validate_test_response(openapi_request, openapi_response)
+            if response_validated:
+                validate_test_request(
+                    openapi_request,
+                    str(response.status_code),
+                    request.META.get("intentionally_undocumented", False),
+                )
+        return response
+
+
+class ZulipTestClient(TestClient):
+    def __init__(self) -> None:
+        super().__init__()
+        self.handler = ZulipClientHandler(enforce_csrf_checks=False)
+
+
 class ZulipTestCaseMixin(SimpleTestCase):
     # Ensure that the test system just shows us diffs
     maxDiff: Optional[int] = None
@@ -154,6 +186,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
     # Override this to verify if the given extra console output matches the
     # expectation.
     expected_console_output: Optional[str] = None
+    client_class = ZulipTestClient
 
     @override
     def setUp(self) -> None:
@@ -266,63 +299,6 @@ Output:
         elif "HTTP_USER_AGENT" not in extra:
             extra["HTTP_USER_AGENT"] = default_user_agent
 
-    def extract_api_suffix_url(self, url: str) -> Tuple[str, Dict[str, List[str]]]:
-        """
-        Function that extracts the URL after `/api/v1` or `/json` and also
-        returns the query data in the URL, if there is any.
-        """
-        url_split = url.split("?")
-        data = {}
-        if len(url_split) == 2:
-            data = parse_qs(url_split[1])
-        url = url_split[0]
-        url = url.replace("/json/", "/").replace("/api/v1/", "/")
-        return (url, data)
-
-    def validate_api_response_openapi(
-        self,
-        url: str,
-        method: str,
-        result: "TestHttpResponse",
-        data: Union[str, bytes, Mapping[str, Any]],
-        extra: Dict[str, str],
-        intentionally_undocumented: bool = False,
-    ) -> None:
-        """
-        Validates all API responses received by this test against Zulip's API documentation,
-        declared in zerver/openapi/zulip.yaml.  This powerful test lets us use Zulip's
-        extensive test coverage of corner cases in the API to ensure that we've properly
-        documented those corner cases.
-        """
-        if not url.startswith(("/json", "/api/v1")):
-            return
-        try:
-            content = orjson.loads(result.content)
-        except orjson.JSONDecodeError:
-            return
-        json_url = False
-        if url.startswith("/json"):
-            json_url = True
-        url, query_data = self.extract_api_suffix_url(url)
-        if len(query_data) != 0:
-            # In some cases the query parameters are defined in the URL itself. In such cases
-            # The `data` argument of our function is not used. Hence get `data` argument
-            # from url.
-            data = query_data
-        response_validated = validate_against_openapi_schema(
-            content, url, method, str(result.status_code)
-        )
-        if response_validated:
-            validate_request(
-                url,
-                method,
-                data,
-                extra,
-                json_url,
-                str(result.status_code),
-                intentionally_undocumented=intentionally_undocumented,
-            )
-
     @instrument_url
     def client_patch(
         self,
@@ -342,18 +318,15 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.patch(
-            url, encoded, follow=follow, secure=secure, headers=headers, **extra
-        )
-        self.validate_api_response_openapi(
+        return django_client.patch(
             url,
-            "patch",
-            result,
-            info,
-            extra,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers=headers,
             intentionally_undocumented=intentionally_undocumented,
+            **extra,
         )
-        return result
 
     @instrument_url
     def client_patch_multipart(
@@ -378,24 +351,16 @@ Output:
         encoded = encode_multipart(BOUNDARY, dict(info))
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.patch(
+        return django_client.patch(
             url,
             encoded,
             content_type=MULTIPART_CONTENT,
             follow=follow,
             secure=secure,
             headers=headers,
+            intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
-        self.validate_api_response_openapi(
-            url,
-            "patch",
-            result,
-            info,
-            extra,
-            intentionally_undocumented=intentionally_undocumented,
-        )
-        return result
 
     def json_patch(
         self,
@@ -477,7 +442,7 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.delete(
+        return django_client.delete(
             url,
             encoded,
             follow=follow,
@@ -486,17 +451,9 @@ Output:
                 "Content-Type": "application/x-www-form-urlencoded",  # https://code.djangoproject.com/ticket/33230
                 **(headers or {}),
             },
+            intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
-        self.validate_api_response_openapi(
-            url,
-            "delete",
-            result,
-            info,
-            extra,
-            intentionally_undocumented=intentionally_undocumented,
-        )
-        return result
 
     @instrument_url
     def client_options(
@@ -554,7 +511,7 @@ Output:
                 encoded = urlencode(info, doseq=True)
             else:
                 content_type = MULTIPART_CONTENT
-        result = django_client.post(
+        return django_client.post(
             url,
             encoded,
             follow=follow,
@@ -564,17 +521,9 @@ Output:
                 **(headers or {}),
             },
             content_type=content_type,
+            intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
-        self.validate_api_response_openapi(
-            url,
-            "post",
-            result,
-            info,
-            extra,
-            intentionally_undocumented=intentionally_undocumented,
-        )
-        return result
 
     @instrument_url
     def client_post_request(self, url: str, req: Any) -> "TestHttpResponse":
@@ -604,13 +553,15 @@ Output:
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.get(
-            url, info, follow=follow, secure=secure, headers=headers, **extra
+        return django_client.get(
+            url,
+            info,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            intentionally_undocumented=intentionally_undocumented,
+            **extra,
         )
-        self.validate_api_response_openapi(
-            url, "get", result, info, extra, intentionally_undocumented=intentionally_undocumented
-        )
-        return result
 
     example_user_map = dict(
         hamlet="hamlet@zulip.com",
