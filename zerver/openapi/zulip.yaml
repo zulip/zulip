@@ -15609,7 +15609,7 @@ paths:
       summary: Get all streams
       tags: ["streams"]
       description: |
-        Get all streams that the user has access to.
+        Get all streams that the user [has access to](/help/stream-permissions).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -15621,7 +15621,7 @@ paths:
               enum:
                 - include_public
             description: |
-              You may pass in one or more of the parameters mentioned above
+              You may pass in one or more of the parameters mentioned below
               as URL query parameters, like so:
       parameters:
         - name: include_public
@@ -15690,7 +15690,7 @@ paths:
                       ignored_parameters_unsupported: {}
                       streams:
                         description: |
-                          A list of `stream` objects with details on the requested streams.
+                          A list of stream objects with details on the requested streams.
                         type: array
                         items:
                           allOf:
@@ -15730,9 +15730,13 @@ paths:
                                 is_default:
                                   type: boolean
                                   description: |
+                                    Only present when [`include_default`][include_default]
+                                    parameter is `true`.
+
                                     Whether the given stream is a
-                                    [default stream](/help/set-default-streams-for-new-users). Only
-                                    returned if the `include_default` parameter is `true`.
+                                    [default stream](/help/set-default-streams-for-new-users).
+
+                                    [include_default]: /api/get-streams#parameter-include_default
                     example:
                       {
                         "msg": "",
@@ -15740,40 +15744,38 @@ paths:
                         "streams":
                           [
                             {
-                              "description": "A Scandinavian country",
-                              "invite_only": false,
-                              "name": "Denmark",
-                              "stream_id": 1,
-                            },
-                            {
-                              "description": "Yet another Italian city",
-                              "invite_only": false,
-                              "name": "Rome",
+                              "can_remove_subscribers_group": 10,
+                              "date_created": 1691057093,
+                              "description": "A private stream",
+                              "first_message_id": 18,
+                              "history_public_to_subscribers": false,
+                              "invite_only": true,
+                              "is_announcement_only": false,
+                              "is_default": false,
+                              "is_web_public": false,
+                              "message_retention_days": null,
+                              "name": "management",
+                              "rendered_description": "<p>A private stream</p>",
                               "stream_id": 2,
+                              "stream_post_policy": 1,
+                              "stream_weekly_traffic": null,
                             },
                             {
-                              "description": "Located in the United Kingdom",
+                              "can_remove_subscribers_group": 9,
+                              "date_created": 1691057093,
+                              "description": "A default public stream",
+                              "first_message_id": 21,
+                              "history_public_to_subscribers": true,
                               "invite_only": false,
-                              "name": "Scotland",
-                              "stream_id": 3,
-                            },
-                            {
-                              "description": "A northeastern Italian city",
-                              "invite_only": false,
-                              "name": "Venice",
-                              "stream_id": 4,
-                            },
-                            {
-                              "description": "A city in Italy",
-                              "invite_only": false,
-                              "name": "Verona",
-                              "stream_id": 5,
-                            },
-                            {
-                              "description": "New stream for testing",
-                              "invite_only": false,
-                              "name": "new stream",
-                              "stream_id": 6,
+                              "is_announcement_only": false,
+                              "is_default": true,
+                              "is_web_public": false,
+                              "message_retention_days": null,
+                              "name": "welcome",
+                              "rendered_description": "<p>A default public stream</p>",
+                              "stream_id": 1,
+                              "stream_post_policy": 1,
+                              "stream_weekly_traffic": null,
                             },
                           ],
                       }
