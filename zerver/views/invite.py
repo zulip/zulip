@@ -184,7 +184,7 @@ def resend_user_invite_email(
     return json_success(request, data={"timestamp": timestamp})
 
 
-@require_realm_admin
+@require_member_or_admin
 @has_request_variables
 def generate_multiuse_invite_backend(
     request: HttpRequest,
@@ -200,7 +200,19 @@ def generate_multiuse_invite_backend(
     ),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
-    check_role_based_permissions(invite_as, user_profile, require_admin=True)
+    if not user_profile.can_create_multiuse_invite_to_realm():
+        # Guest users case will not be handled here as it will
+        # be handled by the decorator above.
+        raise JsonableError(_("Insufficient permission"))
+
+    require_admin = invite_as in [
+        # Owners can only be invited by owners, checked by separate
+        # logic in check_role_based_permissions.
+        PreregistrationUser.INVITE_AS["REALM_OWNER"],
+        PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        PreregistrationUser.INVITE_AS["MODERATOR"],
+    ]
+    check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
 
     streams = []
     for stream_id in stream_ids:

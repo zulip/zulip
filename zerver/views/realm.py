@@ -10,6 +10,7 @@ from confirmation.models import Confirmation, ConfirmationKeyError, get_object_f
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
     do_change_realm_org_type,
+    do_change_realm_permission_group_setting,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -27,6 +28,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.user_groups import access_user_group_for_setting
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
@@ -59,6 +61,9 @@ def update_realm(
     invite_required: Optional[bool] = REQ(json_validator=check_bool, default=None),
     invite_to_realm_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.INVITE_TO_REALM_POLICY_TYPES), default=None
+    ),
+    create_multiuse_invite_group_id: Optional[int] = REQ(
+        "create_multiuse_invite_group", json_validator=check_int, default=None
     ),
     name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -188,7 +193,9 @@ def update_realm(
         )
 
     if (
-        invite_to_realm_policy is not None or invite_required is not None
+        invite_to_realm_policy is not None
+        or invite_required is not None
+        or create_multiuse_invite_group_id is not None
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
 
@@ -275,7 +282,16 @@ def update_realm(
     # TODO: It should be possible to deduplicate this function up
     # further by some more advanced usage of the
     # `REQ/has_request_variables` extraction.
-    req_vars = {k: v for k, v in list(locals().items()) if k in realm.property_types}
+    req_vars = {}
+    req_group_setting_vars = {}
+
+    for k, v in list(locals().items()):
+        if k in realm.property_types:
+            req_vars[k] = v
+
+        for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+            if k == permissions_configuration.id_field_name:
+                req_group_setting_vars[k] = v
 
     for k, v in list(req_vars.items()):
         if v is not None and getattr(realm, k) != v:
@@ -284,6 +300,29 @@ def update_realm(
                 data[k] = "updated"
             else:
                 data[k] = v
+
+    for setting_name, permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        setting_group_id_name = permissions_configuration.id_field_name
+
+        assert setting_group_id_name in req_group_setting_vars
+
+        if req_group_setting_vars[setting_group_id_name] is not None and req_group_setting_vars[
+            setting_group_id_name
+        ] != getattr(realm, setting_group_id_name):
+            user_group_id = req_group_setting_vars[setting_group_id_name]
+            user_group = access_user_group_for_setting(
+                user_group_id,
+                user_profile,
+                setting_name=setting_name,
+                require_system_group=permissions_configuration.require_system_group,
+                allow_internet_group=permissions_configuration.allow_internet_group,
+                allow_owners_group=permissions_configuration.allow_owners_group,
+                allow_nobody_group=permissions_configuration.allow_nobody_group,
+            )
+            do_change_realm_permission_group_setting(
+                realm, setting_name, user_group, acting_user=user_profile
+            )
+            data[setting_name] = user_group_id
 
     # The following realm properties do not fit the pattern above
     # authentication_methods is not supported by the do_set_realm_property

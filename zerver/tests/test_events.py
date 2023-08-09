@@ -71,6 +71,7 @@ from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_playgrounds import check_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import (
     do_change_realm_org_type,
+    do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
     do_deactivate_realm,
     do_set_realm_authentication_methods,
@@ -2968,10 +2969,82 @@ class RealmPropertyActionTest(BaseAction):
             else:
                 check_realm_update("events[0]", events[0], name)
 
+    def do_set_realm_permission_group_setting_test(self, setting_name: str) -> None:
+        all_system_user_groups = UserGroup.objects.filter(
+            realm=self.user_profile.realm,
+            is_system_group=True,
+        )
+
+        setting_permission_configuration = Realm.REALM_PERMISSION_GROUP_SETTINGS[setting_name]
+
+        default_group_name = setting_permission_configuration.default_group_name
+        default_group = all_system_user_groups.get(name=default_group_name)
+        old_group_id = default_group.id
+
+        now = timezone_now()
+
+        do_change_realm_permission_group_setting(
+            self.user_profile.realm,
+            setting_name,
+            default_group,
+            acting_user=self.user_profile,
+        )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=self.user_profile.realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+            ).count(),
+            1,
+        )
+        for user_group in all_system_user_groups:
+            if user_group.name == default_group_name:
+                continue
+
+            now = timezone_now()
+            state_change_expected = True
+            num_events = 1
+            new_group_id = user_group.id
+
+            events = self.verify_action(
+                lambda: do_change_realm_permission_group_setting(
+                    self.user_profile.realm,
+                    setting_name,
+                    user_group,
+                    acting_user=self.user_profile,
+                ),
+                state_change_expected=state_change_expected,
+                num_events=num_events,
+            )
+
+            self.assertEqual(
+                RealmAuditLog.objects.filter(
+                    realm=self.user_profile.realm,
+                    event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                    event_time__gte=now,
+                    acting_user=self.user_profile,
+                    extra_data={
+                        RealmAuditLog.OLD_VALUE: old_group_id,
+                        RealmAuditLog.NEW_VALUE: new_group_id,
+                        "property": setting_name,
+                    },
+                ).count(),
+                1,
+            )
+            check_realm_update_dict("events[0]", events[0])
+
+            old_group_id = new_group_id
+
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_property_test(prop)
+
+        for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            with self.settings(SEND_DIGEST_EMAILS=True):
+                self.do_set_realm_permission_group_setting_test(prop)
 
     def do_set_realm_user_default_setting_test(self, name: str) -> None:
         bool_tests: List[bool] = [True, False, True]

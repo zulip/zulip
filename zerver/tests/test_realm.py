@@ -892,6 +892,14 @@ class RealmTest(ZulipTestCase):
 
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
 
+        for (
+            setting_name,
+            permissions_configuration,
+        ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+            self.assertEqual(
+                getattr(realm, setting_name).name, permissions_configuration.default_group_name
+            )
+
     def test_do_create_realm_with_keyword_arguments(self) -> None:
         date_created = timezone_now() - datetime.timedelta(days=100)
         realm = do_create_realm(
@@ -1207,10 +1215,55 @@ class RealmAPITest(ZulipTestCase):
         realm = self.update_with_api(name, vals[0])
         self.assertEqual(getattr(realm, name), vals[0])
 
+    def do_test_realm_permission_group_setting_update_api(self, setting_name: str) -> None:
+        realm = get_realm("zulip")
+
+        all_system_user_groups = UserGroup.objects.filter(
+            realm=realm,
+            is_system_group=True,
+        )
+
+        setting_permission_configuration = Realm.REALM_PERMISSION_GROUP_SETTINGS[setting_name]
+
+        default_group_name = setting_permission_configuration.default_group_name
+        default_group = all_system_user_groups.get(name=default_group_name)
+
+        self.set_up_db(setting_name, default_group)
+
+        for user_group in all_system_user_groups:
+            if (
+                (
+                    user_group.name == UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME
+                    and not setting_permission_configuration.allow_internet_group
+                )
+                or (
+                    user_group.name == UserGroup.NOBODY_GROUP_NAME
+                    and not setting_permission_configuration.allow_nobody_group
+                )
+                or (
+                    user_group.name == UserGroup.OWNERS_GROUP_NAME
+                    and not setting_permission_configuration.allow_owners_group
+                )
+            ):
+                value = orjson.dumps(user_group.id).decode()
+
+                result = self.client_patch("/json/realm", {setting_name: value})
+                self.assert_json_error(
+                    result, f"'{setting_name}' setting cannot be set to '{user_group.name}' group."
+                )
+                continue
+
+            realm = self.update_with_api(setting_name, user_group.id)
+            self.assertEqual(getattr(realm, setting_name), user_group)
+
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
             with self.subTest(property=prop):
                 self.do_test_realm_update_api(prop)
+
+        for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            with self.subTest(property=prop):
+                self.do_test_realm_permission_group_setting_update_api(prop)
 
     # Not in Realm.property_types because org_type has
     # a unique RealmAuditLog event_type.
