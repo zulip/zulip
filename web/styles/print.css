@@ -44,6 +44,7 @@
     /* Hide unnecessary controls, but leave them
        in the document flow. */
     .search_icon,
+    #search_exit,
     .settings-dropdown-cog,
     .recipient_bar_controls {
         visibility: hidden;
