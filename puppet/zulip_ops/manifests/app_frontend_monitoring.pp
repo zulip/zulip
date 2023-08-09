@@ -3,7 +3,7 @@
 class zulip_ops::app_frontend_monitoring {
   include zulip_ops::prometheus::rabbitmq
   include zulip_ops::prometheus::uwsgi
-  include zulip_ops::prometheus::tornado
+  include zulip_ops::prometheus::process
   zulip_ops::firewall_allow { 'grok_exporter': port => '9144' }
   include zulip_ops::munin_node
   $munin_plugins = [

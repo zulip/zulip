@@ -195,6 +195,35 @@ $time_column_min_width: 50px; /* + padding */
             all single paragraphs the same.
             */
             padding: 2px 0;
+            color: var(--color-text-message-default);
+            line-height: var(--message-box-line-height);
+            min-height: 17px;
+            display: block;
+            position: relative;
+            overflow: hidden;
+
+            &:empty {
+                display: none;
+            }
+
+            &.condensed {
+                max-height: 8.5em;
+                min-height: 0;
+                overflow: hidden;
+                mask-image: linear-gradient(
+                    to top,
+                    hsl(0deg 0% 100% / 0%) 0%,
+                    hsl(0deg 0% 100%) 60px
+                );
+                mask-size: cover;
+            }
+
+            &.collapsed {
+                padding: 0;
+                max-height: 0;
+                min-height: 0;
+                overflow: hidden;
+            }
         }
 
         .message_reactions {
