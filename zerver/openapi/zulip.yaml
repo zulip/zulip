@@ -15737,6 +15737,21 @@ paths:
                                     [default stream](/help/set-default-streams-for-new-users).
 
                                     [include_default]: /api/get-streams#parameter-include_default
+                              required:
+                                - stream_id
+                                - name
+                                - description
+                                - date_created
+                                - invite_only
+                                - rendered_description
+                                - is_web_public
+                                - stream_post_policy
+                                - message_retention_days
+                                - history_public_to_subscribers
+                                - first_message_id
+                                - is_announcement_only
+                                - can_remove_subscribers_group
+                                - stream_weekly_traffic
                     example:
                       {
                         "msg": "",
@@ -17066,6 +17081,21 @@ components:
 
                 **Changes**: New in Zulip 8.0 (feature level 199). Previously, this
                 statistic was available only in subscription objects.
+          required:
+            - stream_id
+            - name
+            - description
+            - date_created
+            - invite_only
+            - rendered_description
+            - is_web_public
+            - stream_post_policy
+            - message_retention_days
+            - history_public_to_subscribers
+            - first_message_id
+            - is_announcement_only
+            - can_remove_subscribers_group
+            - stream_weekly_traffic
     DefaultStream:
       allOf:
         - $ref: "#/components/schemas/BasicStreamBase"
@@ -17086,6 +17116,20 @@ components:
               nullable: true
             is_announcement_only: {}
             can_remove_subscribers_group: {}
+          required:
+            - stream_id
+            - name
+            - description
+            - date_created
+            - invite_only
+            - rendered_description
+            - is_web_public
+            - stream_post_policy
+            - message_retention_days
+            - history_public_to_subscribers
+            - first_message_id
+            - is_announcement_only
+            - can_remove_subscribers_group
     BasicStreamBase:
       type: object
       description: |
