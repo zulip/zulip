@@ -656,6 +656,11 @@ export function initialize_everything() {
         emoji_codes: generated_emoji_codes,
     });
 
+    // The user_group must be initialized before right sidebar
+    // module, so that we can tell whether user is member of
+    // user_group whose members are allowed to create multiuse invite.
+    user_groups.initialize(user_groups_params);
+
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
     // expect DOM elements to always exist (As that did before these
@@ -714,7 +719,6 @@ export function initialize_everything() {
     });
     compose_closed_ui.initialize();
     reload.initialize();
-    user_groups.initialize(user_groups_params);
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize(server_events.home_view_loaded);
