@@ -2891,16 +2891,6 @@ def bulk_get_streams(realm: Realm, stream_names: Set[str]) -> Dict[str, Any]:
     return {stream.name.lower(): stream for stream in streams}
 
 
-def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
-    # The caller should ensure that user_profile_ids includes
-    # the sender.  Note that get_huddle hits the cache, and then
-    # we hit another cache to get the recipient.  We may want to
-    # unify our caching strategy here.
-    huddle = get_or_create_huddle(list(user_profile_ids))
-    assert huddle.recipient is not None
-    return huddle.recipient
-
-
 def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", int]:
     assert recipient.type == Recipient.HUDDLE
 
@@ -4074,9 +4064,7 @@ def get_or_create_huddle(id_list: List[int]) -> Huddle:
 )
 def get_or_create_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
     with transaction.atomic():
-        (huddle, created) = Huddle.objects.select_related("recipient").get_or_create(
-            huddle_hash=huddle_hash
-        )
+        (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
         if created:
             recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
             huddle.recipient = recipient

@@ -56,7 +56,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     flush_per_request_caches,
-    get_huddle_recipient,
+    get_or_create_huddle,
     get_realm,
     get_stream,
     get_system_bot,
@@ -660,16 +660,14 @@ class MessagePOSTTest(ZulipTestCase):
 
             msg = self.get_last_message()
             self.assertEqual("Test message", msg.content)
-            self.assertEqual(
-                msg.recipient_id,
-                get_huddle_recipient(
-                    {
-                        self.example_user("hamlet").id,
-                        self.example_user("othello").id,
-                        self.example_user("cordelia").id,
-                    }
-                ).id,
+            huddle = get_or_create_huddle(
+                [
+                    self.example_user("hamlet").id,
+                    self.example_user("othello").id,
+                    self.example_user("cordelia").id,
+                ]
             )
+            self.assertEqual(msg.recipient_id, huddle.recipient_id)
 
     def test_personal_message_copying_self(self) -> None:
         """
