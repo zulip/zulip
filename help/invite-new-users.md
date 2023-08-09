@@ -55,7 +55,7 @@ permission to invite users.
     not require the user to authenticate using a [configured
     authentication method](/help/configure-authentication-methods).
 
-## Create an invitation link
+## Create a reusable invitation link
 
 {!admin-only.md!}
 
