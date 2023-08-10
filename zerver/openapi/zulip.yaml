@@ -3205,8 +3205,16 @@ paths:
                                 realm_linkifiers:
                                   type: array
                                   description: |
-                                    Array of dictionaries where each dictionary contains details about
-                                    a single realm linkifier.
+                                    An ordered array of dictionaries where each
+                                    dictionary contains details about a single
+                                    realm linkifier.
+
+                                    The order of the array reflects the order
+                                    that each linkifier should be processed when
+                                    linkifying messages and topics. By default,
+                                    new linkifiers are ordered last. This order
+                                    can be modified with [`PATCH
+                                    /realm/linkifiers`](/api/reorder-linkifiers).
                                   items:
                                     type: object
                                     additionalProperties: false
@@ -10606,7 +10614,14 @@ paths:
                       linkifiers:
                         type: array
                         description: |
-                          An array of objects, where each object describes a linkifier.
+                          An ordered array of objects, where each object
+                          describes a linkifier.
+
+                          The order of the array reflects the order that each
+                          linkifier should be processed when linkifying messages
+                          and topics. By default, new linkifiers are ordered
+                          last. This order can be modified with [`PATCH
+                          /realm/linkifiers`](/api/reorder-linkifiers).
                         items:
                           type: object
                           additionalProperties: false
@@ -10641,6 +10656,35 @@ paths:
                           ],
                         "result": "success",
                       }
+    patch:
+      operationId: reorder-linkifiers
+      summary: Reorder all linkifiers
+      tags: ["server_and_organizations"]
+      description: |
+        Change the order that the regular expression patterns in the organization's
+        [linkifiers](/help/add-a-custom-linkifier) are matched in messages and topics.
+        Useful when defining linkifiers with overlapping patterns.
+
+        **Changes**: New in Zulip 8.0 (feature level 202). Before this feature level,
+        linkifiers were always processed in order by ID, which meant users would
+        need to delete and recreate them to reorder the list of linkifiers.
+      parameters:
+        - name: ordered_linkifier_ids
+          in: query
+          description: |
+            A list of the IDs of all the linkifiers defined in this
+            organization, in the desired new order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [3, 2, 1, 5]
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /realm/filters:
     post:
       operationId: add-linkifier
@@ -11382,8 +11426,14 @@ paths:
                         description: |
                           Present if `realm_linkifiers` is present in `fetch_event_types`.
 
-                          Array of objects where each object describes a single
+                          An ordered array of objects where each object describes a single
                           [linkifier](/help/add-a-custom-linkifier).
+
+                          The order of the array reflects the order that each
+                          linkifier should be processed when linkifying messages
+                          and topics. By default, new linkifiers are ordered
+                          last. This order can be modified with [`PATCH
+                          /realm/linkifiers`](/api/reorder-linkifiers).
 
                           Clients will receive an empty array unless the event queue is
                           registered with the client capability `{"linkifier_url_template": true}`.

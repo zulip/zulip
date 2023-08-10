@@ -1246,6 +1246,9 @@ class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern = models.TextField()
     url_template = models.TextField(validators=[url_template_validator])
+    # Linkifiers are applied in a message/topic in order; the processing order
+    # is important when there are overlapping patterns.
+    order = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ("realm", "pattern")
@@ -1309,7 +1312,7 @@ def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
             url_template=linkifier.url_template,
             id=linkifier.id,
         )
-        for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("id")
+        for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("order")
     ]
 
 
@@ -4499,6 +4502,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_LINKIFIER_REMOVED = 225
     REALM_EMOJI_ADDED = 226
     REALM_EMOJI_REMOVED = 227
+    REALM_LINKIFIERS_REORDERED = 228
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302

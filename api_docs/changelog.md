@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 202**
+
+* [`PATCH /realm/linkifiers`](/api/reorder-linkifiers): Added new endpoint
+  to support changing the order in which linkifiers will be processed.
+
 **Feature level 201**
 
 * [`POST /zulip-outgoing-webhook`]: Renamed the notification trigger
