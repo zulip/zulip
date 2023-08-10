@@ -591,7 +591,7 @@ def do_update_message(
         # These fields have legacy field names.
         event[ORIG_TOPIC] = orig_topic_name
         event[TOPIC_NAME] = topic_name
-        event[TOPIC_LINKS] = topic_links(target_message.sender.realm_id, topic_name)
+        event[TOPIC_LINKS] = topic_links(target_message.realm_id, topic_name)
         edit_history_event["prev_topic"] = orig_topic_name
         edit_history_event["topic"] = topic_name
 

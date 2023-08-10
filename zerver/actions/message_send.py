@@ -553,7 +553,7 @@ def build_message_send_dict(
     testing code paths call it directly.
     """
     if realm is None:
-        realm = message.sender.realm
+        realm = message.realm
     assert realm == message.realm
 
     if mention_backend is None:

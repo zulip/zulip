@@ -57,7 +57,7 @@ def remove_reaction(
         # without needing the mapping between emoji names and codes,
         # we allow instead passing the emoji_name and looking up the
         # corresponding code using the current data.
-        emoji_code = get_emoji_data(message.sender.realm_id, emoji_name).emoji_code
+        emoji_code = get_emoji_data(message.realm_id, emoji_name).emoji_code
 
     if not Reaction.objects.filter(
         user_profile=user_profile,
