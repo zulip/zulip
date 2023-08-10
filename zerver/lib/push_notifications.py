@@ -111,7 +111,7 @@ class UserPushIdentityCompat:
 
         return result
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, UserPushIdentityCompat):
             return self.user_id == other.user_id and self.user_uuid == other.user_uuid
         return False
