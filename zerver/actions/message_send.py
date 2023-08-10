@@ -1547,7 +1547,7 @@ def check_message(
     if (
         stream is not None
         and message_send_dict.rendering_result.has_wildcard_mention()
-        and not wildcard_mention_allowed(sender, stream)
+        and not wildcard_mention_allowed(sender, stream, realm)
     ):
         raise JsonableError(
             _("You do not have permission to use wildcard mentions in this stream.")

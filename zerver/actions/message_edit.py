@@ -1269,7 +1269,7 @@ def check_update_message(
 
         if message.is_stream_message() and rendering_result.has_wildcard_mention():
             stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
-            if not wildcard_mention_allowed(message.sender, stream):
+            if not wildcard_mention_allowed(message.sender, stream, message.realm):
                 raise JsonableError(
                     _("You do not have permission to use wildcard mentions in this stream.")
                 )
