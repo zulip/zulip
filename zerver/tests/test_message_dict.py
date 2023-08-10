@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -490,20 +490,16 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
     def _verify_display_recipient(
         self,
         display_recipient: DisplayRecipientT,
-        expected_recipient_objects: Union[Stream, List[UserProfile]],
+        expected_recipient_objects: List[UserProfile],
     ) -> None:
-        if isinstance(expected_recipient_objects, Stream):
-            self.assertEqual(display_recipient, expected_recipient_objects.name)
-
-        else:
-            for user_profile in expected_recipient_objects:
-                recipient_dict: UserDisplayRecipient = {
-                    "email": user_profile.email,
-                    "full_name": user_profile.full_name,
-                    "id": user_profile.id,
-                    "is_mirror_dummy": user_profile.is_mirror_dummy,
-                }
-                self.assertTrue(recipient_dict in display_recipient)
+        for user_profile in expected_recipient_objects:
+            recipient_dict: UserDisplayRecipient = {
+                "email": user_profile.email,
+                "full_name": user_profile.full_name,
+                "id": user_profile.id,
+                "is_mirror_dummy": user_profile.is_mirror_dummy,
+            }
+            self.assertTrue(recipient_dict in display_recipient)
 
     def test_display_recipient_personal(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -544,12 +540,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             allow_edit_history=False,
         )
 
-        self._verify_display_recipient(
-            messages[0]["display_recipient"], get_stream("Verona", cordelia.realm)
-        )
-        self._verify_display_recipient(
-            messages[1]["display_recipient"], get_stream("Denmark", cordelia.realm)
-        )
+        self.assertEqual(messages[0]["display_recipient"], "Verona")
+        self.assertEqual(messages[1]["display_recipient"], "Denmark")
 
     def test_display_recipient_huddle(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -607,13 +599,9 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         self._verify_display_recipient(
             messages[0]["display_recipient"], [hamlet, cordelia, othello]
         )
-        self._verify_display_recipient(
-            messages[1]["display_recipient"], get_stream("Verona", hamlet.realm)
-        )
+        self.assertEqual(messages[1]["display_recipient"], "Verona")
         self._verify_display_recipient(messages[2]["display_recipient"], [hamlet, cordelia])
-        self._verify_display_recipient(
-            messages[3]["display_recipient"], get_stream("Denmark", hamlet.realm)
-        )
+        self.assertEqual(messages[3]["display_recipient"], "Denmark")
         self._verify_display_recipient(
             messages[4]["display_recipient"], [hamlet, cordelia, othello, iago]
         )
