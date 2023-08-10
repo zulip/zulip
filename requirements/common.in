@@ -17,6 +17,7 @@ importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
 uri-template
+regex
 
 # Needed for manage.py
 ipython

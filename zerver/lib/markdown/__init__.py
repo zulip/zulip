@@ -25,6 +25,7 @@ from typing import (
     TypedDict,
     TypeVar,
     Union,
+    cast,
 )
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 from xml.etree.ElementTree import Element, SubElement
@@ -40,6 +41,7 @@ import markdown.postprocessors
 import markdown.treeprocessors
 import markdown.util
 import re2
+import regex
 import requests
 import uri_template
 from django.conf import settings
@@ -53,6 +55,7 @@ from zerver.lib import mention
 from zerver.lib.cache import cache_with_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
+from zerver.lib.emoji_utils import emoji_to_hex_codepoint, unqualify_emoji
 from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
@@ -840,7 +843,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         This works by using the URLs, user_mentions and media data from
         the twitter API and searching for Unicode emojis in the text using
-        `UNICODE_EMOJI_RE`.
+        `POSSIBLE_EMOJI_RE`.
 
         The first step is finding the locations of the URLs, mentions, media and
         emoji in the text. For each match we build a dictionary with type, the start
@@ -897,9 +900,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 for match in re.finditer(re.escape(short_url), text, re.IGNORECASE)
             )
         # Build dicts for emojis
-        for match in re.finditer(UNICODE_EMOJI_RE, text, re.IGNORECASE):
+        for match in POSSIBLE_EMOJI_RE.finditer(text):
             orig_syntax = match.group("syntax")
-            codepoint = unicode_emoji_to_codepoint(orig_syntax)
+            codepoint = emoji_to_hex_codepoint(unqualify_emoji(orig_syntax))
             if codepoint in codepoint_to_name:
                 display_string = ":" + codepoint_to_name[codepoint] + ":"
                 to_process.append(
@@ -1342,54 +1345,27 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         return time_element
 
 
-# All of our emojis (excluding ZWJ sequences) belong to one of these Unicode blocks:
-# \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
-# \U0001f200-\U0001f2ff - Enclosed Ideographic Supplement
-# \U0001f300-\U0001f5ff - Miscellaneous Symbols and Pictographs
-# \U0001f600-\U0001f64f - Emoticons (Emoji)
-# \U0001f680-\U0001f6ff - Transport and Map Symbols
-# \U0001f7e0-\U0001f7eb - Coloured Geometric Shapes (NOTE: Not Unicode standard category name)
-# \U0001f900-\U0001f9ff - Supplemental Symbols and Pictographs
-# \u2000-\u206f         - General Punctuation
-# \u2300-\u23ff         - Miscellaneous Technical
-# \u2400-\u243f         - Control Pictures
-# \u2440-\u245f         - Optical Character Recognition
-# \u2460-\u24ff         - Enclosed Alphanumerics
-# \u2500-\u257f         - Box Drawing
-# \u2580-\u259f         - Block Elements
-# \u25a0-\u25ff         - Geometric Shapes
-# \u2600-\u26ff         - Miscellaneous Symbols
-# \u2700-\u27bf         - Dingbats
-# \u2900-\u297f         - Supplemental Arrows-B
-# \u2b00-\u2bff         - Miscellaneous Symbols and Arrows
-# \u3000-\u303f         - CJK Symbols and Punctuation
-# \u3200-\u32ff         - Enclosed CJK Letters and Months
-UNICODE_EMOJI_RE = (
-    "(?P<syntax>["
-    "\U0001F100-\U0001F64F"
-    "\U0001F680-\U0001F6FF"
-    "\U0001F7E0-\U0001F7EB"
-    "\U0001F900-\U0001F9FF"
-    "\u2000-\u206F"
-    "\u2300-\u27BF"
-    "\u2900-\u297F"
-    "\u2B00-\u2BFF"
-    "\u3000-\u303F"
-    "\u3200-\u32FF"
-    "])"
+# From https://unicode.org/reports/tr51/#EBNF_and_Regex. Keep this synced with `possible_emoji_regex`.
+POSSIBLE_EMOJI_RE = regex.compile(
+    r"""(?P<syntax>
+\p{RI} \p{RI}
+| \p{Emoji}
+  (?: \p{Emoji_Modifier}
+  | \uFE0F \u20E3?
+  | [\U000E0020-\U000E007E]+ \U000E007F
+  )?
+  (?: \u200D
+    (?: \p{RI} \p{RI}
+    | \p{Emoji}
+      (?: \p{Emoji_Modifier}
+      | \uFE0F \u20E3?
+      | [\U000E0020-\U000E007E]+ \U000E007F
+      )?
+    )
+  )*)
+""",
+    regex.VERBOSE,
 )
-# The equivalent JS regex is \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
-# \ud83e[\udd00-\uddff]|[\u2000-\u206f]|[\u2300-\u27bf]|[\u2b00-\u2bff]|[\u3000-\u303f]|
-# [\u3200-\u32ff]. See below comments for explanation. The JS regex is used by marked.js for
-# frontend Unicode emoji processing.
-# The JS regex \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001f100-\U0001f64f
-# The JS regex \ud83d[\ude80-\udeff] represents \U0001f680-\U0001f6ff
-# The JS regex \ud83e[\udd00-\uddff] represents \U0001f900-\U0001f9ff
-# The JS regex [\u2000-\u206f] represents \u2000-\u206f
-# The JS regex [\u2300-\u27bf] represents \u2300-\u27bf
-# Similarly other JS regexes can be mapped to the respective Unicode blocks.
-# For more information, please refer to the following article:
-# http://crocodillon.com/blog/parsing-emoji-unicode-in-javascript
 
 
 def make_emoji(codepoint: str, display_string: str) -> Element:
@@ -1413,11 +1389,6 @@ def make_realm_emoji(src: str, display_string: str) -> Element:
     return elt
 
 
-def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
-    # Unicode codepoints are minimum of length 4, padded with zeroes
-    return f"{ord(unicode_emoji):04x}"
-
-
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """Translates emoticons like `:)` into emoji like `:smile:`."""
 
@@ -1436,15 +1407,28 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
         return make_emoji(name_to_codepoint[name], translated)
 
 
-class UnicodeEmoji(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, match: Match[str]) -> Optional[Element]:
+TEXT_PRESENTATION_RE = regex.compile(r"\P{Emoji_Presentation}\u20E3?")
+
+
+class UnicodeEmoji(CompiledInlineProcessor):
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, match: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         orig_syntax = match.group("syntax")
-        codepoint = unicode_emoji_to_codepoint(orig_syntax)
+
+        # We want to avoid turning things like arrows (↔) and keycaps (numbers
+        # in boxes) into qualified emoji.
+        # More specifically, we skip anything with text in the second column of
+        # this table https://unicode.org/Public/emoji/1.0/emoji-data.txt
+        if TEXT_PRESENTATION_RE.fullmatch(orig_syntax):
+            return None, None, None
+
+        codepoint = emoji_to_hex_codepoint(unqualify_emoji(orig_syntax))
         if codepoint in codepoint_to_name:
             display_string = ":" + codepoint_to_name[codepoint] + ":"
-            return make_emoji(codepoint, display_string)
+            return make_emoji(codepoint, display_string), match.start(), match.end()
         else:
-            return None
+            return None, None, None
 
 
 class Emoji(markdown.inlinepatterns.Pattern):
@@ -2224,7 +2208,7 @@ class ZulipMarkdown(markdown.Markdown):
         reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
         reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
         # We get priority 5 from 'nl2br' extension
-        reg.register(UnicodeEmoji(UNICODE_EMOJI_RE), "unicodeemoji", 0)
+        reg.register(UnicodeEmoji(cast(Pattern[str], POSSIBLE_EMOJI_RE), self), "unicodeemoji", 0)
         return reg
 
     def register_linkifiers(self, registry: markdown.util.Registry) -> markdown.util.Registry:

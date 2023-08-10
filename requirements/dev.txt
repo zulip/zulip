@@ -2230,7 +2230,9 @@ regex==2023.8.8 \
     --hash=sha256:f2181c20ef18747d5f4a7ea513e09ea03bdd50884a11ce46066bb90fe4213675 \
     --hash=sha256:f2200e00b62568cfd920127782c61bc1c546062a879cdc741cfcc6976668dfcf \
     --hash=sha256:fcbdc5f2b0f1cd0f6a56cdb46fe41d2cce1e644e3b68832f3eeebc5fb0f7712e
-    # via talon-core
+    # via
+    #   -r requirements/common.in
+    #   talon-core
 requests[security]==2.31.0 \
     --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
     --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1
@@ -2833,6 +2835,10 @@ types-pyyaml==6.0.12.11 \
 types-redis==4.6.0.4 \
     --hash=sha256:03a1e1659ae4d8f6543bc2b8b11e94b1ee53937f313b1dc6f67dc7bde7d38fe0 \
     --hash=sha256:c475a9d3cf73dd696c3887d30644323fc56f5e00af96151035b3b5b52875c9b3
+    # via -r requirements/mypy.in
+types-regex==2023.6.3.1 \
+    --hash=sha256:21880e584e2bada8656abeeb3131287a89dcb215f24f1f5b1503eb9bca37f759 \
+    --hash=sha256:f385191206021e48db0f452fe9479812710daf07058c8f6972cfb2f6202df136
     # via -r requirements/mypy.in
 types-requests==2.31.0.2 \
     --hash=sha256:56d181c85b5925cbc59f4489a57e72a8b2166f18273fd8ba7b6fe0c0b986f12a \
