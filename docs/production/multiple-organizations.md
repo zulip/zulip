@@ -1,7 +1,3 @@
-```{eval-rst}
-:orphan:
-```
-
 # Hosting multiple organizations
 
 The vast majority of Zulip servers host just a single organization (or
