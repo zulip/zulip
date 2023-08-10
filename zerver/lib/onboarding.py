@@ -245,7 +245,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
 def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     """Given the send_request object for a direct message from the user
     to welcome-bot, trigger the welcome-bot reply."""
-    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
+    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
     content = select_welcome_bot_response(human_response_lower)
 
