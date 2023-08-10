@@ -87,7 +87,6 @@ from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
     DefaultStreamDict,
-    DisplayRecipientT,
     ExtendedFieldElement,
     ExtendedValidator,
     FieldElement,
@@ -99,6 +98,7 @@ from zerver.lib.types import (
     RealmPlaygroundDict,
     RealmUserValidator,
     UnspecifiedValue,
+    UserDisplayRecipient,
     UserFieldElement,
     Validator,
 )
@@ -191,12 +191,12 @@ def query_for_ids(
 # could be replaced with smarter bulk-fetching logic that deduplicates
 # queries for the same recipient; this is just a convenient way to
 # write that code.
-per_request_display_recipient_cache: Dict[int, DisplayRecipientT] = {}
+per_request_display_recipient_cache: Dict[int, List[UserDisplayRecipient]] = {}
 
 
 def get_display_recipient_by_id(
     recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
-) -> DisplayRecipientT:
+) -> List[UserDisplayRecipient]:
     """
     returns: an object describing the recipient (using a cache).
     If the type is a stream, the type_id must be an int; a string is returned.
@@ -211,7 +211,7 @@ def get_display_recipient_by_id(
     return per_request_display_recipient_cache[recipient_id]
 
 
-def get_display_recipient(recipient: "Recipient") -> DisplayRecipientT:
+def get_display_recipient(recipient: "Recipient") -> List[UserDisplayRecipient]:
     return get_display_recipient_by_id(
         recipient.id,
         recipient.type,

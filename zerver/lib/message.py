@@ -989,14 +989,11 @@ def render_markdown(
 
 
 def huddle_users(recipient_id: int) -> str:
-    display_recipient: DisplayRecipientT = get_display_recipient_by_id(
+    display_recipient: List[UserDisplayRecipient] = get_display_recipient_by_id(
         recipient_id,
         Recipient.HUDDLE,
         None,
     )
-
-    # str is for streams.
-    assert not isinstance(display_recipient, str)
 
     user_ids: List[int] = [obj["id"] for obj in display_recipient]
     user_ids = sorted(user_ids)

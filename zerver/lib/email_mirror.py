@@ -460,7 +460,6 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         internal_send_private_message(user_profile, recipient_user, body)
     elif recipient.type == Recipient.HUDDLE:
         display_recipient = get_display_recipient(recipient)
-        assert not isinstance(display_recipient, str)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
         internal_send_huddle_message(user_profile.realm, user_profile, emails, body)
