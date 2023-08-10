@@ -2,8 +2,11 @@ from typing import Dict, List, Optional
 
 import orjson
 from django.db import transaction
+from django.db.models import Max
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.types import LinkifierDict
 from zerver.models import (
     Realm,
@@ -11,6 +14,7 @@ from zerver.models import (
     RealmFilter,
     UserProfile,
     active_user_ids,
+    flush_linkifiers,
     linkifiers_for_realm,
 )
 from zerver.tornado.django_api import send_event_on_commit
@@ -35,7 +39,15 @@ def do_add_linkifier(
 ) -> int:
     pattern = pattern.strip()
     url_template = url_template.strip()
-    linkifier = RealmFilter(realm=realm, pattern=pattern, url_template=url_template)
+    # This makes sure that the new linkifier is always ordered the last modulo
+    # the rare race condition.
+    max_order = RealmFilter.objects.aggregate(Max("order"))["order__max"]
+    if max_order is None:
+        linkifier = RealmFilter(realm=realm, pattern=pattern, url_template=url_template)
+    else:
+        linkifier = RealmFilter(
+            realm=realm, pattern=pattern, url_template=url_template, order=max_order + 1
+        )
     linkifier.full_clean()
     linkifier.save()
 
@@ -130,4 +142,55 @@ def do_update_linkifier(
         ).decode(),
     )
 
+    notify_linkifiers(realm, realm_linkifiers)
+
+
+@transaction.atomic(durable=True)
+def check_reorder_linkifiers(
+    realm: Realm, ordered_linkifier_ids: List[int], *, acting_user: Optional[UserProfile]
+) -> None:
+    """ordered_linkifier_ids should contain ids of all existing linkifiers.
+    In the rare situation when any of the linkifier gets deleted that more ids
+    are passed, the checks below are sufficient to detect inconsistencies most of
+    the time."""
+    # Repeated IDs in the user request would collapse into the same key when
+    # constructing the set.
+    linkifier_id_set = set(ordered_linkifier_ids)
+    if len(linkifier_id_set) < len(ordered_linkifier_ids):
+        raise JsonableError(_("The ordered list must not contain duplicated linkifiers"))
+
+    linkifiers = RealmFilter.objects.filter(realm=realm)
+    if {linkifier.id for linkifier in linkifiers} != linkifier_id_set:
+        raise JsonableError(
+            _("The ordered list must enumerate all existing linkifiers exactly once")
+        )
+
+    # After the validation, we are sure that there is nothing to do. Return
+    # early to avoid flushing the cache and populating the audit logs.
+    if len(linkifiers) == 0:
+        return
+
+    id_to_new_order = {
+        linkifier_id: order for order, linkifier_id in enumerate(ordered_linkifier_ids)
+    }
+
+    for linkifier in linkifiers:
+        assert linkifier.id in id_to_new_order
+        linkifier.order = id_to_new_order[linkifier.id]
+    RealmFilter.objects.bulk_update(linkifiers, fields=["order"])
+    flush_linkifiers(instance=linkifiers[0])
+
+    # This roundtrip re-fetches the linkifiers sorted in the new order.
+    realm_linkifiers = linkifiers_for_realm(realm.id)
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_linkifiers": realm_linkifiers,
+            }
+        ).decode(),
+    )
     notify_linkifiers(realm, realm_linkifiers)

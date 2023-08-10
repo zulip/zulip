@@ -62,6 +62,7 @@ from zerver.actions.realm_domains import (
 from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_linkifiers import (
+    check_reorder_linkifiers,
     do_add_linkifier,
     do_remove_linkifier,
     do_update_linkifier,
@@ -2174,6 +2175,17 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: do_update_linkifier(
                 self.user_profile.realm, linkifier_id, regex, url, acting_user=None
+            ),
+            num_events=1,
+        )
+        check_realm_linkifiers("events[0]", events[0])
+
+        linkifier_ids = list(
+            RealmFilter.objects.all().values_list("id", flat=True).order_by("order")
+        )
+        events = self.verify_action(
+            lambda: check_reorder_linkifiers(
+                self.user_profile.realm, [linkifier_ids[-1], *linkifier_ids[:-1]], acting_user=None
             ),
             num_events=1,
         )

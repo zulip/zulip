@@ -1,8 +1,11 @@
+from typing import List
+
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.actions.realm_linkifiers import (
+    check_reorder_linkifiers,
     do_add_linkifier,
     do_remove_linkifier,
     do_update_linkifier,
@@ -11,6 +14,7 @@ from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError, ValidationFailureError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_int, check_list
 from zerver.models import RealmFilter, UserProfile, linkifiers_for_realm
 
 
@@ -73,3 +77,14 @@ def update_linkifier(
         raise JsonableError(_("Linkifier not found."))
     except ValidationError as e:
         raise ValidationFailureError(e)
+
+
+@require_realm_admin
+@has_request_variables
+def reorder_linkifiers(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    ordered_linkifier_ids: List[int] = REQ(json_validator=check_list(check_int)),
+) -> HttpResponse:
+    check_reorder_linkifiers(user_profile.realm, ordered_linkifier_ids, acting_user=user_profile)
+    return json_success(request)

@@ -1398,21 +1398,25 @@ class MarkdownTest(ZulipTestCase):
                     realm=realm,
                     pattern="http",
                     url_template="http://example.com/",
+                    order=1,
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern="b#(?P<id>[a-z]+)",
                     url_template="http://example.com/b/{id}",
+                    order=2,
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern="a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+)",
                     url_template="http://example.com/a/{aid}/b/{bid}",
+                    order=3,
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern="a#(?P<id>[a-z]+)",
                     url_template="http://example.com/a/{id}",
+                    order=4,
                 ),
             ],
             [
@@ -1454,20 +1458,22 @@ class MarkdownTest(ZulipTestCase):
     def test_linkifier_precedence(self) -> None:
         realm = self.example_user("hamlet").realm
         RealmFilter.objects.filter(realm=realm).delete()
-        # The insertion order should not affect the fact that the linkifiers are ordered by id.
-        # Note that we might later switch to a different field to order the linkifiers.
-        sequence = (10, 3, 11, 2, 4, 5, 6)
-        for cur_precedence in sequence:
+        # The insertion order should not affect the fact that the linkifiers are
+        # ordered by the `order` field.
+        order_values = (10, 3, 11, 2, 4, 5, 6)
+        order_to_id = {}
+        for cur_order in order_values:
             linkifier = RealmFilter(
-                id=cur_precedence,
                 realm=realm,
-                pattern=f"abc{cur_precedence}",
+                pattern=f"abc{cur_order}",
                 url_template="http://foo.com",
+                order=cur_order,
             )
             linkifier.save()
+            order_to_id[cur_order] = linkifier.id
         linkifiers = linkifiers_for_realm(realm.id)
-        for index, cur_precedence in enumerate(sorted(sequence)):
-            self.assertEqual(linkifiers[index]["id"], cur_precedence)
+        for index, cur_order in enumerate(sorted(order_values)):
+            self.assertEqual(linkifiers[index]["id"], order_to_id[cur_order])
 
     def test_realm_patterns_negative(self) -> None:
         realm = get_realm("zulip")

@@ -92,6 +92,7 @@
 * [Add a linkifier](/api/add-linkifier)
 * [Update a linkifier](/api/update-linkifier)
 * [Remove a linkifier](/api/remove-linkifier)
+* [Reorder linkifiers](/api/reorder-linkifiers)
 * [Add a code playground](/api/add-code-playground)
 * [Remove a code playground](/api/remove-code-playground)
 * [Get all custom emoji](/api/get-custom-emoji)

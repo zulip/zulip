@@ -392,6 +392,18 @@ def get_realm_linkifiers(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/linkifiers", "get", "200")
 
 
+@openapi_test_function("/realm/linkifiers:patch")
+def reorder_realm_linkifiers(client: Client) -> None:
+    # {code_example|start}
+    # Reorder the linkifiers in the user's organization.
+    order = [4, 3, 2, 1]
+    request = {"ordered_linkifier_ids": json.dumps(order)}
+
+    result = client.call_endpoint(url="/realm/linkifiers", method="PATCH", request=request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/realm/linkifiers", "patch", "200")
+
+
 @openapi_test_function("/realm/profile_fields:get")
 def get_realm_profile_fields(client: Client) -> None:
     # {code_example|start}
@@ -1629,6 +1641,7 @@ def test_server_organizations(client: Client) -> None:
     update_realm_filter(client)
     add_realm_playground(client)
     get_server_settings(client)
+    reorder_realm_linkifiers(client)
     remove_realm_filter(client)
     remove_realm_playground(client)
     get_realm_emoji(client)

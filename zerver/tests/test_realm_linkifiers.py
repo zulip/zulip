@@ -1,9 +1,12 @@
 import re
+from typing import List
 
+import orjson
 from django.core.exceptions import ValidationError
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmFilter, url_template_validator
+from zerver.lib.utils import assert_is_not_none
+from zerver.models import RealmAuditLog, RealmFilter, url_template_validator
 
 
 class RealmFilterTest(ZulipTestCase):
@@ -265,3 +268,118 @@ class RealmFilterTest(ZulipTestCase):
         for url in invalid_urls:
             with self.assertRaises(ValidationError):
                 url_template_validator(url)
+
+    def test_reorder_linkifiers(self) -> None:
+        iago = self.example_user("iago")
+        self.login("iago")
+
+        def assert_linkifier_audit_logs(expected_id_order: List[int]) -> None:
+            """Check if the audit log created orders the linkifiers correctly"""
+            extra_data = orjson.loads(
+                assert_is_not_none(
+                    RealmAuditLog.objects.filter(
+                        acting_user=iago,
+                        event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED,
+                    )
+                    .latest("event_time")
+                    .extra_data
+                )
+            )
+            audit_logged_ids = [
+                linkifier_dict["id"] for linkifier_dict in extra_data["realm_linkifiers"]
+            ]
+            self.assertListEqual(expected_id_order, audit_logged_ids)
+
+        def assert_linkifier_order(expected_id_order: List[int]) -> None:
+            """Verify that the realm audit log created matches the expected ordering"""
+            result = self.client_get("/json/realm/linkifiers")
+            actual_id_order = [
+                linkifier["id"] for linkifier in self.assert_json_success(result)["linkifiers"]
+            ]
+            self.assertListEqual(expected_id_order, actual_id_order)
+
+        def reorder_verify_succeed(expected_id_order: List[int]) -> None:
+            """Send a reorder request and verify that it succeeds"""
+            result = self.client_patch(
+                "/json/realm/linkifiers",
+                {"ordered_linkifier_ids": orjson.dumps(expected_id_order).decode()},
+            )
+            self.assert_json_success(result)
+
+        reorder_verify_succeed([])
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=iago.realm, event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED
+            ).count(),
+            0,
+        )
+
+        linkifiers = [
+            {
+                "pattern": "1#(?P<id>[123])",
+                "url_template": "https://filter.com/foo/{id}",
+            },
+            {
+                "pattern": "2#(?P<id>[123])",
+                "url_template": "https://filter.com/bar/{id}",
+            },
+            {
+                "pattern": "3#(?P<id>[123])",
+                "url_template": "https://filter.com/baz/{id}",
+            },
+        ]
+        original_id_order = []
+        for linkifier in linkifiers:
+            result = self.client_post("/json/realm/filters", linkifier)
+            original_id_order.append(self.assert_json_success(result)["id"])
+        assert_linkifier_order(original_id_order)
+        self.assertListEqual([0, 1, 2], list(RealmFilter.objects.values_list("order", flat=True)))
+
+        # The creation order orders the linkifiers by default.
+        # When the order values are the same, fallback to order by ID.
+        RealmFilter.objects.all().update(order=0)
+        assert_linkifier_order(original_id_order)
+
+        # This should successfully reorder the linkifiers.
+        new_order = [original_id_order[2], original_id_order[1], original_id_order[0]]
+        reorder_verify_succeed(new_order)
+        assert_linkifier_audit_logs(new_order)
+        assert_linkifier_order(new_order)
+
+        # After reordering, newly created linkifier is ordered at the last, and
+        # the other linkifiers are unchanged.
+        result = self.client_post(
+            "/json/realm/filters", {"pattern": "3#123", "url_template": "https://example.com"}
+        )
+        new_linkifier_id = self.assert_json_success(result)["id"]
+        new_order = [*new_order, new_linkifier_id]
+        assert_linkifier_order(new_order)
+
+        # Deleting a linkifier should preserve the order.
+        deleted_linkifier_id = new_order[2]
+        result = self.client_delete(f"/json/realm/filters/{deleted_linkifier_id}")
+        self.assert_json_success(result)
+        new_order = [*new_order[:2], new_linkifier_id]
+        assert_linkifier_order(new_order)
+
+        # Extra non-existent ids are ignored.
+        new_order = [new_order[2], new_order[0], new_order[1]]
+        result = self.client_patch(
+            "/json/realm/linkifiers", {"ordered_linkifier_ids": [deleted_linkifier_id, *new_order]}
+        )
+        self.assert_json_error(
+            result, "The ordered list must enumerate all existing linkifiers exactly once"
+        )
+
+        # Duplicated IDs are not allowed.
+        new_order = [*new_order, new_order[0]]
+        result = self.client_patch("/json/realm/linkifiers", {"ordered_linkifier_ids": new_order})
+        self.assert_json_error(result, "The ordered list must not contain duplicated linkifiers")
+
+        # Incomplete lists of linkifiers are not allowed.
+        result = self.client_patch(
+            "/json/realm/linkifiers", {"ordered_linkifier_ids": new_order[:2]}
+        )
+        self.assert_json_error(
+            result, "The ordered list must enumerate all existing linkifiers exactly once"
+        )

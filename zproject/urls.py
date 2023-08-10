@@ -114,6 +114,7 @@ from zerver.views.realm_linkifiers import (
     create_linkifier,
     delete_linkifier,
     list_linkifiers,
+    reorder_linkifiers,
     update_linkifier,
 )
 from zerver.views.realm_logo import delete_logo_backend, get_logo_backend, upload_logo
@@ -270,7 +271,7 @@ v1_api_and_json_patterns = [
     # realm/logo -> zerver.views.realm_logo
     rest_path("realm/logo", POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
     # realm/filters and realm/linkifiers -> zerver.views.realm_linkifiers
-    rest_path("realm/linkifiers", GET=list_linkifiers),
+    rest_path("realm/linkifiers", GET=list_linkifiers, PATCH=reorder_linkifiers),
     rest_path("realm/filters", POST=create_linkifier),
     rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier, PATCH=update_linkifier),
     # realm/playgrounds -> zerver.views.realm_playgrounds
