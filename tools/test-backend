@@ -451,10 +451,7 @@ def main() -> None:
             print("Writing XML report")
             cov.xml_report(outfile="var/coverage.xml")
             print("XML report saved; see var/coverage.xml")
-        if not options.no_html_report:
-            print("Writing HTML report")
-            cov.html_report(directory="var/coverage", show_contexts=True)
-            print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
+
     if full_suite and not failures and options.coverage:
         # Assert that various files have full coverage
         for path in enforce_fully_covered:
@@ -481,13 +478,22 @@ def main() -> None:
                     ok = False
             except coverage.misc.NoSource:
                 continue
-        if not ok:
+        if ok:
+            print("Coverage checks pass!")
+        else:
             print()
             print(
                 "There are one or more fully covered files that are still in not_yet_fully_covered."
             )
             print("Remove the file(s) from not_yet_fully_covered in `tools/test-backend`.")
             failures = True
+
+    if options.coverage and not options.no_html_report:
+        # We do this late, because it can take quite a while.
+        print("Writing HTML report")
+        cov.html_report(directory="var/coverage", show_contexts=True)
+        print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
+
     if options.profile:
         prof.disable()
         with tempfile.NamedTemporaryFile(prefix="profile.data.", delete=False) as stats_file:
