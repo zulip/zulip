@@ -39,11 +39,11 @@ const general = {
 
 stream_data.add_sub(general);
 
-function get_list_info(zoom, search) {
+function get_list_info(zoom, type, search) {
     const stream_id = general.stream_id;
     const zoomed = zoom === undefined ? false : zoom;
     const search_term = search === undefined ? "" : search;
-    return topic_list_data.get_list_info(stream_id, zoomed, search_term);
+    return topic_list_data.get_list_info(stream_id, zoomed, search_term, type);
 }
 
 function test(label, f) {
@@ -120,11 +120,20 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     // If we zoom in, our results are based on topic filter.
     // If topic search input is empty, we show all 10 topics.
     const zoomed = true;
-    list_info = get_list_info(zoomed);
+    list_info = get_list_info(zoomed, "all");
+
     assert.equal(list_info.items.length, 10);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 10);
+
+    list_info = get_list_info(zoomed, "resolved");
+    assert.equal(list_info.items.length, 5);
+    assert.equal(list_info.num_possible_topics, 5);
+
+    list_info = get_list_info(zoomed, "unresolved");
+    assert.equal(list_info.items.length, 5);
+    assert.equal(list_info.num_possible_topics, 5);
 
     add_topic_message("After Brooklyn", 1008);
     add_topic_message("Catering", 1009);
@@ -132,11 +141,22 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     // When topic search input is not empty, we show topics
     // based on the search term.
     const search_term = "b,c";
-    list_info = get_list_info(zoomed, search_term);
+    list_info = get_list_info(zoomed, "all", search_term);
     assert.equal(list_info.items.length, 2);
+    add_topic_message("✔ Catering1", 1010);
+    // when topic search is open then we list topics based on search term.
+    list_info = get_list_info(zoomed, "all", "b,c");
+    assert.equal(list_info.items.length, 3);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
-    assert.equal(list_info.num_possible_topics, 2);
+    assert.equal(list_info.num_possible_topics, 3);
+
+    // search term + resolved/unresolved
+    list_info = get_list_info(zoomed, "resolved", "b,c");
+    assert.equal(list_info.items.length, 1);
+
+    list_info = get_list_info(zoomed, "unresolved", "b,c");
+    assert.equal(list_info.items.length, 2);
 });
 
 test("get_list_info unreads", ({override}) => {

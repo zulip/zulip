@@ -380,13 +380,24 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     stream_list.initialize_stream_cursor();
 
     mock_template("filter_topics.hbs", false, () => "filter-topics-stub");
+    topic_list.init_resolved_toggle = () => ({
+        get() {
+            return "resolved_toggle_stub";
+        },
+    });
+
     let filter_topics_appended = false;
+    let resolved_toggle_appended = false;
     $stream_li1.children = () => ({
         append(html) {
             assert.equal(html, "filter-topics-stub");
             filter_topics_appended = true;
         },
     });
+    $(".filter-topics .resolved-toggle").append = (html) => {
+        assert.equal(html, "resolved_toggle_stub");
+        resolved_toggle_appended = true;
+    };
     stream_list.zoom_in_topics({stream_id: 42});
 
     assert.ok(!$label1.visible());
@@ -396,6 +407,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok(!$stream_li2.visible());
     assert.ok($("#streams_list").hasClass("zoom-in"));
     assert.ok(filter_topics_appended);
+    assert.ok(resolved_toggle_appended);
 
     $("#stream_filters li.narrow-filter").show = () => {
         $stream_li1.show();
@@ -406,6 +418,9 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     $(".filter-topics").remove = () => {
         filter_topics_appended = false;
     };
+    topic_list.remove_resolved_toggle = () => {
+        resolved_toggle_appended = false;
+    };
     stream_list.zoom_out_topics({$stream_li: $stream_li1});
 
     assert.ok($label1.visible());
@@ -415,6 +430,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok($stream_li2.visible());
     assert.ok($("#streams_list").hasClass("zoom-out"));
     assert.ok(!filter_topics_appended);
+    assert.ok(!resolved_toggle_appended);
 });
 
 test_ui("narrowing", ({mock_template}) => {

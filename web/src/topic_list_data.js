@@ -103,7 +103,8 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
     }
 }
 
-export function get_list_info(stream_id, zoomed, search_term) {
+export function get_list_info(stream_id, zoomed, search_term, topics_state) {
+    const isTopicsStateResolved = topics_state === "resolved";
     const topic_choice_state = {
         items: [],
         topics_selected: 0,
@@ -120,6 +121,11 @@ export function get_list_info(stream_id, zoomed, search_term) {
     let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
     if (zoomed) {
         topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+        if (topics_state !== "all") {
+            topic_names = topic_names.filter(
+                (name) => resolved_topic.is_resolved(name) === isTopicsStateResolved,
+            );
+        }
     }
 
     if (stream_muted && !zoomed) {

@@ -6,6 +6,8 @@ import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
 import * as blueslip from "./blueslip";
+import * as components from "./components";
+import {$t} from "./i18n";
 import * as popover_menus from "./popover_menus";
 import * as scroll_util from "./scroll_util";
 import * as stream_topic_history from "./stream_topic_history";
@@ -25,6 +27,37 @@ const active_widgets = new Map();
 
 // We know whether we're zoomed or not.
 let zoomed = false;
+
+let resolved_toggle;
+let topics_state = "all";
+
+export function init_resolved_toggle() {
+    resolved_toggle = components.toggle({
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "All"}), key: "all"},
+            {label: $t({defaultMessage: "Unresolved"}), key: "unresolved"},
+            {label: $t({defaultMessage: "Resolved"}), key: "resolved"},
+        ],
+        selected: 0,
+        callback(_value, key) {
+            topics_state = key;
+            active_widgets.get(active_stream_id()).build();
+        },
+    });
+    return resolved_toggle;
+}
+
+export function remove_resolved_toggle() {
+    if (resolved_toggle !== undefined) {
+        resolved_toggle.get().remove();
+        resolved_toggle = undefined;
+    }
+}
+
+export function get_resolved_filter_value() {
+    return topics_state;
+}
 
 export function update() {
     for (const widget of active_widgets.values()) {
@@ -132,6 +165,7 @@ export class TopicListWidget {
             this.my_stream_id,
             zoomed,
             get_topic_search_term(),
+            topics_state,
         );
 
         const num_possible_topics = list_info.num_possible_topics;
