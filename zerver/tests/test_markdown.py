@@ -461,7 +461,11 @@ class MarkdownTest(ZulipTestCase):
                     do_change_user_setting(
                         user_profile, "translate_emoticons", True, acting_user=None
                     )
-                    msg = Message(sender=user_profile, sending_client=get_client("test"))
+                    msg = Message(
+                        sender=user_profile,
+                        sending_client=get_client("test"),
+                        realm=user_profile.realm,
+                    )
                     rendering_result = render_markdown(msg, test["input"])
                     converted = rendering_result.rendered_content
                 else:
@@ -625,7 +629,11 @@ class MarkdownTest(ZulipTestCase):
         content = "http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"
 
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, with_preview)
 
@@ -634,7 +642,11 @@ class MarkdownTest(ZulipTestCase):
         realm.save()
 
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, without_preview)
 
@@ -706,21 +718,33 @@ class MarkdownTest(ZulipTestCase):
         content = "http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"
         expected = '<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=thumbnail"></a></div>'
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
         content = ">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg\n\nAwesome!"
         expected = '<blockquote>\n<p><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>\n</blockquote>\n<p>Awesome!</p>'
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
         content = ">* http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg\n\nAwesome!"
         expected = '<blockquote>\n<ul>\n<li><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></li>\n</ul>\n</blockquote>\n<p>Awesome!</p>'
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
@@ -731,7 +755,11 @@ class MarkdownTest(ZulipTestCase):
         expected = '<p><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg</a><br>\n<a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg</a><br>\n<a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg</a></p>\n<div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_01.jpg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_01.jpg&amp;size=thumbnail"></a></div><div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_02.jpg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_02.jpg&amp;size=thumbnail"></a></div><div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_03.jpg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_03.jpg&amp;size=thumbnail"></a></div>'
 
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
@@ -739,7 +767,11 @@ class MarkdownTest(ZulipTestCase):
         expected = '<div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_01.jpg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_01.jpg&amp;size=thumbnail"></a></div><blockquote>\n<p><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg</a></p>\n</blockquote>\n<ul>\n<li><div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_03.jpg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fimaging.nikon.com%2Flineup%2Fdslr%2Fdf%2Fimg%2Fsample%2Fimg_03.jpg&amp;size=thumbnail"></a></div></li>\n<li><div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail"></a></div></li>\n</ul>'
 
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
@@ -748,7 +780,11 @@ class MarkdownTest(ZulipTestCase):
         expected = '<p>Test 1<br>\n<a href="/user_uploads/{realm_id}/6d/F1PX6u16JA2P-nK45PyxHIYZ/21136101110_1dde1c1a7e_o.jpg">21136101110_1dde1c1a7e_o.jpg</a> </p>\n<div class="message_inline_image"><a href="/user_uploads/{realm_id}/6d/F1PX6u16JA2P-nK45PyxHIYZ/21136101110_1dde1c1a7e_o.jpg" title="21136101110_1dde1c1a7e_o.jpg"><img data-src-fullsize="/thumbnail?url=user_uploads%2F{realm_id}%2F6d%2FF1PX6u16JA2P-nK45PyxHIYZ%2F21136101110_1dde1c1a7e_o.jpg&amp;size=full" src="/thumbnail?url=user_uploads%2F{realm_id}%2F6d%2FF1PX6u16JA2P-nK45PyxHIYZ%2F21136101110_1dde1c1a7e_o.jpg&amp;size=thumbnail"></a></div><p>Next image<br>\n<a href="/user_uploads/{realm_id}/69/sh7L06e7uH7NaX6d5WFfVYQp/IMG_20161116_023910.jpg">IMG_20161116_023910.jpg</a> </p>\n<div class="message_inline_image"><a href="/user_uploads/{realm_id}/69/sh7L06e7uH7NaX6d5WFfVYQp/IMG_20161116_023910.jpg" title="IMG_20161116_023910.jpg"><img data-src-fullsize="/thumbnail?url=user_uploads%2F{realm_id}%2F69%2Fsh7L06e7uH7NaX6d5WFfVYQp%2FIMG_20161116_023910.jpg&amp;size=full" src="/thumbnail?url=user_uploads%2F{realm_id}%2F69%2Fsh7L06e7uH7NaX6d5WFfVYQp%2FIMG_20161116_023910.jpg&amp;size=thumbnail"></a></div><p>Another screenshot<br>\n<a href="/user_uploads/{realm_id}/70/_aZmIEWaN1iUaxwkDjkO7bpj/Screenshot-from-2016-06-01-16-22-42.png">Screenshot-from-2016-06-01-16-22-42.png</a></p>\n<div class="message_inline_image"><a href="/user_uploads/{realm_id}/70/_aZmIEWaN1iUaxwkDjkO7bpj/Screenshot-from-2016-06-01-16-22-42.png" title="Screenshot-from-2016-06-01-16-22-42.png"><img data-src-fullsize="/thumbnail?url=user_uploads%2F{realm_id}%2F70%2F_aZmIEWaN1iUaxwkDjkO7bpj%2FScreenshot-from-2016-06-01-16-22-42.png&amp;size=full" src="/thumbnail?url=user_uploads%2F{realm_id}%2F70%2F_aZmIEWaN1iUaxwkDjkO7bpj%2FScreenshot-from-2016-06-01-16-22-42.png&amp;size=thumbnail"></a></div>'
         expected = expected.format(realm_id=realm.id)
 
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
@@ -759,7 +795,11 @@ class MarkdownTest(ZulipTestCase):
         expected = '<div class="message_inline_image"><a href="https://en.wikipedia.org/wiki/Special:FilePath/File:Wright_of_Derby,_The_Orrery.jpg"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSpecial%3AFilePath%2FFile%3AWright_of_Derby%2C_The_Orrery.jpg&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSpecial%3AFilePath%2FFile%3AWright_of_Derby%2C_The_Orrery.jpg&amp;size=thumbnail"></a></div>'
 
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
@@ -776,7 +816,11 @@ class MarkdownTest(ZulipTestCase):
         settings.INLINE_IMAGE_PREVIEW = True
 
         sender_user_profile = self.example_user("othello")
-        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        message = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         realm = message.get_realm()
 
         ret = image_preview_enabled()
@@ -801,7 +845,11 @@ class MarkdownTest(ZulipTestCase):
     def test_url_embed_preview_enabled(self) -> None:
         sender_user_profile = self.example_user("othello")
         message = copy.deepcopy(
-            Message(sender=sender_user_profile, sending_client=get_client("test"))
+            Message(
+                sender=sender_user_profile,
+                sending_client=get_client("test"),
+                realm=sender_user_profile.realm,
+            )
         )
         realm = message.get_realm()
         realm.inline_url_embed_preview = True  # off by default
@@ -997,7 +1045,7 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
 
         # Needs to mock an actual message because that's how Markdown obtains the realm
-        msg = Message(sender=self.example_user("hamlet"))
+        msg = Message(sender=self.example_user("hamlet"), realm=realm)
         converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         realm_emoji = RealmEmoji.objects.filter(
             realm=realm, name="green_tick", deactivated=False
@@ -1018,7 +1066,7 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         do_remove_realm_emoji(realm, "green_tick", acting_user=None)
 
-        msg = Message(sender=self.example_user("hamlet"))
+        msg = Message(sender=self.example_user("hamlet"), realm=realm)
         converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted.rendered_content, "<p>:green_tick:</p>")
 
@@ -1040,7 +1088,9 @@ class MarkdownTest(ZulipTestCase):
     def test_no_translate_emoticons_if_off(self) -> None:
         user_profile = self.example_user("othello")
         do_change_user_setting(user_profile, "translate_emoticons", False, acting_user=None)
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         content = ":)"
         expected = "<p>:)</p>"
@@ -1057,7 +1107,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_links_in_topic_name(self) -> None:
         realm = get_realm("zulip")
-        msg = Message(sender=self.example_user("othello"))
+        msg = Message(sender=self.example_user("othello"), realm=realm)
 
         msg.set_topic_name("https://google.com/hello-world")
         converted_topic = topic_links(realm.id, msg.topic_name())
@@ -1130,7 +1180,7 @@ class MarkdownTest(ZulipTestCase):
             ["<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/{id}>"],
         )
 
-        msg = Message(sender=self.example_user("othello"))
+        msg = Message(sender=self.example_user("othello"), realm=realm)
         msg.set_topic_name("#444")
 
         flush_per_request_caches()
@@ -1188,7 +1238,7 @@ class MarkdownTest(ZulipTestCase):
             pattern=r"#(?P<id>[a-zA-Z]+-[0-9]+)",
             url_template=r"https://trac.example.com/ticket/{id}",
         ).save()
-        msg = Message(sender=self.example_user("hamlet"))
+        msg = Message(sender=self.example_user("hamlet"), realm=realm)
 
         content = "#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging"
         converted = markdown_convert(content, message_realm=realm, message=msg)
@@ -1261,7 +1311,7 @@ class MarkdownTest(ZulipTestCase):
             pattern=r"url-(?P<id>[0-9]+)",
             url_template="https://example.com/A%20Test/%%%ba/{id}",
         ).save()
-        msg = Message(sender=self.example_user("hamlet"))
+        msg = Message(sender=self.example_user("hamlet"), realm=realm)
         content = "url-123 is well-escaped"
         converted = markdown_convert(content, message_realm=realm, message=msg)
         self.assertEqual(
@@ -1301,7 +1351,7 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
-        msg = Message(sender=self.example_user("othello"))
+        msg = Message(sender=self.example_user("othello"), realm=realm)
         msg.set_topic_name("ABC-123")
 
         flush_per_request_caches()
@@ -1482,14 +1532,16 @@ class MarkdownTest(ZulipTestCase):
             pattern=r"#(?P<id>[0-9]{2,8})",
             url_template=r"https://trac.example.com/ticket/{id}",
         ).save()
-        boring_msg = Message(sender=self.example_user("othello"))
+        boring_msg = Message(sender=self.example_user("othello"), realm=realm)
         boring_msg.set_topic_name("no match here")
         converted_boring_topic = topic_links(realm.id, boring_msg.topic_name())
         self.assertEqual(converted_boring_topic, [])
 
     def test_is_status_message(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         content = "/me makes a list\n* one\n* two"
         rendering_result = render_markdown(msg, content)
@@ -1548,7 +1600,9 @@ class MarkdownTest(ZulipTestCase):
     def test_alert_words(self) -> None:
         user_profile = self.example_user("othello")
         do_add_alert_words(user_profile, ["ALERTWORD", "scaryword"])
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
         realm_alert_words_automaton = get_alert_word_automaton(user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
@@ -1563,7 +1617,9 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(rendering_result.user_ids_with_alert_words, {user_profile.id})
 
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
         content = "We have a NOTHINGWORD day today!"
         rendering_result = render(msg, content)
         self.assertEqual(
@@ -1586,7 +1642,11 @@ class MarkdownTest(ZulipTestCase):
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user("polonius")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
@@ -1620,7 +1680,11 @@ class MarkdownTest(ZulipTestCase):
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user("polonius")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
@@ -1658,7 +1722,11 @@ class MarkdownTest(ZulipTestCase):
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user("polonius")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
@@ -1690,7 +1758,9 @@ class MarkdownTest(ZulipTestCase):
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user("polonius")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
@@ -1724,7 +1794,11 @@ class MarkdownTest(ZulipTestCase):
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user("polonius")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
@@ -1750,7 +1824,11 @@ class MarkdownTest(ZulipTestCase):
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user("polonius")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
@@ -1828,7 +1906,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_mention_topic_wildcard(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         for topic_wildcard in topic_wildcards:
             content = f"@**{topic_wildcard}** test"
@@ -1842,7 +1922,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_mention_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         for stream_wildcard in stream_wildcards:
             content = f"@**{stream_wildcard}** test"
@@ -1856,7 +1938,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_mention_at_topic_wildcard(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         for topic_wildcard in topic_wildcards:
             content = f"@{topic_wildcard} test"
@@ -1868,7 +1952,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_mention_at_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         for stream_wildcard in stream_wildcards:
             content = f"@{stream_wildcard} test"
@@ -1880,7 +1966,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_mention_word_starting_with_at_wildcard(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         content = "test @alleycat.com test"
         rendering_result = render_markdown(msg, content)
@@ -1890,7 +1978,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_mention_at_normal_user(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         content = "@aaron test"
         rendering_result = render_markdown(msg, content)
@@ -1901,7 +1991,9 @@ class MarkdownTest(ZulipTestCase):
     def test_mention_single(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
         user_id = user_profile.id
 
         content = "@**King Hamlet**"
@@ -1923,7 +2015,11 @@ class MarkdownTest(ZulipTestCase):
     def test_mention_with_valid_special_characters_before(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         user_id = user_profile.id
 
         valid_characters_before_mention = ["(", "{", "[", "/", "<"]
@@ -1940,7 +2036,11 @@ class MarkdownTest(ZulipTestCase):
 
     def test_mention_with_invalid_special_characters_before(self) -> None:
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
 
         invalid_characters_before_mention = [".", ",", ";", ":", "#"]
         for character in invalid_characters_before_mention:
@@ -1955,7 +2055,11 @@ class MarkdownTest(ZulipTestCase):
     def test_mention_silent(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         user_id = user_profile.id
 
         content = "@_**King Hamlet**"
@@ -1970,7 +2074,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_silent_stream_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         for wildcard in stream_wildcards:
             content = f"@_**{wildcard}**"
@@ -1983,7 +2089,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_silent_topic_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         for wildcard in topic_wildcards:
             content = f"@_**{wildcard}**"
@@ -1997,7 +2105,11 @@ class MarkdownTest(ZulipTestCase):
     def test_mention_invalid_followed_by_valid(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         user_id = user_profile.id
 
         content = "@**Invalid user** and @**King Hamlet**"
@@ -2013,7 +2125,11 @@ class MarkdownTest(ZulipTestCase):
     def test_invalid_mention_not_uses_valid_mention_data(self) -> None:
         sender_user_profile = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
 
         # Even though King Hamlet will be present in mention data as
         # it was fetched for first mention but second mention is
@@ -2032,7 +2148,11 @@ class MarkdownTest(ZulipTestCase):
     def test_silent_mention_invalid_followed_by_valid(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         user_id = user_profile.id
 
         content = "@_**Invalid user** and @_**King Hamlet**"
@@ -2091,7 +2211,11 @@ class MarkdownTest(ZulipTestCase):
         sender_user_profile = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
 
         content = "@**King Hamlet** and @**Cordelia, Lear's daughter**, check this out"
 
@@ -2111,7 +2235,7 @@ class MarkdownTest(ZulipTestCase):
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
-        msg = Message(sender=othello, sending_client=get_client("test"))
+        msg = Message(sender=othello, sending_client=get_client("test"), realm=othello.realm)
 
         content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia, Lear's daughter**"
         rendering_result = render_markdown(msg, content)
@@ -2155,7 +2279,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_stream_wildcard_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
-        message = Message(sender=user_profile, sending_client=get_client("test"))
+        message = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         def assert_silent_mention(content: str, wildcard: str) -> None:
             expected = (
@@ -2176,7 +2302,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_topic_wildcard_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
-        message = Message(sender=user_profile, sending_client=get_client("test"))
+        message = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
 
         def assert_silent_mention(content: str, wildcard: str) -> None:
             expected = (
@@ -2210,7 +2338,7 @@ class MarkdownTest(ZulipTestCase):
         twin1 = make_user("twin1@example.com", "Mark Twin")
         twin2 = make_user("twin2@example.com", "Mark Twin")
         cordelia = self.example_user("cordelia")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
 
         content = f"@**Mark Twin|{twin1.id}**, @**Mark Twin|{twin2.id}** and @**Cordelia, Lear's daughter**, hi."
 
@@ -2230,7 +2358,11 @@ class MarkdownTest(ZulipTestCase):
 
     def test_mention_invalid(self) -> None:
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
 
         content = "Hey @**Nonexistent User**"
         rendering_result = render_markdown(msg, content)
@@ -2242,7 +2374,7 @@ class MarkdownTest(ZulipTestCase):
     def test_user_mention_atomic_string(self) -> None:
         sender_user_profile = self.example_user("othello")
         realm = get_realm("zulip")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         # Create a linkifier.
         url_template = r"https://trac.example.com/ticket/{id}"
         linkifier = RealmFilter(
@@ -2288,7 +2420,11 @@ class MarkdownTest(ZulipTestCase):
     def test_user_group_mention_single(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         user_id = user_profile.id
         user_group = self.create_user_group_for_test("support")
 
@@ -2309,7 +2445,11 @@ class MarkdownTest(ZulipTestCase):
     def test_invalid_user_group_followed_by_valid_mention_single(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         user_id = user_profile.id
         user_group = self.create_user_group_for_test("support")
 
@@ -2331,7 +2471,7 @@ class MarkdownTest(ZulipTestCase):
     def test_user_group_mention_atomic_string(self) -> None:
         sender_user_profile = self.example_user("othello")
         realm = get_realm("zulip")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         user_profile = self.example_user("hamlet")
         # Create a linkifier.
         url_template = r"https://trac.example.com/ticket/{id}"
@@ -2383,7 +2523,11 @@ class MarkdownTest(ZulipTestCase):
 
     def test_user_group_mention_multiple(self) -> None:
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         support = self.create_user_group_for_test("support")
         backend = self.create_user_group_for_test("backend")
 
@@ -2441,7 +2585,11 @@ class MarkdownTest(ZulipTestCase):
 
     def test_user_group_mention_invalid(self) -> None:
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
 
         content = "Hey @*Nonexistent group*"
         rendering_result = render_markdown(msg, content)
@@ -2452,7 +2600,11 @@ class MarkdownTest(ZulipTestCase):
 
     def test_user_group_silent_mention(self) -> None:
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         support = self.create_user_group_for_test("support")
 
         content = "We'll add you to @_*support* user group."
@@ -2468,7 +2620,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_user_group_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
-        message = Message(sender=user_profile, sending_client=get_client("test"))
+        message = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
         backend = self.create_user_group_for_test("backend")
 
         def assert_silent_mention(content: str) -> None:
@@ -2496,13 +2650,13 @@ class MarkdownTest(ZulipTestCase):
         content = "@*role:moderators* @**King Hamlet** test message"
 
         # Owner cannot mention a system user group.
-        msg = Message(sender=desdemona, sending_client=get_client("test"))
+        msg = Message(sender=desdemona, sending_client=get_client("test"), realm=desdemona.realm)
         rendering_result = render_markdown(msg, content)
         self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
         self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
 
         # Admin belonging to user group also cannot mention a system user group.
-        msg = Message(sender=iago, sending_client=get_client("test"))
+        msg = Message(sender=iago, sending_client=get_client("test"), realm=iago.realm)
         rendering_result = render_markdown(msg, content)
         self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
         self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
@@ -2510,7 +2664,11 @@ class MarkdownTest(ZulipTestCase):
     def test_stream_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         content = "#**Denmark**"
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
@@ -2522,7 +2680,11 @@ class MarkdownTest(ZulipTestCase):
     def test_invalid_stream_followed_by_valid_mention(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         content = "#**Invalid** and #**Denmark**"
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
@@ -2533,7 +2695,11 @@ class MarkdownTest(ZulipTestCase):
 
     def test_stream_multiple(self) -> None:
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         realm = get_realm("zulip")
         denmark = get_stream("Denmark", realm)
         scotland = get_stream("Scotland", realm)
@@ -2554,7 +2720,7 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         case_sens = self.make_stream(stream_name="CaseSens", realm=realm)
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**CaseSens**"
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
@@ -2570,7 +2736,7 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.make_stream(stream_name="CaseSens", realm=realm)
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**casesens**"
         self.assertEqual(
             render_markdown(msg, content).rendered_content, "<p>#<strong>casesens</strong></p>"
@@ -2579,7 +2745,11 @@ class MarkdownTest(ZulipTestCase):
     def test_topic_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         content = "#**Denmark>some topic**"
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
@@ -2603,7 +2773,7 @@ class MarkdownTest(ZulipTestCase):
         )
         # Create a topic link that potentially interferes with the pattern.
         denmark = get_stream("Denmark", realm)
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**Denmark>#1234**"
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
@@ -2616,7 +2786,11 @@ class MarkdownTest(ZulipTestCase):
         denmark = get_stream("Denmark", get_realm("zulip"))
         scotland = get_stream("Scotland", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
         content = "This has two links: #**Denmark>some topic** and #**Scotland>other topic**."
         self.assertEqual(
             render_markdown(msg, content).rendered_content,
@@ -2645,7 +2819,7 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         uni = self.make_stream(stream_name="привет", realm=realm)
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**привет**"
         quoted_name = ".D0.BF.D1.80.D0.B8.D0.B2.D0.B5.D1.82"
         href = f"/#narrow/stream/{uni.id}-{quoted_name}"
@@ -2669,7 +2843,7 @@ class MarkdownTest(ZulipTestCase):
         )
         # Create a stream that potentially interferes with the pattern.
         stream = self.make_stream(stream_name="Stream #1234", realm=realm)
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**Stream #1234**"
         href = f"/#narrow/stream/{stream.id}-Stream-.231234"
         self.assertEqual(
@@ -2682,7 +2856,11 @@ class MarkdownTest(ZulipTestCase):
 
     def test_stream_invalid(self) -> None:
         sender_user_profile = self.example_user("othello")
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
 
         content = "There #**Nonexistentstream**"
         rendering_result = render_markdown(msg, content)
