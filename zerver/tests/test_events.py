@@ -218,6 +218,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
+    RealmFilter,
     RealmPlayground,
     RealmUserDefault,
     Service,
@@ -2166,8 +2167,10 @@ class NormalActionsTest(BaseAction):
         )
         check_realm_linkifiers("events[0]", events[0])
 
+        linkifier_id = events[0]["realm_linkifiers"][-1]["id"]
+        self.assertEqual(RealmFilter.objects.get(id=linkifier_id).pattern, regex)
+
         regex = "#(?P<id>[0-9]+)"
-        linkifier_id = events[0]["realm_linkifiers"][0]["id"]
         events = self.verify_action(
             lambda: do_update_linkifier(
                 self.user_profile.realm, linkifier_id, regex, url, acting_user=None

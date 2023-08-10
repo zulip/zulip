@@ -772,9 +772,9 @@ class FetchInitialStateDataTest(ZulipTestCase):
             linkifier_url_template=True,
         )
         self.assertEqual(result["realm_filters"], [])
-        self.assertEqual(result["realm_linkifiers"][0]["pattern"], "#(?P<id>[123])")
+        self.assertEqual(result["realm_linkifiers"][-1]["pattern"], "#(?P<id>[123])")
         self.assertEqual(
-            result["realm_linkifiers"][0]["url_template"],
+            result["realm_linkifiers"][-1]["url_template"],
             "https://realm.com/my_realm_filter/{id}",
         )
 
