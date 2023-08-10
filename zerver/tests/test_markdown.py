@@ -22,9 +22,11 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
-from zerver.lib.emoji import get_emoji_url
+from zerver.lib.emoji import codepoint_to_name, get_emoji_url
+from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import JsonableError, MarkdownRenderingError
 from zerver.lib.markdown import (
+    POSSIBLE_EMOJI_RE,
     InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
@@ -3156,3 +3158,17 @@ class MarkdownErrorTests(ZulipTestCase):
 
         result = processor.run(markdown_input)
         self.assertEqual(result, expected)
+
+
+class MarkdownEmojiTest(ZulipTestCase):
+    def test_all_emoji_match_regex(self) -> None:
+        non_matching_emoji = [
+            emoji
+            for codepoint in codepoint_to_name
+            if not POSSIBLE_EMOJI_RE.fullmatch(emoji := hex_codepoint_to_emoji(codepoint))
+        ]
+        self.assertEqual(
+            non_matching_emoji,
+            # unqualified numbers in boxes shouldn't be converted to emoji images, so this is fine
+            ["#⃣", "*⃣", "0⃣", "1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣"],
+        )

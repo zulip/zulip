@@ -3,6 +3,8 @@
 from collections import defaultdict
 from typing import Any, Dict, List
 
+from zerver.lib.emoji_utils import emoji_to_hex_codepoint, hex_codepoint_to_emoji, unqualify_emoji
+
 # Emoji sets that we currently support.
 EMOJISETS = ["google", "twitter"]
 
@@ -61,18 +63,12 @@ def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[s
 
 
 def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
-    # Starting from version 4.0.0, `emoji_datasource` package has started to
-    # add an emoji presentation variation selector for certain emojis which
-    # have defined variation sequences. Since in informal environments(like
-    # texting and chat), it is more appropriate for an emoji to have a colorful
-    # display so until emoji characters have a text presentation selector, it
-    # should have a colorful display. Hence we can continue using emoji characters
-    # without appending emoji presentation selector.
-    # (http://unicode.org/reports/tr51/index.html#Presentation_Style)
-    # If `non_qualified` field is present and not None return it otherwise
-    # return `unified` field.
-    emoji_code = emoji_dict.get("non_qualified") or emoji_dict["unified"]
-    return emoji_code.lower()
+    # There is a `non_qualified` field on `emoji_dict` but it's
+    # inconsistently present, so we'll always use the unqualified
+    # emoji by unqualifying it ourselves. This gives us more consistent
+    # behaviour between emojis, and doesn't rely on the incomplete
+    # upstream package (https://github.com/iamcal/emoji-data/pull/217).
+    return emoji_to_hex_codepoint(unqualify_emoji(hex_codepoint_to_emoji(emoji_dict["unified"])))
 
 
 # Returns a dict from categories to list of codepoints. The list of

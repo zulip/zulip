@@ -1707,7 +1707,9 @@ regex==2023.8.8 \
     --hash=sha256:f2181c20ef18747d5f4a7ea513e09ea03bdd50884a11ce46066bb90fe4213675 \
     --hash=sha256:f2200e00b62568cfd920127782c61bc1c546062a879cdc741cfcc6976668dfcf \
     --hash=sha256:fcbdc5f2b0f1cd0f6a56cdb46fe41d2cce1e644e3b68832f3eeebc5fb0f7712e
-    # via talon-core
+    # via
+    #   -r requirements/common.in
+    #   talon-core
 requests[security]==2.31.0 \
     --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
     --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1

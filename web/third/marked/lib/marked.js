@@ -537,12 +537,12 @@ inline.breaks = merge({}, inline.gfm, {
   text: replace(inline.gfm.text)('{2,}', '*')()
 });
 
+// From https://unicode.org/reports/tr51/#EBNF_and_Regex. Keep this synced with POSSIBLE_EMOJI_RE.
+const possible_emoji_regex = /^(\p{RI}\p{RI}|\p{Emoji}(?:\p{Emoji_Modifier}|\u{FE0F}\u{20E3}?|[\u{E0020}-\u{E007E}]+\u{E007F})?(?:\u{200D}(?:\p{RI}\p{RI}|\p{Emoji}(?:\p{Emoji_Modifier}|\u{FE0F}\u{20E3}?|[\u{E0020}-\u{E007E}]+\u{E007F})?))*)/u;
+
 inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
-  unicodeemoji: RegExp('^(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
-                       '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
-                       '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
-                       '[\u3000-\u303F]|[\u3200-\u32FF])'),
+  unicodeemoji: possible_emoji_regex,
   usermention: /^@(_?)(?:\*\*([^\*]+)\*\*)/, // Match potentially multi-word string between @** **
   groupmention: /^@(_?)(?:\*([^\*]+)\*)/, // Match multi-word string between @* *
   stream_topic: /^#\*\*([^\*>]+)>([^\*]+)\*\*/,

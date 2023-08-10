@@ -589,6 +589,41 @@
       "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>"
     },
     {
+      "name": "emoji_sequence_one",
+      "input": "🤷‍♀️",
+      "expected_output": "<p><span aria-label=\"woman shrugging\" class=\"emoji emoji-1f937-200d-2640\" role=\"img\" title=\"woman shrugging\">:woman_shrugging:</span></p>"
+    },
+    {
+      "name": "emoji_sequence_two",
+      "input": "👁‍🗨 #️⃣",
+      "expected_output": "<p><span aria-label=\"eye in speech bubble\" class=\"emoji emoji-1f441-200d-1f5e8\" role=\"img\" title=\"eye in speech bubble\">:eye_in_speech_bubble:</span> <span aria-label=\"hash\" class=\"emoji emoji-0023-20e3\" role=\"img\" title=\"hash\">:hash:</span></p>"
+    },
+    {
+      "name": "unrecognized_emoji_sequence_one",
+      "input": "pheonix bird from 15.1: 🐦‍🔥",
+      "expected_output": "<p>pheonix bird from 15.1: 🐦‍🔥</p>"
+    },
+    {
+      "name": "unrecognized_emoji_sequence_two",
+      "input": "lime from 15.1: 🍋‍🟩",
+      "expected_output": "<p>lime from 15.1: 🍋‍🟩</p>"
+    },
+    {
+      "name": "unrecognized_emoji_sequence_three",
+      "input": "normal lemon 🍋, purple lemon? 🍋‍🟪",
+      "expected_output": "<p>normal lemon <span aria-label=\"lemon\" class=\"emoji emoji-1f34b\" role=\"img\" title=\"lemon\">:lemon:</span>, purple lemon? 🍋‍🟪</p>"
+    },
+    {
+      "name": "unrecognized_emoji_sequence_four",
+      "input": "medium-skinned person riding scooter back and forth: 🧑🏽‍🛴‍↩️",
+      "expected_output": "<p>medium-skinned person riding scooter back and forth: 🧑🏽‍🛴‍↩️</p>"
+    },
+    {
+      "name": "unrecognized_emoji_sequence_skin_tone",
+      "input": "man in manual wheelchair: dark skin tone 👨🏿‍🦽",
+      "expected_output": "<p>man in manual wheelchair: dark skin tone 👨🏿‍🦽</p>"
+    },
+    {
       "name": "emojis_without_space",
       "input": ":cat:hello:dog::rabbit:",
       "expected_output": "<p><span aria-label=\"cat\" class=\"emoji emoji-1f408\" role=\"img\" title=\"cat\">:cat:</span>hello<span aria-label=\"dog\" class=\"emoji emoji-1f415\" role=\"img\" title=\"dog\">:dog:</span><span aria-label=\"rabbit\" class=\"emoji emoji-1f407\" role=\"img\" title=\"rabbit\">:rabbit:</span></p>",
@@ -642,7 +677,7 @@
     },
     {
       "name": "miscellaneous_symbols_and_arrows",
-      "input": "Black upward arrow \u2b06",
+      "input": "Black upward arrow \u2b06\ufe0f",
       "expected_output":"<p>Black upward arrow <span aria-label=\"up\" class=\"emoji emoji-2b06\" role=\"img\" title=\"up\">:up:</span><\/p>"
     },
     {

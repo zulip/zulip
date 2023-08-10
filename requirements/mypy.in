@@ -21,6 +21,7 @@ types-Pygments
 types-python-dateutil
 types-PyYAML
 types-redis
+types-regex
 types-requests
 types-stripe
 types-zxcvbn
