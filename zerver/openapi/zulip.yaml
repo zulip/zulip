@@ -5685,13 +5685,7 @@ paths:
             (that specific large value works around a bug in Zulip
             2.1.x and older in the `found_newest` return value).
           schema:
-            oneOf:
-              - type: string
-                enum:
-                  - newest
-                  - oldest
-                  - first_unread
-              - type: integer
+            $ref: "#/components/schemas/Anchor"
           example: 43
         - name: include_anchor
           in: query
@@ -6447,13 +6441,7 @@ paths:
             - `first_unread`: The oldest unread message matching the
               query, if any; otherwise, the most recent message.
           schema:
-            oneOf:
-              - type: string
-                enum:
-                  - newest
-                  - oldest
-                  - first_unread
-              - type: integer
+            $ref: "#/components/schemas/Anchor"
           example: 43
           required: true
         - name: include_anchor
@@ -16967,6 +16955,14 @@ components:
       description: |
         The event's type, relevant both for client-side dispatch and server-side
         filtering by event type in [POST /register](/api/register-queue).
+    Anchor:
+      oneOf:
+        - type: string
+          enum:
+            - newest
+            - oldest
+            - first_unread
+        - type: integer
     Attachments:
       type: object
       description: |
