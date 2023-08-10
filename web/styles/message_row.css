@@ -246,6 +246,15 @@ $time_column_min_width: 50px; /* + padding */
         .message_length_controller {
             grid-area: more;
         }
+
+        &.content_edit_mode .message_length_controller {
+            /* If entering edit mode on a collapsed message,
+               just hide the controller area. This preserves
+               the collapsed state of the message, which need
+               not be touched. We just need to hide the button.
+               This works for condensed messages, too. */
+            display: none;
+        }
     }
 
     &.include-sender {
