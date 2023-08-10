@@ -449,8 +449,8 @@ def add_realm_filter(client: Client) -> None:
 @openapi_test_function("/realm/filters/{filter_id}:patch")
 def update_realm_filter(client: Client) -> None:
     # {code_example|start}
-    # Update the linkifier (realm_filter) with ID 1
-    filter_id = 1
+    # Update the linkifier (realm_filter) with ID 4
+    filter_id = 4
     request = {
         "pattern": "#(?P<id>[0-9]+)",
         "url_template": "https://github.com/zulip/zulip/issues/{id}",
@@ -467,8 +467,8 @@ def update_realm_filter(client: Client) -> None:
 @openapi_test_function("/realm/filters/{filter_id}:delete")
 def remove_realm_filter(client: Client) -> None:
     # {code_example|start}
-    # Remove the linkifier (realm_filter) with ID 1
-    result = client.remove_realm_filter(1)
+    # Remove the linkifier (realm_filter) with ID 4
+    result = client.remove_realm_filter(4)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "delete", "200")

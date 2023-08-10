@@ -7,6 +7,11 @@ from zerver.models import RealmFilter, url_template_validator
 
 
 class RealmFilterTest(ZulipTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        iago = self.example_user("iago")
+        RealmFilter.objects.filter(realm=iago.realm).delete()
+
     def test_list(self) -> None:
         self.login("iago")
         data = {

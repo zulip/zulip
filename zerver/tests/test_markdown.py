@@ -1453,6 +1453,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_linkifier_precedence(self) -> None:
         realm = self.example_user("hamlet").realm
+        RealmFilter.objects.filter(realm=realm).delete()
         # The insertion order should not affect the fact that the linkifiers are ordered by id.
         # Note that we might later switch to a different field to order the linkifiers.
         sequence = (10, 3, 11, 2, 4, 5, 6)

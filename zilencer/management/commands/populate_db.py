@@ -26,6 +26,7 @@ from zerver.actions.custom_profile_fields import (
 )
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
@@ -794,6 +795,24 @@ class Command(BaseCommand):
                 message_content="Note to self: It's been a while since you've provisioned this development environment.",
                 deliver_at=timezone_now() + timedelta(days=365),
                 realm=zulip_realm,
+            )
+            do_add_linkifier(
+                zulip_realm,
+                "#D(?P<id>[0-9]{2,8})",
+                "https://github.com/zulip/zulip-desktop/pull/{id}",
+                acting_user=None,
+            )
+            do_add_linkifier(
+                zulip_realm,
+                "zulip-mobile#(?P<id>[0-9]{2,8})",
+                "https://github.com/zulip/zulip-mobile/pull/{id}",
+                acting_user=None,
+            )
+            do_add_linkifier(
+                zulip_realm,
+                "zulip-(?P<repo>[a-zA-Z-_0-9]+)#(?P<id>[0-9]{2,8})",
+                "https://github.com/zulip/{repo}/pull/{id}",
+                acting_user=None,
             )
         else:
             zulip_realm = get_realm("zulip")
