@@ -266,6 +266,23 @@ $time_column_min_width: 50px; /* + padding */
             grid-area: more;
         }
 
+        .collapsed ~ .message_length_controller {
+            /* When content is collapsed, the length controller
+               should occupy the space ordinarily assigned to
+               the message. */
+            grid-area: message;
+            /* However, don't let the SHOW MORE button participate
+               in the baseline group. */
+            align-self: start;
+
+            .message_length_toggle {
+                /* Ensure that a collapsed message maintains the
+                   same space around the toggle button as any other
+                   message-row content. */
+                margin: 4px 0;
+            }
+        }
+
         &.content_edit_mode .message_length_controller {
             /* If entering edit mode on a collapsed message,
                just hide the controller area. This preserves
