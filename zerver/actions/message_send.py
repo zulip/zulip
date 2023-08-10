@@ -986,7 +986,7 @@ def do_send_messages(
         ]
 
         presence_idle_user_ids = get_active_presence_idle_user_ids(
-            realm=sender.realm,
+            realm=send_request.realm,
             sender_id=sender.id,
             user_notifications_data_list=user_notifications_data_list,
         )
@@ -1051,9 +1051,7 @@ def do_send_messages(
             queue_json_publish("embed_links", event_data)
 
         if send_request.message.recipient.type == Recipient.PERSONAL:
-            welcome_bot_id = get_system_bot(
-                settings.WELCOME_BOT, send_request.message.sender.realm_id
-            ).id
+            welcome_bot_id = get_system_bot(settings.WELCOME_BOT, send_request.realm.id).id
             if (
                 welcome_bot_id in send_request.active_user_ids
                 and welcome_bot_id != send_request.message.sender_id
