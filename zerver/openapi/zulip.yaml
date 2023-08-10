@@ -5687,6 +5687,10 @@ paths:
           schema:
             oneOf:
               - type: string
+                enum:
+                  - newest
+                  - oldest
+                  - first_unread
               - type: integer
           example: 43
         - name: include_anchor
@@ -6445,6 +6449,10 @@ paths:
           schema:
             oneOf:
               - type: string
+                enum:
+                  - newest
+                  - oldest
+                  - first_unread
               - type: integer
           example: 43
           required: true
