@@ -1623,9 +1623,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     return recipient_map
 
 
-def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
-    realm = sender.realm
-
+def wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) -> bool:
     # If there are fewer than Realm.WILDCARD_MENTION_THRESHOLD, we
     # allow sending.  In the future, we may want to make this behavior
     # a default, and also just allow explicitly setting whether this
