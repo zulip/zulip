@@ -34,16 +34,17 @@ def get_display_recipient_cache_key(
 @cache_with_key(get_display_recipient_cache_key, timeout=3600 * 24 * 7)
 def get_display_recipient_remote_cache(
     recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
-) -> DisplayRecipientT:
+) -> List[UserDisplayRecipient]:
     """
-    returns: an appropriate object describing the recipient.  For a
-    stream this will be the stream name as a string.  For a huddle or
-    personal, it will be an array of dicts about each recipient.
+    This returns an appropriate object describing the recipient of a
+    direct message (whether individual or group).
+
+    It will be an array of dicts for each recipient.
+
+    Do not use this for streams.
     """
-    if recipient_type == Recipient.STREAM:  # nocoverage
-        assert recipient_type_id is not None
-        stream = Stream.objects.values("name").get(id=recipient_type_id)
-        return stream["name"]
+
+    assert recipient_type != Recipient.STREAM
 
     # The main priority for ordering here is being deterministic.
     # Right now, we order by ID, which matches the ordering of user

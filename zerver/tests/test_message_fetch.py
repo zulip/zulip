@@ -43,7 +43,7 @@ from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
 from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
-from zerver.lib.types import DisplayRecipientT
+from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.upload.base import create_attachment
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.user_topics import set_topic_visibility_policy
@@ -2024,11 +2024,11 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         me = self.example_user("hamlet")
 
-        def dr_emails(dr: DisplayRecipientT) -> str:
+        def dr_emails(dr: List[UserDisplayRecipient]) -> str:
             assert isinstance(dr, list)
             return ",".join(sorted({*(r["email"] for r in dr), me.email}))
 
-        def dr_ids(dr: DisplayRecipientT) -> List[int]:
+        def dr_ids(dr: List[UserDisplayRecipient]) -> List[int]:
             assert isinstance(dr, list)
             return sorted({*(r["id"] for r in dr), self.example_user("hamlet").id})
 
