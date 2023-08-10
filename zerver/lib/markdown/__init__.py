@@ -1146,7 +1146,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             }
             if (
                 uncle.tag != "div"
-                or "class" not in uncle.keys()
+                or "class" not in uncle.attrib
                 or not (set(uncle.attrib["class"].split()) & inline_image_classes)
             ):
                 return insertion_index
