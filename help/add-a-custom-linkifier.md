@@ -27,6 +27,23 @@ support](/help/contact-support) with details on what you're trying to do.
 
 {end_tabs}
 
+### Reorder linkifiers
+
+Linkifiers are processed in order, and will not apply to text that
+already is linkified. One can thus configure multiple linkifiers with
+overlapping syntax, and only the first one whose regular expression
+matches a given part of a message will take effect. See the
+[overlapping patterns section](#overlapping-patterns) for examples.
+
+{start_tabs}
+
+{settings_tab|linkifier-settings}
+
+1. Under **Linkifiers**, click and drag existing linkifiers into
+   the desired order.
+
+{end_tabs}
+
 ## Common linkifier patterns
 
 The following examples cover the most common types of linkifiers, with a focus
@@ -155,3 +172,40 @@ This example pattern allows linking to Google searches.
     This pattern uses the `{?var}` expression type. With the default expression
     type (`{q}`), there would be no way to only include the `?` in the URL
     if the optional `q` is present.
+
+### Overlapping patterns
+
+In this example, a general linkifier is configured to make GitHub
+repository references like `zulip-desktop#123` link to issues in that
+repository within the `zulip` GitHub organization. A more specific
+linkifier overrides that linkifier for a specific repository of
+interest (`django/django`) that is in a different organization.
+
+{start_tabs}
+
+* Specific linkifier (ordered before the general linkifier)
+    * Pattern: `django#(?P<id>[0-9]+)`
+    * URL template: `https://github.com/django/django/pull/{id}`
+
+* General linkifier
+    * Pattern: `(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)`
+    * URL template: `https://github.com/zulip/{repo}/pull/{id}`
+
+* Example matching both linkifiers; specific linkifier takes precedence:
+    * Original text: `django#123`
+    * Automatically links to: `https://github.com/django/django/pull/123`
+
+* Example matching only the general linkifier:
+    * Original text: `zulip-desktop#123`
+    * Automatically links to: `https://github.com/zulip/zulip-desktop/pull/123`
+
+{end_tabs}
+
+!!! tip ""
+
+    This set of patterns has overlapping regular expressions. Note that
+    the general linkifier pattern would match `lorem#123` too. The specific
+    linkifier will only get prioritized over the general linkifier if it is
+    ordered before the more general pattern. This can be customized by
+    dragging and dropping existing linkifiers into the desired order. New
+    linkifiers will automatically be ordered last.

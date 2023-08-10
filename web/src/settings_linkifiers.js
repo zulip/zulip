@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {Sortable} from "sortablejs";
 
 import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
@@ -26,23 +27,6 @@ export function maybe_disable_widgets() {
     if (page_params.is_admin) {
         return;
     }
-}
-
-function compare_values(x, y) {
-    if (x > y) {
-        return 1;
-    } else if (x === y) {
-        return 0;
-    }
-    return -1;
-}
-
-function sort_pattern(a, b) {
-    return compare_values(a.pattern, b.pattern);
-}
-
-function sort_url(a, b) {
-    return compare_values(a.url_template, b.url_template);
 }
 
 function open_linkifier_edit_form(linkifier_id) {
@@ -108,6 +92,19 @@ function open_linkifier_edit_form(linkifier_id) {
     });
 }
 
+function update_linkifiers_order() {
+    const order = [];
+    $(".linkifier_row").each(function () {
+        order.push(Number.parseInt($(this).attr("data-linkifier-id"), 10));
+    });
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/realm/linkifiers",
+        {ordered_linkifier_ids: JSON.stringify(order)},
+        $("#linkifier-field-status").expectOne(),
+    );
+}
+
 function handle_linkifier_api_error(xhr, pattern_status, template_status, linkifier_status) {
     // The endpoint uses the Django ValidationError system for error
     // handling, which returns somewhat complicated error
@@ -159,13 +156,16 @@ export function populate_linkifiers(linkifiers_data) {
             },
         },
         $parent_container: $("#linkifier-settings").expectOne(),
-        init_sort: sort_pattern,
-        sort_fields: {
-            pattern: sort_pattern,
-            url: sort_url,
-        },
         $simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
     });
+
+    if (page_params.is_admin) {
+        Sortable.create($linkifiers_table[0], {
+            onUpdate: update_linkifiers_order,
+            filter: "input",
+            preventOnFilter: false,
+        });
+    }
 }
 
 export function set_up() {
