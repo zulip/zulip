@@ -465,7 +465,7 @@ class MessageDict:
                 return realm_id
             if message.recipient.type == Recipient.STREAM:
                 return Stream.objects.get(id=message.recipient.type_id).realm_id
-            return message.sender.realm_id
+            return message.realm_id
 
         message_rows = [
             {

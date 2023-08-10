@@ -95,7 +95,7 @@ def check_add_reaction(
     message, user_message = access_message(user_profile, message_id, lock_message=True)
 
     if emoji_code is None or reaction_type is None:
-        emoji_data = get_emoji_data(message.sender.realm_id, emoji_name)
+        emoji_data = get_emoji_data(message.realm_id, emoji_name)
 
         if emoji_code is None:
             # The emoji_code argument is only required for rare corner

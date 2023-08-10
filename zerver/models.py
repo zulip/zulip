@@ -3012,7 +3012,7 @@ class Message(AbstractMessage):
         return self.recipient.type == Recipient.STREAM
 
     def get_realm(self) -> Realm:
-        return self.sender.realm
+        return self.realm
 
     def save_rendered_content(self) -> None:
         self.save(update_fields=["rendered_content", "rendered_content_version"])
