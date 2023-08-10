@@ -276,7 +276,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Verify that the user was sent a message informing them about
         # the failed scheduled message.
-        realm = scheduled_message.sender.realm
+        realm = scheduled_message.realm
         msg = most_recent_message(scheduled_message.sender)
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
@@ -290,7 +290,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Verify realm isn't deactivated and get user's most recent
         # message.
-        self.assertFalse(scheduled_message.sender.realm.deactivated)
+        self.assertFalse(scheduled_message.realm.deactivated)
         message_before_deactivation = most_recent_message(scheduled_message.sender)
 
         more_than_scheduled_delivery_datetime = (
@@ -306,7 +306,7 @@ class ScheduledMessageTest(ZulipTestCase):
             )
 
         # Verify that no failed scheduled message notification was sent.
-        self.assertTrue(scheduled_message.sender.realm.deactivated)
+        self.assertTrue(scheduled_message.realm.deactivated)
         message_after_deactivation = most_recent_message(scheduled_message.sender)
         self.assertEqual(message_after_deactivation.content, message_before_deactivation.content)
         self.assertNotIn(expected_failure_message, message_after_deactivation.content)
@@ -373,7 +373,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Verify that the user was sent a message informing them about
         # the failed scheduled message.
-        realm = scheduled_message.sender.realm
+        realm = scheduled_message.realm
         msg = most_recent_message(scheduled_message.sender)
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
