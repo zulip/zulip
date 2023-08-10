@@ -185,14 +185,14 @@ def get_emoji_file_content(
     logger.info("Downloading %s", original_emoji_url)
     response = session.get(original_emoji_url)
     if response.status_code == 200:
-        assert type(response.content) == bytes
+        assert isinstance(response.content, bytes)
         return response.content
 
     logger.info("Error fetching emoji from URL %s", original_emoji_url)
     logger.info("Trying %s instead", emoji_url)
     response = session.get(emoji_url)
     if response.status_code == 200:
-        assert type(response.content) == bytes
+        assert isinstance(response.content, bytes)
         return response.content
     logger.info("Error fetching emoji from URL %s", emoji_url)
     logger.error("Could not fetch emoji %s", emoji_id)
