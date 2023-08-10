@@ -3205,15 +3205,12 @@ paths:
                                 realm_linkifiers:
                                   type: array
                                   description: |
-                                    An ordered array of dictionaries where each
-                                    dictionary contains details about a single
-                                    realm linkifier.
+                                    An ordered array of dictionaries where each dictionary contains
+                                    details about a single linkifier.
 
-                                    The order of the array reflects the order
-                                    that each linkifier should be processed when
-                                    linkifying messages and topics. By default,
-                                    new linkifiers are ordered last. This order
-                                    can be modified with [`PATCH
+                                    Clients should always process linkifiers in the order given;
+                                    this is important if the realm has linkifiers with overlapping
+                                    patterns. The order can be modified using [`PATCH
                                     /realm/linkifiers`](/api/reorder-linkifiers).
                                   items:
                                     type: object
@@ -10617,10 +10614,9 @@ paths:
                           An ordered array of objects, where each object
                           describes a linkifier.
 
-                          The order of the array reflects the order that each
-                          linkifier should be processed when linkifying messages
-                          and topics. By default, new linkifiers are ordered
-                          last. This order can be modified with [`PATCH
+                          Clients should always process linkifiers in the order given;
+                          this is important if the realm has linkifiers with overlapping
+                          patterns. The order can be modified using [`PATCH
                           /realm/linkifiers`](/api/reorder-linkifiers).
                         items:
                           type: object

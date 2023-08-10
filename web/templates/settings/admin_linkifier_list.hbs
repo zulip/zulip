@@ -1,6 +1,10 @@
 {{#with linkifier}}
-<tr class="linkifier_row">
+<tr class="linkifier_row{{#if ../can_modify}} movable-row{{/if}}" data-linkifier-id="{{id}}">
     <td>
+        {{#if ../can_modify}}
+            <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+            <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+        {{/if}}
         <span class="linkifier_pattern">{{pattern}}</span>
     </td>
     <td>

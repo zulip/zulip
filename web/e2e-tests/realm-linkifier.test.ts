@@ -20,29 +20,30 @@ async function test_add_linkifier(page: Page): Promise<void> {
     );
     assert.strictEqual(admin_linkifier_status, "Custom linkifier added!");
 
-    await page.waitForSelector(".linkifier_row", {visible: true});
+    await page.waitForSelector(".linkifier_row:nth-child(4)", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".linkifier_row:nth-child(1) span.linkifier_pattern",
+            ".linkifier_row:nth-child(4) span.linkifier_pattern",
         ),
         "#(?P<id>[0-9]+)",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".linkifier_row:nth-child(1) span.linkifier_url_template",
+            ".linkifier_row:nth-child(4) span.linkifier_url_template",
         ),
         "https://trac.example.com/ticket/{id}",
     );
 }
 
 async function test_delete_linkifier(page: Page): Promise<void> {
-    await page.click(".linkifier_row:nth-child(1) .delete");
+    await page.waitForFunction(() => document.querySelectorAll(".linkifier_row").length === 4);
+    await page.click(".linkifier_row:nth-last-child(1) .delete");
     await common.wait_for_micromodal_to_open(page);
     await page.click("#confirm_delete_linkifiers_modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
-    await page.waitForFunction(() => document.querySelectorAll(".linkifier_row").length === 0);
+    await page.waitForFunction(() => document.querySelectorAll(".linkifier_row").length === 3);
 }
 
 async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
@@ -61,7 +62,7 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
 }
 
 async function test_edit_linkifier(page: Page): Promise<void> {
-    await page.click(".linkifier_row:nth-child(1) .edit");
+    await page.click(".linkifier_row:nth-last-child(1) .edit");
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "(?P<num>[0-9a-f]{40})",
@@ -72,23 +73,23 @@ async function test_edit_linkifier(page: Page): Promise<void> {
     await page.waitForSelector("#dialog_widget_modal", {hidden: true});
     await common.wait_for_micromodal_to_close(page);
 
-    await page.waitForSelector(".linkifier_row:nth-child(1)", {visible: true});
+    await page.waitForSelector(".linkifier_row:nth-last-child(1)", {visible: true});
     await page.waitForFunction(
         () =>
-            document.querySelector(".linkifier_row:nth-child(1) span.linkifier_pattern")
+            document.querySelector(".linkifier_row:nth-last-child(1) span.linkifier_pattern")
                 ?.textContent === "(?P<num>[0-9a-f]{40})",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".linkifier_row:nth-child(1) span.linkifier_url_template",
+            ".linkifier_row:nth-last-child(1) span.linkifier_url_template",
         ),
         "https://trac.example.com/commit/{num}",
     );
 }
 
 async function test_edit_invalid_linkifier(page: Page): Promise<void> {
-    await page.click(".linkifier_row:nth-child(1) .edit");
+    await page.click(".linkifier_row:nth-last-child(1) .edit");
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "#(?P<id>d????)",
@@ -118,18 +119,18 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     await page.click(".dialog_exit_button");
     await page.waitForSelector("#dialog_widget_modal", {hidden: true});
 
-    await page.waitForSelector(".linkifier_row:nth-child(1)", {visible: true});
+    await page.waitForSelector(".linkifier_row:nth-last-child(1)", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".linkifier_row:nth-child(1) span.linkifier_pattern",
+            ".linkifier_row:nth-last-child(1) span.linkifier_pattern",
         ),
         "(?P<num>[0-9a-f]{40})",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".linkifier_row:nth-child(1) span.linkifier_url_template",
+            ".linkifier_row:nth-last-child(1) span.linkifier_url_template",
         ),
         "https://trac.example.com/commit/{num}",
     );
