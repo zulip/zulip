@@ -269,7 +269,6 @@ def build_message_list(
         elif message.recipient.type == Recipient.HUDDLE:
             grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
-            assert not isinstance(display_recipient, str)
             narrow_link = huddle_narrow_url(
                 user=user,
                 display_recipient=display_recipient,
@@ -475,8 +474,6 @@ def do_send_missedmessage_events_reply_in_zulip(
     senders = list({m["message"].sender for m in missed_messages})
     if missed_messages[0]["message"].recipient.type == Recipient.HUDDLE:
         display_recipient = get_display_recipient(missed_messages[0]["message"].recipient)
-        # Make sure that this is a list of strings, not a string.
-        assert not isinstance(display_recipient, str)
         narrow_url = huddle_narrow_url(
             user=user_profile,
             display_recipient=display_recipient,
