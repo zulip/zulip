@@ -669,24 +669,24 @@ def get_gcm_alert(
         return f"New direct message from {sender_str}"
 
     assert message.is_stream_message()
-    display_recipient = get_display_recipient(message.recipient)
+    stream_name = get_display_recipient(message.recipient)
 
     if trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is None:
-            return f"{sender_str} mentioned you in #{display_recipient}"
+            return f"{sender_str} mentioned you in #{stream_name}"
         else:
-            return f"{sender_str} mentioned @{mentioned_user_group_name} in #{display_recipient}"
+            return f"{sender_str} mentioned @{mentioned_user_group_name} in #{stream_name}"
     elif trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC:
         return "TODO - 2"
     elif trigger == NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC:
         return "TODO"
     elif trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION:
-        return f"{sender_str} mentioned all topic participants in #{display_recipient} > {message.topic_name()}"
+        return f"{sender_str} mentioned all topic participants in #{stream_name} > {message.topic_name()}"
     elif trigger == NotificationTriggers.STREAM_WILDCARD_MENTION:
-        return f"{sender_str} mentioned everyone in #{display_recipient}"
+        return f"{sender_str} mentioned everyone in #{stream_name}"
     else:
         assert trigger == NotificationTriggers.STREAM_PUSH
-        return f"New stream message from {sender_str} in #{display_recipient}"
+        return f"New stream message from {sender_str} in #{stream_name}"
 
 
 def get_mobile_push_content(rendered_content: str) -> str:
