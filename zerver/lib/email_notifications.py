@@ -28,7 +28,6 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.topic import get_topic_resolution_and_bare_name
-from zerver.lib.types import DisplayRecipientT
 from zerver.lib.url_encoding import (
     huddle_narrow_url,
     personal_narrow_url,
@@ -261,18 +260,25 @@ def build_message_list(
     def message_header(message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
             grouping: Dict[str, Any] = {"user": message.sender_id}
-            narrow_link = get_narrow_url(user, message)
+            narrow_link = personal_narrow_url(
+                realm=user.realm,
+                sender=message.sender,
+            )
             header = f"You and {message.sender.full_name}"
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         elif message.recipient.type == Recipient.HUDDLE:
             grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
             assert not isinstance(display_recipient, str)
-            narrow_link = get_narrow_url(user, message, display_recipient=display_recipient)
+            narrow_link = huddle_narrow_url(
+                user=user,
+                display_recipient=display_recipient,
+            )
             other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user.id]
             header = "You and {}".format(", ".join(other_recipients))
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         else:
+            assert message.recipient.type == Recipient.STREAM
             grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
             stream_id = message.recipient.type_id
             stream = stream_map.get(stream_id, None)
@@ -280,7 +286,11 @@ def build_message_list(
                 # Some of our callers don't populate stream_map, so
                 # we just populate the stream from the database.
                 stream = Stream.objects.only("id", "name").get(id=stream_id)
-            narrow_link = get_narrow_url(user, message, stream=stream)
+            narrow_link = topic_narrow_url(
+                realm=user.realm,
+                stream=stream,
+                topic=message.topic_name(),
+            )
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
             header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
@@ -342,42 +352,6 @@ def build_message_list(
             messages_to_render.append(recipient_block)
 
     return messages_to_render
-
-
-def get_narrow_url(
-    user_profile: UserProfile,
-    message: Message,
-    display_recipient: Optional[DisplayRecipientT] = None,
-    stream: Optional[Stream] = None,
-) -> str:
-    """The display_recipient and stream arguments are optional.  If not
-    provided, we'll compute them from the message; they exist as a
-    performance optimization for cases where the caller needs those
-    data too.
-    """
-    if message.recipient.type == Recipient.PERSONAL:
-        assert stream is None
-        assert display_recipient is None
-        return personal_narrow_url(
-            realm=user_profile.realm,
-            sender=message.sender,
-        )
-    elif message.recipient.type == Recipient.HUDDLE:
-        assert stream is None
-        if display_recipient is None:
-            display_recipient = get_display_recipient(message.recipient)
-        assert display_recipient is not None
-        assert not isinstance(display_recipient, str)
-        other_user_ids = [r["id"] for r in display_recipient if r["id"] != user_profile.id]
-        return huddle_narrow_url(
-            realm=user_profile.realm,
-            other_user_ids=other_user_ids,
-        )
-    else:
-        assert display_recipient is None
-        if stream is None:
-            stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
-        return topic_narrow_url(user_profile.realm, stream, message.topic_name())
 
 
 def message_content_allowed_in_missedmessage_emails(user_profile: UserProfile) -> bool:
@@ -498,16 +472,16 @@ def do_send_missedmessage_events_reply_in_zulip(
     else:
         reply_to_name = "Zulip"
 
-    narrow_url = get_narrow_url(user_profile, missed_messages[0]["message"])
-    context.update(
-        narrow_url=narrow_url,
-    )
-
     senders = list({m["message"].sender for m in missed_messages})
     if missed_messages[0]["message"].recipient.type == Recipient.HUDDLE:
         display_recipient = get_display_recipient(missed_messages[0]["message"].recipient)
         # Make sure that this is a list of strings, not a string.
         assert not isinstance(display_recipient, str)
+        narrow_url = huddle_narrow_url(
+            user=user_profile,
+            display_recipient=display_recipient,
+        )
+        context.update(narrow_url=narrow_url)
         other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user_profile.id]
         context.update(group_pm=True)
         if len(other_recipients) == 2:
@@ -524,6 +498,11 @@ def do_send_missedmessage_events_reply_in_zulip(
             )
             context.update(huddle_display_name=huddle_display_name)
     elif missed_messages[0]["message"].recipient.type == Recipient.PERSONAL:
+        narrow_url = personal_narrow_url(
+            realm=user_profile.realm,
+            sender=missed_messages[0]["message"].sender,
+        )
+        context.update(narrow_url=narrow_url)
         context.update(private_message=True)
     elif (
         context["mention"]
@@ -547,7 +526,14 @@ def do_send_missedmessage_events_reply_in_zulip(
                 }
             )
         message = missed_messages[0]["message"]
+        assert message.recipient.type == Recipient.STREAM
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
+        narrow_url = topic_narrow_url(
+            realm=user_profile.realm,
+            stream=stream,
+            topic=message.topic_name(),
+        )
+        context.update(narrow_url=narrow_url)
         topic_resolved, topic_name = get_topic_resolution_and_bare_name(message.topic_name())
         context.update(
             stream_name=stream.name,

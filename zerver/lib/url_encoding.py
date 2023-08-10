@@ -4,6 +4,7 @@ from urllib.parse import quote, urlsplit
 import re2
 
 from zerver.lib.topic import get_topic_from_message_info
+from zerver.lib.types import UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
 
 
@@ -20,14 +21,16 @@ def encode_stream(stream_id: int, stream_name: str) -> str:
     return str(stream_id) + "-" + hash_util_encode(stream_name)
 
 
-def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
+def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
     base_url = f"{realm.uri}/#narrow/dm/"
     encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", sender.full_name)
     pm_slug = str(sender.id) + "-" + encoded_user_name
     return base_url + pm_slug
 
 
-def huddle_narrow_url(realm: Realm, other_user_ids: List[int]) -> str:
+def huddle_narrow_url(*, user: UserProfile, display_recipient: List[UserDisplayRecipient]) -> str:
+    realm = user.realm
+    other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
     pm_slug = ",".join(str(user_id) for user_id in sorted(other_user_ids)) + "-group"
     base_url = f"{realm.uri}/#narrow/dm/"
     return base_url + pm_slug
@@ -38,7 +41,7 @@ def stream_narrow_url(realm: Realm, stream: Stream) -> str:
     return base_url + encode_stream(stream.id, stream.name)
 
 
-def topic_narrow_url(realm: Realm, stream: Stream, topic: str) -> str:
+def topic_narrow_url(*, realm: Realm, stream: Stream, topic: str) -> str:
     base_url = f"{realm.uri}/#narrow/stream/"
     return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic)}"
 
