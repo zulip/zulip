@@ -196,7 +196,7 @@ def main() -> None:
             # These are known names where we don't have an ascii-only version and there are ascii aliases
             # that a user can still enter instead to get the same emoji.
             if name in ["ココ", "サ", "指", "空"]:
-                assert any(alias.isascii() for alias in aliases)
+                assert any(alias.isascii() for alias in emoji_names["aliases"])
                 continue
             if not name.isascii():
                 ascii_alias = convert_non_ascii_chars(name)
