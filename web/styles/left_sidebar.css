@@ -452,6 +452,19 @@ li.active-sub-filter {
 #global_filters {
     margin-bottom: $sections_vertical_gutter;
 
+    .global-filter-container {
+        display: flex;
+        padding-right: 20px;
+
+        .global-filter-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            flex-grow: 1;
+        }
+    }
+
     .filter-icon {
         display: inline-block;
         min-width: $left_col_size;
@@ -459,7 +472,6 @@ li.active-sub-filter {
     }
 
     .top_left_row .unread_count {
-        margin-right: 20px;
         margin-top: 2px;
         display: none;
     }
