@@ -176,7 +176,6 @@ class MessageDictTest(ZulipTestCase):
         num_ids = len(ids)
         self.assertTrue(num_ids >= 600)
 
-        flush_per_request_caches()
         with self.assert_database_query_count(7):
             rows = list(MessageDict.get_raw_db_rows(ids))
 

@@ -32,7 +32,6 @@ from zerver.models import (
     Stream,
     UserActivityInterval,
     UserProfile,
-    flush_per_request_caches,
     get_client,
     get_realm,
     get_stream,
@@ -60,7 +59,6 @@ class TestDigestEmailMessages(ZulipTestCase):
         # Remove RealmAuditLog rows, so we don't exclude polonius.
         RealmAuditLog.objects.all().delete()
 
-        flush_per_request_caches()
         # When this test is run in isolation, one additional query is run which
         # is equivalent to
         # ContentType.objects.get(app_label='zerver', model='userprofile')
@@ -137,7 +135,6 @@ class TestDigestEmailMessages(ZulipTestCase):
         # Remove RealmAuditoLog rows, so we don't exclude polonius.
         RealmAuditLog.objects.all().delete()
 
-        flush_per_request_caches()
         # When this test is run in isolation, one additional query is run which
         # is equivalent to
         # ContentType.objects.get(app_label='zerver', model='userprofile')
@@ -194,8 +191,6 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         one_hour_ago = timezone_now() - datetime.timedelta(seconds=3600)
         cutoff = time.mktime(one_hour_ago.timetuple())
-
-        flush_per_request_caches()
 
         # When this test is run in isolation, one additional query is run which
         # is equivalent to

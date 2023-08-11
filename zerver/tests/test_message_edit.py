@@ -289,13 +289,14 @@ class EditMessageTest(EditMessageTestCase):
         # Check number of queries performed
         # 1 query for realm_id per message = 3
         # 1 query each for reactions & submessage for all messages = 2
-        with self.assert_database_query_count(5):
+        # 1 query for linkifiers
+        # 1 query for display recipients
+        with self.assert_database_query_count(7):
             MessageDict.to_dict_uncached(messages)
 
         realm_id = 2  # Fetched from stream object
         # Check number of queries performed with realm_id
-        # 1 query each for reactions & submessage for all messages = 2
-        with self.assert_database_query_count(2):
+        with self.assert_database_query_count(3):
             MessageDict.to_dict_uncached(messages, realm_id)
 
     def test_save_message(self) -> None:
@@ -1374,7 +1375,7 @@ class EditMessageTest(EditMessageTestCase):
         # state + 1/user with a UserTopic row for the events data)
         # beyond what is typical were there not UserTopic records to
         # update. Ideally, we'd eliminate the per-user component.
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(22):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1471,7 +1472,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1502,7 +1503,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(35):
+        with self.assert_database_query_count(36):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1535,7 +1536,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1558,7 +1559,7 @@ class EditMessageTest(EditMessageTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(27):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -1657,7 +1658,7 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(27):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -3691,7 +3692,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(56), self.assert_memcached_count(13):
+        with self.assert_database_query_count(57), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {

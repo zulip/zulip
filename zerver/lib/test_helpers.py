@@ -56,6 +56,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    flush_per_request_caches,
     get_client,
     get_realm,
     get_stream,
@@ -181,6 +182,7 @@ def queries_captured(
     if not keep_cache_warm:
         cache = get_cache_backend(None)
         cache.clear()
+        flush_per_request_caches()
     with mock.patch.multiple(
         TimeTrackingCursor, execute=cursor_execute, executemany=cursor_executemany
     ):
