@@ -24,14 +24,16 @@
         + .reaction_button {
             visibility: hidden;
             pointer-events: none;
-            margin: 2px 0.1em 3px;
+            /* Match margins to .message_reaction;
+               probably need to put this in a variable,
+               if it's kept. */
+            margin: 0.15em;
             padding: 3px;
             height: 13px;
             border-radius: 4px;
             padding-left: 0.3em;
             border: 1px solid hsl(0deg 0% 73%);
             padding-right: 0.3em;
-            float: left;
         }
 
         .emoji {
