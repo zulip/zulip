@@ -82,6 +82,12 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 
 {relative|message|direct}
 
+{tab|mobile}
+
+1. Tap the **Direct messages**
+   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="mobile-icon"/> )
+   tab at the bottom of the app.
+
 {end_tabs}
 
 ## Related articles
