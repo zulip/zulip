@@ -247,10 +247,15 @@ $time_column_min_width: 50px; /* + padding */
 
         .message_reactions {
             grid-area: reactions;
-            margin-top: -1px;
             display: flex;
             /* Allow reactions to wrap in mobile viewports */
             flex-wrap: wrap;
+            /* Keep reactions aligned to start (top), so that the
+               margin on the reaction button doesn't appear to
+               stretch the reactions taller. */
+            align-items: flex-start;
+            /* Control reaction spacing with a gap */
+            gap: 4px;
         }
 
         .message_edit {
