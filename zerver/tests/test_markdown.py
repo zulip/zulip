@@ -3,7 +3,7 @@ import os
 import re
 from html import escape
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Set, Tuple, cast
+from typing import Any, Dict, List, Optional, Set, Tuple
 from unittest import mock
 
 import orjson
@@ -63,13 +63,11 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
-    flush_linkifiers,
     flush_per_request_caches,
     get_client,
     get_realm,
     get_stream,
     linkifiers_for_realm,
-    realm_in_local_linkifiers_cache,
 )
 
 
@@ -1453,43 +1451,6 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
-    def test_flush_linkifier(self) -> None:
-        realm = get_realm("zulip")
-
-        def flush() -> None:
-            """
-            flush_linkifiers is a post-save hook, so calling it
-            directly for testing is kind of awkward
-            """
-
-            class Instance:
-                realm_id: Optional[int] = None
-
-            instance = Instance()
-            instance.realm_id = realm.id
-            flush_linkifiers(sender=RealmFilter, instance=cast(RealmFilter, instance))
-
-        def save_new_linkifier() -> None:
-            linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_template="whatever")
-            linkifier.save()
-
-        # start fresh for our realm
-        flush()
-        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
-
-        # call this just for side effects of populating the cache
-        linkifiers_for_realm(realm.id)
-        self.assertTrue(realm_in_local_linkifiers_cache(realm.id))
-
-        # Saving a new RealmFilter should have the side effect of
-        # flushing the cache.
-        save_new_linkifier()
-        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
-
-        # and flush it one more time, to make sure we don't get a KeyError
-        flush()
-        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
-
     def test_linkifier_precedence(self) -> None:
         realm = self.example_user("hamlet").realm
         # The insertion order should not affect the fact that the linkifiers are ordered by id.
@@ -1546,6 +1507,36 @@ class MarkdownTest(ZulipTestCase):
             "<p>/me writes a second line<br>\nline</p>",
         )
         self.assertTrue(Message.is_status_message(content, rendering_result.rendered_content))
+
+    def test_linkifier_caching(self) -> None:
+        realm = get_realm("zulip")
+
+        RealmFilter.objects.all().delete()
+
+        with self.assert_database_query_count(1):
+            self.assertEqual(linkifiers_for_realm(realm.id), [])
+
+        # Verify that our in-memory cache avoids round trips.
+        with self.assert_database_query_count(0, keep_cache_warm=True):
+            with self.assert_memcached_count(0):
+                self.assertEqual(linkifiers_for_realm(realm.id), [])
+
+        linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_template="whatever")
+        linkifier.save()
+
+        # cache gets properly invalidated by virtue of our save
+        self.assertEqual(
+            linkifiers_for_realm(realm.id),
+            [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+        )
+
+        # And the in-process cache works again.
+        with self.assert_database_query_count(0, keep_cache_warm=True):
+            with self.assert_memcached_count(0):
+                self.assertEqual(
+                    linkifiers_for_realm(realm.id),
+                    [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+                )
 
     def test_alert_words(self) -> None:
         user_profile = self.example_user("othello")
