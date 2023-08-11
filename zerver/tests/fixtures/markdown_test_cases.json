@@ -977,6 +977,148 @@
       "input": "```\n#!/usr/bin/python\nprint(\"Hello World\")\n```",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!/usr/bin/python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!/usr/bin/python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
+    },
+    {
+      "name": "backslash_backslash",
+      "input": "\\foo \\\\bar \\\\\\baz \\\\\\\\zar",
+      "expected_output": "<p>\\foo \\bar \\\\baz \\\\zar</p>"
+    },
+    {
+      "name": "backslash_backtick",
+      "input": "\\`Hello World`\n\n\\```python\ndef fib(n):\n    # TODO: base case\n    return fib(n-1) + fib(n-2)\n\\```",
+      "expected_output": "<p>`Hello World`</p>\n<p>```python<br>\ndef fib(n):<br>\n    # TODO: base case<br>\n    return fib(n-1) + fib(n-2)<br>\n```</p>"
+    },
+    {
+      "name": "backslash_asterisk",
+      "input": "\\*italic*\n*italic\\*\n\\**bold**\n\\*\\*bold**\n**bold\\**\n**bold\\*\\*\n**bold*\\*\n\\***~~All three at once~~***\n\\*\\**~~All three at once~~***\n\\*\\*\\*~~All three at once~~***\n\\*\\*\\*\\~~All three at once~~***\n\\*\\*\\*\\~\\~All three at once~~***\n***~~All three at once\\~~***\n***~~All three at once\\~\\~***\n***~~All three at once\\~\\~\\***\n***~~All three at once\\~\\~\\*\\**\n***~~All three at once\\~\\~\\*\\*\\*",
+      "expected_output": "<p>*italic*<br>\n*italic*<br>\n*<em>bold</em>*<br>\n**bold**<br>\n*<em>bold*</em><br>\n**bold**<br>\n*<em>bold</em>*<br>\n*<strong><del>All three at once</del></strong>*<br>\n**<em><del>All three at once</del></em>**<br>\n***<del>All three at once</del>***<br>\n***~~All three at once~~***<br>\n***~~All three at once~~***<br>\n<strong><em>~~All three at once~~</em></strong><br>\n<strong><em>~~All three at once~~</em></strong><br>\n<strong>*~~All three at once~~*</strong><br>\n**<em>~~All three at once~~**</em><br>\n***~~All three at once~~***</p>",
+      "marked_expected_output": "<p>*italic*<br>\n<em>italic\\</em><br>\n*<em>bold*</em><br>\n**bold<strong>\n</strong>bold**<br>\n<strong>bold**\n</strong>bold<em>*<br>\n*<strong><del>All three at once</del>*</strong><br>\n\\</em>*<em><del>All three at once</del>***<br>\n\\</em>**<del>All three at once</del><strong>*<br>\n***~~All three at once~~*</strong><br>\n***~~All three at once<del><strong>*<br>\n*</strong></del>All three at once~~<strong>*<br>\n*</strong>~~All three at once~~<strong>*<br>\n*</strong>~~All three at once~~*<strong><br>\n*</strong>~~All three at once~~***<br>\n<em>**~~All three at once~~\\</em>**</p>"
+    },
+    {
+      "name": "backslash_underscore",
+      "input": "\\_italic_\n_italic\\_\n\\__bold__\n\\_\\_bold__\n__bold\\__\n__bold\\_\\_\n__bold_\\_",
+      "expected_output": "<p>_italic_<br>\n_italic_<br>\n__bold__<br>\n__bold__<br>\n__bold__<br>\n__bold__<br>\n__bold__</p>"
+    },
+    {
+      "name": "backslash_links",
+      "input": "\\{foo}\n{foo\\}\n\\[link](url)\n[link\\](url)\n[link]\\(url)\n[link](url\\)\n\n[text1 \\`code span` text2](url)\n[text3 \\$\\$O(n^2)$$ text4](url)",
+      "expected_output": "<p>{foo}<br>\n{foo}<br>\n[link](url)<br>\n[link](url)<br>\n[link](url)<br>\n[link](url)</p>\n<p><a href=\"http://url\">text1 `code span` text2</a><br>\n<a href=\"http://url\">text3 $$O(n^2)$$ text4</a></p>",
+      "marked_expected_output": "<p>{foo}<br>\n{foo}<br>\n[link](url)<br>\n<a href=\"url\">link\\</a><br>\n[link](url)<br>\n<a href=\"url\\\">link</a></p>\n<p><a href=\"url\">text1 `code span` text2</a><br>\n<a href=\"url\">text3 $$O(n^2)$$ text4</a></p>"
+    },
+    {
+      "name": "backslash_lists",
+      "input": "1\\. item1\n1\\. item2\n\\!123\n\n\\+ item1\n\\- item2",
+      "expected_output": "<p>1. item1<br>\n1. item2<br>\n!123</p>\n<p>+ item1<br>\n- item2</p>"
+    },
+    {
+      "name": "fenced_code_no_backslash",
+      "input": "```\n\\foo \\\\bar \\\\\\baz \\\\\\\\zar\n```\n-\n```\n\\`Hello World`\n```\n-\n```\n\\*italic**italic\\*\\**bold**\\*\\*bold****bold\\****bold\\*\\***bold*\\*\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\foo \\\\bar \\\\\\baz \\\\\\\\zar\n</code></pre></div>\n<p>-</p>\n<div class=\"codehilite\"><pre><span></span><code>\\`Hello World`\n</code></pre></div>\n<p>-</p>\n<div class=\"codehilite\"><pre><span></span><code>\\*italic**italic\\*\\**bold**\\*\\*bold****bold\\****bold\\*\\***bold*\\*\n</code></pre></div>"
+    },
+    {
+      "name": "fenced_code_no_backslash_2",
+      "input": "```\n\\_italic_\n_italic\\_\n\\__bold__\n\\_\\_bold__\n__bold\\__\n__bold\\_\\_\n__bold_\\_\n```\n-\n```\n\\{foo}\n{foo\\}\n```\n-\n```\n\\[link](url)\n[link\\](url)\n[link]\\(url)\n[link](url\\)\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\_italic_\n_italic\\_\n\\__bold__\n\\_\\_bold__\n__bold\\__\n__bold\\_\\_\n__bold_\\_\n</code></pre></div>\n<p>-</p>\n<div class=\"codehilite\"><pre><span></span><code>\\{foo}\n{foo\\}\n</code></pre></div>\n<p>-</p>\n<div class=\"codehilite\"><pre><span></span><code>\\[link](url)\n[link\\](url)\n[link]\\(url)\n[link](url\\)\n</code></pre></div>"
+    },
+    {
+      "name": "fenced_code_no_backslash_3",
+      "input": "```\n\\#**announce>zulip**\n#\\**announce>zulip**\n#*\\*announce>zulip**\n#**announce\\>zulip**\n#**announce>zulip\\**\n#**announce>zulip*\\*\n\\#\\*\\*announce>zulip**\n\\#\\*\\*announce\\>zulip**\n```\n-\n```\n1\\. item1\n1\\. item2\n```\n-\n```\n\\!123\n\\+ item1\n\\- item2\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\#**announce&gt;zulip**\n#\\**announce&gt;zulip**\n#*\\*announce&gt;zulip**\n#**announce\\&gt;zulip**\n#**announce&gt;zulip\\**\n#**announce&gt;zulip*\\*\n\\#\\*\\*announce&gt;zulip**\n\\#\\*\\*announce\\&gt;zulip**\n</code></pre></div>\n<p>-</p>\n<div class=\"codehilite\"><pre><span></span><code>1\\. item1\n1\\. item2\n</code></pre></div>\n<p>-</p>\n<div class=\"codehilite\"><pre><span></span><code>\\!123\n\\+ item1\n\\- item2\n</code></pre></div>"
+    },
+    {
+      "name": "code_span_no_backslash",
+      "input": "`\\foo` `\\\\bar` `\\\\\\baz` `\\\\\\\\zar`\n`\\*Italic*`\n`\\**Bold**`\n`\\_Italic_`\n`\\__Bold__`\n`\\{foo}`\n`{foo\\}`\n`\\[link](url)`\n`[link\\](url)`\n`[link]\\(url)`\n`[link](url\\)`",
+      "expected_output": "<p><code>\\foo</code> <code>\\\\bar</code> <code>\\\\\\baz</code> <code>\\\\\\\\zar</code><br>\n<code>\\*Italic*</code><br>\n<code>\\**Bold**</code><br>\n<code>\\_Italic_</code><br>\n<code>\\__Bold__</code><br>\n<code>\\{foo}</code><br>\n<code>{foo\\}</code><br>\n<code>\\[link](url)</code><br>\n<code>[link\\](url)</code><br>\n<code>[link]\\(url)</code><br>\n<code>[link](url\\)</code></p>"
+    },
+    {
+      "name": "code_span_no_backslash_2",
+      "input": "`\\#**announce>zulip**`\n`#\\**announce>zulip**`\n`#*\\*announce>zulip**`\n`#**announce\\>zulip**`\n`\\#\\*\\*announce>zulip**`\n`\\#\\*\\*announce\\>zulip**`\n`1\\. item1`\n`1\\. item2`\n`\\!123`\n`\\+ item1`\n`\\- item2`",
+      "expected_output": "<p><code>\\#**announce&gt;zulip**</code><br>\n<code>#\\**announce&gt;zulip**</code><br>\n<code>#*\\*announce&gt;zulip**</code><br>\n<code>#**announce\\&gt;zulip**</code><br>\n<code>\\#\\*\\*announce&gt;zulip**</code><br>\n<code>\\#\\*\\*announce\\&gt;zulip**</code><br>\n<code>1\\. item1</code><br>\n<code>1\\. item2</code><br>\n<code>\\!123</code><br>\n<code>\\+ item1</code><br>\n<code>\\- item2</code></p>"
+    },
+    {
+      "name": "backslash_punctuation",
+      "input": "\\!\\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\/\\:\\;\\<\\=\\>\\?\\@\\[\\\\]\\^\\_\\`\\{\\|\\}\\~",
+      "expected_output": "<p>!\"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~</p>"
+    },
+    {
+      "name": "code_span_no_backslash_punctuation",
+      "input": "`\\!\\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\/\\:\\;\\<\\=\\>\\?\\@\\[\\\\]\\^\\_\\{\\|\\}\\~`",
+      "expected_output": "<p><code>\\!\\\"\\#\\$\\%\\&amp;\\'\\(\\)\\*\\+\\,\\-\\.\/\\:\\;\\&lt;\\=\\&gt;\\?\\@\\[\\\\]\\^\\_\\{\\|\\}\\~</code></p>"
+    },
+    {
+      "name": "fenced_code_no_backslash_punctuation",
+      "input": "```\n\\!\\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\/\\:\\;\\<\\=\\>\\?\\@\\[\\\\]\\^\\_\\`\\{\\|\\}\\~\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\!\\&quot;\\#\\$\\%\\&amp;\\&#39;\\(\\)\\*\\+\\,\\-\\.\/\\:\\;\\&lt;\\=\\&gt;\\?\\@\\[\\\\]\\^\\_\\`\\{\\|\\}\\~\n</code></pre></div>"
+    },
+    {
+      "name": "no_backslash_non_punctuation",
+      "input": "\\→\\A\\a\\ \\3\\φ\\«",
+      "expected_output": "<p>\\→\\A\\a\\ \\3\\φ\\«</p>"
+    },
+    {
+      "name": "code_block_no_backslash",
+      "input": "    \\[\\]",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\[\\]\n</code></pre></div>"
+    },
+    {
+      "name": "backslash_safe_html",
+      "input": "\\<h1\\>stay normal\\<\/h1\\> thanks",
+      "expected_output": "<p>&lt;h1&gt;stay normal&lt;/h1&gt; thanks</p>",
+      "text_content": "<h1>stay normal<\/h1> thanks"
+    },
+    {
+      "name": "backslash_safe_html_script",
+      "input": "\\<script\\>alert(1)\\<\\/script\\>",
+      "expected_output": "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>",
+      "text_content": "<script>alert(1)<\/script>"
+    },
+    {
+      "name": "safe_html_in_code_with_no_backslash_escaping",
+      "input": "~~~\n\\<h1\\>stay normal\\<\/h1\\>",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\&lt;h1\\&gt;stay normal\\&lt;/h1\\&gt;\n</code></pre></div>",
+      "text_content": "\\<h1\\>stay normal\\</h1\\>\n"
+    },
+    {
+      "name": "timestamp_invalid_input_and_valid_input_with_backslash_escaping",
+      "input": "\\<time\\:\\<alert\\(1\\)\\>\\>\n\n\\<time:May 28 2020, 1:30 PM IST>",
+      "expected_output": "<p>&lt;time:&lt;alert(1)&gt;&gt;</p>\n<p>&lt;time:May 28 2020, 1:30 PM IST&gt;</p>"
+    },
+    {
+      "name": "spoilers_script_tags_with_backslash_escaping",
+      "input": "```spoiler \\<script\\>alert(1)\\<\/script\\>\n\\<script\\>alert(1)\\<\/script\\>\n```",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div></div>",
+      "text_content": "<script>alert(1)</script> (…)\n"
+    },
+    {
+      "name": "backslash_emoticons",
+      "input":  "\\:) :\\) foo \\:( bar \\<3 with real emoji \\:smile: with white space :smile\\:",
+      "expected_output": "<p>:) :) foo :( bar &lt;3 with real emoji :smile: with white space :smile:</p>",
+      "translate_emoticons": true
+    },
+    {
+      "name": "backslash_heading",
+      "input": "\\# Hello World\n\\#### New World\n\\####### Old World",
+      "expected_output": "<p># Hello World<br>\n#### New World<br>\n####### Old World</p>"
+    },
+    {
+      "name": "tex_inline_no_backslash",
+      "input": "$$\\{1, 2, 3\\}$$\n\n$$\\int_a^b f(t), dt = F(b) - F(a)$$",
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo stretchy=\"false\">{</mo><mn>1</mn><mo separator=\"true\">,</mo><mn>2</mn><mo separator=\"true\">,</mo><mn>3</mn><mo stretchy=\"false\">}</mo></mrow><annotation encoding=\"application/x-tex\">\\{1, 2, 3\\}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mopen\">{</span><span class=\"mord\">1</span><span class=\"mpunct\">,</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord\">2</span><span class=\"mpunct\">,</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord\">3</span><span class=\"mclose\">}</span></span></span></span></p>\n<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><mi>f</mi><mo stretchy=\"false\">(</mo><mi>t</mi><mo stretchy=\"false\">)</mo><mo separator=\"true\">,</mo><mi>d</mi><mi>t</mi><mo>=</mo><mi>F</mi><mo stretchy=\"false\">(</mo><mi>b</mi><mo stretchy=\"false\">)</mo><mo>−</mo><mi>F</mi><mo stretchy=\"false\">(</mo><mi>a</mi><mo stretchy=\"false\">)</mo></mrow><annotation encoding=\"application/x-tex\">\\int_a^b f(t), dt = F(b) - F(a)</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1.3998em;vertical-align:-0.3558em;\"></span><span class=\"mop\"><span class=\"mop op-symbol small-op\" style=\"margin-right:0.19445em;position:relative;top:-0.0006em;\">∫</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.044em;\"><span style=\"top:-2.3442em;margin-left:-0.1945em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mathnormal mtight\">a</span></span></span><span style=\"top:-3.2579em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mathnormal mtight\">b</span></span></span></span><span class=\"vlist-s\">\u200b</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3558em;\"><span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.10764em;\">f</span><span class=\"mopen\">(</span><span class=\"mord mathnormal\">t</span><span class=\"mclose\">)</span><span class=\"mpunct\">,</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord mathnormal\">d</span><span class=\"mord mathnormal\">t</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.13889em;\">F</span><span class=\"mopen\">(</span><span class=\"mord mathnormal\">b</span><span class=\"mclose\">)</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">−</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.13889em;\">F</span><span class=\"mopen\">(</span><span class=\"mord mathnormal\">a</span><span class=\"mclose\">)</span></span></span></span></p>"
+    },
+    {
+      "name": "backslash_blockquote",
+      "input": "\\> Hello World!\n\n\\> Hello Universe!",
+      "expected_output": "<p>&gt; Hello World!</p>\n<p>&gt; Hello Universe!</p>"
+    },
+    {
+      "name": "backslash_table",
+      "input": "\\|| yes | no | maybe\n\\|---|---|:---:|------:\n\\| A | left-aligned | centered | right-aligned\n\\| B |     extra      spaces      |  are |  ok\n\\| C | **bold** *italic* ~~strikethrough~~  \\:smile:  ||",
+      "expected_output": "<p>|| yes | no | maybe<br>\n|---|---|:---:|------:<br>\n| A | left-aligned | centered | right-aligned<br>\n| B |     extra      spaces      |  are |  ok<br>\n| C | <strong>bold</strong> <em>italic</em> <del>strikethrough</del>  :smile:  ||</p>"
+    },
+    {
+      "name": "backslash_time",
+      "input": "Our next meeting is scheduled for \\<time:2020-05-28T13:30:00+05:30\\>",
+      "expected_output": "<p>Our next meeting is scheduled for &lt;time:2020-05-28T13:30:00+05:30&gt;</p>"
     }
   ],
   "linkify_tests": [

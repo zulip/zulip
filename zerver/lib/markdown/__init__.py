@@ -5,6 +5,7 @@ import datetime
 import html
 import logging
 import re
+import string
 import time
 import urllib
 import urllib.parse
@@ -2091,6 +2092,10 @@ class ZulipMarkdown(markdown.Markdown):
                 ),
             ],
         )
+
+        # Extend the list of backslash escapable characters to all
+        # ASCII punctuation characters to follow CommonMark.
+        self.ESCAPED_CHARS = list(string.punctuation)
         self.set_output_format("html")
 
     def build_parser(self) -> markdown.Markdown:
@@ -2115,13 +2120,13 @@ class ZulipMarkdown(markdown.Markdown):
         # html_block - insecure
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry()
-        preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
+        preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 40)
         preprocessors.register(
             markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
         )
         preprocessors.register(fenced_code.FencedBlockPreprocessor(self), "fenced_code_block", 25)
         preprocessors.register(
-            AlertWordNotificationProcessor(self), "custom_text_notifications", 20
+            AlertWordNotificationProcessor(self), "custom_text_notifications", 10
         )
         return preprocessors
 
@@ -2135,22 +2140,21 @@ class ZulipMarkdown(markdown.Markdown):
         # quote - replaced by ours
         parser = BlockParser(self)
         parser.blockprocessors.register(
-            markdown.blockprocessors.EmptyBlockProcessor(parser), "empty", 95
+            markdown.blockprocessors.EmptyBlockProcessor(parser), "empty", 100
         )
         parser.blockprocessors.register(ListIndentProcessor(parser), "indent", 90)
         if not self.email_gateway:
             parser.blockprocessors.register(
-                markdown.blockprocessors.CodeBlockProcessor(parser), "code", 85
+                markdown.blockprocessors.CodeBlockProcessor(parser), "code", 80
             )
-        parser.blockprocessors.register(HashHeaderProcessor(parser), "hashheader", 80)
         # We get priority 75 from 'table' extension
-        parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), "hr", 70)
-        parser.blockprocessors.register(OListProcessor(parser), "olist", 65)
-        parser.blockprocessors.register(UListProcessor(parser), "ulist", 60)
-        parser.blockprocessors.register(BlockQuoteProcessor(parser), "quote", 55)
-        # We get priority 51 from our 'include' extension
+        parser.blockprocessors.register(HashHeaderProcessor(parser), "hashheader", 70)
+        parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), "hr", 50)
+        parser.blockprocessors.register(OListProcessor(parser), "olist", 40)
+        parser.blockprocessors.register(UListProcessor(parser), "ulist", 30)
+        parser.blockprocessors.register(BlockQuoteProcessor(parser), "quote", 20)
         parser.blockprocessors.register(
-            markdown.blockprocessors.ParagraphProcessor(parser), "paragraph", 50
+            markdown.blockprocessors.ParagraphProcessor(parser), "paragraph", 10
         )
         return parser
 
@@ -2158,7 +2162,6 @@ class ZulipMarkdown(markdown.Markdown):
         # We disable the following upstream inline patterns:
         #
         # backtick -        replaced by ours
-        # escape -          probably will re-add at some point.
         # link -            replaced by ours
         # image_link -      replaced by ours
         # autolink -        replaced by ours
@@ -2190,39 +2193,48 @@ class ZulipMarkdown(markdown.Markdown):
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
         reg = markdown.util.Registry()
-        reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), "backtick", 105)
+        # Backtick and Escape have to go before everything else, so
+        # that one can preempt any Markdown patterns by escaping them.
+        reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), "backtick", 190)
+        # Tex is given higher priority than Escape so that it doesn't break the use
+        # of backslash in LaTeX for the cases like: $$\{1, 2, 3\}$$
+        reg.register(Tex(TEX_RE, self), "tex", 185)
         reg.register(
-            markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
+            markdown.inlinepatterns.EscapeInlineProcessor(markdown.inlinepatterns.ESCAPE_RE, self),
+            "escape",
+            180,
         )
-        reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
-        reg.register(Tex(TEX_RE, self), "tex", 90)
-        reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
-        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
-        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
         reg.register(
-            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
+            markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 178
         )
-        reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
-        reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
-        # Reserve priority 45-54 for linkifiers
+        reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 175)
+        reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 172)
+        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 169)
+        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 166)
+        reg.register(
+            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 163
+        )
+        reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 160)
+        reg.register(AutoLink(get_web_link_regex(), self), "autolink", 120)
+        # Reserve priority 100-110 for linkifiers
         reg = self.register_linkifiers(reg)
         reg.register(
             markdown.inlinepatterns.HtmlInlineProcessor(markdown.inlinepatterns.ENTITY_RE, self),
             "entity",
-            40,
+            80,
         )
-        reg.register(markdown.inlinepatterns.SimpleTagPattern(STRONG_RE, "strong"), "strong", 35)
-        reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, "em"), "emphasis", 30)
-        reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, "del"), "del", 25)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(STRONG_RE, "strong"), "strong", 78)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, "em"), "emphasis", 75)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, "del"), "del", 73)
         reg.register(
             markdown.inlinepatterns.SimpleTextInlineProcessor(
                 markdown.inlinepatterns.NOT_STRONG_RE
             ),
             "not_strong",
-            20,
+            70,
         )
-        reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
-        reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
+        reg.register(Emoji(EMOJI_REGEX, self), "emoji", 60)
+        reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 50)
         # We get priority 5 from 'nl2br' extension
         reg.register(UnicodeEmoji(UNICODE_EMOJI_RE), "unicodeemoji", 0)
         return reg
@@ -2233,7 +2245,7 @@ class ZulipMarkdown(markdown.Markdown):
             registry.register(
                 LinkifierPattern(pattern, linkifier["url_template"], self),
                 f"linkifiers/{pattern}",
-                45,
+                100,
             )
         return registry
 
@@ -2241,22 +2253,21 @@ class ZulipMarkdown(markdown.Markdown):
         # Here we build all the processors from upstream, plus a few of our own.
         treeprocessors = markdown.util.Registry()
         # We get priority 30 from 'hilite' extension
-        treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
-        treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 20)
-        treeprocessors.register(markdown.treeprocessors.UnescapeTreeprocessor(self), "unescape", 18)
-        treeprocessors.register(
-            InlineInterestingLinkProcessor(self), "inline_interesting_links", 15
-        )
+        treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 20)
+        treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 10)
+        treeprocessors.register(markdown.treeprocessors.UnescapeTreeprocessor(self), "unescape", 7)
+        treeprocessors.register(InlineInterestingLinkProcessor(self), "inline_interesting_links", 5)
         if settings.CAMO_URI:
-            treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
+            treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 0)
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry:
-        # These are the default Python-Markdown processors, unmodified.
+        # `RawHtmlPostprocessor` and `AndSubstitutePostprocessor`
+        # are the default python-markdown processors, unmodified.
         postprocessors = markdown.util.Registry()
-        postprocessors.register(markdown.postprocessors.RawHtmlPostprocessor(self), "raw_html", 20)
+        postprocessors.register(markdown.postprocessors.RawHtmlPostprocessor(self), "raw_html", 30)
         postprocessors.register(
-            markdown.postprocessors.AndSubstitutePostprocessor(), "amp_substitute", 15
+            markdown.postprocessors.AndSubstitutePostprocessor(), "amp_substitute", 20
         )
         return postprocessors
 
@@ -2273,7 +2284,7 @@ class ZulipMarkdown(markdown.Markdown):
             # insert new 'inline' processor because we have changed self.inlinePatterns
             # but InlineProcessor copies md as self.md in __init__.
             self.treeprocessors.register(
-                markdown.treeprocessors.InlineProcessor(self), "inline", 25
+                markdown.treeprocessors.InlineProcessor(self), "inline", 20
             )
             self.preprocessors = get_sub_registry(self.preprocessors, ["custom_text_notifications"])
             self.parser.blockprocessors = get_sub_registry(

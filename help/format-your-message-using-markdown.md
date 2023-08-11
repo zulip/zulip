@@ -28,6 +28,7 @@ whenever you need a reminder of the formatting syntax below.
 * [Tables](#tables)
 * [Collaborative to-do lists](#collaborative-to-do-lists)
 * [Paragraph and section formatting](#paragraph-and-section-formatting)
+* [Backslash escapes](#backslash-escapes)
 
 ## Text emphasis
 
@@ -123,6 +124,13 @@ whenever you need a reminder of the formatting syntax below.
 {!paragraphs-and-sections-intro.md!}
 
 {!paragraphs-and-sections-examples.md!}
+
+## Backslash escapes
+
+You can prevent a punctuation character from being interpreted as
+Markdown syntax by escaping it with a backslash. For example, you can
+surround a phrase with literal asterisks (instead of emphasizing it)
+like this: `\*literal asterisks\*`.
 
 ## Message formatting reference
 

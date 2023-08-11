@@ -101,6 +101,10 @@ This text won't be visible until the user clicks.
         markdown: "Some inline `code`",
     },
     {
+        markdown: "\\*literal asterisks\\*",
+        output_html: "<p>*literal asterisks*</p>",
+    },
+    {
         markdown: `\
 \`\`\`
 def zulip():

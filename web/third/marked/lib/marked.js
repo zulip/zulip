@@ -465,7 +465,7 @@ Lexer.prototype.token = function(src, top, bq) {
  */
 
 var inline = {
-  escape: /^\\([\\`*{}\[\]()#+\-.!_>])/,
+  escape: /^\\([!"#$%&'()*+,\-./:;<=>?@[\\^\]_`{|}~])/,
   autolink: /^<([^ >]+(@|:\/)[^ >]+)>/,
   url: noop,
   tag: /^<!--[\s\S]*?-->|^<\/?\w+(?:"[^"]*"|'[^']*'|[^'">])*?>/,
@@ -636,10 +636,17 @@ InlineLexer.prototype.output = function(src) {
     , cap;
 
   while (src) {
+    // tex
+    if (cap = this.rules.tex.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.tex(cap[2], cap[0]);
+      continue;
+    }
+
     // escape
     if (cap = this.rules.escape.exec(src)) {
       src = src.substring(cap[0].length);
-      out += cap[1];
+      out += escape(cap[1]);
       continue;
     }
 
@@ -821,13 +828,6 @@ InlineLexer.prototype.output = function(src) {
     if (cap = this.rules.timestamp.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.timestamp(cap[1]);
-      continue;
-    }
-
-    // tex
-    if (cap = this.rules.tex.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += this.tex(cap[2], cap[0]);
       continue;
     }
 
