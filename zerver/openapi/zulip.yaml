@@ -11195,6 +11195,13 @@ paths:
                               type: string
                               description: |
                                 The name of the custom profile field type.
+                      realm_date_created:
+                        type: integer
+                        description: |
+                          The UNIX timestamp (UTC) for when the organization was
+                          created.
+
+                          **Changes**: New in Zulip 8.0 (feature level 203).
                       demo_organization_scheduled_deletion_date:
                         type: integer
                         description: |

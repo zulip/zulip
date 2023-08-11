@@ -12,6 +12,7 @@ page_params.is_spectator = false;
 
 const notifications = mock_esm("../src/notifications");
 const util = mock_esm("../src/util");
+const timerender = mock_esm("../src/timerender");
 
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");
@@ -62,7 +63,10 @@ test("allow_notification_alert", ({disallow, override}) => {
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 });
 
-test("profile_incomplete_alert", () => {
+test("profile_incomplete_alert", ({override}) => {
+    // Don't test time related conditions
+    override(timerender, "should_display_profile_incomplete_alert", () => true);
+
     // Show alert.
     page_params.is_admin = true;
     page_params.realm_description = "Organization imported from Slack!";

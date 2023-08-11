@@ -359,6 +359,7 @@ def fetch_initial_state_data(
             state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
                 realm.demo_organization_scheduled_deletion_date
             )
+        state["realm_date_created"] = datetime_to_timestamp(realm.date_created)
 
         # Presence system parameters for client behavior.
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS

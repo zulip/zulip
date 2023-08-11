@@ -490,3 +490,14 @@ export function get_time_limit_setting_in_appropriate_unit(
     const time_limit_in_days = Math.floor(time_limit_in_hours / 24);
     return {value: time_limit_in_days, unit: "day"};
 }
+
+export function should_display_profile_incomplete_alert(timestamp: number): boolean {
+    const today = new Date(Date.now());
+    const time = new Date(timestamp);
+    const days_old = differenceInCalendarDays(today, time);
+
+    if (days_old >= 15) {
+        return true;
+    }
+    return false;
+}
