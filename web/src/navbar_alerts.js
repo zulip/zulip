@@ -15,6 +15,7 @@ import * as keydown_util from "./keydown_util";
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
+import {should_display_profile_incomplete_alert} from "./timerender";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -94,6 +95,9 @@ export function dismiss_upgrade_nag(ls) {
 
 export function check_profile_incomplete() {
     if (!page_params.is_admin) {
+        return false;
+    }
+    if (!should_display_profile_incomplete_alert(page_params.realm_date_created)) {
         return false;
     }
 

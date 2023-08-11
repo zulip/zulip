@@ -597,3 +597,17 @@ run_test("set_full_datetime", () => {
     expected = "10:52 AM";
     assert.equal(time_str, expected);
 });
+
+run_test("should_display_profile_incomplete_alert", () => {
+    // Organization created < 15 days ago
+    let realm_date_created = new Date();
+    realm_date_created.setDate(realm_date_created.getDate() - 5);
+
+    assert.equal(timerender.should_display_profile_incomplete_alert(realm_date_created), false);
+
+    // Organization created > 15 days ago
+    realm_date_created = new Date();
+    realm_date_created.setDate(realm_date_created.getDate() - 15);
+
+    assert.equal(timerender.should_display_profile_incomplete_alert(realm_date_created), true);
+});
