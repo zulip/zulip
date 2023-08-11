@@ -272,8 +272,8 @@ python_rules = RuleList(
             "good_lines": ["assert_length(data, 2)"],
             "bad_lines": ["assertEqual(len(data), 2)"],
             "exclude_line": {
-                ("zerver/tests/test_decorators.py", "self.assertEqual(len(x), 2)"),
-                ("zerver/tests/test_decorators.py", 'self.assertEqual(len(x["b"]), 3)'),
+                ("zerver/tests/test_validators.py", "self.assertEqual(len(x), 2)"),
+                ("zerver/tests/test_validators.py", 'self.assertEqual(len(x["b"]), 3)'),
             },
         },
         {
