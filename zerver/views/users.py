@@ -740,6 +740,25 @@ def create_user_backend(
     return json_success(request, data={"user_id": target_user.id, "api_key": target_user.api_key, "user_group": user_group})
 
 
+@require_realm_admin
+@has_request_variables
+def get_user_by_email_with_api_key(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    email: str = REQ(),
+) -> HttpResponse:
+
+    if not user_profile.can_create_users:
+        raise JsonableError(_("User not authorized to create users"))
+
+    try:
+        target_user = get_user_by_delivery_email(email, user_profile.realm)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("Email '{}' don't exist in this organization").format(email))
+
+    return json_success(request, data={"user_id": target_user.id, "api_key": target_user.api_key})
+
+
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     raw_user_data = get_raw_user_data(
         user_profile.realm,

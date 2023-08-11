@@ -215,7 +215,7 @@ from zerver.views.users import (
     patch_bot_backend,
     reactivate_user_backend,
     regenerate_bot_api_key,
-    update_user_backend,
+    update_user_backend, get_user_by_email_with_api_key,
 )
 from zerver.views.video_calls import (
     complete_zoom_user,
@@ -298,6 +298,7 @@ v1_api_and_json_patterns = [
     rest_path("realm/deactivate", POST=deactivate_realm),
     # users -> zerver.views.users
     rest_path("users", GET=get_members_backend, POST=create_user_backend),
+    rest_path("users/get_by_email/", POST=get_user_by_email_with_api_key),
     rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),
     rest_path("users/<int:user_id>/reactivate", POST=reactivate_user_backend),
     rest_path(
