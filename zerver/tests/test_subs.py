@@ -4944,15 +4944,13 @@ class SubscriptionAPITest(ZulipTestCase):
         # Sends 3 peer-remove events and 2 unsubscribe events.
         with self.capture_send_event_calls(expected_num_events=5) as events:
             with self.assert_database_query_count(16):
-                with cache_tries_captured() as cache_count:
+                with self.assert_memcached_count(3):
                     bulk_remove_subscriptions(
                         realm,
                         [user1, user2],
                         [stream1, stream2, stream3, private],
                         acting_user=None,
                     )
-
-        self.assert_length(cache_count, 3)
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
 
@@ -5081,18 +5079,17 @@ class SubscriptionAPITest(ZulipTestCase):
 
         test_user_ids = [user.id for user in test_users]
 
+        # The only known O(N) behavior here is that we call
+        # principal_to_user_profile for each of our users, but it
+        # should be cached.
         with self.assert_database_query_count(21):
-            with cache_tries_captured() as cache_tries:
+            with self.assert_memcached_count(3):
                 with mock.patch("zerver.views.streams.send_messages_for_new_subscribers"):
                     self.common_subscribe_to_streams(
                         desdemona,
                         streams,
                         dict(principals=orjson.dumps(test_user_ids).decode()),
                     )
-
-        # The only known O(N) behavior here is that we call
-        # principal_to_user_profile for each of our users.
-        self.assert_length(cache_tries, 3)
 
     def test_subscriptions_add_for_principal(self) -> None:
         """

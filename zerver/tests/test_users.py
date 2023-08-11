@@ -40,7 +40,6 @@ from zerver.lib.send_email import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
-    cache_tries_captured,
     get_subscription,
     get_test_image_file,
     reset_email_visibility_to_everyone_in_zulip_realm,
@@ -795,7 +794,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with self.assert_database_query_count(93):
-            with cache_tries_captured() as cache_tries:
+            with self.assert_memcached_count(24):
                 with self.capture_send_event_calls(expected_num_events=11) as events:
                     fred = do_create_user(
                         email="fred@zulip.com",
@@ -806,7 +805,6 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(cache_tries, 24)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
         notifications = set()

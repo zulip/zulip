@@ -21,7 +21,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_change_user_role
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids, truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
-from zerver.lib.test_helpers import cache_tries_captured, queries_captured
+from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_topics import (
@@ -3691,7 +3691,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(56), cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(56), self.assert_memcached_count(13):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -3701,7 +3701,6 @@ class EditMessageTest(EditMessageTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assert_length(cache_tries, 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assert_length(messages, 1)

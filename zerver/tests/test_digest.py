@@ -24,7 +24,6 @@ from zerver.lib.digest import (
 from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import cache_tries_captured
 from zerver.models import (
     Client,
     Message,
@@ -209,10 +208,8 @@ class TestDigestEmailMessages(ZulipTestCase):
             digest_user_ids = [user.id for user in digest_users]
 
             with self.assert_database_query_count(12):
-                with cache_tries_captured() as cache_tries:
+                with self.assert_memcached_count(0):
                     bulk_handle_digest_email(digest_user_ids, cutoff)
-
-            self.assert_length(cache_tries, 0)
 
         self.assert_length(digest_users, mock_send_future_email.call_count)
 

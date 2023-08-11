@@ -70,7 +70,12 @@ from zerver.lib.test_console_output import (
     tee_stderr_and_find_extra_console_output,
     tee_stdout_and_find_extra_console_output,
 )
-from zerver.lib.test_helpers import find_key_by_email, instrument_url, queries_captured
+from zerver.lib.test_helpers import (
+    cache_tries_captured,
+    find_key_by_email,
+    instrument_url,
+    queries_captured,
+)
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
@@ -1222,6 +1227,12 @@ Output:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
             raise AssertionError(f"{type(items)} is of unexpected size!")
+
+    @contextmanager
+    def assert_memcached_count(self, count: int) -> Iterator[None]:
+        with cache_tries_captured() as cache_tries:
+            yield
+        self.assert_length(cache_tries, count)
 
     @contextmanager
     def assert_database_query_count(
