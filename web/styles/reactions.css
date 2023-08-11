@@ -5,7 +5,6 @@
 
     .message_reaction {
         display: flex;
-        margin: 0.15em;
         padding: 0 2px 0 0;
         cursor: pointer;
         background-color: hsl(0deg 0% 100%);
@@ -24,37 +23,34 @@
         + .reaction_button {
             visibility: hidden;
             pointer-events: none;
-            /* Match margins to .message_reaction;
-               probably need to put this in a variable,
-               if it's kept. */
-            margin: 0.15em;
             padding: 3px;
             height: 13px;
             border-radius: 4px;
             padding-left: 0.3em;
             border: 1px solid hsl(0deg 0% 73%);
             padding-right: 0.3em;
+            /* TODO: Eventually this space will be set on the message
+               box, but for now this preserves the space beneath the
+               reactions area. */
+            margin-bottom: 2px;
         }
 
         .emoji {
-            display: inline-block;
-            flex-shrink: 0;
-            vertical-align: top;
-            top: 0;
             margin: 1px 3px;
             height: 17px;
             width: 17px;
-            position: relative;
+            /* Preserve the emoji's dimensions, no
+               matter what the flexbox does. */
+            flex-shrink: 0;
+            /* Don't inherit position: relative; from
+               the base .emoji class. */
+            position: static;
         }
     }
 
     .message_reaction_count {
-        position: relative;
-        top: 1px;
         font-size: 90%;
-        display: flex;
-        margin: 0 3px;
-        padding: 2px 0;
+        margin: 2px 3px;
         line-height: 1em;
     }
 
