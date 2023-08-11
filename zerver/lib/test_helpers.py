@@ -105,9 +105,7 @@ def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Op
         cache_queries.append(("get", key, cache_name))
         return orig_get(key, cache_name)
 
-    def my_cache_get_many(
-        keys: List[str], cache_name: Optional[str] = None
-    ) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
+    def my_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Dict[str, Any]:
         cache_queries.append(("getmany", keys, cache_name))
         return orig_get_many(keys, cache_name)
 
