@@ -278,10 +278,22 @@
     border-radius: 5px;
     border: 1px solid;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     font-size: 15px;
     line-height: 18px;
+
+    .main-view-banner-elements-wrapper {
+        display: flex;
+        flex-grow: 1;
+        justify-content: space-between;
+
+        @media (width < $md_min) {
+            flex-direction: column;
+            flex-grow: 0;
+            align-items: flex-start;
+        }
+    }
 
     & p {
         margin: 0; /* override bootstrap */
@@ -289,8 +301,15 @@
         padding: 8px 5px 8px 15px;
     }
 
-    .banner_content {
-        flex-grow: 1;
+    @media (width >= $md_min) {
+        .banner_content {
+            align-self: center;
+        }
+
+        .banner-contains-button ~ .main-view-banner-close-button {
+            /* 2.5px: to vertically align `.main-view-banner-close-button` with `.main-view-banner-action-button`. */
+            margin-top: 2.5px;
+        }
     }
 
     .main-view-banner-action-button,
@@ -309,6 +328,11 @@
            close button. */
         &.right_edge {
             margin-right: 10px;
+        }
+
+        @media (width < $md_min) {
+            /* 100% - 10px(margin-left of the button) */
+            width: calc(100% - 10px);
         }
     }
 
