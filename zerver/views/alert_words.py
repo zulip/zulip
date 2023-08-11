@@ -1,12 +1,13 @@
 from typing import List
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json, StringConstraints
+from typing_extensions import Annotated
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import user_alert_words
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_capped_string, check_list, check_string
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
 
 
@@ -19,21 +20,23 @@ def clean_alert_words(alert_words: List[str]) -> List[str]:
     return [w for w in alert_words if w != ""]
 
 
-@has_request_variables
+@typed_endpoint
 def add_alert_words(
     request: HttpRequest,
     user_profile: UserProfile,
-    alert_words: List[str] = REQ(json_validator=check_list(check_capped_string(100))),
+    *,
+    alert_words: Json[List[Annotated[str, StringConstraints(max_length=100)]]],
 ) -> HttpResponse:
     do_add_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success(request, data={"alert_words": user_alert_words(user_profile)})
 
 
-@has_request_variables
+@typed_endpoint
 def remove_alert_words(
     request: HttpRequest,
     user_profile: UserProfile,
-    alert_words: List[str] = REQ(json_validator=check_list(check_string)),
+    *,
+    alert_words: Json[List[str]],
 ) -> HttpResponse:
     do_remove_alert_words(user_profile, alert_words)
     return json_success(request, data={"alert_words": user_alert_words(user_profile)})

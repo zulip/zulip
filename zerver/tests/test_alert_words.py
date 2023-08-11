@@ -139,6 +139,12 @@ class AlertWordTests(ZulipTestCase):
         response_dict = self.assert_json_success(result)
         self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
 
+        result = self.client_post(
+            "/json/users/me/alert_words",
+            {"alert_words": orjson.dumps(["long" * 26]).decode()},
+        )
+        self.assert_json_error(result, "alert_words[0] is too long (limit: 100 characters)")
+
     def test_json_list_remove(self) -> None:
         user = self.get_user()
         self.login_user(user)
