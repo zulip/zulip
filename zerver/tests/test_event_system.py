@@ -32,7 +32,6 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
-    flush_per_request_caches,
     get_client,
     get_realm,
     get_stream,
@@ -1248,7 +1247,6 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        flush_per_request_caches()
         with self.assert_database_query_count(39):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
@@ -1298,7 +1296,6 @@ class FetchQueriesTest(ZulipTestCase):
 
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
-            flush_per_request_caches()
             with self.assert_database_query_count(count):
                 if event_type == "update_message_flags":
                     event_types = ["update_message_flags", "message"]

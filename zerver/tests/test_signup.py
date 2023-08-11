@@ -77,7 +77,6 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
-    flush_per_request_caches,
     get_realm,
     get_stream,
     get_system_bot,
@@ -923,8 +922,7 @@ class LoginTest(ZulipTestCase):
             content="test message",
         )
 
-        # Clear all the caches.
-        flush_per_request_caches()
+        # Clear the ContentType cache.
         ContentType.objects.clear_cache()
 
         # Ensure the number of queries we make is not O(streams)

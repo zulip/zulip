@@ -102,7 +102,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     active_non_guest_user_ids,
-    flush_per_request_caches,
     get_default_stream_groups,
     get_realm,
     get_stream,
@@ -4625,7 +4624,6 @@ class SubscriptionAPITest(ZulipTestCase):
         user2 = self.example_user("iago")
         realm = get_realm("zulip")
         streams_to_sub = ["multi_user_stream"]
-        flush_per_request_caches()
         with self.capture_send_event_calls(expected_num_events=5) as events:
             with self.assert_database_query_count(37):
                 self.common_subscribe_to_streams(

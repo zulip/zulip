@@ -29,7 +29,6 @@ from zerver.models import (
     Realm,
     UserActivity,
     UserProfile,
-    flush_per_request_caches,
     get_realm,
     get_stream,
     get_system_bot,
@@ -246,7 +245,6 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        flush_per_request_caches()
         with self.assert_database_query_count(49):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
@@ -302,7 +300,6 @@ class HomeTest(ZulipTestCase):
         self.login("hamlet")
 
         # Verify succeeds once logged-in
-        flush_per_request_caches()
         with queries_captured():
             with patch("zerver.lib.cache.cache_set"):
                 result = self._get_home_page(stream="Denmark")
@@ -436,7 +433,6 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        flush_per_request_caches()
         with self.assert_database_query_count(50):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
@@ -468,7 +464,6 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        flush_per_request_caches()
         with self.assert_database_query_count(44):
             result = self._get_home_page()
 
