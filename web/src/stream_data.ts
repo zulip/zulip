@@ -28,11 +28,10 @@ type StreamInitParams = {
 };
 
 // Type for the parameter of `create_sub_from_server_data` function.
-type ApiGenericStreamSubscription = (
-    | (NeverSubscribedStream & {previously_subscribed: boolean})
-    | (ApiStreamSubscription & {previously_subscribed: boolean})
-    | (Stream & {stream_weekly_traffic: number | null; subscribers: number[]})
-) & {subscribed: boolean};
+type ApiGenericStreamSubscription =
+    | NeverSubscribedStream
+    | ApiStreamSubscription
+    | (Stream & {stream_weekly_traffic: number | null; subscribers: number[]});
 
 type InviteStreamData = {
     name: string;
@@ -753,10 +752,9 @@ export function create_streams(streams: Stream[]): void {
         const attrs = {
             stream_weekly_traffic: null,
             subscribers: [],
-            subscribed: false,
             ...stream,
         };
-        create_sub_from_server_data(attrs);
+        create_sub_from_server_data(attrs, false, false);
     }
 }
 
@@ -768,6 +766,8 @@ export function clean_up_description(sub: StreamSubscription): void {
 
 export function create_sub_from_server_data(
     attrs: ApiGenericStreamSubscription,
+    subscribed: boolean,
+    previously_subscribed: boolean,
 ): StreamSubscription {
     if (!attrs.stream_id) {
         // fail fast
@@ -801,6 +801,8 @@ export function create_sub_from_server_data(
         email_notifications: null,
         wildcard_mentions_notify: null,
         color: "color" in attrs ? attrs.color : color_data.pick_color(),
+        subscribed,
+        previously_subscribed,
         ...attrs,
     };
 
@@ -880,13 +882,7 @@ export function initialize(params: StreamInitParams): void {
         previously_subscribed: boolean,
     ): void {
         for (const sub of subs) {
-            const attrs = {
-                ...sub,
-                subscribed,
-                previously_subscribed,
-            };
-
-            create_sub_from_server_data(attrs);
+            create_sub_from_server_data(sub, subscribed, previously_subscribed);
         }
     }
 
