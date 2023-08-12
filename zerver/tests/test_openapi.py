@@ -18,6 +18,7 @@ from unittest.mock import MagicMock, patch
 
 import yaml
 from django.http import HttpResponse
+from django.urls import URLPattern
 from django.utils import regex_helper
 
 from zerver.lib.request import _REQ, arguments_map
@@ -475,6 +476,87 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         if diff:  # nocoverage
             self.render_openapi_type_exception(function, openapi_params, function_params, diff)
 
+    def check_openapi_arguments_for_view(
+        self,
+        pattern: URLPattern,
+        function_name: str,
+        function: Callable[..., HttpResponse],
+        method: str,
+        tags: Set[str],
+    ) -> None:
+        # Our accounting logic in the `has_request_variables()`
+        # code means we have the list of all arguments
+        # accepted by every view function in arguments_map.
+        accepted_arguments = set(arguments_map[function_name])
+
+        regex_pattern = pattern.pattern.regex.pattern
+        for url_format, url_params in regex_helper.normalize(regex_pattern):
+            url_pattern = "/" + url_format % {param: f"{{{param}}}" for param in url_params}
+
+            if "intentionally_undocumented" in tags:
+                self.ensure_no_documentation_if_intentionally_undocumented(url_pattern, method)
+                continue
+
+            if url_pattern in self.pending_endpoints:
+                # HACK: After all pending_endpoints have been resolved, we should remove
+                # this segment and the "msg" part of the `ensure_no_...` method.
+                msg = f"""
+We found some OpenAPI documentation for {method} {url_pattern},
+so maybe we shouldn't include it in pending_endpoints.
+"""
+                self.ensure_no_documentation_if_intentionally_undocumented(url_pattern, method, msg)
+                continue
+
+            try:
+                # Don't include OpenAPI parameters that live in
+                # the path; these are not extracted by REQ.
+                openapi_parameters = get_openapi_parameters(
+                    url_pattern, method, include_url_parameters=False
+                )
+            except Exception:  # nocoverage
+                raise AssertionError(f"Could not find OpenAPI docs for {method} {url_pattern}")
+
+            # We now have everything we need to understand the
+            # function as defined in our urls.py:
+            #
+            # * method is the HTTP method, e.g. GET, POST, or PATCH
+            #
+            # * p.pattern.regex.pattern is the URL pattern; might require
+            #   some processing to match with OpenAPI rules
+            #
+            # * accepted_arguments is the full set of arguments
+            #   this method accepts (from the REQ declarations in
+            #   code).
+            #
+            # * The documented parameters for the endpoint as recorded in our
+            #   OpenAPI data in zerver/openapi/zulip.yaml.
+            #
+            # We now compare these to confirm that the documented
+            # argument list matches what actually appears in the
+            # codebase.
+
+            openapi_parameter_names = {parameter["name"] for parameter in openapi_parameters}
+
+            if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
+                print("Undocumented parameters for", url_pattern, method, function_name)
+                print(" +", openapi_parameter_names)
+                print(" -", accepted_arguments)
+                assert url_pattern in self.buggy_documentation_endpoints
+            elif len(openapi_parameter_names - accepted_arguments) > 0:  # nocoverage
+                print(
+                    "Documented invalid parameters for",
+                    url_pattern,
+                    method,
+                    function_name,
+                )
+                print(" -", openapi_parameter_names)
+                print(" +", accepted_arguments)
+                assert url_pattern in self.buggy_documentation_endpoints
+            else:
+                self.assertEqual(openapi_parameter_names, accepted_arguments)
+                self.check_argument_types(function, openapi_parameters)
+                self.checked_endpoints.add(url_pattern)
+
     def test_openapi_arguments(self) -> None:
         """This end-to-end API documentation test compares the arguments
         defined in the actual code using @has_request_variables and
@@ -532,83 +614,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
 
                 function_name = f"{function.__module__}.{function.__name__}"
 
-                # Our accounting logic in the `has_request_variables()`
-                # code means we have the list of all arguments
-                # accepted by every view function in arguments_map.
-                accepted_arguments = set(arguments_map[function_name])
-
-                regex_pattern = p.pattern.regex.pattern
-                for url_format, url_params in regex_helper.normalize(regex_pattern):
-                    url_pattern = "/" + url_format % {param: f"{{{param}}}" for param in url_params}
-
-                    if "intentionally_undocumented" in tags:
-                        self.ensure_no_documentation_if_intentionally_undocumented(
-                            url_pattern, method
-                        )
-                        continue
-
-                    if url_pattern in self.pending_endpoints:
-                        # HACK: After all pending_endpoints have been resolved, we should remove
-                        # this segment and the "msg" part of the `ensure_no_...` method.
-                        msg = f"""
-We found some OpenAPI documentation for {method} {url_pattern},
-so maybe we shouldn't include it in pending_endpoints.
-"""
-                        self.ensure_no_documentation_if_intentionally_undocumented(
-                            url_pattern, method, msg
-                        )
-                        continue
-
-                    try:
-                        # Don't include OpenAPI parameters that live in
-                        # the path; these are not extracted by REQ.
-                        openapi_parameters = get_openapi_parameters(
-                            url_pattern, method, include_url_parameters=False
-                        )
-                    except Exception:  # nocoverage
-                        raise AssertionError(
-                            f"Could not find OpenAPI docs for {method} {url_pattern}"
-                        )
-
-                    # We now have everything we need to understand the
-                    # function as defined in our urls.py:
-                    #
-                    # * method is the HTTP method, e.g. GET, POST, or PATCH
-                    #
-                    # * p.pattern.regex.pattern is the URL pattern; might require
-                    #   some processing to match with OpenAPI rules
-                    #
-                    # * accepted_arguments is the full set of arguments
-                    #   this method accepts (from the REQ declarations in
-                    #   code).
-                    #
-                    # * The documented parameters for the endpoint as recorded in our
-                    #   OpenAPI data in zerver/openapi/zulip.yaml.
-                    #
-                    # We now compare these to confirm that the documented
-                    # argument list matches what actually appears in the
-                    # codebase.
-
-                    openapi_parameter_names = {
-                        parameter["name"] for parameter in openapi_parameters
-                    }
-
-                    if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
-                        print("Undocumented parameters for", url_pattern, method, function_name)
-                        print(" +", openapi_parameter_names)
-                        print(" -", accepted_arguments)
-                        assert url_pattern in self.buggy_documentation_endpoints
-                    elif len(openapi_parameter_names - accepted_arguments) > 0:  # nocoverage
-                        print(
-                            "Documented invalid parameters for", url_pattern, method, function_name
-                        )
-                        print(" -", openapi_parameter_names)
-                        print(" +", accepted_arguments)
-                        assert url_pattern in self.buggy_documentation_endpoints
-                    else:
-                        self.assertEqual(openapi_parameter_names, accepted_arguments)
-                        self.check_argument_types(function, openapi_parameters)
-                        self.checked_endpoints.add(url_pattern)
+                self.check_openapi_arguments_for_view(p, function_name, function, method, tags)
 
         self.check_for_non_existent_openapi_endpoints()
 
