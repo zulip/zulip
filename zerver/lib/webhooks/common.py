@@ -6,6 +6,8 @@ from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
+from pydantic import Json
+from typing_extensions import Annotated, TypeAlias
 
 from zerver.actions.message_send import (
     check_send_private_message,
@@ -14,10 +16,10 @@ from zerver.actions.message_send import (
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.validator import check_list, check_string
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -37,6 +39,8 @@ that this integration expects!
 
 SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
 SETUP_MESSAGE_USER_PART = " by {user_name}"
+
+OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[Optional[str], ApiParamConfig("topic")]
 
 
 def get_setup_webhook_message(integration: str, user_name: Optional[str] = None) -> str:
@@ -69,19 +73,18 @@ class MissingHTTPEventHeaderError(JsonableError):
         return _("Missing the HTTP event header '{header}'")
 
 
-@has_request_variables
+@typed_endpoint
 def check_send_webhook_message(
     request: HttpRequest,
     user_profile: UserProfile,
     topic: str,
     body: str,
     complete_event_type: Optional[str] = None,
-    stream: Optional[str] = REQ(default=None),
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
-    only_events: Optional[List[str]] = REQ(default=None, json_validator=check_list(check_string)),
-    exclude_events: Optional[List[str]] = REQ(
-        default=None, json_validator=check_list(check_string)
-    ),
+    *,
+    stream: Optional[str] = None,
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
+    only_events: Optional[Json[List[str]]] = None,
+    exclude_events: Optional[Json[List[str]]] = None,
     unquote_url_parameters: bool = False,
 ) -> None:
     if complete_event_type is not None and (
