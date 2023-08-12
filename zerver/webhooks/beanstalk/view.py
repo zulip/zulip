@@ -3,11 +3,12 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.decorator import authenticated_rest_api_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
 from zerver.models import UserProfile
@@ -53,12 +54,13 @@ def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[st
     # So we ask the user to replace them with %40
     beanstalk_email_decode=True,
 )
-@has_request_variables
+@typed_endpoint
 def api_beanstalk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(converter=to_wild_value),
-    branches: Optional[str] = REQ(default=None),
+    *,
+    payload: Json[WildValue],
+    branches: Optional[str] = None,
 ) -> HttpResponse:
     # Beanstalk supports both SVN and Git repositories
     # We distinguish between the two by checking for a

@@ -1,23 +1,23 @@
 # Webhooks for external integrations.
-from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_string, to_wild_value
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
+from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, check_send_webhook_message
 from zerver.models import UserProfile
 
 
 @webhook_view("Canarytokens")
-@has_request_variables
+@typed_endpoint
 def api_canarytoken_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    message: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
+    *,
+    message: WebhookPayload[WildValue],
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     """
     Construct a response to a webhook event from a Thinkst canarytoken from

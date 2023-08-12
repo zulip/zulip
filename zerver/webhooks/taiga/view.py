@@ -12,9 +12,9 @@ from django.http import HttpRequest, HttpResponse
 from typing_extensions import TypeAlias
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -23,11 +23,12 @@ ReturnType: TypeAlias = Tuple[WildValue, WildValue]
 
 
 @webhook_view("Taiga")
-@has_request_variables
+@typed_endpoint
 def api_taiga_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    message: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    message: WebhookPayload[WildValue],
 ) -> HttpResponse:
     parsed_events = parse_message(message)
     content = "".join(sorted(generate_content(event) + "\n" for event in parsed_events))
