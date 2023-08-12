@@ -1,15 +1,16 @@
 # Webhooks for external integrations.
 import re
 from itertools import zip_longest
-from typing import List, Literal, Optional, TypedDict, cast
+from typing import List, Literal, TypedDict, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, RequestVariableMissingError, has_request_variables
+from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
     WildValue,
@@ -21,16 +22,17 @@ from zerver.lib.validator import (
     check_url,
     to_wild_value,
 )
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, check_send_webhook_message
 from zerver.models import UserProfile
 
 
 @webhook_view("SlackIncoming")
-@has_request_variables
+@typed_endpoint
 def api_slack_incoming_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
+    *,
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     # Slack accepts webhook payloads as payload="encoded json" as
     # application/x-www-form-urlencoded, as well as in the body as

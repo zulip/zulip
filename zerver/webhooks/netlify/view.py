@@ -4,9 +4,9 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
@@ -26,11 +26,12 @@ fixture_to_headers = get_http_headers_from_filename("HTTP_X_NETLIFY_EVENT")
 
 
 @webhook_view("Netlify", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_netlify_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     message_template, event = get_template(request, payload)
 

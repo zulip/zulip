@@ -5,9 +5,9 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
 from zerver.models import UserProfile
@@ -76,12 +76,13 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("RhodeCode", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_rhodecode_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    branches: Optional[str] = REQ(default=None),
+    *,
+    payload: WebhookPayload[WildValue],
+    branches: Optional[str] = None,
 ) -> HttpResponse:
     event = get_event_name(payload, branches)
     if event is None:
