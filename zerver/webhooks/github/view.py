@@ -6,17 +6,11 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import (
-    WildValue,
-    check_bool,
-    check_int,
-    check_none_or,
-    check_string,
-    to_wild_value,
-)
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import (
+    OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
     get_http_headers_from_filename,
     get_setup_webhook_message,
@@ -796,13 +790,14 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("GitHub", notify_bot_owner_on_invalid_json=True, all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_github_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    branches: Optional[str] = REQ(default=None),
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
+    *,
+    payload: WebhookPayload[WildValue],
+    branches: Optional[str] = None,
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our

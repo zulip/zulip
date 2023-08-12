@@ -4,10 +4,10 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_string
+from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, check_send_webhook_message
 from zerver.models import UserProfile
 
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~\n"
@@ -111,12 +111,13 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("Linear", notify_bot_owner_on_invalid_json=True, all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_linear_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
+    *,
+    payload: WebhookPayload[WildValue],
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     event_type = get_event_type(payload)
     if event_type is None:

@@ -5,9 +5,9 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.email_notifications import convert_html_to_markdown
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -131,11 +131,12 @@ def format_freshdesk_ticket_creation_message(ticket: WildValue) -> str:
 
 
 @authenticated_rest_api_view(webhook_client_name="Freshdesk")
-@has_request_variables
+@typed_endpoint
 def api_freshdesk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     ticket = payload["freshdesk_webhook"]
 

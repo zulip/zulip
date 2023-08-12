@@ -3,9 +3,9 @@ from typing import Callable, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_float, check_int, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_float, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -133,11 +133,12 @@ ALL_EVENT_TYPES = list(EVENTS_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("GoogleCodeIn", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_gci_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     event = get_event(payload)
     if event is not None:

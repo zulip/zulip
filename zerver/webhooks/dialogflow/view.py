@@ -3,19 +3,21 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.actions.message_send import check_send_private_message
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.models import UserProfile, get_user
 
 
 @webhook_view("Dialogflow")
-@has_request_variables
+@typed_endpoint
 def api_dialogflow_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    email: str = REQ(),
+    *,
+    payload: WebhookPayload[WildValue],
+    email: str,
 ) -> HttpResponse:
     status = payload["status"]["code"].tame(check_int)
 

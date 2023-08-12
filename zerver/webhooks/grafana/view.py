@@ -1,8 +1,8 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
     check_float,
@@ -11,7 +11,6 @@ from zerver.lib.validator import (
     check_string,
     check_string_in,
     check_union,
-    to_wild_value,
 )
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -45,11 +44,12 @@ ALL_EVENT_TYPES = LEGACY_EVENT_TYPES + NEW_EVENT_TYPES
 
 
 @webhook_view("Grafana", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_grafana_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     # Grafana alerting system.
     if "alerts" in payload:

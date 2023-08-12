@@ -3,8 +3,8 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
     check_int,
@@ -12,7 +12,6 @@ from zerver.lib.validator import (
     check_string,
     check_string_in,
     check_url,
-    to_wild_value,
 )
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import get_short_sha
@@ -58,11 +57,12 @@ ALL_EVENT_TYPES = ["ping", "job-completed", "workflow-completed"]
 
 
 @webhook_view("CircleCI", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_circleci_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     type = payload["type"].tame(check_string)
     if type == "ping":
