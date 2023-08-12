@@ -614,7 +614,8 @@ so maybe we shouldn't include it in pending_endpoints.
 
                 function_name = f"{function.__module__}.{function.__name__}"
 
-                self.check_openapi_arguments_for_view(p, function_name, function, method, tags)
+                with self.subTest(function_name):
+                    self.check_openapi_arguments_for_view(p, function_name, function, method, tags)
 
         self.check_for_non_existent_openapi_endpoints()
 
