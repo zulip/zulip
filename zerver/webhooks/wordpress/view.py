@@ -4,8 +4,8 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -28,17 +28,18 @@ ALL_EVENT_TYPES = [
 
 
 @webhook_view("WordPress", notify_bot_owner_on_invalid_json=False, all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_wordpress_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    hook: str = REQ(default="WordPress action"),
-    post_title: str = REQ(default="New WordPress post"),
-    post_type: str = REQ(default="post"),
-    post_url: str = REQ(default="WordPress post URL"),
-    display_name: str = REQ(default="New user name"),
-    user_email: str = REQ(default="New user email"),
-    user_login: str = REQ(default="Logged in user"),
+    *,
+    hook: str = "WordPress action",
+    post_title: str = "New WordPress post",
+    post_type: str = "post",
+    post_url: str = "WordPress post URL",
+    display_name: str = "New user name",
+    user_email: str = "New user email",
+    user_login: str = "Logged in user",
 ) -> HttpResponse:
     # remove trailing whitespace (issue for some test fixtures)
     hook = hook.rstrip()
