@@ -84,7 +84,7 @@ mock_esm("../src/hotspots", {
     is_open: () => false,
 });
 
-mock_esm("../src/recent_topics_util", {
+mock_esm("../src/recent_topics_ui", {
     is_in_focus: () => false,
 });
 

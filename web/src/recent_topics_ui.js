@@ -9,6 +9,7 @@ import render_user_with_status_icon from "../templates/user_with_status_icon.hbs
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -22,19 +23,14 @@ import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
-import {
-    get_key_from_message,
-    get_topic_key,
-    is_in_focus,
-    is_visible,
-    set_visible,
-} from "./recent_topics_util";
+import {get_key_from_message, get_topic_key, is_visible, set_visible} from "./recent_topics_util";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
@@ -106,6 +102,17 @@ export function clear_for_tests() {
 
 export function save_filters() {
     ls.set(ls_key, [...filters]);
+}
+
+export function is_in_focus() {
+    // Check if user is focused on recent topics.
+    return (
+        is_visible() &&
+        !compose_state.composing() &&
+        !popovers.any_active() &&
+        !overlays.is_overlay_or_modal_open() &&
+        !$(".home-page-input").is(":focus")
+    );
 }
 
 export function set_default_focus() {

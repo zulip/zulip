@@ -236,7 +236,7 @@ export function in_content_editable_widget(e) {
 // Returns true if we handled it, false if the browser should.
 export function process_escape_key(e) {
     if (
-        recent_topics_util.is_in_focus() &&
+        recent_topics_ui.is_in_focus() &&
         // This will return false if `e.target` is not
         // any of the recent topics elements by design.
         recent_topics_ui.change_focused_element($(e.target), "escape")
@@ -622,7 +622,7 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
-            if (recent_topics_util.is_in_focus()) {
+            if (recent_topics_ui.is_in_focus()) {
                 return recent_topics_ui.change_focused_element($(e.target), event_name);
             }
     }
