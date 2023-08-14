@@ -1,7 +1,7 @@
 {{#with linkifier}}
-<tr class="linkifier_row{{#if ../can_modify}} movable-row{{/if}}" data-linkifier-id="{{id}}">
+<tr class="linkifier_row{{#if (and ../can_modify ../can_drag)}} movable-row{{/if}}" data-linkifier-id="{{id}}">
     <td>
-        {{#if ../can_modify}}
+        {{#if (and ../can_modify ../can_drag)}}
             <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
             <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         {{/if}}

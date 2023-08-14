@@ -133,7 +133,7 @@ export function populate_linkifiers(linkifiers_data) {
     ListWidget.create($linkifiers_table, linkifiers_data, {
         name: "linkifiers_list",
         get_item: ListWidget.default_get_item,
-        modifier(linkifier) {
+        modifier(linkifier, filter_value) {
             return render_admin_linkifier_list({
                 linkifier: {
                     pattern: linkifier.pattern,
@@ -141,6 +141,7 @@ export function populate_linkifiers(linkifiers_data) {
                     id: linkifier.id,
                 },
                 can_modify: page_params.is_admin,
+                can_drag: filter_value.length === 0,
             });
         },
         filter: {
