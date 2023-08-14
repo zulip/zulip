@@ -1683,7 +1683,7 @@ td.pointer {
     bottom: 4px;
 }
 
-div.message_table {
+div.message-list {
     border-collapse: separate;
     margin-left: auto;
     display: none;

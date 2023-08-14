@@ -329,12 +329,12 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("more_dense_mode");
     }
 
-    $("#main_div").on("mouseover", ".message_table .message_row", function () {
+    $("#main_div").on("mouseover", ".message-list .message_row", function () {
         const $row = $(this).closest(".message_row");
         message_hover($row);
     });
 
-    $("#main_div").on("mouseleave", ".message_table .message_row", () => {
+    $("#main_div").on("mouseleave", ".message-list .message_row", () => {
         message_unhover();
     });
 

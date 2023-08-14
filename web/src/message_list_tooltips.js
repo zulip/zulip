@@ -121,7 +121,7 @@ export function initialize() {
             }
 
             const config = {attributes: false, childList: true, subtree: true};
-            const target = $elem.parents(".message_table.focused-message-list").get(0);
+            const target = $elem.parents(".message-list.focused-message-list").get(0);
             const nodes_to_check_for_removal = [
                 $elem.parents(".recipient_row").get(0),
                 $elem.parents(".message_reactions").get(0),
@@ -174,7 +174,7 @@ export function initialize() {
         },
     });
 
-    message_list_tooltip(".message_table .message_time", {
+    message_list_tooltip(".message-list .message_time", {
         onShow(instance) {
             const $time_elem = $(instance.reference);
             const $row = $time_elem.closest(".message_row");
