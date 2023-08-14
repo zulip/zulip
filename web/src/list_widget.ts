@@ -36,7 +36,7 @@ type ListWidgetFilterOpts<Item = unknown> = {
 type ListWidgetOpts<Key = unknown, Item = Key> = {
     name?: string;
     get_item: (key: Key) => Item;
-    modifier: (item: Item) => string;
+    modifier: (item: Item, filter_value: string) => string;
     init_sort?: string | SortingFunction<Item>;
     initially_descending_sort?: boolean;
     html_selector?: (item: Item) => JQuery;
@@ -256,7 +256,7 @@ export function create<Key = unknown, Item = Key>(
 
             let html = "";
             for (const item of slice) {
-                const s = opts.modifier(item);
+                const s = opts.modifier(item, meta.filter_value);
 
                 if (typeof s !== "string") {
                     blueslip.error("List item is not a string", {item: s});
@@ -293,7 +293,7 @@ export function create<Key = unknown, Item = Key>(
                 return;
             }
 
-            const html = opts.modifier(item);
+            const html = opts.modifier(item, meta.filter_value);
             if (typeof html !== "string") {
                 blueslip.error("List item is not a string", {item: html});
                 return;
@@ -432,7 +432,7 @@ export function create<Key = unknown, Item = Key>(
                         "Please specify modifier and html_selector when creating the widget.",
                     );
                 }
-                const rendered_row = opts.modifier(item);
+                const rendered_row = opts.modifier(item, meta.filter_value);
                 if (insert_index === meta.filtered_list.length - 1) {
                     const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]);
                     $target_row.after(rendered_row);
