@@ -2,12 +2,12 @@
 from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_int
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -15,15 +15,16 @@ All_EVENT_TYPES = ["translated", "review"]
 
 
 @webhook_view("Transifex", notify_bot_owner_on_invalid_json=False, all_event_types=All_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_transifex_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    project: str = REQ(),
-    resource: str = REQ(),
-    language: str = REQ(),
-    translated: Optional[int] = REQ(json_validator=check_int, default=None),
-    reviewed: Optional[int] = REQ(json_validator=check_int, default=None),
+    *,
+    project: str,
+    resource: str,
+    language: str,
+    translated: Optional[Json[int]] = None,
+    reviewed: Optional[Json[int]] = None,
 ) -> HttpResponse:
     topic = f"{project} in {language}"
     if translated:
