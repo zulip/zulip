@@ -239,13 +239,17 @@ run_test("filtering", () => {
 
     const $search_input = make_search_input();
 
+    let last_filter_value = "";
     const list = ["apple", "banana", "carrot", "dog", "egg", "fence", "grape"];
     const opts = {
         filter: {
             $element: $search_input,
             predicate: (item, value) => item.includes(value),
         },
-        modifier: (item) => div(item),
+        modifier(item, filter_value) {
+            last_filter_value = filter_value;
+            return div(item);
+        },
         get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
@@ -268,6 +272,7 @@ run_test("filtering", () => {
     // is a glorified indexOf call.)
     $search_input.val = () => "g";
     $search_input.simulate_input_event();
+    assert.equal(last_filter_value, "g");
     assert.deepEqual(widget.get_current_list(), ["dog", "egg", "grape"]);
     expected_html = "<div>dog</div><div>egg</div><div>grape</div>";
     assert.deepEqual($container.$appended_data.html(), expected_html);
