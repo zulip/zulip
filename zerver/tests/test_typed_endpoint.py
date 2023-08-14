@@ -546,6 +546,23 @@ class TestEndpoint(ZulipTestCase):
 
         call_endpoint(test_view, HostRequestMock({"foo": ""}))
 
+    def test_json_optional(self) -> None:
+        # Optional[Json[int]] does not allow client provided optional value at
+        # all. The only possible way for val to be None is through the default
+        # value (if it has one).
+        @typed_endpoint
+        def foo(request: HttpRequest, *, val: Optional[Json[int]]) -> None:
+            ...
+
+        # Json[Optional[int]] however, allows client specified None value.
+        @typed_endpoint
+        def bar(request: HttpRequest, *, val: Json[Optional[int]]) -> None:
+            ...
+
+        with self.assertRaisesMessage(ApiParamValidationError, "val is not an integer"):
+            call_endpoint(foo, HostRequestMock({"val": orjson.dumps(None).decode()}))
+        call_endpoint(bar, HostRequestMock({"val": orjson.dumps(None).decode()}))
+
 
 class ValidationErrorHandlingTest(ZulipTestCase):
     def test_special_handling_errors(self) -> None:
