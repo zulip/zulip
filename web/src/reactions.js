@@ -204,7 +204,7 @@ export function get_reaction_title_data(message_id, local_id) {
 }
 
 export function get_reaction_section(message_id) {
-    const $message_element = $(".message_table").find(`[zid='${CSS.escape(message_id)}']`);
+    const $message_element = $(".message-list").find(`[zid='${CSS.escape(message_id)}']`);
     const $section = $message_element.find(".message_reactions");
     return $section;
 }

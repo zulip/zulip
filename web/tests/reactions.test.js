@@ -349,7 +349,7 @@ test("prevent_simultaneous_requests_updating_reaction", ({override, override_rew
 function stub_reactions(message_id) {
     const $message_row = $.create("message-row-stub");
     const $message_reactions = $.create("reactions-stub");
-    $(".message_table").set_find_results(`[zid='${CSS.escape(message_id)}']`, $message_row);
+    $(".message-list").set_find_results(`[zid='${CSS.escape(message_id)}']`, $message_row);
     $message_row.set_find_results(".message_reactions", $message_reactions);
     return $message_reactions;
 }
