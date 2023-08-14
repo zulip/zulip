@@ -1357,7 +1357,7 @@ td.pointer {
     }
 }
 
-.message_list {
+.message-feed {
     .recipient_row {
         /* Browser overlaps extra top padding of message header and
            the bottom border message if this margin is not present. */

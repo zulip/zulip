@@ -26,7 +26,7 @@
 
     /* Prevent headers from running on every page. */
     #navbar-fixed-container,
-    .message_list .message_header {
+    .message-feed .message_header {
         position: static;
     }
 
