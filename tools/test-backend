@@ -8,8 +8,11 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import warnings
 from typing import TYPE_CHECKING, Iterator, List, Type, cast
 from unittest import mock
+
+from seal.exceptions import UnsealedAttributeAccess
 
 if TYPE_CHECKING:
     # This script does not have access to the zerver module during runtime.
@@ -417,6 +420,7 @@ def main() -> None:
     else:
         print("-- Running tests in serial mode.", flush=True)
 
+    warnings.filterwarnings("error", category=UnsealedAttributeAccess)
     with block_internet():
         test_runner = TestRunner(
             failfast=options.fatal_errors,
