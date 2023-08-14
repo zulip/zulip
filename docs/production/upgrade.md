@@ -65,7 +65,7 @@ See the [troubleshooting guide](#troubleshooting-and-rollback) if you
 run into any issues or need to roll back the upgrade.
 
 After you have completed the Zulip upgrade, you may also wish to [upgrade the
-version of PostgreSQL][#upgrading-postgresql].
+version of PostgreSQL](#upgrading-postgresql).
 
 ## Upgrading from a Git repository
 
