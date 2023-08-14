@@ -196,7 +196,7 @@ def update_messages_for_topic_edit(
     for message in messages_list:
         update_edit_history(message, last_edit_time, edit_history_event)
 
-    Message.objects.bulk_update(messages_list, update_fields)
+    Message.objects.bulk_update(messages_list, update_fields, batch_size=100)
 
     return messages_list
 
