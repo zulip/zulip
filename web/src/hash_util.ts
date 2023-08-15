@@ -4,13 +4,18 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import type {StreamSubscription} from "./sub_store";
+import type {Message} from "./types";
+import type {UserGroup} from "./user_groups";
 
-export function get_hash_category(hash) {
+type Operator = {operator: string; operand: string; negated?: boolean};
+
+export function get_hash_category(hash?: string): string {
     // given "#streams/subscribed", returns "streams"
     return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
 }
 
-export function get_hash_section(hash) {
+export function get_hash_section(hash?: string): string {
     // given "#settings/profile", returns "profile"
     // given '#streams/5/social", returns "5"
     if (!hash) {
@@ -22,15 +27,15 @@ export function get_hash_section(hash) {
     return parts[1] || "";
 }
 
-export function get_current_hash_category() {
+export function get_current_hash_category(): string {
     return get_hash_category(window.location.hash);
 }
 
-export function get_current_hash_section() {
+export function get_current_hash_section(): string {
     return get_hash_section(window.location.hash);
 }
 
-export function build_reload_url() {
+export function build_reload_url(): string {
     let hash = window.location.hash;
     if (hash.length !== 0 && hash[0] === "#") {
         hash = hash.slice(1);
@@ -38,7 +43,7 @@ export function build_reload_url() {
     return "+oldhash=" + encodeURIComponent(hash);
 }
 
-export function encode_operand(operator, operand) {
+export function encode_operand(operator: string, operand: string): string {
     if (
         operator === "group-pm-with" ||
         operator === "dm-including" ||
@@ -59,7 +64,7 @@ export function encode_operand(operator, operand) {
     return internal_url.encodeHashComponent(operand);
 }
 
-export function encode_stream_name(operand) {
+export function encode_stream_name(operand: string): string {
     // stream_data prefixes the stream id, but it does not do the
     // URI encoding piece
     operand = stream_data.name_to_slug(operand);
@@ -67,7 +72,7 @@ export function encode_stream_name(operand) {
     return internal_url.encodeHashComponent(operand);
 }
 
-export function decode_operand(operator, operand) {
+export function decode_operand(operator: string, operand: string): string {
     if (
         operator === "group-pm-with" ||
         operator === "dm-including" ||
@@ -90,12 +95,12 @@ export function decode_operand(operator, operand) {
     return operand;
 }
 
-export function by_stream_url(stream_id) {
+export function by_stream_url(stream_id: number): string {
     // Wrapper for web use of internal_url.by_stream_url
     return internal_url.by_stream_url(stream_id, sub_store.maybe_get_stream_name);
 }
 
-export function by_stream_topic_url(stream_id, topic) {
+export function by_stream_topic_url(stream_id: number, topic: string): string {
     // Wrapper for web use of internal_url.by_stream_topic_url
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
 }
@@ -103,7 +108,7 @@ export function by_stream_topic_url(stream_id, topic) {
 // Encodes an operator list into the
 // corresponding hash: the # component
 // of the narrow URL
-export function operators_to_hash(operators) {
+export function operators_to_hash(operators?: Operator[]): string {
     let hash = "#";
 
     if (operators !== undefined) {
@@ -127,16 +132,16 @@ export function operators_to_hash(operators) {
     return hash;
 }
 
-export function by_sender_url(reply_to) {
+export function by_sender_url(reply_to: string): string {
     return operators_to_hash([{operator: "sender", operand: reply_to}]);
 }
 
-export function pm_with_url(reply_to) {
+export function pm_with_url(reply_to: string): string {
     const slug = people.emails_to_slug(reply_to);
     return "#narrow/dm/" + slug;
 }
 
-export function huddle_with_url(user_ids_string) {
+export function huddle_with_url(user_ids_string: string): string {
     // This method is convenient for callers
     // that have already converted emails to a comma-delimited
     // list of user_ids.  We should be careful to keep this
@@ -144,7 +149,7 @@ export function huddle_with_url(user_ids_string) {
     return "#narrow/dm/" + user_ids_string + "-group";
 }
 
-export function by_conversation_and_time_url(message) {
+export function by_conversation_and_time_url(message: Message): string {
     const absolute_url =
         window.location.protocol +
         "//" +
@@ -152,31 +157,31 @@ export function by_conversation_and_time_url(message) {
         "/" +
         window.location.pathname.split("/")[1];
 
-    const suffix = "/near/" + internal_url.encodeHashComponent(message.id);
+    const suffix = "/near/" + internal_url.encodeHashComponent(message.id.toString());
 
     if (message.type === "stream") {
-        return absolute_url + by_stream_topic_url(message.stream_id, message.topic) + suffix;
+        return absolute_url + by_stream_topic_url(message.stream_id!, message.topic) + suffix;
     }
 
     return absolute_url + people.pm_perma_link(message) + suffix;
 }
 
-export function stream_edit_url(sub) {
+export function stream_edit_url(sub: StreamSubscription): string {
     const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}`;
     return hash;
 }
 
-export function group_edit_url(group) {
+export function group_edit_url(group: UserGroup): string {
     const hash = `#groups/${group.id}/${internal_url.encodeHashComponent(group.name)}`;
     return hash;
 }
 
-export function search_public_streams_notice_url(operators) {
+export function search_public_streams_notice_url(operators: Operator[]): string {
     const public_operator = {operator: "streams", operand: "public"};
     return operators_to_hash([public_operator, ...operators]);
 }
 
-export function parse_narrow(hash) {
+export function parse_narrow(hash: string): Operator[] | undefined {
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
@@ -208,7 +213,7 @@ export function parse_narrow(hash) {
     return operators;
 }
 
-export function is_overlay_hash(hash) {
+export function is_overlay_hash(hash: string): boolean {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
     const overlay_list = [
         "streams",
@@ -230,7 +235,7 @@ export function is_overlay_hash(hash) {
 
 // this finds the stream that is actively open in the settings and focused in
 // the left side.
-export function is_editing_stream(desired_stream_id) {
+export function is_editing_stream(desired_stream_id: number): boolean {
     const hash_components = window.location.hash.slice(1).split(/\//);
 
     if (hash_components[0] !== "streams") {
@@ -248,7 +253,7 @@ export function is_editing_stream(desired_stream_id) {
     return stream_id === desired_stream_id;
 }
 
-export function is_editing_group(desired_group_id) {
+export function is_editing_group(desired_group_id: number): boolean {
     const hash_components = window.location.hash.slice(1).split(/\//);
 
     if (hash_components[0] !== "groups") {
@@ -266,7 +271,7 @@ export function is_editing_group(desired_group_id) {
     return group_id === desired_group_id;
 }
 
-export function is_create_new_stream_narrow() {
+export function is_create_new_stream_narrow(): boolean {
     return window.location.hash === "#streams/new";
 }
 
@@ -281,7 +286,7 @@ export const allowed_web_public_narrows = [
     "id",
 ];
 
-export function is_spectator_compatible(hash) {
+export function is_spectator_compatible(hash: string): boolean {
     // Defines which views are supported for spectators.
     // This implementation should agree with the similar function in zerver/lib/narrow.py.
     const web_public_allowed_hashes = [
@@ -313,11 +318,11 @@ export function is_spectator_compatible(hash) {
     return web_public_allowed_hashes.includes(main_hash);
 }
 
-export function current_hash_as_next() {
+export function current_hash_as_next(): string {
     return `next=/${encodeURIComponent(window.location.hash)}`;
 }
 
-export function build_login_link() {
+export function build_login_link(): string {
     let login_link = "/login/?" + current_hash_as_next();
     if (page_params.development_environment) {
         login_link = "/devlogin/?" + current_hash_as_next();
