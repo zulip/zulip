@@ -14,7 +14,7 @@ import * as hash_util from "./hash_util";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 
-export function login_to_access(empty_narrow) {
+export function login_to_access(empty_narrow?: boolean): void {
     // Hide all overlays, popover and go back to the previous hash if the
     // hash has changed.
     const login_link = hash_util.build_login_link();
