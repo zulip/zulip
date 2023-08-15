@@ -7,9 +7,39 @@ formatted, or to copy the Markdown source for a reply.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!message-actions-menu.md!}
 
-3. Click **View message source**.
+1. Click **View message source**. You will not see the **View message source**
+   menu option for editable messages that you have sent.
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>E</kbd> shortcut to view the Markdown source of the
+    selected message.
+
+{end_tabs}
+
+### Copy the Markdown source of a message to your clipboard
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!message-actions-menu.md!}
+
+1. Click **View message source**. You will not see the **View message source**
+   menu option for editable messages that you have sent.
+
+1. Click the **Copy and close**
+   ( <img src="/static/images/help/copy_to_clipboard.svg" alt="copy" class="mobile-icon"/>)
+   widget in the upper right corner of the message.
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>E</kbd> shortcut to view the Markdown source of the
+    selected message.
 
 {end_tabs}
 
