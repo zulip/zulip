@@ -5,7 +5,13 @@ import * as hash_util from "./hash_util";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 
-export const state = {
+export const state: {
+    is_internal_change: boolean;
+    hash_before_overlay: string | null;
+    old_hash: string;
+    changing_hash: boolean;
+    spectator_old_hash: string;
+} = {
     is_internal_change: false,
     hash_before_overlay: null,
     old_hash: window.location.hash,
@@ -19,21 +25,21 @@ export const state = {
         : `#${user_settings.default_view}`,
 };
 
-export function clear_for_testing() {
+export function clear_for_testing(): void {
     state.is_internal_change = false;
     state.hash_before_overlay = null;
     state.old_hash = "#";
 }
 
-export function old_hash() {
+export function old_hash(): string {
     return state.old_hash;
 }
 
-export function set_hash_before_overlay(hash) {
+export function set_hash_before_overlay(hash: string): void {
     state.hash_before_overlay = hash;
 }
 
-export function update_web_public_hash(hash) {
+export function update_web_public_hash(hash: string): boolean {
     // Returns true if hash is web-public compatible.
     if (hash_util.is_spectator_compatible(hash)) {
         state.spectator_old_hash = hash;
@@ -42,7 +48,7 @@ export function update_web_public_hash(hash) {
     return false;
 }
 
-export function save_old_hash() {
+export function save_old_hash(): boolean {
     state.old_hash = window.location.hash;
 
     const was_internal_change = state.is_internal_change;
@@ -51,7 +57,7 @@ export function save_old_hash() {
     return was_internal_change;
 }
 
-export function update(new_hash) {
+export function update(new_hash: string): void {
     const old_hash = window.location.hash;
 
     if (!new_hash.startsWith("#")) {
@@ -73,7 +79,7 @@ export function update(new_hash) {
     window.location.hash = new_hash;
 }
 
-export function exit_overlay() {
+export function exit_overlay(): void {
     if (hash_util.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
         const new_hash = state.hash_before_overlay || `#${user_settings.default_view}`;
@@ -81,18 +87,18 @@ export function exit_overlay() {
     }
 }
 
-export function go_to_location(hash) {
+export function go_to_location(hash: string): void {
     // Call this function when you WANT the hashchanged
     // function to run.
     window.location.hash = hash;
 }
 
-export function update_hash_internally_if_required(hash) {
+export function update_hash_internally_if_required(hash: string): void {
     if (window.location.hash !== hash) {
         update(hash);
     }
 }
 
-export function return_to_web_public_hash() {
+export function return_to_web_public_hash(): void {
     window.location.hash = state.spectator_old_hash;
 }
