@@ -41,6 +41,12 @@ formatted, or to copy the Markdown source for a reply.
     You can also use the <kbd>E</kbd> shortcut to view the Markdown source of the
     selected message.
 
+{tab|mobile}
+
+{!message-long-press-menu.md!}
+
+1. Tap **Copy to clipboard**.
+
 {end_tabs}
 
 ## Related articles
