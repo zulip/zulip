@@ -3,6 +3,10 @@
     "not_translated": 102,
     "total": 388
   },
+  "be": {
+    "not_translated": 88,
+    "total": 388
+  },
   "bg": {
     "not_translated": 283,
     "total": 388
@@ -33,6 +37,10 @@
   },
   "en_GB": {
     "not_translated": 3,
+    "total": 388
+  },
+  "eo": {
+    "not_translated": 353,
     "total": 388
   },
   "es": {
@@ -81,6 +89,10 @@
   },
   "lt": {
     "not_translated": 359,
+    "total": 388
+  },
+  "lv": {
+    "not_translated": 290,
     "total": 388
   },
   "ml": {

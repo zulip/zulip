@@ -42,7 +42,7 @@ msgstr "Canais privados"
 
 #: analytics/views/stats.py:296
 msgid "Direct messages"
-msgstr ""
+msgstr "Mensagens directas"
 
 #: analytics/views/stats.py:297
 msgid "Group direct messages"
@@ -924,7 +924,7 @@ msgstr ""
 
 #: templates/zerver/app/index.html:165
 msgid "Updates may be delayed."
-msgstr ""
+msgstr "As actualizações podem ser atrasadas."
 
 #: templates/zerver/app/index.html:166
 msgid "Retrying soon…"

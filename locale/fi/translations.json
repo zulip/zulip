@@ -1333,7 +1333,7 @@
   "Zoom to message in conversation context": "",
   "Zulip": "Zulip",
   "Zulip Server dev environment": "Zulip-palvelin dev-ympäistö",
-  "Zulip Server {display_version}": "Sulip-palvelin {display_version}",
+  "Zulip Server {display_version}": "Zulip-palvelin {display_version}",
   "Zulip Server {display_version} (modified)": "Zulip-palvelin {display_version} (muokattu)",
   "Zulip Server {display_version} (patched)": "Zulip-palvlein {display_version} (paikattu)",
   "Zulip lets you mute topics and streams to avoid receiving notifications messages you are not interested in. Muting a stream effectively mutes all topics in that stream. You can also manually mute a topic in an unmuted stream, or unmute a topic in a muted stream. <z-link>Learn more.</z-link>": "",

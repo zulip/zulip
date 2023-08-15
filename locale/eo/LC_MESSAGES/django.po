@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-03 20:21+0000\n"
+"POT-Creation-Date: 2023-08-14 23:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: analytics/views/stats.py:110 zerver/decorator.py:623 zerver/decorator.py:641
+
+#: analytics/views/stats.py:110 zerver/decorator.py:625 zerver/decorator.py:643
 msgid "Not allowed for guest users"
 msgstr ""
 
@@ -255,7 +256,7 @@ msgid ""
 msgstr ""
 
 #: templates/500.html:4 templates/500.html:21
-#: zerver/actions/scheduled_messages.py:411 zerver/middleware.py:433
+#: zerver/actions/scheduled_messages.py:411 zerver/middleware.py:410
 msgid "Internal server error"
 msgstr ""
 
@@ -3196,7 +3197,7 @@ msgstr ""
 msgid "Widgets: {error_msg}"
 msgstr ""
 
-#: zerver/actions/reactions.py:116
+#: zerver/actions/reactions.py:115
 msgid "Reaction already exists."
 msgstr ""
 
@@ -3236,18 +3237,32 @@ msgstr ""
 msgid "[View scheduled messages](#scheduled)"
 msgstr ""
 
-#: zerver/actions/streams.py:76
+#: zerver/actions/streams.py:77
 msgid "Stream is already deactivated"
 msgstr ""
 
-#: zerver/actions/streams.py:841
+#: zerver/actions/streams.py:173
+msgid "Stream is not currently deactivated"
+msgstr ""
+
+#: zerver/actions/streams.py:176
+#, python-brace-format
+msgid "Stream named {stream_name} already exists"
+msgstr ""
+
+#: zerver/actions/streams.py:236
+#, python-brace-format
+msgid "Stream {stream_name} un-archived."
+msgstr ""
+
+#: zerver/actions/streams.py:927
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
 msgstr ""
 
-#: zerver/actions/streams.py:1025
+#: zerver/actions/streams.py:1111
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions](/help/stream-sending-policy) for "
@@ -3257,38 +3272,38 @@ msgid ""
 "* **New permissions**: {new_policy}.\n"
 msgstr ""
 
-#: zerver/actions/streams.py:1160
+#: zerver/actions/streams.py:1246
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr ""
 
-#: zerver/actions/streams.py:1179 zerver/actions/streams.py:1181
+#: zerver/actions/streams.py:1265 zerver/actions/streams.py:1267
 #: zerver/views/streams.py:793
 msgid "No description."
 msgstr ""
 
-#: zerver/actions/streams.py:1184
+#: zerver/actions/streams.py:1270
 #, python-brace-format
 msgid "{user} changed the description for this stream."
 msgstr ""
 
-#: zerver/actions/streams.py:1186
+#: zerver/actions/streams.py:1272
 msgid "Old description"
 msgstr ""
 
-#: zerver/actions/streams.py:1190
+#: zerver/actions/streams.py:1276
 msgid "New description"
 msgstr ""
 
-#: zerver/actions/streams.py:1258 zerver/actions/streams.py:1263
+#: zerver/actions/streams.py:1344 zerver/actions/streams.py:1349
 msgid "Forever"
 msgstr ""
 
-#: zerver/actions/streams.py:1264
+#: zerver/actions/streams.py:1350
 msgid "Messages in this stream will now be retained forever."
 msgstr ""
 
-#: zerver/actions/streams.py:1270
+#: zerver/actions/streams.py:1356
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period](/help/message-retention-"
@@ -3299,7 +3314,7 @@ msgid ""
 "{summary_line}"
 msgstr ""
 
-#: zerver/actions/submessage.py:30
+#: zerver/actions/submessage.py:29
 msgid "You cannot attach a submessage to this message."
 msgstr ""
 
@@ -3319,15 +3334,15 @@ msgstr ""
 msgid "Account is not associated with this subdomain"
 msgstr ""
 
-#: zerver/decorator.py:506 zerver/decorator.py:643
+#: zerver/decorator.py:508 zerver/decorator.py:645
 msgid "This endpoint does not accept bot requests."
 msgstr ""
 
-#: zerver/decorator.py:605
+#: zerver/decorator.py:607
 msgid "Must be an server administrator"
 msgstr ""
 
-#: zerver/decorator.py:662 zerver/lib/streams.py:699 zerver/lib/streams.py:725
+#: zerver/decorator.py:664 zerver/lib/streams.py:699 zerver/lib/streams.py:725
 #: zerver/lib/streams.py:727 zerver/lib/streams.py:742
 #: zerver/lib/user_groups.py:35 zerver/lib/user_groups.py:42
 #: zerver/lib/users.py:249 zerver/lib/users.py:278 zerver/views/invite.py:60
@@ -3336,19 +3351,19 @@ msgstr ""
 msgid "Insufficient permission"
 msgstr ""
 
-#: zerver/decorator.py:704
+#: zerver/decorator.py:706
 msgid "This endpoint requires HTTP basic authentication."
 msgstr ""
 
-#: zerver/decorator.py:711
+#: zerver/decorator.py:713
 msgid "Invalid authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:713
+#: zerver/decorator.py:715
 msgid "Missing authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:886
+#: zerver/decorator.py:888
 msgid "Webhook bots can only access webhooks"
 msgstr ""
 
@@ -3658,7 +3673,7 @@ msgstr ""
 msgid "API usage exceeded rate limit"
 msgstr ""
 
-#: zerver/lib/exceptions.py:234 zerver/lib/request.py:442
+#: zerver/lib/exceptions.py:234 zerver/lib/request.py:441
 #: zerver/lib/validator.py:755
 msgid "Malformed JSON"
 msgstr ""
@@ -4118,27 +4133,27 @@ msgstr ""
 msgid "Push notifications bouncer error: {}"
 msgstr ""
 
-#: zerver/lib/request.py:92
+#: zerver/lib/request.py:91
 #, python-brace-format
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr ""
 
-#: zerver/lib/request.py:104
+#: zerver/lib/request.py:103
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr ""
 
-#: zerver/lib/request.py:117
+#: zerver/lib/request.py:116
 #, python-brace-format
 msgid "Bad value for '{var_name}': {bad_value}"
 msgstr ""
 
-#: zerver/lib/request.py:395 zerver/webhooks/ifttt/view.py:36
+#: zerver/lib/request.py:394 zerver/webhooks/ifttt/view.py:36
 #: zerver/webhooks/slack_incoming/view.py:42
 msgid "Malformed payload"
 msgstr ""
 
-#: zerver/lib/request.py:443
+#: zerver/lib/request.py:442
 msgid "Argument \"{}\" is not valid JSON."
 msgstr ""
 
@@ -4237,21 +4252,21 @@ msgstr ""
 msgid "Upload would exceed your organization's upload quota."
 msgstr ""
 
-#: zerver/lib/upload/base.py:67 zerver/lib/upload/base.py:83
-#: zerver/lib/upload/base.py:177
+#: zerver/lib/upload/base.py:68 zerver/lib/upload/base.py:84
+#: zerver/lib/upload/base.py:178
 msgid "Could not decode image; did you upload an image file?"
 msgstr ""
 
-#: zerver/lib/upload/base.py:69 zerver/lib/upload/base.py:85
-#: zerver/lib/upload/base.py:179
+#: zerver/lib/upload/base.py:70 zerver/lib/upload/base.py:86
+#: zerver/lib/upload/base.py:180
 msgid "Image size exceeds limit."
 msgstr ""
 
-#: zerver/lib/upload/base.py:107
+#: zerver/lib/upload/base.py:108
 msgid "Corrupt animated image."
 msgstr ""
 
-#: zerver/lib/upload/base.py:116
+#: zerver/lib/upload/base.py:117
 msgid "Unknown animated image format."
 msgstr ""
 
@@ -4505,12 +4520,12 @@ msgstr ""
 msgid "No such command: {}"
 msgstr ""
 
-#: zerver/middleware.py:464
+#: zerver/middleware.py:441
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr ""
 
-#: zerver/middleware.py:628
+#: zerver/middleware.py:607
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr ""
@@ -5363,7 +5378,7 @@ msgstr ""
 msgid "Invalid payload"
 msgstr ""
 
-#: zerver/webhooks/front/view.py:155
+#: zerver/webhooks/front/view.py:151
 msgid "Unknown webhook request"
 msgstr ""
 
@@ -5414,7 +5429,7 @@ msgstr ""
 msgid "Unknown WordPress webhook action: {}"
 msgstr ""
 
-#: zerver/worker/queue_processors.py:1123
+#: zerver/worker/queue_processors.py:1104
 #, python-brace-format
 msgid ""
 "Your data export is complete and has been uploaded here:\n"

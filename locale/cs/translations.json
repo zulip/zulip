@@ -1234,7 +1234,7 @@
   "Which parts of the email should be included in the Zulip message sent to this stream?": "",
   "Who can access the stream?": "Kdo může přistupovat ke kanálu?",
   "Who can access user's email address": "",
-  "Who can access your email address": "",
+  "Who can access your email address": "Kdo může přistupovat k vaší adrese elektronické pošty",
   "Who can add bots": "Kdo může přidávat roboty",
   "Who can add custom emoji": "Kdo může přidat vlastní emoji",
   "Who can add users to streams": "Kdo může přidat uživatele do kanálů",

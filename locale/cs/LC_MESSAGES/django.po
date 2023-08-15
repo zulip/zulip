@@ -362,6 +362,10 @@ msgid ""
 "                            <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n"
 "                            "
 msgstr ""
+"\n"
+"                            Pokud tento server spravujete, můžete se podívat do\n"
+"                            <a href=\"%(troubleshooting_url)s\">průvodce řešením potíží serveru Zulip</a>.\n"
+"                            "
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -914,7 +918,7 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
-msgstr ""
+msgstr "Pokračovat"
 
 #: templates/zerver/accounts_home.html:5
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:154
@@ -1014,6 +1018,13 @@ msgid ""
 "                        to log in, this is most likely a server bug or misconfiguration.\n"
 "                        "
 msgstr ""
+"\n"
+"                        Zdá se, že jste se zde ocitl náhodou. Tato stránka\n"
+"je určena jako mezikrok v procesu ověřování.\n"
+"                        a neměla by být přístupná ručně. Pokud jste sem přišli přímo,\n"
+"pravděpodobně jste si spletli adresu. Pokud jste zde uvízli při pokusu\n"
+"                        o přihlášení, jedná se pravděpodobně o chybu serveru nebo chybné nastavení.\n"
+"                        "
 
 #: templates/zerver/billing_nav.html:4
 #: templates/zerver/development/integrations_dev_panel.html:19
@@ -1025,7 +1036,7 @@ msgstr "Zulip"
 
 #: templates/zerver/change_email_address_visibility_modal.html:6
 msgid "Configure email address privacy"
-msgstr ""
+msgstr "Nastavit soukromí adresy elektronické pošty"
 
 #: templates/zerver/change_email_address_visibility_modal.html:8
 msgid "Close modal"
@@ -1036,16 +1047,20 @@ msgid ""
 "Zulip lets you control which roles in the organization can view your email "
 "address."
 msgstr ""
+"Zulip umožňuje řídit, které role v organizaci mohou zobrazit vaši e-mailovou"
+" adresu."
 
 #: templates/zerver/change_email_address_visibility_modal.html:13
 msgid ""
 "Do you want to change the privacy setting for your email from the default "
 "configuration for this organization?"
 msgstr ""
+"Chcete změnit nastavení soukromí vašeho e-mailu oproti výchozímu nastavení "
+"pro tuto organizaci?"
 
 #: templates/zerver/change_email_address_visibility_modal.html:15
 msgid "Who can access your email address"
-msgstr ""
+msgstr "Kdo může přistupovat k vaší adrese elektronické pošty"
 
 #: templates/zerver/change_email_address_visibility_modal.html:22
 #, python-format
@@ -1054,6 +1069,9 @@ msgid ""
 "href=\"%(root_domain_url)s/help/configure-email-visibility\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">after you join</a>."
 msgstr ""
+"Toto nastavení můžete také změnit <a "
+"href=\"%(root_domain_url)s/help/configure-email-visibility\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">poté, co se připojíte</a>."
 
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
@@ -1266,7 +1284,7 @@ msgstr "Normální uživatelé"
 
 #: templates/zerver/digest_base.html:5
 msgid "Digest"
-msgstr ""
+msgstr "Přehled"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:9
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
@@ -3144,7 +3162,7 @@ msgstr "Můžete to zkusit znovu za %(retry_after)s sekund."
 #: templates/zerver/realm_creation_disabled.html:4
 #: templates/zerver/realm_creation_disabled.html:13
 msgid "Organization creation link required"
-msgstr ""
+msgstr "Požadován odkaz na vytvoření organizace"
 
 #: templates/zerver/realm_creation_disabled.html:15
 msgid ""
@@ -3181,7 +3199,7 @@ msgstr "Použít %(external_host)s"
 #: templates/zerver/realm_creation_link_invalid.html:4
 #: templates/zerver/realm_creation_link_invalid.html:14
 msgid "Organization creation link expired or invalid"
-msgstr ""
+msgstr "Odkaz na vytvoření organizace vypršel nebo není platný"
 
 #: templates/zerver/realm_creation_link_invalid.html:16
 msgid ""
@@ -3237,7 +3255,7 @@ msgstr "Vytvořit novou organizaci."
 
 #: templates/zerver/register.html:5
 msgid "Registration"
-msgstr ""
+msgstr "Registrace"
 
 #: templates/zerver/register.html:21
 msgid "Create your organization"
@@ -3253,10 +3271,13 @@ msgid ""
 "            <p>Enter your account details to complete registration.</p>\n"
 "            "
 msgstr ""
+"\n"
+"            <p>Zadejte údaje o svém účtu a dokončete registraci.</p>\n"
+"            "
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
-msgstr ""
+msgstr "Vaše organizace"
 
 #: templates/zerver/register.html:66
 msgid "Your account"
@@ -3312,6 +3333,8 @@ msgid ""
 "Forgot your password? No problem, we'll send a link to reset your password "
 "to the email you signed up with."
 msgstr ""
+"Zapomněli jste heslo? Žádný problém, zašleme vám odkaz pro obnovení hesla na"
+" e-mail, který jste uvedli při registraci."
 
 #: templates/zerver/reset.html:34
 msgid "Send reset link"
@@ -3319,7 +3342,7 @@ msgstr "Odeslat odkaz na reset hesla"
 
 #: templates/zerver/reset_confirm.html:5
 msgid "Set a new password"
-msgstr ""
+msgstr "Nastavte nové heslo"
 
 #: templates/zerver/reset_confirm.html:15
 msgid "Set a new password."
