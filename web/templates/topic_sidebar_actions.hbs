@@ -11,13 +11,13 @@
     {{#if development}}
         <li class="hidden-for-spectators">
             <div class="tabs-container">
-                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute topic' }}" aria-label="{{t 'Mute topic' }}">
+                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
                     <i class="zulip-icon zulip-icon-mute-new"></i>
                 </div>
-                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" data-tippy-content="{{t 'Unmute topic' }}" aria-label="{{t 'Unmute topic' }}">
+                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}">
                     <i class="zulip-icon zulip-icon-unmute-new"></i>
                 </div>
-                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow topic' }}" aria-label="{{t 'Follow topic' }}">
+                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow' }}" aria-label="{{t 'Follow' }}">
                     <i class="zulip-icon zulip-icon-follow"></i>
                 </div>
             </div>
