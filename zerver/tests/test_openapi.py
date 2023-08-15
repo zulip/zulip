@@ -235,10 +235,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # section of the same page.
         "/users/me/subscriptions/{stream_id}",
         #### Mobile-app only endpoints; important for mobile developers.
-        # Mobile interface for fetching API keys
-        "/fetch_api_key",
-        # Already documented; need to fix tracking bug
-        "/dev_fetch_api_key",
         # Mobile interface for development environment login
         "/dev_list_users",
         # Registration for iOS/Android mobile push notifications.
@@ -277,6 +273,13 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Zulip outgoing webhook payload
         "/zulip-outgoing-webhook",
         "/jwt/fetch_api_key",
+    }
+
+    # Endpoints in the API documentation that don't use rest_dispatch
+    # and only use the POST method; used in test_openapi_arguments.
+    documented_post_only_endpoints = {
+        "fetch_api_key",
+        "dev_fetch_api_key",
     }
 
     # Endpoints where the documentation is currently failing our
@@ -585,11 +588,13 @@ so maybe we shouldn't include it in pending_endpoints.
         # for those using the rest_dispatch decorator; we then parse
         # its mapping of (HTTP_METHOD -> FUNCTION).
         for p in urlconf.v1_api_and_json_patterns + urlconf.v1_api_mobile_patterns:
+            methods_endpoints: Dict[str, Any] = {}
             if p.callback is not rest_dispatch:
                 # Endpoints not using rest_dispatch don't have extra data.
-                methods_endpoints: Dict[str, Any] = dict(
-                    GET=p.callback,
-                )
+                if str(p.pattern) in self.documented_post_only_endpoints:
+                    methods_endpoints = dict(POST=p.callback)
+                else:
+                    methods_endpoints = dict(GET=p.callback)
             else:
                 methods_endpoints = assert_is_not_none(p.default_args)
 
