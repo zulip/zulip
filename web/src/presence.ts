@@ -5,6 +5,26 @@ import * as reload_state from "./reload_state";
 import {user_settings} from "./user_settings";
 import * as watchdog from "./watchdog";
 
+export type RawPresence = {
+    server_timestamp: number;
+    active_timestamp?: number;
+    idle_timestamp?: number;
+};
+
+export type PresenceStatus = {
+    status: "active" | "idle" | "offline";
+    last_active?: number;
+};
+
+type PresenceInfoFromEvent = {
+    website: {
+        client: "website";
+        status: "idle" | "active";
+        timestamp: number;
+        pushable: boolean;
+    };
+};
+
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
 
@@ -14,18 +34,18 @@ import * as watchdog from "./watchdog";
 
 // In future commits we'll use raw_info to facilitate
 // handling server events and/or timeout events.
-const raw_info = new Map();
-export const presence_info = new Map();
+const raw_info = new Map<number, RawPresence>();
+export const presence_info = new Map<number, PresenceStatus>();
 
 // We use this internally and export it for testing convenience.
-export function clear_internal_data() {
+export function clear_internal_data(): void {
     raw_info.clear();
     presence_info.clear();
 }
 
 const BIG_REALM_COUNT = 250;
 
-export function get_status(user_id) {
+export function get_status(user_id: number): PresenceStatus["status"] {
     if (people.is_my_user_id(user_id)) {
         if (user_settings.presence_enabled) {
             // if the current user is sharing presence, they always see themselves as online.
@@ -35,16 +55,16 @@ export function get_status(user_id) {
         return "offline";
     }
     if (presence_info.has(user_id)) {
-        return presence_info.get(user_id).status;
+        return presence_info.get(user_id)!.status;
     }
     return "offline";
 }
 
-export function get_user_ids() {
+export function get_user_ids(): number[] {
     return [...presence_info.keys()];
 }
 
-export function status_from_raw(raw) {
+export function status_from_raw(raw: RawPresence): PresenceStatus {
     /*
         Example of `raw`:
 
@@ -58,14 +78,14 @@ export function status_from_raw(raw) {
     /* Mark users as offline after this many seconds since their last checkin, */
     const offline_threshold_secs = page_params.server_presence_offline_threshold_seconds;
 
-    function age(timestamp) {
+    function age(timestamp?: number): number {
         return raw.server_timestamp - (timestamp || 0);
     }
 
     const active_timestamp = raw.active_timestamp;
     const idle_timestamp = raw.idle_timestamp;
 
-    let last_active;
+    let last_active: number | undefined;
     if (active_timestamp !== undefined || idle_timestamp !== undefined) {
         last_active = Math.max(active_timestamp || 0, idle_timestamp || 0);
     }
@@ -99,7 +119,11 @@ export function status_from_raw(raw) {
     };
 }
 
-export function update_info_from_event(user_id, info, server_timestamp) {
+export function update_info_from_event(
+    user_id: number,
+    info: PresenceInfoFromEvent,
+    server_timestamp: number,
+): void {
     /*
         Example of `info`:
 
@@ -120,7 +144,9 @@ export function update_info_from_event(user_id, info, server_timestamp) {
             server_timestamp: 1585745140
         }
     */
-    const raw = raw_info.get(user_id) || {};
+    const raw = raw_info.get(user_id) || {
+        server_timestamp: 0,
+    };
 
     raw.server_timestamp = server_timestamp;
 
@@ -140,7 +166,10 @@ export function update_info_from_event(user_id, info, server_timestamp) {
     presence_info.set(user_id, status);
 }
 
-export function set_info(presences, server_timestamp) {
+export function set_info(
+    presences: Map<number, Omit<RawPresence, "server_timestamp">>,
+    server_timestamp: number,
+): void {
     /*
         Example `presences` data:
 
@@ -187,7 +216,7 @@ export function set_info(presences, server_timestamp) {
             continue;
         }
 
-        const raw = {
+        const raw: RawPresence = {
             server_timestamp,
             active_timestamp: info.active_timestamp || undefined,
             idle_timestamp: info.idle_timestamp || undefined,
@@ -201,7 +230,7 @@ export function set_info(presences, server_timestamp) {
     update_info_for_small_realm();
 }
 
-export function update_info_for_small_realm() {
+export function update_info_for_small_realm(): void {
     if (people.get_active_human_count() >= BIG_REALM_COUNT) {
         // For big realms, we don't want to bloat our buddy
         // lists with lots of long-time-inactive users.
@@ -214,7 +243,7 @@ export function update_info_for_small_realm() {
 
     for (const person of persons) {
         const user_id = person.user_id;
-        let status = "offline";
+        let status: PresenceStatus["status"] = "offline";
 
         if (presence_info.has(user_id)) {
             // this is normal, we have data for active
@@ -238,7 +267,7 @@ export function update_info_for_small_realm() {
     }
 }
 
-export function last_active_date(user_id) {
+export function last_active_date(user_id: number): Date | undefined {
     const info = presence_info.get(user_id);
 
     if (!info || !info.last_active) {
@@ -248,6 +277,9 @@ export function last_active_date(user_id) {
     return new Date(info.last_active * 1000);
 }
 
-export function initialize(params) {
+export function initialize(params: {
+    presences: Map<number, Omit<RawPresence, "server_timestamp">>;
+    server_timestamp: number;
+}): void {
     set_info(params.presences, params.server_timestamp);
 }

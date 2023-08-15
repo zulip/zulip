@@ -48,6 +48,7 @@ export const page_params: {
     server_avatar_changes_disabled: boolean;
     server_name_changes_disabled: boolean;
     server_needs_upgrade: boolean;
+    server_presence_offline_threshold_seconds: number;
     server_sentry_dsn: string | undefined;
     server_sentry_environment: string | undefined;
     server_sentry_sample_rate: number | undefined;
