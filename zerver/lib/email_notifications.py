@@ -875,9 +875,18 @@ def enqueue_welcome_emails(
         return
 
     from_name, from_address = welcome_sender_information()
-    realm_org_types_for_other_accounts = set(
+    other_account_count = (
         UserProfile.objects.filter(delivery_email__iexact=user.delivery_email)
         .exclude(id=user.id)
+        .count()
+    )
+
+    limit_for_older_accounts = timezone_now() - timedelta(days=90)
+    realm_org_types_for_recent_accounts = set(
+        UserProfile.objects.filter(
+            delivery_email__iexact=user.delivery_email, date_joined__gte=limit_for_older_accounts
+        )
+        .exclude(id=user.id, tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
         .values_list("realm__org_type", flat=True)
         .distinct()
     )
@@ -890,7 +899,8 @@ def enqueue_welcome_emails(
 
     # If the user has another account with the same email in another
     # organization, then we don't schedule the followup_day2 email.
-    if len(realm_org_types_for_other_accounts) == 0:
+
+    if other_account_count == 0:
         onboarding_zulip_topics_context = common_context(user)
 
         onboarding_zulip_topics_context.update(
@@ -913,7 +923,7 @@ def enqueue_welcome_emails(
 
     # If the user has an account in another organization of the same
     # type, then we don't schedule the onboarding_zulip_guide email.
-    if user.realm.org_type not in realm_org_types_for_other_accounts:
+    if user.realm.org_type not in realm_org_types_for_recent_accounts:
         # We send the onboarding_zulip_guide email for a subset of Realm.ORG_TYPES
         onboarding_zulip_guide_url, organization_type_reference = get_org_type_zulip_guide(
             user.realm
