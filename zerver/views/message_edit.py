@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 
 import orjson
 from django.contrib.auth.models import AnonymousUser
@@ -7,6 +7,7 @@ from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import Json, NonNegativeInt
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import check_update_message
@@ -14,12 +15,11 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.message import access_message, access_web_public_message, messages_for_ids
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import REQ_topic
+from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
-from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
 from zerver.models import Message, UserProfile
 
 
@@ -88,11 +88,12 @@ def fill_edit_history_entries(
     return formatted_edit_history
 
 
-@has_request_variables
+@typed_endpoint
 def get_message_edit_history(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+    *,
+    message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     if not user_profile.realm.allow_edit_history:
         raise JsonableError(_("Message edit history is disabled in this organization"))
@@ -109,22 +110,18 @@ def get_message_edit_history(
     return json_success(request, data={"message_history": list(reversed(message_edit_history))})
 
 
-PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
-
-
-@has_request_variables
+@typed_endpoint
 def update_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
-    stream_id: Optional[int] = REQ(converter=to_non_negative_int, default=None),
-    topic_name: Optional[str] = REQ_topic(),
-    propagate_mode: str = REQ(
-        default="change_one", str_validator=check_string_in(PROPAGATE_MODE_VALUES)
-    ),
-    send_notification_to_old_thread: bool = REQ(default=False, json_validator=check_bool),
-    send_notification_to_new_thread: bool = REQ(default=True, json_validator=check_bool),
-    content: Optional[str] = REQ(default=None),
+    *,
+    message_id: PathOnly[NonNegativeInt],
+    stream_id: Optional[Json[NonNegativeInt]] = None,
+    topic_name: OptionalTopic = None,
+    propagate_mode: Literal["change_later", "change_one", "change_all"] = "change_one",
+    send_notification_to_old_thread: Json[bool] = False,
+    send_notification_to_new_thread: Json[bool] = True,
+    content: Optional[str] = None,
 ) -> HttpResponse:
     number_changed = check_update_message(
         user_profile,
@@ -167,11 +164,12 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
 
 
 @transaction.atomic
-@has_request_variables
+@typed_endpoint
 def delete_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+    *,
+    message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     # We lock the `Message` object to ensure that any transactions modifying the `Message` object
     # concurrently are serialized properly with deleting the message; this prevents a deadlock
@@ -186,12 +184,13 @@ def delete_message_backend(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def json_fetch_raw_message(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
-    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
-    apply_markdown: bool = REQ(json_validator=check_bool, default=True),
+    *,
+    message_id: PathOnly[NonNegativeInt],
+    apply_markdown: Json[bool] = True,
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         realm = get_valid_realm_from_request(request)

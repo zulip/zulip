@@ -63,11 +63,9 @@ def schema_type(schema: Dict[str, Any]) -> Union[type, Tuple[type, object]]:
         # Ideally, we'd turn this into a Union type.
         return schema_type(schema["oneOf"][0])
     elif "anyOf" in schema:
-        return schema_type(schema["anyOf"][0])  # nocoverage
+        return schema_type(schema["anyOf"][0])
     elif schema.get("contentMediaType") == "application/json":
-        return schema_type(
-            schema["contentSchema"]
-        )  # nocoverage # Will be covered as more endpoints are migrated
+        return schema_type(schema["contentSchema"])
     elif schema["type"] == "array":
         return (list, schema_type(schema["items"]))
     else:
@@ -436,9 +434,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 ]
                 json_request_var_names.add(expected_request_var_name)
             else:
-                expected_param_schema = expected_param_schema[
-                    "schema"
-                ]  # nocoverage # Will be covered as more endpoints are migrated
+                expected_param_schema = expected_param_schema["schema"]
 
             openapi_params.add((expected_request_var_name, schema_type(expected_param_schema)))
 
@@ -460,9 +456,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 # actual_param_schema is a json_schema. Reference:
                 # https://docs.pydantic.dev/latest/api/json_schema/#pydantic.json_schema.GenerateJsonSchema.json_schema
                 actual_param_schema = actual_param_schema["contentSchema"]
-            elif (
-                "contentMediaType" in actual_param_schema
-            ):  # nocoverage # Will be covered as more endpoints are migrated
+            elif "contentMediaType" in actual_param_schema:
                 function_schema_type = schema_type(actual_param_schema)
                 # We do not specify that the content type of int or bool
                 # parameters should be JSON encoded, while our code does expect
