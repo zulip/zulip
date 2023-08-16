@@ -37,7 +37,6 @@ const bot_data_params = {
             email: "bot0@zulip.com",
             full_name: "Bot 0",
             is_active: true,
-            owner: "someone 4",
             owner_id: 4,
             user_id: 42,
             services: [],
@@ -53,7 +52,6 @@ const bot_data_params = {
             email: "outgoingwebhook@zulip.com",
             full_name: "Outgoing webhook",
             is_active: true,
-            owner: "someone 5",
             owner_id: 5,
             user_id: 314,
             services: [{base_url: "http://foo.com", interface: 1, token: "basictoken12345"}],
@@ -86,7 +84,6 @@ test("test_basics", () => {
         email: "bot1@zulip.com",
         full_name: "Bot 1",
         is_active: true,
-        owner: "someone 6",
         owner_id: 6,
         user_id: 43,
         services: [
@@ -108,7 +105,6 @@ test("test_basics", () => {
         email: "embedded-bot@zulip.com",
         full_name: "Embedded bot 1",
         is_active: true,
-        owner: "cordelia@zulip.com",
         owner_id: 7,
         user_id: 143,
         services: [
@@ -133,7 +129,6 @@ test("test_basics", () => {
         assert.equal("bot1@zulip.com", bot.email);
         assert.equal("Bot 1", bot.full_name);
         assert.equal(true, bot.is_active);
-        assert.equal("someone 6", bot.owner);
         assert.equal(6, bot.owner_id);
         assert.equal(43, bot.user_id);
         assert.equal("http://bar.com", services[0].base_url);
