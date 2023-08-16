@@ -11415,15 +11415,11 @@ paths:
                         description: |
                           Present if `realm_emoji` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary describes a custom
+                          A dictionary of objects where each object describes a custom
                           emoji that has been uploaded in this Zulip organization.
-                        oneOf:
-                          - type: object
-                            additionalProperties:
-                              $ref: "#/components/schemas/RealmEmoji"
-                          - type: array
-                            items:
-                              type: integer
+                        type: object
+                        additionalProperties:
+                          $ref: "#/components/schemas/RealmEmoji"
                       realm_linkifiers:
                         type: array
                         description: |
