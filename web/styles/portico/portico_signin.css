@@ -871,13 +871,14 @@ button#register_auth_button_gitlab {
     text-align: left;
 }
 
-.back-to-login-wrapper {
-    line-height: 0;
+.back-to-login-wrapper .back-to-login {
+    display: flex;
+    gap: 5px;
+    align-items: center;
 
-    .back-to-login i {
+    i {
         position: relative;
-        top: 5px;
-
+        top: -1px;
         font-size: 0.8em;
     }
 }
