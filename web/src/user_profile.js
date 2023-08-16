@@ -32,6 +32,14 @@ function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
 }
 
+export function get_user_id_if_user_profile_modal_open() {
+    if (overlays.is_modal_open() && overlays.active_modal() === "#user-profile-modal") {
+        const user_id = $("#user-profile-modal").data("user-id");
+        return user_id;
+    }
+    return undefined;
+}
+
 function initialize_bot_owner(element_id, bot_id) {
     const user_pills = new Map();
     const bot = people.get_by_user_id(bot_id);
