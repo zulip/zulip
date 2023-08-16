@@ -26,7 +26,6 @@ const basic_bot_schema = z.object({
     email: z.string(),
     full_name: z.string(),
     is_active: z.boolean(),
-    owner: z.union([z.string(), z.undefined()]),
     owner_id: z.number(),
     user_id: z.number(),
 });
