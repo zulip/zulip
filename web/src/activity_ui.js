@@ -1,5 +1,7 @@
 import _ from "lodash";
 
+import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
+
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
@@ -72,6 +74,17 @@ export function searching() {
     return user_filter && user_filter.searching();
 }
 
+export function render_empty_user_list_message_if_needed($container) {
+    const empty_list_message = $container.data("empty");
+
+    if (!empty_list_message || $container.children().length) {
+        return;
+    }
+
+    const empty_list_widget = render_empty_list_widget_for_list({empty_list_message});
+    $container.append(empty_list_widget);
+}
+
 export function build_user_sidebar() {
     if (page_params.realm_presence_disabled) {
         return undefined;
@@ -82,6 +95,8 @@ export function build_user_sidebar() {
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
     buddy_list.populate({keys: user_ids});
+
+    render_empty_user_list_message_if_needed(buddy_list.$container);
 
     return user_ids; // for testing
 }
