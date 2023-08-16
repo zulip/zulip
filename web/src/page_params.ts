@@ -4,13 +4,14 @@ const t1 = performance.now();
 export const page_params: {
     apps_page_url: string;
     corporate_enabled: boolean;
+    development_environment: boolean;
     language_list: {
         code: string;
         locale: string;
         name: string;
         percent_translated: number | undefined;
     }[];
-    development_environment: boolean;
+    login_page: string;
     is_admin: boolean;
     is_bot: boolean;
     is_guest: boolean;

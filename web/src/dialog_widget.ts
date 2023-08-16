@@ -3,10 +3,10 @@ import _ from "lodash";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
+import type {AjaxRequestHandler} from "./channel";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import type {AjaxRequestHandler} from "./types";
 import * as ui_report from "./ui_report";
 
 /*
@@ -237,7 +237,7 @@ export function submit_api_request(
     }: RequestOpts = {},
 ): void {
     show_dialog_spinner();
-    request_method({
+    void request_method({
         url,
         data,
         success(response_data, textStatus, jqXHR) {
