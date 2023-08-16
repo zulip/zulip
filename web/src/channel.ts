@@ -8,17 +8,36 @@ import * as reload_state from "./reload_state";
 import {normalize_path, shouldCreateSpanForRequest} from "./sentry";
 import * as spectators from "./spectators";
 
+// We omit `success` handler from original `AjaxSettings` type because it types
+// the `data` parameter as `any` type and we want to avoid that.
+type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
+    url: string;
+    ignore_reload?: boolean;
+    success?: (
+        data: unknown,
+        textStatus: JQuery.Ajax.SuccessTextStatus,
+        jqXHR: JQuery.jqXHR<unknown>,
+    ) => void;
+    error?: JQuery.Ajax.ErrorCallback<unknown>;
+};
+
+type PatchRequestData =
+    | {processData: false; data: FormData}
+    | {processData?: true; data: Record<string, unknown>};
+
+export type AjaxRequestHandler = typeof call;
+
 let password_change_in_progress = false;
 export let password_changes = 0;
 
-export function set_password_change_in_progress(value) {
+export function set_password_change_in_progress(value: boolean): void {
     password_change_in_progress = value;
     if (!value) {
         password_changes += 1;
     }
 }
 
-function call(args) {
+function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
     if (reload_state.is_in_progress() && !args.ignore_reload) {
         // If we're in the process of reloading, most HTTP requests
         // are useless, with exceptions like cleaning up our event
@@ -36,7 +55,7 @@ function call(args) {
             method: args.type,
         },
     };
-    let span;
+    let span: Sentry.Span | undefined;
     if (!shouldCreateSpanForRequest(args.url)) {
         // Leave the span unset, so we don't record a transaction
     } else {
@@ -56,10 +75,7 @@ function call(args) {
 
     // Wrap the error handlers to reload the page if we get a CSRF error
     // (What probably happened is that the user logged out in another tab).
-    let orig_error = args.error;
-    if (orig_error === undefined) {
-        orig_error = function () {};
-    }
+    const orig_error = args.error ?? (() => {});
     args.error = function wrapped_error(xhr, error_type, xhn) {
         if (span !== undefined) {
             span.setHttpStatus(xhr.status);
@@ -119,10 +135,8 @@ function call(args) {
         }
         orig_error(xhr, error_type, xhn);
     };
-    let orig_success = args.success;
-    if (orig_success === undefined) {
-        orig_success = function () {};
-    }
+
+    const orig_success = args.success ?? (() => {});
     args.success = function wrapped_success(data, textStatus, jqXHR) {
         if (span !== undefined) {
             span.setHttpStatus(jqXHR.status);
@@ -151,28 +165,30 @@ function call(args) {
     }
 }
 
-export function get(options) {
+export function get(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
     const args = {type: "GET", dataType: "json", ...options};
     return call(args);
 }
 
-export function post(options) {
+export function post(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
     const args = {type: "POST", dataType: "json", ...options};
     return call(args);
 }
 
-export function put(options) {
+export function put(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
     const args = {type: "PUT", dataType: "json", ...options};
     return call(args);
 }
 
 // Not called exports.delete because delete is a reserved word in JS
-export function del(options) {
+export function del(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
     const args = {type: "DELETE", dataType: "json", ...options};
     return call(args);
 }
 
-export function patch(options) {
+export function patch(
+    options: Omit<AjaxRequestHandlerOptions, "data"> & PatchRequestData,
+): JQuery.jqXHR<unknown> | undefined {
     // Send a PATCH as a POST in order to work around QtWebkit
     // (Linux/Windows desktop app) not supporting PATCH body.
     if (options.processData === false) {
@@ -185,7 +201,10 @@ export function patch(options) {
     return post(options);
 }
 
-export function xhr_error_message(message, xhr) {
+export function xhr_error_message(
+    message: string | null,
+    xhr: JQuery.jqXHR<unknown>,
+): string | null {
     if (xhr.status.toString().charAt(0) === "4" && xhr.responseJSON?.msg) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
@@ -196,5 +215,6 @@ export function xhr_error_message(message, xhr) {
             message = server_response_html;
         }
     }
+
     return message;
 }

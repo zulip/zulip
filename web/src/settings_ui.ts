@@ -2,9 +2,9 @@ import $ from "jquery";
 
 import checkbox_image from "../images/checkbox-green.svg";
 
+import type {AjaxRequestHandler} from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
-import type {AjaxRequestHandler} from "./types";
 import * as ui_report from "./ui_report";
 
 type RequestOpts = {
@@ -51,7 +51,7 @@ export function do_settings_change(
     const remove_after = sticky ? undefined : 1000;
     const appear_after = 500;
 
-    request_method({
+    void request_method({
         url,
         data,
         success(response_data) {

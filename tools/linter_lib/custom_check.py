@@ -185,7 +185,7 @@ js_rules = RuleList(
             "exclude": {
                 # Internal modules can do direct network calls
                 "web/src/blueslip.ts",
-                "web/src/channel.js",
+                "web/src/channel.ts",
                 # External modules that don't include channel.js
                 "web/src/stats/",
                 "web/src/portico/",
