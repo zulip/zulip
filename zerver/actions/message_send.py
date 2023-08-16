@@ -179,6 +179,7 @@ class RecipientInfoResult:
     default_bot_user_ids: Set[int]
     service_bot_tuples: List[Tuple[int, int]]
     all_bot_user_ids: Set[int]
+    topic_participant_user_ids: Set[int]
 
 
 class ActiveUserDict(TypedDict):
@@ -210,6 +211,7 @@ def get_recipient_info(
     topic_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
+    topic_participant_user_ids: Set[int] = set()
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -223,7 +225,6 @@ def get_recipient_info(
         # of this function for different message types.
         assert stream_topic is not None
 
-        topic_participant_user_ids: Set[int] = set()
         if possible_topic_wildcard_mention:
             # A topic participant is anyone who either sent or reacted to messages in the topic.
             # It is expensive to call `participants_for_topic` if the topic has a large number
@@ -464,6 +465,7 @@ def get_recipient_info(
         default_bot_user_ids=default_bot_user_ids,
         service_bot_tuples=service_bot_tuples,
         all_bot_user_ids=all_bot_user_ids,
+        topic_participant_user_ids=topic_participant_user_ids,
     )
 
 
@@ -625,9 +627,11 @@ def build_message_send_dict(
         topic_wildcard_mention_in_followed_topic_user_ids = (
             info.topic_wildcard_mention_in_followed_topic_user_ids
         )
+        topic_participant_user_ids = info.topic_participant_user_ids
     else:
         topic_wildcard_mention_user_ids = set()
         topic_wildcard_mention_in_followed_topic_user_ids = set()
+        topic_participant_user_ids = set()
     """
     Once we have the actual list of mentioned ids from message
     rendering, we can patch in "default bots" (aka normal bots)
@@ -670,6 +674,7 @@ def build_message_send_dict(
         widget_content=widget_content_dict,
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
+        topic_participant_user_ids=topic_participant_user_ids,
     )
 
     return message_send_dict
@@ -688,17 +693,13 @@ def create_user_messages(
     mark_as_read_user_ids: Set[int],
     limit_unread_user_ids: Optional[Set[int]],
     scheduled_message_to_self: bool,
-    topic_wildcard_mention_user_ids: Set[int],
-    topic_wildcard_mention_in_followed_topic_user_ids: Set[int],
+    topic_participant_user_ids: Set[int],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
     sender_id = message.sender.id
     is_stream_message = message.is_stream_message()
-    all_topic_wildcard_mention_user_ids = topic_wildcard_mention_user_ids.union(
-        topic_wildcard_mention_in_followed_topic_user_ids
-    )
 
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
@@ -747,7 +748,7 @@ def create_user_messages(
             flags |= UserMessage.flags.has_alert_word
         if (
             rendering_result.mentions_topic_wildcard
-            and user_profile_id in all_topic_wildcard_mention_user_ids
+            and user_profile_id in topic_participant_user_ids
         ):
             flags |= UserMessage.flags.wildcard_mentioned
 
@@ -875,8 +876,7 @@ def do_send_messages(
                 mark_as_read_user_ids=mark_as_read_user_ids,
                 limit_unread_user_ids=send_request.limit_unread_user_ids,
                 scheduled_message_to_self=scheduled_message_to_self,
-                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
-                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
+                topic_participant_user_ids=send_request.topic_participant_user_ids,
             )
 
             for um in user_messages:

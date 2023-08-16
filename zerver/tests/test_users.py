@@ -1859,6 +1859,7 @@ class RecipientInfoTest(ZulipTestCase):
             default_bot_user_ids=set(),
             service_bot_tuples=[],
             all_bot_user_ids=set(),
+            topic_participant_user_ids=set(),
         )
 
         self.assertEqual(info, expected_info)
