@@ -160,6 +160,41 @@ def is_annotated(type_annotation: Type[object]) -> bool:
     return origin is Annotated
 
 
+def is_optional(type_annotation: Type[object]) -> bool:
+    origin = get_origin(type_annotation)
+    type_args = get_args(type_annotation)
+    return origin is Union and type(None) in type_args and len(type_args) == 2
+
+
+API_PARAM_CONFIG_USAGE_HINT = f"""
+    Detected incorrect usage of Annotated types for parameter {{param_name}}!
+    Check the placement of the {ApiParamConfig.__name__} object in the type annotation:
+
+    {{param_name}}: {{param_type}}
+
+    The Annotated[T, ...] type annotation containing the
+    {ApiParamConfig.__name__} object should not be nested inside another type.
+
+    Correct examples:
+
+    # Using Optional inside Annotated
+    param: Annotated[Optional[int], ApiParamConfig(...)]
+    param: Annotated[Optional[int], ApiParamConfig(...)]] = None
+
+    # Not using Optional when the default is not None
+    param: Annotated[int, ApiParamConfig(...)]
+
+    Incorrect examples:
+
+    # Nesting Annotated inside Optional
+    param: Optional[Annotated[int, ApiParamConfig(...)]]
+    param: Optional[Annotated[int, ApiParamConfig(...)]] = None
+
+    # Nesting the Annotated type carrying ApiParamConfig inside other types like Union
+    param: Union[str, Annotated[int, ApiParamConfig(...)]]
+"""
+
+
 def parse_single_parameter(
     param_name: str, param_type: Type[T], parameter: inspect.Parameter
 ) -> FuncParam[T]:
@@ -174,13 +209,21 @@ def parse_single_parameter(
     # otherwise causes undesired behaviors that the annotated metadata gets
     # lost. This is fixed in Python 3.11:
     # https://github.com/python/cpython/issues/90353
-    if param_default is None:
-        origin = get_origin(param_type)
+    if param_default is None and is_optional(param_type):
         type_args = get_args(param_type)
-        if origin is Union and type(None) in type_args and len(type_args) == 2:
-            inner_type = type_args[0] if type_args[1] is type(None) else type_args[1]
-            if is_annotated(inner_type):
-                param_type = inner_type
+        inner_type = type_args[0] if type_args[1] is type(None) else type_args[1]
+        if is_annotated(inner_type):
+            annotated_type, *annotations = get_args(inner_type)
+            has_api_param_config = any(
+                isinstance(annotation, ApiParamConfig) for annotation in annotations
+            )
+            # This prohibits the use of `Optional[Annotated[T, ApiParamConfig(...)]] = None`
+            # and encourages `Annotated[Optional[T], ApiParamConfig(...)] = None`
+            # to avoid confusion when the parameter metadata is unintentionally nested.
+            assert not has_api_param_config or is_optional(
+                annotated_type
+            ), API_PARAM_CONFIG_USAGE_HINT.format(param_name=param_name, param_type=param_type)
+            param_type = inner_type
 
     param_config: Optional[ApiParamConfig] = None
     if is_annotated(param_type):
@@ -188,12 +231,20 @@ def parse_single_parameter(
         # metadata attached to Annotated. Note that we do not transform
         # param_type to its underlying type because the Annotated metadata might
         # still be needed by other parties like Pydantic.
-        _, *annotations = get_args(param_type)
+        ignored_type, *annotations = get_args(param_type)
         for annotation in annotations:
             if not isinstance(annotation, ApiParamConfig):
                 continue
             assert param_config is None, "ApiParamConfig can only be defined once per parameter"
             param_config = annotation
+    else:
+        # When no parameter configuration is found, assert that there is none
+        # nested somewhere in a Union type to avoid silently ignoring it. If it
+        # does present in the stringified parameter type, it is very likely a
+        # programming error.
+        assert ApiParamConfig.__name__ not in str(param_type), API_PARAM_CONFIG_USAGE_HINT.format(
+            param_name=param_name, param_type=param_type
+        )
     # If param_config is still None at this point, we could not find an instance
     # of it in the type annotation of the function parameter. In this case, we
     # fallback to the defaults by constructing ApiParamConfig here.

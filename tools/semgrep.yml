@@ -186,3 +186,26 @@ rules:
       or use @typed_endpoint_without_parameters instead.
     languages: [python]
     severity: ERROR
+
+  - id: dont-nest-annotated-types-with-param-config
+    patterns:
+      - pattern-not: |
+          def $F(..., invalid_param: typing.Optional[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
+            ...
+      - pattern-not: |
+          def $F(..., $A: typing_extensions.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
+            ...
+      - pattern-not: |
+          def $F(..., $A: typing_extensions.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>] = ..., ...) -> ...:
+            ...
+      - pattern-either:
+          - pattern: |
+              def $F(..., $A: $B[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
+                ...
+          - pattern: |
+              def $F(..., $A: $B[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>] = ..., ...) -> ...:
+                ...
+    message: |
+      Annotated types containing zerver.lib.typed_endpoint.ApiParamConfig should not be nested inside Optional. Use Annotated[Optional[...], zerver.lib.typed_endpoint.ApiParamConfig(...)] instead.
+    languages: [python]
+    severity: ERROR

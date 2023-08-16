@@ -1,9 +1,9 @@
-from typing import Any, Callable, Dict, List, Literal, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Type, TypeVar, Union, cast
 
 import orjson
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import HttpRequest, HttpResponse
-from pydantic import BaseModel, ConfigDict, Json, ValidationInfo, WrapValidator
+from pydantic import BaseModel, ConfigDict, Json, StringConstraints, ValidationInfo, WrapValidator
 from pydantic.dataclasses import dataclass
 from pydantic.functional_validators import ModelWrapValidatorHandler
 from typing_extensions import Annotated
@@ -19,6 +19,7 @@ from zerver.lib.typed_endpoint import (
     PathOnly,
     RequiredStringConstraint,
     WebhookPayload,
+    is_optional,
     typed_endpoint,
     typed_endpoint_without_parameters,
 )
@@ -37,6 +38,16 @@ def call_endpoint(
 
 
 class TestEndpoint(ZulipTestCase):
+    def test_is_optional(self) -> None:
+        """This test is only needed because we don't
+        have coverage of is_optional in Python 3.11.
+        """
+        type = cast(Type[Optional[str]], Optional[str])
+        self.assertTrue(is_optional(type))
+
+        type = str
+        self.assertFalse(is_optional(str))
+
     def test_coerce(self) -> None:
         @typed_endpoint
         def view(request: HttpRequest, *, strict_int: int) -> None:
@@ -386,6 +397,49 @@ class TestEndpoint(ZulipTestCase):
             hamlet,
         )
         self.assertFalse(result)
+
+        # Not nesting the Annotated type with the ApiParamConfig inside Optional is fine
+        @typed_endpoint
+        def no_nesting(
+            request: HttpRequest,
+            *,
+            bar: Annotated[
+                Optional[str],
+                StringConstraints(strip_whitespace=True, max_length=3),
+                ApiParamConfig("test"),
+            ] = None,
+        ) -> None:
+            ...
+
+        with self.assertRaisesMessage(ApiParamValidationError, "test is too long"):
+            call_endpoint(no_nesting, HostRequestMock({"test": "long"}))
+        call_endpoint(no_nesting, HostRequestMock({"test": "lon"}))
+
+        # Nesting Annotated with ApiParamConfig inside Optional is not fine
+        def nesting_with_config(
+            request: HttpRequest,
+            *,
+            invalid_param: Optional[Annotated[str, ApiParamConfig("test")]] = None,
+        ) -> None:
+            raise AssertionError
+
+        with self.assertRaisesRegex(
+            AssertionError,
+            "Detected incorrect usage of Annotated types for parameter invalid_param!",
+        ):
+            typed_endpoint(nesting_with_config)
+
+        # Nesting Annotated inside Optional, when ApiParamConfig is not also nested is fine
+        @typed_endpoint
+        def nesting_without_config(
+            request: HttpRequest,
+            *,
+            bar: Optional[Annotated[str, StringConstraints(max_length=3)]] = None,
+        ) -> None:
+            raise AssertionError
+
+        with self.assertRaisesMessage(ApiParamValidationError, "bar is too long"):
+            call_endpoint(nesting_without_config, HostRequestMock({"bar": "long"}))
 
     def test_aliases(self) -> None:
         @typed_endpoint
