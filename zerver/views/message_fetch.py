@@ -2,6 +2,7 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
+from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
 from sqlalchemy.sql import and_, column, join, literal, literal_column, select, table
 from sqlalchemy.types import Integer, Text
@@ -67,13 +68,13 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
 
 def get_search_fields(
     rendered_content: str,
-    escaped_topic_name: str,
+    topic_name: str,
     content_matches: Iterable[Tuple[int, int]],
     topic_matches: Iterable[Tuple[int, int]],
 ) -> Dict[str, str]:
     return {
         "match_content": highlight_string(rendered_content, content_matches),
-        MATCH_TOPIC: highlight_string(escaped_topic_name, topic_matches),
+        MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
     }
 
 
@@ -206,9 +207,9 @@ def get_messages_backend(
     if is_search:
         for row in rows:
             message_id = row[0]
-            (escaped_topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
+            (topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
             search_fields[message_id] = get_search_fields(
-                rendered_content, escaped_topic_name, content_matches, topic_matches
+                rendered_content, topic_name, content_matches, topic_matches
             )
 
     message_list = messages_for_ids(
