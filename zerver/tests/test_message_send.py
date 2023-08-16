@@ -29,6 +29,7 @@ from zerver.actions.message_send import (
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError
@@ -1804,6 +1805,51 @@ class StreamMessagesTest(ZulipTestCase):
         )
         self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
+
+    def test_wildcard_mentioned_flag_topic_wildcard_mention(self) -> None:
+        # For topic wildcard mentions, the 'wildcard_mentioned' flag should be
+        # set for all the user messages for topic participants, irrespective of
+        # their notifications settings.
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        for user_profile in [cordelia, hamlet, iago]:
+            self.subscribe(user_profile, "Denmark")
+
+        #   user   | topic participant |  wildcard_mentions_notify setting
+        # -------- | ----------------- | ----------------------------------
+        # cordelia |        YES        |                True
+        #  hamlet  |        YES        |                False
+        #   iago   |        NO         |                True
+        self.send_stream_message(cordelia, "Denmark", content="test", topic_name="topic-1")
+        do_change_user_setting(cordelia, "wildcard_mentions_notify", True, acting_user=None)
+        self.send_stream_message(hamlet, "Denmark", content="Hi @**topic**", topic_name="topic-1")
+        message = most_recent_message(cordelia)
+        self.assertTrue(
+            UserMessage.objects.get(
+                user_profile=cordelia, message=message
+            ).flags.wildcard_mentioned.is_set
+        )
+
+        self.send_stream_message(hamlet, "Denmark", content="test", topic_name="topic-2")
+        do_change_user_setting(hamlet, "wildcard_mentions_notify", False, acting_user=None)
+        self.send_stream_message(cordelia, "Denmark", content="Hi @**topic**", topic_name="topic-2")
+        message = most_recent_message(hamlet)
+        self.assertTrue(
+            UserMessage.objects.get(
+                user_profile=hamlet, message=message
+            ).flags.wildcard_mentioned.is_set
+        )
+
+        do_change_user_setting(iago, "wildcard_mentions_notify", True, acting_user=None)
+        self.send_stream_message(hamlet, "Denmark", content="Hi @**topic**", topic_name="topic-3")
+        message = most_recent_message(iago)
+        self.assertFalse(
+            UserMessage.objects.get(
+                user_profile=iago, message=message
+            ).flags.wildcard_mentioned.is_set
+        )
 
     def test_invalid_wildcard_mention_policy(self) -> None:
         cordelia = self.example_user("cordelia")

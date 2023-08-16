@@ -191,6 +191,8 @@ class SendMessageRequest:
     # (having stream wildcard) is being sent to, and have the
     # 'followed_topic_wildcard_mentions_notify' setting ON.
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int]
+    # A topic participant is anyone who either sent or reacted to messages in the topic.
+    topic_participant_user_ids: Set[int]
     links_for_embed: Set[str]
     widget_content: Optional[Dict[str, Any]]
     submessages: List[Dict[str, Any]] = field(default_factory=list)
