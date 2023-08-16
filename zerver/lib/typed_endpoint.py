@@ -103,6 +103,11 @@ WebhookPayload: TypeAlias = Annotated[Json[T], ApiParamConfig(argument_type_is_b
 # A shorthand to declare path only variables that should not be parsed from the
 # request by the @typed_endpoint decorator.
 PathOnly: TypeAlias = Annotated[T, ApiParamConfig(path_only=True)]
+OptionalTopic: TypeAlias = Annotated[
+    Optional[str],
+    StringConstraints(strip_whitespace=True),
+    ApiParamConfig(whence="topic", aliases=("subject")),
+]
 
 # Reusable annotation metadata for Annotated types
 
