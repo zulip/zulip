@@ -153,7 +153,7 @@ body {
     --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
     --color-background: hsl(0deg 0% 94%);
-    --color-background-dropdown-input: hsl(0deg 0% 100%);
+    --color-background-widget-input: hsl(0deg 0% 100%);
     --color-background-navbar: hsl(0deg 0% 96%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
@@ -207,7 +207,7 @@ body {
     --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 37%);
     --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
-    --color-background-dropdown-input: hsl(225deg 6% 10%);
+    --color-background-widget-input: hsl(225deg 6% 10%);
     --color-background-navbar: hsl(0deg 0% 13%);
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
@@ -3112,7 +3112,7 @@ select.invite-as {
         display: flex;
 
         .dropdown-list-search-input {
-            background: var(--color-background-dropdown-input);
+            background: var(--color-background-widget-input);
             color: var(--color-text-dropdown-input);
             width: 100%;
             margin: 4px 4px 2px;
