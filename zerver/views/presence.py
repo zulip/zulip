@@ -5,6 +5,8 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import Json, StringConstraints
+from typing_extensions import Annotated
 
 from zerver.actions.presence import update_user_presence
 from zerver.actions.user_status import do_update_user_status
@@ -12,10 +14,10 @@ from zerver.decorator import human_users_only
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.validator import check_bool, check_capped_string
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import (
     UserActivity,
     UserPresence,
@@ -65,18 +67,21 @@ def get_presence_backend(
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def update_user_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    away: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    status_text: Optional[str] = REQ(str_validator=check_capped_string(60), default=None),
-    emoji_name: Optional[str] = REQ(default=None),
-    emoji_code: Optional[str] = REQ(default=None),
+    *,
+    away: Optional[Json[bool]] = None,
+    status_text: Annotated[
+        Optional[str], StringConstraints(strip_whitespace=True, max_length=60)
+    ] = None,
+    emoji_name: Optional[str] = None,
+    emoji_code: Optional[str] = None,
     # TODO: emoji_type is the more appropriate name for this parameter, but changing
     # that requires nontrivial work on the API documentation, since it's not clear
     # that the reactions endpoint would prefer such a change.
-    emoji_type: Optional[str] = REQ("reaction_type", default=None),
+    emoji_type: Annotated[Optional[str], ApiParamConfig("reaction_type")] = None,
 ) -> HttpResponse:
     if status_text is not None:
         status_text = status_text.strip()
@@ -132,14 +137,15 @@ def update_user_status_backend(
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def update_active_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    status: str = REQ(),
-    ping_only: bool = REQ(json_validator=check_bool, default=False),
-    new_user_input: bool = REQ(json_validator=check_bool, default=False),
-    slim_presence: bool = REQ(json_validator=check_bool, default=False),
+    *,
+    status: str,
+    ping_only: Json[bool] = False,
+    new_user_input: Json[bool] = False,
+    slim_presence: Json[bool] = False,
 ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
