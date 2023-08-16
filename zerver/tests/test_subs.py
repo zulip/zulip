@@ -4967,7 +4967,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
         with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
-            with self.assert_database_query_count(num_streams + 12):
+            with self.assert_database_query_count(num_streams + 11):
                 self.common_subscribe_to_streams(
                     mit_user,
                     stream_names,
@@ -6249,7 +6249,7 @@ class GetSubscribersTest(ZulipTestCase):
             subdomain="zephyr",
         )
 
-        with self.assert_database_query_count(4):
+        with self.assert_database_query_count(3):
             subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
 
         self.assertGreaterEqual(len(subscribed_streams), 2)
@@ -6260,6 +6260,19 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assert_length(sub["subscribers"], len(users_to_subscribe))
             else:
                 self.assert_length(sub["subscribers"], 0)
+            self.assertIsNone(sub["stream_weekly_traffic"])
+
+        # Create a web-public stream to test never_subscried data.
+        self.make_stream("mit_stream_2", realm=mit_user_profile.realm, is_web_public=True)
+        self.make_stream("mit_stream_3", realm=mit_user_profile.realm)
+
+        sub_info = gather_subscriptions_helper(mit_user_profile, include_subscribers=True)
+        never_subscribed_streams = sub_info.never_subscribed
+        # Users in zephyr mirror realm can only access web-public never subscribed streams.
+        self.assert_length(never_subscribed_streams, 1)
+        self.assertEqual(never_subscribed_streams[0]["name"], "mit_stream_2")
+        self.assertTrue(never_subscribed_streams[0]["is_web_public"])
+        self.assertIsNone(never_subscribed_streams[0]["stream_weekly_traffic"])
 
     def test_nonsubscriber(self) -> None:
         """
