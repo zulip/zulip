@@ -878,17 +878,14 @@ def get_web_public_streams(realm: Realm) -> List[APIStreamDict]:  # nocoverage
     return stream_dicts
 
 
-def do_get_streams(
+def get_streams_for_user(
     user_profile: UserProfile,
     include_public: bool = True,
     include_web_public: bool = False,
     include_subscribed: bool = True,
     include_all_active: bool = False,
-    include_default: bool = False,
     include_owner_subscribed: bool = False,
-) -> List[APIStreamDict]:
-    # This function is only used by API clients now.
-
+) -> List[Stream]:
     if include_all_active and not user_profile.is_realm_admin:
         raise JsonableError(_("User not authorized for this query"))
 
@@ -940,6 +937,29 @@ def do_get_streams(
         else:
             # Don't bother going to the database with no valid sources
             return []
+
+    return list(streams)
+
+
+def do_get_streams(
+    user_profile: UserProfile,
+    include_public: bool = True,
+    include_web_public: bool = False,
+    include_subscribed: bool = True,
+    include_all_active: bool = False,
+    include_default: bool = False,
+    include_owner_subscribed: bool = False,
+) -> List[APIStreamDict]:
+    # This function is only used by API clients now.
+
+    streams = get_streams_for_user(
+        user_profile,
+        include_public,
+        include_web_public,
+        include_subscribed,
+        include_all_active,
+        include_owner_subscribed,
+    )
 
     stream_ids = {stream.id for stream in streams}
     recent_traffic = get_streams_traffic(stream_ids, user_profile.realm)
