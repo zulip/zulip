@@ -176,7 +176,9 @@ export function clear_for_testing() {
 
 export function render_lightbox_list_images(preview_source) {
     if (!is_open) {
-        const images = Array.prototype.slice.call($(".focused_table .message_inline_image img"));
+        const images = Array.prototype.slice.call(
+            $(".focused-message-list .message_inline_image img"),
+        );
         const $image_list = $("#lightbox_overlay .image-list").empty();
 
         for (const img of images) {

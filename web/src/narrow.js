@@ -465,8 +465,8 @@ export function activate(raw_operators, opts) {
         // the view right as it's being shown, because we rely on message_lists.current
         // being shown for deciding when to condense messages.
         $("body").addClass("narrowed_view");
-        $("#zfilt").addClass("focused_table");
-        $("#zhome").removeClass("focused_table");
+        $("#zfilt").addClass("focused-message-list");
+        $("#zhome").removeClass("focused-message-list");
 
         message_lists.set_current(msg_list);
 
@@ -1056,8 +1056,8 @@ export function deactivate(coming_from_recent_topics = false, is_actively_scroll
         has_shown_message_list_view = true;
 
         $("body").removeClass("narrowed_view");
-        $("#zfilt").removeClass("focused_table");
-        $("#zhome").addClass("focused_table");
+        $("#zfilt").removeClass("focused-message-list");
+        $("#zhome").addClass("focused-message-list");
         message_lists.set_current(message_lists.home);
         message_lists.current.resume_reading();
         condense.condense_and_collapse($("#zhome div.message_row"));

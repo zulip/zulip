@@ -39,11 +39,11 @@ export function prev_visible($message_row) {
 }
 
 export function first_visible() {
-    return $(".focused_table .selectable_row").first();
+    return $(".focused-message-list .selectable_row").first();
 }
 
 export function last_visible() {
-    return $(".focused_table .selectable_row").last();
+    return $(".focused-message-list .selectable_row").last();
 }
 
 export function visible_range(start_id, end_id) {
