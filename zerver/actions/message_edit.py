@@ -1,7 +1,7 @@
 import datetime
 import itertools
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+from typing import AbstractSet, Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -256,9 +256,10 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
 
 
 def update_user_message_flags(
-    rendering_result: MessageRenderingResult, ums: Iterable[UserMessage]
+    rendering_result: MessageRenderingResult,
+    ums: Iterable[UserMessage],
+    topic_participant_user_ids: AbstractSet[int] = set(),
 ) -> None:
-    wildcard_mentioned = rendering_result.has_wildcard_mention()
     mentioned_ids = rendering_result.mentions_user_ids
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
     changed_ums: Set[UserMessage] = set()
@@ -280,7 +281,11 @@ def update_user_message_flags(
         mentioned = um.user_profile_id in mentioned_ids
         update_flag(um, mentioned, UserMessage.flags.mentioned)
 
-        update_flag(um, wildcard_mentioned, UserMessage.flags.wildcard_mentioned)
+        if rendering_result.mentions_stream_wildcard:
+            update_flag(um, True, UserMessage.flags.wildcard_mentioned)
+        elif rendering_result.mentions_topic_wildcard:
+            topic_wildcard_mentioned = um.user_profile_id in topic_participant_user_ids
+            update_flag(um, topic_wildcard_mentioned, UserMessage.flags.wildcard_mentioned)
 
     for um in changed_ums:
         um.save(update_fields=["flags"])
@@ -416,8 +421,6 @@ def do_update_message(
             members = mention_data.get_group_members(group_id)
             rendering_result.mentions_user_ids.update(members)
 
-        update_user_message_flags(rendering_result, ums)
-
         # One could imagine checking realm.allow_edit_history here and
         # modifying the events based on that setting, but doing so
         # doesn't really make sense.  We need to send the edit event
@@ -496,9 +499,13 @@ def do_update_message(
             event["topic_wildcard_mention_in_followed_topic_user_ids"] = list(
                 info.topic_wildcard_mention_in_followed_topic_user_ids
             )
+            topic_participant_user_ids = info.topic_participant_user_ids
         else:
             event["topic_wildcard_mention_user_ids"] = []
             event["topic_wildcard_mention_in_followed_topic_user_ids"] = []
+            topic_participant_user_ids = set()
+
+        update_user_message_flags(rendering_result, ums, topic_participant_user_ids)
 
         do_update_mobile_push_notification(
             target_message,
