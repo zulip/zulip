@@ -1690,7 +1690,7 @@ div.message_table {
     width: 100%;
 }
 
-div.focused_table {
+div.focused-message-list {
     display: block;
 }
 

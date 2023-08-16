@@ -53,7 +53,7 @@ test("pan_and_zoom", ({override}) => {
         return "message-stub";
     };
 
-    $.create(".focused_table .message_inline_image img", {children: []});
+    $.create(".focused-message-list .message_inline_image img", {children: []});
     const open_image = lightbox.build_open_image_function();
     open_image($img);
 
@@ -86,7 +86,7 @@ test("youtube", ({override}) => {
     $link.closest = () => $msg;
     $link.attr("href", href);
 
-    $.create(".focused_table .message_inline_image img", {children: []});
+    $.create(".focused-message-list .message_inline_image img", {children: []});
 
     const open_image = lightbox.build_open_image_function();
     open_image($img);

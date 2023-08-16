@@ -121,7 +121,7 @@ export function initialize() {
             }
 
             const config = {attributes: false, childList: true, subtree: true};
-            const target = $elem.parents(".message_table.focused_table").get(0);
+            const target = $elem.parents(".message_table.focused-message-list").get(0);
             const nodes_to_check_for_removal = [
                 $elem.parents(".recipient_row").get(0),
                 $elem.parents(".message_reactions").get(0),
