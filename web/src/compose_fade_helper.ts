@@ -1,27 +1,36 @@
+import assert from "minimalistic-assert";
+
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as util from "./util";
+import type {DirectRecipient, StreamRecipient} from "./util";
 
-let focused_recipient;
+type Recipient = DirectRecipient | StreamRecipient;
 
-export function should_fade_message(message) {
+let focused_recipient: Recipient | undefined;
+
+export function should_fade_message(message: Recipient): boolean {
     return !util.same_recipient(focused_recipient, message);
 }
 
-export function clear_focused_recipient() {
+export function clear_focused_recipient(): void {
     focused_recipient = undefined;
 }
 
-export function set_focused_recipient(recipient) {
+export function set_focused_recipient(recipient: Recipient): void {
     focused_recipient = recipient;
 }
 
-function is_pm_recipient(user_id) {
-    const recipients = focused_recipient.to_user_ids.split(",");
+function is_pm_recipient(user_id: number): boolean {
+    // This function is called only when focused_recipient.type==="private",
+    // so it's safe to use non-null assertion (!) here.
+    assert(focused_recipient?.type === "private");
+    const recipients = focused_recipient.to_user_ids?.split(",") || [];
     return recipients.includes(user_id.toString());
 }
 
-export function would_receive_message(user_id) {
+export function would_receive_message(user_id: number): boolean | undefined {
+    assert(focused_recipient !== undefined, "focused recipient is undefined.");
     if (focused_recipient.type === "stream") {
         const sub = sub_store.get(focused_recipient.stream_id);
         if (!sub) {
@@ -38,7 +47,7 @@ export function would_receive_message(user_id) {
     return is_pm_recipient(user_id);
 }
 
-export function want_normal_display() {
+export function want_normal_display(): boolean {
     // If we're not composing show a normal display.
     if (focused_recipient === undefined) {
         return true;
