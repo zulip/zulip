@@ -11315,6 +11315,39 @@ paths:
                           **Changes**: New in Zulip 7.0 (feature level 164). Clients should use 140
                           for older Zulip servers, since that's the value that was hardcoded in the
                           Zulip client apps prior to this parameter being introduced.
+                      server_typing_started_expiry_period_milliseconds:
+                        type: integer
+                        description: |
+                          How long before we assume a client has gone away
+                          and expire its typing status. Its value is in
+                          millisecond. Go to [typing status](/api/set-typing-status)
+                          for more details on how this is used.
+
+                          **Changes**: New in Zulip 8.0 (feature level 204).
+                          Clients should use the previously hardcoded value of
+                          15000 for older servers."
+                      server_typing_stopped_wait_period_milliseconds:
+                        type: integer
+                        description: |
+                          How long after someone stops editing in the compose box
+                          do we send a 'stopped typing' notification. Its value is in
+                          millisecond. Go to [typing status](/api/set-typing-status)
+                          for more details on how this is used.
+
+                          **Changes**: New in Zulip 8.0 (feature level 204).
+                          Clients should use the previously hardcoded value of
+                          5000 for older servers."
+                      server_typing_started_wait_period_milliseconds:
+                        type: integer
+                        description: |
+                          How frequently 'still typing' notifications are sent
+                          to extend the expiry. Its value is in millisecond. Go
+                          to [typing status](/api/set-typing-status) for more
+                          details on how this is used.
+
+                          **Changes**: New in Zulip 8.0 (feature level 204).
+                          Clients should use the previously hardcoded value of
+                          10000 for older servers."
                       scheduled_messages:
                         type: array
                         description: |

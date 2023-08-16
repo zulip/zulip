@@ -574,3 +574,15 @@ MAX_MESSAGE_LENGTH = 10000
 # More drafts, should they exist for some crazy reason, could be
 # fetched in a separate request.
 MAX_DRAFTS_IN_REGISTER_RESPONSE = 1000
+
+# How long in milliseconds before we assume a client has gone away
+# and expire its typing status
+TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS = 15000
+
+# How long in milliseconds after someone stops editing in the compose box
+# do we send a 'stopped typing' notification
+TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 5000
+
+# How frequently in milliseconds 'still typing' notifications are sent
+# to extend the expiry
+TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000

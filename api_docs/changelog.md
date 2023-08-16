@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 204**
+
+* [`POST /register`](/api/register-queue): Added the
+  `server_typing_started_wait_period_milliseconds`, `server_typing_stopped_wait_period_milliseconds` and
+  `server_typing_started_expiry_period_milliseconds` fields to the /api/register-queue
+  response.
+
 **Feature level 203**
 
 * [`POST /register`](/api/register-queue): Add

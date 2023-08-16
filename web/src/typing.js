@@ -6,6 +6,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import {user_settings} from "./user_settings";
 
@@ -14,6 +15,9 @@ import {user_settings} from "./user_settings";
 // when we are typing.  For the inbound side see typing_events.js.
 //
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
+
+const TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = page_params.typing_started_wait_period_milliseconds; // 10s
+const TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = page_params.typing_stopped_wait_period_milliseconds; // 5s
 
 function send_typing_notification_ajax(user_ids_array, operation) {
     channel.post({
@@ -78,12 +82,22 @@ export function initialize() {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
         const new_recipient = is_valid_conversation() ? get_recipient() : null;
-        typing_status.update(worker, new_recipient);
+        typing_status.update(
+            worker,
+            new_recipient,
+            TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS,
+            TYPING_STARTED_WAIT_PERIOD_MILLISECONDS,
+        );
     });
 
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
     $(document).on("compose_canceled.zulip compose_finished.zulip", () => {
-        typing_status.update(worker, null);
+        typing_status.update(
+            worker,
+            null,
+            TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS,
+            TYPING_STARTED_WAIT_PERIOD_MILLISECONDS,
+        );
     });
 }

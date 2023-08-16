@@ -17,7 +17,7 @@ import * as typing_data from "./typing_data";
 
 // How long before we assume a client has gone away
 // and expire its typing status
-const TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
+const TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS = page_params.server_typing_started_expiry_period_milliseconds; // 15s
 
 // If number of users typing exceed this,
 // we render "Several people are typing..."
@@ -93,7 +93,11 @@ export function display_notification(event) {
 
     render_notifications_for_narrow();
 
-    typing_data.kickstart_inbound_timer(recipients, TYPING_STARTED_EXPIRY_PERIOD, () => {
-        hide_notification(event);
-    });
+    typing_data.kickstart_inbound_timer(
+        recipients,
+        TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS,
+        () => {
+            hide_notification(event);
+        },
+    );
 }
