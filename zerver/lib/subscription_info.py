@@ -109,7 +109,7 @@ def build_stream_dict_for_sub(
     user: UserProfile,
     sub_dict: RawSubscriptionDict,
     raw_stream_dict: RawStreamDict,
-    recent_traffic: Dict[int, int],
+    recent_traffic: Optional[Dict[int, int]],
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
@@ -145,9 +145,12 @@ def build_stream_dict_for_sub(
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
     # Add a few computed fields not directly from the data models.
-    stream_weekly_traffic = get_average_weekly_stream_traffic(
-        raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
-    )
+    if recent_traffic is not None:
+        stream_weekly_traffic = get_average_weekly_stream_traffic(
+            raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
+        )
+    else:
+        stream_weekly_traffic = None
 
     email_address = encode_email_address_helper(
         raw_stream_dict["name"], raw_stream_dict["email_token"], show_sender=True
@@ -184,7 +187,7 @@ def build_stream_dict_for_sub(
 
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
-    recent_traffic: Dict[int, int],
+    recent_traffic: Optional[Dict[int, int]],
 ) -> NeverSubscribedStreamDict:
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
@@ -198,9 +201,13 @@ def build_stream_dict_for_never_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
-    stream_weekly_traffic = get_average_weekly_stream_traffic(
-        raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
-    )
+
+    if recent_traffic is not None:
+        stream_weekly_traffic = get_average_weekly_stream_traffic(
+            raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
+        )
+    else:
+        stream_weekly_traffic = None
 
     # Backwards-compatibility addition of removed field.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
@@ -430,8 +437,7 @@ def gather_subscriptions_helper(
         return recip_id_to_stream_id[sub_dict["recipient_id"]]
 
     traffic_stream_ids = {get_stream_id(sub_dict) for sub_dict in sub_dicts}
-    recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids)
-    assert recent_traffic is not None
+    recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids, realm=realm)
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.

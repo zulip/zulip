@@ -328,7 +328,7 @@ def send_subscription_add_events(
         info_by_user[sub_info.user.id].append(sub_info)
 
     stream_ids = {sub_info.stream.id for sub_info in sub_info_list}
-    recent_traffic = get_streams_traffic(stream_ids=stream_ids)
+    recent_traffic = get_streams_traffic(stream_ids=stream_ids, realm=realm)
 
     # We generally only have a few streams, so we compute stream
     # data in its own loop.
