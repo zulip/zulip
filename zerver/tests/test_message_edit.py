@@ -2060,13 +2060,19 @@ class EditMessageTest(EditMessageTestCase):
         )
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
-        def notify(user_id: int) -> Dict[str, Any]:
-            return {
-                "id": user_id,
-                "flags": ["wildcard_mentioned"],
-            }
-
-        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["wildcard_mentioned"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": [],
+                },
+            ],
+            key=itemgetter("id"),
+        )
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
@@ -2155,13 +2161,19 @@ class EditMessageTest(EditMessageTestCase):
         self.login_user(hamlet)
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
-        def notify(user_id: int) -> Dict[str, Any]:
-            return {
-                "id": user_id,
-                "flags": ["wildcard_mentioned"],
-            }
-
-        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["wildcard_mentioned"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": [],
+                },
+            ],
+            key=itemgetter("id"),
+        )
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
