@@ -9,6 +9,9 @@ const {page_params} = require("./lib/zpage_params");
 
 const fake_buddy_list = {
     scroll_container_sel: "#whatever",
+    $container: {
+        data() {},
+    },
     find_li() {},
     first_key() {},
     prev_key() {},
