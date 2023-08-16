@@ -1308,18 +1308,19 @@ class UserGroupAPITestCase(UserGroupTestCase):
             um = most_recent_usermessage(user)
             self.assertFalse(um.flags.mentioned)
 
-    def test_user_group_edit_policy_for_creating_and_deleting_user_group(self) -> None:
+    def test_user_group_edit_policy_for_creating_user_group(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
         def check_create_user_group(acting_user: str, error_msg: str | None = None) -> None:
-            self.login(acting_user)
             params = {
                 "name": "support",
                 "members": orjson.dumps([hamlet.id]).decode(),
                 "description": "Support Team",
             }
-            result = self.client_post("/json/user_groups/create", info=params)
+            result = self.api_post(
+                self.example_user(acting_user), "/api/v1/user_groups/create", info=params
+            )
             if error_msg is None:
                 self.assert_json_success(result)
                 # One group already exists in the test database.
@@ -1327,18 +1328,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             else:
                 self.assert_json_error(result, error_msg)
 
-        def check_delete_user_group(acting_user: str, error_msg: str | None = None) -> None:
-            self.login(acting_user)
-            user_group = NamedUserGroup.objects.get(name="support")
-            with transaction.atomic():
-                result = self.client_delete(f"/json/user_groups/{user_group.id}")
-            if error_msg is None:
-                self.assert_json_success(result)
-                self.assert_length(NamedUserGroup.objects.filter(realm=realm), 9)
-            else:
-                self.assert_json_error(result, error_msg)
-
-        # Check only admins are allowed to create/delete user group. Admins are allowed even if
+        # Check only admins are allowed to create user group. Admins are allowed even if
         # they are not a member of the group.
         do_set_realm_property(
             realm,
@@ -1348,11 +1338,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         check_create_user_group("shiva", "Insufficient permission")
         check_create_user_group("iago")
+        NamedUserGroup.objects.get(name="support", realm=realm).delete()
 
-        check_delete_user_group("shiva", "Insufficient permission")
-        check_delete_user_group("iago")
-
-        # Check moderators are allowed to create/delete user group but not members. Moderators are
+        # Check moderators are allowed to create user group but not members. Moderators are
         # allowed even if they are not a member of the group.
         do_set_realm_property(
             realm,
@@ -1360,14 +1348,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
             CommonPolicyEnum.MODERATORS_ONLY,
             acting_user=None,
         )
-        check_create_user_group("cordelia", "Insufficient permission")
+        check_create_user_group("hamlet", "Insufficient permission")
         check_create_user_group("shiva")
+        NamedUserGroup.objects.get(name="support", realm=realm).delete()
 
-        check_delete_user_group("hamlet", "Insufficient permission")
-        check_delete_user_group("shiva")
-
-        # Check only members are allowed to create the user group and they are allowed to delete
-        # a user group only if they are a member of that group.
+        # Check only members are allowed to create the user group.
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
@@ -1375,13 +1360,83 @@ class UserGroupAPITestCase(UserGroupTestCase):
             acting_user=None,
         )
         check_create_user_group("polonius", "Not allowed for guest users")
-        check_create_user_group("cordelia")
+        check_create_user_group("othello")
+        NamedUserGroup.objects.get(name="support", realm=realm).delete()
 
+        # Check only full members are allowed to create the user group.
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            CommonPolicyEnum.FULL_MEMBERS_ONLY,
+            acting_user=None,
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        othello = self.example_user("othello")
+        othello.date_joined = timezone_now() - timedelta(days=9)
+        othello.save()
+
+        check_create_user_group("othello", "Insufficient permission")
+
+        othello.date_joined = timezone_now() - timedelta(days=11)
+        othello.save()
+        check_create_user_group("othello")
+
+    def test_user_group_edit_policy_for_deleting_user_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        def check_delete_user_group(acting_user: str, error_msg: str | None = None) -> None:
+            user_group = NamedUserGroup.objects.get(name="support")
+            with transaction.atomic():
+                result = self.api_delete(
+                    self.example_user(acting_user), f"/api/v1/user_groups/{user_group.id}"
+                )
+            if error_msg is None:
+                self.assert_json_success(result)
+                self.assert_length(NamedUserGroup.objects.filter(realm=realm), 9)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        self.create_user_group_for_test("support")
+        # Check only admins are allowed to delete user group. Admins are allowed even if
+        # they are not a member of the group.
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            CommonPolicyEnum.ADMINS_ONLY,
+            acting_user=None,
+        )
+        check_delete_user_group("shiva", "Insufficient permission")
+        check_delete_user_group("iago")
+
+        self.create_user_group_for_test("support")
+        # Check moderators are allowed to delete user group but not members. Moderators are
+        # allowed even if they are not a member of the group.
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            CommonPolicyEnum.MODERATORS_ONLY,
+            acting_user=None,
+        )
+        check_delete_user_group("hamlet", "Insufficient permission")
+        check_delete_user_group("shiva")
+
+        self.create_user_group_for_test("support")
+        # Check only members are allowed to delete the user group and they are allowed to create
+        # a user group only if they are a member of that group.
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            CommonPolicyEnum.MEMBERS_ONLY,
+            acting_user=None,
+        )
         check_delete_user_group("polonius", "Not allowed for guest users")
         check_delete_user_group("cordelia", "Insufficient permission")
-        check_delete_user_group("hamlet")
+        check_delete_user_group("othello")
 
-        # Check only full members are allowed to create the user group and they are allowed to delete
+        self.create_user_group_for_test("support")
+        # Check only full members are allowed to delete the user group and they are allowed to delete
         # a user group only if they are a member of that group.
         do_set_realm_property(
             realm,
@@ -1389,26 +1444,22 @@ class UserGroupAPITestCase(UserGroupTestCase):
             CommonPolicyEnum.FULL_MEMBERS_ONLY,
             acting_user=None,
         )
-        cordelia = self.example_user("cordelia")
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
 
-        cordelia.date_joined = timezone_now() - timedelta(days=9)
-        cordelia.save()
-        check_create_user_group("cordelia", "Insufficient permission")
-
+        cordelia = self.example_user("cordelia")
         cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
-        check_create_user_group("cordelia")
 
-        hamlet.date_joined = timezone_now() - timedelta(days=9)
-        hamlet.save()
+        othello = self.example_user("othello")
+        othello.date_joined = timezone_now() - timedelta(days=9)
+        othello.save()
 
         check_delete_user_group("cordelia", "Insufficient permission")
-        check_delete_user_group("hamlet", "Insufficient permission")
+        check_delete_user_group("othello", "Insufficient permission")
 
-        hamlet.date_joined = timezone_now() - timedelta(days=11)
-        hamlet.save()
-        check_delete_user_group("hamlet")
+        othello.date_joined = timezone_now() - timedelta(days=11)
+        othello.save()
+        check_delete_user_group("othello")
 
     def test_user_group_edit_policy_for_updating_user_groups(self) -> None:
         othello = self.example_user("othello")
