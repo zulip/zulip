@@ -167,7 +167,11 @@ export function get_value_for_new_option(container) {
 }
 
 function create_choice_row(container) {
-    const context = {text: "", value: get_value_for_new_option(container)};
+    const context = {
+        text: "",
+        value: get_value_for_new_option(container),
+        new_empty_choice_row: true,
+    };
     const row = render_settings_profile_field_choice(context);
     $(container).append(row);
 }
@@ -180,7 +184,6 @@ function clear_form_data() {
     // Clear data from select field form
     $("#profile_field_choices").empty();
     create_choice_row($("#profile_field_choices"));
-    update_choice_delete_btn($("#profile_field_choices"), false);
     $("#profile_field_choices_row").hide();
     // Clear external account field form
     $("#custom_field_url_pattern").val("");
@@ -318,20 +321,40 @@ function open_custom_profile_field_form_modal() {
     });
 }
 
+function disable_submit_btn_if_empty_choices() {
+    const $choice_text_rows = $("#edit-custom-profile-field-form-modal .choice-row").find(
+        ".modal_text_input",
+    );
+    let non_empty_choice_present = false;
+    for (const text_row of $choice_text_rows) {
+        if ($(text_row).val() !== "") {
+            non_empty_choice_present = true;
+            break;
+        }
+    }
+    $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop(
+        "disabled",
+        !non_empty_choice_present,
+    );
+}
+
 function add_choice_row(e) {
-    if ($(e.target).parent().next().hasClass("choice-row")) {
+    disable_submit_btn_if_empty_choices();
+    const $curr_choice_row = $(e.target).parent();
+    if ($curr_choice_row.next().hasClass("choice-row")) {
         return;
     }
+    // Display delete buttons for all existing choices before creating the new row,
+    // which will not have the delete button so that there is at least one option present.
+    $curr_choice_row.find("button.delete-choice").show();
     const choices_div = e.delegateTarget;
-    update_choice_delete_btn($(choices_div), true);
     create_choice_row(choices_div);
 }
 
 function delete_choice_row(e) {
     const $row = $(e.currentTarget).parent();
-    const $container = $row.parent();
     $row.remove();
-    update_choice_delete_btn($container, false);
+    disable_submit_btn_if_empty_choices();
 }
 
 function show_modal_for_deleting_options(field, deleted_values, update_profile_field) {
@@ -411,7 +434,6 @@ function set_up_select_field_edit_form($profile_field_form, field_data) {
 
     // Add blank choice at last
     create_choice_row($choice_list);
-    update_choice_delete_btn($choice_list, false);
     Sortable.create($choice_list[0], {
         onUpdate() {},
         filter: "input",
@@ -674,7 +696,6 @@ export function do_populate_profile_fields(profile_fields_data) {
 
 function set_up_select_field() {
     create_choice_row("#profile_field_choices");
-    update_choice_delete_btn($("#profile_field_choices"), false);
 
     if (page_params.is_admin) {
         const choice_list = $("#profile_field_choices")[0];
