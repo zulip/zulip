@@ -1,17 +1,17 @@
-from typing import Any, Dict, List
+from typing import List
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.lib.drafts import (
+    DraftData,
     do_create_drafts,
     do_delete_draft,
     do_edit_draft,
-    draft_dict_validator,
     draft_endpoint,
 )
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_list
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import Draft, UserProfile
 
 
@@ -23,32 +23,32 @@ def fetch_drafts(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
 
 
 @draft_endpoint
-@has_request_variables
+@typed_endpoint
 def create_drafts(
     request: HttpRequest,
     user_profile: UserProfile,
-    draft_dicts: List[Dict[str, Any]] = REQ(
-        "drafts", json_validator=check_list(draft_dict_validator)
-    ),
+    *,
+    drafts: Json[List[DraftData]],
 ) -> HttpResponse:
-    created_draft_objects = do_create_drafts(draft_dicts, user_profile)
+    created_draft_objects = do_create_drafts(drafts, user_profile)
     draft_ids = [draft_object.id for draft_object in created_draft_objects]
     return json_success(request, data={"ids": draft_ids})
 
 
 @draft_endpoint
-@has_request_variables
+@typed_endpoint
 def edit_draft(
     request: HttpRequest,
     user_profile: UserProfile,
-    draft_id: int,
-    draft_dict: Dict[str, Any] = REQ("draft", json_validator=draft_dict_validator),
+    *,
+    draft_id: PathOnly[int],
+    draft: Json[DraftData],
 ) -> HttpResponse:
-    do_edit_draft(draft_id, draft_dict, user_profile)
+    do_edit_draft(draft_id, draft, user_profile)
     return json_success(request)
 
 
 @draft_endpoint
-def delete_draft(request: HttpRequest, user_profile: UserProfile, draft_id: int) -> HttpResponse:
+def delete_draft(request: HttpRequest, user_profile: UserProfile, *, draft_id: int) -> HttpResponse:
     do_delete_draft(draft_id, user_profile)
     return json_success(request)
