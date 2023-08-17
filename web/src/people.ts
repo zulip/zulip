@@ -109,7 +109,7 @@ export function split_to_ints(lst: string): number[] {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
 
-export function get_users_from_ids(user_ids: number[]): (User | undefined)[] {
+export function get_users_from_ids(user_ids: number[]): User[] {
     return user_ids.map((user_id) => get_by_user_id(user_id));
 }
 
