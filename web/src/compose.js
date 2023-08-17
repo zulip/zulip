@@ -351,6 +351,11 @@ function insert_video_call_url(url, target_textarea) {
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
 }
 
+function insert_audio_call_url(url, target_textarea) {
+    const link_text = $t({defaultMessage: "Join audio call."});
+    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
+}
+
 export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
     function show_preview(rendered_content, raw_content) {
         // content is passed to check for status messages ("/me ...")
@@ -629,85 +634,13 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        let $target_textarea;
-        let edit_message_id;
-        if ($(e.target).parents(".message_edit_form").length === 1) {
-            edit_message_id = rows.id($(e.target).parents(".message_row"));
-            $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
-        }
-
-        let video_call_link;
-        const available_providers = page_params.realm_available_video_chat_providers;
         const show_video_chat_button = compute_show_video_chat_button();
 
         if (!show_video_chat_button) {
             return;
         }
 
-        if (
-            available_providers.zoom &&
-            page_params.realm_video_chat_provider === available_providers.zoom.id
-        ) {
-            abort_video_callbacks(edit_message_id);
-            const key = edit_message_id || "";
-
-            const make_zoom_call = () => {
-                video_call_xhrs.set(
-                    key,
-                    channel.post({
-                        url: "/json/calls/zoom/create",
-                        success(res) {
-                            video_call_xhrs.delete(key);
-                            insert_video_call_url(res.url, $target_textarea);
-                        },
-                        error(xhr, status) {
-                            video_call_xhrs.delete(key);
-                            if (
-                                status === "error" &&
-                                xhr.responseJSON &&
-                                xhr.responseJSON.code === "INVALID_ZOOM_TOKEN"
-                            ) {
-                                page_params.has_zoom_token = false;
-                            }
-                            if (status !== "abort") {
-                                ui_report.generic_embed_error(
-                                    $t_html({defaultMessage: "Failed to create video call."}),
-                                );
-                            }
-                        },
-                    }),
-                );
-            };
-
-            if (page_params.has_zoom_token) {
-                make_zoom_call();
-            } else {
-                zoom_token_callbacks.set(key, make_zoom_call);
-                window.open(
-                    window.location.protocol + "//" + window.location.host + "/calls/zoom/register",
-                    "_blank",
-                    "width=800,height=500,noopener,noreferrer",
-                );
-            }
-        } else if (
-            available_providers.big_blue_button &&
-            page_params.realm_video_chat_provider === available_providers.big_blue_button.id
-        ) {
-            const meeting_name = get_recipient_label() + " meeting";
-            channel.get({
-                url: "/json/calls/bigbluebutton/create",
-                data: {
-                    meeting_name,
-                },
-                success(response) {
-                    insert_video_call_url(response.url, $target_textarea);
-                },
-            });
-        } else {
-            const video_call_id = util.random_int(100000000000000, 999999999999999);
-            video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
-            insert_video_call_url(video_call_link, $target_textarea);
-        }
+        generate_and_insert_audio_or_video_call_link($(e.target), false);
     });
 
     $("body").on("click", ".time_pick", (e) => {
@@ -871,4 +804,89 @@ function schedule_message_to_custom_date() {
         success,
         error,
     });
+}
+
+function generate_and_insert_audio_or_video_call_link($target_element, is_audio_call) {
+    let $target_textarea;
+    let edit_message_id;
+    if ($target_element.parents(".message_edit_form").length === 1) {
+        edit_message_id = rows.id($target_element.parents(".message_row"));
+        $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+    }
+
+    const available_providers = page_params.realm_available_video_chat_providers;
+
+    if (
+        available_providers.zoom &&
+        page_params.realm_video_chat_provider === available_providers.zoom.id
+    ) {
+        if (is_audio_call) {
+            // TODO: Add support for generating audio-only Zoom calls here.
+            return;
+        }
+        abort_video_callbacks(edit_message_id);
+        const key = edit_message_id || "";
+
+        const make_zoom_call = () => {
+            video_call_xhrs.set(
+                key,
+                channel.post({
+                    url: "/json/calls/zoom/create",
+                    success(res) {
+                        video_call_xhrs.delete(key);
+                        insert_video_call_url(res.url, $target_textarea);
+                    },
+                    error(xhr, status) {
+                        video_call_xhrs.delete(key);
+                        if (
+                            status === "error" &&
+                            xhr.responseJSON &&
+                            xhr.responseJSON.code === "INVALID_ZOOM_TOKEN"
+                        ) {
+                            page_params.has_zoom_token = false;
+                        }
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                            );
+                        }
+                    },
+                }),
+            );
+        };
+
+        if (page_params.has_zoom_token) {
+            make_zoom_call();
+        } else {
+            zoom_token_callbacks.set(key, make_zoom_call);
+            window.open(
+                window.location.protocol + "//" + window.location.host + "/calls/zoom/register",
+                "_blank",
+                "width=800,height=500,noopener,noreferrer",
+            );
+        }
+    } else if (
+        available_providers.big_blue_button &&
+        page_params.realm_video_chat_provider === available_providers.big_blue_button.id
+    ) {
+        if (is_audio_call) {
+            // TODO: Add support for audio-only BigBlueButton calls here.
+            return;
+        }
+        const meeting_name = get_recipient_label() + " meeting";
+        channel.get({
+            url: "/json/calls/bigbluebutton/create",
+            data: {
+                meeting_name,
+            },
+            success(response) {
+                insert_video_call_url(response.url, $target_textarea);
+            },
+        });
+    } else {
+        // TODO: Use `new URL` to generate the URLs here.
+        const video_call_id = util.random_int(100000000000000, 999999999999999);
+        const video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
+        insert_video_call_url(video_call_link, $target_textarea);
+    }
 }

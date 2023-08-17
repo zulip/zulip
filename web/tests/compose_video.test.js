@@ -83,9 +83,6 @@ test("videos", ({override}) => {
         const ev = {
             preventDefault() {},
             stopPropagation() {},
-            target: {
-                to_$: () => $textarea,
-            },
         };
 
         const handler = $("body").get_on_handler("click", ".video_link");
