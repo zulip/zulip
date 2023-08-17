@@ -1490,6 +1490,7 @@ class TestScriptMTA(ZulipTestCase):
             input=mail,
             stdout=subprocess.PIPE,
             text=True,
+            check=False,
         )
         self.assertEqual(
             p.stdout,

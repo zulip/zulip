@@ -399,7 +399,9 @@ has_puppet_changes = True
 if not args.skip_puppet and IS_SERVER_UP:
     logging.info("Pre-checking for puppet changes...")
     try_puppet = subprocess.run(
-        ["./scripts/zulip-puppet-apply", "--noop", "--force"], stdout=subprocess.DEVNULL
+        ["./scripts/zulip-puppet-apply", "--noop", "--force"],
+        stdout=subprocess.DEVNULL,
+        check=False,
     )
     if try_puppet.returncode == 0:
         if minimal_change:
