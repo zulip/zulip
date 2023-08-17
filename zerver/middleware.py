@@ -636,7 +636,16 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
         # misconfigured, but we cannot distinguish this from a random
         # client which is providing proxy headers to a correctly
         # configured Zulip.
-        if proxy_state_header != "" and not request.is_secure():
+        #
+        # There is a complication to the above logic -- we do expect
+        # that requests not through the proxy may happen from
+        # localhost over HTTP (e.g. the email gateway).  Skip warnings
+        # if the remote IP is localhost.
+        if (
+            proxy_state_header != ""
+            and not request.is_secure()
+            and request.META["REMOTE_ADDR"] not in ("127.0.0.1", "::1")
+        ):
             raise ProxyMisconfigurationError(proxy_state_header)
 
 
