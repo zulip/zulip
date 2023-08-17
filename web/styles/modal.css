@@ -68,7 +68,7 @@
         text-overflow: ellipsis;
     }
 
-    #user_profile_manage_others_edit_button {
+    .user_profile_manage_others_edit_button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 

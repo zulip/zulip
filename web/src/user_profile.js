@@ -529,17 +529,18 @@ export function register_click_handlers() {
 
     $("body").on(
         "click",
-        "#user-profile-modal #name #user_profile_manage_others_edit_button",
+        "#user-profile-modal #name .user_profile_manage_others_edit_button",
         (e) => {
             show_manage_user_tab("manage-profile-tab");
             e.stopPropagation();
             e.preventDefault();
         },
     );
+
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
-    $("body").on("click", "#user-profile-modal #name #user_profile_manage_own_edit_button", () => {
+    $("body").on("click", "#user-profile-modal #name .user_profile_manage_own_edit_button", () => {
         hide_user_profile();
     });
 
