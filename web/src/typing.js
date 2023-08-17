@@ -6,14 +6,21 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import {user_settings} from "./user_settings";
 
 // This module handles the outbound side of typing indicators.
 // We detect changes in the compose box and notify the server
 // when we are typing.  For the inbound side see typing_events.js.
-//
-// See docs/subsystems/typing-indicators.md for details on typing indicators.
+// See docs/subsystems/typing-indicators.md for more details.
+
+// How frequently 'start' notifications are sent to extend
+// the expiry of active typing indicators.
+const typing_started_wait_period = page_params.server_typing_started_wait_period_milliseconds;
+// How long after someone stops editing in the compose box
+// do we send a 'stop' notification.
+const typing_stopped_wait_period = page_params.server_typing_stopped_wait_period_milliseconds;
 
 function send_typing_notification_ajax(user_ids_array, operation) {
     channel.post({
@@ -78,12 +85,17 @@ export function initialize() {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
         const new_recipient = is_valid_conversation() ? get_recipient() : null;
-        typing_status.update(worker, new_recipient);
+        typing_status.update(
+            worker,
+            new_recipient,
+            typing_started_wait_period,
+            typing_stopped_wait_period,
+        );
     });
 
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
     $(document).on("compose_canceled.zulip compose_finished.zulip", () => {
-        typing_status.update(worker, null);
+        typing_status.update(worker, null, typing_started_wait_period, typing_stopped_wait_period);
     });
 }

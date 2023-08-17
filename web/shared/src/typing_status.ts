@@ -13,18 +13,6 @@ type TypingStatusState = {
     idle_timer: ReturnType<typeof setTimeout>;
 };
 
-// The following constants are tuned to work with
-// TYPING_STARTED_EXPIRY_PERIOD, which is what the other
-// users will use to time out our messages.  (Or us,
-// depending on your perspective.) See typing_events.js.
-
-// How frequently 'still typing' notifications are sent
-// to extend the expiry
-const TYPING_STARTED_WAIT_PERIOD = 10000; // 10s
-// How long after someone stops editing in the compose box
-// do we send a 'stopped typing' notification
-const TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
-
 /** Exported only for tests. */
 export let state: TypingStatusState | null = null;
 
@@ -39,6 +27,7 @@ export function stop_last_notification(worker: TypingStatusWorker): void {
 /** Exported only for tests. */
 export function start_or_extend_idle_timer(
     worker: TypingStatusWorker,
+    typing_stopped_wait_period: number,
 ): ReturnType<typeof setTimeout> {
     function on_idle_timeout(): void {
         // We don't do any real error checking here, because
@@ -51,29 +40,34 @@ export function start_or_extend_idle_timer(
     if (state?.idle_timer) {
         clearTimeout(state.idle_timer);
     }
-    return setTimeout(on_idle_timeout, TYPING_STOPPED_WAIT_PERIOD);
+    return setTimeout(on_idle_timeout, typing_stopped_wait_period);
 }
 
-function set_next_start_time(current_time: number): void {
+function set_next_start_time(current_time: number, typing_started_wait_period: number): void {
     assert(state !== null, "State object should not be null here.");
-    state.next_send_start_time = current_time + TYPING_STARTED_WAIT_PERIOD;
+    state.next_send_start_time = current_time + typing_started_wait_period;
 }
 
 function actually_ping_server(
     worker: TypingStatusWorker,
     recipient_ids: number[],
     current_time: number,
+    typing_started_wait_period: number,
 ): void {
     worker.notify_server_start(recipient_ids);
-    set_next_start_time(current_time);
+    set_next_start_time(current_time, typing_started_wait_period);
 }
 
 /** Exported only for tests. */
-export function maybe_ping_server(worker: TypingStatusWorker, recipient_ids: number[]): void {
+export function maybe_ping_server(
+    worker: TypingStatusWorker,
+    recipient_ids: number[],
+    typing_started_wait_period: number,
+): void {
     assert(state !== null, "State object should not be null here.");
     const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
-        actually_ping_server(worker, recipient_ids, current_time);
+        actually_ping_server(worker, recipient_ids, current_time, typing_started_wait_period);
     }
 }
 
@@ -103,17 +97,22 @@ export function maybe_ping_server(worker: TypingStatusWorker, recipient_ids: num
  *   addressed to, as a sorted array of user IDs; or `null` if no direct message
  *   is being composed anymore.
  */
-export function update(worker: TypingStatusWorker, new_recipient_ids: number[] | null): void {
+export function update(
+    worker: TypingStatusWorker,
+    new_recipient_ids: number[] | null,
+    typing_started_wait_period: number,
+    typing_stopped_wait_period: number,
+): void {
     if (state !== null) {
         // We need to use _.isEqual for comparisons; === doesn't work
         // on arrays.
         if (_.isEqual(new_recipient_ids, state.current_recipient_ids)) {
             // Nothing has really changed, except we may need
             // to send a ping to the server.
-            maybe_ping_server(worker, new_recipient_ids!);
+            maybe_ping_server(worker, new_recipient_ids!, typing_started_wait_period);
 
             // We can also extend out our idle time.
-            state.idle_timer = start_or_extend_idle_timer(worker);
+            state.idle_timer = start_or_extend_idle_timer(worker, typing_stopped_wait_period);
 
             return;
         }
@@ -135,8 +134,8 @@ export function update(worker: TypingStatusWorker, new_recipient_ids: number[] |
     state = {
         current_recipient_ids: new_recipient_ids,
         next_send_start_time: 0,
-        idle_timer: start_or_extend_idle_timer(worker),
+        idle_timer: start_or_extend_idle_timer(worker, typing_stopped_wait_period),
     };
     const current_time = worker.get_current_time();
-    actually_ping_server(worker, new_recipient_ids, current_time);
+    actually_ping_server(worker, new_recipient_ids, current_time, typing_started_wait_period);
 }

@@ -10,6 +10,9 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const typing = zrequire("typing");
 const typing_status = zrequire("../shared/src/typing_status");
 
+const TYPING_STARTED_WAIT_PERIOD = 10000;
+const TYPING_STOPPED_WAIT_PERIOD = 5000;
+
 function make_time(secs) {
     // make times semi-realistic
     return 1000000 + 1000 * secs;
@@ -26,7 +29,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // invalid conversation basically does nothing
     let worker = {};
-    typing_status.update(worker, null);
+    typing_status.update(worker, null, TYPING_STARTED_WAIT_PERIOD, TYPING_STOPPED_WAIT_PERIOD);
 
     // Start setting up more testing state.
     const events = {};
@@ -63,7 +66,12 @@ run_test("basics", ({override, override_rewire}) => {
 
     function call_handler(new_recipient) {
         clear_events();
-        typing_status.update(worker, new_recipient);
+        typing_status.update(
+            worker,
+            new_recipient,
+            TYPING_STARTED_WAIT_PERIOD,
+            TYPING_STOPPED_WAIT_PERIOD,
+        );
     }
 
     worker = {
@@ -263,12 +271,22 @@ run_test("basics", ({override, override_rewire}) => {
 
     // User ids of people in compose narrow doesn't change and is same as stat.current_recipient_ids
     // so counts of function should increase except stop_last_notification
-    typing_status.update(worker, typing.get_recipient());
+    typing_status.update(
+        worker,
+        typing.get_recipient(),
+        TYPING_STARTED_WAIT_PERIOD,
+        TYPING_STOPPED_WAIT_PERIOD,
+    );
     assert.deepEqual(call_count.maybe_ping_server, 1);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 1);
     assert.deepEqual(call_count.stop_last_notification, 0);
 
-    typing_status.update(worker, typing.get_recipient());
+    typing_status.update(
+        worker,
+        typing.get_recipient(),
+        TYPING_STARTED_WAIT_PERIOD,
+        TYPING_STOPPED_WAIT_PERIOD,
+    );
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 2);
     assert.deepEqual(call_count.stop_last_notification, 0);
@@ -276,14 +294,24 @@ run_test("basics", ({override, override_rewire}) => {
     // change in recipient and new_recipient should make us
     // call typing_status.stop_last_notification
     override(compose_pm_pill, "get_user_ids_string", () => "2,3,4");
-    typing_status.update(worker, typing.get_recipient());
+    typing_status.update(
+        worker,
+        typing.get_recipient(),
+        TYPING_STARTED_WAIT_PERIOD,
+        TYPING_STOPPED_WAIT_PERIOD,
+    );
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
     assert.deepEqual(call_count.stop_last_notification, 1);
 
     // Stream messages are represented as get_user_ids_string being empty
     override(compose_pm_pill, "get_user_ids_string", () => "");
-    typing_status.update(worker, typing.get_recipient());
+    typing_status.update(
+        worker,
+        typing.get_recipient(),
+        TYPING_STARTED_WAIT_PERIOD,
+        TYPING_STOPPED_WAIT_PERIOD,
+    );
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
     assert.deepEqual(call_count.stop_last_notification, 2);
