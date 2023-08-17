@@ -1208,8 +1208,16 @@ td.pointer {
                 transition: unset;
             }
 
+            &:focus {
+                /* Remove the outline but do not color on focus;
+                   focus-visible is more appropriate for the color
+                   changes, as it only applies color when focus
+                   is achieved from a keyboard or other pointerless
+                   device. */
+                outline: 0;
+            }
+
             &:hover,
-            &:focus,
             &:focus-visible {
                 outline: 0;
                 color: var(--color-message-action-interactive);
