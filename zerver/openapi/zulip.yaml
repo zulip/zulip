@@ -11240,7 +11240,7 @@ paths:
 
                           **Changes**: New in Zulip 7.0 (feature level 164). Clients should use 60
                           for older Zulip servers, since that's the value that was hardcoded in the
-                          the Zulip mobile apps prior to this parameter being introduced.
+                          Zulip mobile apps prior to this parameter being introduced.
                       server_presence_offline_threshold_seconds:
                         type: integer
                         description: |
@@ -11251,6 +11251,39 @@ paths:
                           **Changes**: New in Zulip 7.0 (feature level 164). Clients should use 140
                           for older Zulip servers, since that's the value that was hardcoded in the
                           Zulip client apps prior to this parameter being introduced.
+                      server_typing_started_expiry_period_milliseconds:
+                        type: integer
+                        description: |
+                          For clients implementing [typing notifications](/api/set-typing-status)
+                          protocol, the time interval in milliseconds that the client should wait
+                          for additional [typing start](/api/get-events#typing-start) events from
+                          the server before removing an active typing indicator.
+
+                          **Changes**: New in Zulip 8.0 (feature level 204). Clients should use 15000
+                          for older Zulip servers, since that's the value that was hardcoded in the
+                          Zulip apps prior to this parameter being introduced.
+                      server_typing_stopped_wait_period_milliseconds:
+                        type: integer
+                        description: |
+                          For clients implementing [typing notifications](/api/set-typing-status)
+                          protocol, the time interval in milliseconds that the client should wait
+                          when a user stops interacting with the compose UI before sending a stop
+                          notification to the server.
+
+                          **Changes**: New in Zulip 8.0 (feature level 204). Clients should use 5000
+                          for older Zulip servers, since that's the value that was hardcoded in the
+                          Zulip apps prior to this parameter being introduced.
+                      server_typing_started_wait_period_milliseconds:
+                        type: integer
+                        description: |
+                          For clients implementing [typing notifications](/api/set-typing-status)
+                          protocol, the time interval in milliseconds that the client should use
+                          to send regular start notifications to the server to indicate that the
+                          user is still actively interacting with the compose UI.
+
+                          **Changes**: New in Zulip 8.0 (feature level 204). Clients should use 10000
+                          for older Zulip servers, since that's the value that was hardcoded in the
+                          Zulip apps prior to this parameter being introduced.
                       scheduled_messages:
                         type: array
                         description: |

@@ -14,10 +14,10 @@ import * as typing_data from "./typing_data";
 //
 // We also handle the local event of re-narrowing.
 // (For the outbound code, see typing.js.)
-
+//
 // How long before we assume a client has gone away
-// and expire its typing status
-const TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
+// and expire the active typing indicator.
+const typing_started_expiry_period = page_params.server_typing_started_expiry_period_milliseconds;
 
 // If number of users typing exceed this,
 // we render "Several people are typing..."
@@ -93,7 +93,7 @@ export function display_notification(event) {
 
     render_notifications_for_narrow();
 
-    typing_data.kickstart_inbound_timer(recipients, TYPING_STARTED_EXPIRY_PERIOD, () => {
+    typing_data.kickstart_inbound_timer(recipients, typing_started_expiry_period, () => {
         hide_notification(event);
     });
 }
