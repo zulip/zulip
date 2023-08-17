@@ -218,12 +218,6 @@ h3,
     & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
         width: 20%;
     }
-
-    /* Limit the actions column to not using excessive width */
-    .admin-table-wrapper table.admin_profile_fields_table tr .actions {
-        width: 11%;
-        min-width: 70px;
-    }
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
