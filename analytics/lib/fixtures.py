@@ -66,7 +66,7 @@ def generate_time_series_data(
 
     noise_scalars = [rng.gauss(0, 1)]
     for i in range(1, length):
-        noise_scalars.append(  # noqa: PERF401 # https://github.com/astral-sh/ruff/issues/6210
+        noise_scalars.append(
             noise_scalars[-1] * autocorrelation + rng.gauss(0, 1) * (1 - autocorrelation)
         )
 
