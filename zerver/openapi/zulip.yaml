@@ -8701,40 +8701,27 @@ paths:
                   - example:
                       {
                         "already_subscribed":
-                          {"newbie@zulip.com": ["new stream"]},
+                          {"iago@zulip.com": ["new stream"]},
                         "msg": "",
                         "result": "success",
-                        "subscribed": {"iago@zulip.com": ["new stream"]},
+                        "subscribed": {"newbie@zulip.com": ["new stream"]},
                       }
         "400":
           description: Bad request.
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example:
-                          {
-                            "msg": "Unable to access stream (private_stream).",
-                            "result": "error",
-                          }
-                        description: |
-                          A typical response for when the requesting user does not have access to
-                          a private stream and `"authorization_errors_fatal": true`:
-                  - allOf:
-                      - $ref: "#/components/schemas/AddSubscriptionsResponse"
-                      - example:
-                          {
-                            "already_subscribed": {},
-                            "msg": "",
-                            "result": "success",
-                            "subscribed": {},
-                            "unauthorized": ["private_stream"],
-                          }
-                        description: |
-                          A typical response for when the requesting user does not have access to
-                          a private stream and `"authorization_errors_fatal": false`:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "msg": "Unable to access stream (private_stream).",
+                        "result": "error",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON response for when the requesting user does not have
+                      access to a private stream and `"authorization_errors_fatal": true`:
     patch:
       operationId: update-subscriptions
       summary: Update subscriptions
