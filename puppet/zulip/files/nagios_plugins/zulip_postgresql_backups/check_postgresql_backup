@@ -41,6 +41,7 @@ skip_backups = subprocess.run(
     ["crudini", "--get", "/etc/zulip/zulip.conf", "postgresql", "skip_backups"],
     capture_output=True,
     text=True,
+    check=False,
 )
 if skip_backups.returncode == 0 and skip_backups.stdout.strip().lower() in [
     1,

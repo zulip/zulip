@@ -180,7 +180,7 @@ Proposed {BOLDRED}diff{ENDC} for {CYAN}{fn}{ENDC}:
             """,
             flush=True,
         )
-        subprocess.run(["diff", fn, "-"], input=phtml, text=True)
+        subprocess.run(["diff", fn, "-"], input=phtml, text=True, check=False)
         print(
             f"""
 ---
