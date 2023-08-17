@@ -14,11 +14,11 @@
                     <span class="user_profile_name">{{full_name}}</span>
                     {{#if is_me}}
                         <a href="/#settings/profile">
-                            <i class="fa fa-edit" id="user_profile_manage_own_edit_button" aria-hidden="true"></i>
+                            <i class="fa fa-edit user_profile_manage_own_edit_button" aria-hidden="true"></i>
                         </a>
                     {{/if}}
                     {{#if can_manage_profile}}
-                        <i class="fa fa-edit" id="user_profile_manage_others_edit_button" aria-hidden="true"></i>
+                        <i class="fa fa-edit user_profile_manage_others_edit_button" aria-hidden="true"></i>
                     {{/if}}
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
