@@ -105,9 +105,7 @@ $time_column_min_width: 42px; /* + padding */
         padding: 0 5px 0 3px;
 
         &:hover .message_controls,
-        &:focus-within .message_controls,
-        &:hover .message_failed,
-        &:focus-within .message_failed {
+        &:hover .message_failed {
             .empty-star:hover {
                 cursor: pointer;
             }
