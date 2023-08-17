@@ -6,6 +6,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    Mapping,
     Optional,
     Sequence,
     Set,
@@ -57,17 +58,21 @@ VARMAP = {
 }
 
 
-def schema_type(schema: Dict[str, Any]) -> Union[type, Tuple[type, object]]:
+def schema_type(
+    schema: Dict[str, Any], defs: Mapping[str, Any] = {}
+) -> Union[type, Tuple[type, object]]:
     if "oneOf" in schema:
         # Hack: Just use the type of the first value
         # Ideally, we'd turn this into a Union type.
-        return schema_type(schema["oneOf"][0])
+        return schema_type(schema["oneOf"][0], defs)
     elif "anyOf" in schema:
-        return schema_type(schema["anyOf"][0])
+        return schema_type(schema["anyOf"][0], defs)
     elif schema.get("contentMediaType") == "application/json":
-        return schema_type(schema["contentSchema"])
+        return schema_type(schema["contentSchema"], defs)
+    elif "$ref" in schema:
+        return schema_type(defs[schema["$ref"]], defs)
     elif schema["type"] == "array":
-        return (list, schema_type(schema["items"]))
+        return (list, schema_type(schema["items"], defs))
     else:
         return VARMAP[schema["type"]]
 
@@ -439,7 +444,10 @@ do not match the types declared in the implementation of {function.__name__}.\n"
             openapi_params.add((expected_request_var_name, schema_type(expected_param_schema)))
 
         for actual_param in parse_view_func_signature(function).parameters:
-            actual_param_schema = TypeAdapter(actual_param.param_type).json_schema()
+            actual_param_schema = TypeAdapter(actual_param.param_type).json_schema(
+                ref_template="{model}"
+            )
+            defs_mapping = actual_param_schema.get("$defs", {})
             # The content type of the JSON schema generated from the
             # function parameter type annotation should have content type
             # matching that of our OpenAPI spec. If not so, hint that the
@@ -467,7 +475,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                     (int, bool),
                     f'\nUnexpected content type {actual_param_schema["contentMediaType"]} on function parameter {actual_param.param_name}, which does not match the OpenAPI definition.',
                 )
-            function_params.add((actual_param.request_var_name, schema_type(actual_param_schema)))
+            function_params.add(
+                (actual_param.request_var_name, schema_type(actual_param_schema, defs_mapping))
+            )
 
         diff = openapi_params - function_params
         if diff:  # nocoverage

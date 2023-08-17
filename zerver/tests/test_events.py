@@ -126,7 +126,7 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
-from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
+from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
     check_attachment_add,
@@ -3497,39 +3497,39 @@ class DraftActionTest(BaseAction):
 
     def test_draft_create_event(self) -> None:
         self.do_enable_drafts_synchronization(self.user_profile)
-        dummy_draft = {
-            "type": "draft",
-            "to": "",
-            "topic": "",
-            "content": "Sample draft content",
-            "timestamp": 1596820995,
-        }
+        dummy_draft = DraftData(
+            type="",
+            to=[],
+            topic="",
+            content="Sample draft content",
+            timestamp=1596820995,
+        )
         action = lambda: do_create_drafts([dummy_draft], self.user_profile)
         self.verify_action(action)
 
     def test_draft_edit_event(self) -> None:
         self.do_enable_drafts_synchronization(self.user_profile)
-        dummy_draft = {
-            "type": "draft",
-            "to": "",
-            "topic": "",
-            "content": "Sample draft content",
-            "timestamp": 1596820995,
-        }
+        dummy_draft = DraftData(
+            type="",
+            to=[],
+            topic="",
+            content="Sample draft content",
+            timestamp=1596820995,
+        )
         draft_id = do_create_drafts([dummy_draft], self.user_profile)[0].id
-        dummy_draft["content"] = "Some more sample draft content"
+        dummy_draft.content = "Some more sample draft content"
         action = lambda: do_edit_draft(draft_id, dummy_draft, self.user_profile)
         self.verify_action(action)
 
     def test_draft_delete_event(self) -> None:
         self.do_enable_drafts_synchronization(self.user_profile)
-        dummy_draft = {
-            "type": "draft",
-            "to": "",
-            "topic": "",
-            "content": "Sample draft content",
-            "timestamp": 1596820995,
-        }
+        dummy_draft = DraftData(
+            type="",
+            to=[],
+            topic="",
+            content="Sample draft content",
+            timestamp=1596820995,
+        )
         draft_id = do_create_drafts([dummy_draft], self.user_profile)[0].id
         action = lambda: do_delete_draft(draft_id, self.user_profile)
         self.verify_action(action)
