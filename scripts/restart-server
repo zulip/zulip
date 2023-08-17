@@ -185,6 +185,7 @@ if has_application_server():
         uwsgi_status = subprocess.run(
             ["supervisorctl", "status", "zulip-django"],
             stdout=subprocess.DEVNULL,
+            check=False,
         )
         if uwsgi_status.returncode == 0:
             logging.info("Starting rolling restart of django server")
