@@ -135,7 +135,7 @@ $time_column_min_width: 42px; /* + padding */
             ".      more      .        . .   "
             ".      reactions .        . .   ";
 
-        @media (width < $sm_min) {
+        @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
             grid-template-columns: $avatar_column_width auto max-content 8px minmax(
                     $time_column_min_width,
                     max-content
@@ -147,7 +147,8 @@ $time_column_min_width: 42px; /* + padding */
             justify-self: end;
             padding: 0;
 
-            @media (width < $sm_min) {
+            @media (width < $sm_min),
+                ((width >= $md_min) and (width < $mc_min)) {
                 padding: 0 4px;
 
                 /* This is intended to target the first message_controls child
