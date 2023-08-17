@@ -18,7 +18,7 @@ TEST_DROPLET_SUBDOMAIN = "do"
 
 
 def generate_ssh_keys() -> None:
-    subprocess.call(
+    subprocess.check_call(
         ["ssh-keygen", "-f", str(Path.home()) + "/.ssh/id_ed25519", "-P", "", "-t", "ed25519"]
     )
 

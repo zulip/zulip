@@ -32,7 +32,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.no_generate:
-        subprocess.call(["./manage.py", "makemessages", "--locale", "en"], stderr=subprocess.STDOUT)
+        subprocess.check_call(
+            ["./manage.py", "makemessages", "--locale", "en"], stderr=subprocess.STDOUT
+        )
 
     with open("locale/en/translations.json") as f:
         data = json.load(f)
