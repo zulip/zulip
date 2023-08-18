@@ -148,7 +148,7 @@ run_test("random_int", () => {
     });
 });
 
-run_test("all_and_everyone_mentions_regexp", () => {
+run_test("wildcard_mentions_regexp", () => {
     const messages_with_all_mentions = [
         "@**all**",
         "some text before @**all** some text after",
@@ -168,6 +168,13 @@ run_test("all_and_everyone_mentions_regexp", () => {
         "some text before @**stream** some text after",
         "@**stream** some text after only",
         "some text before only @**stream**",
+    ];
+
+    const messages_with_topic_mentions = [
+        "@**topic**",
+        "some text before @**topic** some text after",
+        "@**topic** some text after only",
+        "some text before only @**topic**",
     ];
 
     const messages_without_all_mentions = [
@@ -197,6 +204,15 @@ run_test("all_and_everyone_mentions_regexp", () => {
         "some_email@**stream**.com",
     ];
 
+    const messages_without_topic_mentions = [
+        "some text before @topic some text after",
+        "@topic",
+        "`@topic`",
+        "some_email@topic.com",
+        "`@**topic**`",
+        "some_email@**topic**.com",
+    ];
+
     let i;
     for (i = 0; i < messages_with_all_mentions.length; i += 1) {
         assert.ok(util.find_wildcard_mentions(messages_with_all_mentions[i]));
@@ -210,6 +226,10 @@ run_test("all_and_everyone_mentions_regexp", () => {
         assert.ok(util.find_wildcard_mentions(messages_with_stream_mentions[i]));
     }
 
+    for (i = 0; i < messages_with_topic_mentions.length; i += 1) {
+        assert.ok(util.find_wildcard_mentions(messages_with_topic_mentions[i]));
+    }
+
     for (i = 0; i < messages_without_all_mentions.length; i += 1) {
         assert.ok(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
     }
@@ -220,6 +240,10 @@ run_test("all_and_everyone_mentions_regexp", () => {
 
     for (i = 0; i < messages_without_stream_mentions.length; i += 1) {
         assert.ok(!util.find_wildcard_mentions(messages_without_stream_mentions[i]));
+    }
+
+    for (i = 0; i < messages_without_topic_mentions.length; i += 1) {
+        assert.ok(!util.find_wildcard_mentions(messages_without_topic_mentions[i]));
     }
 });
 
