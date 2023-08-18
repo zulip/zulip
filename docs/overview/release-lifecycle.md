@@ -43,6 +43,8 @@ server repository][zulip-server].
   upgrading to a new major release series, We recommend always
   upgrading to the latest maintenance release in that series, so that
   you use the latest version of the upgrade code.
+- For the dates of past stable releases,
+  [see the Zulip blog][blog-releases].
 
 Starting with Zulip 4.0, the Zulip web app displays the current server
 version in the gear menu. With older releases, the server version is
@@ -54,6 +56,9 @@ documentation, like our [Help Center](https://zulip.com/help/), [API
 documentation](https://zulip.com/api/), and [Integrations
 documentation](https://zulip.com/integrations/), are distributed with
 the Zulip server itself (E.g. `https://zulip.example.com/help/`).
+
+[blog-major-releases]: https://blog.zulip.com/tag/major-releases/
+[blog-releases]: https://blog.zulip.com/tag/release-announcements/
 
 ### Git versions
 
@@ -88,12 +93,11 @@ version of Zulip. We work extremely hard to make sure Zulip is stable
 for self-hosters, has no regressions, and that the [Zulip upgrade
 process](../production/upgrade.md) Just Works.
 
-The Zulip server and clients apps are all carefully engineered to
+The Zulip server and client apps are all carefully engineered to
 ensure compatibility with old versions. In particular:
 
 - The Zulip mobile and desktop apps maintain backwards-compatibility
-  code to support any Zulip server since 4.0. (They may also work
-  with older versions, with a degraded experience).
+  code to support any Zulip server version from the last 18 months.
 - Zulip maintains an [API changelog](https://zulip.com/api/changelog)
   detailing all changes to the API to make it easy for client
   developers to do this correctly.
@@ -107,7 +111,6 @@ As a result, we generally do not backport changes to previous stable
 release series except in rare cases involving a security issue or
 critical bug just after publishing a major release.
 
-[blog-major-releases]: https://blog.zulip.com/tag/major-releases/
 [upgrade-from-git]: ../production/upgrade.md#upgrading-from-a-git-repository
 
 ### Security releases
