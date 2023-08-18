@@ -11,6 +11,7 @@ sys.path.append(ZULIP_PATH)
 
 from tools.setup.emoji.custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
 from tools.setup.emoji.emoji_setup_utils import get_emoji_code
+from zerver.lib.emoji_utils import hex_codepoint_to_emoji, unqualify_emoji
 
 CLDR_DATA_FILE = os.path.join(
     ZULIP_PATH, "node_modules", "cldr-annotations-modern", "annotations", "en", "annotations.json"
@@ -140,13 +141,9 @@ def main() -> None:
             all_emojis[emoji_code] = CUSTOM_EMOJI_NAME_MAPS[emoji_code]
         else:
             # create the unicode character(s) for the emoji, since this is the key into the CLDR data
-            emoji = "".join(
-                chr(int(h, 16))
-                for h in (emoji_dict["non_qualified"] or emoji_dict["unified"]).split("-")
-                # We have to do this check because of this upstream bug:
-                # https://github.com/iamcal/emoji-data/pull/217
-                if h != "FE0F"
-            )
+            # We can't just use emoji_dict["non_qualified"] because of this upstream bug:
+            # https://github.com/iamcal/emoji-data/pull/217
+            emoji = unqualify_emoji(hex_codepoint_to_emoji(emoji_dict["unified"]))
             if emoji not in CLDR_DATA:
                 print(
                     f"{emoji} not found in custom emoji name maps, but also not found in CLDR data. Skipping."
