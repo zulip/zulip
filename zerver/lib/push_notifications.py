@@ -20,6 +20,7 @@ from django.utils.translation import override as override_language
 from typing_extensions import TypeAlias
 
 from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
@@ -708,10 +709,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
             match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
             if match:
                 emoji_code = match.group("emoji_code")
-                char_repr = ""
-                for codepoint in emoji_code.split("-"):
-                    char_repr += chr(int(codepoint, 16))
-                return char_repr
+                return hex_codepoint_to_emoji(emoji_code)
         # Handles realm emojis, avatars etc.
         if elem.tag == "img":
             return elem.get("alt", "")
