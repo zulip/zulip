@@ -46,6 +46,17 @@
                the base .emoji class. */
             position: static;
         }
+
+        .emoji_alt_code {
+            /* Apply the same margins as on graphical emoji. */
+            margin: 1px 3px;
+            /* Reset some properties from the base .emoji_alt_code
+               class that aren't appropriate in a flexbox context. */
+            position: static;
+            /* Flexbox will handle baselines, so don't mess with the
+               line-height. */
+            line-height: inherit;
+        }
     }
 
     .message_reaction_count {
