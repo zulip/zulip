@@ -311,6 +311,16 @@ function image_to_zulip_markdown(_content, node) {
     return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") || "";
 }
 
+function katex_to_zulip_markdown(_content, node) {
+    console.log(_content, node);
+    const math_string = node.querySelector("annotation").textContent;
+    if (node.getAttribute("display") === "block") {
+        return `\`\`\`math\n${math_string}\n\`\`\``;
+    } else {
+        return `\$\$${math_string}\$\$`;
+    }
+}
+
 export function paste_handler_converter(paste_html) {
     // turning off escaping (for now) to remove extra `/`
     TurndownService.prototype.escape = (string) => string;

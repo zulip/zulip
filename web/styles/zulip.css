@@ -287,6 +287,10 @@ a {
     }
 }
 
+.katex-mathml annotation {
+    display: block;
+}
+
 code,
 pre {
     font-family: "Source Code Pro", monospace;
