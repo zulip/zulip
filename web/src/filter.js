@@ -575,6 +575,9 @@ export class Filter {
         if (_.isEqual(term_types, ["streams-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["sender"])) {
+            return true;
+        }
         return false;
     }
 
@@ -713,6 +716,23 @@ export class Filter {
             // and also to ensure that we return a string and not an array so that we
             // can have the same return type as other cases.
             return names.join(", ");
+        }
+        if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {
+            const email = this.operands("sender")[0];
+            const user = people.get_by_email(email);
+            let sender = email;
+            if (user) {
+                if (people.is_my_user_id(user.user_id)) {
+                    return $t({defaultMessage: "Messages sent by you"});
+                }
+                sender = user.full_name;
+            }
+            return $t(
+                {defaultMessage: "Messages sent by {sender}"},
+                {
+                    sender,
+                },
+            );
         }
         if (term_types.length === 1) {
             switch (term_types[0]) {
