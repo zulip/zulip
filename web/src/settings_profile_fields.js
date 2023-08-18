@@ -144,20 +144,6 @@ function read_external_account_field_data($profile_field_form) {
     return field_data;
 }
 
-export function update_choice_delete_btn($container, display_flag) {
-    const no_of_choice_row = $container.find(".choice-row").length;
-
-    // Disable delete button if there only one choice row
-    // Enable choice delete button more one than once choice
-    if (no_of_choice_row === 1) {
-        if (display_flag === true) {
-            $container.find(".choice-row .delete-choice").show();
-        } else {
-            $container.find(".choice-row .delete-choice").hide();
-        }
-    }
-}
-
 export function get_value_for_new_option(container) {
     let value = 0;
     for (const row of $(container).find(".choice-row")) {

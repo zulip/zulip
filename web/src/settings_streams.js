@@ -22,8 +22,6 @@ function add_choice_row($widget) {
     if ($widget.closest(".choice-row").next().hasClass("choice-row")) {
         return;
     }
-    const $choices_div = $("#default-stream-choices");
-    settings_profile_fields.update_choice_delete_btn($choices_div, true);
     create_choice_row();
 }
 
@@ -154,9 +152,7 @@ export function delete_default_stream(stream_id, $default_stream_row, $alert_ele
 
 function delete_choice_row(e) {
     const $row = $(e.currentTarget).parent();
-    const $container = $row.parent();
     $row.remove();
-    settings_profile_fields.update_choice_delete_btn($container, false);
 
     // Disable the submit button if no streams are selected.
     $("#add-default-stream-modal .dialog_submit_button").prop(
@@ -209,7 +205,6 @@ function show_add_default_streams_modal() {
         $("#add-default-stream-modal .dialog_submit_button").prop("disabled", true);
 
         create_choice_row();
-        settings_profile_fields.update_choice_delete_btn($("#default-stream-choices"), false);
         $("#default-stream-choices").on("click", "button.delete-choice", delete_choice_row);
     }
 
