@@ -2531,7 +2531,7 @@ class NormalActionsTest(BaseAction):
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
 
         reset_email_visibility_to_everyone_in_zulip_realm()
-        bot.refresh_from_db()
+        bot = self.refresh_user(bot)
 
         self.user_profile = self.example_user("iago")
         action = lambda: do_reactivate_user(bot, acting_user=self.example_user("iago"))
