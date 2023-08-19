@@ -180,13 +180,13 @@ beautifulsoup4==4.12.2 \
     #   -r requirements/common.in
     #   pyoembed
     #   zulip-bots
-boto3==1.28.29 \
-    --hash=sha256:1ab375c231547db4c9ce760e29cbe90d0341fe44910571b1bc4967a72fd8276f \
-    --hash=sha256:7b8e7deee9f665612b3cd7412989aaab0337d8006a0490a188c814af137bd32d
+boto3==1.28.30 \
+    --hash=sha256:2b509a959966a572f15db5768a18066ce1f53022ac53fca9421c620219fa3998 \
+    --hash=sha256:e095ede98d3680e65966ab71f273b7d86938f5d853773ef96f4cb646277c2a4b
     # via -r requirements/common.in
-botocore==1.31.29 \
-    --hash=sha256:71b335a47ee061994ac12f15ffe63c5c783cb055dc48079b7d755a46b9c1918c \
-    --hash=sha256:d3dc422491b3a30667f188f3434541a1dd86d6f8ed7f98ca26e056ae7d912c85
+botocore==1.31.30 \
+    --hash=sha256:269f20dcadd8dfd0c26d0e6fbceb84814ff6638ff3aafcc5324b9fb9949a7051 \
+    --hash=sha256:3cf6a9d7621b897c9ff23cd02113826141b3dd3d7e90273b661efc4dc05f84e2
     # via
     #   boto3
     #   s3transfer

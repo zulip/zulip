@@ -232,26 +232,26 @@ boltons==21.0.0 \
     #   face
     #   glom
     #   semgrep
-boto3==1.28.29 \
-    --hash=sha256:1ab375c231547db4c9ce760e29cbe90d0341fe44910571b1bc4967a72fd8276f \
-    --hash=sha256:7b8e7deee9f665612b3cd7412989aaab0337d8006a0490a188c814af137bd32d
+boto3==1.28.30 \
+    --hash=sha256:2b509a959966a572f15db5768a18066ce1f53022ac53fca9421c620219fa3998 \
+    --hash=sha256:e095ede98d3680e65966ab71f273b7d86938f5d853773ef96f4cb646277c2a4b
     # via
     #   -r requirements/common.in
     #   moto
-boto3-stubs[s3,ses,sns,sqs]==1.28.29 \
-    --hash=sha256:320ec5a10dd951d15ae82df4a9b54d48cac3a96eb3ee026c11f3e0e1a854b8c0 \
-    --hash=sha256:8bef5d38a30201cd0eed7dbf0f1267da98826c4af02ffaaf8c7faa4f7fc1b9ab
+boto3-stubs[s3,ses,sns,sqs]==1.28.30 \
+    --hash=sha256:0f0d21b84d6bd4353f1bc63d5e670d260fefab489f7f345036a3294222f9809b \
+    --hash=sha256:fe0271a1e83ebd41f1a9f350836c37041f21755aa5a7a40f05cdadf4e2312f8a
     # via -r requirements/mypy.in
-botocore==1.31.29 \
-    --hash=sha256:71b335a47ee061994ac12f15ffe63c5c783cb055dc48079b7d755a46b9c1918c \
-    --hash=sha256:d3dc422491b3a30667f188f3434541a1dd86d6f8ed7f98ca26e056ae7d912c85
+botocore==1.31.30 \
+    --hash=sha256:269f20dcadd8dfd0c26d0e6fbceb84814ff6638ff3aafcc5324b9fb9949a7051 \
+    --hash=sha256:3cf6a9d7621b897c9ff23cd02113826141b3dd3d7e90273b661efc4dc05f84e2
     # via
     #   boto3
     #   moto
     #   s3transfer
-botocore-stubs==1.31.29 \
-    --hash=sha256:108750e970cfc92fd593ab1be9ddaa2e89ce0b1ec908d5c3ad55405e1c3713a1 \
-    --hash=sha256:f961e1695c0caed71baee347413e0fc06ac28b0d3bb33253f163f7555b145702
+botocore-stubs==1.31.30 \
+    --hash=sha256:1ac9d367068cd4e005cc3b9acdace0cd2bfaf4b0d26fd9d1393a3ac76d305fd0 \
+    --hash=sha256:d8604218c85adf8ec2e590c2ac799f44277ac8b59e0c04af68faa032f6c67bc7
     # via boto3-stubs
 bracex==2.3.post1 \
     --hash=sha256:351b7f20d56fb9ea91f9b9e9e7664db466eb234188c175fd943f8f755c807e73 \
@@ -3174,9 +3174,9 @@ pip==20.3.4 \
     #   -r requirements/pip.in
     #   pip-tools
     #   zulip-bots
-setuptools==68.1.0 \
-    --hash=sha256:d59c97e7b774979a5ccb96388efc9eb65518004537e85d52e81eaee89ab6dd91 \
-    --hash=sha256:e13e1b0bc760e9b0127eda042845999b2f913e12437046e663b833aa96d89715
+setuptools==68.1.2 \
+    --hash=sha256:3d4dfa6d95f1b101d695a6160a7626e15583af71a5f52176efa5d39a054d475d \
+    --hash=sha256:3d8083eed2d13afc9426f227b24fd1659489ec107c0e86cec2ffdde5c92e790b
     # via
     #   -r requirements/pip.in
     #   pip-tools
