@@ -1903,16 +1903,14 @@ Output:
     def expect_soft_reactivation(self, user: UserProfile, action: Callable[[], None]) -> None:
         self._assert_long_term_idle(user)
         action()
-        # Prevent from using the old user object
-        user.refresh_from_db()
-        self.assertEqual(user.long_term_idle, False)
+        fresh_user = self.refresh_user(user)
+        self.assertEqual(fresh_user.long_term_idle, False)
 
     def expect_to_stay_long_term_idle(self, user: UserProfile, action: Callable[[], None]) -> None:
         self._assert_long_term_idle(user)
         action()
-        # Prevent from using the old user object
-        user.refresh_from_db()
-        self.assertEqual(user.long_term_idle, True)
+        fresh_user = self.refresh_user(user)
+        self.assertEqual(fresh_user.long_term_idle, True)
 
     def soft_deactivate_user(self, user: UserProfile) -> None:
         do_soft_deactivate_users([user])
