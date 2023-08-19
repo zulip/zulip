@@ -13,6 +13,7 @@ import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
+import * as list_widget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
@@ -74,6 +75,9 @@ export function render_bots() {
         });
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
     }
+
+    list_widget.render_empty_list_message_if_needed($("#active_bots_list"));
+    list_widget.render_empty_list_message_if_needed($("#inactive_bots_list"));
 }
 
 export function generate_zuliprc_url(bot_id) {
