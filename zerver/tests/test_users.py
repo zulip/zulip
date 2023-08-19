@@ -350,8 +350,8 @@ class PermissionTest(ZulipTestCase):
         # it doesn't need to be, but client-side changes would be
         # required in apps like the mobile apps.
         # delivery_email is sent for admins.
-        admin.refresh_from_db()
-        user.refresh_from_db()
+        admin = self.refresh_user(admin)
+        user = self.refresh_user(user)
         self.login_user(admin)
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         members = self.assert_json_success(result)["members"]
@@ -1474,12 +1474,12 @@ class ActivateTest(ZulipTestCase):
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
-        user.refresh_from_db()
+        user = self.refresh_user(user)
         self.assertFalse(user.is_active)
 
         # Reactivate user
         do_reactivate_user(user, acting_user=None)
-        user.refresh_from_db()
+        user = self.refresh_user(user)
         self.assertTrue(user.is_active)
 
         # Verify no email sent by default.
@@ -1490,7 +1490,7 @@ class ActivateTest(ZulipTestCase):
             ),
         )
         self.assert_json_success(result)
-        user.refresh_from_db()
+        user = self.refresh_user(user)
         self.assertFalse(user.is_active)
 
         self.assert_length(outbox, 1)
@@ -2633,9 +2633,9 @@ class TestBulkRegenerateAPIKey(ZulipTestCase):
 
         bulk_regenerate_api_keys([hamlet.id, cordelia.id])
 
-        hamlet.refresh_from_db()
-        cordelia.refresh_from_db()
-        othello.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
+        cordelia = self.refresh_user(cordelia)
+        othello = self.refresh_user(othello)
 
         self.assertNotEqual(hamlet_old_api_key, hamlet.api_key)
         self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)

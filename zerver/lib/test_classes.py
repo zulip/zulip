@@ -106,6 +106,7 @@ from zerver.models import (
     get_system_bot,
     get_user,
     get_user_by_delivery_email,
+    get_user_profile_by_id,
 )
 from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
@@ -651,6 +652,9 @@ Output:
 
     def notification_bot(self, realm: Realm) -> UserProfile:
         return get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+
+    def refresh_user(self, user: UserProfile) -> UserProfile:
+        return get_user_profile_by_id(user.id)
 
     def create_test_bot(
         self, short_name: str, user_profile: UserProfile, full_name: str = "Foo Bot", **extras: Any
