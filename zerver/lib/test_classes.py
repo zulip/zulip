@@ -176,6 +176,9 @@ class ZulipTestCaseMixin(SimpleTestCase):
                 self.mock_ldap.reset()
             self.mock_initialize.stop()
 
+    def get_user_from_email(self, email: str, realm: Realm) -> UserProfile:
+        return get_user(email, realm)
+
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
         if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
@@ -631,11 +634,11 @@ Output:
 
     def mit_user(self, name: str) -> UserProfile:
         email = self.mit_user_map[name]
-        return get_user(email, get_realm("zephyr"))
+        return self.get_user_from_email(email, get_realm("zephyr"))
 
     def lear_user(self, name: str) -> UserProfile:
         email = self.lear_user_map[name]
-        return get_user(email, get_realm("lear"))
+        return self.get_user_from_email(email, get_realm("lear"))
 
     def nonreg_email(self, name: str) -> str:
         return self.nonreg_user_map[name]
@@ -661,7 +664,7 @@ Output:
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_email = f"{short_name}-bot@zulip.testserver"
-        bot_profile = get_user(bot_email, user_profile.realm)
+        bot_profile = self.get_user_from_email(bot_email, user_profile.realm)
         return bot_profile
 
     def fail_to_create_test_bot(
@@ -2015,7 +2018,7 @@ class WebhookTestCase(ZulipTestCase):
 
     @property
     def test_user(self) -> UserProfile:
-        return get_user(self.TEST_USER_EMAIL, get_realm("zulip"))
+        return self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
 
     def setUp(self) -> None:
         super().setUp()
