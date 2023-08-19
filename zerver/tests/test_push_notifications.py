@@ -58,7 +58,6 @@ from zerver.lib.remote_server import (
     send_to_push_bouncer,
 )
 from zerver.lib.response import json_response_from_error
-from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -1068,6 +1067,10 @@ class PushNotificationTest(BouncerTestCase):
 class HandlePushNotificationTest(PushNotificationTest):
     DEFAULT_SUBDOMAIN = ""
 
+    def soft_deactivate_main_user(self) -> None:
+        self.user_profile = self.example_user("hamlet")
+        self.soft_deactivate_user(self.user_profile)
+
     def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
         assert request.url is not None  # allow mypy to infer url is present.
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
@@ -1592,7 +1595,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.subscribe(sender, "public_stream")
         logger_string = "zulip.soft_deactivation"
         with self.assertLogs(logger_string, level="INFO") as info_logs:
-            do_soft_deactivate_users([self.user_profile])
+            self.soft_deactivate_main_user()
+
         self.assertEqual(
             info_logs.output,
             [
@@ -1649,7 +1653,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
         # Personal mention in a stream message should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+        def mention_in_stream() -> None:
             mention = f"@**{self.user_profile.full_name}**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
@@ -1660,8 +1664,11 @@ class HandlePushNotificationTest(PushNotificationTest):
                 },
             )
 
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, mention_in_stream)
+
         # Direct message should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+        def direct_message() -> None:
             # Soft reactivate the user by sending a personal message
             personal_message_id = self.send_personal_message(othello, self.user_profile, "Message")
             handle_push_notification(
@@ -1671,6 +1678,9 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "trigger": NotificationTriggers.DIRECT_MESSAGE,
                 },
             )
+
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, direct_message)
 
         # User FOLLOWS the topic.
         # 'wildcard_mentions_notify' is disabled to verify the corner case when only
@@ -1688,7 +1698,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         # Topic wildcard mention in followed topic should soft reactivate the user
         # user should be a topic participant
         self.send_stream_message(self.user_profile, "Denmark", "topic paticipant")
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+
+        def send_topic_wildcard_mention() -> None:
             mention = "@**topic**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
@@ -1699,8 +1710,11 @@ class HandlePushNotificationTest(PushNotificationTest):
                 },
             )
 
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, send_topic_wildcard_mention)
+
         # Stream wildcard mention in followed topic should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
+        def send_stream_wildcard_mention() -> None:
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
@@ -1710,6 +1724,9 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "trigger": NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
                 },
             )
+
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_stream_wildcard_mention)
 
         # Reset
         do_set_user_topic_visibility_policy(
@@ -1723,31 +1740,14 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
         # Topic Wildcard mention should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
-            mention = "@**topic**"
-            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_push_notification(
-                self.user_profile.id,
-                {
-                    "message_id": stream_mentioned_message_id,
-                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
-                },
-            )
+        self.expect_soft_reactivation(self.user_profile, send_topic_wildcard_mention)
 
         # Stream Wildcard mention should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
-            mention = "@**all**"
-            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_push_notification(
-                self.user_profile.id,
-                {
-                    "message_id": stream_mentioned_message_id,
-                    "trigger": NotificationTriggers.STREAM_WILDCARD_MENTION,
-                },
-            )
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_stream_wildcard_mention)
 
         # Group mention should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
+        def send_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
@@ -1758,6 +1758,9 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "mentioned_user_group_id": large_user_group.id,
                 },
             )
+
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_group_mention)
 
     @mock.patch("zerver.lib.push_notifications.logger.info")
     @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
