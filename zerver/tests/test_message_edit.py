@@ -4566,7 +4566,6 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_can_move_messages_between_streams(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_move_messages_between_streams()
 
         self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
