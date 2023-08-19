@@ -7000,7 +7000,7 @@ class EmailValidatorTestCase(ZulipTestCase):
 
         realm = inviter.realm
         do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
-        inviter.realm.refresh_from_db()
+
         error = validate_email_is_valid(
             "fred+5555@zulip.com",
             get_realm_email_validator(realm),

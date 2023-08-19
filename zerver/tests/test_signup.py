@@ -3984,7 +3984,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(get_default_language_for_new_user(req, realm), "de")
 
         do_set_realm_property(realm, "default_language", "hi", acting_user=None)
-        realm.refresh_from_db()
+
         req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
         self.assertEqual(get_default_language_for_new_user(req, realm), "de")
