@@ -326,7 +326,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
-        user.refresh_from_db()
+
+        # refresh user
+        user = self.example_user("hamlet")
 
         self.login_user(user)
         self.assert_num_bots_equal(0)
@@ -1127,7 +1129,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{bot_user.id}", bot_info)
         self.assert_json_success(result)
 
-        bot_user.refresh_from_db()
+        # refresh bot user for next check
+        bot_user = get_user(bot_email, bot_realm)
         self.assertEqual(bot_user.bot_owner, cordelia)
 
     def test_patch_bot_owner_with_private_streams(self) -> None:
