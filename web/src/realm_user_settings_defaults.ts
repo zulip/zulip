@@ -42,6 +42,8 @@ export type RealmDefaultSettings = {
     web_stream_unreads_count_display_policy: number;
     web_mark_read_on_scroll_policy: number;
     wildcard_mentions_notify: boolean;
+    automatically_follow_topics_policy: number;
+    automatically_unmute_topics_in_muted_streams_policy: number;
 };
 
 export let realm_user_settings_defaults: RealmDefaultSettings;
