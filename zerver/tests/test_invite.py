@@ -795,7 +795,6 @@ class InviteUserTest(InviteUserBase):
 
     def test_can_invite_others_to_realm(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_invite_others_to_realm()
 
         realm = get_realm("zulip")
