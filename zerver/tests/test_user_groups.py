@@ -427,7 +427,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_can_edit_user_groups(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_edit_user_groups()
 
         self.check_has_permission_policies("user_group_edit_policy", validation_func)

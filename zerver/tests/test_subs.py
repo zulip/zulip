@@ -4401,13 +4401,11 @@ class SubscriptionAPITest(ZulipTestCase):
         if invite_only:
 
             def validation_func(user_profile: UserProfile) -> bool:
-                user_profile.refresh_from_db()
                 return user_profile.can_create_private_streams()
 
         else:
 
             def validation_func(user_profile: UserProfile) -> bool:
-                user_profile.refresh_from_db()
                 return user_profile.can_create_public_streams()
 
         self.check_has_permission_policies(stream_policy, validation_func)
@@ -4420,7 +4418,6 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_can_create_web_public_streams(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_create_web_public_streams()
 
         self.check_has_permission_policies("create_web_public_stream_policy", validation_func)
@@ -4522,7 +4519,6 @@ class SubscriptionAPITest(ZulipTestCase):
         """
 
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_subscribe_other_users()
 
         self.check_has_permission_policies("invite_to_stream_policy", validation_func)
