@@ -159,6 +159,20 @@ export function set_up(settings_panel) {
         settings_object.realm_name_in_email_notifications_policy,
     );
 
+    const $automatically_follow_topics_policy_dropdown = $container.find(
+        ".setting_automatically_follow_topics_policy",
+    );
+    $automatically_follow_topics_policy_dropdown.val(
+        settings_object.automatically_follow_topics_policy,
+    );
+
+    const $automatically_unmute_topics_in_muted_streams_policy_dropdown = $container.find(
+        ".setting_automatically_unmute_topics_in_muted_streams_policy",
+    );
+    $automatically_unmute_topics_in_muted_streams_policy_dropdown.val(
+        settings_object.automatically_unmute_topics_in_muted_streams_policy,
+    );
+
     set_enable_digest_emails_visibility(settings_panel);
 
     if (for_realm_settings) {
@@ -276,7 +290,9 @@ export function update_page(settings_panel) {
                 break;
             }
             case "notification_sound":
-            case "realm_name_in_email_notifications_policy": {
+            case "realm_name_in_email_notifications_policy":
+            case "automatically_follow_topics_policy":
+            case "automatically_unmute_topics_in_muted_streams_policy": {
                 $container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
                 break;
             }

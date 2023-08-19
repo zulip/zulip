@@ -579,6 +579,12 @@ export const notification_settings_labels = {
     realm_name_in_email_notifications_policy: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
     }),
+    automatically_follow_topics_policy: $t({
+        defaultMessage: "Automatically follow topics",
+    }),
+    automatically_unmute_topics_in_muted_streams_policy: $t({
+        defaultMessage: "Automatically unmute topics in muted streams",
+    }),
 };
 
 export const realm_user_settings_defaults_labels = {
@@ -741,6 +747,8 @@ const other_notification_settings = [
     "email_notifications_batching_period_seconds",
     "realm_name_in_email_notifications_policy",
     "notification_sound",
+    "automatically_follow_topics_policy",
+    "automatically_unmute_topics_in_muted_streams_policy",
 ];
 
 export const all_notification_settings = [
@@ -920,5 +928,24 @@ export const user_topic_visibility_policy_values = {
     inherit: {
         code: 0,
         description: $t({defaultMessage: "Default for stream"}),
+    },
+};
+
+export const automatically_follow_or_unmute_topics_policy_values = {
+    participation: {
+        code: 1,
+        description: $t({defaultMessage: "Topics I participate in"}),
+    },
+    send: {
+        code: 2,
+        description: $t({defaultMessage: "Topics I send a message to"}),
+    },
+    initiation: {
+        code: 3,
+        description: $t({defaultMessage: "Topics I start"}),
+    },
+    never: {
+        code: 4,
+        description: $t({defaultMessage: "Never"}),
     },
 };
