@@ -467,6 +467,16 @@ class FencedBlockPreprocessor(Preprocessor):
                 use_pygments=self.codehilite_conf["use_pygments"][0],
                 lang=(lang or None),
                 noclasses=self.codehilite_conf["noclasses"][0],
+                # By default, the Pygments PHP lexers won't highlight
+                # code without a `<?php` marker at the start of the
+                # code block, which is undesired in the common case of
+                # pasting a snippet of PHP code rather than whole
+                # file. The `startinline` option overrides this
+                # behavior for PHP-descended languages and has no
+                # effect on other lexers.
+                #
+                # See https://pygments.org/docs/lexers/#lexers-for-php-and-related-languages
+                startinline=True,
             )
 
             code = highliter.hilite().rstrip("\n")
