@@ -8,6 +8,7 @@ import render_topic_list_item from "../templates/topic_list_item.hbs";
 import * as blueslip from "./blueslip";
 import * as components from "./components";
 import {$t} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as popover_menus from "./popover_menus";
 import * as scroll_util from "./scroll_util";
 import * as stream_topic_history from "./stream_topic_history";
@@ -31,8 +32,17 @@ let zoomed = false;
 let resolved_toggle;
 let topics_state = "all";
 
+function set_key_handlers(toggler) {
+    keydown_util.handle({
+        $elem: toggler.meta.$ind_tab,
+        handlers: {
+            Tab: toggler.maybe_go_right,
+        },
+    });
+}
+
 export function init_resolved_toggle() {
-    resolved_toggle = components.toggle({
+    const opts = {
         child_wants_focus: true,
         values: [
             {label: $t({defaultMessage: "All"}), key: "all"},
@@ -44,7 +54,9 @@ export function init_resolved_toggle() {
             topics_state = key;
             active_widgets.get(active_stream_id()).build();
         },
-    });
+    };
+    resolved_toggle = components.toggle(opts);
+    set_key_handlers(resolved_toggle);
     return resolved_toggle;
 }
 

@@ -137,6 +137,7 @@ export function toggle(opts: {
         // Skip disabled tabs and go to the next one.
         maybe_go_left,
         maybe_go_right,
+        meta,
 
         disable_tab(name: string) {
             const value = opts.values.find((o) => o.key === name);
