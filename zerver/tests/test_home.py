@@ -1120,7 +1120,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
         query_count = len(queries)
-        long_term_idle_user.refresh_from_db()
+        long_term_idle_user = self.refresh_user(long_term_idle_user)
         self.assertFalse(long_term_idle_user.long_term_idle)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
@@ -1152,7 +1152,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
         query_count = len(queries)
-        long_term_idle_user.refresh_from_db()
+        long_term_idle_user = self.refresh_user(long_term_idle_user)
         self.assertFalse(long_term_idle_user.long_term_idle)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)

@@ -1114,7 +1114,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         self.assertEqual(result.status_code, 200)
 
-        user_profile.refresh_from_db()
+        user_profile = self.refresh_user(user_profile)
         self.assertFalse(user_profile.enable_offline_email_notifications)
 
     def test_welcome_unsubscribe(self) -> None:

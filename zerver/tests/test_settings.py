@@ -58,7 +58,8 @@ class ChangeSettingsTest(ZulipTestCase):
         )
         self.assert_json_success(json_result)
 
-        user.refresh_from_db()
+        user = self.refresh_user(user)
+
         self.assertEqual(user.full_name, "Foo Bar")
         self.logout()
 
