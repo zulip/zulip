@@ -105,6 +105,7 @@ from zerver.models import (
     get_default_stream_groups,
     get_realm,
     get_stream,
+    get_stream_by_id_in_realm,
     get_user,
     get_user_profile_by_id_in_realm,
     validate_attachment_request,
@@ -1078,6 +1079,9 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.make_stream("stream", realm=realm)
         stream_id = self.subscribe(user_profile, "stream").id
 
+        def fresh_stream() -> Stream:
+            return get_stream_by_id_in_realm(stream_id, realm)
+
         params = {
             "is_default_stream": orjson.dumps(True).decode(),
         }
@@ -1095,7 +1099,9 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "A default stream cannot be private.")
-        stream.refresh_from_db()
+
+        stream = fresh_stream()
+
         self.assertFalse(stream.invite_only)
 
         params = {
@@ -1104,7 +1110,9 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_success(result)
-        stream.refresh_from_db()
+
+        stream = fresh_stream()
+
         self.assertTrue(stream.invite_only)
         self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
 
@@ -1117,7 +1125,9 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/streams/{stream_2_id}", bad_params)
         self.assert_json_error(result, "A default stream cannot be private.")
-        stream.refresh_from_db()
+
+        stream = fresh_stream()
+
         self.assertFalse(stream_2.invite_only)
         self.assertFalse(stream_2_id in get_default_stream_ids_for_realm(realm.id))
 
@@ -1137,7 +1147,9 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/streams/{private_stream_id}", params)
         self.assert_json_success(result)
-        private_stream.refresh_from_db()
+
+        private_stream = get_stream_by_id_in_realm(private_stream_id, realm)
+
         self.assertFalse(private_stream.invite_only)
         self.assertTrue(private_stream_id in get_default_stream_ids_for_realm(realm.id))
 
