@@ -1887,23 +1887,32 @@ Output:
             UserGroupMembership.objects.filter(user_profile=user, user_group=user_group).exists()
         )
 
-    @contextmanager
-    def soft_deactivate_and_check_long_term_idle(
-        self, user: UserProfile, expected: bool
-    ) -> Iterator[None]:
-        """
-        Ensure that the user is soft deactivated (long term idle), and check if the user
-        has been reactivated when exiting the context with an assertion
-        """
+    def _assert_long_term_idle(self, user: UserProfile) -> None:
         if not user.long_term_idle:
-            do_soft_deactivate_users([user])
-            self.assertTrue(user.long_term_idle)
-        try:
-            yield
-        finally:
-            # Prevent from using the old user object
-            user.refresh_from_db()
-            self.assertEqual(user.long_term_idle, expected)
+            raise AssertionError(
+                """
+                We expect you to explicitly call self.soft_deactivate_user
+                if your user is not already soft-deactivated.
+            """
+            )
+
+    def expect_soft_reactivation(self, user: UserProfile, action: Callable[[], None]) -> None:
+        self._assert_long_term_idle(user)
+        action()
+        # Prevent from using the old user object
+        user.refresh_from_db()
+        self.assertEqual(user.long_term_idle, False)
+
+    def expect_to_stay_long_term_idle(self, user: UserProfile, action: Callable[[], None]) -> None:
+        self._assert_long_term_idle(user)
+        action()
+        # Prevent from using the old user object
+        user.refresh_from_db()
+        self.assertEqual(user.long_term_idle, True)
+
+    def soft_deactivate_user(self, user: UserProfile) -> None:
+        do_soft_deactivate_users([user])
+        assert user.long_term_idle
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):

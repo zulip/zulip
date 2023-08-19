@@ -1635,12 +1635,17 @@ class TestMessageNotificationEmails(ZulipTestCase):
             get_realm("zulip"), "large_user_group", [hamlet, othello, cordelia], acting_user=None
         )
 
+        def reset_hamlet_as_soft_deactivated_user() -> None:
+            nonlocal hamlet
+            hamlet = self.example_user("hamlet")
+            self.soft_deactivate_user(hamlet)
+
         # Do note that the event dicts for the missed messages are constructed by hand
         # The part of testing the consumption of missed messages by the worker is left to
         # test_queue_worker.test_missed_message_worker
 
         # Personal mention in a stream message should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+        def send_personal_mention() -> None:
             mention = f"@**{hamlet.full_name}**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1652,8 +1657,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 },
             )
 
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_personal_mention)
+
         # Direct message should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+        def send_direct_message() -> None:
             # Soft reactivate the user by sending a personal message
             personal_message_id = self.send_personal_message(othello, hamlet, "Message")
             handle_missedmessage_emails(
@@ -1664,6 +1672,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
                     )
                 },
             )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_direct_message)
 
         # Hamlet FOLLOWS the topic.
         # 'wildcard_mentions_notify' is disabled to verify the corner case when only
@@ -1679,7 +1690,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         # Topic wildcard mention in followed topic should soft reactivate the user
         # hamlet should be a topic participant
         self.send_stream_message(hamlet, "Denmark", "test message")
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+
+        def send_topic_wildcard_mention() -> None:
             mention = "@**topic**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1691,8 +1703,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 },
             )
 
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_topic_wildcard_mention)
+
         # Stream wildcard mention in followed topic should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
+        def send_stream_wildcard_mention() -> None:
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1704,6 +1719,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 },
             )
 
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_stream_wildcard_mention)
+
         # Reset
         do_set_user_topic_visibility_policy(
             hamlet,
@@ -1714,33 +1732,15 @@ class TestMessageNotificationEmails(ZulipTestCase):
         do_change_user_setting(hamlet, "wildcard_mentions_notify", True, acting_user=None)
 
         # Topic Wildcard mention should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
-            mention = "@**topic**"
-            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
-                hamlet.id,
-                {
-                    stream_mentioned_message_id: MissedMessageData(
-                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION
-                    ),
-                },
-            )
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_topic_wildcard_mention)
 
         # Stream Wildcard mention should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
-            mention = "@**all**"
-            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
-                hamlet.id,
-                {
-                    stream_mentioned_message_id: MissedMessageData(
-                        trigger=NotificationTriggers.STREAM_WILDCARD_MENTION
-                    ),
-                },
-            )
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_stream_wildcard_mention)
 
         # Group mention should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
+        def send_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1752,6 +1752,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
                     ),
                 },
             )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_group_mention)
 
     def test_followed_topic_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
