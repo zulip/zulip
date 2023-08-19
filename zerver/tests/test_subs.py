@@ -4397,26 +4397,19 @@ class SubscriptionAPITest(ZulipTestCase):
             "create_web_public_stream_policy", invite_only=False, is_web_public=True
         )
 
-    def _test_can_create_streams(self, stream_policy: str, invite_only: bool) -> None:
-        if invite_only:
+    def test_private_stream_policies(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            return user_profile.can_create_private_streams()
 
-            def validation_func(user_profile: UserProfile) -> bool:
-                return user_profile.can_create_private_streams()
+        self.check_has_permission_policies("create_private_stream_policy", validation_func)
 
-        else:
+    def test_public_stream_policies(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            return user_profile.can_create_public_streams()
 
-            def validation_func(user_profile: UserProfile) -> bool:
-                return user_profile.can_create_public_streams()
+        self.check_has_permission_policies("create_public_stream_policy", validation_func)
 
-        self.check_has_permission_policies(stream_policy, validation_func)
-
-    def test_can_create_private_streams(self) -> None:
-        self._test_can_create_streams("create_private_stream_policy", invite_only=True)
-
-    def test_can_create_public_streams(self) -> None:
-        self._test_can_create_streams("create_public_stream_policy", invite_only=False)
-
-    def test_can_create_web_public_streams(self) -> None:
+    def test_web_public_stream_policies(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
             return user_profile.can_create_web_public_streams()
 
