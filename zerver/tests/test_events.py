@@ -257,6 +257,15 @@ class BaseAction(ZulipTestCase):
         super().setUp()
         self.user_profile = self.example_user("hamlet")
 
+    def refresh_user_profile(self) -> None:
+        # Call this to make sure you don't have a stale UserProfile
+        # object after doing some kind of setup on the user before
+        # some action that acts on self.user_profile.
+        #
+        # Most of our callers are probably calling this for legacy
+        # reasons that no longer apply, but it's cheap enough.
+        self.user_profile = self.example_user("hamlet")
+
     def verify_action(
         self,
         action: Callable[[], object],
@@ -1658,10 +1667,9 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
-        # Important: We need to refresh from the database here so that
-        # we don't have a stale UserProfile object with an old value
-        # for email being passed into this next function.
-        self.user_profile.refresh_from_db()
+
+        self.refresh_user_profile()
+
         action = lambda: do_change_user_delivery_email(self.user_profile, "newhamlet@zulip.com")
         events = self.verify_action(action, num_events=2, client_gravatar=False)
 
@@ -1677,10 +1685,9 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
-        # Important: We need to refresh from the database here so that
-        # we don't have a stale UserProfile object with an old value
-        # for email being passed into this next function.
-        self.user_profile.refresh_from_db()
+
+        self.refresh_user_profile()
+
         action = lambda: do_change_user_delivery_email(self.user_profile, "newhamlet@zulip.com")
         events = self.verify_action(action, num_events=3, client_gravatar=False)
 
@@ -1855,12 +1862,9 @@ class NormalActionsTest(BaseAction):
     def test_change_is_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        # Important: We need to refresh from the database here so that
-        # we don't have a stale UserProfile object with an old value
-        # for email being passed into this next function.
-        self.user_profile.refresh_from_db()
-
+        self.refresh_user_profile()
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+
         for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role, acting_user=None),
@@ -1880,10 +1884,7 @@ class NormalActionsTest(BaseAction):
     def test_change_is_billing_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        # Important: We need to refresh from the database here so that
-        # we don't have a stale UserProfile object with an old value
-        # for email being passed into this next function.
-        self.user_profile.refresh_from_db()
+        self.refresh_user_profile()
 
         events = self.verify_action(lambda: do_make_user_billing_admin(self.user_profile))
         check_realm_user_update("events[0]", events[0], "is_billing_admin")
@@ -1892,10 +1893,7 @@ class NormalActionsTest(BaseAction):
     def test_change_is_owner(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        # Important: We need to refresh from the database here so that
-        # we don't have a stale UserProfile object with an old value
-        # for email being passed into this next function.
-        self.user_profile.refresh_from_db()
+        self.refresh_user_profile()
 
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
@@ -1917,10 +1915,7 @@ class NormalActionsTest(BaseAction):
     def test_change_is_moderator(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        # Important: We need to refresh from the database here so that
-        # we don't have a stale UserProfile object with an old value
-        # for email being passed into this next function.
-        self.user_profile.refresh_from_db()
+        self.refresh_user_profile()
 
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_MODERATOR, UserProfile.ROLE_MEMBER]:
@@ -1945,10 +1940,7 @@ class NormalActionsTest(BaseAction):
 
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        # Important: We need to refresh from the database here so that
-        # we don't have a stale UserProfile object with an old value
-        # for email being passed into this next function.
-        self.user_profile.refresh_from_db()
+        self.refresh_user_profile()
 
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER]:
