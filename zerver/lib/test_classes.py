@@ -178,7 +178,9 @@ class ZulipTestCaseMixin(SimpleTestCase):
             self.mock_initialize.stop()
 
     def get_user_from_email(self, email: str, realm: Realm) -> UserProfile:
-        return get_user(email, realm)
+        user = get_user(email, realm)
+        self._prevent_refresh_from_db_for_user(user)
+        return user
 
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
         if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
@@ -577,6 +579,22 @@ Output:
         )
         return result
 
+    def _prevent_refresh_from_db_for_user(self, user: UserProfile) -> None:
+        def fail() -> None:  # nocoverage
+            raise Exception(
+                """
+                Please do not call refresh_from_db on UserProfile
+                objects. Instead explicitly re-fetch the user object
+                from the database using a Zulip test helper such
+                as refresh_user or example_user.
+                """
+            )
+
+        # We monkey-patch refresh_from_db here. We use setattr
+        # to get around mypy and then disable the ruff warning.
+        # ruff: noqa: B010
+        setattr(user, "refresh_from_db", fail)
+
     example_user_map = dict(
         hamlet="hamlet@zulip.com",
         cordelia="cordelia@zulip.com",
@@ -631,7 +649,9 @@ Output:
 
     def example_user(self, name: str) -> UserProfile:
         email = self.example_user_map[name]
-        return get_user_by_delivery_email(email, get_realm("zulip"))
+        user = get_user_by_delivery_email(email, get_realm("zulip"))
+        self._prevent_refresh_from_db_for_user(user)
+        return user
 
     def mit_user(self, name: str) -> UserProfile:
         email = self.mit_user_map[name]
