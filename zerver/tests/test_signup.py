@@ -754,13 +754,17 @@ class PasswordResetTest(ZulipTestCase):
     def test_password_reset_for_soft_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        with self.soft_deactivate_and_check_long_term_idle(user_profile, False):
+
+        def reset_password() -> None:
             # start the password reset process by supplying an email address
             result = self.client_post("/accounts/password/reset/", {"email": email})
 
             # check the redirect link telling you to check mail for password reset link
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result["Location"].endswith("/accounts/password/reset/done/"))
+
+        self.soft_deactivate_user(user_profile)
+        self.expect_soft_reactivation(user_profile, reset_password)
 
 
 class LoginTest(ZulipTestCase):
