@@ -1171,9 +1171,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # The setting is toggled off, and scheduled jobs have been removed.
         self.assertEqual(result.status_code, 200)
-        # Circumvent user_profile caching.
 
-        user_profile.refresh_from_db()
+        user_profile = self.example_user("hamlet")
         self.assertFalse(user_profile.enable_digest_emails)
         self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
 
@@ -1192,7 +1191,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         self.assertEqual(result.status_code, 200)
 
-        user_profile.refresh_from_db()
+        user_profile = self.example_user("hamlet")
         self.assertFalse(user_profile.enable_login_emails)
 
     def test_marketing_unsubscribe(self) -> None:
@@ -1208,8 +1207,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
         self.assertEqual(result.status_code, 200)
 
-        # Circumvent user_profile caching.
-        user_profile.refresh_from_db()
+        user_profile = self.example_user("hamlet")
         self.assertFalse(user_profile.enable_marketing_emails)
 
     def test_marketing_unsubscribe_post(self) -> None:
@@ -1229,8 +1227,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 200)
 
-        # Circumvent user_profile caching.
-        user_profile.refresh_from_db()
+        user_profile = self.example_user("hamlet")
         self.assertFalse(user_profile.enable_marketing_emails)
 
 
@@ -2593,7 +2590,8 @@ class UserSignUpTest(ZulipTestCase):
         self.login("hamlet")
         with get_test_image_file("img.png") as image_file:
             self.client_post("/json/users/me/avatar", {"file": image_file})
-        hamlet_in_zulip.refresh_from_db()
+
+        hamlet_in_zulip = self.example_user("hamlet")
         hamlet_in_zulip.left_side_userlist = True
         hamlet_in_zulip.default_language = "de"
         hamlet_in_zulip.emojiset = "twitter"
