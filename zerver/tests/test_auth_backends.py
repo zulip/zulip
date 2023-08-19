@@ -2312,7 +2312,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             '<samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success" />', saml_response
         )
 
-        hamlet.refresh_from_db()
+        hamlet = self.example_user("hamlet")
         # Ensure that the user's api_key was rotated:
         self.assertNotEqual(hamlet.api_key, old_api_key)
 
@@ -2332,7 +2332,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.make_idp_initiated_logout_request(cordelia.delivery_email)
         self.assert_logged_in_user_id(hamlet.id)
 
-        cordelia.refresh_from_db()
+        cordelia = self.example_user("cordelia")
         # Cordelia's api_key should have been rotated:
         self.assertNotEqual(cordelia.api_key, cordelia_old_api_key)
 
@@ -6387,12 +6387,11 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
-        hamlet.refresh_from_db()
 
         self.change_ldap_user_attr("hamlet", "cn", "New Name")
         self.perform_ldap_sync(hamlet)
 
-        hamlet.refresh_from_db()
+        hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.full_name, "New Name")
 
     def test_update_split_full_name(self) -> None:
@@ -6458,7 +6457,8 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "deactivated": "someCustomAttr"}
         ), self.assertLogs("zulip.ldap") as info_logs:
             self.perform_ldap_sync(self.example_user("hamlet"))
-        hamlet.refresh_from_db()
+
+        hamlet = self.example_user("hamlet")
         self.assertTrue(hamlet.is_active)
         self.assertEqual(
             info_logs.output,
@@ -6472,7 +6472,8 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "deactivated": "someCustomAttr"}
         ), self.assertLogs("django_auth_ldap") as ldap_logs, self.assertRaises(AssertionError):
             self.perform_ldap_sync(self.example_user("hamlet"))
-        hamlet.refresh_from_db()
+
+        hamlet = self.example_user("hamlet")
         self.assertTrue(hamlet.is_active)
         self.assertEqual(
             ldap_logs.output,
