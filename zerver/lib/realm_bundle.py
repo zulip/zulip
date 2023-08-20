@@ -79,6 +79,13 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     def realm_password_auth_enabled() -> bool:
         return password_auth_enabled(realm, realm_authentication_methods_dict)
 
+    def realm_signup_notifications_stream_id() -> int:
+        signup_notifications_stream = realm.get_signup_notifications_stream()
+        if signup_notifications_stream:
+            return signup_notifications_stream.id
+        else:
+            return -1
+
     state["development_environment"] = settings.DEVELOPMENT
     state["event_queue_longpoll_timeout_seconds"] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
     state["giphy_rating_options"] = realm.get_giphy_rating_options()
@@ -112,6 +119,7 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["realm_password_auth_enabled"] = realm_password_auth_enabled()
     state["realm_plan_type"] = realm.plan_type
     state["realm_push_notifications_enabled"] = push_notifications_enabled()
+    state["realm_signup_notifications_stream_id"] = realm_signup_notifications_stream_id()
     state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
     state["realm_uri"] = realm.uri
     state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
@@ -127,12 +135,6 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
     state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
     state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
-
-    signup_notifications_stream = realm.get_signup_notifications_stream()
-    if signup_notifications_stream:
-        state["realm_signup_notifications_stream_id"] = signup_notifications_stream.id
-    else:
-        state["realm_signup_notifications_stream_id"] = -1
 
     if realm.demo_organization_scheduled_deletion_date is not None:
         state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
