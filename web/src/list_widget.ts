@@ -189,8 +189,16 @@ function get_column_count_for_table($table: JQuery): number {
     return column_count;
 }
 
-export function render_empty_list_message_if_needed($container: JQuery): void {
-    const empty_list_message = $container.data("empty");
+export function render_empty_list_message_if_needed(
+    $container: JQuery,
+    filter_value: string,
+): void {
+    let empty_list_message = $container.data("empty");
+
+    const empty_search_results_message = $container.data("search-results-empty");
+    if (filter_value && empty_search_results_message) {
+        empty_list_message = empty_search_results_message;
+    }
 
     if (!empty_list_message || $container.children().length) {
         return;
@@ -290,7 +298,7 @@ export function create<Key = unknown, Item = Key>(
 
             // Stop once the offset reaches the length of the original list.
             if (meta.offset >= meta.filtered_list.length) {
-                render_empty_list_message_if_needed($container);
+                render_empty_list_message_if_needed($container, meta.filter_value);
                 return;
             }
 
