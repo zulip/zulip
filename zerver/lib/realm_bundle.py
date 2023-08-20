@@ -62,6 +62,12 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     # future choose to move this logic to the frontend.
     state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
 
+    def realm_digest_emails_enabled() -> bool:
+        return realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
+
+    def realm_password_auth_enabled() -> bool:
+        return password_auth_enabled(realm, realm_authentication_methods_dict)
+
     state["development_environment"] = settings.DEVELOPMENT
     state["event_queue_longpoll_timeout_seconds"] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
     state["giphy_rating_options"] = realm.get_giphy_rating_options()
@@ -80,9 +86,7 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["realm_bot_domain"] = realm.get_bot_domain()
     state["realm_date_created"] = datetime_to_timestamp(realm.date_created)
     state["realm_default_external_accounts"] = get_default_external_accounts()
-    state["realm_digest_emails_enabled"] = (
-        realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
-    )
+    state["realm_digest_emails_enabled"] = realm_digest_emails_enabled()
     state["realm_email_auth_enabled"] = email_auth_enabled(realm, realm_authentication_methods_dict)
     state["realm_icon_source"] = realm.icon_source
     state["realm_icon_url"] = realm_icon_url(realm)
@@ -92,9 +96,7 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["realm_night_logo_source"] = get_realm_logo_source(realm, night=True)
     state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
     state["realm_org_type"] = realm.org_type
-    state["realm_password_auth_enabled"] = password_auth_enabled(
-        realm, realm_authentication_methods_dict
-    )
+    state["realm_password_auth_enabled"] = realm_password_auth_enabled()
     state["realm_plan_type"] = realm.plan_type
     state["realm_push_notifications_enabled"] = push_notifications_enabled()
     state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
