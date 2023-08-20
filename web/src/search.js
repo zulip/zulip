@@ -12,6 +12,10 @@ import * as search_suggestion from "./search_suggestion";
 export let is_using_input_method = false;
 
 export function narrow_or_search_for_term(search_string, {on_narrow_search}) {
+    if (search_string === "") {
+        exit_search({keep_search_narrow_open: true});
+        return "";
+    }
     const $search_query_box = $("#search_query");
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -72,7 +76,7 @@ export function initialize({on_narrow_search}) {
 
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
-        on_escape: exit_search,
+        on_escape: () => exit_search({keep_search_narrow_open: false}),
         tabIsEnter: false,
         openInputFieldOnKeyUp() {
             if ($(".navbar-search.expanded").length === 0) {
@@ -150,7 +154,7 @@ export function initialize({on_narrow_search}) {
     // register searchbar click handler
     $("#search_exit").on("click", (e) => {
         popovers.hide_all();
-        exit_search();
+        exit_search({keep_search_narrow_open: false});
         e.preventDefault();
         e.stopPropagation();
     });
@@ -167,7 +171,7 @@ export function initialize({on_narrow_search}) {
     $("#search_exit").on("keydown", (e) => {
         if (e.key === "tab") {
             popovers.hide_all();
-            exit_search();
+            exit_search({keep_search_narrow_open: false});
             e.preventDefault();
             e.stopPropagation();
         }
@@ -209,13 +213,16 @@ function reset_searchbox_text() {
     $("#search_query").val(get_initial_search_string());
 }
 
-function exit_search() {
+function exit_search(opts) {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
         close_search_bar_and_open_narrow_description();
+    } else if (opts.keep_search_narrow_open) {
+        // If the user is in a search narrow and we don't want to redirect,
+        // we just keep the search bar open and don't do anything.
+        return;
     } else {
-        // for "searching narrows", we redirect
         window.location.href = filter.generate_redirect_url();
     }
     $("#search_query").trigger("blur");
