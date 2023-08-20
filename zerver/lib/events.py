@@ -10,14 +10,11 @@ from django.utils.translation import gettext as _
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
 from zerver.actions.users import get_owned_bot_dicts
-from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
-from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
@@ -35,16 +32,13 @@ from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import check_narrow_for_events, read_stop_words
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
-from zerver.lib.push_notifications import push_notifications_enabled
-from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
+from zerver.lib.realm_bundle import get_realm_bundle
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.streams import do_get_streams, get_web_public_streams
 from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_public_subs
-from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
@@ -52,14 +46,12 @@ from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
-    MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
     Draft,
     Message,
     Realm,
     RealmUserDefault,
-    Stream,
     UserMessage,
     UserProfile,
     UserStatus,
@@ -72,21 +64,12 @@ from zerver.models import (
     linkifiers_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
-from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
 class RestartEventError(Exception):
     """
     Special error for handling restart events in apply_events.
     """
-
-
-def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
-    state["realm_logo_url"] = get_realm_logo_url(realm, night=False)
-    state["realm_logo_source"] = get_realm_logo_source(realm, night=False)
-    state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
-    state["realm_night_logo_source"] = get_realm_logo_source(realm, night=True)
-    state["max_logo_file_size_mib"] = settings.MAX_LOGO_FILE_SIZE_MIB
 
 
 def always_want(msg_type: str) -> bool:
@@ -231,139 +214,8 @@ def fetch_initial_state_data(
         state["server_timestamp"] = time.time()
 
     if want("realm"):
-        # The realm bundle includes both realm properties and server
-        # properties, since it's rare that one would want one and not
-        # the other. We expect most clients to want it.
-        #
-        # A note on naming: For some settings, one could imagine
-        # having a server-level value and a realm-level value (with
-        # the server value serving as the default for the realm
-        # value). For such settings, we prefer the following naming
-        # scheme:
-        #
-        # * realm_inline_image_preview (current realm setting)
-        # * server_inline_image_preview (server-level default)
-        #
-        # In situations where for backwards-compatibility reasons we
-        # have an unadorned name, we should arrange that clients using
-        # that unadorned name work correctly (i.e. that should be the
-        # currently active setting, not a server-level default).
-        #
-        # Other settings, which are just server-level settings or data
-        # about the version of Zulip, can be named without prefixes,
-        # e.g. giphy_rating_options or development_environment.
-        for property_name in Realm.property_types:
-            state["realm_" + property_name] = getattr(realm, property_name)
-
-        # Most state is handled via the property_types framework;
-        # these manual entries are for those realm settings that don't
-        # fit into that framework.
-        realm_authentication_methods_dict = realm.authentication_methods_dict()
-        state["realm_authentication_methods"] = realm_authentication_methods_dict
-
-        # We pretend these features are disabled because anonymous
-        # users can't access them.  In the future, we may want to move
-        # this logic to the frontends, so that we can correctly
-        # display what these fields are in the settings.
-        state["realm_allow_message_editing"] = (
-            False if user_profile is None else realm.allow_message_editing
-        )
-        state["realm_edit_topic_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
-        )
-        state["realm_delete_own_message_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
-        )
-
-        # This setting determines whether to send presence and also
-        # whether to display of users list in the right sidebar; we
-        # want both behaviors for logged-out users.  We may in the
-        # future choose to move this logic to the frontend.
-        state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
-
-        # Important: Encode units in the client-facing API name.
-        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
-        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
-        state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
-        state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
-
-        state["realm_icon_url"] = realm_icon_url(realm)
-        state["realm_icon_source"] = realm.icon_source
-        add_realm_logo_fields(state, realm)
-
-        state["realm_uri"] = realm.uri
-        state["realm_bot_domain"] = realm.get_bot_domain()
-        state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
-        state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
-
-        state["realm_digest_emails_enabled"] = (
-            realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
-        )
-        state["realm_email_auth_enabled"] = email_auth_enabled(
-            realm, realm_authentication_methods_dict
-        )
-        state["realm_password_auth_enabled"] = password_auth_enabled(
-            realm, realm_authentication_methods_dict
-        )
-
-        state["server_generation"] = settings.SERVER_GENERATION
-        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
-        state["development_environment"] = settings.DEVELOPMENT
-        state["realm_org_type"] = realm.org_type
-        state["realm_plan_type"] = realm.plan_type
-        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
-        state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
-
-        state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
-        state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
-        state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
-        state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
-        state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
-        state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
-        state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
-        state["giphy_rating_options"] = realm.get_giphy_rating_options()
-
-        state["server_emoji_data_url"] = emoji.data_url()
-
-        state["server_needs_upgrade"] = is_outdated_server(user_profile)
-        state[
-            "event_queue_longpoll_timeout_seconds"
-        ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
-
-        # TODO: Should these have the realm prefix replaced with server_?
-        state["realm_push_notifications_enabled"] = push_notifications_enabled()
-        state["realm_default_external_accounts"] = get_default_external_accounts()
-
-        if settings.JITSI_SERVER_URL is not None:
-            state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
-        else:  # nocoverage
-            state["jitsi_server_url"] = None
-
-        if realm.notifications_stream and not realm.notifications_stream.deactivated:
-            notifications_stream = realm.notifications_stream
-            state["realm_notifications_stream_id"] = notifications_stream.id
-        else:
-            state["realm_notifications_stream_id"] = -1
-
-        signup_notifications_stream = realm.get_signup_notifications_stream()
-        if signup_notifications_stream:
-            state["realm_signup_notifications_stream_id"] = signup_notifications_stream.id
-        else:
-            state["realm_signup_notifications_stream_id"] = -1
-
-        state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
-        state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
-        state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
-        state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
-        if realm.demo_organization_scheduled_deletion_date is not None:
-            state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
-                realm.demo_organization_scheduled_deletion_date
-            )
-        state["realm_date_created"] = datetime_to_timestamp(realm.date_created)
-
-        # Presence system parameters for client behavior.
-        state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
-        state["server_presence_offline_threshold_seconds"] = settings.OFFLINE_THRESHOLD_SECS
+        realm_bundle = get_realm_bundle(user_profile, realm)
+        state.update(realm_bundle)
 
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
