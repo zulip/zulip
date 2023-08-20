@@ -100,6 +100,7 @@ proxy_port = base_port
 django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
+tornado2_port = 8888
 
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -144,6 +145,16 @@ def server_processes() -> List[List[str]]:
             "runtornado",
             *manage_args,
             f"127.0.0.1:{tornado_port}",
+        ],
+        [
+            "env",
+            "PYTHONUNBUFFERED=1",
+            "python3",
+            *tornado_autoreload,
+            "./manage.py",
+            "runtornado",
+            *manage_args,
+            f"127.0.0.1:{tornado2_port}",
         ],
     ]
 
@@ -326,6 +337,7 @@ def print_listeners() -> None:
     external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
     print(f"\nStarting Zulip on:\n\n\t{CYAN}http://{external_host}/{ENDC}\n\nInternal ports:")
     ports = [
+        (tornado2_port, "EXERIMENTAL second Tornado"),
         (proxy_port, "Development server proxy (connect here)"),
         (django_port, "Django"),
         (tornado_port, "Tornado"),
