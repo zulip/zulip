@@ -136,6 +136,7 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
     state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
 
+    # For whatever reason this is the only field that is optional in the realm bundle.
     if realm.demo_organization_scheduled_deletion_date is not None:
         state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
             realm.demo_organization_scheduled_deletion_date
