@@ -182,6 +182,10 @@ def send_event(
             user_id = user if isinstance(user, int) else user["id"]
             port_user_map[get_user_id_tornado_port(realm_ports, user_id)].append(user)
 
+    # EXPERIMENT!!!!
+    if event["type"] == "presence":
+        port_user_map = {8888: list(users)}
+
     for port, port_users in port_user_map.items():
         print()
         print("GOT EVENT!!!", port, event, notify_tornado_queue_name(port))
