@@ -75,7 +75,7 @@ export function searching() {
 }
 
 export function render_empty_user_list_message_if_needed($container) {
-    const empty_list_message = $container.data("empty");
+    const empty_list_message = $container.data("search-results-empty");
 
     if (!empty_list_message || $container.children().length) {
         return;
