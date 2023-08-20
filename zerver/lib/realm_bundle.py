@@ -56,12 +56,6 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
         Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
     )
 
-    # This setting determines whether to send presence and also
-    # whether to display of users list in the right sidebar; we
-    # want both behaviors for logged-out users.  We may in the
-    # future choose to move this logic to the frontend.
-    state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
-
     def jitsi_server_url() -> Optional[str]:
         if settings.JITSI_SERVER_URL is None:  # nocoverage
             return None
@@ -78,6 +72,16 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
 
     def realm_password_auth_enabled() -> bool:
         return password_auth_enabled(realm, realm_authentication_methods_dict)
+
+    def realm_presence_disabled() -> bool:
+        if user_profile is None:
+            # Anonymous users should have presence disabled, and,
+            # for now, we potentially lie about their realm setting, since
+            # it's not super important to them until they either sign
+            # up or log in.
+            return True
+        else:
+            return realm.presence_disabled
 
     def realm_signup_notifications_stream_id() -> int:
         signup_notifications_stream = realm.get_signup_notifications_stream()
@@ -118,6 +122,7 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["realm_org_type"] = realm.org_type
     state["realm_password_auth_enabled"] = realm_password_auth_enabled()
     state["realm_plan_type"] = realm.plan_type
+    state["realm_presence_disabled"] = realm_presence_disabled()
     state["realm_push_notifications_enabled"] = push_notifications_enabled()
     state["realm_signup_notifications_stream_id"] = realm_signup_notifications_stream_id()
     state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
