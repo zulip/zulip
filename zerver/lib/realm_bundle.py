@@ -37,15 +37,22 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     # Other settings, which are just server-level settings or data
     # about the version of Zulip, can be named without prefixes,
     # e.g. giphy_rating_options or development_environment.
+    #
+    # ANONYMOUS USERS:
+    #
+    #    For anonymous users (i.e. `user_profile is None`), we tend
+    #    to ignore the realm settings at times, and instead we pick
+    #    the most restrictive settings possible.  Examples:
+    #
+    #       realm_allow_message_editing -> False
+    #       realm_delete_own_message_policy -> POLICY_ADMINS_ONLY
+    #       realm_edit_topic_policy -> POLICY_ADMINS_ONLY
+
     for property_name in Realm.property_types:
         state["realm_" + property_name] = getattr(realm, property_name)
 
     realm_authentication_methods_dict = realm.authentication_methods_dict()
 
-    # We pretend these features are disabled because anonymous
-    # users can't access them.  In the future, we may want to move
-    # this logic to the frontends, so that we can correctly
-    # display what these fields are in the settings.
     state["realm_allow_message_editing"] = (
         False if user_profile is None else realm.allow_message_editing
     )
