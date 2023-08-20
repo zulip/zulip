@@ -162,6 +162,7 @@ def do_update_user_presence(
     if len(update_fields) > 0:
         presence.save(update_fields=update_fields)
 
+    force_send_update = True
     if force_send_update or (
         not user_profile.realm.presence_disabled and (created or became_online)
     ):

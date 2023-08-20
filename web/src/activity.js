@@ -243,7 +243,7 @@ export function initialize() {
     }
 
     /* Time between keep-alive pings */
-    const active_ping_interval_ms = page_params.server_presence_ping_interval_seconds * 1000;
+    const active_ping_interval_ms = 4000;
     util.call_function_periodically(get_full_presence_list_update, active_ping_interval_ms);
 
     // Let the server know we're here, but pass "false" for
