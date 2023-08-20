@@ -51,7 +51,10 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     for property_name in Realm.property_types:
         state["realm_" + property_name] = getattr(realm, property_name)
 
-    realm_authentication_methods_dict = realm.authentication_methods_dict()
+    # Compute this up front, since the implementation is fairly expensive.
+    # Among other things it traverses RealmAuthenticationMethod rows
+    # from the database.
+    realm_authentication_methods_dict: Dict[str, bool] = realm.authentication_methods_dict()
 
     state["realm_allow_message_editing"] = (
         False if user_profile is None else realm.allow_message_editing
