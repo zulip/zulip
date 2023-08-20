@@ -39,7 +39,7 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
         if name == "generated/emoji/emoji_api.json":
             # Unlike most .json files, we do want to hash this file;
             # its hashed URL is returned as part of the API.  See
-            # data_url() in zerver/lib/emoji.py.
+            # server_emoji_data_url() in zerver/lib/emoji.py.
             return super().hashed_name(name, content, filename)
         if ext in [".png", ".gif", ".jpg", ".svg"]:
             # Similarly, don't hash-rename image files; we only serve

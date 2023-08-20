@@ -44,7 +44,7 @@ EMOTICON_RE = (
 )
 
 
-def data_url() -> str:
+def server_emoji_data_url() -> str:
     # This bakes a hash into the URL, which looks something like
     # static/webpack-bundles/files/64.0cdafdf0b6596657a9be.png
     # This is how Django deals with serving static files in a cacheable way.

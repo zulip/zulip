@@ -2,8 +2,8 @@ from typing import Dict, Optional
 
 from django.conf import settings
 
-from zerver.lib import emoji
 from zerver.lib.compatibility import is_outdated_server
+from zerver.lib.emoji import server_emoji_data_url
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
@@ -100,7 +100,7 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
     state["realm_uri"] = realm.uri
     state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
-    state["server_emoji_data_url"] = emoji.data_url()
+    state["server_emoji_data_url"] = server_emoji_data_url()
     state["server_generation"] = settings.SERVER_GENERATION
     state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
     state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
