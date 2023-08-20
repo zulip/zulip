@@ -26,6 +26,7 @@ let get_events_failures = 0;
 const get_events_params = {};
 
 function get_events_success(events) {
+    console.log("got events");
     let messages = [];
     const update_message_events = [];
     const post_message_events = [];
@@ -36,6 +37,7 @@ function get_events_success(events) {
     };
 
     for (const event of events) {
+        console.log("event data", event);
         try {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id, event.id);
         } catch (error) {
