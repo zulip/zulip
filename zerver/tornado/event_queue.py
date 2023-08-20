@@ -572,11 +572,6 @@ def gc_event_queues(port: int) -> None:
 
 
 def persistent_queue_filename(port: int, last: bool = False) -> str:
-    if settings.TORNADO_PROCESSES == 1:
-        # Use non-port-aware, legacy version.
-        if last:
-            return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ("",) + ".last"
-        return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ("",)
     if last:
         return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ("." + str(port) + ".last",)
     return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ("." + str(port),)
