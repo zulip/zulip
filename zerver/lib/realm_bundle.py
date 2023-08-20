@@ -62,6 +62,11 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     # future choose to move this logic to the frontend.
     state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
 
+    def jitsi_server_url() -> Optional[str]:
+        if settings.JITSI_SERVER_URL is None:  # nocoverage
+            return None
+        return settings.JITSI_SERVER_URL.rstrip("/")
+
     def realm_digest_emails_enabled() -> bool:
         return realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
 
@@ -71,6 +76,7 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["development_environment"] = settings.DEVELOPMENT
     state["event_queue_longpoll_timeout_seconds"] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
     state["giphy_rating_options"] = realm.get_giphy_rating_options()
+    state["jitsi_server_url"] = jitsi_server_url()
     state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
     state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
     state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
@@ -114,11 +120,6 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
     state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
     state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
-
-    if settings.JITSI_SERVER_URL is not None:
-        state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
-    else:  # nocoverage
-        state["jitsi_server_url"] = None
 
     if realm.notifications_stream and not realm.notifications_stream.deactivated:
         notifications_stream = realm.notifications_stream
