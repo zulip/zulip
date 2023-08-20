@@ -27,7 +27,7 @@ run_test("clear_search_form", () => {
     assert.equal($("#search_query").val(), "");
 });
 
-run_test("initialize", ({mock_template}) => {
+run_test("initialize", ({override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -294,6 +294,7 @@ run_test("initialize", ({mock_template}) => {
 
     assert.ok(!is_blurred);
 
+    override_rewire(search, "exit_search", () => {});
     ev.key = "Enter";
     $search_query_box.is = () => true;
     $searchbox_form.trigger(ev);
