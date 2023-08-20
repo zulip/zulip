@@ -56,23 +56,31 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     # from the database.
     realm_authentication_methods_dict: Dict[str, bool] = realm.authentication_methods_dict()
 
-    state["realm_allow_message_editing"] = (
-        False if user_profile is None else realm.allow_message_editing
-    )
-    state["realm_edit_topic_policy"] = (
-        Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
-    )
-    state["realm_delete_own_message_policy"] = (
-        Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
-    )
-
     def jitsi_server_url() -> Optional[str]:
         if settings.JITSI_SERVER_URL is None:  # nocoverage
             return None
         return settings.JITSI_SERVER_URL.rstrip("/")
 
+    def realm_allow_message_editing() -> bool:
+        if user_profile is None:
+            return False
+        else:
+            return realm.allow_message_editing
+
+    def realm_delete_own_message_policy() -> int:
+        if user_profile is None:
+            return realm.POLICY_ADMINS_ONLY
+        else:
+            return realm.delete_own_message_policy
+
     def realm_digest_emails_enabled() -> bool:
         return realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
+
+    def realm_edit_topic_policy() -> int:
+        if user_profile is None:
+            return realm.POLICY_ADMINS_ONLY
+        else:
+            return realm.edit_topic_policy
 
     def realm_notifications_stream_id() -> int:
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
@@ -114,12 +122,15 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
     state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
     state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
+    state["realm_allow_message_editing"] = realm_allow_message_editing()
     state["realm_authentication_methods"] = realm_authentication_methods_dict
     state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
     state["realm_bot_domain"] = realm.get_bot_domain()
     state["realm_date_created"] = datetime_to_timestamp(realm.date_created)
     state["realm_default_external_accounts"] = get_default_external_accounts()
+    state["realm_delete_own_message_policy"] = realm_delete_own_message_policy()
     state["realm_digest_emails_enabled"] = realm_digest_emails_enabled()
+    state["realm_edit_topic_policy"] = realm_edit_topic_policy()
     state["realm_email_auth_enabled"] = email_auth_enabled(realm, realm_authentication_methods_dict)
     state["realm_icon_source"] = realm.icon_source
     state["realm_icon_url"] = realm_icon_url(realm)
