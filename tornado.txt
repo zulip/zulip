@@ -1,0 +1,44 @@
+GOAL:
+
+Create a reference implementation in Python for an event server
+dedicated to distributing **only** presence events.  Ideally the
+Python implementation would be tiny enough to port to something like
+Rust.
+
+It should be a fully functional branch off of Zulip that works in
+the dev environment, so that folks who want to port it to Rust or
+whatever can still work within our ecosystem.
+
+The reference implementation should basically be a stripped down
+version of current Tornado server (~2300 lines of code) that removes
+all the non-presence application stuff like client_gravatar flags
+or process_message_update_event handlers.
+
+Other than only dealing with presence events, it would support
+the same architecture as our current system, including things
+like authentication, listening to Django for send_event calls,
+providing queue ids to clients, timing out clients, etc. We may omit a
+few details like sharding, since they can just be patched in after we
+evaluate the initial non-Python prototype.
+
+The code for the stripped down system would live in something
+like zerver/tornado_presence.
+
+WHAT THIS IS NOT:
+
+We don't intend necessarily to have a final architecture with two
+different event servers. The goal is to encourage a somewhat realistic
+prototype of an event server that doesn't immediately get bogged down
+in a bunch details.
+
+BASIC ARCHITECTURE:
+
+I want to stress that this is all just in dev, not production.
+
+    - run-dev deploys two copies of tornado (current and
+        presence-only)
+    - ngnix diverts /json/events_presence to the new server
+    - Django has some very minor logic to divert presence
+        events to the new server
+    - client has two polling loops (we would basically make
+        a hacky copy of server_events.js.)
