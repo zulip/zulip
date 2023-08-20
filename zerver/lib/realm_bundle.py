@@ -70,6 +70,12 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     def realm_digest_emails_enabled() -> bool:
         return realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
 
+    def realm_notifications_stream_id() -> int:
+        if realm.notifications_stream and not realm.notifications_stream.deactivated:
+            return realm.notifications_stream.id
+        else:
+            return -1
+
     def realm_password_auth_enabled() -> bool:
         return password_auth_enabled(realm, realm_authentication_methods_dict)
 
@@ -101,6 +107,7 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["realm_logo_url"] = get_realm_logo_url(realm, night=False)
     state["realm_night_logo_source"] = get_realm_logo_source(realm, night=True)
     state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
+    state["realm_notifications_stream_id"] = realm_notifications_stream_id()
     state["realm_org_type"] = realm.org_type
     state["realm_password_auth_enabled"] = realm_password_auth_enabled()
     state["realm_plan_type"] = realm.plan_type
@@ -120,12 +127,6 @@ def get_realm_bundle(user_profile: Optional[UserProfile], realm: Realm) -> Dict[
     state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
     state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
     state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
-
-    if realm.notifications_stream and not realm.notifications_stream.deactivated:
-        notifications_stream = realm.notifications_stream
-        state["realm_notifications_stream_id"] = notifications_stream.id
-    else:
-        state["realm_notifications_stream_id"] = -1
 
     signup_notifications_stream = realm.get_signup_notifications_stream()
     if signup_notifications_stream:
