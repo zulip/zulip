@@ -20,8 +20,8 @@ from zerver.lib.validator import (
     check_string,
     to_non_negative_int,
 )
-from zerver.models import Client, UserProfile, get_client, get_user_profile_by_id
-from .event_queue import access_client_descriptor, fetch_events, process_notification
+from zerver.models import get_client, get_user_profile_by_id
+from .event_queue import fetch_events
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -46,17 +46,17 @@ def get_presence_events_internal(
     return get_events_backend(request, user_profile)
 
 
-def get_presence_events(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+def get_presence_events(request: HttpRequest, user_profile) -> HttpResponse:
     return get_events_backend(request, user_profile)
 
 
 @has_request_variables
 def get_events_backend(
     request: HttpRequest,
-    user_profile: UserProfile,
+    user_profile,
     # user_client is intended only for internal Django=>Tornado requests
     # and thus shouldn't be documented for external use.
-    user_client: Optional[Client] = REQ(
+    user_client = REQ(
         converter=lambda var_name, s: get_client(s), default=None, intentionally_undocumented=True
     ),
     last_event_id: Optional[int] = REQ(json_validator=check_int, default=None),
