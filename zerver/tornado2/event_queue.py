@@ -221,7 +221,6 @@ class EventQueue:
         # will only be None for migration from old versions
         self.newest_pruned_id: Optional[int] = -1
         self.id: str = id
-        self.virtual_events: Dict[str, Dict[str, Any]] = {}
 
     def to_dict(self) -> Dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
@@ -231,7 +230,6 @@ class EventQueue:
             id=self.id,
             next_event_id=self.next_event_id,
             queue=list(self.queue),
-            virtual_events=self.virtual_events,
         )
         if self.newest_pruned_id is not None:
             d["newest_pruned_id"] = self.newest_pruned_id
@@ -243,7 +241,6 @@ class EventQueue:
         ret.next_event_id = d["next_event_id"]
         ret.newest_pruned_id = d.get("newest_pruned_id", None)
         ret.queue = deque(d["queue"])
-        ret.virtual_events = d.get("virtual_events", {})
         return ret
 
     def push(self, orig_event: Mapping[str, Any]) -> None:
@@ -265,7 +262,7 @@ class EventQueue:
         return self.queue.popleft()
 
     def empty(self) -> bool:
-        return len(self.queue) == 0 and len(self.virtual_events) == 0
+        return len(self.queue) == 0
 
     # See the comment on pop; that applies here as well
     def prune(self, through_id: int) -> None:
@@ -275,40 +272,13 @@ class EventQueue:
 
     def contents(self, include_internal_data: bool = False) -> List[Dict[str, Any]]:
         contents: List[Dict[str, Any]] = []
-        virtual_id_map: Dict[str, Dict[str, Any]] = {}
-        for event_type in self.virtual_events:
-            virtual_id_map[self.virtual_events[event_type]["id"]] = self.virtual_events[event_type]
-        virtual_ids = sorted(virtual_id_map.keys())
 
-        # Merge the virtual events into their final place in the queue
-        index = 0
-        length = len(virtual_ids)
         for event in self.queue:
-            while index < length and virtual_ids[index] < event["id"]:
-                contents.append(virtual_id_map[virtual_ids[index]])
-                index += 1
             contents.append(event)
-        while index < length:
-            contents.append(virtual_id_map[virtual_ids[index]])
-            index += 1
 
-        self.virtual_events = {}
         self.queue = deque(contents)
 
-        if include_internal_data:
-            return contents
-        return prune_internal_data(contents)
-
-
-def prune_internal_data(events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Prunes the internal_data data structures, which are not intended to
-    be exposed to API clients.
-    """
-    events = copy.deepcopy(events)
-    for event in events:
-        if event["type"] == "message" and "internal_data" in event:
-            del event["internal_data"]
-    return events
+        return contents
 
 
 # maps queue ids to client descriptors
