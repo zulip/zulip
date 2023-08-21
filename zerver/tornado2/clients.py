@@ -7,7 +7,6 @@ import random
 import time
 import traceback
 import uuid
-from collections import deque
 from contextlib import suppress
 from functools import lru_cache
 from typing import (
@@ -15,7 +14,6 @@ from typing import (
     Any,
     Callable,
     Collection,
-    Deque,
     Dict,
     Iterable,
     List,
@@ -48,6 +46,7 @@ from .handlers import (
     get_handler_by_id,
     handler_stats_string,
 )
+from .event_queue import EventQueue
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -209,76 +208,6 @@ class ClientDescriptor:
         # `do_gc_event_queues` is preserved.
         self.finish_current_handler()
         do_gc_event_queues({self.event_queue.id}, {self.user_profile_id}, {self.realm_id})
-
-
-class EventQueue:
-    def __init__(self, id: str) -> None:
-        # When extending this list of properties, one must be sure to
-        # update to_dict and from_dict.
-
-        self.queue: Deque[Dict[str, Any]] = deque()
-        self.next_event_id: int = 0
-        # will only be None for migration from old versions
-        self.newest_pruned_id: Optional[int] = -1
-        self.id: str = id
-
-    def to_dict(self) -> Dict[str, Any]:
-        # If you add a new key to this dict, make sure you add appropriate
-        # migration code in from_dict or load_event_queues to account for
-        # loading event queues that lack that key.
-        d = dict(
-            id=self.id,
-            next_event_id=self.next_event_id,
-            queue=list(self.queue),
-        )
-        if self.newest_pruned_id is not None:
-            d["newest_pruned_id"] = self.newest_pruned_id
-        return d
-
-    @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "EventQueue":
-        ret = cls(d["id"])
-        ret.next_event_id = d["next_event_id"]
-        ret.newest_pruned_id = d.get("newest_pruned_id", None)
-        ret.queue = deque(d["queue"])
-        return ret
-
-    def push(self, orig_event: Mapping[str, Any]) -> None:
-        # By default, we make a shallow copy of the event dictionary
-        # to push into the target event queue; this allows the calling
-        # code to send the same "event" object to multiple queues.
-        # This behavior is important because the event_queue system is
-        # about to mutate the event dictionary, minimally to add the
-        # event_id attribute.
-        event = dict(orig_event)
-        event["id"] = self.next_event_id
-        self.next_event_id += 1
-        self.queue.append(event)
-
-    # Note that pop ignores virtual events.  This is fine in our
-    # current usage since virtual events should always be resolved to
-    # a real event before being given to users.
-    def pop(self) -> Dict[str, Any]:
-        return self.queue.popleft()
-
-    def empty(self) -> bool:
-        return len(self.queue) == 0
-
-    # See the comment on pop; that applies here as well
-    def prune(self, through_id: int) -> None:
-        while len(self.queue) != 0 and self.queue[0]["id"] <= through_id:
-            self.newest_pruned_id = self.queue[0]["id"]
-            self.pop()
-
-    def contents(self, include_internal_data: bool = False) -> List[Dict[str, Any]]:
-        contents: List[Dict[str, Any]] = []
-
-        for event in self.queue:
-            contents.append(event)
-
-        self.queue = deque(contents)
-
-        return contents
 
 
 # maps queue ids to client descriptors
