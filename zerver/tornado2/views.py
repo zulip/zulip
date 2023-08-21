@@ -1,34 +1,15 @@
 import time
-from typing import Any, Callable, Mapping, Optional, Sequence, TypeVar
 
 from asgiref.sync import async_to_sync
-from django.conf import settings
-from django.http import HttpRequest, HttpResponse
-from django.utils.translation import gettext as _
-from typing_extensions import ParamSpec
-
 from zerver.decorator import internal_notify_view, process_client
-from zerver.lib.exceptions import JsonableError
-from zerver.lib.queue import get_queue_client
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import AsynchronousResponse, json_success
-from zerver.lib.validator import (
-    check_bool,
-    check_dict,
-    check_int,
-    check_list,
-    check_string,
-    to_non_negative_int,
-)
+from zerver.lib.validator import check_bool, check_int, to_non_negative_int
 from zerver.models import get_client, get_user_profile_by_id
 from .event_queue import fetch_events
 
-P = ParamSpec("P")
-T = TypeVar("T")
-
-
-def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
-    async def wrapped(*args: P.args, **kwargs: P.kwargs) -> T:
+def in_tornado_thread(f):
+    async def wrapped(*args, **kwargs):
         return f(*args, **kwargs)
 
     return async_to_sync(wrapped)
@@ -37,8 +18,8 @@ def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
 @internal_notify_view(True)
 @has_request_variables
 def get_presence_events_internal(
-    request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
-) -> HttpResponse:
+    request, user_profile_id = REQ(json_validator=check_int)
+):
     user_profile = get_user_profile_by_id(user_profile_id)
     RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
 
@@ -46,26 +27,24 @@ def get_presence_events_internal(
     return get_events_backend(request, user_profile)
 
 
-def get_presence_events(request: HttpRequest, user_profile) -> HttpResponse:
+def get_presence_events(request, user_profile):
     return get_events_backend(request, user_profile)
 
 
 @has_request_variables
 def get_events_backend(
-    request: HttpRequest,
+    request,
     user_profile,
     # user_client is intended only for internal Django=>Tornado requests
     # and thus shouldn't be documented for external use.
     user_client = REQ(
         converter=lambda var_name, s: get_client(s), default=None, intentionally_undocumented=True
     ),
-    last_event_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    queue_id: Optional[str] = REQ(default=None),
-    dont_block: bool = REQ(default=False, json_validator=check_bool),
-    lifespan_secs: int = REQ(
-        default=0, converter=to_non_negative_int, intentionally_undocumented=True
-    ),
-) -> HttpResponse:
+    last_event_id = REQ(json_validator=check_int, default=None),
+    queue_id = REQ(default=None),
+    dont_block = REQ(default=False, json_validator=check_bool),
+    lifespan_secs = REQ(default=0, converter=to_non_negative_int, intentionally_undocumented=True),
+):
     # Extract the Tornado handler from the request
     handler_id = RequestNotes.get_notes(request).tornado_handler_id
     assert handler_id is not None
@@ -95,16 +74,13 @@ def get_events_backend(
         handler_id=handler_id,
         new_queue_data=new_queue_data,
     )
-    if "extra_log_data" in result:
-        log_data = RequestNotes.get_notes(request).log_data
-        assert log_data is not None
-        log_data["extra"] = result["extra_log_data"]
 
     if result["type"] == "async":
         # Return an AsynchronousResponse; this will result in
         # Tornado discarding the response and instead long-polling the
         # request.  See zulip_finish for more design details.
         return AsynchronousResponse()
+
     if result["type"] == "error":
         raise result["exception"]
     return json_success(request, data=result["response"])
