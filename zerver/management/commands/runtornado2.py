@@ -21,10 +21,8 @@ from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado2.application import create_tornado_application, setup_tornado_rabbitmq
 from zerver.tornado2.descriptors import set_current_port
 from zerver.tornado2.event_queue import (
-    add_client_gc_hook,
     dump_event_queues,
     get_wrapped_process_notification,
-    missedmessage_hook,
     setup_event_queue,
 )
 from zerver.tornado2.sharding import notify_tornado_queue_name
@@ -128,7 +126,6 @@ class Command(BaseCommand):
                 logging_data["port"] = str(port)
                 await setup_event_queue(http_server, port)
                 stack.callback(dump_event_queues, port)
-                add_client_gc_hook(missedmessage_hook)
                 if settings.USING_RABBITMQ:
                     setup_tornado_rabbitmq(queue_client)
 
