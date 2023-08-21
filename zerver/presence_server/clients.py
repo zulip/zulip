@@ -72,7 +72,7 @@ def create_heartbeat_event() -> Dict[str, str]:
     return dict(type="heartbeat")
 
 
-class ClientDescriptor:
+class Client:
     def __init__(
         self,
         user_profile_id: int,
@@ -109,10 +109,10 @@ class ClientDescriptor:
         )
 
     def __repr__(self) -> str:
-        return f"ClientDescriptor<{self.event_queue.id}>"
+        return f"Client<{self.event_queue.id}>"
 
     @classmethod
-    def from_dict(cls, d: MutableMapping[str, Any]) -> "ClientDescriptor":
+    def from_dict(cls, d: MutableMapping[str, Any]) -> "Client":
         if "client_type" in d:
             # Temporary migration for the rename of client_type to client_type_name
             d["client_type_name"] = d["client_type"]
@@ -211,16 +211,16 @@ class ClientDescriptor:
 
 
 # maps queue ids to client descriptors
-clients: Dict[str, ClientDescriptor] = {}
+clients: Dict[str, Client] = {}
 # maps user id to list of client descriptors
-user_clients: Dict[int, List[ClientDescriptor]] = {}
+user_clients: Dict[int, List[Client]] = {}
 
 # list of registered gc hooks.
 # each one will be called with a user profile id, queue, and bool
 # last_for_client that is true if this is the last queue pertaining
 # to this user_profile_id
 # that is about to be deleted
-gc_hooks: List[Callable[[int, ClientDescriptor, bool], None]] = []
+gc_hooks: List[Callable[[int, Client, bool], None]] = []
 
 
 def clear_client_event_queues_for_testing() -> None:
@@ -231,11 +231,11 @@ def clear_client_event_queues_for_testing() -> None:
     gc_hooks.clear()
 
 
-def add_client_gc_hook(hook: Callable[[int, ClientDescriptor, bool], None]) -> None:
+def add_client_gc_hook(hook: Callable[[int, Client, bool], None]) -> None:
     gc_hooks.append(hook)
 
 
-def access_client_descriptor(user_id: int, queue_id: str) -> ClientDescriptor:
+def access_client_descriptor(user_id: int, queue_id: str) -> Client:
     client = clients.get(queue_id)
     if client is not None:
         if user_id == client.user_profile_id:
@@ -250,18 +250,18 @@ def access_client_descriptor(user_id: int, queue_id: str) -> ClientDescriptor:
     raise BadEventQueueIdError(queue_id)
 
 
-def get_clients_for_user(user_profile_id: int) -> List[ClientDescriptor]:
+def get_clients_for_user(user_profile_id: int) -> List[Client]:
     return user_clients.get(user_profile_id, [])
 
 
-def add_to_client_dicts(client: ClientDescriptor) -> None:
+def add_to_client_dicts(client: Client) -> None:
     user_clients.setdefault(client.user_profile_id, []).append(client)
 
 
-def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> ClientDescriptor:
+def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> Client:
     queue_id = str(uuid.uuid4())
     new_queue_data["event_queue"] = EventQueue(queue_id).to_dict()
-    client = ClientDescriptor.from_dict(new_queue_data)
+    client = Client.from_dict(new_queue_data)
     clients[queue_id] = client
     add_to_client_dicts(client)
     return client
@@ -271,7 +271,7 @@ def do_gc_event_queues(
     to_remove: AbstractSet[str], affected_users: AbstractSet[int], affected_realms: AbstractSet[int]
 ) -> None:
     def filter_client_dict(
-        client_dict: MutableMapping[int, List[ClientDescriptor]], key: int
+        client_dict: MutableMapping[int, List[Client]], key: int
     ) -> None:
         if key not in client_dict:
             return
