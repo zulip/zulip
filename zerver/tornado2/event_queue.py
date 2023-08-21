@@ -38,7 +38,7 @@ from tornado import autoreload
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.queue import queue_json_publish, retry_event
+from zerver.lib.queue import queue_json_publish
 from zerver.middleware import async_request_timer_restart
 from .descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from .exceptions import BadEventQueueIdError
@@ -488,50 +488,3 @@ def fetch_events(
 
     client.connect_handler(handler_id, client_type_name)
     return dict(type="async")
-
-
-def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
-    assert "user_id" in event
-    assert "presence" in event
-
-    print(f"OUTBOUND! about to send out event to some subset of {len(users)} users")
-
-    for user_profile_id in users:
-        for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event(event):
-                client.add_event(event)
-
-
-def process_notification(notice: Mapping[str, Any]) -> None:
-    event: Mapping[str, Any] = notice["event"]
-    users: Union[List[int], List[Mapping[str, Any]]] = notice["users"]
-    start_time = time.time()
-
-    assert event["type"] == "presence"
-    process_presence_event(event, cast(List[int], users))
-
-    logging.info(
-        "Tornado: Event %s for %s users took %sms",
-        event["type"],
-        len(users),
-        int(1000 * (time.time() - start_time)),
-    )
-
-
-def get_wrapped_process_notification(queue_name: str) -> Callable[[List[Dict[str, Any]]], None]:
-    def failure_processor(notice: Dict[str, Any]) -> None:
-        logging.error(
-            "Maximum retries exceeded for Tornado notice:%s\nStack trace:\n%s\n",
-            notice,
-            traceback.format_exc(),
-        )
-
-    def wrapped_process_notification(notices: List[Dict[str, Any]]) -> None:
-        print("PRESENCE notices", notices)
-        for notice in notices:
-            try:
-                process_notification(notice)
-            except Exception:
-                retry_event(queue_name, notice, failure_processor)
-
-    return wrapped_process_notification

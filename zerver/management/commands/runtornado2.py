@@ -20,10 +20,8 @@ from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado2.application import create_tornado_application, setup_tornado_rabbitmq
 from zerver.tornado2.descriptors import set_current_port
-from zerver.tornado2.event_queue import (
-    get_wrapped_process_notification,
-    setup_event_queue,
-)
+from zerver.tornado2.event_queue import setup_event_queue
+from zerver.tornado2.process import process_notifications
 from zerver.tornado2.config import notify_queue_name
 
 if settings.USING_RABBITMQ:
@@ -107,9 +105,7 @@ class Command(BaseCommand):
                     queue_name = notify_queue_name()
                     print("In management", queue_name)
                     stack.callback(queue_client.close)
-                    queue_client.start_json_consumer(
-                        queue_name, get_wrapped_process_notification(queue_name)
-                    )
+                    queue_client.start_json_consumer(queue_name, process_notifications)
 
                 # Application is an instance of Django's standard wsgi handler.
                 application = create_tornado_application()
