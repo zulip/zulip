@@ -391,7 +391,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices(realm)
 
-    users = UserProfile.objects.filter(realm=realm)
+    users = UserProfile.objects.select_related("realm").filter(realm=realm)
     for user in users:
         do_delete_messages_by_sender(user)
         do_delete_avatar_image(user, acting_user=acting_user)

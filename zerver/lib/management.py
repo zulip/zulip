@@ -131,7 +131,7 @@ server via `ps -ef` or reading bash history. Prefer
                 raise CommandError("The --all-users option requires a realm; please pass --realm.")
 
             if all_users:
-                user_profiles = UserProfile.objects.filter(realm=realm)
+                user_profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
                 if not include_deactivated:
                     user_profiles = user_profiles.filter(is_active=True)
                 if is_bot is not None:

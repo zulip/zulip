@@ -593,7 +593,9 @@ def get_raw_user_data(
 
 
 def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet[UserProfile]:
-    return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
+    return UserProfile.objects.select_related("realm").filter(
+        is_bot=True, is_active=True, bot_owner=user_profile
+    )
 
 
 def is_2fa_verified(user: UserProfile) -> bool:

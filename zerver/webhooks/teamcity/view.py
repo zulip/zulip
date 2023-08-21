@@ -33,11 +33,15 @@ def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Opti
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
         # and beginning of email address
-        user = UserProfile.objects.filter(
-            Q(full_name__iexact=teamcity_username) | Q(email__istartswith=teamcity_username),
-            is_active=True,
-            realm=realm,
-        ).order_by("id")[0]
+        user = (
+            UserProfile.objects.select_related("realm")
+            .filter(
+                Q(full_name__iexact=teamcity_username) | Q(email__istartswith=teamcity_username),
+                is_active=True,
+                realm=realm,
+            )
+            .order_by("id")[0]
+        )
         return user
     except IndexError:
         return None

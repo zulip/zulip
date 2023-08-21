@@ -217,7 +217,7 @@ def reset_email_visibility_to_everyone_in_zulip_realm() -> None:
         RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         acting_user=None,
     )
-    users = UserProfile.objects.filter(realm=realm)
+    users = UserProfile.objects.select_related("realm").filter(realm=realm)
     for user in users:
         do_change_user_setting(
             user,

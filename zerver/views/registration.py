@@ -1006,7 +1006,7 @@ def find_account(
             for email in emails:
                 emails_q |= Q(delivery_email__iexact=email)
 
-            user_profiles = UserProfile.objects.filter(
+            user_profiles = UserProfile.objects.select_related("realm").filter(
                 emails_q, is_active=True, is_bot=False, realm__deactivated=False
             )
 
