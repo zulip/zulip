@@ -448,55 +448,7 @@ def persistent_queue_filename(port: int, last: bool = False) -> str:
     return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ("." + str(port),)
 
 
-def dump_event_queues(port: int) -> None:
-    start = time.time()
-
-    with open(persistent_queue_filename(port), "wb") as stored_queues:
-        stored_queues.write(
-            orjson.dumps([(qid, client.to_dict()) for (qid, client) in clients.items()])
-        )
-
-    if len(clients) > 0 or settings.PRODUCTION:
-        logging.info(
-            "Tornado %d dumped %d event queues in %.3fs", port, len(clients), time.time() - start
-        )
-
-
-def load_event_queues(port: int) -> None:
-    global clients
-    start = time.time()
-
-    try:
-        with open(persistent_queue_filename(port), "rb") as stored_queues:
-            data = orjson.loads(stored_queues.read())
-    except FileNotFoundError:
-        pass
-    except orjson.JSONDecodeError:
-        logging.exception("Tornado %d could not deserialize event queues", port, stack_info=True)
-    else:
-        try:
-            clients = {qid: ClientDescriptor.from_dict(client) for (qid, client) in data}
-        except Exception:
-            logging.exception(
-                "Tornado %d could not deserialize event queues", port, stack_info=True
-            )
-
-    for client in clients.values():
-        # Put code for migrations due to event queue data format changes here
-
-        add_to_client_dicts(client)
-
-    if len(clients) > 0 or settings.PRODUCTION:
-        logging.info(
-            "Tornado %d loaded %d event queues in %.3fs", port, len(clients), time.time() - start
-        )
-
-
 async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
-    if not settings.TEST_SUITE:
-        load_event_queues(port)
-        autoreload.add_reload_hook(lambda: dump_event_queues(port))
-
     with suppress(OSError):
         os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
 

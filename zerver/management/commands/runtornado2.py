@@ -21,11 +21,10 @@ from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado2.application import create_tornado_application, setup_tornado_rabbitmq
 from zerver.tornado2.descriptors import set_current_port
 from zerver.tornado2.event_queue import (
-    dump_event_queues,
     get_wrapped_process_notification,
     setup_event_queue,
 )
-from zerver.tornado2.sharding import notify_tornado_queue_name
+from zerver.tornado2.config import notify_queue_name
 
 if settings.USING_RABBITMQ:
     from zerver.lib.queue import TornadoQueueClient, set_queue_client
@@ -105,7 +104,7 @@ class Command(BaseCommand):
                     queue_client = TornadoQueueClient()
                     set_queue_client(queue_client)
                     # Process notifications received via RabbitMQ
-                    queue_name = notify_tornado_queue_name(port)
+                    queue_name = notify_queue_name()
                     print("In management", queue_name)
                     stack.callback(queue_client.close)
                     queue_client.start_json_consumer(
@@ -125,7 +124,6 @@ class Command(BaseCommand):
 
                 logging_data["port"] = str(port)
                 await setup_event_queue(http_server, port)
-                stack.callback(dump_event_queues, port)
                 if settings.USING_RABBITMQ:
                     setup_tornado_rabbitmq(queue_client)
 

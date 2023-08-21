@@ -13,11 +13,7 @@ from urllib3.util import Retry
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
-from .sharding import (
-    get_tornado_url,
-    get_user_tornado_port,
-    notify_tornado_queue_name,
-)
+from .config import get_server_url, notify_queue_name
 
 
 class TornadoAdapter(HTTPAdapter):
@@ -77,7 +73,7 @@ def request_presence_event_queue(
     if not settings.USING_TORNADO:
         return None
 
-    tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
+    tornado_url = get_server_url()
     req = {
         "dont_block": "true",
         "slim_presence": orjson.dumps(slim_presence),
@@ -98,7 +94,7 @@ def get_user_events(
     if not settings.USING_TORNADO:
         return []
 
-    tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
+    tornado_url = get_server_url()
     post_data: Dict[str, Any] = {
         "queue_id": queue_id,
         "last_event_id": last_event_id,
@@ -138,9 +134,9 @@ def send_presence_event(event, user_ids):
 
     assert event["type"] == "presence"
 
-    print("PRESENCE: about to publish to queue!!", port, notify_tornado_queue_name(port))
+    print("PRESENCE: about to publish to queue!!")
     queue_json_publish(
-        notify_tornado_queue_name(port),
+        notify_queue_name(),
         dict(event=event, users=user_ids),
         lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
     )
