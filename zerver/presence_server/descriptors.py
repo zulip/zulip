@@ -1,5 +1,6 @@
 descriptors_by_handler_id = {}
 
+
 def get_descriptor_by_handler_id(handler_id):
     return descriptors_by_handler_id.get(handler_id)
 

@@ -1,52 +1,22 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-import copy
 import logging
-import os
 import random
 import time
-import traceback
 import uuid
-from contextlib import suppress
-from functools import lru_cache
-from typing import (
-    AbstractSet,
-    Any,
-    Callable,
-    Collection,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypedDict,
-    Union,
-    cast,
-)
+from typing import AbstractSet, Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Set
 
-import orjson
 import tornado.ioloop
 from django.conf import settings
 from django.utils.translation import gettext as _
-from tornado import autoreload
 
-from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.queue import queue_json_publish
 from zerver.middleware import async_request_timer_restart
+
 from .descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
-from .exceptions import BadEventQueueIdError
-from .handlers import (
-    clear_handler_by_id,
-    finish_handler,
-    get_handler_by_id,
-    handler_stats_string,
-)
 from .event_queue import EventQueue
+from .exceptions import BadEventQueueIdError
+from .handlers import clear_handler_by_id, finish_handler, get_handler_by_id, handler_stats_string
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -260,9 +230,7 @@ def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> Clie
 def do_gc_event_queues(
     to_remove: AbstractSet[str], affected_users: AbstractSet[int], affected_realms: AbstractSet[int]
 ) -> None:
-    def filter_client_dict(
-        client_dict: MutableMapping[int, List[Client]], key: int
-    ) -> None:
+    def filter_client_dict(client_dict: MutableMapping[int, List[Client]], key: int) -> None:
         if key not in client_dict:
             return
 

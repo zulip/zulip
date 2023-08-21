@@ -132,18 +132,6 @@ def run() -> None:
     if args.use_mypy_daemon:
         command.append("--use-daemon")
     linter_config.external_linter(
-        "mypy",
-        command,
-        ["py", "pyi"],
-        pass_targets=False,
-        description="Static type checker for Python (config: pyproject.toml)",
-        suppress_line=(
-            lambda line: line.startswith("Daemon") or line == "Restarting: configuration changed"
-        )
-        if args.use_mypy_daemon
-        else lambda _: False,
-    )
-    linter_config.external_linter(
         "ruff",
         ["ruff", "--quiet"],
         ["py", "pyi"],

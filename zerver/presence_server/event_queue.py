@@ -5,6 +5,7 @@ It's a queue of events to send out to a particular client.
 """
 from collections import deque
 
+
 class EventQueue:
     def __init__(self, id: str) -> None:
         # When extending this list of properties, one must be sure to
@@ -60,7 +61,7 @@ class EventQueue:
             self.newest_pruned_id = self.queue[0]["id"]
             self.pop()
 
-    def contents(self, include_internal_data = False):
+    def contents(self, include_internal_data=False):
         contents = []
 
         for event in self.queue:

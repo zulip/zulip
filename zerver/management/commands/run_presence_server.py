@@ -20,8 +20,8 @@ from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 from zerver.lib.debug import interactive_debug_listen
 from zerver.presence_server.application import create_tornado_application, setup_tornado_rabbitmq
 from zerver.presence_server.clients import setup_event_queue
-from zerver.presence_server.process import process_notifications
 from zerver.presence_server.config import notify_queue_name
+from zerver.presence_server.process import process_notifications
 
 if settings.USING_RABBITMQ:
     from zerver.lib.queue import TornadoQueueClient, set_queue_client

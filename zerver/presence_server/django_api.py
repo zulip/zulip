@@ -1,18 +1,16 @@
-from collections import defaultdict
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Mapping, Optional, Tuple, Union
 from urllib.parse import urlparse
 
-import orjson
 import requests
 from django.conf import settings
-from django.db import transaction
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
 from urllib3.util import Retry
 
 from zerver.lib.queue import queue_json_publish
-from zerver.models import Client, Realm, UserProfile
+from zerver.models import Client, UserProfile
+
 from .config import get_server_url, notify_queue_name
 
 
@@ -87,8 +85,6 @@ def request_presence_event_queue(
 
 
 def send_presence_event(event, user_ids):
-    port = 8888
-
     assert event["type"] == "presence"
 
     print("PRESENCE: about to publish to queue!!")
