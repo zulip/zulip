@@ -72,7 +72,7 @@ from zerver.models import (
     linkifiers_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
-from zerver.tornado2.django_api import request_presence_event_queue
+from zerver.presence_server.django_api import request_presence_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 

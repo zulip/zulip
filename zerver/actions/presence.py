@@ -12,7 +12,7 @@ from zerver.lib.presence import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Client, UserPresence, UserProfile, active_user_ids, get_client
-from zerver.tornado2.django_api import send_presence_event
+from zerver.presence_server.django_api import send_presence_event
 
 
 def send_presence_changed(

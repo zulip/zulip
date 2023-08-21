@@ -18,10 +18,10 @@ if settings.PRODUCTION:
 
 from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 from zerver.lib.debug import interactive_debug_listen
-from zerver.tornado2.application import create_tornado_application, setup_tornado_rabbitmq
-from zerver.tornado2.clients import setup_event_queue
-from zerver.tornado2.process import process_notifications
-from zerver.tornado2.config import notify_queue_name
+from zerver.presence_server.application import create_tornado_application, setup_tornado_rabbitmq
+from zerver.presence_server.clients import setup_event_queue
+from zerver.presence_server.process import process_notifications
+from zerver.presence_server.config import notify_queue_name
 
 if settings.USING_RABBITMQ:
     from zerver.lib.queue import TornadoQueueClient, set_queue_client
@@ -114,7 +114,7 @@ class Command(BaseCommand):
                 stack.callback(http_server.stop)
                 http_server.listen(port, address=addr)
 
-                from zerver.tornado2.ioloop_logging import logging_data
+                from zerver.presence_server.ioloop_logging import logging_data
 
                 logging_data["port"] = str(port)
                 await setup_event_queue(http_server, port)

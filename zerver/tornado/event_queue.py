@@ -1172,7 +1172,6 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
 
     slim_event = dict(
         type="presence",
-        server_impl="tornado2",
         user_id=event["user_id"],
         server_timestamp=event["server_timestamp"],
         presence=event["presence"],
