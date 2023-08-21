@@ -152,7 +152,9 @@ server via `ps -ef` or reading bash history. Prefer
         if realm is not None:
             user_profiles = user_profiles.filter(realm=realm)
         email_matches = [Q(delivery_email__iexact=e) for e in emails]
-        user_profiles = user_profiles.filter(reduce(lambda a, b: a | b, email_matches))
+        user_profiles = user_profiles.filter(reduce(lambda a, b: a | b, email_matches)).order_by(
+            "id"
+        )
 
         # Return the single query, for ease of composing.
         return user_profiles
