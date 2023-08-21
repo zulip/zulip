@@ -1811,7 +1811,7 @@ class NormalActionsTest(BaseAction):
         othello = self.example_user("othello")
         events = self.verify_action(
             lambda: check_add_user_group(
-                self.user_profile.realm, "backend", [othello], "Backend team", acting_user=None
+                self.user_profile.realm, "backend", [othello], "Backend team", acting_user=othello
             )
         )
         check_user_group_add("events[0]", events[0])
@@ -1857,7 +1857,7 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_members("events[0]", events[0])
 
         api_design = check_add_user_group(
-            hamlet.realm, "api-design", [hamlet], description="API design team", acting_user=None
+            hamlet.realm, "api-design", [hamlet], description="API design team", acting_user=othello
         )
 
         # Test add subgroups

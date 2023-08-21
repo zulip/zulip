@@ -678,10 +678,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         hamlet_only = check_add_user_group(
-            get_realm("zulip"), "hamlet_only", [hamlet], acting_user=None
+            get_realm("zulip"), "hamlet_only", [hamlet], acting_user=hamlet
         )
         hamlet_and_cordelia = check_add_user_group(
-            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=None
+            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=hamlet
         )
 
         hamlet_only_message_id = self.send_stream_message(othello, "Denmark", "@*hamlet_only*")
@@ -716,7 +716,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         othello = self.example_user("othello")
 
         hamlet_and_cordelia = check_add_user_group(
-            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=None
+            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=hamlet
         )
 
         user_group_mentioned_message_id = self.send_stream_message(
@@ -753,7 +753,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         othello = self.example_user("othello")
 
         hamlet_and_cordelia = check_add_user_group(
-            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=None
+            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=hamlet
         )
 
         topic_wildcard_mentioned_in_followed_topic_message_id = self.send_stream_message(
@@ -1620,7 +1620,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
         large_user_group = check_add_user_group(
-            get_realm("zulip"), "large_user_group", [hamlet, othello, cordelia], acting_user=None
+            get_realm("zulip"), "large_user_group", [hamlet, othello, cordelia], acting_user=hamlet
         )
 
         def reset_hamlet_as_soft_deactivated_user() -> None:
