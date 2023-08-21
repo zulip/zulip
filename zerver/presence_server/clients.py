@@ -199,16 +199,6 @@ class Client:
             ioloop.remove_timeout(self._timeout_handle)
             self._timeout_handle = None
 
-    def cleanup(self) -> None:
-        # Before we can GC the event queue, we need to disconnect the
-        # handler and notify the client (or connection server) so that
-        # they can clean up their own state related to the GC'd event
-        # queue.  Finishing the handler before we GC ensures the
-        # invariant that event queues are idle when passed to
-        # `do_gc_event_queues` is preserved.
-        self.finish_current_handler()
-        do_gc_event_queues({self.event_queue.id}, {self.user_profile_id}, {self.realm_id})
-
 
 # maps queue ids to client descriptors
 clients: Dict[str, Client] = {}
