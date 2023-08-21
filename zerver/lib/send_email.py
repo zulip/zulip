@@ -559,7 +559,7 @@ def send_custom_email(
         f.write(get_header(options.get("subject"), parsed_email_template.get("subject"), "subject"))
 
     # Finally, we send the actual emails.
-    for user_profile in users.select_related("realm"):
+    for user_profile in users.select_related("realm").order_by("id"):
         if options.get("admins_only") and not user_profile.is_realm_admin:
             continue
         context: Dict[str, Union[List[str], str]] = {
