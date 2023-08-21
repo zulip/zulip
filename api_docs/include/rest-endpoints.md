@@ -14,7 +14,9 @@
 * [Get a message's edit history](/api/get-message-history)
 * [Update personal message flags](/api/update-message-flags)
 * [Update personal message flags for narrow](/api/update-message-flags-for-narrow)
-* [Mark messages as read in bulk](/api/mark-all-as-read)
+* [Mark all messages as read](/api/mark-all-as-read)
+* [Mark messages in a stream as read](/api/mark-stream-as-read)
+* [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
 
 #### Scheduled messages
