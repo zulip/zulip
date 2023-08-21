@@ -1,3 +1,15 @@
+"""
+
+I LOVE THIS CODE.  I didn't touch it all (apart from one relative import),
+as it's just pure infrastructure.
+
+If we were to port to a different Python architecture, we could just
+throw this all away, I believe. And it's relatively sane code if we
+wanted to crib some details off of it.
+
+I confess that I don't really understand everything going on here,
+but that's in a good way.
+"""
 import logging
 import urllib
 from contextlib import suppress

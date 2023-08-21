@@ -86,25 +86,6 @@ def request_presence_event_queue(
     return resp.json()["queue_id"]
 
 
-def get_user_events(
-    user_profile: UserProfile, queue_id: str, last_event_id: int
-) -> List[Dict[str, Any]]:
-    if not settings.USING_TORNADO:
-        return []
-
-    tornado_url = get_server_url()
-    post_data: Dict[str, Any] = {
-        "queue_id": queue_id,
-        "last_event_id": last_event_id,
-        "dont_block": "true",
-        "user_profile_id": user_profile.id,
-        "secret": settings.SHARED_SECRET,
-        "client": "internal",
-    }
-    resp = requests_client().post(tornado_url + "/api/v1/presence_events/internal", data=post_data)
-    return resp.json()["events"]
-
-
 def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
     if not settings.USING_TORNADO or settings.RUNNING_INSIDE_TORNADO:
         # To allow the backend test suite to not require a separate
