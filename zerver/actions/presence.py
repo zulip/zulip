@@ -63,8 +63,7 @@ def send_presence_changed(
         server_timestamp=time.time(),
         presence={presence_dict["client"]: presence_dict},
     )
-    print("CALL send_presence_event")
-    send_presence_event(user_profile.realm, event, user_ids)
+    send_presence_event(event, user_ids)
 
 
 def consolidate_client(client: Client) -> Client:

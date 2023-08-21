@@ -14,9 +14,7 @@ from urllib3.util import Retry
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
 from .sharding import (
-    get_realm_tornado_ports,
     get_tornado_url,
-    get_user_id_tornado_port,
     get_user_tornado_port,
     notify_tornado_queue_name,
 )
@@ -157,41 +155,14 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
         )
 
-
-# The core function for sending an event from Django to Tornado (which
-# will then push it to web and mobile clients for the target users).
-# By convention, send_event should only be called from
-# zerver/actions/*.py, which helps make it easy to find event
-# generation code.
-#
-# Every call point should be covered by a test in `test_events.py`,
-# with the schema verified in `zerver/lib/event_schema.py`.
-#
-# See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
-def send_presence_event(
-    realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
-) -> None:
-    """`users` is a list of user IDs, or in some special cases like message
-    send/update or embeds, dictionaries containing extra data."""
-
-    realm_ports = get_realm_tornado_ports(realm)
-    if len(realm_ports) == 1:
-        port_user_map = {realm_ports[0]: list(users)}
-    else:
-        port_user_map = defaultdict(list)
-        for user in users:
-            user_id = user if isinstance(user, int) else user["id"]
-            port_user_map[get_user_id_tornado_port(realm_ports, user_id)].append(user)
-
-    port_user_map = {8888: list(users)}
+def send_presence_event(event, user_ids):
+    port = 8888
 
     assert event["type"] == "presence"
 
-    for port, port_users in port_user_map.items():
-        print()
-        print("PRESENCE: about to publish to queue!!", port, event, notify_tornado_queue_name(port))
-        queue_json_publish(
-            notify_tornado_queue_name(port),
-            dict(event=event, users=port_users),
-            lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
-        )
+    print("PRESENCE: about to publish to queue!!", port, notify_tornado_queue_name(port))
+    queue_json_publish(
+        notify_tornado_queue_name(port),
+        dict(event=event, users=user_ids),
+        lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
+    )
