@@ -36,15 +36,6 @@ def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
 
 @internal_notify_view(True)
 @has_request_variables
-def notify_presence(
-    request: HttpRequest, data: Mapping[str, Any] = REQ(json_validator=check_dict([]))
-) -> HttpResponse:
-    in_tornado_thread(process_notification)(data)
-    return json_success(request)
-
-
-@internal_notify_view(True)
-@has_request_variables
 def get_presence_events_internal(
     request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:

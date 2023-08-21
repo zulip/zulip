@@ -86,28 +86,6 @@ def request_presence_event_queue(
     return resp.json()["queue_id"]
 
 
-def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
-    if not settings.USING_TORNADO or settings.RUNNING_INSIDE_TORNADO:
-        # To allow the backend test suite to not require a separate
-        # Tornado process, we simply call the process_notification
-        # handler directly rather than making the notify_tornado HTTP
-        # request.  It would perhaps be better to instead implement
-        # this via some sort of `responses` module configuration, but
-        # perhaps it's more readable to have the logic live here.
-        #
-        # We use an import local to this function to prevent this hack
-        # from creating import cycles.
-        from .event_queue import process_notification
-
-        process_notification(data)
-    else:
-        print("Post with SHARED_SECRET")
-        tornado_url = get_tornado_url(port)
-        requests_client().post(
-            tornado_url + "/notify_presence",
-            data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
-        )
-
 def send_presence_event(event, user_ids):
     port = 8888
 
@@ -117,5 +95,4 @@ def send_presence_event(event, user_ids):
     queue_json_publish(
         notify_queue_name(),
         dict(event=event, users=user_ids),
-        lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
     )
