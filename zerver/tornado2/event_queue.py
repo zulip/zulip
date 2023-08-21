@@ -79,7 +79,6 @@ class ClientDescriptor:
         user_profile_id: int,
         realm_id: int,
         event_queue: "EventQueue",
-        event_types: Optional[Sequence[str]],
         client_type_name: str,
         lifespan_secs: int = 0,
     ) -> None:
@@ -88,7 +87,6 @@ class ClientDescriptor:
         self.current_handler_id: Optional[int] = None
         self.current_client_name: Optional[str] = None
         self.event_queue = event_queue
-        self.event_types = event_types
         self.last_connection_time = time.time()
         self.client_type_name = client_type_name
         self._timeout_handle: Any = None  # TODO: should be return type of ioloop.call_later
@@ -108,7 +106,6 @@ class ClientDescriptor:
             realm_id=self.realm_id,
             event_queue=self.event_queue.to_dict(),
             queue_timeout=self.queue_timeout,
-            event_types=self.event_types,
             last_connection_time=self.last_connection_time,
         )
 
@@ -125,7 +122,6 @@ class ClientDescriptor:
             d["user_profile_id"],
             d["realm_id"],
             EventQueue.from_dict(d["event_queue"]),
-            d["event_types"],
             d["client_type_name"],
             d["queue_timeout"],
         )

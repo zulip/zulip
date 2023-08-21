@@ -70,53 +70,11 @@ def get_events_backend(
     ),
     last_event_id: Optional[int] = REQ(json_validator=check_int, default=None),
     queue_id: Optional[str] = REQ(default=None),
-    # apply_markdown, client_gravatar, all_public_streams, and various
-    # other parameters are only used when registering a new queue via this
-    # endpoint.  This is a feature used primarily by get_events_internal
-    # and not expected to be used by third-party clients.
-    apply_markdown: bool = REQ(
-        default=False, json_validator=check_bool, intentionally_undocumented=True
-    ),
-    client_gravatar: bool = REQ(
-        default=False, json_validator=check_bool, intentionally_undocumented=True
-    ),
-    slim_presence: bool = REQ(
-        default=False, json_validator=check_bool, intentionally_undocumented=True
-    ),
-    all_public_streams: bool = REQ(
-        default=False, json_validator=check_bool, intentionally_undocumented=True
-    ),
-    event_types: Optional[Sequence[str]] = REQ(
-        default=None, json_validator=check_list(check_string), intentionally_undocumented=True
-    ),
     dont_block: bool = REQ(default=False, json_validator=check_bool),
-    narrow: Sequence[Sequence[str]] = REQ(
-        default=[],
-        json_validator=check_list(check_list(check_string)),
-        intentionally_undocumented=True,
-    ),
     lifespan_secs: int = REQ(
         default=0, converter=to_non_negative_int, intentionally_undocumented=True
     ),
-    bulk_message_deletion: bool = REQ(
-        default=False, json_validator=check_bool, intentionally_undocumented=True
-    ),
-    stream_typing_notifications: bool = REQ(
-        default=False, json_validator=check_bool, intentionally_undocumented=True
-    ),
-    user_settings_object: bool = REQ(
-        default=False, json_validator=check_bool, intentionally_undocumented=True
-    ),
-    pronouns_field_type_supported: bool = REQ(
-        default=True, json_validator=check_bool, intentionally_undocumented=True
-    ),
-    linkifier_url_template: bool = REQ(
-        default=False, json_validator=check_bool, intentionally_undocumented=True
-    ),
 ) -> HttpResponse:
-    if all_public_streams and not user_profile.can_access_public_streams():
-        raise JsonableError(_("User not authorized for this query"))
-
     # Extract the Tornado handler from the request
     handler_id = RequestNotes.get_notes(request).tornado_handler_id
     assert handler_id is not None
@@ -132,20 +90,9 @@ def get_events_backend(
         new_queue_data = dict(
             user_profile_id=user_profile.id,
             realm_id=user_profile.realm_id,
-            event_types=event_types,
             client_type_name=valid_user_client.name,
-            apply_markdown=apply_markdown,
-            client_gravatar=client_gravatar,
-            slim_presence=slim_presence,
-            all_public_streams=all_public_streams,
             queue_timeout=lifespan_secs,
             last_connection_time=time.time(),
-            narrow=narrow,
-            bulk_message_deletion=bulk_message_deletion,
-            stream_typing_notifications=stream_typing_notifications,
-            user_settings_object=user_settings_object,
-            pronouns_field_type_supported=pronouns_field_type_supported,
-            linkifier_url_template=linkifier_url_template,
         )
 
     result = in_tornado_thread(fetch_events)(
