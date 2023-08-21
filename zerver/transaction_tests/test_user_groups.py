@@ -13,6 +13,7 @@ from zerver.lib.test_classes import ZulipTransactionTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import Realm, UserGroup, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.views.user_groups import update_subgroups_of_user_group
 
@@ -81,8 +82,18 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
         """Build a user groups forming a chain through group-group memberships
         returning a list where each group is the supergroup of its subsequent group.
         """
+        admins_group = UserGroup.objects.get(
+            realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
+        )
         groups = [
-            check_add_user_group(realm, f"chain #{self.counter + i}", [], acting_user=None)
+            check_add_user_group(
+                realm,
+                f"chain #{self.counter + i}",
+                [],
+                "",
+                {"can_manage_group": admins_group},
+                acting_user=None,
+            )
             for i in range(self.CHAIN_LENGTH)
         ]
         self.counter += self.CHAIN_LENGTH

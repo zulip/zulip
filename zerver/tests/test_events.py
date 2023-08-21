@@ -111,6 +111,7 @@ from zerver.actions.user_groups import (
     do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
+    get_single_user_group_name_from_user_id,
     remove_subgroups_from_user_group,
 )
 from zerver.actions.user_settings import (
@@ -1809,9 +1810,37 @@ class NormalActionsTest(BaseAction):
 
     def test_user_group_events(self) -> None:
         othello = self.example_user("othello")
+
+        # 2 events are expected because default value of `can_manage_group` is
+        # single user group corresponding to acting_user, so a single user group
+        # with member othello will also be created.
         events = self.verify_action(
             lambda: check_add_user_group(
                 self.user_profile.realm, "backend", [othello], "Backend team", acting_user=othello
+            ),
+            num_events=2,
+        )
+        check_user_group_add("events[0]", events[0])
+        check_user_group_add("events[1]", events[1])
+        self.assertEqual(
+            events[0]["group"]["name"], get_single_user_group_name_from_user_id(othello.id)
+        )
+        self.assertEqual(events[1]["group"]["name"], "backend")
+
+        admins_system_group = UserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=othello.realm, is_system_group=True
+        )
+
+        # Here we have specified the value of can_manage_group so only
+        # 1 event is expected.
+        events = self.verify_action(
+            lambda: check_add_user_group(
+                self.user_profile.realm,
+                "frontend",
+                [othello],
+                "Frontend team",
+                {"can_manage_group": admins_system_group},
+                acting_user=othello,
             )
         )
         check_user_group_add("events[0]", events[0])

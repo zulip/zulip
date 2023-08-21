@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Collection, Dict, Iterable, Iterator, List, TypedDict
+from typing import Collection, Dict, Iterable, Iterator, List, Optional, TypedDict
 
 from django.db import transaction
 from django.db.models import F, QuerySet
@@ -399,19 +399,20 @@ def set_defaults_for_group_settings(
     user_group: UserGroup,
     set_group_settings: Iterable[str],
     system_groups_name_dict: Dict[str, UserGroup],
+    *,
+    acting_user: Optional[UserProfile] = None,
 ) -> UserGroup:
-    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+    from zerver.actions.user_groups import get_default_group_for_setting
+
+    for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
         if setting_name in set_group_settings:
             # We skip the settings for which a value is passed
             # in user group creation API request.
             continue
 
-        if user_group.is_system_group and permission_config.default_for_system_groups is not None:
-            default_group_name = permission_config.default_for_system_groups
-        else:
-            default_group_name = permission_config.default_group_name
-
-        default_group = system_groups_name_dict[default_group_name]
+        default_group = get_default_group_for_setting(
+            user_group, setting_name, system_groups_name_dict, acting_user=acting_user
+        )
         setattr(user_group, setting_name, default_group)
 
     return user_group
@@ -438,6 +439,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
             realm=realm,
             is_system_group=True,
             can_mention_group_id=initial_group_setting_value,
+            can_manage_group_id=initial_group_setting_value,
         )
         role_system_groups_dict[role] = user_group
 
@@ -447,6 +449,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         realm=realm,
         is_system_group=True,
         can_mention_group_id=initial_group_setting_value,
+        can_manage_group_id=initial_group_setting_value,
     )
     everyone_on_internet_system_group = UserGroup(
         name=SystemGroups.EVERYONE_ON_INTERNET,
@@ -454,6 +457,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         realm=realm,
         is_system_group=True,
         can_mention_group_id=initial_group_setting_value,
+        can_manage_group_id=initial_group_setting_value,
     )
     nobody_system_group = UserGroup(
         name=SystemGroups.NOBODY,
@@ -461,6 +465,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         realm=realm,
         is_system_group=True,
         can_mention_group_id=initial_group_setting_value,
+        can_manage_group_id=initial_group_setting_value,
     )
     # Order of this list here is important to create correct GroupGroupMembership objects
     # Note that because we do not create user memberships here, no audit log entries for
@@ -508,7 +513,9 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
                 },
             )
         )
-    UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
+    UserGroup.objects.bulk_update(
+        groups_with_updated_settings, ["can_mention_group", "can_manage_group"]
+    )
 
     subgroup_objects: List[GroupGroupMembership] = []
     # "Nobody" system group is not a subgroup of any user group, since it is already empty.

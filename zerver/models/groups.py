@@ -38,6 +38,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     is_system_group = models.BooleanField(default=False)
 
     can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
+    can_manage_group = models.ForeignKey("self", on_delete=models.RESTRICT, related_name="+")
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -75,6 +76,16 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
             id_field_name="can_mention_group_id",
+        ),
+        "can_manage_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name="creating_user",
+            default_for_system_groups=SystemGroups.NOBODY,
+            id_field_name="can_manage_group_id",
         ),
     }
 

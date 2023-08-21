@@ -50,7 +50,10 @@ def create_user_group_in_database(
 
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     user_group = set_defaults_for_group_settings(
-        user_group, list(group_settings_map.keys()), system_groups_name_dict
+        user_group,
+        list(group_settings_map.keys()),
+        system_groups_name_dict,
+        acting_user=acting_user,
     )
     user_group.save()
 
@@ -443,3 +446,53 @@ def do_change_user_group_permission_setting(
 
     event_data_dict: Dict[str, Union[str, int]] = {setting_name: setting_value_group.id}
     do_send_user_group_update_event(user_group, event_data_dict)
+
+
+def get_single_user_group_name_from_user_id(user_id: int) -> str:
+    return f"user:{user_id}"
+
+
+def get_or_create_single_user_group(
+    group_user: UserProfile,
+    realm: Realm,
+) -> UserGroup:
+    group_name = get_single_user_group_name_from_user_id(group_user.id)
+    try:
+        user_group = UserGroup.objects.get(
+            name=group_name,
+            realm=realm,
+            is_system_group=True,
+        )
+    except UserGroup.DoesNotExist:
+        with transaction.atomic(savepoint=False):
+            user_group = create_user_group_in_database(
+                group_name,
+                [group_user],
+                realm,
+                is_system_group=True,
+                acting_user=group_user,
+            )
+            do_send_create_user_group_event(user_group, [group_user])
+
+    return user_group
+
+
+def get_default_group_for_setting(
+    user_group: UserGroup,
+    setting_name: str,
+    system_groups_name_dict: Dict[str, UserGroup],
+    *,
+    acting_user: Optional[UserProfile],
+) -> UserGroup:
+    permission_config = UserGroup.GROUP_PERMISSION_SETTINGS[setting_name]
+    if user_group.is_system_group and permission_config.default_for_system_groups is not None:
+        return system_groups_name_dict[permission_config.default_for_system_groups]
+
+    default_group_name = permission_config.default_group_name
+    if default_group_name in system_groups_name_dict:
+        return system_groups_name_dict[default_group_name]
+
+    assert default_group_name == "creating_user"
+    assert acting_user is not None
+
+    return get_or_create_single_user_group(acting_user, user_group.realm)

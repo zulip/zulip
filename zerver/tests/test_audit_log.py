@@ -1153,7 +1153,10 @@ class TestRealmAuditLog(ZulipTestCase):
             [hamlet, cordelia],
             acting_user=hamlet,
             description="lorem",
-            group_settings_map={"can_mention_group": public_group},
+            group_settings_map={
+                "can_mention_group": public_group,
+                "can_manage_group": public_group,
+            },
         )
 
         audit_log_entries = RealmAuditLog.objects.filter(
