@@ -81,7 +81,6 @@ class ClientDescriptor:
         event_queue: "EventQueue",
         event_types: Optional[Sequence[str]],
         client_type_name: str,
-        slim_presence: bool = False,
         lifespan_secs: int = 0,
     ) -> None:
         self.user_profile_id = user_profile_id
@@ -91,7 +90,6 @@ class ClientDescriptor:
         self.event_queue = event_queue
         self.event_types = event_types
         self.last_connection_time = time.time()
-        self.slim_presence = slim_presence
         self.client_type_name = client_type_name
         self._timeout_handle: Any = None  # TODO: should be return type of ioloop.call_later
 
@@ -112,7 +110,6 @@ class ClientDescriptor:
             queue_timeout=self.queue_timeout,
             event_types=self.event_types,
             last_connection_time=self.last_connection_time,
-            slim_presence=self.slim_presence,
         )
 
     def __repr__(self) -> str:
@@ -124,16 +121,12 @@ class ClientDescriptor:
             # Temporary migration for the rename of client_type to client_type_name
             d["client_type_name"] = d["client_type"]
 
-        if "slim_presence" not in d:
-            d["slim_presence"] = False
-
         ret = cls(
             d["user_profile_id"],
             d["realm_id"],
             EventQueue.from_dict(d["event_queue"]),
             d["event_types"],
             d["client_type_name"],
-            d["slim_presence"],
             d["queue_timeout"],
         )
         ret.last_connection_time = d["last_connection_time"]
@@ -166,6 +159,7 @@ class ClientDescriptor:
         return False
 
     def accepts_event(self, event: Mapping[str, Any]) -> bool:
+        # TODO: Allow some clients to opt out.
         assert event["type"] == "presence"
         return True
 
@@ -535,35 +529,15 @@ def fetch_events(
 
 
 def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
-    if "user_id" not in event:
-        # We only recently added `user_id` to presence data.
-        # Any old events in our queue can just be dropped,
-        # since presence events are pretty ephemeral in nature.
-        logging.warning("Dropping some obsolete presence events after upgrade.")
-
-    slim_event = dict(
-        type="presence",
-        user_id=event["user_id"],
-        server_timestamp=event["server_timestamp"],
-        presence=event["presence"],
-    )
-
-    legacy_event = dict(
-        type="presence",
-        user_id=event["user_id"],
-        email=event["email"],
-        server_timestamp=event["server_timestamp"],
-        presence=event["presence"],
-    )
+    assert "user_id" in event
+    assert "presence" in event
 
     print(f"OUTBOUND! about to send out event to some subset of {len(users)} users")
+
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
-                if client.slim_presence:
-                    client.add_event(slim_event)
-                else:
-                    client.add_event(legacy_event)
+                client.add_event(event)
 
 
 def process_notification(notice: Mapping[str, Any]) -> None:

@@ -67,7 +67,6 @@ def requests_client() -> requests.Session:
 def request_presence_event_queue(
     user_profile: UserProfile,
     user_client: Client,
-    slim_presence: bool,
     queue_lifespan_secs: int,
 ) -> Optional[str]:
     if not settings.USING_TORNADO:
@@ -76,7 +75,6 @@ def request_presence_event_queue(
     tornado_url = get_server_url()
     req = {
         "dont_block": "true",
-        "slim_presence": orjson.dumps(slim_presence),
         "client": "internal",
         "user_profile_id": user_profile.id,
         "user_client": user_client.name,
