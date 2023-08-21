@@ -40,8 +40,6 @@ EXCLUDED_URLS = [
 
 VNU_IGNORE = [
     # Real errors that should be fixed.
-    r"Duplicate ID “[^”]*”\.",
-    r"The first occurrence of ID “[^”]*” was here\.",
     r"Attribute “markdown” not allowed on element “div” at this point\.",
     r"No “p” element in scope but a “p” end tag seen\.",
     (
