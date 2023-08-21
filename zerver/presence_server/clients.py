@@ -317,17 +317,7 @@ def gc_event_queues(port: int) -> None:
         )
 
 
-def persistent_queue_filename(port: int, last: bool = False) -> str:
-    if last:
-        return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ("." + str(port) + ".last",)
-    return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ("." + str(port),)
-
-
 async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
-    with suppress(OSError):
-        os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
-
-    # Set up event queue garbage collection
     pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)
     pc.start()
 
