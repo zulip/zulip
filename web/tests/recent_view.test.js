@@ -117,12 +117,6 @@ mock_esm("../src/user_topics", {
         }
         return false;
     },
-    is_topic_unmuted(stream_id, topic) {
-        if (stream_id === stream6 && topic === topic11) {
-            return true;
-        }
-        return false;
-    },
     is_topic_unmuted_or_followed(stream_id, topic) {
         if (stream_id === stream6 && (topic === topic11 || topic === topic12)) {
             return true;
@@ -398,17 +392,13 @@ function generate_topic_data(topic_info_array) {
             stream_name: "stream_name",
             stream_color: "",
             stream_id,
-            stream_muted: undefined,
             stream_url: "https://www.example.com",
             topic,
             conversation_key: get_topic_key(stream_id, topic),
             topic_url: "https://www.example.com",
             unread_count,
             mention_in_unread: false,
-            topic_muted: visibility_policy === all_visibility_policies.MUTED,
-            topic_unmuted: visibility_policy === all_visibility_policies.UNMUTED,
             visibility_policy,
-            development: true,
             all_visibility_policies,
         });
     }

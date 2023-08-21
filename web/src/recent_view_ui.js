@@ -471,7 +471,6 @@ function format_conversation(conversation_data) {
         // Stream info
         context.stream_id = last_msg.stream_id;
         context.stream_name = stream_data.get_stream_name_from_id(last_msg.stream_id);
-        context.stream_muted = stream_info.is_muted;
         context.stream_color = stream_info.color;
         context.stream_url = hash_util.by_stream_url(context.stream_id);
         context.invite_only = stream_info.invite_only;
@@ -484,10 +483,6 @@ function format_conversation(conversation_data) {
         // We only supply the data to the topic rows and let jquery
         // display / hide them according to filters instead of
         // doing complete re-render.
-        context.topic_muted = Boolean(user_topics.is_topic_muted(context.stream_id, context.topic));
-        context.topic_unmuted = Boolean(
-            user_topics.is_topic_unmuted(context.stream_id, context.topic),
-        );
         context.mention_in_unread = unread.topic_has_any_unread_mentions(
             context.stream_id,
             context.topic,
@@ -497,9 +492,8 @@ function format_conversation(conversation_data) {
             context.stream_id,
             context.topic,
         );
-        // The following two fields are not specific to this context, but this is the
+        // The following field is not specific to this context, but this is the
         // easiest way we've figured out for passing the data to the template rendering.
-        context.development = page_params.development_environment;
         context.all_visibility_policies = user_topics.all_visibility_policies;
 
         // Since the css for displaying senders in reverse order is much simpler,
