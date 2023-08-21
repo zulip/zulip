@@ -343,11 +343,15 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_success(result)
         self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
-        # Check default value of can_mention_group setting.
+        # Check default value of settings.
         everyone_system_group = NamedUserGroup.objects.get(
             name="role:everyone", realm=hamlet.realm, is_system_group=True
         )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=hamlet.realm, is_system_group=True
+        )
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, nobody_system_group.usergroup_ptr)
         self.assertEqual(support_group.can_mention_group, everyone_system_group.usergroup_ptr)
 
         # Test invalid member error
