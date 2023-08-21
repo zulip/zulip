@@ -97,9 +97,6 @@ function render_code_sections() {
 new SimpleBar($(".markdown")[0]);
 new SimpleBar($(".sidebar")[0]);
 
-// Remove ID attributes from sidebar links so they don't conflict with index page anchor links
-$(".help .sidebar h1, .help .sidebar h2, .help .sidebar h3").removeAttr("id");
-
 // Scroll to anchor link when clicked. Note that landing-page.js has a
 // similar function; this file and landing-page.js are never included
 // on the same page.

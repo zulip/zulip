@@ -68,6 +68,7 @@ class ApiURLView(TemplateView):
         return context
 
 
+sidebar_headings = XPath("//*[self::h1 or self::h2 or self::h3 or self::h4]")
 sidebar_links = XPath("//a[@href=$url]")
 
 
@@ -239,6 +240,12 @@ class MarkdownDirectoryView(ApiURLView):
             home_link.text = context["doc_root_title"] + " home"
             tree.insert(0, home_h1)
         url = context["doc_root"] + article
+        # Remove ID attributes from sidebar headings so they don't conflict with index page headings
+        headings = sidebar_headings(tree)
+        assert isinstance(headings, list)
+        for h in headings:
+            assert isinstance(h, _Element)
+            h.attrib.pop("id", "")
         # Highlight current article link
         links = sidebar_links(tree, url=url)
         assert isinstance(links, list)
