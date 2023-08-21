@@ -16,7 +16,7 @@ from tornado.iostream import StreamClosedError
 from tornado.wsgi import WSGIContainer
 
 from zerver.lib.response import AsynchronousResponse, json_response
-from zerver.tornado.descriptors import get_descriptor_by_handler_id
+from .descriptors import get_descriptor_by_handler_id
 
 current_handler_id = 0
 handlers: Dict[int, "AsyncDjangoHandler"] = {}

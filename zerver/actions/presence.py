@@ -12,7 +12,7 @@ from zerver.lib.presence import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Client, UserPresence, UserProfile, active_user_ids, get_client
-from zerver.tornado2.django_api import send_event
+from zerver.tornado2.django_api import send_presence_event
 
 
 def send_presence_changed(
@@ -63,7 +63,8 @@ def send_presence_changed(
         server_timestamp=time.time(),
         presence={presence_dict["client"]: presence_dict},
     )
-    send_event(user_profile.realm, event, user_ids)
+    print("CALL send_presence_event")
+    send_presence_event(user_profile.realm, event, user_ids)
 
 
 def consolidate_client(client: Client) -> Client:
@@ -191,6 +192,7 @@ def update_user_presence(
         "client": client.name,
     }
 
+    print("in update_user_presence")
     queue_json_publish("user_presence", event)
 
     if new_user_input:

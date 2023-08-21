@@ -45,9 +45,9 @@ from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField
-from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
-from zerver.tornado.exceptions import BadEventQueueIdError
-from zerver.tornado.handlers import (
+from .descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
+from .exceptions import BadEventQueueIdError
+from .handlers import (
     clear_handler_by_id,
     finish_handler,
     get_handler_by_id,
@@ -1186,6 +1186,7 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
     )
 
     for user_profile_id in users:
+        print(user_profile_id, get_client_descriptors_for_user(user_profile_id))
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
                 if client.slim_presence:
@@ -1500,48 +1501,10 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     users: Union[List[int], List[Mapping[str, Any]]] = notice["users"]
     start_time = time.time()
 
-    if event["type"] == "message":
-        if len(users) > 0 and isinstance(users[0], dict) and "stream_push_notify" in users[0]:
-            # TODO/compatibility: Remove this whole block once one can no
-            # longer directly upgrade directly from 4.x to 5.0-dev.
-            modern_event, user_dicts = reformat_legacy_send_message_event(event, users)
-            process_message_event(modern_event, user_dicts)
-        else:
-            process_message_event(event, cast(List[Mapping[str, Any]], users))
-    elif event["type"] == "update_message":
-        process_message_update_event(event, cast(List[Mapping[str, Any]], users))
-    elif event["type"] == "delete_message":
-        if len(users) > 0 and isinstance(users[0], dict):
-            # do_delete_messages used to send events with users in
-            # dict format {"id": <int>} This block is here for
-            # compatibility with events in that format still in the
-            # queue at the time of upgrade.
-            #
-            # TODO/compatibility: Remove this block once you can no
-            # longer directly upgrade directly from 4.x to main.
-            user_ids: List[int] = [user["id"] for user in cast(List[Mapping[str, Any]], users)]
-        else:
-            user_ids = cast(List[int], users)
-        process_deletion_event(event, user_ids)
-    elif event["type"] == "presence":
-        process_presence_event(event, cast(List[int], users))
-    elif event["type"] == "custom_profile_fields":
-        process_custom_profile_fields_event(event, cast(List[int], users))
-    elif event["type"] == "cleanup_queue":
-        # cleanup_event_queue may generate this event to forward cleanup
-        # requests to the right shard.
-        assert isinstance(users[0], int)
-        try:
-            client = access_client_descriptor(users[0], event["queue_id"])
-        except BadEventQueueIdError:
-            logging.info(
-                "Ignoring cleanup request for bad queue id %s (%d)", event["queue_id"], users[0]
-            )
-        else:
-            client.cleanup()
-    else:
-        process_event(event, cast(List[int], users))
-    logging.debug(
+    assert event["type"] == "presence"
+    process_presence_event(event, cast(List[int], users))
+
+    logging.info(
         "Tornado: Event %s for %s users took %sms",
         event["type"],
         len(users),
@@ -1558,6 +1521,7 @@ def get_wrapped_process_notification(queue_name: str) -> Callable[[List[Dict[str
         )
 
     def wrapped_process_notification(notices: List[Dict[str, Any]]) -> None:
+        print("PRESENCE notices", notices)
         for notice in notices:
             try:
                 process_notification(notice)

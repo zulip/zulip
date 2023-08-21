@@ -20,6 +20,7 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS
 from zerver.tornado.views import cleanup_event_queue, get_events, get_events_internal, notify
+from zerver.tornado2.views import get_presence_events, get_presence_events_internal, notify_presence
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
@@ -495,6 +496,7 @@ v1_api_and_json_patterns = [
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
     rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
+    rest_path("presence_events", GET=get_presence_events),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
@@ -740,6 +742,8 @@ urls += [
     # asynchronous Tornado behavior.
     path("notify_tornado", notify),
     path("api/v1/events/internal", get_events_internal),
+    path("notify_presence", notify_presence),
+    path("api/v1/presence_events/internal", get_presence_events_internal),
 ]
 
 # Python Social Auth

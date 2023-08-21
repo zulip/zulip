@@ -85,6 +85,7 @@ import * as scroll_util from "./scroll_util";
 import * as search from "./search";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import * as server_events2 from "./server_events2";
 import * as settings from "./settings";
 import * as settings_data from "./settings_data";
 import * as settings_display from "./settings_display";
@@ -697,6 +698,7 @@ export function initialize_everything() {
     timerender.initialize();
     message_view_header.initialize();
     server_events.initialize();
+    server_events2.initialize();
     user_status.initialize(user_status_params);
     compose_recipient.initialize();
     compose_pm_pill.initialize({

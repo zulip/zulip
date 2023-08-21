@@ -38,7 +38,7 @@ def get_user_id_tornado_port(realm_ports: List[int], user_id: int) -> int:
 
 
 def get_user_tornado_port(user: UserProfile) -> int:
-    return get_user_id_tornado_port(get_realm_tornado_ports(user.realm), user.id)
+    return 8888
 
 
 def get_tornado_url(port: int) -> str:
@@ -46,6 +46,4 @@ def get_tornado_url(port: int) -> str:
 
 
 def notify_tornado_queue_name(port: int) -> str:
-    if settings.TORNADO_PROCESSES == 1:
-        return "notify_tornado"
-    return f"notify_tornado_port_{port}"
+    return "notify_presence"

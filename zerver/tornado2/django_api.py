@@ -13,7 +13,7 @@ from urllib3.util import Retry
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
-from zerver.tornado.sharding import (
+from .sharding import (
     get_realm_tornado_ports,
     get_tornado_url,
     get_user_id_tornado_port,
@@ -70,7 +70,7 @@ def requests_client() -> requests.Session:
     return c
 
 
-def request_event_queue(
+def request_presence_event_queue(
     user_profile: UserProfile,
     user_client: Client,
     apply_markdown: bool,
@@ -112,7 +112,7 @@ def request_event_queue(
     if event_types is not None:
         req["event_types"] = orjson.dumps(event_types)
 
-    resp = requests_client().post(tornado_url + "/api/v1/events/internal", data=req)
+    resp = requests_client().post(tornado_url + "/api/v1/presence_events/internal", data=req)
     return resp.json()["queue_id"]
 
 
@@ -131,7 +131,7 @@ def get_user_events(
         "secret": settings.SHARED_SECRET,
         "client": "internal",
     }
-    resp = requests_client().post(tornado_url + "/api/v1/events/internal", data=post_data)
+    resp = requests_client().post(tornado_url + "/api/v1/presence_events/internal", data=post_data)
     return resp.json()["events"]
 
 
@@ -146,13 +146,14 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
         #
         # We use an import local to this function to prevent this hack
         # from creating import cycles.
-        from zerver.tornado.event_queue import process_notification
+        from .event_queue import process_notification
 
         process_notification(data)
     else:
+        print("Post with SHARED_SECRET")
         tornado_url = get_tornado_url(port)
         requests_client().post(
-            tornado_url + "/notify_tornado",
+            tornado_url + "/notify_presence",
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
         )
 
@@ -167,7 +168,7 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
 # with the schema verified in `zerver/lib/event_schema.py`.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
-def send_event(
+def send_presence_event(
     realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
 ) -> None:
     """`users` is a list of user IDs, or in some special cases like message
@@ -184,13 +185,11 @@ def send_event(
 
     port_user_map = {8888: list(users)}
 
-    print()
-    print("TORNADO2!!")
     assert event["type"] == "presence"
 
     for port, port_users in port_user_map.items():
         print()
-        print("TORNADO2!!", port, event, notify_tornado_queue_name(port))
+        print("PRESENCE: about to publish to queue!!", port, event, notify_tornado_queue_name(port))
         queue_json_publish(
             notify_tornado_queue_name(port),
             dict(event=event, users=port_users),

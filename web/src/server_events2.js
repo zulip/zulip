@@ -12,7 +12,6 @@ import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
 import * as server_events_dispatch from "./server_events_dispatch";
 import * as ui_report from "./ui_report";
-import * as watchdog from "./watchdog";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
@@ -26,7 +25,7 @@ let get_events_failures = 0;
 const get_events_params = {};
 
 function get_events_success(events) {
-    console.log("got events");
+    console.log("got events from NEW event loop");
     let messages = [];
     const update_message_events = [];
     const post_message_events = [];
@@ -37,7 +36,7 @@ function get_events_success(events) {
     };
 
     for (const event of events) {
-        console.log("event data", event);
+        console.log("event data from new event loop", event);
         try {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id, event.id);
         } catch (error) {
@@ -164,15 +163,8 @@ function get_events({dont_block = false} = {}) {
 
     get_events_params.dont_block = dont_block || get_events_failures > 0;
 
-    if (get_events_params.dont_block) {
-        // If we're requesting an immediate re-connect to the server,
-        // that means it's fairly likely that this client has been off
-        // the Internet and thus may have stale state (which is
-        // important for potential presence issues).
-        watchdog.set_suspect_offline(true);
-    }
     if (get_events_params.queue_id === undefined) {
-        get_events_params.queue_id = page_params.queue_id;
+        get_events_params.queue_id = page_params.presence_queue_id;
         get_events_params.last_event_id = page_params.last_event_id;
     }
 
@@ -188,11 +180,10 @@ function get_events({dont_block = false} = {}) {
 
     get_events_timeout = undefined;
     get_events_xhr = channel.get({
-        url: "/json/events",
+        url: "/json/presence_events",
         data: get_events_params,
         timeout: page_params.event_queue_longpoll_timeout_seconds * 1000,
         success(data) {
-            watchdog.set_suspect_offline(false);
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
@@ -207,18 +198,6 @@ function get_events({dont_block = false} = {}) {
         error(xhr, error_type) {
             try {
                 get_events_xhr = undefined;
-                // If we're old enough that our message queue has been
-                // garbage collected, immediately reload.
-                if (xhr.status === 400 && xhr.responseJSON?.code === "BAD_EVENT_QUEUE_ID") {
-                    page_params.event_queue_expired = true;
-                    reload.initiate({
-                        immediate: true,
-                        save_pointer: false,
-                        save_narrow: true,
-                        save_compose: true,
-                    });
-                    return;
-                }
 
                 if (error_type === "abort") {
                     // Don't restart if we explicitly aborted
@@ -266,34 +245,8 @@ export function home_view_loaded() {
 }
 
 export function initialize() {
-    reload.add_reload_hook(cleanup_event_queue);
-    watchdog.on_unsuspend(() => {
-        // Immediately poll for new events on unsuspend
-        blueslip.log("Restarting get_events due to unsuspend");
-        get_events_failures = 0;
-        restart_get_events({dont_block: true});
-    });
     get_events();
 }
-
-function cleanup_event_queue() {
-    // Submit a request to the server to clean up our event queue
-    if (page_params.event_queue_expired === true || page_params.no_event_queue === true) {
-        return;
-    }
-    blueslip.log("Cleaning up our event queue");
-    // Set expired because in a reload we may be called twice.
-    page_params.event_queue_expired = true;
-    channel.del({
-        url: "/json/events",
-        data: {queue_id: page_params.queue_id},
-        ignore_reload: true,
-    });
-}
-
-window.addEventListener("beforeunload", () => {
-    cleanup_event_queue();
-});
 
 // For unit testing
 export const _get_events_success = get_events_success;

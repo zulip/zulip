@@ -108,6 +108,7 @@ class Command(BaseCommand):
                     set_queue_client(queue_client)
                     # Process notifications received via RabbitMQ
                     queue_name = notify_tornado_queue_name(port)
+                    print("In management", queue_name)
                     stack.callback(queue_client.close)
                     queue_client.start_json_consumer(
                         queue_name, get_wrapped_process_notification(queue_name)

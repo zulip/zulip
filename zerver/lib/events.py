@@ -72,6 +72,7 @@ from zerver.models import (
     linkifiers_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
+from zerver.tornado2.django_api import request_presence_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
@@ -1517,6 +1518,23 @@ def do_events_register(
     while True:
         # Note that we pass event_types, not fetch_event_types here, since
         # that's what controls which future events are sent.
+        presence_queue_id = request_presence_event_queue(
+            user_profile,
+            user_client,
+            apply_markdown,
+            client_gravatar,
+            slim_presence,
+            queue_lifespan_secs,
+            event_types,
+            all_public_streams,
+            narrow=legacy_narrow,
+            bulk_message_deletion=bulk_message_deletion,
+            stream_typing_notifications=stream_typing_notifications,
+            user_settings_object=user_settings_object,
+            pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
+        )
+
         queue_id = request_event_queue(
             user_profile,
             user_client,
@@ -1550,6 +1568,9 @@ def do_events_register(
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
         )
+        ret["presence_queue_id"] = presence_queue_id
+        print("queue_id", ret["queue_id"])
+        print("presence_queue_id", ret["presence_queue_id"])
 
         # Apply events that came in while we were fetching initial data
         events = get_user_events(user_profile, queue_id, -1)

@@ -21,9 +21,9 @@ from zerver.lib.validator import (
     to_non_negative_int,
 )
 from zerver.models import Client, UserProfile, get_client, get_user_profile_by_id
-from zerver.tornado.descriptors import is_current_port
-from zerver.tornado.event_queue import access_client_descriptor, fetch_events, process_notification
-from zerver.tornado.sharding import get_user_tornado_port, notify_tornado_queue_name
+from .descriptors import is_current_port
+from .event_queue import access_client_descriptor, fetch_events, process_notification
+from .sharding import get_user_tornado_port, notify_tornado_queue_name
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -38,7 +38,7 @@ def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
 
 @internal_notify_view(True)
 @has_request_variables
-def notify(
+def notify_presence(
     request: HttpRequest, data: Mapping[str, Any] = REQ(json_validator=check_dict([]))
 ) -> HttpResponse:
     in_tornado_thread(process_notification)(data)
@@ -77,7 +77,7 @@ def cleanup_event_queue(
 
 @internal_notify_view(True)
 @has_request_variables
-def get_events_internal(
+def get_presence_events_internal(
     request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     user_profile = get_user_profile_by_id(user_profile_id)
@@ -88,7 +88,7 @@ def get_events_internal(
     return get_events_backend(request, user_profile)
 
 
-def get_events(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+def get_presence_events(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     user_port = get_user_tornado_port(user_profile)
     if not is_current_port(user_port):
         # When a single realm is split across multiple Tornado shards,

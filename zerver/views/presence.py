@@ -147,6 +147,7 @@ def update_active_status_backend(
     elif user_profile.presence_enabled:
         client = RequestNotes.get_notes(request).client
         assert client is not None
+        print("about to call update_user_presence")
         update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
 
     if ping_only:
