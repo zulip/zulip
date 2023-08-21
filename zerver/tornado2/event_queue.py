@@ -38,11 +38,8 @@ from tornado import autoreload
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.narrow import build_narrow_predicate
-from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.middleware import async_request_timer_restart
-from zerver.models import CustomProfileField
 from .descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from .exceptions import BadEventQueueIdError
 from .handlers import (
@@ -84,26 +81,9 @@ class ClientDescriptor:
         event_queue: "EventQueue",
         event_types: Optional[Sequence[str]],
         client_type_name: str,
-        apply_markdown: bool = True,
-        client_gravatar: bool = True,
         slim_presence: bool = False,
-        all_public_streams: bool = False,
         lifespan_secs: int = 0,
-        narrow: Collection[Sequence[str]] = [],
-        bulk_message_deletion: bool = False,
-        stream_typing_notifications: bool = False,
-        user_settings_object: bool = False,
-        pronouns_field_type_supported: bool = True,
-        linkifier_url_template: bool = False,
     ) -> None:
-        # TODO: We eventually want to upstream this code to the caller, but
-        # serialization concerns make it a bit difficult.
-        modern_narrow = narrow_dataclasses_from_tuples(narrow)
-
-        # These objects are serialized on shutdown and restored on restart.
-        # If fields are added or semantics are changed, temporary code must be
-        # added to load_event_queues() to update the restored objects.
-        # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
         self.realm_id = realm_id
         self.current_handler_id: Optional[int] = None
@@ -111,19 +91,9 @@ class ClientDescriptor:
         self.event_queue = event_queue
         self.event_types = event_types
         self.last_connection_time = time.time()
-        self.apply_markdown = apply_markdown
-        self.client_gravatar = client_gravatar
         self.slim_presence = slim_presence
-        self.all_public_streams = all_public_streams
         self.client_type_name = client_type_name
         self._timeout_handle: Any = None  # TODO: should be return type of ioloop.call_later
-        self.narrow = narrow
-        self.narrow_predicate = build_narrow_predicate(modern_narrow)
-        self.bulk_message_deletion = bulk_message_deletion
-        self.stream_typing_notifications = stream_typing_notifications
-        self.user_settings_object = user_settings_object
-        self.pronouns_field_type_supported = pronouns_field_type_supported
-        self.linkifier_url_template = linkifier_url_template
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -142,17 +112,7 @@ class ClientDescriptor:
             queue_timeout=self.queue_timeout,
             event_types=self.event_types,
             last_connection_time=self.last_connection_time,
-            apply_markdown=self.apply_markdown,
-            client_gravatar=self.client_gravatar,
             slim_presence=self.slim_presence,
-            all_public_streams=self.all_public_streams,
-            narrow=self.narrow,
-            client_type_name=self.client_type_name,
-            bulk_message_deletion=self.bulk_message_deletion,
-            stream_typing_notifications=self.stream_typing_notifications,
-            user_settings_object=self.user_settings_object,
-            pronouns_field_type_supported=self.pronouns_field_type_supported,
-            linkifier_url_template=self.linkifier_url_template,
         )
 
     def __repr__(self) -> str:
@@ -163,9 +123,6 @@ class ClientDescriptor:
         if "client_type" in d:
             # Temporary migration for the rename of client_type to client_type_name
             d["client_type_name"] = d["client_type"]
-        if "client_gravatar" not in d:
-            # Temporary migration for the addition of the client_gravatar field
-            d["client_gravatar"] = False
 
         if "slim_presence" not in d:
             d["slim_presence"] = False
@@ -176,17 +133,8 @@ class ClientDescriptor:
             EventQueue.from_dict(d["event_queue"]),
             d["event_types"],
             d["client_type_name"],
-            d["apply_markdown"],
-            d["client_gravatar"],
             d["slim_presence"],
-            d["all_public_streams"],
             d["queue_timeout"],
-            d.get("narrow", []),
-            d.get("bulk_message_deletion", False),
-            d.get("stream_typing_notifications", False),
-            d.get("user_settings_object", False),
-            d.get("pronouns_field_type_supported", True),
-            d.get("linkifier_url_template", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -377,8 +325,6 @@ def prune_internal_data(events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 clients: Dict[str, ClientDescriptor] = {}
 # maps user id to list of client descriptors
 user_clients: Dict[int, List[ClientDescriptor]] = {}
-# maps realm id to list of client descriptors with all_public_streams=True
-realm_clients_all_streams: Dict[int, List[ClientDescriptor]] = {}
 
 # list of registered gc hooks.
 # each one will be called with a user profile id, queue, and bool
@@ -425,8 +371,6 @@ def get_client_descriptors_for_realm_all_streams(realm_id: int) -> List[ClientDe
 
 def add_to_client_dicts(client: ClientDescriptor) -> None:
     user_clients.setdefault(client.user_profile_id, []).append(client)
-    if client.all_public_streams or client.narrow != []:
-        realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
 
 
 def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> ClientDescriptor:
@@ -660,21 +604,14 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         presence=event["presence"],
     )
 
+    print(f"OUTBOUND! about to send out event to some subset of {len(users)} users")
     for user_profile_id in users:
-        print(user_profile_id, get_client_descriptors_for_user(user_profile_id))
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
                 if client.slim_presence:
                     client.add_event(slim_event)
                 else:
                     client.add_event(legacy_event)
-
-
-def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
-    for user_profile_id in users:
-        for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event(event):
-                client.add_event(event)
 
 
 def process_notification(notice: Mapping[str, Any]) -> None:

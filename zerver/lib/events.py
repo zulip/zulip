@@ -1521,18 +1521,8 @@ def do_events_register(
         presence_queue_id = request_presence_event_queue(
             user_profile,
             user_client,
-            apply_markdown,
-            client_gravatar,
             slim_presence,
             queue_lifespan_secs,
-            event_types,
-            all_public_streams,
-            narrow=legacy_narrow,
-            bulk_message_deletion=bulk_message_deletion,
-            stream_typing_notifications=stream_typing_notifications,
-            user_settings_object=user_settings_object,
-            pronouns_field_type_supported=pronouns_field_type_supported,
-            linkifier_url_template=linkifier_url_template,
         )
 
         queue_id = request_event_queue(

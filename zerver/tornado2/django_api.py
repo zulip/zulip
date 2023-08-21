@@ -71,18 +71,8 @@ def requests_client() -> requests.Session:
 def request_presence_event_queue(
     user_profile: UserProfile,
     user_client: Client,
-    apply_markdown: bool,
-    client_gravatar: bool,
     slim_presence: bool,
     queue_lifespan_secs: int,
-    event_types: Optional[Sequence[str]] = None,
-    all_public_streams: bool = False,
-    narrow: Iterable[Sequence[str]] = [],
-    bulk_message_deletion: bool = False,
-    stream_typing_notifications: bool = False,
-    user_settings_object: bool = False,
-    pronouns_field_type_supported: bool = True,
-    linkifier_url_template: bool = False,
 ) -> Optional[str]:
     if not settings.USING_TORNADO:
         return None
@@ -90,25 +80,13 @@ def request_presence_event_queue(
     tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
     req = {
         "dont_block": "true",
-        "apply_markdown": orjson.dumps(apply_markdown),
-        "client_gravatar": orjson.dumps(client_gravatar),
         "slim_presence": orjson.dumps(slim_presence),
-        "all_public_streams": orjson.dumps(all_public_streams),
         "client": "internal",
         "user_profile_id": user_profile.id,
         "user_client": user_client.name,
-        "narrow": orjson.dumps(narrow),
         "secret": settings.SHARED_SECRET,
         "lifespan_secs": queue_lifespan_secs,
-        "bulk_message_deletion": orjson.dumps(bulk_message_deletion),
-        "stream_typing_notifications": orjson.dumps(stream_typing_notifications),
-        "user_settings_object": orjson.dumps(user_settings_object),
-        "pronouns_field_type_supported": orjson.dumps(pronouns_field_type_supported),
-        "linkifier_url_template": orjson.dumps(linkifier_url_template),
     }
-
-    if event_types is not None:
-        req["event_types"] = orjson.dumps(event_types)
 
     resp = requests_client().post(tornado_url + "/api/v1/presence_events/internal", data=req)
     return resp.json()["queue_id"]
