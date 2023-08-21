@@ -325,10 +325,6 @@ def get_client_descriptors_for_user(user_profile_id: int) -> List[ClientDescript
     return user_clients.get(user_profile_id, [])
 
 
-def get_client_descriptors_for_realm_all_streams(realm_id: int) -> List[ClientDescriptor]:
-    return realm_clients_all_streams.get(realm_id, [])
-
-
 def add_to_client_dicts(client: ClientDescriptor) -> None:
     user_clients.setdefault(client.user_profile_id, []).append(client)
 
