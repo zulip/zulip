@@ -8,7 +8,7 @@ but we more or less just distribute the events into the appropriate
 buckets without any extra business logic.
 """
 
-from .event_queue import get_client_descriptors_for_user
+from .clients import get_clients_for_user
 
 
 def process_notifications(notices):
@@ -23,6 +23,6 @@ def process_notifications(notices):
         print(f"OUTBOUND! about to send out event to some subset of {len(user_ids)} users")
 
         for user_id in user_ids:
-            for client in get_client_descriptors_for_user(user_id):
+            for client in get_clients_for_user(user_id):
                 if client.accepts_event(event):
                     client.add_event(event)

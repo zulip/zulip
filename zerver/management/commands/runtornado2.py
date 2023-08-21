@@ -20,7 +20,7 @@ from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado2.application import create_tornado_application, setup_tornado_rabbitmq
 from zerver.tornado2.descriptors import set_current_port
-from zerver.tornado2.event_queue import setup_event_queue
+from zerver.tornado2.clients import setup_event_queue
 from zerver.tornado2.process import process_notifications
 from zerver.tornado2.config import notify_queue_name
 

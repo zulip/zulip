@@ -321,7 +321,7 @@ def access_client_descriptor(user_id: int, queue_id: str) -> ClientDescriptor:
     raise BadEventQueueIdError(queue_id)
 
 
-def get_client_descriptors_for_user(user_profile_id: int) -> List[ClientDescriptor]:
+def get_clients_for_user(user_profile_id: int) -> List[ClientDescriptor]:
     return user_clients.get(user_profile_id, [])
 
 

@@ -6,7 +6,7 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import AsynchronousResponse, json_success
 from zerver.lib.validator import check_bool, check_int, to_non_negative_int
 from zerver.models import get_client, get_user_profile_by_id
-from .event_queue import fetch_events
+from .clients import fetch_events
 
 def in_tornado_thread(f):
     async def wrapped(*args, **kwargs):
