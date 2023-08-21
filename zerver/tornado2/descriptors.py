@@ -1,29 +1,12 @@
-from typing import TYPE_CHECKING, Dict, Optional
+descriptors_by_handler_id = {}
 
-from django.conf import settings
-
-descriptors_by_handler_id: Dict[int, "ClientDescriptor"] = {}
-
-
-def get_descriptor_by_handler_id(handler_id: int) -> Optional["ClientDescriptor"]:
+def get_descriptor_by_handler_id(handler_id):
     return descriptors_by_handler_id.get(handler_id)
 
 
-def set_descriptor_by_handler_id(handler_id: int, client_descriptor: "ClientDescriptor") -> None:
+def set_descriptor_by_handler_id(handler_id, client_descriptor):
     descriptors_by_handler_id[handler_id] = client_descriptor
 
 
-def clear_descriptor_by_handler_id(handler_id: int) -> None:
+def clear_descriptor_by_handler_id(handler_id):
     del descriptors_by_handler_id[handler_id]
-
-
-current_port: Optional[int] = None
-
-
-def is_current_port(port: int) -> Optional[int]:
-    return settings.TEST_SUITE or current_port == port
-
-
-def set_current_port(port: int) -> None:
-    global current_port
-    current_port = port
