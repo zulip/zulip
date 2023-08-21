@@ -1303,6 +1303,9 @@ def send_pm_if_empty_stream(
     if not sender.is_bot or sender.bot_owner is None:
         return
 
+    if is_cross_realm_bot_email(sender.delivery_email):
+        return
+
     if sender.bot_owner is not None:
         with override_language(sender.bot_owner.default_language):
             arg_dict: Dict[str, Any] = {
