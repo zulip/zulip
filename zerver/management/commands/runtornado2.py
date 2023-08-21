@@ -18,16 +18,16 @@ if settings.PRODUCTION:
 
 from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 from zerver.lib.debug import interactive_debug_listen
-from zerver.tornado.application import create_tornado_application, setup_tornado_rabbitmq
-from zerver.tornado.descriptors import set_current_port
-from zerver.tornado.event_queue import (
+from zerver.tornado2.application import create_tornado_application, setup_tornado_rabbitmq
+from zerver.tornado2.descriptors import set_current_port
+from zerver.tornado2.event_queue import (
     add_client_gc_hook,
     dump_event_queues,
     get_wrapped_process_notification,
     missedmessage_hook,
     setup_event_queue,
 )
-from zerver.tornado.sharding import notify_tornado_queue_name
+from zerver.tornado2.sharding import notify_tornado_queue_name
 
 if settings.USING_RABBITMQ:
     from zerver.lib.queue import TornadoQueueClient, set_queue_client
@@ -61,6 +61,9 @@ class Command(BaseCommand):
 
         if not addr:
             addr = "127.0.0.1"
+
+        # EXPERIMENT!!!
+        assert port == 8888
 
         if settings.DEBUG:
             logging.basicConfig(
@@ -119,7 +122,7 @@ class Command(BaseCommand):
                 stack.callback(http_server.stop)
                 http_server.listen(port, address=addr)
 
-                from zerver.tornado.ioloop_logging import logging_data
+                from zerver.tornado2.ioloop_logging import logging_data
 
                 logging_data["port"] = str(port)
                 await setup_event_queue(http_server, port)

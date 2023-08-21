@@ -182,21 +182,17 @@ def send_event(
             user_id = user if isinstance(user, int) else user["id"]
             port_user_map[get_user_id_tornado_port(realm_ports, user_id)].append(user)
 
-    # EXPERIMENT!!!!
-    if event["type"] == "presence":
-        port_user_map = {8888: list(users)}
+    port_user_map = {8888: list(users)}
+
+    print()
+    print("TORNADO2!!")
+    assert event["type"] == "presence"
 
     for port, port_users in port_user_map.items():
         print()
-        print("GOT EVENT!!!", port, event, notify_tornado_queue_name(port))
+        print("TORNADO2!!", port, event, notify_tornado_queue_name(port))
         queue_json_publish(
             notify_tornado_queue_name(port),
             dict(event=event, users=port_users),
             lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
         )
-
-
-def send_event_on_commit(
-    realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
-) -> None:
-    transaction.on_commit(lambda: send_event(realm, event, users))

@@ -152,7 +152,7 @@ def server_processes() -> List[List[str]]:
             "python3",
             *tornado_autoreload,
             "./manage.py",
-            "runtornado",
+            "runtornado2",
             *manage_args,
             f"127.0.0.1:{tornado2_port}",
         ],
