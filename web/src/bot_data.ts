@@ -26,7 +26,7 @@ const basic_bot_schema = z.object({
     email: z.string(),
     full_name: z.string(),
     is_active: z.boolean(),
-    owner_id: z.number(),
+    owner_id: z.number().nullable(),
     user_id: z.number(),
 });
 
@@ -90,7 +90,7 @@ export function update(bot_id: number, bot_update: ServerUpdateBotData): void {
 export function get_all_bots_for_current_user(): Bot[] {
     const ret = [];
     for (const bot of bots.values()) {
-        if (people.is_my_user_id(bot.owner_id)) {
+        if (bot.owner_id !== null && people.is_my_user_id(bot.owner_id)) {
             ret.push(bot);
         }
     }
@@ -100,7 +100,7 @@ export function get_all_bots_for_current_user(): Bot[] {
 export function get_editable(): Bot[] {
     const ret = [];
     for (const bot of bots.values()) {
-        if (bot.is_active && people.is_my_user_id(bot.owner_id)) {
+        if (bot.is_active && bot.owner_id !== null && people.is_my_user_id(bot.owner_id)) {
             ret.push(bot);
         }
     }
