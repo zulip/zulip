@@ -1262,7 +1262,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
     if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
         return
 
-    if not sender.is_bot or sender.bot_owner is None:
+    if not sender.is_bot or sender.bot_owner_id is None:
         return
 
     # Don't send these notifications for cross-realm bot messages
@@ -1280,6 +1280,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
     if last_reminder and timezone_now() - last_reminder <= waitperiod:
         return
 
+    assert sender.bot_owner is not None
     internal_send_private_message(
         get_system_bot(settings.NOTIFICATION_BOT, sender.bot_owner.realm_id),
         sender.bot_owner,
@@ -1300,7 +1301,7 @@ def send_pm_if_empty_stream(
     """If a bot sends a message to a stream that doesn't exist or has no
     subscribers, sends a notification to the bot owner (if not a
     cross-realm bot) so that the owner can correct the issue."""
-    if not sender.is_bot or sender.bot_owner is None:
+    if not sender.is_bot or sender.bot_owner_id is None:
         return
 
     if is_cross_realm_bot_email(sender.delivery_email):
