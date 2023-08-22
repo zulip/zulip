@@ -28,6 +28,31 @@ class UserGroupDict(TypedDict):
     can_mention_group: int
 
 
+def has_user_group_access(
+    user_group: UserGroup, user_profile: UserProfile, *, for_read: bool
+) -> bool:
+    if for_read and not user_profile.is_guest:
+        # Everyone is allowed to read a user group and check who
+        # are its members. Guests should be unable to reach this
+        # code path, since they can't access user groups API
+        # endpoints, but we check for guests here for defense in
+        # depth.
+        return True
+
+    if user_group.is_system_group:
+        return False
+
+    group_member_ids = get_user_group_direct_member_ids(user_group)
+    if (
+        not user_profile.is_realm_admin
+        and not user_profile.is_moderator
+        and user_profile.id not in group_member_ids
+    ):
+        return False
+
+    return True
+
+
 def access_user_group_by_id(
     user_group_id: int, user_profile: UserProfile, *, for_read: bool
 ) -> UserGroup:
@@ -35,22 +60,10 @@ def access_user_group_by_id(
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
     except UserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
-    if for_read and not user_profile.is_guest:
-        # Everyone is allowed to read a user group and check who
-        # are its members. Guests should be unable to reach this
-        # code path, since they can't access user groups API
-        # endpoints, but we check for guests here for defense in
-        # depth.
-        return user_group
-    if user_group.is_system_group:
+
+    if not has_user_group_access(user_group, user_profile, for_read=for_read):
         raise JsonableError(_("Insufficient permission"))
-    group_member_ids = get_user_group_direct_member_ids(user_group)
-    if (
-        not user_profile.is_realm_admin
-        and not user_profile.is_moderator
-        and user_profile.id not in group_member_ids
-    ):
-        raise JsonableError(_("Insufficient permission"))
+
     return user_group
 
 
