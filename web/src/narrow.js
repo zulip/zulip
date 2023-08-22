@@ -903,8 +903,9 @@ export function by_topic(target_id, opts) {
         unread_ops.notify_server_message_read(original);
     }
 
+    const stream_name = stream_data.get_stream_name_from_id(original.stream_id);
     const search_terms = [
-        {operator: "stream", operand: original.stream},
+        {operator: "stream", operand: stream_name},
         {operator: "topic", operand: original.topic},
     ];
     opts = {then_select_id: target_id, ...opts};
@@ -942,7 +943,7 @@ export function by_recipient(target_id, opts) {
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            by("stream", stream_data.get_stream_name_from_id(message.stream_id));
+            by("stream", stream_data.get_stream_name_from_id(message.stream_id), opts);
             break;
     }
 }
