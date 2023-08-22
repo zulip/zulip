@@ -1152,9 +1152,6 @@ td.pointer {
     text-align: right;
     opacity: 0.8;
     color: var(--color-text-default);
-    font-feature-settings:
-        "pnum" on,
-        "lnum" on;
     letter-spacing: 0.02em;
     /* Disable blue link styling for the message timestamp link. */
     &:hover {
