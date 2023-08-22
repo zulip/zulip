@@ -22,7 +22,7 @@ are:
 - Ubuntu 20.04, 22.04
 - Debian 11, 12
 - CentOS 7 (beta)
-- Fedora 33 and 34 (beta)
+- Fedora 38 (beta)
 - RHEL 7 (beta)
 
 **Note**: You should not use the `root` user to run the installation.
