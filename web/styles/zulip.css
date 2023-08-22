@@ -1495,11 +1495,11 @@ td.pointer {
     align-items: center;
 
     .change_visibility_policy {
-        display: flex;
         cursor: pointer;
 
         i {
             font-size: 17px;
+            display: block;
         }
     }
 }

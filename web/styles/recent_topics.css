@@ -38,6 +38,10 @@
                 /* Use the same color as the message feed pointer */
                 box-shadow: 0 3px 0 hsl(215deg 47% 50%);
             }
+
+            .change_visibility_policy i {
+                display: block;
+            }
         }
 
         & a {
@@ -204,6 +208,7 @@
         .flex_container .right_part {
             margin-left: auto;
             display: inline-flex;
+            align-items: center;
         }
 
         .recent_topic_actions {
@@ -222,9 +227,13 @@
         }
 
         .recent_topic_actions .recent_topics_focusable {
-            display: flex;
-            align-items: center;
+            /* Keep a uniform distance from the focus-within
+               indicator at bottom. */
             padding-bottom: 3px;
+            /* But push down with margin by the same amount,
+               so as to preserve vertical alignment introduced
+               by the parent flexbox. */
+            margin-top: 3px;
         }
 
         .recent_topics_participants {
