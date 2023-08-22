@@ -171,7 +171,8 @@
         }
 
         .unread_mention_info:not(:empty) {
-            margin-right: -5px;
+            /* Zero out right margin from left sidebar presentation. */
+            margin-right: 0;
             /* Match with its font-size. */
             line-height: 14px;
         }
@@ -212,8 +213,9 @@
         }
 
         .recent_topic_actions {
-            /* To add spacing between unread count and mute icon */
-            margin-left: 10px;
+            /* Add spacing between mention marker, unread count
+               and mute icon */
+            margin-left: 5px;
             display: flex;
             flex-flow: row nowrap;
         }
@@ -234,6 +236,12 @@
                so as to preserve vertical alignment introduced
                by the parent flexbox. */
             margin-top: 3px;
+        }
+
+        .recent_topic_actions .recipient_bar_icon {
+            /* Zero out padding used in recipient bar. */
+            padding-right: 0;
+            padding-left: 0;
         }
 
         .recent_topics_participants {
