@@ -986,7 +986,8 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
 # * api_key is a secret.
 # * password is a secret.
 # * uuid is unlikely to be useful if the domain changes.
-EXCLUDED_USER_PROFILE_FIELDS = ["api_key", "password", "uuid"]
+# * groups and user_permissions fields are not used.
+EXCLUDED_USER_PROFILE_FIELDS = ["api_key", "groups", "password", "user_permissions", "uuid"]
 
 
 def custom_fetch_user_profile(response: TableData, context: Context) -> None:
