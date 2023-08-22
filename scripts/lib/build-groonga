@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
+version="13.0.5"
+sha256=f49c4b2bd24f60a3237495dda241017c42076f4d2012bc523fcfa4f349f069a0
+
+tmpdir="$(mktemp -d)"
+trap 'rm -r "$tmpdir"' EXIT
+cd "$tmpdir"
+tarball="groonga-$version.tar.gz"
+curl -fLO --retry 3 "https://github.com/groonga/groonga/releases/download/v$version/$tarball"
+sha256sum -c <<<"$sha256 $tarball"
+tar -xzf "$tarball"
+cd "groonga-$version"
+
+./configure --prefix=/usr
+make -j "$(nproc)"
+make install

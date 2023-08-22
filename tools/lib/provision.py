@@ -88,10 +88,8 @@ elif vendor == "ubuntu" and os_version == "22.04":  # jammy
     POSTGRESQL_VERSION = "14"
 elif vendor == "neon" and os_version == "20.04":  # KDE Neon
     POSTGRESQL_VERSION = "12"
-elif vendor == "fedora" and os_version == "33":
-    POSTGRESQL_VERSION = "13"
-elif vendor == "fedora" and os_version == "34":
-    POSTGRESQL_VERSION = "13"
+elif vendor == "fedora" and os_version == "38":
+    POSTGRESQL_VERSION = "15"
 elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
@@ -160,6 +158,7 @@ COMMON_YUM_DEPENDENCIES = [
     # Puppeteer dependencies end here.
 ]
 
+BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor == "debian" and os_version in ["12"] or vendor == "ubuntu" and os_version in []:
     # For platforms without a PGroonga release, we need to build it
@@ -213,10 +212,10 @@ elif "fedora" in os_families():
         f"postgresql{POSTGRESQL_VERSION}",
         f"postgresql{POSTGRESQL_VERSION}-devel",
         # Needed to build PGroonga from source
-        "groonga-devel",
         "msgpack-devel",
         *VENV_DEPENDENCIES,
     ]
+    BUILD_GROONGA_FROM_SOURCE = True
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
@@ -246,6 +245,8 @@ def install_system_deps() -> None:
 
     # For some platforms, there aren't published PGroonga
     # packages available, so we build them from source.
+    if BUILD_GROONGA_FROM_SOURCE:
+        run_as_root(["./scripts/lib/build-groonga"])
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
 
@@ -329,11 +330,16 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     # Later steps will ensure PostgreSQL is started
 
     # Link in tsearch data files
+    if vendor == "fedora":
+        # Since F36 dictionary files were moved away from /usr/share/myspell
+        tsearch_source_prefix = "/usr/share/hunspell"
+    else:
+        tsearch_source_prefix = "/usr/share/myspell"
     run_as_root(
         [
             "ln",
             "-nsf",
-            "/usr/share/myspell/en_US.dic",
+            os.path.join(tsearch_source_prefix, "en_US.dic"),
             f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.dict",
         ]
     )
@@ -341,7 +347,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         [
             "ln",
             "-nsf",
-            "/usr/share/myspell/en_US.aff",
+            os.path.join(tsearch_source_prefix, "en_US.aff"),
             f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.affix",
         ]
     )
@@ -363,6 +369,11 @@ def main(options: argparse.Namespace) -> NoReturn:
     else:
         # hash the content of setup-yum-repo*
         with open("scripts/lib/setup-yum-repo", "rb") as fb:
+            sha_sum.update(fb.read())
+
+    # hash the content of build-pgroonga if Groonga is built from source
+    if BUILD_GROONGA_FROM_SOURCE:
+        with open("scripts/lib/build-groonga", "rb") as fb:
             sha_sum.update(fb.read())
 
     # hash the content of build-pgroonga if PGroonga is built from source
