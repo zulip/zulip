@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
+import {buddy_list} from "./buddy_list";
 import {page_params} from "./page_params";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -161,6 +162,9 @@ export function initialize_right_sidebar(): void {
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);
+
+    buddy_list.initialize_tooltips();
+
     update_invite_user_option();
     if (page_params.is_spectator) {
         rendered_markdown.update_elements(
@@ -186,5 +190,19 @@ export function initialize_right_sidebar(): void {
                 $status_emoji.attr("src", still_url);
             }
         }
+    });
+
+    $("#buddy-list-users-matching-view-container").on(
+        "click",
+        ".buddy-list-subsection-header",
+        (e) => {
+            e.stopPropagation();
+            buddy_list.toggle_users_matching_view_section();
+        },
+    );
+
+    $("#buddy-list-other-users-container").on("click", ".buddy-list-subsection-header", (e) => {
+        e.stopPropagation();
+        buddy_list.toggle_other_users_section();
     });
 }
