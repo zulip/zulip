@@ -100,10 +100,7 @@ jobs:
         run: |
           # This is the main setup job for the test suite
           ./tools/ci/setup-backend --skip-dev-db-build
-
-          # Cleaning caches is mostly unnecessary in GitHub Actions, because
-          # most builds don't get to write to the cache.
-          # scripts/lib/clean_unused_caches.py --verbose --threshold 0
+          scripts/lib/clean_unused_caches.py --verbose --threshold=0
 
       - name: Run tools test
         run: |
