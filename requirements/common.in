@@ -27,6 +27,12 @@ Pillow
 
 # Needed for building complex DB queries
 SQLAlchemy==1.4.*
+# A requirement of SQLAlchemy that we don't use
+# (https://github.com/sqlalchemy/sqlalchemy/issues/6136) but that can
+# lead to segfaults when restarting
+# (https://github.com/python-greenlet/greenlet/issues/330), so bump to
+# the fixed version
+greenlet>=3.0.0a1
 
 # Needed for S3 file uploads and other AWS tools
 boto3
