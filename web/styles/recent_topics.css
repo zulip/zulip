@@ -175,6 +175,8 @@
             margin-right: 0;
             /* Match with its font-size. */
             line-height: 14px;
+            /* Present a default/arrow cursor */
+            cursor: default;
         }
 
         .unread_hidden {
