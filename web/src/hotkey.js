@@ -292,7 +292,7 @@ export function process_escape_key(e) {
         }
 
         // Emoji picker goes before compose so compose emoji picker is closed properly.
-        if (emoji_picker.reactions_popped()) {
+        if (emoji_picker.is_open()) {
             emoji_picker.hide_emoji_popover();
             return true;
         }
@@ -404,7 +404,7 @@ export function process_enter_key(e) {
         return false;
     }
 
-    if (emoji_picker.reactions_popped()) {
+    if (emoji_picker.is_open()) {
         return emoji_picker.navigate("enter", e);
     }
 
@@ -557,7 +557,7 @@ export function process_tab_key() {
         return true;
     }
 
-    if (emoji_picker.reactions_popped()) {
+    if (emoji_picker.is_open()) {
         return emoji_picker.navigate("tab");
     }
 
@@ -593,7 +593,7 @@ export function process_shift_tab_key() {
     }
 
     // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
-    if (emoji_picker.reactions_popped()) {
+    if (emoji_picker.is_open()) {
         return emoji_picker.navigate("shift_tab");
     }
 
@@ -647,7 +647,7 @@ export function process_hotkey(e, hotkey) {
 
     // This block needs to be before the open modals check, because
     // the "user status" modal can show the emoji picker.
-    if (emoji_picker.reactions_popped()) {
+    if (emoji_picker.is_open()) {
         return emoji_picker.navigate(event_name);
     }
 

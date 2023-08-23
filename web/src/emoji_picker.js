@@ -187,12 +187,12 @@ function refill_section_head_offsets($popover) {
     });
 }
 
-export function reactions_popped() {
+export function is_open() {
     return Boolean(emoji_popover_instance);
 }
 
 export function hide_emoji_popover() {
-    if (!reactions_popped()) {
+    if (!is_open()) {
         return;
     }
     current_message_id = null;
@@ -447,7 +447,7 @@ function change_focus_to_filter() {
 export function navigate(event_name, e) {
     if (
         event_name === "toggle_reactions_popover" &&
-        reactions_popped() &&
+        is_open() &&
         (search_is_active === false || search_results.length === 0)
     ) {
         hide_emoji_popover();
@@ -792,7 +792,7 @@ export function register_click_handlers() {
         e.preventDefault();
         e.stopPropagation();
         toggle_emoji_popover(e.target, undefined, {placement: "bottom"});
-        if (reactions_popped()) {
+        if (is_open()) {
             // Because the emoji picker gets drawn on top of the user
             // status modal, we need this hack to make clicking outside
             // the emoji picker only close the emoji picker, and not the
