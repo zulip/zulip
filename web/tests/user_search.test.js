@@ -76,16 +76,28 @@ function test(label, f) {
     });
 }
 
+function set_input_val(val) {
+    $(".user-list-filter").val(val);
+    $(".user-list-filter").trigger("input");
+}
+
 test("clear_search", ({override}) => {
+    override(presence, "get_status", () => "active");
+    override(presence, "get_user_ids", () => all_user_ids);
+    override(popovers, "hide_all_except_sidebars", () => {});
+    override(resize, "resize_sidebars", () => {});
+
+    // Empty because no users match this search string.
+    override(fake_buddy_list, "populate", (user_ids) => {
+        assert.deepEqual(user_ids, {keys: []});
+    });
+    set_input_val("somevalue");
+    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
+
+    // Now we're clearing the search string and everyone shows up again.
     override(fake_buddy_list, "populate", (user_ids) => {
         assert.deepEqual(user_ids, {keys: ordered_user_ids});
     });
-    override(presence, "get_status", () => "active");
-    override(presence, "get_user_ids", () => all_user_ids);
-    override(resize, "resize_sidebars", () => {});
-
-    $(".user-list-filter").val("somevalue");
-    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
     $("#clear_search_people_button").trigger("click");
     assert.equal($(".user-list-filter").val(), "");
     $("#clear_search_people_button").trigger("click");
@@ -98,11 +110,14 @@ test("escape_search", ({override}) => {
     override(resize, "resize_sidebars", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
 
-    $(".user-list-filter").val("somevalue");
+    set_input_val("somevalue");
     activity.escape_search();
     assert.equal($(".user-list-filter").val(), "");
     activity.escape_search();
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
+
+    // We need to reset this because the unit tests aren't isolated from each other.
+    set_input_val("");
 });
 
 test("blur search right", ({override}) => {

@@ -334,7 +334,7 @@ test("simple search", () => {
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
-    const user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
+    const user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
 
     assert.deepEqual(user_ids, [selma.user_id]);
 });
@@ -345,14 +345,14 @@ test("muted users excluded from search", () => {
 
     let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
     assert.equal(user_ids.includes(selma.user_id), false);
-    user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
     assert.deepEqual(user_ids, []);
-    assert.ok(!buddy_data.matches_filter("sel", selma.user_id));
+    assert.ok(!buddy_data.matches_filter("selm", selma.user_id));
 
     muted_users.remove_muted_user(selma.user_id);
-    user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
     assert.deepEqual(user_ids, [selma.user_id]);
-    assert.ok(buddy_data.matches_filter("sel", selma.user_id));
+    assert.ok(buddy_data.matches_filter("selm", selma.user_id));
 });
 
 test("bulk_data_hacks", ({override_rewire}) => {
@@ -398,9 +398,9 @@ test("bulk_data_hacks", ({override_rewire}) => {
     assert.equal(user_ids.length, 0);
 
     // We match on "h" for the first name, and the result limit
-    // is relaxed for searches.  (We exclude "me", though.)
+    // is relaxed for searches.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("h");
-    assert.equal(user_ids.length, 996);
+    assert.equal(user_ids.length, 997);
 
     // We match on "p" for the email.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("p");
