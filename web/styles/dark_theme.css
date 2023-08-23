@@ -756,8 +756,8 @@
         }
     }
 
-    #user_presences li:hover,
-    #user_presences li.highlighted_user {
+    #buddy-list-users-matching-view li:hover,
+    #buddy-list-users-matching-view li.highlighted_user {
         background-color: hsl(136deg 25% 73% / 20%);
     }
 
