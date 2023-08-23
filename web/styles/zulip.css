@@ -3077,7 +3077,7 @@ select.invite-as {
 #scroll-to-bottom-button-container {
     display: block;
     position: absolute;
-    bottom: 41px;
+    bottom: var(--compose-box-height);
     right: 0;
     visibility: hidden;
     opacity: 0;

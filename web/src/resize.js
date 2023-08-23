@@ -115,7 +115,8 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
         // subtract 10 for the selected message border.
         bottom_whitespace_height - compose_non_textarea_height - 10,
     );
-    $("#scroll-to-bottom-button-container").css("bottom", compose_height);
+    // Capture the compose box's height for use in CSS
+    $("html").css("--compose-box-height", `${compose_height}px`);
 }
 
 export function resize_bottom_whitespace() {
