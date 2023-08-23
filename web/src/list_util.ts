@@ -4,6 +4,7 @@ const list_selectors = [
     "#stream_filters",
     "#left-sidebar-navigation-list",
     "#buddy-list-users-matching-view",
+    "#buddy-list-other-users",
     "#send_later_options",
 ];
 

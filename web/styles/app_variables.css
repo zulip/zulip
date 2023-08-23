@@ -197,6 +197,7 @@
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
     --color-background-popover: hsl(0deg 0% 100%);
     --color-background-alert-word: hsl(18deg 100% 84%);
+    --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
 
     /* Compose box colors */
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
@@ -247,6 +248,8 @@
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
     --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
+    --color-text-url: hsl(200deg 100% 40%);
+    --color-text-url-hover: hsl(200deg 100% 25%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -484,6 +487,7 @@
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
     --color-background-alert-word: hsl(22deg 70% 35%);
+    --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
 
     /* Compose box colors */
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
@@ -532,6 +536,7 @@
     --color-text-search: hsl(0deg 0% 100% / 75%);
     --color-text-search-hover: hsl(0deg 0% 100%);
     --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
+    --color-text-empty-list-message: hsl(0deg 0% 67%);
     --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
     --color-text-full-name: hsl(0deg 0% 100%);
     --color-text-item: hsl(0deg 0% 50%);
@@ -547,6 +552,7 @@
         hsl(0deg 0% 75%) 75%,
         hsl(0deg 0% 11%)
     );
+    --color-text-url-hover: hsl(200deg 79% 66%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical

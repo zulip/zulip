@@ -747,6 +747,7 @@ export function initialize_everything(state_data) {
             sidebar_ui.hide_all();
             popovers.hide_all();
             narrow.by("stream", sub.name, {trigger});
+            activity_ui.build_user_sidebar();
         },
     });
     stream_list_sort.initialize();
@@ -792,7 +793,6 @@ export function initialize_everything(state_data) {
     search.initialize({
         on_narrow_search: narrow.activate,
     });
-    tutorial.initialize();
     desktop_notifications.initialize();
     audible_notifications.initialize();
     compose_notifications.initialize({
@@ -814,9 +814,6 @@ export function initialize_everything(state_data) {
     settings_toggle.initialize();
     about_zulip.initialize();
 
-    // All overlays must be initialized before hashchange.js
-    hashchange.initialize();
-
     initialize_unread_ui();
     activity.initialize();
     activity_ui.initialize({
@@ -824,6 +821,13 @@ export function initialize_everything(state_data) {
             narrow.by("dm", email, {trigger: "sidebar"});
         },
     });
+    // This needs to happen after activity_ui.initialize, so that user_filter
+    // is defined.
+    tutorial.initialize();
+
+    // All overlays, and also activity_ui, must be initialized before hashchange.js
+    hashchange.initialize();
+
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();

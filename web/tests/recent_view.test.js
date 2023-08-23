@@ -189,6 +189,8 @@ dropdown_widget.DropdownWidget = function DropdownWidget() {
 };
 
 const {all_messages_data} = zrequire("all_messages_data");
+const {buddy_list} = zrequire("buddy_list");
+const activity_ui = zrequire("activity_ui");
 const people = zrequire("people");
 const rt = zrequire("recent_view_ui");
 const recent_view_util = zrequire("recent_view_util");
@@ -444,7 +446,7 @@ function test(label, f) {
     });
 }
 
-test("test_recent_view_show", ({mock_template}) => {
+test("test_recent_view_show", ({override, mock_template}) => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
@@ -458,12 +460,19 @@ test("test_recent_view_show", ({mock_template}) => {
         is_spectator: false,
     };
 
+    activity_ui.set_cursor_and_filter();
+
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
         return "<recent_view table stub>";
     });
 
     mock_template("recent_view_row.hbs", false, noop);
+
+    let buddy_list_populated = false;
+    override(buddy_list, "populate", () => {
+        buddy_list_populated = true;
+    });
 
     stub_out_filter_buttons();
     // We don't test the css calls; we just skip over them.
@@ -473,6 +482,8 @@ test("test_recent_view_show", ({mock_template}) => {
     rt.process_messages(messages);
 
     rt.show();
+
+    assert.ok(buddy_list_populated);
 
     // incorrect topic_key
     assert.equal(rt.inplace_rerender("stream_unknown:topic_unknown"), false);
