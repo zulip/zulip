@@ -330,6 +330,37 @@ export function paste_handler_converter(paste_html) {
     return markdown_text;
 }
 
+function is_safe_url_paste_target($textarea) {
+    const range = $textarea.range();
+
+    if (!range.text) {
+        // No range is selected
+        return false;
+    }
+
+    if (isUrl(range.text.trim())) {
+        // Don't engage our URL paste logic over existing URLs
+        return false;
+    }
+
+    if (range.start <= 2) {
+        // The range opens too close to the start of the textarea
+        // to have to worry about Markdown link syntax
+        return true;
+    }
+
+    // Look at the two characters before the start of the original
+    // range in search of the tell-tale `](` from existing Markdown
+    // link syntax
+    const possible_markdown_link_markers = $textarea[0].value.slice(range.start - 2, range.start);
+
+    if (possible_markdown_link_markers === "](") {
+        return false;
+    }
+
+    return true;
+}
+
 export function paste_handler(event) {
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -347,13 +378,10 @@ export function paste_handler(event) {
         const paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
-        const range = $textarea.range();
 
-        // Only try to generate formatted links when dealing with a URL
-        // and a range selection. Note that even clipboards with "text/html"
-        // have a "text" equivalent, so we need an if statement that checks
-        // for more than a value on `trimmed_paste_text`
-        if (isUrl(trimmed_paste_text) && range.text) {
+        // Only intervene to generate formatted links when dealing
+        // with a URL and a URL-safe range selection.
+        if (isUrl(trimmed_paste_text) && is_safe_url_paste_target($textarea)) {
             event.preventDefault();
             event.stopPropagation();
             const url = trimmed_paste_text;
