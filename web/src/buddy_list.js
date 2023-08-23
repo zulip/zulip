@@ -10,7 +10,7 @@ import * as padded_widget from "./padded_widget";
 import * as scroll_util from "./scroll_util";
 
 class BuddyListConf {
-    container_sel = "#user_presences";
+    container_sel = "#buddy-list-users-matching-view";
     scroll_container_sel = "#buddy_list_wrapper";
     item_sel = "li.user_sidebar_entry";
     padding_sel = "#buddy_list_wrapper_padding";
