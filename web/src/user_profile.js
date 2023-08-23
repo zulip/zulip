@@ -21,6 +21,7 @@ import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
+import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as timerender from "./timerender";
@@ -94,6 +95,7 @@ function change_state_of_subscribe_button(event, dropdown) {
     event.stopPropagation();
     user_profile_subscribe_widget.render();
     const $subscribe_button = $("#user-profile-modal .add-subscription-button");
+    $subscribe_button.parent()[0]._tippy?.destroy();
     $subscribe_button.prop("disabled", false);
 }
 
@@ -341,6 +343,10 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     $("#tab-toggle").append($elem);
     if (show_user_subscribe_widget) {
         $("#user-profile-modal .add-subscription-button").prop("disabled", true);
+        stream_ui_updates.initialize_disable_btn_hint_popover(
+            $("#user-profile-modal .add-subscription-button-wrapper"),
+            $t({defaultMessage: "Select a stream to subscribe"}),
+        );
     }
 }
 
