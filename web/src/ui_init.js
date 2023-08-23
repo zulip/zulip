@@ -597,6 +597,7 @@ export function initialize_everything() {
             sidebar_ui.hide_all();
             popovers.hide_all();
             narrow.by("stream", sub.name, {trigger});
+            activity_ui.build_user_sidebar();
         },
     });
     stream_list_sort.initialize();

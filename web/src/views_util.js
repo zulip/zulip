@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as activity_ui from "./activity_ui";
 import * as compose_actions from "./compose_actions";
 import * as compose_recipient from "./compose_recipient";
 import * as dropdown_widget from "./dropdown_widget";
@@ -89,6 +90,10 @@ export function show(opts) {
     search.clear_search_form();
     opts.complete_rerender();
     compose_actions.on_show_navigation_view();
+
+    // This has to happen after resetting the current narrow filter, so
+    // that the buddy list is rendered with the correct narrow state.
+    activity_ui.build_user_sidebar();
 
     // Misc.
     if (opts.is_recent_view) {

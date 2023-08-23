@@ -182,4 +182,34 @@ export function initialize_right_sidebar() {
             }
         }
     });
+
+    $("#buddy-list-users-matching-view-container").on(
+        "click",
+        ".buddy-list-subsection-header",
+        () => {
+            $("#buddy-list-users-matching-view").toggleClass("collapsed");
+            const is_collapsed = $("#buddy-list-users-matching-view").hasClass("collapsed");
+            $("#buddy-list-users-matching-view-container .toggle-narrow-users").toggleClass(
+                "fa-caret-down",
+                !is_collapsed,
+            );
+            $("#buddy-list-users-matching-view-container .toggle-narrow-users").toggleClass(
+                "fa-caret-right",
+                is_collapsed,
+            );
+        },
+    );
+
+    $("#buddy-list-other-users-container").on("click", ".buddy-list-subsection-header", () => {
+        $("#buddy-list-other-users").toggleClass("collapsed");
+        const is_collapsed = $("#buddy-list-other-users").hasClass("collapsed");
+        $("#buddy-list-other-users-container .toggle-other-users").toggleClass(
+            "fa-caret-down",
+            !is_collapsed,
+        );
+        $("#buddy-list-other-users-container .toggle-other-users").toggleClass(
+            "fa-caret-right",
+            is_collapsed,
+        );
+    });
 }

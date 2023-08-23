@@ -682,11 +682,6 @@
         }
     }
 
-    #buddy-list-users-matching-view li:hover,
-    #buddy-list-users-matching-view li.highlighted_user {
-        background-color: hsl(136deg 25% 73% / 20%);
-    }
-
     .group-row.active,
     .stream-row.active {
         background-color: hsl(0deg 0% 0% / 20%);

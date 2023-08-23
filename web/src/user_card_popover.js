@@ -809,13 +809,13 @@ function register_click_handlers() {
     $("body").on("click", ".update_status_text", open_user_status_modal);
 
     // Clicking on one's own status emoji should open the user status modal.
-    $("#buddy-list-users-matching-view").on(
+    $(".buddy-list-section").on(
         "click",
         ".user_sidebar_entry_me .status-emoji",
         open_user_status_modal,
     );
 
-    $("#buddy-list-users-matching-view").on("click", ".user-list-sidebar-menu-icon", (e) => {
+    $(".buddy-list-section").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
 

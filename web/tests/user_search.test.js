@@ -9,7 +9,10 @@ const {page_params} = require("./lib/zpage_params");
 
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
-    $container: {
+    $users_matching_view_container: {
+        data() {},
+    },
+    $other_users_container: {
         data() {},
     },
     find_li() {},
@@ -58,7 +61,7 @@ const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, (opts) => {
         people.init();
         people.add_active_user(alice);
         people.add_active_user(fred);
@@ -67,7 +70,7 @@ function test(label, f) {
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
         activity_ui.set_cursor_and_filter();
-        f({override});
+        f(opts);
     });
 }
 
@@ -76,11 +79,18 @@ function set_input_val(val) {
     $(".user-list-filter").trigger("input");
 }
 
+function stub_buddy_list_empty_list_message_lengths() {
+    $("#buddy-list-users-matching-view .empty-list-message").length = 0;
+    $("#buddy-list-other-users .empty-list-message").length = 0;
+}
+
 test("clear_search", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
     override(resize, "resize_sidebars", noop);
+
+    stub_buddy_list_empty_list_message_lengths();
 
     // Empty because no users match this search string.
     override(fake_buddy_list, "populate", (user_ids) => {
@@ -104,6 +114,7 @@ test("escape_search", ({override}) => {
 
     override(resize, "resize_sidebars", noop);
     override(popovers, "hide_all", noop);
+    stub_buddy_list_empty_list_message_lengths();
 
     set_input_val("somevalue");
     activity_ui.escape_search();

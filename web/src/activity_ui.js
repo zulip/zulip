@@ -93,13 +93,14 @@ export function build_user_sidebar() {
         return undefined;
     }
 
-    const filter_text = get_filter_text();
+    const filter_text = user_filter ? user_filter.text() : "";
 
     const all_user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
     buddy_list.populate({all_user_ids});
 
-    render_empty_user_list_message_if_needed(buddy_list.$container);
+    render_empty_user_list_message_if_needed(buddy_list.$users_matching_view_container);
+    render_empty_user_list_message_if_needed(buddy_list.$other_users_container);
 
     return all_user_ids; // for testing
 }

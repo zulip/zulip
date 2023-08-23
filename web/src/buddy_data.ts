@@ -3,9 +3,12 @@ import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as muted_users from "./muted_users";
+import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
+import * as stream_data from "./stream_data";
+import type {StreamSubscription} from "./sub_store";
 import * as timerender from "./timerender";
 import * as unread from "./unread";
 import {user_settings} from "./user_settings";
@@ -24,6 +27,11 @@ import * as util from "./util";
 export const max_size_before_shrinking = 600;
 
 let is_searching_users = false;
+
+export function get_is_searching_users(): boolean {
+    return is_searching_users;
+}
+
 export function set_is_searching_users(val: boolean): void {
     is_searching_users = val;
 }
@@ -71,7 +79,35 @@ export function level(user_id: number): number {
     }
 }
 
-export function compare_function(a: number, b: number): number {
+export function user_matches_narrow(
+    user_id: number,
+    pm_ids: Set<number>,
+    stream_id?: number | null,
+): boolean {
+    if (stream_id) {
+        return stream_data.is_user_subscribed(stream_id, user_id);
+    }
+    if (pm_ids.size > 0) {
+        return pm_ids.has(user_id) || people.is_my_user_id(user_id);
+    }
+    return false;
+}
+
+export function compare_function(
+    a: number,
+    b: number,
+    current_sub: StreamSubscription | undefined,
+    pm_ids: Set<number>,
+): number {
+    const a_would_receive_message = user_matches_narrow(a, pm_ids, current_sub?.stream_id);
+    const b_would_receive_message = user_matches_narrow(b, pm_ids, current_sub?.stream_id);
+    if (a_would_receive_message && !b_would_receive_message) {
+        return -1;
+    }
+    if (!a_would_receive_message && b_would_receive_message) {
+        return 1;
+    }
+
     const level_a = level(a);
     const level_b = level(b);
     const diff = level_a - level_b;
@@ -91,7 +127,9 @@ export function compare_function(a: number, b: number): number {
 
 export function sort_users(user_ids: number[]): number[] {
     // TODO sort by unread count first, once we support that
-    user_ids.sort(compare_function);
+    const current_sub = narrow_state.stream_sub();
+    const pm_ids_set = narrow_state.pm_ids_set();
+    user_ids.sort((a, b) => compare_function(a, b, current_sub, pm_ids_set));
     return user_ids;
 }
 
@@ -276,7 +314,11 @@ function maybe_shrink_list(user_ids: number[], user_filter_text: string): number
         return user_ids;
     }
 
-    user_ids = user_ids.filter((user_id) => user_is_recently_active(user_id));
+    // We want to always show PM recipients even if they're inactive.
+    const pm_ids_set = narrow_state.pm_ids_set();
+    user_ids = user_ids.filter(
+        (user_id) => user_is_recently_active(user_id) || user_matches_narrow(user_id, pm_ids_set),
+    );
 
     return user_ids;
 }
@@ -339,6 +381,13 @@ function get_filtered_user_id_list(user_filter_text: string): number[] {
         const my_user_id = people.my_current_user_id();
         if (!base_user_id_list.includes(my_user_id)) {
             base_user_id_list = [my_user_id, ...base_user_id_list];
+        }
+
+        // We want to always show PM recipients even if they're inactive.
+        const pm_ids_set = narrow_state.pm_ids_set();
+        if (pm_ids_set.size) {
+            const base_user_id_set = new Set([...base_user_id_list, ...pm_ids_set]);
+            base_user_id_list = [...base_user_id_set];
         }
     }
 

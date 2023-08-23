@@ -474,18 +474,16 @@ export function initialize() {
     });
 
     // SIDEBARS
-    $("#buddy-list-users-matching-view")
-        .expectOne()
-        .on("click", ".selectable_sidebar_block", (e) => {
-            const $li = $(e.target).parents("li");
+    $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
+        const $li = $(e.target).parents("li");
 
-            activity_ui.narrow_for_user({$li});
+        activity_ui.narrow_for_user({$li});
 
-            e.preventDefault();
-            e.stopPropagation();
-            sidebar_ui.hide_userlist_sidebar();
-            $(".tooltip").remove();
-        });
+        e.preventDefault();
+        e.stopPropagation();
+        sidebar_ui.hide_userlist_sidebar();
+        $(".tooltip").remove();
+    });
 
     // Doesn't show tooltip on touch devices.
     function do_render_buddy_list_tooltip(
@@ -549,7 +547,7 @@ export function initialize() {
     }
 
     // BUDDY LIST TOOLTIPS (not displayed on touch devices)
-    $("#buddy-list-users-matching-view").on("mouseenter", ".selectable_sidebar_block", (e) => {
+    $(".buddy-list-section").on("mouseenter", ".selectable_sidebar_block", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
         const user_id_string = $elem.attr("data-user-id");
@@ -557,7 +555,7 @@ export function initialize() {
 
         // `target_node` is the `ul` element since it stays in DOM even after updates.
         function get_target_node() {
-            return document.querySelector("#buddy-list-users-matching-view");
+            return $(e.target).parents(".buddy-list-section")[0];
         }
 
         function check_reference_removed(mutation, instance) {

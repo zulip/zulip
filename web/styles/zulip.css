@@ -243,6 +243,7 @@ body {
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
     --color-background-popover: hsl(0deg 0% 100%);
     --color-background-alert-word: hsl(18deg 100% 84%);
+    --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
 
     /* Compose box colors */
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
@@ -530,6 +531,7 @@ body {
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
     --color-background-alert-word: hsl(22deg 70% 35%);
+    --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
 
     /* Compose box colors */
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
@@ -578,6 +580,7 @@ body {
     --color-text-search: hsl(0deg 0% 100% / 75%);
     --color-text-search-hover: hsl(0deg 0% 100%);
     --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
+    --color-text-empty-list-message: hsl(0deg 0% 67%);
     --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
     --color-text-full-name: hsl(0deg 0% 100%);
     --color-text-item: hsl(0deg 0% 50%);

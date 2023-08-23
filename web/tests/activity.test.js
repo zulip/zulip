@@ -2,6 +2,13 @@
 
 const {strict: assert} = require("assert");
 
+const {
+    clear_buddy_list,
+    override_user_matches_narrow,
+    buddy_list_add_user_matching_view,
+    buddy_list_add_other_user,
+    stub_buddy_list_elements,
+} = require("./lib/buddy_list");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
@@ -19,7 +26,6 @@ const _document = {
 };
 
 const channel = mock_esm("../src/channel");
-const compose_state = mock_esm("../src/compose_state");
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
 const popovers = mock_esm("../src/popovers");
@@ -32,7 +38,6 @@ const watchdog = mock_esm("../src/watchdog");
 set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");
-const compose_fade = zrequire("compose_fade");
 const keydown_util = zrequire("keydown_util");
 const muted_users = zrequire("muted_users");
 const presence = zrequire("presence");
@@ -41,7 +46,11 @@ const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
 const activity = zrequire("activity");
 const activity_ui = zrequire("activity_ui");
+const stream_data = zrequire("stream_data");
+const narrow_state = zrequire("narrow_state");
+const peer_data = zrequire("peer_data");
 const util = zrequire("util");
+const {Filter} = zrequire("../src/filter");
 
 const me = {
     email: "me@zulip.com",
@@ -90,10 +99,13 @@ people.add_active_user(zoe);
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-function clear_buddy_list() {
-    buddy_list.populate({
-        all_user_ids: [],
-    });
+const $alice_stub = $.create("alice stub");
+const $fred_stub = $.create("fred stub");
+
+const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
+function add_sub_and_set_as_current_narrow(sub) {
+    stream_data.add_sub(sub);
+    narrow_state.set_current_filter(new Filter([{operator: "stream", operand: sub.name}]));
 }
 
 function test(label, f) {
@@ -109,6 +121,8 @@ function test(label, f) {
             });
         });
 
+        stub_buddy_list_elements();
+
         presence.presence_info.set(alice.user_id, {status: "active"});
         presence.presence_info.set(fred.user_id, {status: "active"});
         presence.presence_info.set(jill.user_id, {status: "active"});
@@ -117,7 +131,7 @@ function test(label, f) {
         presence.presence_info.set(zoe.user_id, {status: "active"});
         presence.presence_info.set(me.user_id, {status: "active"});
 
-        clear_buddy_list();
+        clear_buddy_list(buddy_list);
         muted_users.set_muted_users([]);
 
         activity.clear_for_testing();
@@ -213,14 +227,13 @@ test("huddle_data.process_loaded_messages", () => {
 
 test("presence_list_full_update", ({override, mock_template}) => {
     override(padded_widget, "update_padding", noop);
+    let presence_rows = [];
     mock_template("presence_rows.hbs", false, (data) => {
-        assert.equal(data.presence_rows.length, 7);
-        assert.equal(data.presence_rows[0].user_id, me.user_id);
+        presence_rows = [...presence_rows, ...data.presence_rows];
     });
+    mock_template("empty_list_widget_for_list.hbs", false, noop);
 
     $(".user-list-filter").trigger("focus");
-    compose_state.private_message_recipient = () => fred.email;
-    compose_fade.set_focused_recipient("private");
 
     const user_ids = activity_ui.build_user_sidebar();
 
@@ -233,6 +246,9 @@ test("presence_list_full_update", ({override, mock_template}) => {
         zoe.user_id,
         mark.user_id,
     ]);
+
+    assert.equal(presence_rows.length, 7);
+    assert.equal(presence_rows[0].user_id, me.user_id);
 });
 
 function simulate_right_column_buddy_list() {
@@ -242,20 +258,11 @@ function simulate_right_column_buddy_list() {
     };
 }
 
-function buddy_list_add(user_id, $stub) {
-    if ($stub.attr) {
-        $stub.attr("data-user-id", user_id);
-    }
-    $stub.length = 1;
-    const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
-    $("#buddy-list-users-matching-view").set_find_results(sel, $stub);
-}
-
 test("direct_message_update_dom_counts", () => {
     const $count = $.create("alice-unread-count");
     const pm_key = alice.user_id.toString();
     const $li = $.create("alice stub");
-    buddy_list_add(pm_key, $li);
+    buddy_list_add_user_matching_view(pm_key, $li);
     $li.set_find_results(".unread_count", $count);
     $count.set_parents_result("li", $li);
 
@@ -286,12 +293,26 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     override(sidebar_ui, "hide_all", noop);
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(resize, "resize_sidebars", noop);
+    mock_template("empty_list_widget_for_list.hbs", false, noop);
 
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
-    let $me_li;
-    let $alice_li;
-    let $fred_li;
+    const $me_li = $.create("me stub");
+    const $alice_li = $.create("alice stub");
+    const $fred_li = $.create("fred stub");
+
+    // Simulate a small window by having the
+    // fill_screen_with_content render the entire
+    // list in one pass.  We will do more refined
+    // testing in the buddy_list node tests.
+    override(buddy_list, "fill_screen_with_content", () => {
+        buddy_list.render_more({
+            chunk_size: 100,
+        });
+        buddy_list_add_user_matching_view(me.user_id, $me_li);
+        buddy_list_add_user_matching_view(alice.user_id, $alice_li);
+        buddy_list_add_user_matching_view(fred.user_id, $fred_li);
+    });
 
     let narrowed;
 
@@ -302,24 +323,16 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 
     function init() {
         $.clear_all_elements();
-        buddy_list.populate({
-            all_user_ids: [me.user_id, alice.user_id, fred.user_id],
-        });
+        stub_buddy_list_elements();
 
         buddy_list.start_scroll_handler = noop;
         override_rewire(util, "call_function_periodically", noop);
         override_rewire(activity, "send_presence_to_server", noop);
         activity_ui.initialize({narrow_by_email});
 
-        $("#buddy-list-users-matching-view").empty = noop;
-
-        $me_li = $.create("me stub");
-        $alice_li = $.create("alice stub");
-        $fred_li = $.create("fred stub");
-
-        buddy_list_add(me.user_id, $me_li);
-        buddy_list_add(alice.user_id, $alice_li);
-        buddy_list_add(fred.user_id, $fred_li);
+        buddy_list.populate({
+            all_user_ids: [me.user_id, alice.user_id, fred.user_id],
+        });
     }
 
     (function test_filter_keys() {
@@ -382,79 +395,80 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     })();
 });
 
-test("first/prev/next", ({override, mock_template}) => {
-    let rendered_alice;
-    let rendered_fred;
-    user_settings.user_list_style = 2;
-
-    mock_template("presence_row.hbs", false, (data) => {
-        switch (data.user_id) {
-            case alice.user_id:
-                rendered_alice = true;
-                assert.deepEqual(data, {
-                    faded: true,
-                    href: "#narrow/dm/1-Alice-Smith",
-                    is_current_user: false,
-                    name: "Alice Smith",
-                    num_unread: 0,
-                    user_circle_class: "user_circle_green",
-                    user_id: alice.user_id,
-                    status_emoji_info: undefined,
-                    status_text: undefined,
-                    user_list_style: {
-                        COMPACT: false,
-                        WITH_STATUS: true,
-                        WITH_AVATAR: false,
-                    },
-                    should_add_guest_user_indicator: false,
-                });
-                break;
-            case fred.user_id:
-                rendered_fred = true;
-                assert.deepEqual(data, {
-                    href: "#narrow/dm/2-Fred-Flintstone",
-                    name: "Fred Flintstone",
-                    user_id: fred.user_id,
-                    is_current_user: false,
-                    num_unread: 0,
-                    user_circle_class: "user_circle_green",
-                    faded: false,
-                    status_emoji_info: undefined,
-                    status_text: undefined,
-                    user_list_style: {
-                        COMPACT: false,
-                        WITH_STATUS: true,
-                        WITH_AVATAR: false,
-                    },
-                    should_add_guest_user_indicator: false,
-                });
-                break;
-            /* istanbul ignore next */
-            default:
-                throw new Error(`we did not expect to have to render a row for  ${data.name}`);
-        }
-    });
-
+test("first/prev/next", ({override, override_rewire, mock_template}) => {
+    override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
+    mock_template("presence_rows.hbs", false, noop);
     override(padded_widget, "update_padding", noop);
+    stub_buddy_list_elements();
 
+    // empty list
     assert.equal(buddy_list.first_key(), undefined);
+    blueslip.reset();
+    blueslip.expect("error", "Couldn't find key in buddy list");
+    assert.equal(buddy_list.prev_key(alice.user_id), undefined);
+    blueslip.reset();
+    blueslip.expect("error", "Couldn't find key in buddy list");
+    assert.equal(buddy_list.next_key(alice.user_id), undefined);
+    blueslip.reset();
+
+    // one user matching the view
+    clear_buddy_list(buddy_list);
+    buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
+    buddy_list.populate({
+        all_user_ids: [alice.user_id],
+    });
+    assert.equal(buddy_list.first_key(), alice.user_id);
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
     assert.equal(buddy_list.next_key(alice.user_id), undefined);
 
-    override(buddy_list.$container, "append", noop);
-
-    activity_ui.redraw_user(alice.user_id);
-    activity_ui.redraw_user(fred.user_id);
-
+    // two users matching the view
+    clear_buddy_list(buddy_list);
+    buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
+    buddy_list_add_user_matching_view(fred.user_id, $fred_stub);
+    buddy_list.populate({
+        all_user_ids: [alice.user_id, fred.user_id],
+    });
     assert.equal(buddy_list.first_key(), alice.user_id);
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
     assert.equal(buddy_list.prev_key(fred.user_id), alice.user_id);
-
     assert.equal(buddy_list.next_key(alice.user_id), fred.user_id);
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
 
-    assert.ok(rendered_alice);
-    assert.ok(rendered_fred);
+    // one other user
+    clear_buddy_list(buddy_list);
+    buddy_list_add_other_user(fred.user_id, $fred_stub);
+    buddy_list.populate({
+        all_user_ids: [fred.user_id],
+    });
+    assert.equal(buddy_list.first_key(), fred.user_id);
+    assert.equal(buddy_list.prev_key(fred.user_id), undefined);
+    assert.equal(buddy_list.next_key(fred.user_id), undefined);
+
+    // two other users
+    clear_buddy_list(buddy_list);
+    buddy_list_add_other_user(alice.user_id, $alice_stub);
+    buddy_list_add_other_user(fred.user_id, $fred_stub);
+    buddy_list.populate({
+        all_user_ids: [alice.user_id, fred.user_id],
+    });
+    assert.equal(buddy_list.first_key(), alice.user_id);
+    assert.equal(buddy_list.prev_key(alice.user_id), undefined);
+    assert.equal(buddy_list.prev_key(fred.user_id), alice.user_id);
+    assert.equal(buddy_list.next_key(alice.user_id), fred.user_id);
+    assert.equal(buddy_list.next_key(fred.user_id), undefined);
+
+    // one user matching the view, and one other user
+    clear_buddy_list(buddy_list);
+    buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
+    buddy_list_add_other_user(alice.user_id, $fred_stub);
+    buddy_list.populate({
+        all_user_ids: [alice.user_id, fred.user_id],
+    });
+    assert.equal(buddy_list.first_key(), alice.user_id);
+    assert.equal(buddy_list.prev_key(alice.user_id), undefined);
+    assert.equal(buddy_list.prev_key(fred.user_id), alice.user_id);
+    assert.equal(buddy_list.next_key(alice.user_id), fred.user_id);
+    assert.equal(buddy_list.next_key(fred.user_id), undefined);
 });
 
 test("render_empty_user_list_message", ({override, mock_template}) => {
@@ -481,15 +495,17 @@ test("render_empty_user_list_message", ({override, mock_template}) => {
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     user_settings.user_list_style = 2;
+
+    override(padded_widget, "update_padding", noop);
     mock_template("presence_row.hbs", true, (data, html) => {
         assert.deepEqual(data, {
+            faded: false,
             href: "#narrow/dm/1-Alice-Smith",
             name: "Alice Smith",
             user_id: 1,
             is_current_user: false,
             num_unread: 0,
             user_circle_class: "user_circle_green",
-            faded: true,
             status_emoji_info: undefined,
             status_text: undefined,
             user_list_style: {
@@ -503,51 +519,69 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
         return html;
     });
 
-    override(padded_widget, "update_padding", noop);
-
-    let appended_html;
-    override(buddy_list.$container, "append", (html) => {
-        appended_html = html;
+    let users_matching_view_appended_html;
+    override(buddy_list.$users_matching_view_container, "append", (html) => {
+        users_matching_view_appended_html = html;
+    });
+    let other_users_appended_html;
+    override(buddy_list.$other_users_container, "append", (html) => {
+        other_users_appended_html = html;
     });
 
+    add_sub_and_set_as_current_narrow(rome_sub);
+
+    buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
+    peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id]);
     activity_ui.redraw_user(alice.user_id);
-    assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
-    assert.ok(appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(users_matching_view_appended_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(users_matching_view_appended_html.indexOf("user_circle_green") > 0);
+
+    clear_buddy_list(buddy_list);
+    buddy_list_add_other_user(alice.user_id, $alice_stub);
+    peer_data.set_subscribers(rome_sub.stream_id, []);
+    activity_ui.redraw_user(alice.user_id);
+    assert.ok(other_users_appended_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(other_users_appended_html.indexOf("user_circle_green") > 0);
 });
 
 test("insert_alice_then_fred", ({override, mock_template}) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
 
-    let appended_html;
-    override(buddy_list.$container, "append", (html) => {
-        appended_html = html;
+    let other_users_appended_html;
+    override(buddy_list.$other_users_container, "append", (html) => {
+        other_users_appended_html = html;
     });
     override(padded_widget, "update_padding", noop);
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
-    assert.ok(appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(other_users_appended_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(other_users_appended_html.indexOf("user_circle_green") > 0);
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
-    assert.ok(appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(other_users_appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(other_users_appended_html.indexOf("user_circle_green") > 0);
 });
 
-test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
+test("insert_fred_then_alice_then_rename, both as users matching view", ({
+    override,
+    mock_template,
+}) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
 
-    let appended_html;
-    override(buddy_list.$container, "append", (html) => {
-        appended_html = html;
+    add_sub_and_set_as_current_narrow(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id, fred.user_id]);
+
+    let users_matching_view_appended_html;
+    override(buddy_list.$users_matching_view_container, "append", (html) => {
+        users_matching_view_appended_html = html;
     });
     override(padded_widget, "update_padding", noop);
+    buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
+    buddy_list_add_user_matching_view(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
-    assert.ok(appended_html.indexOf("user_circle_green") > 0);
-
-    const $fred_stub = $.create("fred-first");
-    buddy_list_add(fred.user_id, $fred_stub);
+    assert.ok(users_matching_view_appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(users_matching_view_appended_html.indexOf("user_circle_green") > 0);
 
     let inserted_html;
     $fred_stub.before = (html) => {
@@ -571,8 +605,58 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
     };
     people.add_active_user(fred_with_new_name);
 
-    const $alice_stub = $.create("alice-first");
-    buddy_list_add(alice.user_id, $alice_stub);
+    $alice_stub.before = (html) => {
+        inserted_html = html;
+    };
+
+    activity_ui.redraw_user(fred_with_new_name.user_id);
+    assert.ok(fred_removed);
+    assert.ok(users_matching_view_appended_html.indexOf('data-user-id="2"') > 0);
+
+    // restore old Fred data
+    people.add_active_user(fred);
+});
+
+test("insert_fred_then_alice_then_rename, both as other users", ({override, mock_template}) => {
+    mock_template("presence_row.hbs", true, (_data, html) => html);
+
+    add_sub_and_set_as_current_narrow(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, []);
+
+    let other_users_appended_html;
+    override(buddy_list.$other_users_container, "append", (html) => {
+        other_users_appended_html = html;
+    });
+    override(padded_widget, "update_padding", noop);
+
+    buddy_list_add_other_user(alice.user_id, $alice_stub);
+    buddy_list_add_other_user(fred.user_id, $fred_stub);
+
+    activity_ui.redraw_user(fred.user_id);
+    assert.ok(other_users_appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(other_users_appended_html.indexOf("user_circle_green") > 0);
+
+    let inserted_html;
+    $fred_stub.before = (html) => {
+        inserted_html = html;
+    };
+
+    let fred_removed;
+    $fred_stub.remove = () => {
+        fred_removed = true;
+    };
+
+    activity_ui.redraw_user(alice.user_id);
+    assert.ok(inserted_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(inserted_html.indexOf("user_circle_green") > 0);
+
+    // Next rename fred to Aaron.
+    const fred_with_new_name = {
+        email: fred.email,
+        user_id: fred.user_id,
+        full_name: "Aaron",
+    };
+    people.add_active_user(fred_with_new_name);
 
     $alice_stub.before = (html) => {
         inserted_html = html;
@@ -580,7 +664,7 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
 
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
-    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(other_users_appended_html.indexOf('data-user-id="2"') > 0);
 
     // restore old Fred data
     people.add_active_user(fred);
@@ -624,7 +708,7 @@ test("update_presence_info", ({override}) => {
     };
 
     const $alice_li = $.create("alice stub");
-    buddy_list_add(alice.user_id, $alice_li);
+    buddy_list_add_user_matching_view(alice.user_id, $alice_li);
 
     let inserted;
     override(buddy_list, "insert_or_move", () => {
@@ -661,10 +745,9 @@ test("update_presence_info", ({override}) => {
 });
 
 test("initialize", ({override, mock_template}) => {
-    mock_template("presence_rows.hbs", false, noop);
-    override(padded_widget, "update_padding", noop);
     override(pm_list, "update_private_messages", noop);
     override(watchdog, "check_for_unsuspend", noop);
+    override(buddy_list, "fill_screen_with_content", noop);
 
     let payload;
     override(channel, "post", (arg) => {
@@ -677,9 +760,13 @@ test("initialize", ({override, mock_template}) => {
 
     function clear() {
         $.clear_all_elements();
-        buddy_list.$container = $("#buddy-list-users-matching-view");
-        buddy_list.$container.append = noop;
-        clear_buddy_list();
+        buddy_list.$users_matching_view_container = $("#buddy-list-users-matching-view");
+        buddy_list.$users_matching_view_container.append = noop;
+        buddy_list.$other_users_container = $("#buddy-list-other-users");
+        buddy_list.$other_users_container.append = noop;
+        stub_buddy_list_elements();
+        mock_template("empty_list_widget_for_list.hbs", false, noop);
+        clear_buddy_list(buddy_list);
         page_params.presences = {};
     }
 

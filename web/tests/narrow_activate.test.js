@@ -72,9 +72,11 @@ mock_esm("../src/user_topics", {
     is_topic_muted: () => false,
 });
 
+const {buddy_list} = zrequire("buddy_list");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const narrow = zrequire("narrow");
+const people = zrequire("people");
 
 const denmark = {
     subscribed: false,
@@ -156,6 +158,15 @@ function stub_message_list() {
 
 run_test("basics", ({override}) => {
     stub_message_list();
+
+    const me = {
+        email: "me@zulip.com",
+        user_id: 999,
+        full_name: "Me Myself",
+    };
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+    override(buddy_list, "populate", noop);
 
     const helper = test_helper({override});
     const terms = [{operator: "stream", operand: "Denmark"}];

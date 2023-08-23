@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import * as activity_ui from "./activity_ui";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -1021,6 +1022,7 @@ function handle_post_view_change(msg_list) {
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     stream_list.handle_narrow_activated(filter);
     pm_list.handle_narrow_activated(filter);
+    activity_ui.build_user_sidebar();
 }
 
 function handle_post_narrow_deactivate_processes(msg_list) {
