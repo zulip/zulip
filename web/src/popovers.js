@@ -1070,7 +1070,7 @@ export function any_active() {
         stream_popover.stream_popped() ||
         message_info_popped() ||
         user_info_popped() ||
-        emoji_picker.reactions_popped() ||
+        emoji_picker.is_open() ||
         $("[class^='column-'].expanded").length
     );
 }
