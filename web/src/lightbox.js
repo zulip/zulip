@@ -25,8 +25,8 @@ export class PanZoomControl {
             // Ideally we'd set `bounds` here, but that feature is
             // currently broken upstream.  See
             // https://github.com/anvaka/panzoom/issues/112.
-            maxZoom: 100,
-            minZoom: 0.1,
+            maxZoom: 64,
+            minZoom: 1 / 16,
             filterKey() {
                 // Disable the library's built in keybindings
                 return true;
@@ -155,13 +155,13 @@ export class PanZoomControl {
     zoomIn() {
         const w = $(".image-preview").width();
         const h = $(".image-preview").height();
-        this.panzoom.smoothZoom(w / 2, h / 2, 1.5);
+        this.panzoom.smoothZoom(w / 2, h / 2, Math.SQRT2);
     }
 
     zoomOut() {
         const w = $(".image-preview").width();
         const h = $(".image-preview").height();
-        this.panzoom.smoothZoom(w / 2, h / 2, 0.5);
+        this.panzoom.smoothZoom(w / 2, h / 2, Math.SQRT1_2);
     }
 
     isActive() {
