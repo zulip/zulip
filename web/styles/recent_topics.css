@@ -4,7 +4,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: 100vh;
+    max-height: calc(100vh - var(--compose-box-height));
 
     #recent_topics_table {
         max-width: 100%;
