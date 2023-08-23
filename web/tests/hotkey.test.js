@@ -37,7 +37,7 @@ const compose_actions = mock_esm("../src/compose_actions");
 const condense = mock_esm("../src/condense");
 const drafts = mock_esm("../src/drafts");
 const emoji_picker = mock_esm("../src/emoji_picker", {
-    reactions_popped: () => false,
+    is_open: () => false,
     toggle_emoji_popover() {},
 });
 const gear_menu = mock_esm("../src/gear_menu", {
@@ -418,7 +418,7 @@ run_test("v w/no overlays", ({override}) => {
 });
 
 run_test("emoji picker", ({override}) => {
-    override(emoji_picker, "reactions_popped", () => true);
+    override(emoji_picker, "is_open", () => true);
     assert_mapping(":", emoji_picker, "navigate", true);
 });
 
