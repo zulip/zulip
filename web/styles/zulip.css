@@ -1540,6 +1540,7 @@ td.pointer {
 
     &:hover {
         opacity: 0.4 !important;
+        cursor: pointer;
     }
 }
 
