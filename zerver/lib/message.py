@@ -598,7 +598,7 @@ class MessageDict:
             # of going to the DB here should be overshadowed by the cost of rendering
             # and updating the row.
             # TODO: see #1379 to eliminate Markdown dependencies
-            message = Message.objects.select_related("sender", "sender__realm").get(id=message_id)
+            message = Message.objects.select_related("sender").get(id=message_id)
 
             assert message is not None  # Hint for mypy.
             # It's unfortunate that we need to have side effects on the message
