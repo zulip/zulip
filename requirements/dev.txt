@@ -659,9 +659,8 @@ django-stubs-ext==4.2.2 \
     # via
     #   -r requirements/common.in
     #   django-stubs
-django-two-factor-auth[call,phonenumberslite,sms]==1.15.4 \
-    --hash=sha256:4570ffa774bbced191f670079fea4e72a350ee91b2a937d5eb08e535ca47f1a6 \
-    --hash=sha256:6be4313069bffcaef8b657573ddc82f82e77da1a0bdb31175b1649c2411c0b0a
+https://github.com/andersk/django-two-factor-auth/archive/b0ae80051d45ac360595ed327b044c766f57d32f.zip#egg=django-two-factor-auth[call,phonenumberslite,sms]==1.15.4+git \
+    --hash=sha256:e5d5c876316fc60057efac812de0dae1b064b35bb2798fac44c04c6bb70c50a5
     # via -r requirements/common.in
 dnspython==2.4.2 \
     --hash=sha256:57c6fbaaeaaf39c891292012060beb141791735dbb4004798328fc2c467402d8 \
