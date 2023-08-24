@@ -201,10 +201,18 @@ function render_user_stream_list(streams, user) {
         modifier_html(item) {
             return format_user_stream_list_item_html(item, user);
         },
+        callback_after_render() {
+            $container.parent().removeClass("empty-list");
+        },
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item && item.name.toLocaleLowerCase().includes(value);
+            },
+            onupdate() {
+                if ($container.find("#empty-table-message").length) {
+                    $container.parent().addClass("empty-list");
+                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -218,6 +226,9 @@ function render_user_group_list(groups, user) {
     ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
+        callback_after_render() {
+            $container.parent().removeClass("empty-list");
+        },
         modifier_html(item) {
             return format_user_group_list_item_html(item);
         },

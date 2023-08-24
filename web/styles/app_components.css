@@ -1163,6 +1163,15 @@ div.overlay {
     }
 }
 
+#empty-list-message,
+#empty-table-message {
+    background-color: inherit;
+    color: var(--color-text-default);
+    font-size: 1.5em;
+    padding: 3em 1em;
+    text-align: center;
+}
+
 .filter_text_input {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);

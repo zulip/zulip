@@ -61,6 +61,11 @@
             position: absolute;
         }
 
+        #empty-table-message {
+            background-color: var(--color-background);
+            padding: 3em 1em;
+        }
+
         .fa-check-square-o,
         .fa-square-o {
             padding: 0 2px;
