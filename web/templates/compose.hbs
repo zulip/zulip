@@ -49,15 +49,12 @@
             <form id="send_message_form" action="/json/messages" method="post">
                 <div class="compose_table">
                     <div id="compose_top">
-                        <div id="compose_top_right" class="order-2">
+                        <div id="compose_top_right">
                             <button type="button" class="expand_composebox_button fa fa-chevron-up" aria-label="{{t 'Expand compose' }}" data-tippy-content="{{t 'Expand compose' }}"></button>
                             <button type="button" class="collapse_composebox_button fa fa-chevron-down" aria-label="{{t 'Collapse compose' }}" data-tippy-content="{{t 'Collapse compose' }}"></button>
                             <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
                         </div>
-                        <div id="compose-recipient" class="order-1">
-                            <div class="topic-marker-container order-1">
-                                <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle" data-tooltip-template-id="narrow_to_compose_recipients_tooltip"></a>
-                            </div>
+                        <div id="compose-recipient">
                             {{> dropdown_widget_with_stream_colorblock
                               widget_name="compose_select_recipient"}}
                             <div class="topic-marker-container">
@@ -66,6 +63,9 @@
                             <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
                             <div id="compose-direct-recipient" class="pill-container" data-before="{{t 'You and' }}">
                                 <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
+                            </div>
+                            <div class="topic-marker-container">
+                                <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle" data-tooltip-template-id="narrow_to_compose_recipients_tooltip"></a>
                             </div>
                         </div>
                     </div>
@@ -76,7 +76,7 @@
                     </div>
                     <div class="drag"></div>
                     <div class="compose_bottom_top_container">
-                        <div class="compose_right_float_container order-3">
+                        <div class="compose_right_float_container">
                             <button type="submit" id="compose-send-button" class="button small send_message compose-submit-button animated-purple-button">
                                 <img class="loader" alt="" src="" />
                                 <span>{{t 'Send' }}</span>

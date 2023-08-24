@@ -177,6 +177,8 @@
 .compose_bottom_top_container {
     margin-top: 6px;
     display: flex;
+    /* Preserve sensible tab order despite layout shift. */
+    flex-flow: row-reverse;
 }
 
 .compose_bottom_bottom_container {
@@ -213,8 +215,8 @@
 
 #compose_top {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    /* Preserve sensible tab order despite layout shift. */
+    flex-flow: row-reverse;
     padding-bottom: 5px;
 }
 
