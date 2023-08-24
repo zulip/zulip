@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, Union
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -35,6 +36,7 @@ from zerver.lib.validator import (
     check_dict,
     check_int,
     check_int_in,
+    check_none_or,
     check_string_in,
     check_string_or_int,
     to_non_negative_int,
@@ -391,9 +393,36 @@ def update_realm(
 
 @require_realm_owner
 @has_request_variables
-def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
+def deactivate_realm(
+    request: HttpRequest,
+    user: UserProfile,
+    deletion_delay_days: Optional[int] = REQ(json_validator=check_none_or(check_int), default=None),
+) -> HttpResponse:
+    if settings.MAX_DEACTIVATED_REALM_DELETION_DAYS is not None and (
+        deletion_delay_days is None
+        or deletion_delay_days > settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
+    ):
+        raise JsonableError(
+            _("{field_name} must be at most {max_allowed_days} days.").format(
+                field_name="deletion_delay_days",
+                max_allowed_days=settings.MAX_DEACTIVATED_REALM_DELETION_DAYS,
+            )
+        )
+
+    if (
+        settings.MIN_DEACTIVATED_REALM_DELETION_DAYS is not None
+        and deletion_delay_days is not None
+        and deletion_delay_days < settings.MIN_DEACTIVATED_REALM_DELETION_DAYS
+    ):
+        raise JsonableError(
+            _("{field_name} must be at least {min_allowed_days} days.").format(
+                field_name="deletion_delay_days",
+                min_allowed_days=settings.MIN_DEACTIVATED_REALM_DELETION_DAYS,
+            )
+        )
+
     realm = user.realm
-    do_deactivate_realm(realm, acting_user=user)
+    do_deactivate_realm(realm, acting_user=user, deletion_delay_days=deletion_delay_days)
     return json_success(request)
 
 

@@ -2017,3 +2017,7 @@ $option_title_width: 180px;
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
 }
+
+#deactivate-realm-user-modal .allowed_duration_message {
+    font-style: italic;
+}

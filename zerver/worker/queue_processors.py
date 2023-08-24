@@ -52,6 +52,7 @@ from zerver.actions.message_flags import do_mark_stream_messages_as_read
 from zerver.actions.message_send import internal_send_private_message, render_incoming_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.realm_export import notify_realm_export
+from zerver.actions.realm_settings import scrub_deactivated_realm
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.context_processors import common_context
 from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitError, get_bot_handler
@@ -1143,6 +1144,9 @@ class DeferredWorker(QueueProcessingWorker):
             )
             user_profile = get_user_profile_by_id(event["user_profile_id"])
             reactivate_user_if_soft_deactivated(user_profile)
+        elif event["type"] == "scrub_deactivated_realm":
+            realm_to_scrub = Realm.objects.get(id=event["realm_id"])
+            scrub_deactivated_realm(realm_to_scrub)
 
         end = time.time()
         logger.info(

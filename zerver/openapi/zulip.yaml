@@ -11321,6 +11321,25 @@ paths:
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
                           this property always had a value of 10000.
+                      server_min_deactivated_realm_deletion_days:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The minimum allowed realm data deletion days while deactivating
+                          a realm.
+
+                          **Changes**: New in Zulip 8.0 (feature level 212)
+                      server_max_deactivated_realm_deletion_days:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed realm data deletion days while deactivating
+                          a realm. The value `None` represents that there is no maximum value.
+
+                          **Changes**: New in Zulip 8.0 (feature level 212).
                       server_presence_ping_interval_seconds:
                         type: integer
                         description: |

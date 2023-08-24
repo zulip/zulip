@@ -1,3 +1,4 @@
+import {add} from "date-fns";
 import $ from "jquery";
 
 import pygments_data from "../generated/pygments_data.json";
@@ -28,6 +29,7 @@ import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 
@@ -41,6 +43,8 @@ export function reset() {
 
 const MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE = 2147483647;
 const DISABLED_STATE_ID = -1;
+let custom_deletion_time_input = page_params.server_min_deactivated_realm_deletion_days;
+let custom_deletion_time_unit = "days";
 
 export function maybe_disable_widgets() {
     if (page_params.is_owner) {
@@ -730,29 +734,193 @@ export function discard_property_element_changes(elem, for_realm_default_setting
     update_dependent_subsettings(property_name);
 }
 
+export function valid_to(deletes_in) {
+    const time_valid = Number.parseFloat(deletes_in);
+    if (time_valid === 0) {
+        return $t({defaultMessage: "Data will be deleted immediately"});
+    }
+
+    if (!time_valid) {
+        return $t({defaultMessage: "Data will not be automatically deleted"});
+    }
+
+    // The below is a duplicate of timerender.get_full_datetime, with a different base string.
+    const valid_to = add(new Date(), {minutes: time_valid});
+    const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
+    const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
+
+    return $t({defaultMessage: "Data to be deleted on {date} at {time}"}, {date, time});
+}
+
 export function deactivate_organization(e) {
     e.preventDefault();
     e.stopPropagation();
 
     function do_deactivate_realm() {
+        let deletes_in_days = $("#deletes_in").val();
+        // See settings_config.realm_deletion_in_values for why we do this conversion.
+        if (deletes_in_days === "null") {
+            deletes_in_days = JSON.stringify(null);
+        } else if (deletes_in_days === "custom") {
+            const deletes_in_minutes = Number.parseFloat(
+                settings_ui.get_custom_input_time_in_minutes(
+                    custom_deletion_time_unit,
+                    custom_deletion_time_input,
+                ),
+            );
+            deletes_in_days = deletes_in_minutes / (60 * 24);
+        } else {
+            const deletes_in_minutes = Number.parseFloat($("#deletes_in").val());
+            deletes_in_days = deletes_in_minutes / (60 * 24);
+        }
+        const data = {
+            deletion_delay_days: deletes_in_days,
+        };
         channel.post({
             url: "/json/realm/deactivate",
+            data,
             error(xhr) {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
             },
         });
     }
 
-    const html_body = render_settings_deactivate_realm_modal();
+    const time_unit_choices = ["days", "weeks"];
+    const minimum_allowed_days = page_params.server_min_deactivated_realm_deletion_days;
+    const maximum_allowed_days = page_params.server_max_deactivated_realm_deletion_days;
+
+    const delete_in_options = {};
+
+    function get_allowed_duration_message() {
+        if (maximum_allowed_days === null) {
+            return $t(
+                {
+                    defaultMessage:
+                        "Enter a value greater than or equal to {minimum_allowed_days} days",
+                },
+                {minimum_allowed_days},
+            );
+        }
+        return $t(
+            {
+                defaultMessage:
+                    "Enter a value between {minimum_allowed_days} and {maximum_allowed_days} days",
+            },
+            {minimum_allowed_days, maximum_allowed_days},
+        );
+    }
+
+    function is_valid_time_period(time_period) {
+        if (time_period === "custom") {
+            return true;
+        }
+        if (time_period === "null") {
+            if (maximum_allowed_days === null) {
+                return true;
+            }
+            return false;
+        }
+        if (maximum_allowed_days === null && time_period >= minimum_allowed_days * 24 * 60) {
+            return true;
+        }
+        if (
+            time_period >= minimum_allowed_days * 24 * 60 &&
+            time_period <= maximum_allowed_days * 24 * 60
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    for (const key in settings_config.realm_deletion_in_values) {
+        if (is_valid_time_period(settings_config.realm_deletion_in_values[key].value)) {
+            delete_in_options[key] = settings_config.realm_deletion_in_values[key];
+        }
+    }
+
+    const html_body = render_settings_deactivate_realm_modal({
+        is_admin: page_params.is_admin,
+        is_owner: page_params.is_owner,
+        development_environment: page_params.development_environment,
+        delete_in_options,
+        allowed_duration_message: get_allowed_duration_message(),
+        time_choices: time_unit_choices,
+    });
+
+    function deactivate_realm_modal_post_render() {
+        settings_ui.set_custom_time_inputs_visibility(
+            $("#deletes_in"),
+            custom_deletion_time_unit,
+            custom_deletion_time_input,
+        );
+
+        let deletion_time_in_minutes;
+        if ($("#deletes_in").val() !== "custom") {
+            deletion_time_in_minutes = $("#deletes_in").val();
+        } else {
+            deletion_time_in_minutes = settings_ui.get_custom_input_time_in_minutes(
+                custom_deletion_time_unit,
+                custom_deletion_time_input,
+            );
+        }
+        const valid_to_text = valid_to(deletion_time_in_minutes);
+        settings_ui.set_valid_till_text($("#deletes_in"), valid_to_text);
+
+        $("#deletes_in").on("change", () => {
+            settings_ui.set_custom_time_inputs_visibility(
+                $("#deletes_in"),
+                custom_deletion_time_unit,
+                custom_deletion_time_input,
+            );
+
+            let deletion_time_in_minutes;
+            if ($("#deletes_in").val() !== "custom") {
+                deletion_time_in_minutes = $("#deletes_in").val();
+            } else {
+                deletion_time_in_minutes = settings_ui.get_custom_input_time_in_minutes(
+                    custom_deletion_time_unit,
+                    custom_deletion_time_input,
+                );
+            }
+            const valid_to_text = valid_to(deletion_time_in_minutes);
+            settings_ui.set_valid_till_text($("#deletes_in"), valid_to_text);
+        });
+
+        $("#custom-deletion-time-input").on("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                return;
+            }
+        });
+
+        $("#custom-realm-deletion-time").on(
+            "change",
+            ".custom-input-time-value, .custom-input-time-unit",
+            () => {
+                custom_deletion_time_input = $("#custom-deletion-time-input").val();
+                custom_deletion_time_unit = $("#custom-deletion-time-unit").val();
+                $(".custom-input-time-valid-till").text(
+                    valid_to(
+                        settings_ui.get_custom_input_time_in_minutes(
+                            custom_deletion_time_unit,
+                            custom_deletion_time_input,
+                        ),
+                    ),
+                );
+            },
+        );
+    }
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Deactivate organization"}),
         help_link: "/help/deactivate-your-organization",
         html_body,
+        id: "deactivate-realm-user-modal",
         on_click: do_deactivate_realm,
         close_on_submit: false,
         focus_submit_on_open: true,
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        post_render: deactivate_realm_modal_post_render,
     });
 }
 

@@ -1,2 +1,26 @@
 <p>{{t "This action is permanent and cannot be undone. All users will permanently lose access to their Zulip accounts." }}</p>
+
+{{#if development_environment}}
+<div class="alert" id="dev_env_msg"></div>
+{{/if}}
+<div class="input-group">
+    <label for="deletes_in">{{t "Automatically delete all data after" }}</label>
+    <select id="deletes_in" class="modal_select bootstrap-focus-style">
+        {{#each delete_in_options}}
+            <option {{#if this.default }}selected{{/if}} name="delete_in" value="{{this.value}}">{{this.description}}</option>
+        {{/each}}
+    </select>
+    <p class="input-time-valid-till"></p>
+    <div id="custom-realm-deletion-time" class="dependent-settings-block custom-time-input-container">
+        <p class="allowed_duration_message">{{allowed_duration_message}}</p>
+        <label for="deletes_in">{{t "Custom time" }}</label>
+        <input type="text" autocomplete="off" name="custom-deletion-time" id="custom-deletion-time-input" class="custom-input-time-value inline-block modal_text_input" value="" maxlength="4"/>
+        <select class="custom-input-time-unit bootstrap-focus-style modal_select" id="custom-deletion-time-unit">
+            {{#each time_choices}}
+                <option name="custom_time_choice" class="custom_time_choice" value="{{this}}">{{this}}</option>
+            {{/each}}
+        </select>
+        <p class="custom-input-time-valid-till"></p>
+    </div>
+</div>
 <p>{{t "Are you sure you want to deactivate this organization?"}}</p>

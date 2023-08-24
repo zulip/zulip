@@ -26,6 +26,8 @@ export const page_params: {
     muted_users: {id: number; timestamp: number}[];
     needs_tutorial: boolean;
     page_load_time: number;
+    server_min_deactivated_realm_deletion_days: number;
+    server_max_deactivated_realm_deletion_days: number | null;
     promote_sponsoring_zulip: boolean;
     realm_add_custom_emoji_policy: number;
     realm_avatar_changes_disabled: boolean;

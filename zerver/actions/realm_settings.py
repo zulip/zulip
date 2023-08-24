@@ -1,3 +1,4 @@
+import datetime
 import logging
 from email.headerregistry import Address
 from typing import Any, Dict, Literal, Optional, Tuple, Union
@@ -13,6 +14,7 @@ from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
@@ -295,7 +297,12 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+def do_deactivate_realm(
+    realm: Realm,
+    *,
+    acting_user: Optional[UserProfile],
+    deletion_delay_days: Optional[int] = None,
+) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -306,7 +313,14 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
         return
 
     realm.deactivated = True
-    realm.save(update_fields=["deactivated"])
+
+    if deletion_delay_days is None:
+        realm.save(update_fields=["deactivated"])
+    else:
+        realm.scheduled_deletion_date = timezone_now() + datetime.timedelta(
+            days=deletion_delay_days
+        )
+        realm.save(update_fields=["scheduled_deletion_date", "deactivated"])
 
     if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices(realm)
@@ -338,6 +352,13 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
     send_event(realm, event, active_user_ids(realm.id))
 
+    if deletion_delay_days == 0:
+        deferred_work_event = {
+            "type": "scrub_deactivated_realm",
+            "realm_id": realm.id,
+        }
+        queue_json_publish("deferred_work", deferred_work_event)
+
 
 def do_reactivate_realm(realm: Realm) -> None:
     if not realm.deactivated:
@@ -345,8 +366,10 @@ def do_reactivate_realm(realm: Realm) -> None:
         return
 
     realm.deactivated = False
+    realm.scheduled_deletion_date = None
+
     with transaction.atomic():
-        realm.save(update_fields=["deactivated"])
+        realm.save(update_fields=["deactivated", "scheduled_deletion_date"])
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
@@ -387,6 +410,7 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
         obj_class._default_manager.filter(realm=realm).delete()
 
 
+@transaction.atomic
 def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices(realm)
@@ -439,6 +463,8 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_SCRUBBED,
     )
+    realm.scheduled_deletion_date = None
+    realm.save()
 
 
 @transaction.atomic(durable=True)
@@ -552,3 +578,12 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
         language=language,
         context=context,
     )
+
+
+def scrub_deactivated_realm(realm_to_scrub: Realm) -> None:
+    if (
+        realm_to_scrub.scheduled_deletion_date is not None
+        and realm_to_scrub.scheduled_deletion_date <= timezone_now()
+    ):
+        do_scrub_realm(realm_to_scrub, acting_user=None)
+        logging.info("Scrubbed realm %s", realm_to_scrub.id)

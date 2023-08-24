@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 212**
+
+* [`POST /register`](/api/register-queue): Added
+  `server_min_deactivated_realm_deletion_days` and
+  `server_max_deactivated_realm_deletion_days` constants to be used in
+  UI for deactivating an organization.
+* `POST /realm/deactivate`: Added `deletion_delay_days` parameter
+  to control when the realm may be automatically deleted.
+
 **Feature level 211**
 
 * [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic),

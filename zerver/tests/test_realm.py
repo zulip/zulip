@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Union
 from unittest import mock
 
 import orjson
+import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -27,6 +28,7 @@ from zerver.actions.realm_settings import (
     do_send_realm_reactivation_email,
     do_set_realm_property,
     do_set_realm_user_default_setting,
+    scrub_deactivated_realm,
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
@@ -376,11 +378,12 @@ class RealmTest(ZulipTestCase):
 
     def test_do_reactivate_realm(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deletion_delay_days=15)
         self.assertTrue(realm.deactivated)
 
         do_reactivate_realm(realm)
         self.assertFalse(realm.deactivated)
+        self.assertEqual(realm.scheduled_deletion_date, None)
 
         log_entry = RealmAuditLog.objects.last()
         assert log_entry is not None
@@ -723,6 +726,69 @@ class RealmTest(ZulipTestCase):
         }
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
+
+    def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
+        self.login("desdemona")
+
+        # settings.MIN_DEACTIVATED_REALM_DELETION_DAYS have default value 14.
+        # So minimum 14 days should be given for data deletion.
+        result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 12})
+        self.assert_json_error(result, "deletion_delay_days must be at least 14 days.")
+
+        result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 17})
+        self.assert_json_success(result)
+
+        do_reactivate_realm(get_realm("zulip"))
+
+        with self.settings(MAX_DEACTIVATED_REALM_DELETION_DAYS=30):
+            self.login("desdemona")
+
+            # None value to deletion_delay_days means data will be never deleted.
+            result = self.client_post(
+                "/json/realm/deactivate", {"deletion_delay_days": orjson.dumps(None).decode()}
+            )
+            self.assert_json_error(
+                result,
+                "deletion_delay_days must be at most 30 days.",
+            )
+
+            result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 40})
+            self.assert_json_error(
+                result,
+                "deletion_delay_days must be at most 30 days.",
+            )
+
+            result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 25})
+            self.assert_json_success(result)
+
+    def test_scrub_deactivated_realms(self) -> None:
+        zulip = get_realm("zulip")
+        zephyr = get_realm("zephyr")
+        lear = get_realm("lear")
+
+        do_deactivate_realm(zephyr, acting_user=None, deletion_delay_days=3)
+        self.assertTrue(zephyr.deactivated)
+
+        do_deactivate_realm(zulip, acting_user=None, deletion_delay_days=None)
+        self.assertTrue(zulip.deactivated)
+
+        with mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm:
+            scrub_deactivated_realm(zephyr)
+            scrub_deactivated_realm(zulip)
+            mock_scrub_realm.assert_not_called()
+
+        with mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm:
+            with self.assertLogs(level="INFO"):
+                do_deactivate_realm(lear, acting_user=None, deletion_delay_days=0)
+                self.assertTrue(lear.deactivated)
+                mock_scrub_realm.assert_called_once_with(lear, acting_user=None)
+
+        with time_machine.travel(timezone_now() + datetime.timedelta(days=4)):
+            with mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm:
+                with self.assertLogs(level="INFO"):
+                    scrub_deactivated_realm(get_realm("zephyr"))
+                    scrub_deactivated_realm(get_realm("zulip"))
+                    mock_scrub_realm.assert_called_once_with(zephyr, acting_user=None)
 
     def test_initial_plan_type(self) -> None:
         with self.settings(BILLING_ENABLED=True):
@@ -1597,6 +1663,9 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertNotEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
 
+        zulip.scheduled_deletion_date = timezone_now() + datetime.timedelta(days=3)
+        zulip.save(update_fields=["scheduled_deletion_date"])
+
         with self.assertLogs(level="WARNING"):
             do_scrub_realm(zulip, acting_user=None)
 
@@ -1649,3 +1718,5 @@ class ScrubRealmTest(ZulipTestCase):
             self.assertNotRegex(
                 user.delivery_email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$"
             )
+
+        self.assertEqual(zulip.scheduled_deletion_date, None)

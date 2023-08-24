@@ -587,3 +587,10 @@ TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 5000
 # How often a client should send start notifications to the server to
 # indicate that the user is still interacting with the compose UI.
 TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000
+
+# Minimum and maximum permitted number of days before full data
+# deletion when deactivating an organization. A nonzero minimum helps
+# protect against a compromised administrator account being used to
+# delete an active organization.
+MIN_DEACTIVATED_REALM_DELETION_DAYS: Optional[int] = 14
+MAX_DEACTIVATED_REALM_DELETION_DAYS: Optional[int] = None
