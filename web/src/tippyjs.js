@@ -428,6 +428,11 @@ export function initialize() {
             instance.destroy();
         },
     });
+
+    delegate("body", {
+        target: "#user_info_popover .status-emoji",
+        appendTo: () => document.body,
+    });
 }
 
 export function show_copied_confirmation($copy_button, on_hide_callback, timeout_in_ms = 1000) {
