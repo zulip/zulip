@@ -130,7 +130,7 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth[call,phonenumberslite,sms]
+https://github.com/andersk/django-two-factor-auth/archive/b0ae80051d45ac360595ed327b044c766f57d32f.zip#egg=django-two-factor-auth[call,phonenumberslite,sms]==1.15.4+git  # https://github.com/jazzband/django-two-factor-auth/pull/649
 
 # Needed for processing payments (in corporate)
 stripe
