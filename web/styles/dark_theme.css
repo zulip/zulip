@@ -896,12 +896,16 @@
     #settings_page .settings-header,
     #settings_page .sidebar li.active,
     #settings_page .sidebar-wrapper .tab-container,
-    .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
     .modal-footer,
     .modal-bg .modal-header {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    .table-striped tbody tr:nth-child(even) td {
+        border-color: hsl(0deg 0% 0% / 20%);
+        background-color: hsl(212deg 28% 14%);
     }
 
     .table-striped tbody tr:nth-child(odd) td {

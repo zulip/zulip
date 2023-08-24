@@ -754,6 +754,10 @@ div.overlay {
         background-color: hsl(0deg 0% 98%);
     }
 
+    tbody > tr:nth-child(even) > td {
+        background-color: hsl(0deg 0% 95%);
+    }
+
     /* Force the actions column to use the minimum space necessary */
     .actions {
         width: 1%;
