@@ -120,6 +120,10 @@ missing.difference_update(
 # https://github.com/python-social-auth/social-app-django/pull/25
 missing.discard(("default", "0005_auto_20160727_2333"))
 
+# This was a typo (twofactor for two_factor) corrected in
+# https://github.com/jazzband/django-two-factor-auth/pull/642
+missing.discard(("twofactor", "0001_squashed_0008_delete_phonedevice"))
+
 for key, migration in loader.disk_migrations.items():
     missing.discard(key)
     missing.difference_update(migration.replaces)
