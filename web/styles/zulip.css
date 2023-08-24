@@ -1148,7 +1148,7 @@ td.pointer {
 .messagebox-content .message_time {
     display: block;
     font-size: 13px;
-    font-weight: normal;
+    font-weight: 350;
     text-align: right;
     opacity: 0.8;
     color: var(--color-text-default);
