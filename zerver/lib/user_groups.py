@@ -311,7 +311,7 @@ def get_recursive_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
 
 
 def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
-    return UserProfile.objects.filter(direct_groups__in=get_recursive_subgroups(user_group))
+    return UserProfile.objects.seal().filter(direct_groups__in=get_recursive_subgroups(user_group))
 
 
 def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:

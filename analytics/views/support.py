@@ -293,7 +293,9 @@ def support(
         case_insensitive_users_q = Q()
         for key_word in key_words:
             case_insensitive_users_q |= Q(delivery_email__iexact=key_word)
-        users = set(UserProfile.objects.select_related("realm").filter(case_insensitive_users_q))
+        users = set(
+            UserProfile.objects.select_related("realm").seal().filter(case_insensitive_users_q)
+        )
         realms = set(Realm.objects.filter(string_id__in=key_words))
 
         for key_word in key_words:
@@ -309,11 +311,15 @@ def support(
                     realms.add(get_realm(subdomain))
             except ValidationError:
                 users.update(
-                    UserProfile.objects.select_related("realm").filter(full_name__iexact=key_word)
+                    UserProfile.objects.select_related("realm")
+                    .seal()
+                    .filter(full_name__iexact=key_word)
                 )
 
         # full_names can have , in them
-        users.update(UserProfile.objects.select_related("realm").filter(full_name__iexact=query))
+        users.update(
+            UserProfile.objects.select_related("realm").seal().filter(full_name__iexact=query)
+        )
 
         context["users"] = users
         context["realms"] = realms

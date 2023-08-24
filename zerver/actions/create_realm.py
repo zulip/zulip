@@ -140,7 +140,7 @@ def setup_realm_internal_bots(realm: Realm) -> None:
         for bot in settings.REALM_INTERNAL_BOTS
     ]
     create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
-    bots = UserProfile.objects.filter(
+    bots = UserProfile.objects.seal().filter(
         realm=realm,
         email__in=[bot_info[1] for bot_info in internal_bots],
         bot_owner__isnull=True,

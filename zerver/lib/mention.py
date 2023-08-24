@@ -90,7 +90,8 @@ class MentionBackend:
             q_list = [user_filter.Q() for user_filter in unseen_user_filters]
 
             rows = (
-                UserProfile.objects.filter(
+                UserProfile.objects.seal()
+                .filter(
                     realm_id=self.realm_id,
                     is_active=True,
                 )

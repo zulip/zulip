@@ -35,7 +35,7 @@ def get_valid_integration_name(name: str) -> Optional[str]:
 
 def dev_panel(request: HttpRequest) -> HttpResponse:
     integrations = get_webhook_integrations()
-    bots = UserProfile.objects.filter(is_bot=True, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+    bots = UserProfile.objects.seal().filter(is_bot=True, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
     context = {
         "integrations": integrations,
         "bots": bots,

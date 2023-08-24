@@ -35,6 +35,7 @@ def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Opti
         # and beginning of email address
         user = (
             UserProfile.objects.select_related("realm")
+            .seal()
             .filter(
                 Q(full_name__iexact=teamcity_username) | Q(email__istartswith=teamcity_username),
                 is_active=True,

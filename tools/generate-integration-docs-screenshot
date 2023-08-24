@@ -60,8 +60,10 @@ def create_integration_bot(integration: Integration, bot_name: Optional[str] = N
     if bot_name is None:
         bot_name = f"{integration.name.capitalize()} Bot"
     try:
-        bot = UserProfile.objects.select_related("bot_owner", "bot_owner__realm").get(
-            email=bot_email
+        bot = (
+            UserProfile.objects.select_related("bot_owner", "bot_owner__realm")
+            .seal()
+            .get(email=bot_email)
         )
     except UserProfile.DoesNotExist:
         bot = do_create_user(

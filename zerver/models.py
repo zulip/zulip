@@ -51,6 +51,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
 from django_stubs_ext import StrPromise, ValuesQuerySet
+from seal.models import SealableManager, SealableModel
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -855,7 +856,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         else:
             roles = [UserProfile.ROLE_REALM_ADMINISTRATOR]
 
-        return UserProfile.objects.filter(
+        return UserProfile.objects.seal().filter(
             realm=self,
             is_active=True,
             role__in=roles,
@@ -871,7 +872,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         else:
             roles = [UserProfile.ROLE_REALM_ADMINISTRATOR]
 
-        return UserProfile.objects.filter(
+        return UserProfile.objects.seal().filter(
             realm=self,
             is_bot=False,
             is_active=True,
@@ -879,15 +880,23 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         )
 
     def get_human_billing_admin_and_realm_owner_users(self) -> QuerySet["UserProfile"]:
-        return UserProfile.objects.select_related("realm").filter(
-            Q(role=UserProfile.ROLE_REALM_OWNER) | Q(is_billing_admin=True),
-            realm=self,
-            is_bot=False,
-            is_active=True,
+        return (
+            UserProfile.objects.select_related("realm")
+            .seal()
+            .filter(
+                Q(role=UserProfile.ROLE_REALM_OWNER) | Q(is_billing_admin=True),
+                realm=self,
+                is_bot=False,
+                is_active=True,
+            )
         )
 
     def get_active_users(self) -> QuerySet["UserProfile"]:
-        return UserProfile.objects.filter(realm=self, is_active=True)
+        return (
+            UserProfile.objects.select_related("recipient")
+            .seal()
+            .filter(realm=self, is_active=True)
+        )
 
     def get_first_human_user(self) -> Optional["UserProfile"]:
         """A useful value for communications with newly created realms.
@@ -898,10 +907,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         * The user may be deactivated, etc., so it's not something that's useful
           for features, permissions, etc.
         """
-        return UserProfile.objects.filter(realm=self, is_bot=False).order_by("id").first()
+        return UserProfile.objects.seal().filter(realm=self, is_bot=False).order_by("id").first()
 
     def get_human_owner_users(self) -> QuerySet["UserProfile"]:
-        return UserProfile.objects.filter(
+        return UserProfile.objects.seal().filter(
             realm=self, is_bot=False, role=UserProfile.ROLE_REALM_OWNER, is_active=True
         )
 
@@ -1765,7 +1774,11 @@ class RealmUserDefault(UserBaseSettings):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)
 
 
-class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class SealableUserManager(SealableManager):
+    objects: UserManager["UserProfile"] = UserManager()
+
+
+class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings, SealableModel):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
@@ -1971,7 +1984,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
 
     zoom_token = models.JSONField(default=None, null=True)
 
-    objects = UserManager()
+    objects = SealableUserManager()
 
     ROLE_ID_TO_NAME_MAP = {
         ROLE_REALM_OWNER: gettext_lazy("Organization owner"),
@@ -3897,8 +3910,10 @@ class Subscription(models.Model):
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
-    return UserProfile.objects.select_related("realm", "bot_owner", "bot_owner__realm").get(
-        id=user_profile_id
+    return (
+        UserProfile.objects.select_related("realm", "bot_owner", "bot_owner__realm")
+        .seal()
+        .get(id=user_profile_id)
     )
 
 
@@ -3909,14 +3924,18 @@ def get_user_profile_by_email(email: str) -> UserProfile:
     multiple users with a given (delivery) email address existing on a
     single server (in different realms).
     """
-    return UserProfile.objects.select_related("realm").get(delivery_email__iexact=email.strip())
+    return (
+        UserProfile.objects.select_related("realm").seal().get(delivery_email__iexact=email.strip())
+    )
 
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
     try:
-        return UserProfile.objects.select_related("realm", "bot_owner", "bot_owner__realm").get(
-            api_key=api_key
+        return (
+            UserProfile.objects.select_related("realm", "bot_owner", "bot_owner__realm")
+            .seal()
+            .get(api_key=api_key)
         )
     except UserProfile.DoesNotExist:
         # We will cache failed lookups with None.  The
@@ -3941,8 +3960,10 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS security model.  Use get_user in
     those code paths.
     """
-    return UserProfile.objects.select_related("realm", "bot_owner").get(
-        delivery_email__iexact=email.strip(), realm=realm
+    return (
+        UserProfile.objects.select_related("realm", "bot_owner")
+        .seal()
+        .get(delivery_email__iexact=email.strip(), realm=realm)
     )
 
 
@@ -3966,7 +3987,7 @@ def get_users_by_delivery_email(emails: Set[str], realm: Realm) -> QuerySet[User
     for email in emails:
         email_filter |= Q(delivery_email__iexact=email.strip())
 
-    return UserProfile.objects.filter(realm=realm).filter(email_filter)
+    return UserProfile.objects.seal().filter(realm=realm).filter(email_filter)
 
 
 @cache_with_key(lambda email, realm: user_profile_cache_key(email, realm.id), timeout=3600 * 24 * 7)
@@ -3978,8 +3999,10 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS.  In those code paths, use
     get_user_by_delivery_email.
     """
-    return UserProfile.objects.select_related("realm", "bot_owner", "bot_owner__realm").get(
-        email__iexact=email.strip(), realm=realm
+    return (
+        UserProfile.objects.select_related("realm", "bot_owner", "bot_owner__realm")
+        .seal()
+        .get(email__iexact=email.strip(), realm=realm)
     )
 
 
@@ -3993,7 +4016,7 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
 
 
 def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
-    return UserProfile.objects.select_related("realm", "bot_owner").get(id=uid, realm=realm)
+    return UserProfile.objects.select_related("realm", "bot_owner").seal().get(id=uid, realm=realm)
 
 
 def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
@@ -4021,7 +4044,7 @@ def get_system_bot(email: str, realm_id: int) -> UserProfile:
     the same realm as the one *to* which the message will be sent should be used - because
     cross-realm messages will be eliminated as part of the migration.
     """
-    return UserProfile.objects.select_related("realm").get(email__iexact=email.strip())
+    return UserProfile.objects.select_related("realm").seal().get(email__iexact=email.strip())
 
 
 def get_user_by_id_in_realm_including_cross_realm(
