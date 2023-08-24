@@ -673,6 +673,14 @@ ul {
             }
         }
     }
+
+    .empty-list {
+        border: none;
+
+        #empty-table-message {
+            padding: 3em 1em;
+        }
+    }
 }
 
 @media (width < $md_min) {
