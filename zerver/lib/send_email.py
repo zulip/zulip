@@ -563,6 +563,8 @@ def send_custom_email(
         if options.get("admins_only") and not user_profile.is_realm_admin:
             continue
         context: Dict[str, object] = {
+            "realm": user_profile.realm,
+            "realm_string_id": user_profile.realm.string_id,
             "realm_uri": user_profile.realm.uri,
             "realm_name": user_profile.realm.name,
         }
