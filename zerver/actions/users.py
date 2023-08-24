@@ -62,15 +62,15 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
     user_id = user_profile.id
     realm = user_profile.realm
     date_joined = user_profile.date_joined
-    personal_recipient = user_profile.recipient
+    personal_recipient_id = user_profile.recipient_id
 
     with transaction.atomic():
         user_profile.delete()
         # Recipient objects don't get deleted through CASCADE, so we need to handle
         # the user's personal recipient manually. This will also delete all Messages pointing
         # to this recipient (all direct messages sent to the user).
-        assert personal_recipient is not None
-        personal_recipient.delete()
+        assert personal_recipient_id is not None
+        Recipient.objects.get(id=personal_recipient_id).delete()
         replacement_user = create_user(
             force_id=user_id,
             email=Address(
@@ -160,7 +160,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
     do_deactivate_user(user_profile, acting_user=None)
 
     user_id = user_profile.id
-    personal_recipient = user_profile.recipient
+    personal_recipient_id = user_profile.recipient_id
     realm = user_profile.realm
     date_joined = user_profile.date_joined
 
@@ -212,8 +212,8 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
         # We don't delete the personal recipient to preserve  personal messages!
         # Now, the personal recipient belong to replacement_user, because
         # personal_recipient.type_id is equal to replacement_user.id.
-        replacement_user.recipient = personal_recipient
-        replacement_user.save(update_fields=["recipient"])
+        replacement_user.recipient_id = personal_recipient_id
+        replacement_user.save(update_fields=["recipient_id"])
 
         # Uses index: zerver_message_realm_sender_recipient (prefix)
         Message.objects.filter(realm_id=realm.id, sender=temp_replacement_user).update(
