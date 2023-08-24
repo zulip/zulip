@@ -79,6 +79,7 @@
     "desktop-login": ["./src/bundles/portico", "./src/portico/desktop-login"],
     "desktop-redirect": ["./src/bundles/portico", "./src/portico/desktop-redirect"],
     "stats": [
+        "./src/stats/page_params",
         "./src/bundles/portico",
         "./styles/portico/stats.css",
         "./src/stats/stats",
