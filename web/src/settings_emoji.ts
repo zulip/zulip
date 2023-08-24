@@ -109,8 +109,9 @@ export function populate_emoji(): void {
     }
 
     const emoji_data = emoji.get_server_realm_emoji_data();
+    const active_emoji_data = Object.values(emoji_data).filter((emoji) => !emoji.deactivated);
 
-    for (const emoji of Object.values(emoji_data)) {
+    for (const emoji of active_emoji_data) {
         // Add people.js data for the user here.
         if (emoji.author_id !== null) {
             emoji.author = people.maybe_get_user_by_id(emoji.author_id);
@@ -120,22 +121,19 @@ export function populate_emoji(): void {
     }
 
     const $emoji_table = $("#admin_emoji_table").expectOne();
-    ListWidget.create<ServerEmoji>($emoji_table, Object.values(emoji_data), {
+    ListWidget.create<ServerEmoji>($emoji_table, active_emoji_data, {
         name: "emoji_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
-            if (item.deactivated !== true) {
-                return render_admin_emoji_list({
-                    emoji: {
-                        name: item.name,
-                        display_name: item.name.replaceAll("_", " "),
-                        source_url: item.source_url,
-                        author: item.author || "",
-                        can_delete_emoji: can_delete_emoji(item),
-                    },
-                });
-            }
-            return "";
+            return render_admin_emoji_list({
+                emoji: {
+                    name: item.name,
+                    display_name: item.name.replaceAll("_", " "),
+                    source_url: item.source_url,
+                    author: item.author || "",
+                    can_delete_emoji: can_delete_emoji(item),
+                },
+            });
         },
         filter: {
             $element: $emoji_table
