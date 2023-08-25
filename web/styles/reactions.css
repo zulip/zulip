@@ -28,7 +28,7 @@
             height: 13px;
             border-radius: 4px;
             padding-left: 0.3em;
-            border: 1px solid hsl(0deg 0% 73%);
+            border: 1px solid var(--color-message-reaction-button-border);
             padding-right: 0.3em;
             /* TODO: Eventually this space will be set on the message
                box, but for now this preserves the space beneath the
@@ -67,19 +67,19 @@
     }
 
     .message_reaction:hover .message_reaction_count {
-        color: hsl(200deg 100% 40%);
+        color: var(--color-message-reaction-button-text-hover);
     }
 
     & i {
         font-size: 1.3em;
         float: left;
-        color: hsl(0deg 0% 33%);
+        color: var(--color-message-reaction-button-text);
     }
 
     &:hover .message_reaction + .reaction_button {
         visibility: visible;
         pointer-events: all;
-        background-color: hsl(0deg 0% 98%);
+        background-color: var(--color-message-reaction-button-background);
     }
 
     .reaction_button,
@@ -94,7 +94,7 @@
         }
 
         &:hover i {
-            color: hsl(200deg 100% 40%);
+            color: var(--color-message-reaction-button-text-hover);
         }
 
         /* Configure the reaction button to appear if and only if there's an
@@ -107,21 +107,23 @@
         }
 
         &:hover {
-            border: 1px solid hsl(200deg 100% 40%);
-            background-color: hsl(195deg 50% 95%);
+            border: 1px solid var(--color-message-reaction-button-border-hover);
+            background-color: var(
+                --color-message-reaction-button-background-hover
+            );
             cursor: pointer;
             opacity: 1;
-            color: hsl(200deg 100% 40%);
+            color: var(--color-message-reaction-button-text-hover);
         }
 
         .message_reaction_count {
             font-size: 1.1em;
-            color: hsl(0deg 0% 33%);
+            color: var(--color-message-reaction-button-text);
             margin-right: 0;
         }
 
         &:hover .message_reaction_count {
-            color: hsl(200deg 100% 40%);
+            color: var(--color-message-reaction-button-text-hover);
         }
     }
 }
