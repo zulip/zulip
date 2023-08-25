@@ -190,6 +190,25 @@ function on_show_prep(instance) {
     popovers.hide_all_except_sidebars();
 }
 
+// Toggles a popover menu directly; intended for use in keyboard
+// shortcuts and similar alternative ways to open a popover menu.
+export function toggle_popover_menu(target, popover_props) {
+    const instance = target._tippy;
+
+    if (instance) {
+        instance.hide();
+        return;
+    }
+
+    tippy(target, {
+        ...default_popover_props,
+        showOnCreate: true,
+        ...popover_props,
+    });
+}
+
+// Main function to define a popover menu, opened via clicking on the
+// target selector.
 export function register_popover_menu(target, popover_props) {
     // For some elements, such as the click target to open the message
     // actions menu, we want to avoid propagating the click event to
@@ -206,18 +225,8 @@ export function register_popover_menu(target, popover_props) {
     $("body").on("click", target, (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const instance = e.currentTarget._tippy;
 
-        if (instance) {
-            instance.hide();
-            return;
-        }
-
-        tippy(e.currentTarget, {
-            ...default_popover_props,
-            showOnCreate: true,
-            ...popover_props,
-        });
+        toggle_popover_menu(e.currentTarget, popover_props);
     });
 }
 
