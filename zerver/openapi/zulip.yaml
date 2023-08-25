@@ -12967,7 +12967,7 @@ paths:
                           client capability and process the `user_settings` event type instead.
 
                           Prior to Zulip 5.0 (feature level 84), this field was present
-                          in response if 'realm_user' was present in `fetch_event_types`, not
+                          in response if `realm_user` was present in `fetch_event_types`, not
                           `update_display_settings`.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
