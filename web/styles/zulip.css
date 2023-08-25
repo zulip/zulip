@@ -287,6 +287,13 @@ body {
     );
     --color-tab-picker-icon: hsl(200deg 100% 40%);
 
+    /* Reaction container colors */
+    --color-message-reaction-border: hsl(194deg 37% 84%);
+    --color-message-reaction-border-reacted: hsl(193deg 38% 70%);
+    --color-message-reaction-border-hover: hsl(200deg 100% 40%);
+    --color-message-reaction-background: transparent;
+    --color-message-reaction-background-reacted: hsl(196deg 51% 93%);
+
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
     --color-zulip-logo-loading: hsl(0deg 0% 27%);
@@ -523,6 +530,13 @@ body {
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
+
+    /* Reaction container colors */
+    --color-message-reaction-border: hsl(0deg 0% 0% / 80%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 0% / 90%);
+    --color-message-reaction-border-hover: hsl(236deg 33% 90%);
+    --color-message-reaction-background: transparent;
+    --color-message-reaction-background-reacted: hsl(0deg 0% 0% / 50%);
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
