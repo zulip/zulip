@@ -128,13 +128,13 @@ export function get_list_info(stream_id, zoomed, search_term) {
     }
 
     if (stream_muted && !zoomed) {
-        const unmuted_topics = topic_names.filter((topic) =>
-            user_topics.is_topic_unmuted(stream_id, topic),
+        const unmuted_or_followed_topics = topic_names.filter((topic) =>
+            user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
-        choose_topics(stream_id, unmuted_topics, zoomed, topic_choice_state);
+        choose_topics(stream_id, unmuted_or_followed_topics, zoomed, topic_choice_state);
 
         const other_topics = topic_names.filter(
-            (topic) => !user_topics.is_topic_unmuted(stream_id, topic),
+            (topic) => !user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
         choose_topics(stream_id, other_topics, zoomed, topic_choice_state);
     } else {
