@@ -293,6 +293,12 @@ body {
     --color-message-reaction-border-hover: hsl(200deg 100% 40%);
     --color-message-reaction-background: transparent;
     --color-message-reaction-background-reacted: hsl(196deg 51% 93%);
+    --color-message-reaction-button-text: hsl(0deg 0% 33%);
+    --color-message-reaction-button-text-hover: hsl(200deg 100% 40%);
+    --color-message-reaction-button-background: hsl(0deg 0% 98%);
+    --color-message-reaction-button-background-hover: hsl(195deg 50% 95%);
+    --color-message-reaction-button-border: hsl(0deg 0% 73%);
+    --color-message-reaction-button-border-hover: hsl(200deg 100% 40%);
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
@@ -537,6 +543,20 @@ body {
     --color-message-reaction-border-hover: hsl(236deg 33% 90%);
     --color-message-reaction-background: transparent;
     --color-message-reaction-background-reacted: hsl(0deg 0% 0% / 50%);
+    --color-message-reaction-button-text: inherit;
+    --color-message-reaction-button-text-hover: inherit;
+    --color-message-reaction-button-background: var(
+        --color-message-reaction-background
+    );
+    --color-message-reaction-button-background-hover: var(
+        --color-message-reaction-background
+    );
+    --color-message-reaction-button-border: var(
+        --color-message-reaction-border
+    );
+    --color-message-reaction-button-border-hover: var(
+        --color-message-reaction-border-hover
+    );
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
