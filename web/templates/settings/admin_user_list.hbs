@@ -1,9 +1,12 @@
 <tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}">
     <td>
-        <span class="user_name" >
-            <a data-user-id="{{user_id}}" class="view_user_profile" tabindex="0">{{full_name}}</a>
-            {{#if is_current_user}}<span class="my_user_status">{{t '(you)' }}</span>{{/if}}</span>
-        <i class="fa fa-ban deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
+        <span class="user_name pill_container">
+            <a data-user-id="{{user_id}}" class="view_user_profile pill-value" tabindex="0">
+            <img class="pill-image" src="{{img_src}}" />
+            <span class="pill-value">{{full_name}}</span>
+            {{#if is_current_user}}<span class="my_user_status">{{t '(you)' }}</span>{{/if}}</a>
+            <i class="fa fa-ban deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
+        </span>
     </td>
     {{#if display_email}}
     <td>
@@ -19,13 +22,18 @@
     </td>
     {{#if is_bot}}
     <td class="user_role">
-        <span class="owner">
-            {{#if no_owner }}
-            {{bot_owner_full_name}}
-            {{else}}
-            <a data-user-id="{{bot_owner_id}}" class="view_user_profile" tabindex="0">{{bot_owner_full_name}}</a>
-            {{/if}}
-        </span>
+        {{#if no_owner }}
+            <span class="owner">
+                {{bot_owner_full_name}}
+            </span>
+        {{else}}
+            <span class="owner pill_container">
+                <a data-user-id="{{bot_owner_id}}" class="view_user_profile pill-value" tabindex="0">
+                <img class="pill-image" src="{{owner_img_src}}" />
+                <span class="pill-value" >{{bot_owner_full_name}}</span>
+                </a>
+            </span>
+        {{/if}}
     </td>
     <td class="bot_type">
         <span class="bot type">{{bot_type}}</span>
