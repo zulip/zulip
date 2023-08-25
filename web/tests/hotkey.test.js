@@ -101,7 +101,7 @@ message_lists.current = {
     },
     selected_row() {
         const $row = $.create("selected-row-stub");
-        $row.set_find_results(".actions_hover", []);
+        $row.set_find_results(".message-actions-menu-button", []);
         return $row;
     },
     selected_message() {

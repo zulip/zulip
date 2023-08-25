@@ -895,11 +895,9 @@ export function initialize() {
                 // emoji_picker which we don't want to hide after actions popover is hidden.
                 e.stopPropagation();
                 e.preventDefault();
-                emoji_picker.toggle_emoji_popover(
-                    instance.reference.parentElement,
-                    message_id,
-                    true,
-                );
+                emoji_picker.toggle_emoji_popover(instance.reference.parentElement, message_id, {
+                    placement: "bottom",
+                });
                 instance.hide();
             });
 

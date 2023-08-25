@@ -738,7 +738,8 @@ ul {
     left: -1px;
 }
 
-.giphy-popover {
+.giphy-popover,
+.emoji-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
            as it is not necessary for the Giphy popover. */
@@ -747,6 +748,18 @@ ul {
         /* By resetting to the default color from the `body`,
            we can ignore the colors applied from `tippy-box`. */
         color: var(--color-text-default);
+    }
+}
+
+.emoji-popover-root {
+    /* The emoji popover has a different background color for the
+       header and footer, so we customize the arrow to match this color. */
+    .tippy-box[data-placement="top"] .tippy-arrow::before {
+        border-top-color: hsl(0deg 0% 93%);
+    }
+
+    .tippy-box[data-placement="bottom"] .tippy-arrow::before {
+        border-bottom-color: hsl(0deg 0% 93%);
     }
 }
 
