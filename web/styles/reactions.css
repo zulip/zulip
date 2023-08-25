@@ -7,17 +7,18 @@
         display: flex;
         padding: 0 2px 0 0;
         cursor: pointer;
-        background-color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(194deg 37% 84%);
+        background-color: var(--color-message-reaction-background);
+        border: 1px solid var(--color-message-reaction-border);
         border-radius: 4px;
         align-items: center;
 
         &.reacted {
-            background-color: hsl(195deg 50% 95%);
+            background-color: var(--color-message-reaction-background-reacted);
+            border-color: var(--color-message-reaction-border-reacted);
         }
 
         &:hover {
-            border: 1px solid hsl(200deg 100% 40%);
+            border: 1px solid var(--color-message-reaction-border-hover);
         }
 
         + .reaction_button {
@@ -122,15 +123,6 @@
         &:hover .message_reaction_count {
             color: hsl(200deg 100% 40%);
         }
-    }
-}
-
-.private-message .message_reactions .message_reaction {
-    background-color: hsl(192deg 20% 95%);
-
-    &.reacted {
-        background-color: hsl(196deg 51% 93%);
-        border-color: hsl(193deg 38% 70%);
     }
 }
 
