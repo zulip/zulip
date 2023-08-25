@@ -140,7 +140,7 @@
     opacity: 1 !important;
 }
 
-.emoji-info-popover {
+.emoji-picker-popover {
     padding: 0;
     height: 370px;
     user-select: none;
