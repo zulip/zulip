@@ -493,12 +493,12 @@ No changes; feature level used for Zulip 6.0 release.
 
 **Feature level 152**
 
-* [`PATCH /messages/{message_id}`](/api/update-message): The
-  `send_notification_to_old_thread` and
-  `send_notification_to_new_thread` parameters are now respected when
-  moving a topic within a stream. The default value for
-  `send_notification_to_old_thread` was changed from `true` to
-  `false`.
+* [`PATCH /messages/{message_id}`](/api/update-message):
+  The default value for `send_notification_to_old_thread` was changed from
+  `true` to `false`.
+  When moving a topic within a stream, the `send_notification_to_old_thread`
+  and `send_notification_to_new_thread` parameters are now respected, and by
+  default a notification is sent to the new thread.
 
 **Feature level 151**
 
