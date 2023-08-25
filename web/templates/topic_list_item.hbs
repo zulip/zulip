@@ -1,4 +1,4 @@
-<li class='bottom_left_row {{#if is_active_topic}}active-sub-filter{{/if}} {{#if is_zero}}zero-topic-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}} {{#if is_unmuted}}unmuted_topic{{/if}} topic-list-item' data-topic-name='{{topic_name}}'>
+<li class='bottom_left_row {{#if is_active_topic}}active-sub-filter{{/if}} {{#if is_zero}}zero-topic-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}} {{#if is_unmuted_or_followed}}unmuted_or_followed_topic{{/if}} topic-list-item' data-topic-name='{{topic_name}}'>
     <span class='topic-box'>
         <span class="sidebar-topic-check">
             {{topic_resolved_prefix}}
@@ -10,6 +10,9 @@
             <span class="unread_mention_info">
                 @
             </span>
+        {{else if is_followed}}
+            <i class="zulip-icon zulip-icon-follow" aria-hidden="true"> </i>
+            &nbsp;
         {{/if}}
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
             {{unread}}

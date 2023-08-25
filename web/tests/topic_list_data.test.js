@@ -19,7 +19,10 @@ const user_topics = mock_esm("../src/user_topics", {
     is_topic_muted() {
         return false;
     },
-    is_topic_unmuted() {
+    is_topic_followed() {
+        return false;
+    },
+    is_topic_unmuted_or_followed() {
         return false;
     },
 });
@@ -95,7 +98,8 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         contains_unread_mention: false,
         is_active_topic: false,
         is_muted: false,
-        is_unmuted: false,
+        is_followed: false,
+        is_unmuted_or_followed: false,
         is_zero: true,
         topic_display_name: "topic 9",
         topic_name: "✔ topic 9",
@@ -108,7 +112,8 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         contains_unread_mention: false,
         is_active_topic: false,
         is_muted: false,
-        is_unmuted: false,
+        is_followed: false,
+        is_unmuted_or_followed: false,
         is_zero: true,
         topic_display_name: "topic 8",
         topic_name: "topic 8",

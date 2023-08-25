@@ -396,8 +396,8 @@ ul.filters {
             }
         }
 
-        & li.unmuted_topic {
-            color: var(--color-unmuted-topic-list-item);
+        & li.unmuted_or_followed_topic {
+            color: var(--color-unmuted-or-followed-topic-list-item);
 
             .unread_count {
                 opacity: 1;
