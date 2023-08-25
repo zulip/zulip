@@ -5,7 +5,9 @@
 
     {{#unless msg/sent_by_me}}
     <div class="reaction_button message_control_button" data-tooltip-template-id="add-emoji-tooltip-template">
-        <i class="zulip-icon zulip-icon-smile" aria-label="{{t 'Add emoji reaction' }} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+        <div class="emoji-message-control-button-container">
+            <i class="zulip-icon zulip-icon-smile" aria-label="{{t 'Add emoji reaction' }} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+        </div>
     </div>
     {{/unless}}
 

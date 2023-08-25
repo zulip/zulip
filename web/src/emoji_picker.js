@@ -9,30 +9,27 @@ import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
+import {media_breakpoints_num} from "./css_variables";
 import * as emoji from "./emoji";
 import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
-import * as popovers from "./popovers";
+import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as scroll_util from "./scroll_util";
 import * as spectators from "./spectators";
+import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 import * as user_status_ui from "./user_status_ui";
-
-// Emoji picker is of fixed width and height. Update these
-// whenever these values are changed in `reactions.css`.
-const APPROX_HEIGHT = 375;
-const APPROX_WIDTH = 255;
 
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
 // implemented as the emoji_popover.
 export let complete_emoji_catalog = [];
 
-let $current_message_emoji_popover_elem;
+let emoji_popover_instance = null;
 let emoji_catalog_last_coordinates = {
     section: 0,
     index: 0,
@@ -43,6 +40,7 @@ let search_is_active = false;
 const search_results = [];
 let section_head_offsets = [];
 let edit_message_id = null;
+let current_message_id = null;
 
 const EMOJI_CATEGORIES = [
     {name: "Popular", icon: "fa-star-o"},
@@ -108,6 +106,7 @@ function show_search_results() {
 }
 
 function show_emoji_catalog() {
+    reset_emoji_showcase();
     $(".emoji-popover-emoji-map").show();
     $(".emoji-popover-category-tabs").show();
     $(".emoji-search-results-container").hide();
@@ -164,7 +163,7 @@ export function rebuild_catalog() {
 const generate_emoji_picker_content = function (id) {
     let emojis_used = [];
 
-    if (id !== undefined) {
+    if (id) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
     for (const emoji_dict of emoji.emojis_by_name.values()) {
@@ -189,22 +188,24 @@ function refill_section_head_offsets($popover) {
 }
 
 export function reactions_popped() {
-    return $current_message_emoji_popover_elem !== undefined;
+    return Boolean(emoji_popover_instance);
 }
 
 export function hide_emoji_popover() {
-    $(".has_popover").removeClass("has_popover has_emoji_popover");
+    if (!reactions_popped()) {
+        return;
+    }
+    current_message_id = null;
     if (user_status_ui.user_status_picker_open()) {
         // Re-enable clicking events for other elements after closing
         // the popover.  This is the inverse of the hack of in the
         // handler that opens the "user status modal" emoji picker.
         $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "all");
     }
-    if (reactions_popped()) {
-        $current_message_emoji_popover_elem.popover("destroy");
-        $current_message_emoji_popover_elem.removeClass("reaction_button_visible");
-        $current_message_emoji_popover_elem = undefined;
-    }
+    $(emoji_popover_instance.reference).removeClass("reaction_button_visible");
+    $(emoji_popover_instance.reference).parent().removeClass("reaction_button_visible");
+    emoji_popover_instance.destroy();
+    emoji_popover_instance = null;
 }
 
 function get_selected_emoji() {
@@ -433,7 +434,8 @@ function get_next_emoji_coordinates(move_by) {
 }
 
 function change_focus_to_filter() {
-    $(".emoji-popover-filter").trigger("focus");
+    const $popover = $(emoji_popover_instance.popper);
+    $popover.find(".emoji-popover-filter").trigger("focus");
     // If search is active reset current selected emoji to first emoji.
     if (search_is_active) {
         current_section = 0;
@@ -619,71 +621,80 @@ function register_popover_events($popover) {
     });
 }
 
-export function build_emoji_popover(element, id) {
-    const $elt = $(element);
-    if (id !== undefined) {
-        message_lists.current.select_id(id);
-    }
-
-    let placement = popovers.compute_placement($elt, APPROX_HEIGHT, APPROX_WIDTH, true);
-
-    if (placement === "viewport_center") {
-        // For legacy reasons `compute_placement` actually can
-        // return `viewport_center`, but bootstrap doesn't actually
-        // support that.
-        placement = "left";
-    }
-
-    let template = render_emoji_popover();
-
-    // if the window is mobile sized, add the `.popover-flex` wrapper to the emoji
-    // popover so that it will be wrapped in flex and centered in the screen.
-    if (window.innerWidth <= 768) {
-        template = "<div class='popover-flex'>" + template + "</div>";
-    }
-
-    $elt.popover({
-        // temporary patch for handling popover placement of `viewport_center`
-        placement,
-        fix_positions: true,
-        template,
-        title: "",
-        content: generate_emoji_picker_content(id),
-        html: true,
-        trigger: "manual",
-        fixed: true,
-    });
-    $elt.popover("show");
-    $elt.addClass("reaction_button_visible");
-    $elt.closest(".message_row").toggleClass("has_popover has_emoji_popover");
-
-    const $popover = $elt.data("popover").$tip;
-    $popover.find(".emoji-popover-filter").trigger("focus");
-    $current_message_emoji_popover_elem = $elt;
-
-    emoji_catalog_last_coordinates = {
-        section: 0,
-        index: 0,
+function get_default_emoji_popover_options() {
+    return {
+        placement: "top",
+        popperOptions: {
+            modifiers: [
+                {
+                    // The placement is set to top, but if that placement does not fit,
+                    // the opposite bottom or left placement will be used.
+                    name: "flip",
+                    options: {
+                        // We list both bottom and top here, because
+                        // some callers override the default
+                        // placement.
+                        fallbackPlacements: ["bottom", "top", "left", "right"],
+                    },
+                },
+            ],
+        },
+        onCreate(instance) {
+            if (current_message_id) {
+                message_lists.current.select_id(current_message_id);
+            }
+            emoji_popover_instance = instance;
+            const $popover = $(instance.popper);
+            $popover.addClass("emoji-popover-root");
+            instance.setContent(ui_util.parse_html(render_emoji_popover()));
+            $popover
+                .find(".popover-content")
+                .append(generate_emoji_picker_content(current_message_id));
+            emoji_catalog_last_coordinates = {
+                section: 0,
+                index: 0,
+            };
+        },
+        onShow(instance) {
+            const $reference = $(instance.reference);
+            $reference.addClass("reaction_button_visible");
+            $reference.parent().addClass("reaction_button_visible");
+        },
+        onMount(instance) {
+            const $popover = $(instance.popper);
+            refill_section_head_offsets($popover);
+            register_popover_events($popover);
+            show_emoji_catalog();
+            change_focus_to_filter();
+        },
+        onHidden() {
+            hide_emoji_popover();
+        },
     };
-    show_emoji_catalog();
-    reset_emoji_showcase();
-
-    $(() => refill_section_head_offsets($popover));
-    register_popover_events($popover);
 }
 
-export function toggle_emoji_popover(element, id) {
-    const $last_popover_elem = $current_message_emoji_popover_elem;
-    popovers.hide_all();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
+export function toggle_emoji_popover(target, id, additional_popover_options) {
+    if (id) {
+        current_message_id = id;
     }
 
-    build_emoji_popover(element, id);
-}
+    let show_as_overlay = false;
 
+    // If the window is mobile-sized, we will render the
+    // emoji popover centered on the screen with the overlay.
+    if (window.innerWidth <= media_breakpoints_num.md) {
+        show_as_overlay = true;
+    }
+
+    popover_menus.toggle_popover_menu(
+        target,
+        {
+            ...get_default_emoji_popover_options(),
+            ...additional_popover_options,
+        },
+        {show_as_overlay},
+    );
+}
 export function register_click_handlers() {
     $(document).on("click", ".emoji-popover-emoji.reaction", function (e) {
         // When an emoji is clicked in the popover,
@@ -729,7 +740,7 @@ export function register_click_handlers() {
         toggle_emoji_popover(compose_click_target);
     });
 
-    $("#main_div").on("click", ".reaction_button", function (e) {
+    $("#main_div").on("click", ".emoji-message-control-button-container", function (e) {
         e.stopPropagation();
 
         if (page_params.is_spectator) {
@@ -738,7 +749,7 @@ export function register_click_handlers() {
         }
 
         const message_id = rows.get_message_id(this);
-        toggle_emoji_popover(this, message_id);
+        toggle_emoji_popover(e.currentTarget, message_id, {placement: "bottom"});
     });
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
@@ -780,12 +791,17 @@ export function register_click_handlers() {
     $("body").on("click", "#set-user-status-modal #selected_emoji", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        toggle_emoji_popover(e.target);
-        // Because the emoji picker gets drawn on top of the user
-        // status modal, we need this hack to make clicking outside
-        // the emoji picker only close the emoji picker, and not the
-        // whole user status modal.
-        $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "none");
+        toggle_emoji_popover(e.target, undefined, {placement: "bottom"});
+        if (reactions_popped()) {
+            // Because the emoji picker gets drawn on top of the user
+            // status modal, we need this hack to make clicking outside
+            // the emoji picker only close the emoji picker, and not the
+            // whole user status modal.
+            $(".app, .header, .modal__overlay, #set-user-status-modal").css(
+                "pointer-events",
+                "none",
+            );
+        }
     });
 
     $(document).on("click", ".emoji-popover-emoji.status-emoji", function (e) {
