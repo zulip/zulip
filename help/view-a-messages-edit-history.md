@@ -25,6 +25,11 @@ Organization administrators can
     never see a **MOVED** label; messages that have been moved will be
     marked as **EDITED** just like those whose content has been edited.
 
+!!! keyboard_tip ""
+
+    You can use <kbd>Shift</kbd> + <kbd>H</kbd> to view the edit history of the
+    selected message.
+
 {end_tabs}
 
 ## Related articles
