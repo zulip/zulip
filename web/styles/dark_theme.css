@@ -415,12 +415,6 @@
         color: inherit;
     }
 
-    .message_reactions .message_reaction_count,
-    .message_reactions .reaction_button i,
-    .message_reactions:hover .message_reaction + .reaction_button {
-        color: inherit !important;
-    }
-
     .active_private_messages_section {
         #private_messages_section,
         #direct-messages-list,
