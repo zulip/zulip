@@ -202,8 +202,8 @@ export function hide_emoji_popover() {
         // handler that opens the "user status modal" emoji picker.
         $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "all");
     }
-    $(emoji_popover_instance.reference).removeClass("reaction_button_visible");
-    $(emoji_popover_instance.reference).parent().removeClass("reaction_button_visible");
+    $(emoji_popover_instance.reference).removeClass("active-emoji-picker-reference");
+    $(emoji_popover_instance.reference).parent().removeClass("active-emoji-picker-reference");
     emoji_popover_instance.destroy();
     emoji_popover_instance = null;
 }
@@ -657,8 +657,8 @@ function get_default_emoji_popover_options() {
         },
         onShow(instance) {
             const $reference = $(instance.reference);
-            $reference.addClass("reaction_button_visible");
-            $reference.parent().addClass("reaction_button_visible");
+            $reference.addClass("active-emoji-picker-reference");
+            $reference.parent().addClass("active-emoji-picker-reference");
         },
         onMount(instance) {
             const $popover = $(instance.popper);
