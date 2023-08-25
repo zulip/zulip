@@ -49,7 +49,7 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 201**
 
-* [`POST /zulip-outgoing-webhook`]: Renamed the notification trigger
+* `POST /zulip-outgoing-webhook`: Renamed the notification trigger
   `private_message` to `direct_message`.
 
 **Feature level 200**
