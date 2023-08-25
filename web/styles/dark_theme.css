@@ -556,8 +556,7 @@
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,
-    .emoji-popover .reaction.reacted,
-    .message_reactions .message_reaction.reacted {
+    .emoji-popover .reaction.reacted {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
     }
@@ -568,17 +567,6 @@
 
     .message_time:hover {
         color: var(--color-message-action-interactive);
-    }
-
-    .message_reactions:hover .message_reaction + .reaction_button,
-    .message_reactions .message_reaction {
-        background-color: transparent;
-        border-color: hsl(0deg 0% 0% / 80%);
-        color: inherit;
-
-        &:hover {
-            border-color: hsl(236deg 33% 90%);
-        }
     }
 
     .emoji-popover .reaction:focus {
