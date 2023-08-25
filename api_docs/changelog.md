@@ -1300,6 +1300,8 @@ field with an integer field `invite_to_realm_policy`.
 * [`GET /events`](/api/get-events): Added new event type `muted_users`
   which will be sent to a user when the set of users muted by them has
   changed.
+* [`POST /register`](/api/register-queue): Added a new `muted_users` field,
+  which identifies the set of other users the current user has muted.
 
 **Feature level 47**
 
