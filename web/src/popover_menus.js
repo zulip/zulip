@@ -190,10 +190,59 @@ function on_show_prep(instance) {
     popovers.hide_all_except_sidebars();
 }
 
+function get_props_for_popover_centering(popover_props) {
+    // We should put the reference element in the viewport,
+    // otherwise Tippy will think that the reference is
+    // hidden and hide the popover too.
+    const reference_offset = 1;
+
+    return {
+        arrow: false,
+        getReferenceClientRect: () => ({
+            width: 0,
+            height: 0,
+            left: reference_offset,
+            top: reference_offset,
+        }),
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "offset",
+                    options: {
+                        offset({popper}) {
+                            // Calculate the offset needed to place the reference in the center
+                            const x_offset_to_center = window.innerWidth / 2 - reference_offset;
+                            const y_offset_to_center =
+                                window.innerHeight / 2 - popper.height / 2 - reference_offset;
+
+                            return [x_offset_to_center, y_offset_to_center];
+                        },
+                    },
+                },
+            ],
+        },
+        onMount(instance) {
+            $("body").append($("<div>").attr("id", "popover-overlay-background"));
+            popover_props.onMount(instance);
+        },
+        onHidden(instance) {
+            $("#popover-overlay-background").remove();
+            popover_props.onHidden(instance);
+        },
+    };
+}
+
 // Toggles a popover menu directly; intended for use in keyboard
 // shortcuts and similar alternative ways to open a popover menu.
-export function toggle_popover_menu(target, popover_props) {
+export function toggle_popover_menu(target, popover_props, options) {
     const instance = target._tippy;
+    let mobile_popover_props = {};
+
+    if (options?.show_as_overlay) {
+        mobile_popover_props = {
+            ...get_props_for_popover_centering(popover_props),
+        };
+    }
 
     if (instance) {
         instance.hide();
@@ -204,6 +253,7 @@ export function toggle_popover_menu(target, popover_props) {
         ...default_popover_props,
         showOnCreate: true,
         ...popover_props,
+        ...mobile_popover_props,
     });
 }
 

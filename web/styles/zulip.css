@@ -643,6 +643,18 @@ body.has-overlay-scrollbar {
     }
 }
 
+/* Styles for popovers rendered as an overlay at the
+   center of the screen, primarily used in mobile sizes. */
+#popover-overlay-background {
+    position: fixed;
+    inset: 0;
+
+    /* Needs to be higher than the 105 for div.overlay so that the
+       emoji picker can render on top of the user status picker. */
+    z-index: 106;
+    background-color: hsl(0deg 0% 0% / 70%);
+}
+
 .column-right {
     width: var(--right-sidebar-width);
     max-width: var(--right-sidebar-width);
