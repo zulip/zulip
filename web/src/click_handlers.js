@@ -897,7 +897,7 @@ export function initialize() {
         // Dismiss popovers if the user has clicked outside them
         if (
             $(
-                '.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded',
+                '.popover-inner, #user-profile-modal, .emoji-picker-popover, .app-main [class^="column-"].expanded',
             ).has(e.target).length === 0
         ) {
             // Since tippy instance can handle outside clicks on their own,
