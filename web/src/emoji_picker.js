@@ -756,7 +756,7 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
 
-        const $popover = $(e.currentTarget).closest(".emoji-info-popover").expectOne();
+        const $popover = $(e.currentTarget).closest(".emoji-picker-popover").expectOne();
         const $emoji_map = $popover.find(".emoji-popover-emoji-map");
 
         const offset = section_head_offsets.find(

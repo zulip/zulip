@@ -52,7 +52,7 @@ async function test_user_status(page: Page): Promise<void> {
     // Wait until emoji popover is opened.
     await page.waitForSelector(`.emoji-popover  ${tada_emoji_selector}`, {visible: true});
     await page.click(`.emoji-popover  ${tada_emoji_selector}`);
-    await page.waitForSelector(".emoji-info-popover", {hidden: true});
+    await page.waitForSelector(".emoji-picker-popover", {hidden: true});
     await page.waitForSelector(`.selected-emoji${tada_emoji_selector}`);
 
     await page.click("#set-user-status-modal .dialog_submit_button");
