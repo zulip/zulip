@@ -81,10 +81,13 @@
         background-color: hsl(0deg 0% 98%);
     }
 
-    .reaction_button {
+    .reaction_button,
+    .emoji-message-control-button-container {
         display: flex;
         align-items: center;
+    }
 
+    .reaction_button {
         & i {
             font-size: 1em;
         }
@@ -170,7 +173,7 @@
 
             background-color: hsl(0deg 0% 93%);
 
-            border-radius: 5px 5px 0 0;
+            border-radius: 3px 3px 0 0;
 
             .fa-search {
                 position: absolute;
@@ -277,6 +280,7 @@
         background-color: hsl(0deg 0% 93%);
         min-height: 44px;
         width: 250px;
+        border-radius: 0 0 3px 3px;
 
         .emoji-preview {
             position: absolute;

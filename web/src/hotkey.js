@@ -1000,8 +1000,11 @@ export function process_hotkey(e, hotkey) {
         case "toggle_reactions_popover": {
             const $row = message_lists.current.selected_row();
             emoji_picker.toggle_emoji_popover(
-                msg.sent_by_me ? $row.find(".actions_hover")[0] : $row.find(".reaction_button")[0],
+                msg.sent_by_me
+                    ? $row.find(".message-actions-menu-button")[0]
+                    : $row.find(".emoji-message-control-button-container")[0],
                 msg.id,
+                {placement: "bottom"},
             );
             return true;
         }

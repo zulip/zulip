@@ -1203,7 +1203,7 @@ td.pointer {
         text-align: center;
         color: var(--color-message-action-visible);
 
-        > i {
+        & i {
             vertical-align: middle;
             /* TODO: Math for these values, possibly with variables.
                In short, the icon body is 16px square; the current
