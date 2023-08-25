@@ -265,7 +265,7 @@ test("get_list_info unreads", ({override}) => {
     // this should make topic 5 at top in items array
     general.is_muted = true;
     add_unreads("topic 5", 1);
-    override(user_topics, "is_topic_unmuted", (stream_id, topic_name) => {
+    override(user_topics, "is_topic_unmuted_or_followed", (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
         return topic_name === "topic 5";
     });
