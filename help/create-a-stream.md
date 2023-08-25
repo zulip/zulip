@@ -9,20 +9,7 @@ If you are an administrator setting up streams for the first time, check out our
 
 ## Create a stream
 
-{start_tabs}
-
-{relative|stream|all}
-
-1. Click **Create stream** on the right.
-
-1. Fill out the requested info, and click **Create**.
-
-!!! warn ""
-
-    **Note**: You will only see the **Create stream** button if you have
-    permission to create streams.
-
-{end_tabs}
+{!create-a-stream-instructions.md!}
 
 ## Stream options
 
