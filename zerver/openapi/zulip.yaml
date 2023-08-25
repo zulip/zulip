@@ -13856,6 +13856,8 @@ paths:
                       giphy_rating_options:
                         type: object
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           Dictionary where each entry describes a valid rating
                           that is configured on this server and could be selected by an
                           organization administrator.
