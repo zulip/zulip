@@ -4,6 +4,24 @@ import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import type {MatchedMessage, Message, RawMessage, UpdateMessageEvent} from "./types";
 
+// When the type is "private", properties from to_user_ids might be undefined.
+// See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
+// Recipient type in direct messages (DM)
+export type DirectRecipient = {
+    type: "private";
+    to_user_ids: string | undefined;
+    reply_to: string;
+};
+
+// Recipient type in a stream
+export type StreamRecipient = {
+    type: "stream";
+    stream_id: number;
+    topic: string;
+};
+
+export type Recipient = DirectRecipient | StreamRecipient;
+
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -68,10 +86,6 @@ export const same_stream_and_topic = function util_same_stream_and_topic(
 export function extract_pm_recipients(recipients: string): string[] {
     return recipients.split(/\s*[,;]\s*/).filter((recipient) => recipient.trim() !== "");
 }
-
-// When the type is "private", properties from to_user_ids might be undefined.
-// See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
-type Recipient = {to_user_ids?: string; type: "private"} | (StreamTopic & {type: "stream"});
 
 export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {
     if (a === undefined || b === undefined) {
