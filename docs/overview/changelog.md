@@ -19,6 +19,75 @@ log][commit-log] for an up-to-date list of all changes.
 
 ## Zulip Server 7.x series
 
+### Zulip Server 7.3
+
+_Released 2023-08-25_
+
+- CVE-2023-32678: Users who used to be subscribed to a private stream, and have
+  since been removed from it, retained the ability to edit messages/topics and
+  delete messages that they used to have access to, if other relevant
+  organization permissions allowed these actions. For example, a user may have
+  still been able to edit or delete their old messages they had posted in such a
+  private stream.
+- Fixed a bug, introduced in Zulip Server 7.0, which would cause uploaded files
+  attached to some messages to be mistakenly deleted after some, but not all,
+  messages linking to the uploaded file were deleted by the user. See our
+  [blog post](https://blog.zulip.com/2023/08/25/uploaded-file-data-loss-incident/) for more details.
+- Fixed a bug, introduced in Zulip Server 7.2 in the
+  [operating system upgrade process](../production/upgrade.md#upgrading-the-operating-system),
+  which would cause errors of the form
+  `venv was not set up for this Python version`.
+- Fixed a bug, introduced in Zulip Server 7.2, when the
+  [email gateway](../production/email-gateway.md)
+  was used in conjunction with a
+  [reverse proxy](../production/deployment.md#putting-the-zulip-application-behind-a-reverse-proxy).
+- Improved the performance of
+  [resolving](https://zulip.com/help/resolve-a-topic) or
+  [moving](https://zulip.com/help/move-content-to-another-topic) long topics.
+- Fixed bad rendering of stream links in
+  [stream descriptions](https://zulip.com/help/change-the-stream-description).
+- Fixed broken and misaligned images in Zulip welcome emails.
+- Fixed YouTube video previews to be ordered in the order they are linked, not
+  reverse order.
+- Upgraded Python requirements.
+- Updated puppet dependencies.
+- Improved the [Sentry integration](https://zulip.com/integrations/doc/sentry),
+  including making the “Test plugin” button in Sentry work properly.
+- Reduced memory usage by replacing a custom error reporting handler with the
+  default Django implementation. This will result in a slight change in the
+  format of server exception emails. Such emails should be rare in most
+  self-hosted systems; installations with a large amount of server exception
+  volume should be using the
+  [Sentry integration](../subsystems/logging.md#sentry-error-logging).
+- Updated the
+  [data export tool](../production/export-and-import.md#data-export)
+  to handle bots created in very early versions of Zulip Server.
+- Fixed a bug with the
+  [data export tool](../production/export-and-import.md#data-export)
+  and deleted users in group DMs.
+- Added a `./manage.py reactivate-stream` command to reactivate archived
+  streams.
+- Fixed links in the documentation to
+  [Modify Zulip](../production/modify.md)
+  and
+  [Upgrade Zulip](../production/upgrade.md)
+  pages.
+- Linked the documentation on how to
+  [host multiple Zulip](../production/multiple-organizations.md)
+  organizations on one server.
+- Fixed missing images in documentation for the
+  [“XKCD” bot](https://zulip.com/integrations/doc/xkcd).
+- Fixed “Back to login page” button alignment in the desktop app.
+- Added a reference to
+  [PostgreSQL upgrades](../production/upgrade.md#upgrading-postgresql)
+  in the
+  [release upgrade](../production/upgrade.md#upgrading-to-a-release)
+  section.
+- Clarified that PostgreSQL versions must match in
+  "[Restoring backups](../production/export-and-import.md#restoring-backups)"
+  section, and explain how to do that.
+- Reformatted Changelog.
+
 ### Zulip Server 7.2
 
 _Released 2023-07-05_
