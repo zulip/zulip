@@ -1,6 +1,12 @@
 import $ from "jquery";
 
 import {PollData} from "../shared/src/poll_data";
+import type {
+    InboundData,
+    NewOptionOutboundData,
+    QuestionOutboundData,
+    VoteOutboundData,
+} from "../shared/src/poll_data";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
@@ -8,13 +14,37 @@ import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as people from "./people";
+import type {Message} from "./types";
+
+type Event = {sender_id: number; data: InboundData};
+
+type ExtraData =
+    | {
+          question?: string | undefined;
+          options?: never[] | undefined;
+      }
+    | undefined;
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+    interface JQuery {
+        handle_events(events: Event[]): void;
+    }
+}
 
 export function activate({
     $elem,
     callback,
     extra_data: {question = "", options = []} = {},
     message,
-}) {
+}: {
+    $elem: JQuery;
+    callback: (
+        data: NewOptionOutboundData | QuestionOutboundData | VoteOutboundData | undefined,
+    ) => void;
+    extra_data: ExtraData;
+    message: Message;
+}): void {
     const is_my_poll = people.is_my_user_id(message.sender_id);
     const poll_data = new PollData({
         message_sender_id: message.sender_id,
@@ -26,12 +56,12 @@ export function activate({
         report_error_function: blueslip.warn,
     });
 
-    function update_edit_controls() {
-        const has_question = $elem.find("input.poll-question").val().trim() !== "";
+    function update_edit_controls(): void {
+        const has_question = $elem.find("input.poll-question").val()!.toString().trim() !== "";
         $elem.find("button.poll-question-check").toggle(has_question);
     }
 
-    function render_question() {
+    function render_question(): void {
         const question = poll_data.get_question();
         const input_mode = poll_data.get_input_mode();
         const can_edit = is_my_poll && !input_mode;
@@ -53,7 +83,7 @@ export function activate({
         $elem.find(".poll-author-help").toggle(author_help);
     }
 
-    function start_editing() {
+    function start_editing(): void {
         poll_data.set_input_mode();
 
         const question = poll_data.get_question();
@@ -62,14 +92,14 @@ export function activate({
         $elem.find("input.poll-question").trigger("focus");
     }
 
-    function abort_edit() {
+    function abort_edit(): void {
         poll_data.clear_input_mode();
         render_question();
     }
 
-    function submit_question() {
+    function submit_question(): void {
         const $poll_question_input = $elem.find("input.poll-question");
-        let new_question = $poll_question_input.val().trim();
+        let new_question = $poll_question_input.val()!.toString().trim();
         const old_question = poll_data.get_question();
 
         // We should disable the button for blank questions,
@@ -92,9 +122,9 @@ export function activate({
         callback(data);
     }
 
-    function submit_option() {
+    function submit_option(): void {
         const $poll_option_input = $elem.find("input.poll-option");
-        const option = $poll_option_input.val().trim();
+        const option = $poll_option_input.val()!.toString().trim();
         const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
@@ -111,13 +141,13 @@ export function activate({
         callback(data);
     }
 
-    function submit_vote(key) {
+    function submit_vote(key: string): void {
         const data = poll_data.handle.vote.outbound(key);
         callback(data);
     }
 
-    function build_widget() {
-        const html = render_widgets_poll_widget();
+    function build_widget(): void {
+        const html = render_widgets_poll_widget({});
         $elem.html(html);
 
         $elem.find("input.poll-question").on("keyup", (e) => {
@@ -176,9 +206,9 @@ export function activate({
         });
     }
 
-    function check_option_button() {
+    function check_option_button(): void {
         const $poll_option_input = $elem.find("input.poll-option");
-        const option = $poll_option_input.val().trim();
+        const option = ($poll_option_input.val() as string)?.trim();
         const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
@@ -192,7 +222,7 @@ export function activate({
         }
     }
 
-    function render_results() {
+    function render_results(): void {
         const widget_data = poll_data.get_widget_data();
 
         const html = render_widgets_poll_widget_results(widget_data);
@@ -203,12 +233,12 @@ export function activate({
             .off("click")
             .on("click", (e) => {
                 e.stopPropagation();
-                const key = $(e.target).attr("data-key");
+                const key = $(e.target).attr("data-key")!;
                 submit_vote(key);
             });
     }
 
-    $elem.handle_events = function (events) {
+    $elem.handle_events = function (events: Event[]) {
         for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
         }
