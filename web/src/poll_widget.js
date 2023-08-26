@@ -182,12 +182,12 @@ export function activate({
         const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
-            $elem.find("button.poll-option").attr("disabled", true);
+            $elem.find("button.poll-option").prop("disabled", true);
             $elem
                 .find("button.poll-option")
                 .attr("title", $t({defaultMessage: "Option already present."}));
         } else {
-            $elem.find("button.poll-option").attr("disabled", false);
+            $elem.find("button.poll-option").prop("disabled", false);
             $elem.find("button.poll-option").removeAttr("title");
         }
     }
