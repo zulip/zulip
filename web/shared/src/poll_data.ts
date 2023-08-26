@@ -31,7 +31,9 @@ export type WidgetData = {
 };
 
 export type InboundData = Record<string, unknown> & {type: string};
-
+export type NewOptionOutboundData = {type: string; idx: number; option: string};
+export type QuestionOutboundData = {type: string; question: string};
+export type VoteOutboundData = {type: string; key: string; vote: number};
 export type PollHandle = {
     // Add generic key property to allow string indexing on PollHandle type in `handle_event` method.
     [key: string]: {
@@ -39,15 +41,15 @@ export type PollHandle = {
         inbound: (sender_id: number, data: InboundData) => void;
     };
     new_option: {
-        outbound: (option: string) => {type: string; idx: number; option: string};
+        outbound: (option: string) => NewOptionOutboundData;
         inbound: (sender_id: number | string, data: InboundData) => void;
     };
     question: {
-        outbound: (question: string) => {type: string; question: string} | undefined;
+        outbound: (question: string) => QuestionOutboundData | undefined;
         inbound: (sender_id: number, data: InboundData) => void;
     };
     vote: {
-        outbound: (key: string) => {type: string; key: string; vote: number};
+        outbound: (key: string) => VoteOutboundData;
         inbound: (sender_id: number, data: InboundData) => void;
     };
 };
