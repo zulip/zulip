@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 206**
+
+* `POST /calls/zoom/create`: Added `is_video_call` parameter
+  controlling whether to request a Zoom meeting that defaults to
+  having video enabled.
+
 **Feature level 205**
 
 * [`POST /register`](/api/register-queue): `streams` field in the response

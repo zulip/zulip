@@ -31,7 +31,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import append_url_query_string
-from zerver.lib.validator import check_dict, check_string
+from zerver.lib.validator import check_bool, check_dict, check_string
 from zerver.models import UserProfile, get_realm
 
 
@@ -142,13 +142,30 @@ def complete_zoom_user_in_realm(
     return render(request, "zerver/close_window.html")
 
 
-def make_zoom_video_call(request: HttpRequest, user: UserProfile) -> HttpResponse:
+@has_request_variables
+def make_zoom_video_call(
+    request: HttpRequest,
+    user: UserProfile,
+    is_video_call: bool = REQ(json_validator=check_bool, default=True),
+) -> HttpResponse:
     oauth = get_zoom_session(user)
     if not oauth.authorized:
         raise InvalidZoomTokenError
 
+    # The meeting host has the ability to configure both their own and
+    # participants' default video on/off state for the meeting. That's
+    # why when creating a meeting, configure the video on/off default
+    # according to the desired call type. Each Zoom user can still have
+    # their own personal setting to not start video by default.
+    payload = {
+        "settings": {
+            "host_video": is_video_call,
+            "participant_video": is_video_call,
+        }
+    }
+
     try:
-        res = oauth.post("https://api.zoom.us/v2/users/me/meetings", json={})
+        res = oauth.post("https://api.zoom.us/v2/users/me/meetings", json=payload)
     except OAuth2Error:
         do_set_zoom_token(user, None)
         raise InvalidZoomTokenError
