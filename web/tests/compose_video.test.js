@@ -132,7 +132,7 @@ test("videos", ({override}) => {
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
-    (function test_zoom_video_link_compose_clicked() {
+    (function test_zoom_video_and_audio_links_compose_clicked() {
         let syntax_to_insert;
         let called = false;
 
@@ -152,9 +152,6 @@ test("videos", ({override}) => {
             called = true;
         });
 
-        const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
-
         page_params.realm_video_chat_provider = realm_available_video_chat_providers.zoom.id;
         page_params.has_zoom_token = false;
 
@@ -172,10 +169,19 @@ test("videos", ({override}) => {
             return {abort() {}};
         };
 
-        handler(ev);
+        $("#compose-textarea").val("");
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler(ev);
         const video_link_regex = /\[translated: Join video call\.]\(example\.zoom\.com\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
+
+        $("#compose-textarea").val("");
+        const audio_handler = $("body").get_on_handler("click", ".audio_link");
+        audio_handler(ev);
+        const audio_link_regex = /\[translated: Join audio call\.]\(example\.zoom\.com\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, audio_link_regex);
     })();
 
     (function test_bbb_video_link_compose_clicked() {

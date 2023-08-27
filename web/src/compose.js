@@ -89,8 +89,10 @@ export function update_video_chat_button_display() {
 export function compute_show_audio_chat_button() {
     const available_providers = page_params.realm_available_video_chat_providers;
     if (
-        available_providers.jitsi_meet &&
-        page_params.realm_video_chat_provider === available_providers.jitsi_meet.id
+        (available_providers.jitsi_meet &&
+            page_params.realm_video_chat_provider === available_providers.jitsi_meet.id) ||
+        (available_providers.zoom &&
+            page_params.realm_video_chat_provider === available_providers.zoom.id)
     ) {
         return true;
     }
@@ -856,21 +858,26 @@ function generate_and_insert_audio_or_video_call_link($target_element, is_audio_
         available_providers.zoom &&
         page_params.realm_video_chat_provider === available_providers.zoom.id
     ) {
-        if (is_audio_call) {
-            // TODO: Add support for generating audio-only Zoom calls here.
-            return;
-        }
         abort_video_callbacks(edit_message_id);
         const key = edit_message_id || "";
+
+        const request = {
+            is_video_call: !is_audio_call,
+        };
 
         const make_zoom_call = () => {
             video_call_xhrs.set(
                 key,
                 channel.post({
                     url: "/json/calls/zoom/create",
+                    data: request,
                     success(res) {
                         video_call_xhrs.delete(key);
-                        insert_video_call_url(res.url, $target_textarea);
+                        if (is_audio_call) {
+                            insert_audio_call_url(res.url, $target_textarea);
+                        } else {
+                            insert_video_call_url(res.url, $target_textarea);
+                        }
                     },
                     error(xhr, status) {
                         video_call_xhrs.delete(key);
