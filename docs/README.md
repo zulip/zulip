@@ -1,6 +1,4 @@
 # Zulip Markdown documentation hosted elsewhere
 
-The Markdown files in this directory ( /zulip/docs ) are not intended
-to be read on GitHub. Instead, visit our
-[ReadTheDocs](https://zulip.readthedocs.io/en/latest/index.html) to
-read the Zulip documentation.
+Explore the rich content of our Zulip documentation by heading over to [ReadTheDocs!](https://zulip.readthedocs.io/en/latest/index.html) 📚 While the Markdown files in this directory (/zulip/docs) aren't best experienced on GitHub, you'll find a much more engaging and user-friendly reading experience on our [ReadTheDocs](https://zulip.readthedocs.io/en/latest/index.html) platform. Dive in and discover all that Zulip has to offer! 🚀
+
