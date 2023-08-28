@@ -999,7 +999,10 @@ class PushNotificationTest(BouncerTestCase):
     def mock_apns(self) -> Iterator[Tuple[APNsContext, mock.AsyncMock]]:
         apns = mock.Mock(spec=aioapns.APNs)
         apns.send_notification = mock.AsyncMock()
-        apns_context = APNsContext(apns=apns, loop=asyncio.new_event_loop())
+        apns_context = APNsContext(
+            apns=apns,
+            loop=asyncio.new_event_loop(),
+        )
         try:
             with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
                 mock_get.return_value = apns_context
