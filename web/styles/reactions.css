@@ -1,39 +1,62 @@
 .message_reactions {
     overflow: hidden;
-
     user-select: none;
 
     .message_reaction {
         display: flex;
-        padding: 0 2px 0 0;
+        padding: 1px 4px 1px 3px;
+        box-sizing: border-box;
+        min-width: 44px;
         cursor: pointer;
+        color: var(--color-message-reaction-text);
         background-color: var(--color-message-reaction-background);
         border: 1px solid var(--color-message-reaction-border);
-        border-radius: 4px;
+        border-radius: 21px;
         align-items: center;
+        box-shadow: inset 0 0 5px 0 var(--color-message-reaction-shadow-inner);
+        transition:
+            transform 100ms linear,
+            font-weight 100ms linear;
 
         &.reacted {
+            color: var(--color-message-reaction-text-reacted);
             background-color: var(--color-message-reaction-background-reacted);
             border-color: var(--color-message-reaction-border-reacted);
+            font-weight: var(--font-weight-message-reaction);
+            box-shadow: none;
         }
 
         &:hover {
-            border: 1px solid var(--color-message-reaction-border-hover);
+            background-color: var(--color-message-reaction-background-hover);
+        }
+
+        &:active {
+            transform: scale(var(--scale-message-reaction-active));
         }
 
         + .reaction_button {
             visibility: hidden;
             pointer-events: none;
-            padding: 3px;
+            padding: 4px 6px;
             height: 13px;
-            border-radius: 4px;
-            padding-left: 0.3em;
+            border-radius: 21px;
+            color: var(--color-message-reaction-button-text);
+            background-color: var(--color-message-reaction-button-background);
             border: 1px solid var(--color-message-reaction-button-border);
-            padding-right: 0.3em;
             /* TODO: Eventually this space will be set on the message
-               box, but for now this preserves the space beneath the
-               reactions area. */
-            margin-bottom: 2px;
+               box, at least in part, but for now this preserves the
+               space beneath the reactions area. */
+            margin-bottom: 4px;
+
+            &:hover {
+                color: var(--color-message-reaction-button-text-hover);
+                background-color: var(
+                    --color-message-reaction-button-background-hover
+                );
+                border-color: var(--color-message-reaction-button-border-hover);
+                box-shadow: inset 0 0 5px 0
+                    var(--color-message-reaction-shadow-inner);
+            }
         }
 
         .emoji {
@@ -79,7 +102,6 @@
     &:hover .message_reaction + .reaction_button {
         visibility: visible;
         pointer-events: all;
-        background-color: var(--color-message-reaction-button-background);
     }
 
     .reaction_button,
@@ -117,7 +139,7 @@
         }
 
         .message_reaction_count {
-            font-size: 1.1em;
+            font-weight: 700;
             color: var(--color-message-reaction-button-text);
             margin-right: 0;
         }
