@@ -7,9 +7,9 @@
 #
 # For details, see requirements/README.md .
 #
-aioapns==2.2 \
-    --hash=sha256:36f55048008e07c14de16d30980df5cf14fcbddc6e80b454813e8d65e1a9f39b \
-    --hash=sha256:dc530d221219aecb4f2937c756637e2b6f144761b6e876794bf26d5e66859357
+aioapns==3.0 \
+    --hash=sha256:32216377d1d8693ba08cfeba3b6e13824f766c2f751901e082fcb5b1d408bbed \
+    --hash=sha256:67f0bbdb784f62a8ee615751ab8069613a80f7b5e280535ffd3d1c7739be3259
     # via -r requirements/common.in
 aiohttp==3.8.5 \
     --hash=sha256:00ad4b6f185ec67f3e6562e8a1d2b69660be43070bd0ef6fcec5211154c7df67 \
