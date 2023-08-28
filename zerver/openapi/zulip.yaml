@@ -11691,22 +11691,26 @@ paths:
                               description: |
                                 Object containing the details of unread direct messages with
                                 a specific user. Note that in rare situations, it is possible
-                                for a message that you sent to another user to be marked as
-                                unread and thus appear here.
+                                for a message that the current user sent to another user to
+                                be marked as unread and thus appear here.
                               additionalProperties: false
                               properties:
                                 other_user_id:
                                   type: integer
                                   description: |
                                     The user ID of the other participant in this non-group direct
-                                    message conversation. Will be your own user ID for messages
-                                    that you sent to only yourself.
+                                    message conversation. Will be the current user's ID for messages
+                                    that they sent in a one-on-one direct message conversation with
+                                    themself.
+
+                                    **Changes**: New in Zulip 5.0 (feature level 119), replacing
+                                    the less clearly named `sender_id` field.
                                 sender_id:
                                   deprecated: true
                                   type: integer
                                   description: |
-                                    Old name for `other_user_id`. Clients should access this
-                                    field in Zulip server versions that do not yet support
+                                    Old name for the `other_user_id` field. Clients should access
+                                    this field in Zulip server versions that do not yet support
                                     `other_user_id`.
 
                                     **Changes**: Deprecated in Zulip 5.0 (feature level 119).
@@ -11772,14 +11776,15 @@ paths:
                                   type: array
                                   description: |
                                     The message IDs of the recent unread messages which have been sent in
-                                    this group.
+                                    this group direct message conversation.
                                   items:
                                     type: integer
                           mentions:
                             type: array
                             description: |
-                              Array containing the IDs of all messages in which the user has been mentioned.
-                              For muted streams, wildcard mentions will not be considered for this array.
+                              Array containing the IDs of all unread messages in which the user has been
+                              mentioned. For muted streams, wildcard mentions will not be considered for
+                              this array.
                             items:
                               type: integer
                           old_unreads_missing:
