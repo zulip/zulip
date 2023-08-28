@@ -101,3 +101,53 @@ test("muted_users", () => {
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2,3", "15"]);
 });
+
+test("insert_empty_dm", () => {
+    pmc.recent.initialize(params);
+
+    // Base data
+    assert.deepEqual(pmc.recent.get(), [
+        {user_ids_string: "1", max_message_id: 100},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1,2,3", max_message_id: 97},
+        {user_ids_string: "15", max_message_id: 96},
+    ]);
+
+    // Insert an empty conversation
+    const user_ids1 = [1, 5];
+    pmc.recent.insert_empty_dm(user_ids1);
+
+    // Check if the empty conversation is added
+    assert.deepEqual(pmc.recent.get(), [
+        {user_ids_string: "1,5", max_message_id: -1},
+        {user_ids_string: "1", max_message_id: 100},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1,2,3", max_message_id: 97},
+        {user_ids_string: "15", max_message_id: 96},
+    ]);
+
+    // Try inserting an existing conversation, should not affect the order
+    const user_ids2 = [1, 5];
+    pmc.recent.insert_empty_dm(user_ids2);
+
+    // Check if the order remains the same
+    assert.deepEqual(pmc.recent.get(), [
+        {user_ids_string: "1,5", max_message_id: -1},
+        {user_ids_string: "1", max_message_id: 100},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1,2,3", max_message_id: 97},
+        {user_ids_string: "15", max_message_id: 96},
+    ]);
+
+    pmc.recent.remove_empty_dm();
+    assert.deepEqual(pmc.recent.get(), [
+        {user_ids_string: "1", max_message_id: 100},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1,2,3", max_message_id: 97},
+        {user_ids_string: "15", max_message_id: 96},
+    ]);
+});

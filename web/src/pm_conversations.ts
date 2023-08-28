@@ -37,6 +37,32 @@ class RecentDirectMessages {
     recent_message_ids = new FoldDict<PMConversation>(); // key is user_ids_string
     recent_private_messages: PMConversation[] = [];
 
+    remove_empty_dm(): void {
+        const convoList = this.recent_private_messages;
+        for (let i = 0; i < convoList.length; i += 1) {
+            if (convoList[i].max_message_id < 0) {
+                convoList.splice(i, i + 1);
+                break;
+            }
+        }
+    }
+
+    insert_empty_dm(user_ids: number[]): void {
+        const user_ids_string = user_ids.join(",");
+        // adds to top of recent private messages list, if not already present.
+        if (
+            !this.recent_private_messages
+                .map((obj) => obj.user_ids_string)
+                .includes(user_ids_string)
+        ) {
+            const conversation = {
+                user_ids_string,
+                max_message_id: -1,
+            };
+            this.recent_private_messages.unshift(conversation);
+        }
+    }
+
     insert(user_ids: number[], message_id: number): void {
         if (user_ids.length === 0) {
             // The server sends [] for direct messages to oneself.

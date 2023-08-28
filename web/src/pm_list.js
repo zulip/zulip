@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import * as pm_conversations from "./pm_conversations";
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
 import * as resize from "./resize";
@@ -149,6 +150,7 @@ export function handle_narrow_activated(filter) {
     const active_filter = filter;
     const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), ["is-dm"]);
     const narrow_to_private_messages_section = active_filter.operands("dm").length !== 0;
+    remove_empty_conversations();
 
     if (is_all_private_message_view) {
         // In theory, this should get expanded when we scroll to the
@@ -161,11 +163,13 @@ export function handle_narrow_activated(filter) {
         unhighlight_all_private_messages_view();
     }
     if (narrow_to_private_messages_section) {
-        const {user_ids_string: current_user_ids_string} = pm_list_data.get_active_user_ids();
+        const {user_ids_string: current_user_ids_string, user_ids_array: current_user_ids_array} =
+            pm_list_data.get_active_user_ids();
         const $active_filter_li = $(
             `li[data-user-ids-string='${CSS.escape(current_user_ids_string)}']`,
         );
         scroll_pm_into_view($active_filter_li);
+        show_empty_conversation_new_dm(current_user_ids_array);
         update_private_messages();
     }
 }
@@ -173,7 +177,21 @@ export function handle_narrow_activated(filter) {
 export function handle_narrow_deactivated() {
     // Since one can renarrow via the keyboard shortcut or similar, we
     // avoid disturbing the zoomed state here.
+    remove_empty_conversations();
     unhighlight_all_private_messages_view();
+    update_private_messages();
+}
+
+export function show_empty_conversation_new_dm(user_ids) {
+    const temp_user_ids = [];
+    for (const user_id of user_ids) {
+        temp_user_ids.push(user_id);
+    }
+    pm_conversations.recent.insert_empty_dm(temp_user_ids);
+}
+
+export function remove_empty_conversations() {
+    pm_conversations.recent.remove_empty_dm();
     update_private_messages();
 }
 
