@@ -110,6 +110,11 @@ body {
     --message-box-icon-height: 25px;
 
     /*
+    Reaction container UI scaling.
+    */
+    --scale-message-reaction-active: 0.96;
+
+    /*
     Left position of unread marker. Only needs to be tracked if it is negative so that
     it doesn't leak through message header.
     */
@@ -288,17 +293,27 @@ body {
     --color-tab-picker-icon: hsl(200deg 100% 40%);
 
     /* Reaction container colors */
-    --color-message-reaction-border: hsl(194deg 37% 84%);
-    --color-message-reaction-border-reacted: hsl(193deg 38% 70%);
-    --color-message-reaction-border-hover: hsl(200deg 100% 40%);
-    --color-message-reaction-background: transparent;
-    --color-message-reaction-background-reacted: hsl(196deg 51% 93%);
-    --color-message-reaction-button-text: hsl(0deg 0% 33%);
-    --color-message-reaction-button-text-hover: hsl(200deg 100% 40%);
-    --color-message-reaction-button-background: hsl(0deg 0% 98%);
-    --color-message-reaction-button-background-hover: hsl(195deg 50% 95%);
-    --color-message-reaction-button-border: hsl(0deg 0% 73%);
-    --color-message-reaction-button-border-hover: hsl(200deg 100% 40%);
+    --color-message-reaction-border: hsl(0deg 0% 0% / 12%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 0% / 40%);
+    --color-message-reaction-background: hsl(0deg 0% 100%);
+    --color-message-reaction-background-reacted: hsl(0deg 0% 100%);
+    --color-message-reaction-background-hover: hsl(210deg 30% 96%);
+    --color-message-reaction-shadow-inner: hsl(210deg 50% 50% / 15%);
+    --color-message-reaction-text: hsl(210deg 20% 25% / 100%);
+    --color-message-reaction-text-reacted: hsl(210deg 20% 20% / 100%);
+    --color-message-reaction-button-text: hsl(210deg 20% 20% / 60%);
+    --color-message-reaction-button-text-hover: var(
+        --color-message-reaction-text
+    );
+    --color-message-reaction-button-background: inherit;
+    --color-message-reaction-button-background-hover: var(
+        --color-message-reaction-background
+    );
+    --color-message-reaction-button-border: transparent;
+    --color-message-reaction-button-border-hover: var(
+        --color-message-reaction-border
+    );
+    --font-weight-message-reaction: 600;
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
@@ -538,25 +553,28 @@ body {
     --color-tab-picker-icon: hsl(0deg 0% 80%);
 
     /* Reaction container colors */
-    --color-message-reaction-border: hsl(0deg 0% 0% / 80%);
-    --color-message-reaction-border-reacted: hsl(0deg 0% 0% / 90%);
-    --color-message-reaction-border-hover: hsl(236deg 33% 90%);
-    --color-message-reaction-background: transparent;
-    --color-message-reaction-background-reacted: hsl(0deg 0% 0% / 50%);
-    --color-message-reaction-button-text: inherit;
-    --color-message-reaction-button-text-hover: inherit;
-    --color-message-reaction-button-background: var(
-        --color-message-reaction-background
+    --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 100% / 50%);
+    --color-message-reaction-background: hsl(0deg 0% 0% / 30%);
+    --color-message-reaction-background-reacted: hsl(0deg 0% 0% / 80%);
+    --color-message-reaction-background-hover: hsl(0deg 0% 100% / 10%);
+    /* No shadow in dark mode. */
+    --color-message-reaction-shadow-inner: transparent;
+    --color-message-reaction-text: hsl(0deg 0% 100% / 75%);
+    --color-message-reaction-text-reacted: hsl(0deg 0% 100% / 85%);
+    --color-message-reaction-button-text: var(--color-message-reaction-text);
+    --color-message-reaction-button-text-hover: var(
+        --color-message-reaction-text-reacted
     );
+    --color-message-reaction-button-background: inherit;
     --color-message-reaction-button-background-hover: var(
-        --color-message-reaction-background
+        --color-message-reaction-background-hover
     );
-    --color-message-reaction-button-border: var(
+    --color-message-reaction-button-border: transparent;
+    --color-message-reaction-button-border-hover: var(
         --color-message-reaction-border
     );
-    --color-message-reaction-button-border-hover: var(
-        --color-message-reaction-border-hover
-    );
+    --font-weight-message-reaction: 550;
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
