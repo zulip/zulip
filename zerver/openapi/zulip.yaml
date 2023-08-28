@@ -11712,7 +11712,7 @@ paths:
                                     **Changes**: Deprecated in Zulip 5.0 (feature level 119).
                                     We expect to provide a next version of the full `unread_msgs`
                                     API before removing this legacy name.
-                                message_ids:
+                                unread_message_ids:
                                   type: array
                                   description: |
                                     The message IDs of the recent unread direct messages sent
@@ -11768,7 +11768,7 @@ paths:
                                     A string containing the IDs of all users in the group
                                     direct message conversation separated by commas; for
                                     example: `"1,2,3"`.
-                                message_ids:
+                                unread_message_ids:
                                   type: array
                                   description: |
                                     The message IDs of the recent unread messages which have been sent in
