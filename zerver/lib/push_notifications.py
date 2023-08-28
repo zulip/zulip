@@ -135,10 +135,6 @@ def get_apns_context() -> Optional[APNsContext]:
     # import time.
     import aioapns
 
-    # aioapns logs at "error" level for every non-successful request,
-    # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
-    logging.getLogger("aioapns").setLevel(logging.CRITICAL)
-
     if settings.APNS_CERT_FILE is None:  # nocoverage
         return None
 
@@ -147,12 +143,22 @@ def get_apns_context() -> Optional[APNsContext]:
     # hammered with a ton of these all at once after startup.
     loop = asyncio.new_event_loop()
 
+    # Defining a no-op error-handling function overrides the default
+    # behaviour of logging at ERROR level whenever delivery fails; we
+    # handle those errors by checking the result in
+    # send_apple_push_notification.
+    async def err_func(
+        request: aioapns.NotificationRequest, result: aioapns.common.NotificationResult
+    ) -> None:
+        pass  # nocoverage
+
     async def make_apns() -> aioapns.APNs:
         return aioapns.APNs(
             client_cert=settings.APNS_CERT_FILE,
             topic=settings.APNS_TOPIC,
             max_connection_attempts=APNS_MAX_RETRIES,
             use_sandbox=settings.APNS_SANDBOX,
+            err_func=err_func,
         )
 
     apns = loop.run_until_complete(make_apns())
