@@ -83,6 +83,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.types import Validator
 from zerver.lib.user_groups import access_user_group_for_setting
+from zerver.lib.users import access_user_by_email, access_user_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -98,43 +99,18 @@ from zerver.lib.validator import (
     check_union,
     to_non_negative_int,
 )
-from zerver.models import (
-    Realm,
-    Stream,
-    UserGroup,
-    UserMessage,
-    UserProfile,
-    get_active_user,
-    get_active_user_profile_by_id_in_realm,
-    get_system_bot,
-)
-
-
-class PrincipalError(JsonableError):
-    code = ErrorCode.UNAUTHORIZED_PRINCIPAL
-    data_fields = ["principal"]
-    http_status_code = 403
-
-    def __init__(self, principal: Union[int, str]) -> None:
-        self.principal: Union[int, str] = principal
-
-    @staticmethod
-    def msg_format() -> str:
-        return _("User not authorized to execute queries on behalf of '{principal}'")
+from zerver.models import Realm, Stream, UserGroup, UserMessage, UserProfile, get_system_bot
 
 
 def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) -> UserProfile:
-    try:
-        if isinstance(principal, str):
-            return get_active_user(principal, agent.realm)
-        else:
-            return get_active_user_profile_by_id_in_realm(principal, agent.realm)
-    except UserProfile.DoesNotExist:
-        # We have to make sure we don't leak information about which users
-        # are registered for Zulip in a different realm.  We could do
-        # something a little more clever and check the domain part of the
-        # principal to maybe give a better error message
-        raise PrincipalError(principal)
+    if isinstance(principal, str):
+        return access_user_by_email(
+            agent, principal, allow_deactivated=False, allow_bots=True, for_admin=False
+        )
+    else:
+        return access_user_by_id(
+            agent, principal, allow_deactivated=False, allow_bots=True, for_admin=False
+        )
 
 
 def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) -> bool:
