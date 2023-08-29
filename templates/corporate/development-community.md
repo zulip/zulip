@@ -65,7 +65,7 @@ feedback.
   you. For example, include the **full traceback** in a [code
   block](/help/code-blocks) (not a screenshot), a link to the code or
   a draft PR you’re having trouble debugging, etc.
-- Ask questions on streams rather than PMing core contributors. You’ll
+- Ask questions on streams rather than DMing core contributors. You’ll
   get answers faster since other people can help, and it makes it
   possible for others to benefit from the discussion.
 - Don’t ask the same question in multiple places. Moderators read
