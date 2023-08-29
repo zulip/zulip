@@ -188,11 +188,12 @@ h3,
 
 .setting_notification_sound,
 .play_notification_sound {
-    display: inline;
     margin-right: 4px;
 
     & i {
         font-size: 22px;
+        /* Visually center with chevron in select */
+        line-height: 26px;
         cursor: pointer;
     }
 }
@@ -396,6 +397,40 @@ td .button {
 
     & label.checkbox + label {
         cursor: pointer;
+    }
+}
+
+/* Class for displaying an input with an
+   auxiliary control, e.g., the play button
+   next to the notification sound dropdown. */
+.input-element-with-control {
+    display: flex;
+    align-items: center;
+    /* Preserve the effective space allotted
+       inside the input group.
+
+       Select element: 325px
+       Button element: ~29px
+       Right margin:     4px
+       TOTAL           358px */
+    max-width: 358px;
+
+    .settings_select {
+        /* Hold the settings select to its usual 325px;
+           a TODO would be to fix up the min- and max-
+           width values on the parent class, as the
+           min-width always applies, and max-width: 100%
+           has no meaning without an actual width:
+           declaration. */
+        max-width: 325px;
+        /* Disregard the min-width from the main
+           .settings_select selector. */
+        min-width: 0;
+        /* Allow the select to grow within the flex
+           container to keep the play button in the
+           viewport, and not force dodgy looking wrap
+           onto a second line. */
+        flex: 1 0 auto;
     }
 }
 
