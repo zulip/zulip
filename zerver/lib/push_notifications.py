@@ -696,45 +696,6 @@ def initialize_push_notifications() -> None:
         )
 
 
-def get_gcm_alert(
-    message: Message, trigger: str, mentioned_user_group_name: Optional[str] = None
-) -> str:
-    """
-    Determine what alert string to display based on the missed messages.
-    """
-    sender_str = message.sender.full_name
-    if (
-        message.recipient.type == Recipient.HUDDLE
-        and trigger == NotificationTriggers.DIRECT_MESSAGE
-    ):
-        return f"New direct group message from {sender_str}"
-    elif (
-        message.recipient.type == Recipient.PERSONAL
-        and trigger == NotificationTriggers.DIRECT_MESSAGE
-    ):
-        return f"New direct message from {sender_str}"
-
-    assert message.is_stream_message()
-    stream_name = get_message_stream_name_from_database(message)
-
-    if trigger == NotificationTriggers.MENTION:
-        if mentioned_user_group_name is None:
-            return f"{sender_str} mentioned you in #{stream_name}"
-        else:
-            return f"{sender_str} mentioned @{mentioned_user_group_name} in #{stream_name}"
-    elif trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC:
-        return "TODO - 2"
-    elif trigger == NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC:
-        return "TODO"
-    elif trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION:
-        return f"{sender_str} mentioned all topic participants in #{stream_name} > {message.topic_name()}"
-    elif trigger == NotificationTriggers.STREAM_WILDCARD_MENTION:
-        return f"{sender_str} mentioned everyone in #{stream_name}"
-    else:
-        assert trigger == NotificationTriggers.STREAM_PUSH
-        return f"New stream message from {sender_str} in #{stream_name}"
-
-
 def get_mobile_push_content(rendered_content: str) -> str:
     def get_text(elem: lxml.html.HtmlElement) -> str:
         # Convert default emojis to their Unicode equivalent.
@@ -966,7 +927,6 @@ def get_message_payload_apns(
 def get_message_payload_gcm(
     user_profile: UserProfile,
     message: Message,
-    trigger: str,
     mentioned_user_group_id: Optional[int] = None,
     mentioned_user_group_name: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -979,7 +939,6 @@ def get_message_payload_gcm(
         content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
         data.update(
             event="message",
-            alert=get_gcm_alert(message, trigger, mentioned_user_group_name),
             zulip_message_id=message.id,  # message_id is reserved for CCS
             time=datetime_to_timestamp(message.date_sent),
             content=content,
@@ -1194,7 +1153,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         user_profile, message, trigger, mentioned_user_group_id, mentioned_user_group_name
     )
     gcm_payload, gcm_options = get_message_payload_gcm(
-        user_profile, message, trigger, mentioned_user_group_id, mentioned_user_group_name
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
     )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 

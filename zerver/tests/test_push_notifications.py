@@ -2229,11 +2229,8 @@ class TestGetAPNsPayload(PushNotificationTest):
 
 
 class TestGetGCMPayload(PushNotificationTest):
-    def _test_get_message_payload_gcm_mentions(
+    def _test_get_message_payload_gcm_stream_message(
         self,
-        trigger: str,
-        alert: str,
-        *,
         mentioned_user_group_id: Optional[int] = None,
         mentioned_user_group_name: Optional[str] = None,
     ) -> None:
@@ -2245,12 +2242,11 @@ class TestGetGCMPayload(PushNotificationTest):
 
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, trigger, mentioned_user_group_id, mentioned_user_group_name
+            hamlet, message, mentioned_user_group_id, mentioned_user_group_name
         )
         expected_payload = {
             "user_id": hamlet.id,
             "event": "message",
-            "alert": alert,
             "zulip_message_id": message.id,
             "time": datetime_to_timestamp(message.date_sent),
             "content": "a" * 200 + "…",
@@ -2279,41 +2275,18 @@ class TestGetGCMPayload(PushNotificationTest):
             },
         )
 
-    def test_get_message_payload_gcm_personal_mention(self) -> None:
-        self._test_get_message_payload_gcm_mentions(
-            NotificationTriggers.MENTION, "King Hamlet mentioned you in #Verona"
-        )
+    # Here, the payload is notification trigger independent. This test covers
+    # the case when the trigger for push notifications is personal mention,
+    # wildcard mention, stream push, or followed topic push.
+    def test_get_message_payload_gcm_stream_message(self) -> None:
+        self._test_get_message_payload_gcm_stream_message()
 
     def test_get_message_payload_gcm_user_group_mention(self) -> None:
         # Note that the @mobile_team user group doesn't actually
         # exist; this test is just verifying the formatting logic.
-        self._test_get_message_payload_gcm_mentions(
-            NotificationTriggers.MENTION,
-            "King Hamlet mentioned @mobile_team in #Verona",
+        self._test_get_message_payload_gcm_stream_message(
             mentioned_user_group_id=3,
             mentioned_user_group_name="mobile_team",
-        )
-
-    def test_get_message_payload_gcm_topic_wildcard_mention_in_followed_topic(self) -> None:
-        self._test_get_message_payload_gcm_mentions(
-            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC, "TODO - 2"
-        )
-
-    def test_get_message_payload_gcm_stream_wildcard_mention_in_followed_topic(self) -> None:
-        self._test_get_message_payload_gcm_mentions(
-            NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC, "TODO"
-        )
-
-    def test_get_message_payload_gcm_topic_wildcard_mention(self) -> None:
-        self._test_get_message_payload_gcm_mentions(
-            NotificationTriggers.TOPIC_WILDCARD_MENTION,
-            "King Hamlet mentioned all topic participants in #Verona > Test topic",
-        )
-
-    def test_get_message_payload_gcm_stream_wildcard_mention(self) -> None:
-        self._test_get_message_payload_gcm_mentions(
-            NotificationTriggers.STREAM_WILDCARD_MENTION,
-            "King Hamlet mentioned everyone in #Verona",
         )
 
     def test_get_message_payload_gcm_direct_message(self) -> None:
@@ -2323,15 +2296,12 @@ class TestGetGCMPayload(PushNotificationTest):
             realm_id=self.personal_recipient_user.realm_id,
         )
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
-        )
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New direct message from King Hamlet",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": message.content,
@@ -2357,15 +2327,12 @@ class TestGetGCMPayload(PushNotificationTest):
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, NotificationTriggers.STREAM_PUSH
-        )
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New stream message from King Hamlet in #Denmark",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": message.content,
@@ -2395,15 +2362,12 @@ class TestGetGCMPayload(PushNotificationTest):
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, NotificationTriggers.STREAM_PUSH
-        )
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New stream message from King Hamlet in #Denmark",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": "*This organization has disabled including message content in mobile push notifications*",
