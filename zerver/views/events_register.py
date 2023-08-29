@@ -14,7 +14,7 @@ from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool, check_dict, check_int, check_list, check_string
-from zerver.models import Stream, UserProfile
+from zerver.models import UserProfile, get_stream_by_id_in_realm
 
 
 def _default_all_public_streams(
@@ -29,8 +29,9 @@ def _default_all_public_streams(
 def _default_narrow(
     user_profile: UserProfile, narrow: Sequence[Sequence[str]]
 ) -> Sequence[Sequence[str]]:
-    default_stream: Optional[Stream] = user_profile.default_events_register_stream
-    if not narrow and default_stream is not None:
+    default_stream_id: Optional[int] = user_profile.default_events_register_stream_id
+    if not narrow and default_stream_id is not None:
+        default_stream = get_stream_by_id_in_realm(default_stream_id, user_profile.realm)
         narrow = [["stream", default_stream.name]]
     return narrow
 
