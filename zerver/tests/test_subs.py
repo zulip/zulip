@@ -2834,9 +2834,7 @@ class StreamAdminTest(ZulipTestCase):
                 "principals": orjson.dumps([99]).decode(),
             },
         )
-        self.assert_json_error(
-            result, "User not authorized to execute queries on behalf of '99'", status_code=403
-        )
+        self.assert_json_error(result, "No such user", status_code=400)
 
 
 class DefaultStreamTest(ZulipTestCase):
@@ -5091,11 +5089,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(
             self.test_user, "Denmark", post_data, allow_fail=True
         )
-        self.assert_json_error(
-            result,
-            f"User not authorized to execute queries on behalf of '{target_profile.id}'",
-            status_code=403,
-        )
+        self.assert_json_error(result, "User is deactivated", status_code=400)
 
     def test_subscriptions_add_for_principal_invite_only(self) -> None:
         """
@@ -5138,11 +5132,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invalid_principal]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result,
-            f"User not authorized to execute queries on behalf of '{invalid_principal}'",
-            status_code=403,
-        )
+        self.assert_json_error(result, "No such user", status_code=400)
 
     def test_subscription_add_invalid_principal(self) -> None:
         invalid_principal = 999
@@ -5155,11 +5145,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invalid_principal]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result,
-            f"User not authorized to execute queries on behalf of '{invalid_principal}'",
-            status_code=403,
-        )
+        self.assert_json_error(result, "No such user", status_code=400)
 
     def test_subscription_add_principal_other_realm(self) -> None:
         """
@@ -5176,11 +5162,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([principal]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result,
-            f"User not authorized to execute queries on behalf of '{principal}'",
-            status_code=403,
-        )
+        self.assert_json_error(result, "No such user", status_code=400)
 
     def helper_check_subs_before_and_after_remove(
         self,

@@ -8531,6 +8531,16 @@ paths:
 
         Note that the ability to subscribe oneself and/or other users to a specified
         stream depends on the [stream's privacy settings](/help/stream-permissions).
+
+        **Changes**: Before Zulip 8.0 (feature level 208), if a user
+        specified by the [`principals`][principals-param] parameter was
+        a deactivated user, or did not exist, then an HTTP status code
+        of 403 was returned with `code: "UNAUTHORIZED_PRINCIPAL"` in the
+        error response. As of this feature level, an HTTP status code of
+        400 is returned with `code: "BAD_REQUEST"` in the error response
+        for these cases.
+
+        [principals-param]: /api/subscribe#parameter-principals
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -8836,7 +8846,15 @@ paths:
           by the [`can_remove_subscribers_group`][can-remove-parameter]
           for the stream.
 
-        **Changes**: Before Zulip 8.0 (feature level 197),
+        **Changes**: Before Zulip 8.0 (feature level 208), if a user
+        specified by the [`principals`][principals-param] parameter was
+        a deactivated user, or did not exist, then an HTTP status code
+        of 403 was returned with `code: "UNAUTHORIZED_PRINCIPAL"` in the
+        error response. As of this feature level, an HTTP status code of
+        400 is returned with `code: "BAD_REQUEST"` in the error response
+        for these cases.
+
+        Before Zulip 8.0 (feature level 197),
         the `can_remove_subscribers_group` setting
         was named `can_remove_subscribers_group_id`.
 
@@ -8847,6 +8865,7 @@ paths:
         Before Zulip 6.0 (feature level 145), users had no special
         privileges for managing bots that they own.
 
+        [principals-param]: /api/unsubscribe#parameter-principals
         [can-remove-parameter]: /api/subscribe#parameter-can_remove_subscribers_group
       x-curl-examples-parameters:
         oneOf:
