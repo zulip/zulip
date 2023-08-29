@@ -11,8 +11,8 @@ START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
 TAB_CONTENT_REGEX = re.compile(r"^\{tab\|\s*(.+?)\s*\}$")
 
-CODE_SECTION_TEMPLATE = """
-<div class="code-section {tab_class}" markdown="1">
+TABBED_SECTION_TEMPLATE = """
+<div class="tabbed-section {tab_class}" markdown="1">
 {nav_bar}
 <div class="blocks">
 {blocks}
@@ -131,7 +131,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 ]
             nav_bar = self.generate_nav_bar(tab_section)
             content_blocks = self.generate_content_blocks(tab_section, lines)
-            rendered_tabs = CODE_SECTION_TEMPLATE.format(
+            rendered_tabs = TABBED_SECTION_TEMPLATE.format(
                 tab_class=tab_class, nav_bar=nav_bar, blocks=content_blocks
             )
 

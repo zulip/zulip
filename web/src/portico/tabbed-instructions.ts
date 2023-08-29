@@ -67,6 +67,6 @@ export function activate_correct_tab($codeSection: JQuery): void {
     }
 }
 
-$(".code-section").each(function () {
+$(".tabbed-section").each(function () {
     activate_correct_tab($(this));
 });
