@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 208**
+
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`DELETE /users/me/subscriptions`](/api/unsubscribe): These endpoints
+  now return an HTTP status code of 400 with `code: "BAD_REQUEST"` in
+  the error response when a user specified in the `principals` parameter
+  is deactivated or does not exist. Previously, these endpoints returned
+  an HTTP status code of 403 with `code: "UNAUTHORIZED_PRINCIPAL"` in the
+  error response for these cases.
+
 **Feature level 207**
 
 * [`POST /register`](/api/register-queue): Added `display_name` and
