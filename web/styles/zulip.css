@@ -103,6 +103,11 @@ body {
     --message-box-icon-height: 25px;
 
     /*
+    Reaction container UI scaling.
+    */
+    --scale-message-reaction-active: 0.96;
+
+    /*
     Left position of unread marker. Only needs to be tracked if it is negative so that
     it doesn't leak through message header.
     */

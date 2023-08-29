@@ -25,6 +25,11 @@
             background-color: var(--color-message-reaction-background-hover);
         }
 
+        &:active {
+            scale: var(--scale-message-reaction-active);
+            transition: all 40ms ease-out;
+        }
+
         + .reaction_button {
             visibility: hidden;
             pointer-events: none;
@@ -47,6 +52,11 @@
                     --color-message-reaction-button-background-hover
                 );
                 border-color: var(--color-message-reaction-button-border-hover);
+            }
+
+            &:active {
+                scale: var(--scale-message-reaction-active);
+                transition: all 40ms ease-out;
             }
         }
 
