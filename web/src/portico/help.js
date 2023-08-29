@@ -8,9 +8,9 @@ import * as common from "../common";
 
 import {activate_correct_tab} from "./tabbed-instructions";
 
-function register_code_section($code_section) {
-    const $li = $code_section.find("ul.nav li");
-    const $blocks = $code_section.find(".blocks div");
+function register_tabbed_section($tabbed_section) {
+    const $li = $tabbed_section.find("ul.nav li");
+    const $blocks = $tabbed_section.find(".blocks div");
 
     $li.on("click", function () {
         const tab_key = this.dataset.tabKey;
@@ -76,10 +76,10 @@ function add_copy_to_clipboard_element($codehilite) {
     });
 }
 
-function render_code_sections() {
+function render_tabbed_sections() {
     $(".code-section").each(function () {
         activate_correct_tab($(this));
-        register_code_section($(this));
+        register_tabbed_section($(this));
     });
 
     // Add a copy-to-clipboard button for each .codehilite element
@@ -119,6 +119,6 @@ $(".markdown").on("click", () => {
     }
 });
 
-render_code_sections();
+render_tabbed_sections();
 
 $(".highlighted")[0]?.scrollIntoView({block: "center"});
