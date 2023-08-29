@@ -2115,113 +2115,14 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
-    def test_get_message_payload_apns_topic_wildcard_mention_in_followed_topic(self) -> None:
+    def _test_get_message_payload_apns_wildcard_mention(self, trigger: str) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         payload = get_message_payload_apns(
             user_profile,
             message,
-            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
-        )
-        expected = {
-            "alert": {
-                "title": "#Verona > Test topic",
-                "subtitle": "TODO - 2",
-                "body": message.content,
-            },
-            "sound": "default",
-            "badge": 0,
-            "custom": {
-                "zulip": {
-                    "message_ids": [message.id],
-                    "recipient_type": "stream",
-                    "sender_email": self.sender.email,
-                    "sender_id": self.sender.id,
-                    "stream": stream.name,
-                    "stream_id": stream.id,
-                    "topic": message.topic_name(),
-                    "server": settings.EXTERNAL_HOST,
-                    "realm_id": self.sender.realm.id,
-                    "realm_uri": self.sender.realm.uri,
-                    "user_id": user_profile.id,
-                },
-            },
-        }
-        self.assertDictEqual(payload, expected)
-
-    def test_get_message_payload_apns_stream_wildcard_mention_in_followed_topic(self) -> None:
-        user_profile = self.example_user("othello")
-        stream = Stream.objects.filter(name="Verona").get()
-        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
-        )
-        expected = {
-            "alert": {
-                "title": "#Verona > Test topic",
-                "subtitle": "TODO",
-                "body": message.content,
-            },
-            "sound": "default",
-            "badge": 0,
-            "custom": {
-                "zulip": {
-                    "message_ids": [message.id],
-                    "recipient_type": "stream",
-                    "sender_email": self.sender.email,
-                    "sender_id": self.sender.id,
-                    "stream": stream.name,
-                    "stream_id": stream.id,
-                    "topic": message.topic_name(),
-                    "server": settings.EXTERNAL_HOST,
-                    "realm_id": self.sender.realm.id,
-                    "realm_uri": self.sender.realm.uri,
-                    "user_id": user_profile.id,
-                },
-            },
-        }
-        self.assertDictEqual(payload, expected)
-
-    def test_get_message_payload_apns_topic_wildcard_mention(self) -> None:
-        user_profile = self.example_user("othello")
-        stream = Stream.objects.filter(name="Verona").get()
-        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.TOPIC_WILDCARD_MENTION
-        )
-        expected = {
-            "alert": {
-                "title": "#Verona > Test topic",
-                "subtitle": "King Hamlet mentioned all topic participants:",
-                "body": message.content,
-            },
-            "sound": "default",
-            "badge": 0,
-            "custom": {
-                "zulip": {
-                    "message_ids": [message.id],
-                    "recipient_type": "stream",
-                    "sender_email": self.sender.email,
-                    "sender_id": self.sender.id,
-                    "stream": stream.name,
-                    "stream_id": stream.id,
-                    "topic": message.topic_name(),
-                    "server": settings.EXTERNAL_HOST,
-                    "realm_id": self.sender.realm.id,
-                    "realm_uri": self.sender.realm.uri,
-                    "user_id": user_profile.id,
-                },
-            },
-        }
-        self.assertDictEqual(payload, expected)
-
-    def test_get_message_payload_apns_stream_wildcard_mention(self) -> None:
-        user_profile = self.example_user("othello")
-        stream = Stream.objects.filter(name="Verona").get()
-        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.STREAM_WILDCARD_MENTION
+            trigger,
         )
         expected = {
             "alert": {
@@ -2248,6 +2149,26 @@ class TestGetAPNsPayload(PushNotificationTest):
             },
         }
         self.assertDictEqual(payload, expected)
+
+    def test_get_message_payload_apns_topic_wildcard_mention_in_followed_topic(self) -> None:
+        self._test_get_message_payload_apns_wildcard_mention(
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+        )
+
+    def test_get_message_payload_apns_stream_wildcard_mention_in_followed_topic(self) -> None:
+        self._test_get_message_payload_apns_wildcard_mention(
+            NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+        )
+
+    def test_get_message_payload_apns_topic_wildcard_mention(self) -> None:
+        self._test_get_message_payload_apns_wildcard_mention(
+            NotificationTriggers.TOPIC_WILDCARD_MENTION
+        )
+
+    def test_get_message_payload_apns_stream_wildcard_mention(self) -> None:
+        self._test_get_message_payload_apns_wildcard_mention(
+            NotificationTriggers.STREAM_WILDCARD_MENTION
+        )
 
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
     def test_get_message_payload_apns_redacted_content(self) -> None:
