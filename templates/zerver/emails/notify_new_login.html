@@ -1,7 +1,7 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
 {% block preheader %}
-    {% trans organization_url=realm_uri %}Organization: {{ organization_url }} Time: {{ login_time }} Email: {{ user_email }}{% endtrans %}
+    {% trans organization_url=realm_url %}Organization: {{ organization_url }} Time: {{ login_time }} Email: {{ user_email }}{% endtrans %}
 {% endblock %}
 
 {% block illustration %}
@@ -13,7 +13,7 @@
 <p>
     <ul>
         <li>
-            {% trans organization_link=macros.link_tag(realm_uri) %}Organization: {{ organization_link }}{% endtrans %}
+            {% trans organization_link=macros.link_tag(realm_url) %}Organization: {{ organization_link }}{% endtrans %}
         </li>
         <li>
             {% trans user_email=macros.email_tag(user_email) %}Email: {{ user_email }}{% endtrans %}
@@ -33,7 +33,7 @@
 <p>{{ _("If this was you, great! There's nothing else you need to do.") }}</p>
 
 <p>
-    {% trans support_email=macros.email_tag(support_email), reset_link=realm_uri + "/accounts/password/reset/" %}If you do not recognize this login, or think your account may have been compromised, please <a href="{{ reset_link }}">reset your password</a> or contact us immediately at {{ support_email }}.{% endtrans %}
+    {% trans support_email=macros.email_tag(support_email), reset_link=realm_url + "/accounts/password/reset/" %}If you do not recognize this login, or think your account may have been compromised, please <a href="{{ reset_link }}">reset your password</a> or contact us immediately at {{ support_email }}.{% endtrans %}
 </p>
 
 <p>
@@ -43,5 +43,5 @@
 {% endblock %}
 
 {% block manage_preferences %}
-<p><a href="{{ realm_uri }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from login notifications") }}</a></p>
+<p><a href="{{ realm_url }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from login notifications") }}</a></p>
 {% endblock %}

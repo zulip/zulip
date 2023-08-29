@@ -32,8 +32,8 @@ export function shouldCreateSpanForRequest(url: string): boolean {
 
 if (page_params.server_sentry_dsn) {
     const url_matches = [/^\//, new RegExp("^" + _.escapeRegExp(page_params.webpack_public_path))];
-    if (page_params.realm_uri !== undefined) {
-        url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
+    if (page_params.realm_url !== undefined) {
+        url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_url) + "/"));
     }
     const sentry_key =
         // No parameter is the portico pages, empty string is the empty realm

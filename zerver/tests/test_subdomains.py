@@ -72,9 +72,9 @@ class SubdomainsTest(ZulipTestCase):
         self.assertTrue(test("/anything"))
         self.assertFalse(test("https://zulip.com"))
         self.assertFalse(test("http://zulip.com"))
-        self.assertTrue(test(f"{realm.uri}"))
+        self.assertTrue(test(f"{realm.url}"))
 
-        self.assertFalse(test(f"{realm.uri}@www.google.com"))
+        self.assertFalse(test(f"{realm.url}@www.google.com"))
 
         # We don't have an existing configuration STATIC_URL with this
         # format, but it's worth testing in case that changes.
@@ -84,7 +84,7 @@ class SubdomainsTest(ZulipTestCase):
             self.assertTrue(test(f"{settings.STATIC_URL}/x"))
             self.assertFalse(test(evil_url))
             self.assertFalse(test(f"{evil_url}/x"))
-            self.assertTrue(test(f"{realm.uri}"))
+            self.assertTrue(test(f"{realm.url}"))
             self.assertTrue(test("/static/images/logo/zulip-org-logo.svg"))
             self.assertTrue(test("/anything"))
 

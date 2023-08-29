@@ -239,13 +239,13 @@ def build_message_list(
         # structure of the URL to leverage. We can't use `relative_to_full_url()`
         # function here because it uses a stricter regex which will not work for
         # plain text.
-        plain = re.sub(r"/user_uploads/(\S*)", user.realm.uri + r"/user_uploads/\1", plain)
+        plain = re.sub(r"/user_uploads/(\S*)", user.realm.url + r"/user_uploads/\1", plain)
         plain = fix_spoilers_in_text(plain, user.default_language)
         plain = add_quote_prefix_in_text(plain)
 
         assert message.rendered_content is not None
         fragment = lxml.html.fragment_fromstring(message.rendered_content, create_parent=True)
-        relative_to_full_url(fragment, user.realm.uri)
+        relative_to_full_url(fragment, user.realm.url)
         fix_emojis(fragment, user.emojiset)
         fix_spoilers_in_html(fragment, user.default_language)
         html = lxml.html.tostring(fragment, encoding="unicode")
@@ -768,7 +768,7 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
     from zerver.context_processors import common_context
 
     from_name, from_address = welcome_sender_information()
-    realm_url = user.realm.uri
+    realm_url = user.realm.url
 
     account_registered_context = common_context(user)
     account_registered_context.update(
@@ -822,7 +822,7 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
         .count()
     )
     unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
-    realm_url = user.realm.uri
+    realm_url = user.realm.url
 
     # Any emails scheduled below should be added to the logic in get_onboarding_email_schedule
     # to determine how long to delay sending the email based on when the user signed up.

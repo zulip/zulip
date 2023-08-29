@@ -1156,7 +1156,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
             downgrade_now_without_creating_additional_invoices(realm)
             void_all_open_invoices(realm)
             context: Dict[str, Union[str, Realm]] = {
-                "upgrade_url": f"{realm.uri}{reverse('initial_upgrade')}",
+                "upgrade_url": f"{realm.url}{reverse('initial_upgrade')}",
                 "realm": realm,
             }
             send_email_to_billing_admins_and_realm_owners(

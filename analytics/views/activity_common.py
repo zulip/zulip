@@ -87,7 +87,7 @@ def realm_support_link(realm_str: str) -> Markup:
 
 
 def realm_url_link(realm_str: str) -> Markup:
-    url = get_realm(realm_str).uri
+    url = get_realm(realm_str).url
     return Markup('<a href="{url}"><i class="fa fa-home"></i></a>').format(url=url)
 
 

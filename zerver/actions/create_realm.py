@@ -52,7 +52,7 @@ def do_change_realm_subdomain(
     experience for clients.
     """
     old_subdomain = realm.subdomain
-    old_uri = realm.uri
+    old_uri = realm.url
     # If the realm had been a demo organization scheduled for
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
@@ -68,10 +68,10 @@ def do_change_realm_subdomain(
         )
 
         # If a realm if being renamed multiple times, we should find all the placeholder
-        # realms and reset their deactivated_redirect field to point to the new realm uri
+        # realms and reset their deactivated_redirect field to point to the new realm url
         placeholder_realms = Realm.objects.filter(deactivated_redirect=old_uri, deactivated=True)
         for placeholder_realm in placeholder_realms:
-            do_add_deactivated_redirect(placeholder_realm, realm.uri)
+            do_add_deactivated_redirect(placeholder_realm, realm.url)
 
     # The below block isn't executed in a transaction with the earlier code due to
     # the functions called below being complex and potentially sending events,
@@ -83,7 +83,7 @@ def do_change_realm_subdomain(
     if add_deactivated_redirect:
         placeholder_realm = do_create_realm(old_subdomain, realm.name)
         do_deactivate_realm(placeholder_realm, acting_user=None)
-        do_add_deactivated_redirect(placeholder_realm, realm.uri)
+        do_add_deactivated_redirect(placeholder_realm, realm.url)
 
 
 def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
@@ -283,7 +283,7 @@ def do_create_realm(
         message = "[{name}]({support_link}) ([{subdomain}]({realm_link})). Organization type: {type}".format(
             name=realm.name,
             subdomain=realm.display_subdomain,
-            realm_link=realm.uri,
+            realm_link=realm.url,
             support_link=support_url,
             type=organization_type,
         )

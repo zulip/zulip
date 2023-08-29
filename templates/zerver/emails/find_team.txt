@@ -6,7 +6,7 @@ Your email address {{ email }} has accounts with the following Zulip organizatio
 
 
 {% for realm in realms %}
-* {{ realm.name }}: {{ realm.uri }}
+* {{ realm.name }}: {{ realm.url }}
 {% endfor %}
 
 {% trans %}If you have trouble logging in, please contact Zulip support by replying to this email.{% endtrans %}

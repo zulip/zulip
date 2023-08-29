@@ -231,6 +231,7 @@ class RealmTest(ZulipTestCase):
         self.assert_json_success(result)
         json = orjson.loads(result.content)
         self.assertEqual(json["realm_uri"], "http://coolrealm.testserver")
+        self.assertEqual(json["realm_url"], "http://coolrealm.testserver")
         realm = get_realm("coolrealm")
         self.assertIsNone(realm.demo_organization_scheduled_deletion_date)
         self.assertEqual(realm.string_id, data["string_id"])
@@ -310,7 +311,7 @@ class RealmTest(ZulipTestCase):
 
         placeholder_realm = get_realm("zulip")
         self.assertTrue(placeholder_realm.deactivated)
-        self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.uri)
+        self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.url)
 
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED, acting_user=iago

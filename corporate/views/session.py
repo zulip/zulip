@@ -21,7 +21,7 @@ def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) ->
     customer = get_customer_by_realm(user.realm)
     assert customer
     stripe_session = stripe.checkout.Session.create(
-        cancel_url=f"{user.realm.uri}/billing/",
+        cancel_url=f"{user.realm.url}/billing/",
         customer=customer.stripe_customer_id,
         metadata={
             "type": "card_update",
@@ -29,7 +29,7 @@ def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) ->
         },
         mode="setup",
         payment_method_types=["card"],
-        success_url=f"{user.realm.uri}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+        success_url=f"{user.realm.url}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
     )
     Session.objects.create(
         stripe_session_id=stripe_session.id,
@@ -76,13 +76,13 @@ def start_retry_payment_intent_session(
     }
     metadata.update(stripe_payment_intent.metadata)
     stripe_session = stripe.checkout.Session.create(
-        cancel_url=f"{user.realm.uri}/upgrade/",
+        cancel_url=f"{user.realm.url}/upgrade/",
         customer=customer.stripe_customer_id,
         metadata=metadata,
         setup_intent_data={"metadata": metadata},
         mode="setup",
         payment_method_types=["card"],
-        success_url=f"{user.realm.uri}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+        success_url=f"{user.realm.url}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
     )
     session = Session.objects.create(
         stripe_session_id=stripe_session.id,

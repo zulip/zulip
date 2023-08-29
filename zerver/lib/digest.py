@@ -234,7 +234,7 @@ def gather_new_streams(
     else:
         new_streams = [stream for stream in recent_streams if stream.is_web_public]
 
-    base_url = f"{realm.uri}/#narrow/stream/"
+    base_url = f"{realm.url}/#narrow/stream/"
 
     streams_html = []
     streams_plain = []

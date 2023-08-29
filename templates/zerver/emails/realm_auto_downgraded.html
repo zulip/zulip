@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-    {% trans organization_name_with_link=macros.link_tag(realm.uri, realm.string_id) %}
+    {% trans organization_name_with_link=macros.link_tag(realm.url, realm.string_id) %}
     Your organization, {{ organization_name_with_link }}, has been downgraded to the Zulip Cloud
     Free plan because of unpaid invoices. The unpaid invoices have been voided.
     {% endtrans %}
