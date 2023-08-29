@@ -1,5 +1,6 @@
 from unittest import mock
 
+import orjson
 import responses
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
@@ -68,6 +69,15 @@ class TestVideoCall(ZulipTestCase):
             "https://api.zoom.us/v2/users/me/meetings",
         )
         self.assertEqual(
+            orjson.loads(responses.calls[-1].request.body),
+            {
+                "settings": {
+                    "host_video": True,
+                    "participant_video": True,
+                },
+            },
+        )
+        self.assertEqual(
             responses.calls[-1].request.headers["Authorization"],
             "Bearer newtoken",
         )
@@ -91,6 +101,15 @@ class TestVideoCall(ZulipTestCase):
         self.assertEqual(
             responses.calls[-1].request.url,
             "https://api.zoom.us/v2/users/me/meetings",
+        )
+        self.assertEqual(
+            orjson.loads(responses.calls[-1].request.body),
+            {
+                "settings": {
+                    "host_video": False,
+                    "participant_video": False,
+                },
+            },
         )
         self.assertEqual(
             responses.calls[-1].request.headers["Authorization"],
