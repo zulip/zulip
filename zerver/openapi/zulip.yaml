@@ -7368,7 +7368,7 @@ paths:
         [delete a message completely][delete-completely] feature documented in
         the Zulip Help Center.
 
-        [delete-completely]: /help/edit-or-delete-a-message#delete-a-message-completely
+        [delete-completely]: /help/delete-a-message#delete-a-message-completely
       x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/MessageId"
