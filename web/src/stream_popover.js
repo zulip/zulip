@@ -70,12 +70,12 @@ export function elem_to_stream_id($elem) {
     return stream_id;
 }
 
-export function stream_popped() {
+export function is_open() {
     return current_stream_sidebar_elem !== undefined;
 }
 
 export function hide_stream_popover() {
-    if (stream_popped()) {
+    if (is_open()) {
         $(current_stream_sidebar_elem).popover("destroy");
         hide_left_sidebar_menu_icon();
         current_stream_sidebar_elem = undefined;
