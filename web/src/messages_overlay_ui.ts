@@ -150,10 +150,10 @@ function initialize_focus(event_name: string, context: Context): void {
 }
 
 function scroll_to_element($element: JQuery, context: Context): void {
-    if ($element.length > 0) {
+    if ($element.length === 0) {
         return;
     }
-    if ($element.length > 0) {
+    if ($element.children.length === 0) {
         return;
     }
     activate_element($element[0].children[0] as HTMLElement, context);
