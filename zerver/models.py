@@ -4074,11 +4074,15 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
 
 
 def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
+    def check_private_stream(stream_id: int) -> bool:
+        stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
+        return stream.invite_only
+
     is_private_bot = (
-        user_profile.default_sending_stream
-        and user_profile.default_sending_stream.invite_only
-        or user_profile.default_events_register_stream
-        and user_profile.default_events_register_stream.invite_only
+        user_profile.default_sending_stream_id
+        and check_private_stream(user_profile.default_sending_stream_id)
+        or user_profile.default_events_register_stream_id
+        and check_private_stream(user_profile.default_events_register_stream_id)
     )
     assert user_profile.bot_owner_id is not None
     if is_private_bot:
