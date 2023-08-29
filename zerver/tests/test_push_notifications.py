@@ -2231,14 +2231,18 @@ class TestGetAPNsPayload(PushNotificationTest):
 class TestGetGCMPayload(PushNotificationTest):
     def _test_get_message_payload_gcm_stream_message(
         self,
+        truncate_content: bool = False,
         mentioned_user_group_id: Optional[int] = None,
         mentioned_user_group_name: Optional[str] = None,
     ) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        message.content = "a" * 210
-        message.rendered_content = "a" * 210
-        message.save()
+        content = message.content
+        if truncate_content:
+            message.content = "a" * 210
+            message.rendered_content = "a" * 210
+            message.save()
+            content = "a" * 200 + "…"
 
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
@@ -2249,8 +2253,8 @@ class TestGetGCMPayload(PushNotificationTest):
             "event": "message",
             "zulip_message_id": message.id,
             "time": datetime_to_timestamp(message.date_sent),
-            "content": "a" * 200 + "…",
-            "content_truncated": True,
+            "content": content,
+            "content_truncated": truncate_content,
             "server": settings.EXTERNAL_HOST,
             "realm_id": hamlet.realm.id,
             "realm_uri": hamlet.realm.uri,
@@ -2280,6 +2284,9 @@ class TestGetGCMPayload(PushNotificationTest):
     # wildcard mention, stream push, or followed topic push.
     def test_get_message_payload_gcm_stream_message(self) -> None:
         self._test_get_message_payload_gcm_stream_message()
+
+    def test_get_message_payload_gcm_stream_message_truncate_content(self) -> None:
+        self._test_get_message_payload_gcm_stream_message(truncate_content=True)
 
     def test_get_message_payload_gcm_user_group_mention(self) -> None:
         # Note that the @mobile_team user group doesn't actually
@@ -2314,40 +2321,6 @@ class TestGetGCMPayload(PushNotificationTest):
                 "sender_full_name": "King Hamlet",
                 "sender_avatar_url": absolute_avatar_url(message.sender),
                 "recipient_type": "private",
-            },
-        )
-        self.assertDictEqual(
-            gcm_options,
-            {
-                "priority": "high",
-            },
-        )
-
-    def test_get_message_payload_gcm_stream_notifications(self) -> None:
-        stream = Stream.objects.get(name="Denmark")
-        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
-        self.assertDictEqual(
-            payload,
-            {
-                "user_id": hamlet.id,
-                "event": "message",
-                "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
-                "content": message.content,
-                "content_truncated": False,
-                "server": settings.EXTERNAL_HOST,
-                "realm_id": hamlet.realm.id,
-                "realm_uri": hamlet.realm.uri,
-                "sender_id": hamlet.id,
-                "sender_email": hamlet.email,
-                "sender_full_name": "King Hamlet",
-                "sender_avatar_url": absolute_avatar_url(message.sender),
-                "recipient_type": "stream",
-                "topic": "Test topic",
-                "stream": "Denmark",
-                "stream_id": stream.id,
             },
         )
         self.assertDictEqual(
