@@ -1878,6 +1878,18 @@ class TestAPNs(PushNotificationTest):
                 logger.output,
             )
 
+    def test_other_exception(self) -> None:
+        self.setup_apns_tokens()
+        with self.mock_apns() as (apns_context, send_notification), self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
+            send_notification.side_effect = IOError
+            self.send(devices=self.devices()[0:1])
+            self.assertIn(
+                f"ERROR:zerver.lib.push_notifications:APNs: Error sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}",
+                logger.output[1],
+            )
+
     def test_internal_server_error(self) -> None:
         self.setup_apns_tokens()
         with self.mock_apns() as (apns_context, send_notification), self.assertLogs(

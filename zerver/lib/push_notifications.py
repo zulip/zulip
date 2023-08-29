@@ -6,7 +6,19 @@ import logging
 import re
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 import gcm
 import lxml.html
@@ -242,25 +254,41 @@ def send_apple_push_notification(
         )
     payload_data = dict(modernize_apns_payload(payload_data))
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
-    for device in devices:
-        # TODO obviously this should be made to actually use the async
-        request = aioapns.NotificationRequest(
-            device_token=device.token, message=message, time_to_live=24 * 3600
-        )
 
-        try:
-            result = apns_context.loop.run_until_complete(
-                apns_context.apns.send_notification(request)
+    async def send_all_notifications() -> Iterable[
+        Tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]
+    ]:
+        requests = [
+            aioapns.NotificationRequest(
+                device_token=device.token, message=message, time_to_live=24 * 3600
             )
-        except aioapns.exceptions.ConnectionError:
+            for device in devices
+        ]
+        results = list(
+            await asyncio.gather(
+                *(apns_context.apns.send_notification(request) for request in requests),
+                return_exceptions=True,
+            )
+        )
+        return zip(devices, results)
+
+    results = apns_context.loop.run_until_complete(send_all_notifications())
+
+    for device, result in results:
+        if isinstance(result, aioapns.exceptions.ConnectionError):
             logger.error(
                 "APNs: ConnectionError sending for user %s to device %s; check certificate expiration",
                 user_identity,
                 device.token,
             )
-            continue
-
-        if result.is_successful:
+        elif isinstance(result, BaseException):
+            logger.exception(
+                "APNs: Error sending for user %s to device %s",
+                user_identity,
+                device.token,
+                exc_info=result,
+            )
+        elif result.is_successful:
             logger.info(
                 "APNs: Success sending for user %s to device %s", user_identity, device.token
             )
