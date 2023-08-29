@@ -109,7 +109,12 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
 // corresponding hash: the # component
 // of the narrow URL
 export function operators_to_hash(operators?: Operator[]): string {
-    let hash = "#";
+    // We use this hash for search results and other ways of activating
+    // narrow views. Recent Conversations is not an "operators" view,
+    // and is navigated to from other user interactions. For this reason,
+    // we know that if there are no operators, we should show All Messages,
+    // and we should set the hash to match.
+    let hash = "#all_messages";
 
     if (operators !== undefined) {
         hash = "#narrow";

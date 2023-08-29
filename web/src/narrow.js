@@ -1028,6 +1028,16 @@ export function deactivate(coming_from_recent_topics = false, is_actively_scroll
     if (narrow_state.filter() === undefined && !coming_from_recent_topics) {
         return;
     }
+    // If we're coming from Recent Conversations to All messages, we need to hide
+    // the Recent Conversations view.
+    if (
+        narrow_state.filter() === undefined &&
+        coming_from_recent_topics &&
+        recent_topics_util.is_visible()
+    ) {
+        recent_topics_ui.hide();
+    }
+
     blueslip.debug("Unnarrowed");
 
     if (is_actively_scrolling) {
