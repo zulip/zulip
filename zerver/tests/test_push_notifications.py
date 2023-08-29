@@ -2016,10 +2016,10 @@ class TestGetAPNsPayload(PushNotificationTest):
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
 
-    def test_get_message_payload_apns_stream_message(self) -> None:
+    def _test_get_message_payload_apns_stream_message(self, trigger: str) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(self.sender, message, NotificationTriggers.STREAM_PUSH)
+        payload = get_message_payload_apns(self.sender, message, trigger)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -2045,6 +2045,12 @@ class TestGetAPNsPayload(PushNotificationTest):
             },
         }
         self.assertDictEqual(payload, expected)
+
+    def test_get_message_payload_apns_stream_message(self) -> None:
+        self._test_get_message_payload_apns_stream_message(NotificationTriggers.STREAM_PUSH)
+
+    def test_get_message_payload_apns_followed_topic_message(self) -> None:
+        self._test_get_message_payload_apns_stream_message(NotificationTriggers.FOLLOWED_TOPIC_PUSH)
 
     def test_get_message_payload_apns_stream_mention(self) -> None:
         user_profile = self.example_user("othello")
