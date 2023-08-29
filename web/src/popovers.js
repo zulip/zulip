@@ -973,7 +973,7 @@ export function any_active() {
         popover_menus.any_active() ||
         user_group_popover.is_open() ||
         user_sidebar_popped() ||
-        stream_popover.stream_popped() ||
+        stream_popover.is_open() ||
         message_info_popped() ||
         user_info_popped() ||
         emoji_picker.is_open() ||

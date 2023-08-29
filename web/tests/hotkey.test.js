@@ -89,7 +89,7 @@ mock_esm("../src/recent_view_ui", {
 });
 
 const stream_popover = mock_esm("../src/stream_popover", {
-    stream_popped: () => false,
+    is_open: () => false,
 });
 
 message_lists.current = {

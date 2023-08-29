@@ -389,7 +389,7 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (stream_popover.stream_popped()) {
+    if (stream_popover.is_open()) {
         stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
         return true;
     }
