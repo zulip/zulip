@@ -745,11 +745,12 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 119**
 
-* [`POST /register`](/api/register-queue): The `unread_msgs` section
-  of the response now prefers `other_user_id` over the poorly named
-  `sender_id` field in the `pms` dictionaries. This change is
-  motivated by the possibility that a message you yourself sent to
-  another user could be marked as unread.
+* [`POST /register`](/api/register-queue): Added `other_user_id` field
+  to the `pms` objects in the `unread_msgs` data set, deprecating the
+  less clearly named `sender_id` field. This change was motivated by
+  the possibility that a one-on-one direct message sent by the current
+  user to another user could be marked as unread. The `sender_id` field
+  is still present for backwards compatibility with older server versions.
 
 **Feature level 118**
 
