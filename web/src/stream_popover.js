@@ -436,7 +436,7 @@ export function register_click_handlers() {
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
         e.stopPropagation();
 
-        const elt = e.target;
+        const elt = e.currentTarget;
         const $stream_li = $(elt).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
 
