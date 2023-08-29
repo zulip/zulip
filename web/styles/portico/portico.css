@@ -64,7 +64,7 @@ html {
 
 /* The API tabbed content tends to have a lot of code blocks,
    which look nicer against a different background */
-.api-center .code-section {
+.api-center .tabbed-section {
     .blocks {
         background-color: hsl(0deg 0% 98%);
     }

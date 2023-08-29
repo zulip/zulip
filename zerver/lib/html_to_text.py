@@ -16,8 +16,8 @@ def html_to_text(content: Union[str, bytes], tags: Mapping[str, str] = {"p": " |
     for tag in bs.find_all("div", class_="admonition"):
         tag.clear()
 
-    # Skip code-sections, which just contains navigation instructions.
-    for tag in bs.find_all("div", class_="code-section"):
+    # Skip tabbed-sections, which just contain navigation instructions.
+    for tag in bs.find_all("div", class_="tabbed-section"):
         tag.clear()
 
     text = ""

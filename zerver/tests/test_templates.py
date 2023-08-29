@@ -36,7 +36,7 @@ header
 
 <h1 id="heading">Heading</h1>
 <p>
-  <div class="code-section has-tabs" markdown="1">
+  <div class="tabbed-section has-tabs" markdown="1">
     <ul class="nav">
       <li data-tab-key="ios" tabindex="0">iOS</li>
       <li data-tab-key="desktop-web" tabindex="0">Desktop/Web</li>
@@ -54,7 +54,7 @@ header
 
 <h2 id="heading-2">Heading 2</h2>
 <p>
-  <div class="code-section has-tabs" markdown="1">
+  <div class="tabbed-section has-tabs" markdown="1">
     <ul class="nav">
       <li data-tab-key="desktop-web" tabindex="0">Desktop/Web</li>
       <li data-tab-key="android" tabindex="0">Android</li>
@@ -72,7 +72,7 @@ header
 
 <h2 id="heading-3">Heading 3</h2>
 <p>
-  <div class="code-section no-tabs" markdown="1">
+  <div class="tabbed-section no-tabs" markdown="1">
     <ul class="nav">
       <li data-tab-key="instructions-for-all-platforms" tabindex="0">Instructions for all platforms</li>
     </ul>
