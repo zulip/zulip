@@ -201,10 +201,7 @@ export function patch(
     return post(options);
 }
 
-export function xhr_error_message(
-    message: string | null,
-    xhr: JQuery.jqXHR<unknown>,
-): string | null {
+export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): string {
     if (xhr.status.toString().charAt(0) === "4" && xhr.responseJSON?.msg) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
