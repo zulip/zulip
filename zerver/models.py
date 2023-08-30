@@ -3116,6 +3116,74 @@ class Message(AbstractMessage):
                 F("id").desc(nulls_last=True),
                 name="zerver_message_recipient_subject",
             ),
+            # Indexes prefixed with realm_id
+            models.Index(
+                # For moving messages between streams or marking
+                # streams as read.  The "id" at the end makes it easy
+                # to scan the resulting messages in order, and perform
+                # batching.
+                "realm_id",
+                "recipient_id",
+                "id",
+                name="zerver_message_realm_recipient_id",
+            ),
+            models.Index(
+                # For generating digest emails and message archiving,
+                # which both group by stream.
+                "realm_id",
+                "recipient_id",
+                "date_sent",
+                name="zerver_message_realm_recipient_date_sent",
+            ),
+            models.Index(
+                # For exports, which want to limit both sender and
+                # receiver.  The prefix of this index (realm_id,
+                # sender_id) can be used for scrubbing users and/or
+                # deleting users' messages.
+                "realm_id",
+                "sender_id",
+                "recipient_id",
+                name="zerver_message_realm_sender_recipient",
+            ),
+            models.Index(
+                # For analytics queries
+                "realm_id",
+                "date_sent",
+                name="zerver_message_realm_date_sent",
+            ),
+            models.Index(
+                # For users searching by topic (but not stream), which
+                # is done case-insensitively
+                "realm_id",
+                Upper("subject"),
+                F("id").desc(nulls_last=True),
+                name="zerver_message_realm_upper_subject",
+            ),
+            models.Index(
+                # Most stream/topic searches are case-insensitive by
+                # topic name (e.g. messages_for_topic).  The "id" at
+                # the end makes it easy to scan the resulting messages
+                # in order, and perform batching.
+                "realm_id",
+                "recipient_id",
+                Upper("subject"),
+                F("id").desc(nulls_last=True),
+                name="zerver_message_realm_recipient_upper_subject",
+            ),
+            models.Index(
+                # Only used by already_sent_mirrored_message_id
+                "realm_id",
+                "recipient_id",
+                "subject",
+                F("id").desc(nulls_last=True),
+                name="zerver_message_realm_recipient_subject",
+            ),
+            models.Index(
+                # Only used by update_first_visible_message_id
+                "realm_id",
+                F("id").desc(nulls_last=True),
+                name="zerver_message_realm_id",
+            ),
         ]
 
 
@@ -4404,6 +4472,13 @@ class ScheduledMessage(models.Model):
             models.Index(
                 name="zerver_unsent_scheduled_messages_by_user",
                 fields=["sender", "delivery_type", "scheduled_timestamp"],
+                condition=Q(
+                    delivered=False,
+                ),
+            ),
+            models.Index(
+                name="zerver_realm_unsent_scheduled_messages_by_user",
+                fields=["realm_id", "sender", "delivery_type", "scheduled_timestamp"],
                 condition=Q(
                     delivered=False,
                 ),
