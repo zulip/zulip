@@ -14487,6 +14487,8 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is an [organization owner](/api/roles-and-permissions).
+
+                          **Changes**: New in Zulip 3.0 (feature level 11).
                       is_billing_admin:
                         type: boolean
                         description: |
