@@ -348,7 +348,7 @@ test("xhr_error_message", () => {
     msg = "some message";
     assert.equal(channel.xhr_error_message(msg, xhr), "some message: file not found");
 
-    msg = null;
+    msg = "";
     assert.equal(channel.xhr_error_message(msg, xhr), "file not found");
 });
 
