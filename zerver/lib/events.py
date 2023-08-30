@@ -54,17 +54,20 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
-from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
+from zerver.lib.users import (
+    get_cross_realm_dicts,
+    get_raw_user_data,
+    is_administrator_role,
+    max_message_id_for_user,
+)
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
     Draft,
-    Message,
     Realm,
     RealmUserDefault,
     Stream,
-    UserMessage,
     UserProfile,
     UserStatus,
     UserTopic,
@@ -182,17 +185,7 @@ def fetch_initial_state_data(
         # `max_message_id` is primarily used for generating `local_id`
         # values that are higher than this.  We likely can eventually
         # remove this parameter from the API.
-        user_messages = None
-        if user_profile is not None:
-            user_messages = (
-                UserMessage.objects.filter(user_profile=user_profile)
-                .order_by("-message_id")
-                .values("message_id")[:1]
-            )
-        if user_messages:
-            state["max_message_id"] = user_messages[0]["message_id"]
-        else:
-            state["max_message_id"] = -1
+        state["max_message_id"] = max_message_id_for_user(user_profile)
 
     if want("drafts"):
         if user_profile is None:
@@ -1232,13 +1225,7 @@ def apply_event(
             message_ids = [event["message_id"]]
         else:
             message_ids = event["message_ids"]  # nocoverage
-        max_message = (
-            Message.objects.filter(usermessage__user_profile=user_profile).order_by("-id").first()
-        )
-        if max_message:
-            state["max_message_id"] = max_message.id
-        else:
-            state["max_message_id"] = -1
+        state["max_message_id"] = max_message_id_for_user(user_profile)
 
         if "raw_unread_msgs" in state:
             for remove_id in message_ids:

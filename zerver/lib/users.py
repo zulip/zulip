@@ -26,6 +26,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     Realm,
     Service,
+    UserMessage,
     UserProfile,
     get_realm_user_dicts,
     get_user,
@@ -622,3 +623,18 @@ def get_users_with_access_to_real_email(user_profile: UserProfile) -> List[int]:
             user_profile.email_address_visibility,
         )
     ]
+
+
+def max_message_id_for_user(user_profile: Optional[UserProfile]) -> int:
+    if user_profile is None:
+        return -1
+    max_message = (
+        UserMessage.objects.filter(user_profile=user_profile)
+        .order_by("-message_id")
+        .only("message_id")
+        .first()
+    )
+    if max_message:
+        return max_message.message_id
+    else:
+        return -1
