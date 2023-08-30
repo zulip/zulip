@@ -9149,7 +9149,7 @@ paths:
       description: |
         Check whether a user is subscribed to a stream.
 
-        **Changes**: New in Zulip 3.0 (feature level 11).
+        **Changes**: New in Zulip 3.0 (feature level 12).
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/StreamIdInPath"
