@@ -1552,8 +1552,9 @@ No changes; feature level used for Zulip 3.0 release.
   as 86400 seconds (1 day).
 * [`POST /register`](/api/register-queue): The response now contains a
   `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
-* [`POST /set-typing-status`](/api/set-typing-status): Removed legacy support for sending email
-  addresses, rather than user IDs, to encode private message recipients.
+* [`POST /set-typing-status`](/api/set-typing-status): Removed legacy
+  support for sending email addresses in the `to` parameter, rather
+  than user IDs, to encode direct message recipients.
 
 **Feature level 10**
 
