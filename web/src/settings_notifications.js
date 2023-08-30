@@ -128,7 +128,9 @@ export function set_up(settings_panel) {
     $container.find(".play_notification_sound").on("click", () => {
         const sound = $notification_sound_dropdown.val().toLowerCase();
         if (settings_object.notification_sound !== "none" && sound !== "none") {
-            notifications.update_notification_sound_source($temp_notification_sound_elem, { notification_sound: sound });
+            notifications.update_notification_sound_source($temp_notification_sound_elem, {
+                notification_sound: sound,
+            });
             ui_util.play_audio($temp_notification_sound_elem[0]);
         }
     });
