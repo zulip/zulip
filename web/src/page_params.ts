@@ -45,6 +45,7 @@ export const page_params: {
     realm_private_message_policy: number;
     realm_push_notifications_enabled: boolean;
     realm_sentry_key: string | undefined;
+    realm_upload_quota_mib: number | null;
     realm_uri: string;
     realm_user_group_edit_policy: number;
     realm_waiting_period_threshold: number;

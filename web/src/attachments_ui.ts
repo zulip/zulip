@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import render_confirm_delete_attachment from "../templates/confirm_dialog/confirm_delete_attachment.hbs";
 import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
@@ -14,10 +15,48 @@ import * as scroll_util from "./scroll_util";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 
-let attachments;
-let upload_space_used;
+type ServerAttachment = z.infer<typeof attachment_api_response_schema>["attachments"][number];
 
-export function bytes_to_size(bytes, kb_with_1024_bytes = false) {
+type Attachment = ServerAttachment & {
+    create_time_str: string;
+    size_str: string;
+};
+
+type AttachmentEvent =
+    | {
+          op: "add" | "update";
+          attachment: ServerAttachment;
+          upload_space_used: number;
+      }
+    | {
+          op: "remove";
+          attachment: {id: number};
+          upload_space_used: number;
+      };
+
+const attachment_api_response_schema = z.object({
+    attachments: z.array(
+        z.object({
+            id: z.number(),
+            name: z.string(),
+            path_id: z.string(),
+            size: z.number(),
+            create_time: z.number(),
+            messages: z.array(
+                z.object({
+                    id: z.number(),
+                    date_sent: z.number(),
+                }),
+            ),
+        }),
+    ),
+    upload_space_used: z.number(),
+});
+
+let attachments: Attachment[];
+let upload_space_used: z.infer<typeof attachment_api_response_schema>["upload_space_used"];
+
+export function bytes_to_size(bytes: number, kb_with_1024_bytes = false): string {
     const kb_size = kb_with_1024_bytes ? 1024 : 1000;
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     if (bytes === 0) {
@@ -31,14 +70,14 @@ export function bytes_to_size(bytes, kb_with_1024_bytes = false) {
     return size + " " + sizes[i];
 }
 
-export function percentage_used_space(uploads_size) {
+export function percentage_used_space(uploads_size: number): string | null {
     if (page_params.realm_upload_quota_mib === null) {
         return null;
     }
     return ((100 * uploads_size) / page_params.realm_upload_quota_mib).toFixed(1);
 }
 
-function set_upload_space_stats() {
+function set_upload_space_stats(): void {
     if (page_params.realm_upload_quota_mib === null) {
         return;
     }
@@ -51,7 +90,7 @@ function set_upload_space_stats() {
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
 }
 
-function delete_attachments(attachment, file_name) {
+function delete_attachments(attachment: string, file_name: string): void {
     const html_body = render_confirm_delete_attachment({file_name});
 
     dialog_widget.launch({
@@ -66,7 +105,7 @@ function delete_attachments(attachment, file_name) {
     });
 }
 
-function sort_mentioned_in(a, b) {
+function sort_mentioned_in(a: Attachment, b: Attachment): number {
     const a_m = a.messages[0];
     const b_m = b.messages[0];
 
@@ -86,13 +125,13 @@ function sort_mentioned_in(a, b) {
     return -1;
 }
 
-function render_attachments_ui() {
+function render_attachments_ui(): void {
     set_upload_space_stats();
 
     const $uploaded_files_table = $("#uploaded_files_table").expectOne();
     const $search_input = $("#upload_file_search");
 
-    ListWidget.create($uploaded_files_table, attachments, {
+    ListWidget.create<Attachment>($uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         get_item: ListWidget.default_get_item,
         modifier(attachment) {
@@ -123,7 +162,7 @@ function render_attachments_ui() {
     scroll_util.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
-function format_attachment_data(new_attachments) {
+function format_attachment_data(new_attachments: ServerAttachment[]): Attachment[] {
     return new_attachments.map((attachment) => ({
         ...attachment,
         create_time_str: timerender.render_now(new Date(attachment.create_time)).time_str,
@@ -131,7 +170,7 @@ function format_attachment_data(new_attachments) {
     }));
 }
 
-export function update_attachments(event) {
+export function update_attachments(event: AttachmentEvent): void {
     if (attachments === undefined) {
         // If we haven't fetched attachment data yet, there's nothing to do.
         return;
@@ -148,7 +187,7 @@ export function update_attachments(event) {
     render_attachments_ui();
 }
 
-export function set_up_attachments() {
+export function set_up_attachments(): void {
     // The settings page must be rendered before this function gets called.
 
     const $status = $("#delete-upload-status");
@@ -159,17 +198,18 @@ export function set_up_attachments() {
     $("#uploaded_files_table").on("click", ".remove-attachment", (e) => {
         const file_name = $(e.target).closest(".uploaded_file_row").attr("id");
         delete_attachments(
-            $(e.target).closest(".uploaded_file_row").attr("data-attachment-id"),
-            file_name,
+            $(e.target).closest(".uploaded_file_row").attr("data-attachment-id")!,
+            file_name!,
         );
     });
 
-    channel.get({
+    void channel.get({
         url: "/json/attachments",
         success(data) {
+            const clean_data = attachment_api_response_schema.parse(data);
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            attachments = format_attachment_data(data.attachments);
-            upload_space_used = data.upload_space_used;
+            attachments = format_attachment_data(clean_data.attachments);
+            upload_space_used = clean_data.upload_space_used;
             render_attachments_ui();
         },
         error(xhr) {
