@@ -510,7 +510,7 @@ def send_custom_email(
     *,
     target_emails: Sequence[str] = [],
     options: Dict[str, Any],
-    add_context: Optional[Callable[[Dict[str, Union[List[str], str]], UserProfile], None]] = None,
+    add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
 ) -> None:
     """
     Helper for `manage.py send_custom_email`.
@@ -562,7 +562,7 @@ def send_custom_email(
     for user_profile in users.select_related("realm").order_by("id"):
         if options.get("admins_only") and not user_profile.is_realm_admin:
             continue
-        context: Dict[str, Union[List[str], str]] = {
+        context: Dict[str, object] = {
             "realm_uri": user_profile.realm.uri,
             "realm_name": user_profile.realm.name,
         }

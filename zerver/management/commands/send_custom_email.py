@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import orjson
 from django.conf import settings
@@ -86,9 +86,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: str) -> None:
         target_emails: List[str] = []
         users: QuerySet[UserProfile] = UserProfile.objects.none()
-        add_context: Optional[
-            Callable[[Dict[str, Union[List[str], str]], UserProfile], None]
-        ] = None
+        add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None
 
         if options["entire_server"]:
             users = UserProfile.objects.filter(
@@ -106,9 +104,7 @@ class Command(ZulipBaseCommand):
                 long_term_idle=False,
             ).distinct("delivery_email")
 
-            def add_marketing_unsubscribe(
-                context: Dict[str, Union[List[str], str]], user: UserProfile
-            ) -> None:
+            def add_marketing_unsubscribe(context: Dict[str, object], user: UserProfile) -> None:
                 context["unsubscribe_link"] = one_click_unsubscribe_link(user, "marketing")
 
             add_context = add_marketing_unsubscribe
@@ -139,12 +135,10 @@ class Command(ZulipBaseCommand):
             ).distinct("delivery_email")
         elif options["json_file"]:
             with open(options["json_file"]) as f:
-                user_data: Dict[str, Dict[str, Union[List[str], str]]] = orjson.loads(f.read())
+                user_data: Dict[str, Dict[str, object]] = orjson.loads(f.read())
             users = UserProfile.objects.filter(id__in=[int(user_id) for user_id in user_data])
 
-            def add_context_from_dict(
-                context: Dict[str, Union[List[str], str]], user: UserProfile
-            ) -> None:
+            def add_context_from_dict(context: Dict[str, object], user: UserProfile) -> None:
                 context.update(user_data.get(str(user.id), {}))
 
             add_context = add_context_from_dict

@@ -1,6 +1,6 @@
 import tempfile
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Union
+from typing import Dict
 from unittest.mock import patch
 
 import ldap
@@ -130,7 +130,7 @@ class TestCustomEmails(ZulipTestCase):
             "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
         )
 
-        def add_context(context: Dict[str, Union[List[str], str]], user: UserProfile) -> None:
+        def add_context(context: Dict[str, object], user: UserProfile) -> None:
             context["unsubscribe_link"] = "some@email"
             context["custom"] = str(user.id)
 
