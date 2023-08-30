@@ -5,6 +5,7 @@
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
 from datetime import datetime, timezone
+from unittest import skip
 
 import orjson
 from django.db.migrations.state import StateApps
@@ -28,6 +29,7 @@ from zerver.lib.test_helpers import use_db_models
 # been tested for a migration being merged.
 
 
+@skip("Cannot be run because there is a non-atomic migration that has been merged after it")
 class ScheduledEmailData(MigrationsTestCase):
     migrate_from = "0467_rename_extradata_realmauditlog_extra_data_json"
     migrate_to = "0468_rename_followup_day_email_templates"
