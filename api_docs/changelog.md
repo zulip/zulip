@@ -87,7 +87,7 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /users/me/subscriptions`](/api/subscribe),
   [`PATCH /streams/{stream_id}`](/api/update-stream),
-  [`GET users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions),
   [`GET /streams`](/api/get-streams),
   [`POST /register`](/api/register-queue),
   [`GET /events`](/api/get-events): Renamed
@@ -239,7 +239,7 @@ No changes; feature level used for Zulip 7.0 release.
 
 **Feature level 178**
 
-* `POST users/me/presence`,
+* `POST /users/me/presence`,
   [`GET /users/<user_id_or_email>/presence`](/api/get-user-presence),
   [`GET /realm/presence`](/api/get-presence),
   [`POST /register`](/api/register-queue),
@@ -265,7 +265,7 @@ No changes; feature level used for Zulip 7.0 release.
 **Feature level 176**
 
 * [`POST /realm/filters`](/api/add-linkifier),
-  [`PATCH realm/filters/<int:filter_id>`](/api/update-linkifier):
+  [`PATCH /realm/filters/<int:filter_id>`](/api/update-linkifier):
   The `url_format_string` parameter is replaced by `url_template`.
   [Linkifiers](/help/add-a-custom-linkifier) now only accept
   [RFC 6570][rfc6570] compliant URL templates. The old URL format
@@ -557,7 +557,7 @@ user's profile.
 
 **Feature level 145**
 
-* [`DELETE users/me/subscriptions`](/api/unsubscribe): Normal users can
+* [`DELETE /users/me/subscriptions`](/api/unsubscribe): Normal users can
   now remove bots that they own from streams.
 
 **Feature level 144**
@@ -578,7 +578,7 @@ user's profile.
 
 **Feature level 142**
 
-* [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
+* [`GET /users/me/subscriptions`](/api/get-subscriptions), [`GET
   /streams`](/api/get-streams), [`POST /register`](/api/register-queue),
   [`GET /events`](/api/get-events): Added `can_remove_subscribers_group_id`
   field to Stream and Subscription objects.
@@ -765,7 +765,7 @@ No changes; feature level used for Zulip 5.0 release.
   field. These changes substantially simplify client complexity for
   processing historical message edits.
 
-* [`GET messages/{message_id}/history`](/api/get-message-history):
+* [`GET /messages/{message_id}/history`](/api/get-message-history):
   Added `stream` field to message history `snapshot` indicating
   the updated stream ID of messages moved to a new stream.
 
@@ -914,7 +914,7 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 98**
 
-* [`POST /subscribe`](/api/subscribe): Added `is_web_public` parameter
+* [`POST /users/me/subscriptions`](/api/subscribe): Added `is_web_public` parameter
   for requesting the creation of a web-public stream.
 * [`PATCH /streams/{stream_id}`](/api/update-stream): Added
   `is_web_public` parameter for converting a stream into a web-public stream.
@@ -1054,7 +1054,7 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 83**
 
-* * [`POST /register`](/api/register-queue): The `cross_realm_bots`
+* [`POST /register`](/api/register-queue): The `cross_realm_bots`
   section of the response now uses the `is_system_bot` flag to
   indicate whether the bot is a system bot.
 
@@ -1227,7 +1227,7 @@ No changes; feature level used for Zulip 4.0 release.
   events to support typing notifications in stream messages. These new
   events are only sent to clients with `client_capabilities`
   showing support for `stream_typing_notifications`.
-* [`POST /set-typing-status`](/api/set-typing-status): Added support
+* [`POST /typing`](/api/set-typing-status): Added support
   for sending typing notifications for stream messages.
 
 **Feature level 57**
@@ -1406,7 +1406,7 @@ field with an integer field `invite_to_realm_policy`.
 
 **Feature level 31**
 
-* [`GET users/me/subscriptions`](/api/get-subscriptions): Added a
+* [`GET /users/me/subscriptions`](/api/get-subscriptions): Added a
   `role` field to Subscription objects representing whether the user
   is a stream administrator.
 
@@ -1419,7 +1419,7 @@ user to be a stream administrator at this feature level.
 
 **Feature level 30**
 
-* [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
+* [`GET /users/me/subscriptions`](/api/get-subscriptions), [`GET
   /streams`](/api/get-streams): Added `date_created` to Stream
   objects.
 * [`POST /users`](/api/create-user), `POST /bots`: The ID of the newly
@@ -1501,11 +1501,11 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 17**
 
-* [`GET users/me/subscriptions`](/api/get-subscriptions),
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
   [`GET /streams`](/api/get-streams): Added
   `message_retention_days` to Stream objects.
-* [`POST users/me/subscriptions`](/api/subscribe), [`PATCH
-  streams/{stream_id}`](/api/update-stream): Added `message_retention_days`
+* [`POST /users/me/subscriptions`](/api/subscribe), [`PATCH
+  /streams/{stream_id}`](/api/update-stream): Added `message_retention_days`
   parameter.
 
 **Feature level 16**
@@ -1523,7 +1523,7 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 14**
 
-* [`GET users/me/subscriptions`](/api/get-subscriptions): Removed
+* [`GET /users/me/subscriptions`](/api/get-subscriptions): Removed
   the `is_old_stream` field from Stream objects.  This field was
   always equivalent to `stream_weekly_traffic != null` on the same object.
 
@@ -1540,7 +1540,7 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 12**
 
-* [`GET users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):
+* [`GET /users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):
   New endpoint added for checking if another user is subscribed to a stream.
 
 **Feature level 11**
@@ -1552,21 +1552,21 @@ No changes; feature level used for Zulip 3.0 release.
   as 86400 seconds (1 day).
 * [`POST /register`](/api/register-queue): The response now contains a
   `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
-* [`POST /set-typing-status`](/api/set-typing-status): Removed legacy
+* [`POST /typing`](/api/set-typing-status): Removed legacy
   support for sending email addresses in the `to` parameter, rather
   than user IDs, to encode direct message recipients.
 
 **Feature level 10**
 
-* [`GET users/me`](/api/get-own-user): Added `avatar_version`, `is_guest`,
+* [`GET /users/me`](/api/get-own-user): Added `avatar_version`, `is_guest`,
   `is_active`, `timezone`, and `date_joined` fields to the User objects.
-* [`GET users/me`](/api/get-own-user): Removed `client_id` and `short_name`
+* [`GET /users/me`](/api/get-own-user): Removed `client_id` and `short_name`
   from the response to this endpoint.  These fields had no purpose and
   were inconsistent with other API responses describing users.
 
 **Feature level 9**
 
-* [`POST users/me/subscriptions`](/api/subscribe), [`DELETE
+* [`POST /users/me/subscriptions`](/api/subscribe), [`DELETE
   /users/me/subscriptions`](/api/unsubscribe): Other users to
   subscribe/unsubscribe, declared in the `principals` parameter, can
   now be referenced by user_id, rather than Zulip display email
@@ -1655,7 +1655,7 @@ No changes; feature level used for Zulip 3.0 release.
   Added `prev_stream` as a potential property of the `edit_history` object
   within message objects to indicate when a message was moved to another
   stream.
-* [`GET messages/{message_id}/history`](/api/get-message-history):
+* [`GET /messages/{message_id}/history`](/api/get-message-history):
   `prev_stream` is present in `snapshot` objects within `message_history`
   object when a message was moved to another stream.
 * [`GET /server_settings`](/api/get-server-settings): Added
@@ -1759,7 +1759,7 @@ No changes; feature level used for Zulip 3.0 release.
   encoding topics using the `topic` parameter name.  The previous
   `subject` parameter name was deprecated but is still supported for
   backwards-compatibility.
-* [`POST /set-typing-status`](/api/set-typing-status): Added support for specifying the
+* [`POST /typing`](/api/set-typing-status): Added support for specifying the
   recipients with user IDs, deprecating the original API of specifying
   them using email addresses.
 
