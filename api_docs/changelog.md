@@ -1550,8 +1550,9 @@ No changes; feature level used for Zulip 3.0 release.
   time limit before community topic editing is forbidden.  A `null`
   value means no limit. This was previously hard-coded in the server
   as 86400 seconds (1 day).
-* [`POST /register`](/api/register-queue): The response now contains a
-  `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
+* [`POST /register`](/api/register-queue): The response now contains
+  an `is_owner` boolean field, which is similar to the existing
+  `is_admin` and `is_guest` fields.
 * [`POST /typing`](/api/set-typing-status): Removed legacy
   support for sending email addresses in the `to` parameter, rather
   than user IDs, to encode direct message recipients.
