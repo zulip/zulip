@@ -162,6 +162,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
 
 
 def get_recent_topics(
+    realm_id: int,
     stream_ids: List[int],
     cutoff_date: datetime.datetime,
 ) -> List[DigestTopic]:
@@ -171,7 +172,9 @@ def get_recent_topics(
     #   * number of senders
 
     messages = (
+        # Uses index: zerver_message_realm_recipient_date_sent
         Message.objects.filter(
+            realm_id=realm_id,
             recipient__type=Recipient.STREAM,
             recipient__type_id__in=stream_ids,
             date_sent__gt=cutoff_date,
@@ -307,7 +310,7 @@ def bulk_get_digest_context(
     # Get all the recent topics for all the users.  This does the heavy
     # lifting of making an expensive query to the Message table.  Then
     # for each user, we filter to just the streams they care about.
-    recent_topics = get_recent_topics(sorted(all_stream_ids), cutoff_date)
+    recent_topics = get_recent_topics(realm.id, sorted(all_stream_ids), cutoff_date)
 
     stream_map = get_slim_stream_map(all_stream_ids)
 

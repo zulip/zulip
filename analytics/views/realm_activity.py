@@ -163,6 +163,7 @@ def sent_messages_report(realm: str) -> str:
         "Bots",
     ]
 
+    # Uses index: zerver_message_realm_date_sent
     query = SQL(
         """
         select
@@ -188,6 +189,8 @@ def sent_messages_report(realm: str) -> str:
                 r.string_id = %s
             and
                 date_sent > now() - interval '2 week'
+            and
+                m.realm_id = r.id
             group by
                 date_sent::date
             order by

@@ -232,7 +232,7 @@ def get_recipient_info(
             # has syntax that might be a @topic mention without having confirmed the syntax isn't, say,
             # in a code block.
             topic_participant_user_ids = participants_for_topic(
-                recipient.id, stream_topic.topic_name
+                realm_id, recipient.id, stream_topic.topic_name
             )
         subscription_rows = (
             get_subscriptions_for_send_message(
@@ -1085,6 +1085,8 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         time_window = datetime.timedelta(seconds=0)
 
     messages = Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_subject
+        realm_id=message.realm_id,
         sender=message.sender,
         recipient=message.recipient,
         subject=message.topic_name(),

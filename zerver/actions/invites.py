@@ -134,7 +134,11 @@ def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
         not estimated_sent["messages"]
         # Only after we've done the rough-estimate check, take the
         # time to do the exact check:
-        and not Message.objects.filter(realm=realm, sender__is_bot=False).exists()
+        and not Message.objects.filter(
+            # Uses index: zerver_message_realm_sender_recipient (prefix)
+            realm=realm,
+            sender__is_bot=False,
+        ).exists()
     ):
         warning_flags.append("no-messages-sent")
 

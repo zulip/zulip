@@ -923,7 +923,9 @@ def delete_in_topic(
 ) -> HttpResponse:
     stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
 
-    messages = messages_for_topic(assert_is_not_none(stream.recipient_id), topic_name)
+    messages = messages_for_topic(
+        user_profile.realm_id, assert_is_not_none(stream.recipient_id), topic_name
+    )
     # Note: It would be better to use bulk_access_messages here, which is our core function
     # for obtaining the accessible messages - and it's good to use it wherever we can,
     # so that we have a central place to keep up to date with our security model for

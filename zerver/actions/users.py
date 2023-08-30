@@ -189,7 +189,10 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
             force_date_joined=date_joined,
             create_personal_recipient=False,
         )
-        Message.objects.filter(sender=user_profile).update(sender=temp_replacement_user)
+        # Uses index: zerver_message_realm_sender_recipient (prefix)
+        Message.objects.filter(realm_id=realm.id, sender=user_profile).update(
+            sender=temp_replacement_user
+        )
         Subscription.objects.filter(
             user_profile=user_profile, recipient__type=Recipient.HUDDLE
         ).update(user_profile=temp_replacement_user)
@@ -212,7 +215,10 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
         replacement_user.recipient = personal_recipient
         replacement_user.save(update_fields=["recipient"])
 
-        Message.objects.filter(sender=temp_replacement_user).update(sender=replacement_user)
+        # Uses index: zerver_message_realm_sender_recipient (prefix)
+        Message.objects.filter(realm_id=realm.id, sender=temp_replacement_user).update(
+            sender=replacement_user
+        )
         Subscription.objects.filter(
             user_profile=temp_replacement_user, recipient__type=Recipient.HUDDLE
         ).update(user_profile=replacement_user, is_user_active=replacement_user.is_active)

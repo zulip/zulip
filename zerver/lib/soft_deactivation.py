@@ -210,7 +210,10 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     all_stream_msgs = list(
         Message.objects.filter(
-            recipient_id__in=recipient_ids, id__gt=user_profile.last_active_message_id
+            # Uses index: zerver_message_realm_recipient_id
+            realm_id=user_profile.realm_id,
+            recipient_id__in=recipient_ids,
+            id__gt=user_profile.last_active_message_id,
         )
         .order_by("id")
         .values("id", "recipient__type_id")

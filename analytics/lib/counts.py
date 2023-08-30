@@ -447,7 +447,13 @@ def count_message_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
-        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
+        # We limit both userprofile and message so that we only see
+        # users from this realm, but also get the performance speedup
+        # of limiting messages by realm.
+        realm_clause = SQL(
+            "zerver_userprofile.realm_id = {} AND zerver_message.realm_id = {} AND"
+        ).format(Literal(realm.id), Literal(realm.id))
+    # Uses index: zerver_message_realm_date_sent (or the only-date index)
     return lambda kwargs: SQL(
         """
     INSERT INTO analytics_usercount
@@ -474,7 +480,13 @@ def count_message_type_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
-        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
+        # We limit both userprofile and message so that we only see
+        # users from this realm, but also get the performance speedup
+        # of limiting messages by realm.
+        realm_clause = SQL(
+            "zerver_userprofile.realm_id = {} AND zerver_message.realm_id = {} AND"
+        ).format(Literal(realm.id), Literal(realm.id))
+    # Uses index: zerver_message_realm_date_sent (or the only-date index)
     return lambda kwargs: SQL(
         """
     INSERT INTO analytics_usercount
@@ -523,7 +535,10 @@ def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
-        realm_clause = SQL("zerver_stream.realm_id = {} AND").format(Literal(realm.id))
+        realm_clause = SQL(
+            "zerver_stream.realm_id = {} AND zerver_message.realm_id = {} AND"
+        ).format(Literal(realm.id), Literal(realm.id))
+    # Uses index: zerver_message_realm_date_sent (or the only-date index)
     return lambda kwargs: SQL(
         """
     INSERT INTO analytics_streamcount

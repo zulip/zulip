@@ -139,7 +139,7 @@ def send_bot_mock_message(
     bot: UserProfile, integration: Integration, fixture_path: str, config: BaseScreenshotConfig
 ) -> None:
     # Delete all messages, so new message is the only one it's message group
-    Message.objects.filter(sender=bot).delete()
+    Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
     data, _, _ = get_fixture_info(fixture_path)
 
     assert bot.bot_owner is not None
@@ -166,7 +166,7 @@ def send_bot_payload_message(
     bot: UserProfile, integration: WebhookIntegration, fixture_path: str, config: ScreenshotConfig
 ) -> bool:
     # Delete all messages, so new message is the only one it's message group
-    Message.objects.filter(sender=bot).delete()
+    Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
     data, json_fixture, fixture_name = get_fixture_info(fixture_path)
 
     headers = get_requests_headers(integration.name, fixture_name)
@@ -217,7 +217,7 @@ def send_bot_payload_message(
 
 
 def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
-    message = Message.objects.filter(sender=bot).last()
+    message = Message.objects.filter(realm_id=bot.realm_id, sender=bot).last()
     realm = get_realm("zulip")
     if message is None:
         print(f"No message found for {bot.full_name}")

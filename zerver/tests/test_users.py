@@ -2499,10 +2499,10 @@ class DeleteUserTest(ZulipTestCase):
         self.send_personal_message(hamlet, cordelia)
 
         personal_message_ids_to_hamlet = Message.objects.filter(
-            recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient=hamlet_personal_recipient
         ).values_list("id", flat=True)
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
-        self.assertTrue(Message.objects.filter(sender=hamlet).exists())
+        self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
 
         huddle_message_ids_from_cordelia = [
             self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
@@ -2535,7 +2535,9 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_hamlet).count(), 0)
         self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(), 3)
 
-        self.assertEqual(Message.objects.filter(sender_id=hamlet_user_id).count(), 0)
+        self.assertEqual(
+            Message.objects.filter(realm_id=realm.id, sender_id=hamlet_user_id).count(), 0
+        )
 
         # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
         # in a correct state.
@@ -2564,10 +2566,10 @@ class DeleteUserTest(ZulipTestCase):
         self.send_personal_message(hamlet, cordelia)
 
         personal_message_ids_to_hamlet = Message.objects.filter(
-            recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient=hamlet_personal_recipient
         ).values_list("id", flat=True)
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
-        self.assertTrue(Message.objects.filter(sender=hamlet).exists())
+        self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
 
         huddle_message_ids_from_cordelia = [
             self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
@@ -2584,7 +2586,7 @@ class DeleteUserTest(ZulipTestCase):
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
 
         original_messages_from_hamlet_count = Message.objects.filter(
-            sender_id=hamlet_user_id
+            realm_id=realm.id, sender_id=hamlet_user_id
         ).count()
         self.assertGreater(original_messages_from_hamlet_count, 0)
 
@@ -2614,7 +2616,7 @@ class DeleteUserTest(ZulipTestCase):
         )
 
         self.assertEqual(
-            Message.objects.filter(sender_id=hamlet_user_id).count(),
+            Message.objects.filter(realm_id=realm.id, sender_id=hamlet_user_id).count(),
             original_messages_from_hamlet_count,
         )
 

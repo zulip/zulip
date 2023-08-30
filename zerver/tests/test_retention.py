@@ -697,7 +697,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         )
         for attachment_id in attachment_ids:
             attachment_id_to_message_ids[attachment_id] = list(
-                Message.objects.filter(attachment__id=attachment_id).values_list("id", flat=True),
+                Message.objects.filter(realm_id=realm_id, attachment__id=attachment_id).values_list(
+                    "id", flat=True
+                ),
             )
 
         usermsg_ids = self._get_usermessage_ids(msg_ids)
@@ -736,9 +738,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             self.assertEqual(
                 set(attachment_id_to_message_ids[attachment_id]),
                 set(
-                    Message.objects.filter(attachment__id=attachment_id).values_list(
-                        "id", flat=True
-                    )
+                    Message.objects.filter(
+                        realm_id=realm_id, attachment__id=attachment_id
+                    ).values_list("id", flat=True)
                 ),
             )
 
