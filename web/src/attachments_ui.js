@@ -124,11 +124,11 @@ function render_attachments_ui() {
 }
 
 function format_attachment_data(new_attachments) {
-    for (const attachment of new_attachments) {
-        const time = new Date(attachment.create_time);
-        attachment.create_time_str = timerender.render_now(time).time_str;
-        attachment.size_str = bytes_to_size(attachment.size);
-    }
+    return new_attachments.map((attachment) => ({
+        ...attachment,
+        create_time_str: timerender.render_now(new Date(attachment.create_time)).time_str,
+        size_str: bytes_to_size(attachment.size),
+    }));
 }
 
 export function update_attachments(event) {
@@ -140,8 +140,7 @@ export function update_attachments(event) {
         attachments = attachments.filter((a) => a.id !== event.attachment.id);
     }
     if (event.op === "add" || event.op === "update") {
-        format_attachment_data([event.attachment]);
-        attachments.push(event.attachment);
+        attachments.push(format_attachment_data([event.attachment])[0]);
     }
     upload_space_used = event.upload_space_used;
     // TODO: This is inefficient and we should be able to do some sort
@@ -169,8 +168,7 @@ export function set_up_attachments() {
         url: "/json/attachments",
         success(data) {
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            format_attachment_data(data.attachments);
-            attachments = data.attachments;
+            attachments = format_attachment_data(data.attachments);
             upload_space_used = data.upload_space_used;
             render_attachments_ui();
         },
