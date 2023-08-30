@@ -77,6 +77,10 @@ export function initialize({on_click_scroll_to_selected}) {
         $("#realm-default-notification-sound-audio"),
         realm_user_settings_defaults,
     );
+    update_notification_sound_source(
+        $("#temp-realm-default-notification-sound-audio"),
+        realm_user_settings_defaults,
+    );
 
     register_click_handlers({on_click_scroll_to_selected});
 }

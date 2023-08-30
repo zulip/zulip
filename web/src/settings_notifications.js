@@ -121,18 +121,20 @@ export function set_enable_marketing_emails_visibility() {
 export function set_up(settings_panel) {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    const $notification_sound_elem = $(settings_panel.notification_sound_elem);
+    const $temp_notification_sound_elem = $("#temp-realm-default-notification-sound-audio");
     const for_realm_settings = settings_panel.for_realm_settings;
+    const $notification_sound_dropdown = $container.find(".setting_notification_sound");
 
     $container.find(".play_notification_sound").on("click", () => {
-        if (settings_object.notification_sound !== "none") {
-            ui_util.play_audio($notification_sound_elem[0]);
+        const sound = $notification_sound_dropdown.val().toLowerCase();
+        if (settings_object.notification_sound !== "none" && sound !== "none") {
+            notifications.update_notification_sound_source($temp_notification_sound_elem, { notification_sound: sound });
+            ui_util.play_audio($temp_notification_sound_elem[0]);
         }
     });
 
     update_desktop_icon_count_display(settings_panel);
 
-    const $notification_sound_dropdown = $container.find(".setting_notification_sound");
     $notification_sound_dropdown.val(settings_object.notification_sound);
 
     $container.find(".enable_sounds, .enable_stream_audible_notifications").on("change", () => {
