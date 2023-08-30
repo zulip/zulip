@@ -420,8 +420,11 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     )
     cross_realm_bot_message_ids = list(
         Message.objects.filter(
-            # Filtering by both message.recipient and message.realm is more robust for ensuring
-            # no messages belonging to another realm will be deleted due to some bugs.
+            # Filtering by both message.recipient and message.realm is
+            # more robust for ensuring no messages belonging to
+            # another realm will be deleted due to some bugs.
+            #
+            # Uses index: zerver_message_realm_sender_recipient
             sender__realm=internal_realm,
             recipient_id__in=all_recipient_ids_in_realm,
             realm=realm,

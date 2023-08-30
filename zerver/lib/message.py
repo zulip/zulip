@@ -511,6 +511,7 @@ class MessageDict:
             "sending_client__name",
             "sender__realm_id",
         ]
+        # Uses index: zerver_message_pkey
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
         return MessageDict.sew_submessages_and_reactions_to_msgs(messages)
 
@@ -1476,6 +1477,7 @@ def update_first_visible_message_id(realm: Realm) -> None:
     else:
         try:
             first_visible_message_id = (
+                # Uses index: zerver_message_realm_id
                 Message.objects.filter(realm=realm)
                 .values("id")
                 .order_by("-id")[realm.message_visibility_limit - 1]["id"]

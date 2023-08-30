@@ -1314,6 +1314,8 @@ def export_partial_message_files(
 
     if public_only:
         messages_we_received = Message.objects.filter(
+            # Uses index: zerver_message_realm_sender_recipient
+            realm_id=realm.id,
             sender__in=ids_of_our_possible_senders,
             recipient__in=recipient_ids_for_us,
         )
@@ -1329,6 +1331,8 @@ def export_partial_message_files(
         # anyone in the export and received by any of the users who we
         # have consent to export.
         messages_we_received = Message.objects.filter(
+            # Uses index: zerver_message_realm_sender_recipient
+            realm_id=realm.id,
             sender__in=ids_of_our_possible_senders,
             recipient__in=recipient_ids_for_us,
         )
@@ -1345,6 +1349,8 @@ def export_partial_message_files(
             messages_we_received_in_protected_history_streams = Message.objects.annotate(
                 has_usermessage=has_usermessage_expression
             ).filter(
+                # Uses index: zerver_message_realm_sender_recipient
+                realm_id=realm.id,
                 sender__in=ids_of_our_possible_senders,
                 recipient_id__in=(
                     set(consented_recipient_ids) & set(streams_with_protected_history_recipient_ids)
@@ -1370,6 +1376,8 @@ def export_partial_message_files(
         recipient_ids_for_them = get_ids(recipients_for_them)
 
         messages_we_sent_to_them = Message.objects.filter(
+            # Uses index: zerver_message_realm_sender_recipient
+            realm_id=realm.id,
             sender__in=consented_user_ids,
             recipient__in=recipient_ids_for_them,
         )
@@ -1410,6 +1418,7 @@ def write_message_partials(
     dump_file_id = 1
 
     for message_id_chunk in message_id_chunks:
+        # Uses index: zerver_message_pkey
         actual_query = Message.objects.filter(id__in=message_id_chunk).order_by("id")
         message_chunk = make_raw(actual_query)
 
@@ -2253,13 +2262,21 @@ def export_messages_single_user(
 
         return ", ".join(user_names)
 
-    messages_from_me = Message.objects.filter(sender=user_profile)
+    messages_from_me = Message.objects.filter(
+        # Uses index: zerver_message_realm_sender_recipient (prefix)
+        realm_id=user_profile.realm_id,
+        sender=user_profile,
+    )
 
     my_subscriptions = Subscription.objects.filter(
         user_profile=user_profile, recipient__type__in=[Recipient.PERSONAL, Recipient.HUDDLE]
     )
     my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
-    messages_to_me = Message.objects.filter(recipient_id__in=my_recipient_ids)
+    messages_to_me = Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_id (prefix)
+        realm_id=user_profile.realm_id,
+        recipient_id__in=my_recipient_ids,
+    )
 
     # Find all message ids that pertain to us.
     all_message_ids: Set[int] = set()

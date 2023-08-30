@@ -276,6 +276,7 @@ def do_update_message_flags(
             subscribed_recipient_ids = get_subscribed_stream_recipient_ids_for_user(user_profile)
 
             message_ids_in_unsubscribed_streams = set(
+                # Uses index: zerver_message_pkey
                 Message.objects.select_related("recipient")
                 .filter(id__in=messages, recipient__type=Recipient.STREAM)
                 .exclude(recipient_id__in=subscribed_recipient_ids)
@@ -326,6 +327,7 @@ def do_update_message_flags(
             historical_messages = bulk_access_messages(
                 user_profile,
                 list(
+                    # Uses index: zerver_message_pkey
                     Message.objects.filter(id__in=historical_message_ids).prefetch_related(
                         "recipient"
                     )

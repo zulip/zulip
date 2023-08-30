@@ -1573,9 +1573,24 @@ class ScrubRealmTest(ZulipTestCase):
 
         CustomProfileField.objects.create(realm=lear)
 
-        self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 10)
-        self.assertEqual(Message.objects.filter(sender__in=[cordelia, king]).count(), 10)
-        self.assertEqual(Message.objects.filter(sender=notification_bot).count(), 6)
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id__in=(zulip.id, lear.id), sender__in=[iago, othello]
+            ).count(),
+            10,
+        )
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id__in=(zulip.id, lear.id), sender__in=[cordelia, king]
+            ).count(),
+            10,
+        )
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id__in=(zulip.id, lear.id), sender=notification_bot
+            ).count(),
+            6,
+        )
         self.assertEqual(UserMessage.objects.filter(user_profile__in=[iago, othello]).count(), 25)
         self.assertEqual(UserMessage.objects.filter(user_profile__in=[cordelia, king]).count(), 25)
 
@@ -1584,9 +1599,24 @@ class ScrubRealmTest(ZulipTestCase):
         with self.assertLogs(level="WARNING"):
             do_scrub_realm(zulip, acting_user=None)
 
-        self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 0)
-        self.assertEqual(Message.objects.filter(sender__in=[cordelia, king]).count(), 10)
-        self.assertEqual(Message.objects.filter(sender=notification_bot).count(), 3)
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id__in=(zulip.id, lear.id), sender__in=[iago, othello]
+            ).count(),
+            0,
+        )
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id__in=(zulip.id, lear.id), sender__in=[cordelia, king]
+            ).count(),
+            10,
+        )
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id__in=(zulip.id, lear.id), sender=notification_bot
+            ).count(),
+            3,
+        )
         self.assertEqual(UserMessage.objects.filter(user_profile__in=[iago, othello]).count(), 0)
         self.assertEqual(UserMessage.objects.filter(user_profile__in=[cordelia, king]).count(), 25)
 

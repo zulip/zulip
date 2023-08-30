@@ -643,7 +643,7 @@ class RealmImportExportTest(ExportFile):
             type_id__in=public_stream_ids, type=Recipient.STREAM
         )
         public_stream_message_ids = Message.objects.filter(
-            recipient__in=public_stream_recipients
+            realm_id=realm.id, recipient__in=public_stream_recipients
         ).values_list("id", flat=True)
 
         # Messages from Private stream C are not exported since no member gave consent
@@ -656,7 +656,7 @@ class RealmImportExportTest(ExportFile):
             type_id__in=private_stream_ids, type=Recipient.STREAM
         )
         private_stream_message_ids = Message.objects.filter(
-            recipient__in=private_stream_recipients
+            realm_id=realm.id, recipient__in=private_stream_recipients
         ).values_list("id", flat=True)
 
         pm_recipients = Recipient.objects.filter(
@@ -664,7 +664,7 @@ class RealmImportExportTest(ExportFile):
         )
         pm_query = Q(recipient__in=pm_recipients) | Q(sender__in=consented_user_ids)
         exported_pm_ids = (
-            Message.objects.filter(pm_query)
+            Message.objects.filter(pm_query, realm=realm.id)
             .values_list("id", flat=True)
             .values_list("id", flat=True)
         )
@@ -676,7 +676,7 @@ class RealmImportExportTest(ExportFile):
         )
         pm_query = Q(recipient__in=huddle_recipients) | Q(sender__in=consented_user_ids)
         exported_huddle_ids = (
-            Message.objects.filter(pm_query)
+            Message.objects.filter(pm_query, realm=realm.id)
             .values_list("id", flat=True)
             .values_list("id", flat=True)
         )
@@ -1260,7 +1260,7 @@ class RealmImportExportTest(ExportFile):
         # test messages
         def get_stream_messages(r: Realm) -> QuerySet[Message]:
             recipient = get_recipient_stream(r)
-            messages = Message.objects.filter(recipient=recipient)
+            messages = Message.objects.filter(realm_id=r.id, recipient=recipient)
             return messages
 
         @getter
