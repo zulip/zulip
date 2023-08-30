@@ -996,7 +996,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertFalse(get_user("hermionegranger@email.com", realm).is_mirror_dummy)
         self.assertFalse(get_user("hermionegranger@email.com", realm).is_bot)
 
-        messages = Message.objects.filter(sender__realm=realm)
+        messages = Message.objects.filter(realm_id=realm.id)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
         # After removing user_joined, added_user, discussion_created, etc.

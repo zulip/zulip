@@ -165,7 +165,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
     def _make_expired_zulip_messages(self, message_quantity: int) -> List[int]:
         msg_ids = list(
             Message.objects.order_by("id")
-            .filter(sender__realm=self.zulip_realm)
+            .filter(realm=self.zulip_realm)
             .values_list("id", flat=True)[3 : 3 + message_quantity]
         )
         self._change_messages_date_sent(
@@ -233,7 +233,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Change some Zulip messages to be expired:
         expired_zulip_msg_ids = list(
             Message.objects.order_by("id")
-            .filter(sender__realm=self.zulip_realm)
+            .filter(realm=self.zulip_realm)
             .values_list("id", flat=True)[3:10]
         )
         self._change_messages_date_sent(
@@ -266,7 +266,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # so they shouldn't get archived
         zulip_msg_ids = list(
             Message.objects.order_by("id")
-            .filter(sender__realm=self.zulip_realm)
+            .filter(realm=self.zulip_realm)
             .values_list("id", flat=True)[3:10]
         )
         self._change_messages_date_sent(
