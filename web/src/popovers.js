@@ -511,10 +511,6 @@ export function hide_userlist_sidebar() {
     $(".app-main .column-right").removeClass("expanded");
 }
 
-export function hide_pm_list_sidebar() {
-    $(".app-main .column-left").removeClass("expanded");
-}
-
 export function show_userlist_sidebar() {
     $(".app-main .column-right").addClass("expanded");
     resize.resize_page_components();
@@ -1013,10 +1009,6 @@ export function hide_all(not_hide_tippy_instances) {
     hide_all_except_sidebars({
         not_hide_tippy_instances,
     });
-}
-
-export function set_userlist_placement(placement) {
-    userlist_placement = placement || "right";
 }
 
 export function compute_placement(
