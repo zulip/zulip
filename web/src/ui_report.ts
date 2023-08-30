@@ -1,6 +1,6 @@
 import $ from "jquery";
-import _ from "lodash";
 
+import * as channel from "./channel";
 import * as common from "./common";
 import {$t} from "./i18n";
 
@@ -38,18 +38,8 @@ export function error(
     status_box: JQuery,
     remove_after?: number,
 ): void {
-    if (xhr && xhr.status >= 400 && xhr.status < 500 && xhr.responseJSON?.msg) {
-        // Only display the error response for 4XX, where we've crafted
-        // a nice response.
-        const server_response_html = _.escape(xhr.responseJSON.msg);
-        if (response_html) {
-            response_html += ": " + server_response_html;
-        } else {
-            response_html = server_response_html;
-        }
-    }
-
-    message(response_html, status_box, "alert-error", remove_after);
+    const msg = xhr ? channel.xhr_error_message(response_html, xhr) : response_html;
+    message(msg, status_box, "alert-error", remove_after);
 }
 
 export function client_error(
