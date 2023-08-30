@@ -282,7 +282,7 @@ def send_apple_push_notification(
                 device.token,
             )
         elif isinstance(result, BaseException):
-            logger.exception(
+            logger.error(
                 "APNs: Error sending for user %s to device %s",
                 user_identity,
                 device.token,
