@@ -1,6 +1,6 @@
 
 # Drop everything else
--A INPUT   -j LOGDROP
--A FORWARD -j LOGDROP
+-A INPUT   -j DROP
+-A FORWARD -j DROP
 
 COMMIT
