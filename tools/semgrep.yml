@@ -17,6 +17,23 @@ rules:
       include:
         - zerver/views/
 
+  - id: limit-message-filter
+    patterns:
+      - pattern: Message.objects.filter(...)
+      - pattern-not: Message.objects.filter(..., realm=..., ...)
+      - pattern-not: Message.objects.filter(..., realm_id=..., ...)
+      - pattern-not: Message.objects.filter(..., realm_id__in=..., ...)
+      - pattern-not: Message.objects.filter(..., id=..., ...)
+      - pattern-not: Message.objects.filter(..., id__in=..., ...)
+      - pattern-not: Message.objects.filter(..., id__lt=..., ...)
+      - pattern-not: Message.objects.filter(..., id__gt=..., ...)
+    message: "Set either a realm limit or an id limit on Message queries"
+    languages: [python]
+    severity: ERROR
+    paths:
+      exclude:
+        - "**/migrations/"
+
   - id: dont-import-models-in-migrations
     patterns:
       - pattern-not: from zerver.lib.redis_utils import get_redis_client

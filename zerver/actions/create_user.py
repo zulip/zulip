@@ -181,7 +181,12 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     # Start by finding recent messages matching those recipients.
     cutoff_date = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
     recent_message_ids = set(
-        Message.objects.filter(recipient_id__in=recipient_ids, date_sent__gt=cutoff_date)
+        Message.objects.filter(
+            # Uses index: zerver_message_realm_recipient_id
+            realm_id=user_profile.realm_id,
+            recipient_id__in=recipient_ids,
+            date_sent__gt=cutoff_date,
+        )
         .order_by("-id")
         .values_list("id", flat=True)[0:MAX_NUM_ONBOARDING_MESSAGES]
     )

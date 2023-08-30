@@ -39,6 +39,7 @@ if settings.BILLING_ENABLED:
 
 
 def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
+    # Uses index: zerver_message_date_sent_3b5b05d8
     query = SQL(
         """
         select

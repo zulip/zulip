@@ -611,7 +611,7 @@ def do_update_message(
 
         assert target_stream.recipient_id is not None
         target_topic_has_messages = messages_for_topic(
-            target_stream.recipient_id, target_topic
+            realm.id, target_stream.recipient_id, target_topic
         ).exists()
 
     if propagate_mode in ["change_later", "change_all"]:
@@ -804,6 +804,7 @@ def do_update_message(
             # unless the topic has thousands of messages of history.
             assert stream_being_edited.recipient_id is not None
             unmoved_messages = messages_for_topic(
+                realm.id,
                 stream_being_edited.recipient_id,
                 orig_topic_name,
             )
@@ -1041,7 +1042,7 @@ def do_update_message(
             # it reuses existing logic, which is good for keeping it
             # correct as we maintain the codebase.
             preexisting_topic_messages = messages_for_topic(
-                stream_for_new_topic.recipient_id, new_topic
+                realm.id, stream_for_new_topic.recipient_id, new_topic
             ).exclude(id__in=[*changed_message_ids, resolved_topic_message_id])
 
             visible_preexisting_messages = bulk_access_messages(
@@ -1136,6 +1137,7 @@ def check_time_limit_for_change_all_propagate_mode(
         ).values_list("message_id", flat=True)
         messages_allowed_to_move: List[int] = list(
             Message.objects.filter(
+                # Uses index: zerver_message_pkey
                 id__in=accessible_messages_in_topic,
                 date_sent__gt=timezone_now()
                 - datetime.timedelta(seconds=message_move_deadline_seconds),
@@ -1146,7 +1148,7 @@ def check_time_limit_for_change_all_propagate_mode(
         total_messages_requested_to_move = len(accessible_messages_in_topic)
     else:
         all_messages_in_topic = (
-            messages_for_topic(message.recipient_id, message.topic_name())
+            messages_for_topic(message.realm_id, message.recipient_id, message.topic_name())
             .order_by("id")
             .values_list("id", "date_sent")
         )

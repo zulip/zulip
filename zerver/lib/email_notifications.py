@@ -629,6 +629,7 @@ def handle_missedmessage_emails(
     # messages that were permanently deleted, since those would now be
     # in the ArchivedMessage table, not the Message table.
     messages = Message.objects.filter(
+        # Uses index: zerver_message_pkey
         usermessage__user_profile_id=user_profile,
         id__in=message_ids,
         usermessage__flags=~UserMessage.flags.read,

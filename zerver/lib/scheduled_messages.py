@@ -24,6 +24,7 @@ def get_undelivered_scheduled_messages(
     user_profile: UserProfile,
 ) -> List[Union[APIScheduledDirectMessageDict, APIScheduledStreamMessageDict]]:
     scheduled_messages = ScheduledMessage.objects.filter(
+        realm_id=user_profile.realm_id,
         sender=user_profile,
         # Notably, we don't require failed=False, since we will want
         # to display those to users.

@@ -2550,7 +2550,7 @@ class StripeTest(StripeTestCase):
         )
         sender = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
         recipient_id = self.example_user("desdemona").recipient_id
-        message = Message.objects.filter(sender=sender.id).first()
+        message = Message.objects.filter(realm_id=realm.id, sender=sender.id).first()
         assert message is not None
         self.assertEqual(message.content, expected_message)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)

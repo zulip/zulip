@@ -228,7 +228,13 @@ def build_page_params_for_home_page_load(
         # In narrow_stream context, initial pointer is just latest message
         recipient = narrow_stream.recipient
         page_params["max_message_id"] = -1
-        max_message = Message.objects.filter(recipient=recipient).order_by("-id").only("id").first()
+        max_message = (
+            # Uses index: zerver_message_realm_recipient_id
+            Message.objects.filter(realm_id=realm.id, recipient=recipient)
+            .order_by("-id")
+            .only("id")
+            .first()
+        )
         if max_message:
             page_params["max_message_id"] = max_message.id
         page_params["narrow_stream"] = narrow_stream.name

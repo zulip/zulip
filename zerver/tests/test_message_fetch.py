@@ -2289,7 +2289,7 @@ class GetOldMessagesTest(ZulipTestCase):
         stream_names = ["Scotland", "Verona", "Venice"]
 
         def send_messages_to_all_streams() -> None:
-            Message.objects.filter(recipient__type=Recipient.STREAM).delete()
+            Message.objects.filter(realm_id=realm.id, recipient__type=Recipient.STREAM).delete()
             for stream_name in stream_names:
                 self.subscribe(hamlet, stream_name)
                 for i in range(num_messages_per_stream):

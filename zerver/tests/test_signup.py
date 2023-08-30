@@ -1306,13 +1306,17 @@ class RealmCreationTest(ZulipTestCase):
         ]:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
-            messages = Message.objects.filter(recipient=recipient).order_by("date_sent")
+            messages = Message.objects.filter(realm_id=realm.id, recipient=recipient).order_by(
+                "date_sent"
+            )
             self.assert_length(messages, message_count)
             self.assertIn(text, messages[0].content)
 
         # Check admin organization's signups stream messages
         recipient = signups_stream.recipient
-        messages = Message.objects.filter(recipient=recipient).order_by("id")
+        messages = Message.objects.filter(realm_id=internal_realm.id, recipient=recipient).order_by(
+            "id"
+        )
         self.assert_length(messages, 1)
         # Check organization name, subdomain and organization type are in message content
         self.assertIn("Zulip Test", messages[0].content)
@@ -1610,7 +1614,9 @@ class RealmCreationTest(ZulipTestCase):
 
         # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(
-            sender__email="welcome-bot@zulip.com", recipient__type=Recipient.PERSONAL
+            realm_id=get_realm(string_id).id,
+            sender__email="welcome-bot@zulip.com",
+            recipient__type=Recipient.PERSONAL,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
@@ -1661,7 +1667,9 @@ class RealmCreationTest(ZulipTestCase):
 
         # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(
-            sender__email="welcome-bot@zulip.com", recipient__type=Recipient.PERSONAL
+            realm_id=get_realm(string_id).id,
+            sender__email="welcome-bot@zulip.com",
+            recipient__type=Recipient.PERSONAL,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 

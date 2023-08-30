@@ -131,7 +131,7 @@ class GitterImporter(ZulipTestCase):
 
         # test rendered_messages
         realm_users = UserProfile.objects.filter(realm=realm)
-        messages = Message.objects.filter(sender__in=realm_users)
+        messages = Message.objects.filter(realm_id=realm.id, sender__in=realm_users)
         for message in messages:
             self.assertIsNotNone(message.rendered_content, None)
 

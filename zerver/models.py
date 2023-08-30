@@ -3189,6 +3189,8 @@ class Message(AbstractMessage):
 
 def get_context_for_message(message: Message) -> QuerySet[Message]:
     return Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_upper_subject
+        realm_id=message.realm_id,
         recipient_id=message.recipient_id,
         subject__iexact=message.subject,
         id__lt=message.id,
@@ -3676,6 +3678,8 @@ def validate_attachment_request_for_spectator_access(
         Attachment.objects.filter(id=attachment.id, is_web_public__isnull=True).update(
             is_web_public=Exists(
                 Message.objects.filter(
+                    # Uses index: zerver_attachment_messages_attachment_id_message_id_key
+                    realm_id=realm.id,
                     attachment=OuterRef("id"),
                     recipient__stream__invite_only=False,
                     recipient__stream__is_web_public=True,
@@ -3723,6 +3727,8 @@ def validate_attachment_request(
         Attachment.objects.filter(id=attachment.id, is_realm_public__isnull=True).update(
             is_realm_public=Exists(
                 Message.objects.filter(
+                    # Uses index: zerver_attachment_messages_attachment_id_message_id_key
+                    realm_id=user_profile.realm_id,
                     attachment=OuterRef("id"),
                     recipient__stream__invite_only=False,
                 ),

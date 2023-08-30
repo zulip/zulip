@@ -193,7 +193,11 @@ def do_reactivate_stream(
 
     # Update caches
     cache_set(display_recipient_cache_key(stream.recipient_id), new_name)
-    messages = Message.objects.filter(recipient_id=stream.recipient_id).only("id")
+    messages = Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_id
+        realm_id=realm.id,
+        recipient_id=stream.recipient_id,
+    ).only("id")
     cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
 
     # Unset the is_web_public cache on attachments, since the stream is now private.
@@ -284,11 +288,17 @@ def merge_streams(
     # this before removing the subscription objects, to avoid messages
     # "disappearing" if an error interrupts this function.
     message_ids_to_clear = list(
-        Message.objects.filter(recipient=recipient_to_destroy).values_list("id", flat=True)
+        Message.objects.filter(
+            # Uses index: zerver_message_realm_recipient_id
+            realm_id=realm.id,
+            recipient=recipient_to_destroy,
+        ).values_list("id", flat=True)
     )
-    count = Message.objects.filter(recipient=recipient_to_destroy).update(
-        recipient=recipient_to_keep
-    )
+    count = Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_id (prefix)
+        realm_id=realm.id,
+        recipient=recipient_to_destroy,
+    ).update(recipient=recipient_to_keep)
     bulk_delete_cache_keys(message_ids_to_clear)
 
     # Remove subscriptions to the old stream.
@@ -1185,7 +1195,11 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
 
     assert stream.recipient_id is not None
     recipient_id: int = stream.recipient_id
-    messages = Message.objects.filter(recipient_id=recipient_id).only("id")
+    messages = Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_id
+        realm_id=stream.realm_id,
+        recipient_id=recipient_id,
+    ).only("id")
 
     cache_set(display_recipient_cache_key(recipient_id), stream.name)
 
