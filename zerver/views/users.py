@@ -67,6 +67,7 @@ from zerver.lib.users import (
     check_valid_interface_type,
     get_api_key,
     get_raw_user_data,
+    max_message_id_for_user,
     validate_user_custom_profile_data,
 )
 from zerver.lib.utils import generate_api_key
@@ -88,7 +89,6 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
-    Message,
     Service,
     Stream,
     UserProfile,
@@ -743,11 +743,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     )
     result: Dict[str, Any] = raw_user_data[user_profile.id]
 
-    result["max_message_id"] = -1
-
-    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by("-id")[:1]
-    if messages:
-        result["max_message_id"] = messages[0].id
+    result["max_message_id"] = max_message_id_for_user(user_profile)
 
     return json_success(request, data=result)
 
