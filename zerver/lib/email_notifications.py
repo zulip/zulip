@@ -195,7 +195,7 @@ def add_quote_prefix_in_text(content: str) -> str:
 def build_message_list(
     user: UserProfile,
     messages: List[Message],
-    stream_id_map: Dict[int, Stream],  # only needs id, name
+    stream_id_map: Optional[Dict[int, Stream]] = None,  # only needs id, name
 ) -> List[Dict[str, Any]]:
     """
     Builds the message list object for the message notification email template.
@@ -280,8 +280,9 @@ def build_message_list(
             assert message.recipient.type == Recipient.STREAM
             grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
             stream_id = message.recipient.type_id
-            stream = stream_id_map.get(stream_id, None)
-            if stream is None:
+            if stream_id_map is not None and stream_id in stream_id_map:
+                stream = stream_id_map[stream_id]
+            else:
                 # Some of our callers don't populate stream_map, so
                 # we just populate the stream from the database.
                 stream = Stream.objects.only("id", "name").get(id=stream_id)
@@ -558,7 +559,6 @@ def do_send_missedmessage_events_reply_in_zulip(
             messages=build_message_list(
                 user=user_profile,
                 messages=[m["message"] for m in missed_messages],
-                stream_map={},
             ),
             sender_str=", ".join(sender.full_name for sender in senders),
             realm_str=user_profile.realm.name,
