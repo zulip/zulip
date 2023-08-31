@@ -20,6 +20,11 @@ export function add_messages(messages, msg_list, opts) {
     if (!messages) {
         return undefined;
     }
+    // Don't proceed with rendering logic on an undefined
+    // table name (i.e., the recent topics list)
+    if (msg_list.table_name === undefined) {
+        return undefined;
+    }
 
     loading.destroy_indicator($("#page_loading_indicator"));
 
