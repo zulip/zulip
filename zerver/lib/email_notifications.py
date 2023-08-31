@@ -195,7 +195,7 @@ def add_quote_prefix_in_text(content: str) -> str:
 def build_message_list(
     user: UserProfile,
     messages: List[Message],
-    stream_map: Dict[int, Stream],  # only needs id, name
+    stream_id_map: Dict[int, Stream],  # only needs id, name
 ) -> List[Dict[str, Any]]:
     """
     Builds the message list object for the message notification email template.
@@ -280,7 +280,7 @@ def build_message_list(
             assert message.recipient.type == Recipient.STREAM
             grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
             stream_id = message.recipient.type_id
-            stream = stream_map.get(stream_id, None)
+            stream = stream_id_map.get(stream_id, None)
             if stream is None:
                 # Some of our callers don't populate stream_map, so
                 # we just populate the stream from the database.
