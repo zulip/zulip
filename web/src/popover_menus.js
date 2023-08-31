@@ -223,11 +223,15 @@ function get_props_for_popover_centering(popover_props) {
         },
         onMount(instance) {
             $("body").append($("<div>").attr("id", "popover-overlay-background"));
-            popover_props.onMount(instance);
+            if (popover_props.onMount) {
+                popover_props.onMount(instance);
+            }
         },
         onHidden(instance) {
             $("#popover-overlay-background").remove();
-            popover_props.onHidden(instance);
+            if (popover_props.onHidden) {
+                popover_props.onHidden(instance);
+            }
         },
     };
 }
