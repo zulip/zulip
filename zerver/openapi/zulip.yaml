@@ -1165,18 +1165,19 @@ paths:
 
                                 This event is also sent when a user gains access to a stream they
                                 previously [could not access](/help/stream-permissions), such as
-                                when a private stream is made public, their role changes or when
-                                a [guest user](/help/roles-and-permissions) is subscribed to a
-                                public (or private) stream.
+                                when their [role](/help/roles-and-permissions) changes, a
+                                private stream is made public, or a guest user is subscribed
+                                to a public (or private) stream.
 
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the stream; just that it exists.
 
                                 **Changes**: Prior to Zulip 8.0 (feature level 205), this event was
-                                not sent when a user gained access to a stream due to role change.
+                                not sent when a user gained access to a stream due to their role
+                                changing.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 192), this event was
-                                not sent when guest users gained access to a public stream by being
+                                Prior to Zulip 8.0 (feature level 192), this event was not sent
+                                when guest users gained access to a public stream by being
                                 subscribed.
                               properties:
                                 id:
@@ -1228,11 +1229,12 @@ paths:
                                 Event sent to all users who can see a stream when it is deactivated.
 
                                 This event is also sent when a user loses access to a stream they
-                                previously [could access](/help/stream-permissions) when their roles
-                                changes.
+                                previously [could access](/help/stream-permissions) because their
+                                [role](/help/roles-and-permissions) has changed.
 
                                 **Changes**: Prior to Zulip 8.0 (feature level 205), this event was
-                                not sent when a user lost access to a stream due to role change.
+                                not sent when a user lost access to a stream due to their role
+                                changing.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
