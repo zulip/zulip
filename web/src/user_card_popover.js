@@ -75,7 +75,7 @@ function clipboard_enable(arg) {
 
 // user_info
 
-export function show_user_info_popover(element, user) {
+export function toggle_user_info_popover(element, user) {
     const $last_popover_elem = $current_user_info_popover_elem;
     hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -340,7 +340,7 @@ function load_medium_avatar(user, $elt) {
 
 // user_info_manage_menu
 
-function show_user_info_popover_manage_menu(element, user) {
+function toggle_user_info_popover_manage_menu(element, user) {
     const $last_popover_elem = $current_user_info_popover_manage_menu;
     hide_user_info_popover_manage_menu();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -410,7 +410,7 @@ export function get_user_info_popover_manage_menu_items() {
 // element is the target element to pop off of
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
-function show_user_info_popover_for_message(element, user, message) {
+function toggle_user_info_popover_for_message(element, user, message) {
     const $last_popover_elem = $current_message_info_popover_elem;
     hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -447,7 +447,7 @@ function show_user_info_popover_for_message(element, user, message) {
 }
 
 // triggered from keyboard shortcut
-export function show_sender_info() {
+export function toggle_sender_info() {
     const $message = $(".selected_message");
     let $sender = $message.find(".message-avatar");
     if ($sender.length === 0) {
@@ -458,7 +458,7 @@ export function show_sender_info() {
 
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
-    show_user_info_popover_for_message($sender[0], user, message);
+    toggle_user_info_popover_for_message($sender[0], user, message);
     if ($current_message_info_popover_elem && !page_params.is_spectator) {
         focus_user_info_popover_item();
     }
@@ -519,7 +519,7 @@ export function hide_user_sidebar_popover() {
         // the presence list may be redrawn. Due to funkiness with jQuery's .data()
         // this would confuse $.popover("destroy"), which looks at the .data() attached
         // to a certain element. We thus save off the .data("popover") in the
-        // show_user_sidebar_popover and inject it here before calling destroy.
+        // toggle_user_sidebar_popover and inject it here before calling destroy.
         $("#user_presences").data("popover", current_user_sidebar_popover);
         $("#user_presences").popover("destroy");
         current_user_sidebar_user_id = undefined;
@@ -547,7 +547,7 @@ export function register_click_handlers() {
         e.stopPropagation();
         const message = message_lists.current.get(rows.id($row));
         const user = people.get_by_user_id(message.sender_id);
-        show_user_info_popover_for_message(this, user, message);
+        toggle_user_info_popover_for_message(this, user, message);
     });
 
     $("#main_div").on("click", ".user-mention", function (e) {
@@ -568,7 +568,7 @@ export function register_click_handlers() {
         } else {
             user = people.get_by_email(email);
         }
-        show_user_info_popover_for_message(this, user, message);
+        toggle_user_info_popover_for_message(this, user, message);
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
@@ -667,7 +667,7 @@ export function register_click_handlers() {
     $("body").on("click", ".view_user_profile", (e) => {
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
-        show_user_info_popover(e.target, user);
+        toggle_user_info_popover(e.target, user);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -791,7 +791,7 @@ export function register_click_handlers() {
         e.stopPropagation();
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
-        show_user_info_popover_manage_menu(e.target, user);
+        toggle_user_info_popover_manage_menu(e.target, user);
     });
 }
 
