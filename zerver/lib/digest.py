@@ -248,13 +248,47 @@ def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
 
-def get_user_stream_map(user_ids: List[int]) -> Dict[int, Set[int]]:
-    rows = Subscription.objects.filter(
-        user_profile_id__in=user_ids,
-        recipient__type=Recipient.STREAM,
-        active=True,
-        is_muted=False,
-    ).values("user_profile_id", "recipient__type_id")
+def get_user_stream_map(user_ids: List[int], cutoff_date: datetime.datetime) -> Dict[int, Set[int]]:
+    """Skipping streams where the user's subscription status has changed
+    when constructing digests is critical to ensure correctness for
+    streams without shared history, guest users, and long-term idle
+    users, because it means that every user has the same view of the
+    history of a given stream whose message history is being included
+    (and thus we can share a lot of work).
+
+    The downside is that newly created streams are never included in
+    the first digest email after their creation.  Should we wish to
+    change that, we will need to be very careful to avoid creating
+    bugs for any of those classes of users.
+    """
+    events = [
+        RealmAuditLog.SUBSCRIPTION_CREATED,
+        RealmAuditLog.SUBSCRIPTION_ACTIVATED,
+        RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+    ]
+    # This uses the zerver_realmauditlog_user_subscriptions_idx
+    # partial index on RealmAuditLog which is specifically for those
+    # three event types.
+    rows = (
+        Subscription.objects.filter(
+            user_profile_id__in=user_ids,
+            recipient__type=Recipient.STREAM,
+            active=True,
+            is_muted=False,
+        )
+        .alias(
+            was_modified=Exists(
+                RealmAuditLog.objects.filter(
+                    modified_stream_id=OuterRef("recipient__type_id"),
+                    modified_user_id=OuterRef("user_profile_id"),
+                    event_time__gt=cutoff_date,
+                    event_type__in=events,
+                )
+            )
+        )
+        .filter(was_modified=False)
+        .values("user_profile_id", "recipient__type_id")
+    )
 
     # maps user_id -> {stream_id, stream_id, ...}
     dct: Dict[int, Set[int]] = defaultdict(set)
@@ -288,16 +322,12 @@ def bulk_get_digest_context(
     result: Dict[int, Dict[str, Any]] = {}
 
     user_ids = [user.id for user in users]
-
-    user_stream_map = get_user_stream_map(user_ids)
-
-    recently_modified_streams = get_modified_streams(user_ids, cutoff_date)
+    user_stream_map = get_user_stream_map(user_ids, cutoff_date)
 
     all_stream_ids = set()
 
     for user in users:
         stream_ids = user_stream_map[user.id]
-        stream_ids -= recently_modified_streams.get(user.id, set())
         all_stream_ids |= stream_ids
 
     # Get all the recent topics for all the users.  This does the heavy
@@ -398,45 +428,3 @@ def bulk_write_realm_audit_logs(users: List[UserProfile]) -> None:
     ]
 
     RealmAuditLog.objects.bulk_create(log_rows)
-
-
-def get_modified_streams(
-    user_ids: List[int], cutoff_date: datetime.datetime
-) -> Dict[int, Set[int]]:
-    """Skipping streams where the user's subscription status has changed
-    when constructing digests is critical to ensure correctness for
-    streams without shared history, guest users, and long-term idle
-    users, because it means that every user has the same view of the
-    history of a given stream whose message history is being included
-    (and thus we can share a lot of work).
-
-    The downside is that newly created streams are never included in
-    the first digest email after their creation.  Should we wish to
-    change that, we will need to be very careful to avoid creating
-    bugs for any of those classes of users.
-    """
-    events = [
-        RealmAuditLog.SUBSCRIPTION_CREATED,
-        RealmAuditLog.SUBSCRIPTION_ACTIVATED,
-        RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
-    ]
-
-    # Get rows where the users' subscriptions have changed.
-    rows = (
-        RealmAuditLog.objects.filter(
-            modified_user_id__in=user_ids,
-            event_time__gt=cutoff_date,
-            event_type__in=events,
-        )
-        .values("modified_user_id", "modified_stream_id")
-        .distinct()
-    )
-
-    result: Dict[int, Set[int]] = defaultdict(set)
-
-    for row in rows:
-        user_id = row["modified_user_id"]
-        stream_id = row["modified_stream_id"]
-        result[user_id].add(stream_id)
-
-    return result
