@@ -64,12 +64,12 @@ class DigestTopic:
     def diversity(self) -> int:
         return len(self.human_senders)
 
-    def teaser_data(self, user: UserProfile, stream_map: Dict[int, Stream]) -> Dict[str, Any]:
+    def teaser_data(self, user: UserProfile, stream_id_map: Dict[int, Stream]) -> Dict[str, Any]:
         teaser_count = self.num_human_messages - len(self.sample_messages)
         first_few_messages = build_message_list(
             user=user,
             messages=self.sample_messages,
-            stream_map=stream_map,
+            stream_id_map=stream_id_map,
         )
         return {
             "participants": sorted(self.human_senders),
@@ -298,8 +298,9 @@ def get_user_stream_map(user_ids: List[int], cutoff_date: datetime.datetime) -> 
     return dct
 
 
-def get_slim_stream_map(stream_ids: Set[int]) -> Dict[int, Stream]:
-    # This can be passed to build_message_list.
+def get_slim_stream_id_map(stream_ids: Set[int]) -> Dict[int, Stream]:
+    # "slim" because it only fetches the names of the stream objects,
+    # suitable for passing into build_message_list.
     streams = Stream.objects.filter(
         id__in=stream_ids,
     ).only("id", "name")
@@ -335,7 +336,7 @@ def bulk_get_digest_context(
     # for each user, we filter to just the streams they care about.
     recent_topics = get_recent_topics(realm.id, sorted(all_stream_ids), cutoff_date)
 
-    stream_map = get_slim_stream_map(all_stream_ids)
+    stream_id_map = get_slim_stream_id_map(all_stream_ids)
 
     recently_created_streams = get_recently_created_streams(realm, cutoff_date)
 
@@ -352,7 +353,7 @@ def bulk_get_digest_context(
 
         # Get context data for hot conversations.
         context["hot_conversations"] = [
-            hot_topic.teaser_data(user, stream_map) for hot_topic in hot_topics
+            hot_topic.teaser_data(user, stream_id_map) for hot_topic in hot_topics
         ]
 
         # Gather new streams.
