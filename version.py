@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 207
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (247, 8)
+PROVISION_VERSION = (247, 9)
