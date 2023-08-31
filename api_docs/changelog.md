@@ -34,10 +34,10 @@ format used by the Zulip server that they are interacting with.
 **Feature level 205**
 
 * [`POST /register`](/api/register-queue): `streams` field in the response
-  now included web-public streams as well.
+  now includes [web-public streams](/help/public-access-option) as well.
 * [`GET /events`](/api/get-events): Events for stream creation and deletion
-  are now sent to the user if they gain or lose access to some streams due
-  to change in their role.
+  are now sent to clients when a user gains or loses access to any streams
+  due to a change in their [role](/help/roles-and-permissions).
 
 **Feature level 204**
 
