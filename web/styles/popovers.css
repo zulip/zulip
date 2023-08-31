@@ -14,6 +14,12 @@
     }
 
     /* TODO: Clean this logic up after drop Bootstrap styling */
+    & hr {
+        /* Override bootstrap defaults */
+        margin: 5px 0;
+    }
+
+    /* TODO: Clean this logic up after drop Bootstrap styling */
     & ul.nav {
         /* Override default padding of tippyjs */
         margin: 0 -9px;
@@ -21,11 +27,6 @@
         /* Override bootstrap defaults */
         .nav-list > li > a {
             padding: 3px 15px;
-        }
-
-        /* Override bootstrap defaults */
-        & hr {
-            margin: 5px 0;
         }
     }
 }
