@@ -175,6 +175,11 @@ def get_recent_topics(
             "sender",  # we need the sender's full name
             "sending_client",  # for Message.sent_by_human
         )
+        .defer(
+            # This construction, to only fetch the sender's full_name,
+            # is because `.only()` doesn't work with select_related tables.
+            *{f"sender__{f.name}" for f in UserProfile._meta.fields if f.name not in {"full_name"}}
+        )
     )
 
     digest_topic_map: Dict[TopicKey, DigestTopic] = {}
