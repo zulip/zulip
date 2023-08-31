@@ -169,7 +169,7 @@ const keypress_mappings = {
     114: {name: "reply_message", message_view_only: true}, // 'r'
     115: {name: "toggle_conversation_view", message_view_only: true}, // 's'
     116: {name: "open_recent_view", message_view_only: true}, // 't'
-    117: {name: "show_sender_info", message_view_only: true}, // 'u'
+    117: {name: "toggle_sender_info", message_view_only: true}, // 'u'
     118: {name: "show_lightbox", message_view_only: true}, // 'v'
     119: {name: "query_users", message_view_only: true}, // 'w'
     120: {name: "compose_private_message", message_view_only: true}, // 'x'
@@ -990,7 +990,7 @@ export function process_hotkey(e, hotkey) {
     if (
         // Allow UI only features for spectators which they can perform.
         page_params.is_spectator &&
-        !["toggle_conversation_view", "show_lightbox", "show_sender_info"].includes(event_name)
+        !["toggle_conversation_view", "show_lightbox", "toggle_sender_info"].includes(event_name)
     ) {
         spectators.login_to_access();
         return true;
@@ -1027,8 +1027,8 @@ export function process_hotkey(e, hotkey) {
         case "show_lightbox":
             lightbox.show_from_selected_message();
             return true;
-        case "show_sender_info":
-            user_card_popover.show_sender_info();
+        case "toggle_sender_info":
+            user_card_popover.toggle_sender_info();
             return true;
         // ':': open reactions to message
         case "toggle_reactions_popover": {

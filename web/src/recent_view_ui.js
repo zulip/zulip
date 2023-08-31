@@ -1283,7 +1283,7 @@ export function initialize() {
         const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
         e.stopPropagation();
         const user = people.get_by_user_id(participant_user_id);
-        user_card_popover.show_user_info_popover(this, user);
+        user_card_popover.toggle_user_info_popover(this, user);
     });
 
     $("body").on(
