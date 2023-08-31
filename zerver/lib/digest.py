@@ -1,4 +1,5 @@
 import datetime
+import functools
 import heapq
 import logging
 from collections import defaultdict
@@ -149,9 +150,12 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
         )
 
 
+# We cache both by stream-id and cutoff, which ensures the per-stream
+# cache also does not contain data from old digests
+@functools.lru_cache(maxsize=500)
 def get_recent_topics(
     realm_id: int,
-    stream_ids: List[int],
+    stream_id: int,
     cutoff_date: datetime.datetime,
 ) -> List[DigestTopic]:
     # Gather information about topic conversations, then
@@ -164,14 +168,14 @@ def get_recent_topics(
         Message.objects.filter(
             realm_id=realm_id,
             recipient__type=Recipient.STREAM,
-            recipient__type_id__in=stream_ids,
+            recipient__type_id=stream_id,
             date_sent__gt=cutoff_date,
         )
         .order_by(
             "id",  # we will sample the first few messages
         )
         .select_related(
-            "recipient",  # we need stream_id
+            "recipient",  # build_message_list looks up recipient.type
             "sender",  # we need the sender's full name
             "sending_client",  # for Message.sent_by_human
         )
@@ -184,7 +188,7 @@ def get_recent_topics(
 
     digest_topic_map: Dict[TopicKey, DigestTopic] = {}
     for message in messages:
-        topic_key = (message.recipient.type_id, message.topic_name())
+        topic_key = (stream_id, message.topic_name())
 
         if topic_key not in digest_topic_map:
             digest_topic_map[topic_key] = DigestTopic(topic_key)
@@ -298,13 +302,10 @@ def get_user_stream_map(user_ids: List[int], cutoff_date: datetime.datetime) -> 
     return dct
 
 
-def get_slim_stream_id_map(stream_ids: Set[int]) -> Dict[int, Stream]:
+def get_slim_stream_id_map(realm: Realm) -> Dict[int, Stream]:
     # "slim" because it only fetches the names of the stream objects,
     # suitable for passing into build_message_list.
-    streams = Stream.objects.filter(
-        id__in=stream_ids,
-    ).only("id", "name")
-
+    streams = get_active_streams(realm).only("id", "name")
     return {stream.id: stream for stream in streams}
 
 
@@ -320,28 +321,19 @@ def bulk_get_digest_context(
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
 
-    result: Dict[int, Dict[str, Any]] = {}
+    stream_id_map = get_slim_stream_id_map(realm)
+    recently_created_streams = get_recently_created_streams(realm, cutoff_date)
 
     user_ids = [user.id for user in users]
     user_stream_map = get_user_stream_map(user_ids, cutoff_date)
 
-    all_stream_ids = set()
-
+    result: Dict[int, Dict[str, Any]] = {}
     for user in users:
         stream_ids = user_stream_map[user.id]
-        all_stream_ids |= stream_ids
 
-    # Get all the recent topics for all the users.  This does the heavy
-    # lifting of making an expensive query to the Message table.  Then
-    # for each user, we filter to just the streams they care about.
-    recent_topics = get_recent_topics(realm.id, sorted(all_stream_ids), cutoff_date)
-
-    stream_id_map = get_slim_stream_id_map(all_stream_ids)
-
-    recently_created_streams = get_recently_created_streams(realm, cutoff_date)
-
-    for user in users:
-        stream_ids = user_stream_map[user.id]
+        recent_topics = []
+        for stream_id in stream_ids:
+            recent_topics += get_recent_topics(realm.id, stream_id, cutoff_date)
 
         hot_topics = get_hot_topics(recent_topics, stream_ids)
 
