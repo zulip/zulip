@@ -83,13 +83,6 @@ class DigestTopic:
 #    diversely comment upon topics.
 
 
-def should_process_digest(realm_str: str) -> bool:
-    if realm_str in settings.SYSTEM_ONLY_REALMS:
-        # Don't try to send emails to system-only realms
-        return False
-    return True
-
-
 # Changes to this should also be reflected in
 # zerver/worker/queue_processors.py:DigestWorker.consume()
 def queue_digest_user_ids(user_ids: List[int], cutoff: datetime.datetime) -> None:
@@ -105,9 +98,8 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
     weekday = timezone_now().weekday()
     for realm in Realm.objects.filter(
         deactivated=False, digest_emails_enabled=True, digest_weekday=weekday
-    ):
-        if should_process_digest(realm.string_id):
-            _enqueue_emails_for_realm(realm, cutoff)
+    ).exclude(string_id__in=settings.SYSTEM_ONLY_REALMS):
+        _enqueue_emails_for_realm(realm, cutoff)
 
 
 def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
