@@ -901,7 +901,7 @@
     .modal-footer,
     .modal-bg .modal-header {
         border-color: hsl(0deg 0% 0% / 20%);
-        background-color: hsl(0deg 0% 0% / 20%);
+        background-color: hsl(213deg 28% 14%);
     }
 
     .table-striped tbody tr:nth-child(odd) td {
