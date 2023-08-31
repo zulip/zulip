@@ -204,6 +204,7 @@ function get_props_for_popover_centering(popover_props) {
             left: reference_offset,
             top: reference_offset,
         }),
+        placement: "top",
         popperOptions: {
             modifiers: [
                 {
