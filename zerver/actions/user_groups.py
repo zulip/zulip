@@ -50,7 +50,7 @@ def create_user_group_in_database(
 
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     user_group = set_defaults_for_group_settings(
-        user_group, group_settings_map, system_groups_name_dict
+        user_group, list(group_settings_map.keys()), system_groups_name_dict
     )
     user_group.save()
 
