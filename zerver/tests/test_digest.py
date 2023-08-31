@@ -323,7 +323,6 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     @override_settings(SYSTEM_ONLY_REALMS=["zulipinternal"])
     def test_enqueue_emails(self) -> None:
-        # code coverage - digest.should_process_digest()
         def call_enqueue_emails(realm: Realm) -> int:
             do_set_realm_property(realm, "digest_emails_enabled", True, acting_user=None)
             do_set_realm_property(
