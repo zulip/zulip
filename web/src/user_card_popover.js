@@ -541,6 +541,37 @@ function get_user_card_popover_for_message_items() {
 
 // Functions related to the user card popover in the user sidebar.
 
+function toggle_sidebar_user_card_popover($target) {
+    const user_id = elem_to_user_id($target.find("a"));
+    const user = people.get_by_user_id(user_id);
+    const popover_placement = userlist_placement === "left" ? "right" : "left";
+
+    // Hiding popovers may mutate current_user_sidebar_user_id.
+    const previous_user_sidebar_id = current_user_sidebar_user_id;
+
+    // Hide popovers, but we don't want to hide the sidebars on
+    // smaller browser windows.
+    hide_all_except_sidebars();
+
+    if (previous_user_sidebar_id === user_id) {
+        // If the popover is already shown, clicking again should toggle it.
+        return;
+    }
+
+    render_user_card_popover(
+        user,
+        $target,
+        false,
+        false,
+        "compose_private_message",
+        "user_popover",
+        popover_placement,
+    );
+
+    current_user_sidebar_user_id = user.user_id;
+    current_user_sidebar_popover = $target.data("popover");
+}
+
 export function user_sidebar_popped() {
     return current_user_sidebar_popover !== undefined;
 }
@@ -740,38 +771,11 @@ function register_click_handlers() {
         open_user_status_modal,
     );
 
-    $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {
+    $("#user_presences").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
+        const $target = $(e.currentTarget).closest("li");
 
-        const $target = $(this).closest("li");
-        const user_id = elem_to_user_id($target.find("a"));
-        // Hiding popovers may mutate current_user_sidebar_user_id.
-        const previous_user_sidebar_id = current_user_sidebar_user_id;
-
-        // Hide popovers, but we don't want to hide the sidebars on
-        // smaller browser windows.
-        hide_all_except_sidebars();
-
-        if (previous_user_sidebar_id === user_id) {
-            // If the popover is already shown, clicking again should toggle it.
-            return;
-        }
-
-        const user = people.get_by_user_id(user_id);
-        const popover_placement = userlist_placement === "left" ? "right" : "left";
-
-        render_user_card_popover(
-            user,
-            $target,
-            false,
-            false,
-            "compose_private_message",
-            "user_popover",
-            popover_placement,
-        );
-
-        current_user_sidebar_user_id = user.user_id;
-        current_user_sidebar_popover = $target.data("popover");
+        toggle_sidebar_user_card_popover($target);
     });
 
     $("body").on("click", ".sidebar-popover-mute-user", (e) => {
