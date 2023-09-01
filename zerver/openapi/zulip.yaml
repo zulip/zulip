@@ -7773,9 +7773,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "BAD_REQUEST",
                         "msg": "Email 'newbie@zulip.com' already in use",
                         "result": "error",
                       }
