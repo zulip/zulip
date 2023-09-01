@@ -38,9 +38,10 @@ $user_status_emoji_width: 24px;
             padding: 0 6px;
 
             & i {
-                padding-right: 0.25em;
+                padding-right: 0.35em;
                 display: inline-block;
                 width: 13px;
+                font-size: 17px;
                 vertical-align: middle;
             }
 
