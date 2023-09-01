@@ -434,10 +434,6 @@ export function dispatch_normal_event(event) {
                     $("#realm-default-notification-sound-audio"),
                     realm_user_settings_defaults,
                 );
-                notifications.update_notification_sound_source(
-                    $("#temp-realm-default-notification-sound-audio"),
-                    realm_user_settings_defaults,
-                );
             }
             break;
         }
