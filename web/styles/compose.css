@@ -762,8 +762,8 @@ input.recipient_box {
     }
 
     .compose_control_menu {
-        padding: 0 7px;
-        font-size: 15px;
+        padding: 0 1px;
+        font-size: 18px;
     }
 
     .compose_control_menu_wrapper {
@@ -937,7 +937,8 @@ input.recipient_box {
     margin: 0;
 
     .zulip-icon {
-        padding: 5px 9px;
+        padding: 5px 3px;
+        font-size: 17px;
     }
 
     .separator-line {
