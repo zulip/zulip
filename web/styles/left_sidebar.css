@@ -636,9 +636,10 @@ li.top_left_scheduled_messages {
     right: 10px;
 
     & i {
-        padding-right: 0.25em;
+        padding-right: 0.35em;
         display: inline-block;
         width: 13px;
+        font-size: 17px;
         vertical-align: middle;
     }
 
