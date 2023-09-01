@@ -9160,19 +9160,34 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "Cannot mute self", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Cannot mute self",
+                            "result": "error",
+                          }
                         description: |
-                          An example JSON response for when the user is yourself:
+                          An example JSON response for when the user ID is the current
+                          user's ID:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "No such user", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such user",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is nonexistent or inaccessible:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
+                      - $ref: "#/components/schemas/CodedError"
                       - example:
-                          {"msg": "User already muted", "result": "error"}
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "User already muted",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is already muted:
     delete:
@@ -9196,13 +9211,23 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "No such user", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such user",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is nonexistent or inaccessible:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "User is not muted", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "User is not muted",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is not previously muted:
 
