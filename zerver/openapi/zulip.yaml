@@ -8097,9 +8097,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "BAD_REQUEST",
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
@@ -10624,9 +10625,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "BAD_REQUEST",
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
