@@ -19307,14 +19307,8 @@ components:
             A typical failed json response for when user's account is deactivated:
     RateLimitedError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - example:
-            {
-              "code": "RATE_LIMIT_HIT",
-              "msg": "API usage exceeded rate limit",
-              "result": "error",
-              "retry-after": 28.706807374954224,
-            }
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
           description: |
             ## Rate limit exceeded
 
@@ -19330,6 +19324,22 @@ components:
             A typical failed JSON response for when a rate limit is exceeded:
 
             [rate-limit-headers]: /api/http-headers#rate-limiting-response-headers
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            retry-after:
+              type: integer
+              description: |
+                How many seconds the client must wait before making
+                additional requests.
+          example:
+            {
+              "code": "RATE_LIMIT_HIT",
+              "msg": "API usage exceeded rate limit",
+              "result": "error",
+              "retry-after": 28.706807374954224,
+            }
     RealmDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
