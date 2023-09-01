@@ -14,12 +14,12 @@ message.
 
 {!message-actions.md!}
 
-1. Click the **smiley face** (<i class="fa fa-smile-o"></i>) icon.
+1. Click the **smiley face** (<i class="zulip-icon zulip-icon-smile"></i>) icon.
 
     !!! warn ""
 
         For messages that you've sent, click on the **ellipsis**
-        (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) and then
+        (<i class="zulip-icon zulip-icon-more-vertical-spread"></i>) and then
         **Add emoji reaction**.
 
 1. Select an emoji. Type to search, use the arrow keys, or click on an emoji
