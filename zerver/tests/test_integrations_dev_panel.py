@@ -30,11 +30,14 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
         # Intention of this test looks like to trigger ValidationError
         # so just testing ValidationError is printed along with Traceback in logs
-        self.assertTrue("ValidationError" in logs.output[0])
-        self.assertTrue("Traceback (most recent call last)" in logs.output[0])
-        self.assertEqual(
-            logs.output[1], "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake"
+        self.assert_length(logs.output, 1)
+        self.assertTrue(
+            logs.output[0].startswith(
+                "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake\n"
+                "Traceback (most recent call last):\n"
+            )
         )
+        self.assertTrue("ValidationError" in logs.output[0])
 
     def test_check_send_webhook_fixture_message_for_success_without_headers(self) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)

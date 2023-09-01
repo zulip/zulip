@@ -2,7 +2,6 @@ import cProfile
 import logging
 import tempfile
 import time
-import traceback
 from typing import Any, Callable, Dict, List, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode, urljoin
 
@@ -22,8 +21,7 @@ from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
-from sentry_sdk import capture_exception, set_tag
-from sentry_sdk.integrations.logging import ignore_logger
+from sentry_sdk import set_tag
 from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
@@ -361,10 +359,6 @@ class LogRequests(MiddlewareMixin):
 
 
 class JsonErrorHandler(MiddlewareMixin):
-    def __init__(self, get_response: Callable[[HttpRequest], HttpResponseBase]) -> None:
-        super().__init__(get_response)
-        ignore_logger("zerver.middleware.json_error_handler")
-
     def process_exception(
         self, request: HttpRequest, exception: Exception
     ) -> Optional[HttpResponse]:
@@ -404,11 +398,19 @@ class JsonErrorHandler(MiddlewareMixin):
                     exception=exception,
                 )
             return response
+
         if RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
-            capture_exception(exception)
-            json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
-            json_error_logger.error(traceback.format_exc(), extra=dict(request=request))
-            return json_response(res_type="error", msg=_("Internal server error"), status=500)
+            response = json_response(res_type="error", msg=_("Internal server error"), status=500)
+            log_response(
+                "%s: %s",
+                response.reason_phrase,
+                request.path,
+                response=response,
+                request=request,
+                exception=exception,
+            )
+            return response
+
         return None
 
 
