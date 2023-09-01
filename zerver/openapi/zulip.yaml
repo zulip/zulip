@@ -5640,14 +5640,8 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid stream ID",
-                            "result": "error",
-                          }
-                        description: |
+                      - $ref: "#/components/schemas/InvalidStreamError"
+                      - description: |
                           A typical failed JSON response for when an invalid stream ID is passed:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
@@ -5688,15 +5682,9 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/CodedError"
+                  - $ref: "#/components/schemas/InvalidStreamError"
                   - description: |
                       A typical failed JSON response for when an invalid stream ID is passed:
-                    example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
   /messages:
     get:
       operationId: get-messages
@@ -8484,14 +8472,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the user is attempting to fetch the topics
                       of a non-existing stream (or also a private stream they don't have access to):
   /users/me/subscriptions:
@@ -15799,14 +15781,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the requested stream does not exist,
                       or where the user does not have permission to access the target stream:
   /streams:
@@ -16070,15 +16046,9 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON response for when the stream ID is not valid.
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
+                      An example JSON response for when the stream ID is not valid:
     delete:
       operationId: archive-stream
       summary: Archive a stream
@@ -16097,14 +16067,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the supplied stream does not exist:
     patch:
       operationId: update-stream
@@ -16251,14 +16215,8 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid stream ID",
-                            "result": "error",
-                          }
-                        description: |
+                      - $ref: "#/components/schemas/InvalidStreamError"
+                      - description: |
                           An example JSON response for when the supplied stream does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
@@ -19160,6 +19118,20 @@ components:
           example:
             {
               "msg": "Invalid message(s)",
+              "code": "BAD_REQUEST",
+              "result": "error",
+            }
+    InvalidStreamError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+          example:
+            {
+              "msg": "Invalid stream ID",
               "code": "BAD_REQUEST",
               "result": "error",
             }
