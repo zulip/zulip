@@ -5023,14 +5023,15 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "UNAUTHORIZED",
                         "result": "error",
                         "msg": "Not logged in: API authentication or user session required",
                       }
                     description: |
-                      A typical failed JSON response for when the user is not logged in
+                      A typical failed JSON response for when the user is not logged in:
   /drafts:
     get:
       operationId: get-drafts
