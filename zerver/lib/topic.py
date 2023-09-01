@@ -86,11 +86,6 @@ def topic_column_sa() -> ColumnElement[Text]:
     return column("subject", Text)
 
 
-def filter_by_exact_message_topic(query: QuerySet[Message], message: Message) -> QuerySet[Message]:
-    topic_name = message.topic_name()
-    return query.filter(subject=topic_name)
-
-
 def filter_by_topic_name_via_message(
     query: QuerySet[UserMessage], topic_name: str
 ) -> QuerySet[UserMessage]:

@@ -69,7 +69,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import access_stream_for_send_message, ensure_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.topic import filter_by_exact_message_topic, participants_for_topic
+from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.validator import check_widget_content
@@ -1084,18 +1084,14 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
     else:
         time_window = datetime.timedelta(seconds=0)
 
-    query = Message.objects.filter(
+    messages = Message.objects.filter(
         sender=message.sender,
         recipient=message.recipient,
+        subject=message.topic_name(),
         content=message.content,
         sending_client=message.sending_client,
         date_sent__gte=message.date_sent - time_window,
         date_sent__lte=message.date_sent + time_window,
-    )
-
-    messages = filter_by_exact_message_topic(
-        query=query,
-        message=message,
     )
 
     if messages.exists():
