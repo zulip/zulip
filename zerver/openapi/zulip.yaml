@@ -16244,7 +16244,7 @@ paths:
                       - description: |
                           An example JSON response for when the supplied stream does not exist:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
+                      - $ref: "#/components/schemas/CodedError"
                       - example:
                           {
                             "code": "BAD_REQUEST",
@@ -16253,7 +16253,7 @@ paths:
                           }
                         description: |
                           An example JSON response for when invalid combination of stream permission
-                          parameters are passed.
+                          parameters are passed:
   /streams/{stream_id}/delete_topic:
     post:
       operationId: delete-topic
@@ -16330,7 +16330,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "result": "error",
@@ -16479,7 +16479,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -16488,7 +16488,6 @@ paths:
                       }
                     description: |
                       An example JSON error response for when user sends to multiple streams:
-
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -16553,7 +16552,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "result": "error",
@@ -16693,7 +16692,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -16720,7 +16719,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
