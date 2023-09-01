@@ -3,6 +3,7 @@ import $ from "jquery";
 const t1 = performance.now();
 export const page_params: {
     apps_page_url: string;
+    avatar_source: string;
     corporate_enabled: boolean;
     development_environment: boolean;
     language_list: {
@@ -19,6 +20,7 @@ export const page_params: {
     is_moderator: boolean;
     is_owner: boolean;
     is_spectator: boolean;
+    max_avatar_file_size_mib: number;
     muted_users: {id: number; timestamp: number}[];
     needs_tutorial: boolean;
     page_load_time: number;
