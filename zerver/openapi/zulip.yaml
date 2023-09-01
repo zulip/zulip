@@ -5206,10 +5206,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no draft exists with the provided ID.
-                    example: {"result": "error", "msg": "Draft does not exist"}
+                      A typical failed JSON response for when no draft exists with
+                      the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Draft does not exist",
+                      }
     delete:
       operationId: delete-draft
       tags: ["drafts"]
@@ -5235,10 +5241,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no draft exists with the provided ID.
-                    example: {"result": "error", "msg": "Draft does not exist"}
+                      A typical failed JSON response for when no draft exists with
+                      the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Draft does not exist",
+                      }
   /scheduled_messages:
     get:
       operationId: get-scheduled-messages
@@ -5542,16 +5554,22 @@ paths:
                         description: |
                           A typical failed JSON response for when a direct message is scheduled
                           to be sent to a user that does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - description: |
-                          Example response for when no scheduled message exists with the provided ID.
-                        example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "result": "error",
-                            "msg": "Scheduled message does not exist",
-                          }
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no scheduled message exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Scheduled message does not exist",
+                      }
     delete:
       operationId: delete-scheduled-message
       tags: ["scheduled_messages"]
@@ -5582,9 +5600,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      Example response for when no scheduled message exists with the provided ID.
+                      A typical failed JSON response for when no scheduled message exists
+                      with the provided ID:
                     example:
                       {
                         "code": "BAD_REQUEST",
