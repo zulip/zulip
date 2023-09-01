@@ -97,8 +97,8 @@
 }
 
 .user_info_popover_action_buttons {
-    display: flex;
     margin-left: auto;
+    line-height: 1;
 }
 
 .user_info_popover_manage_menu_btn {
@@ -146,9 +146,6 @@
 }
 
 .info_popover_actions .user_info_popover_manage_menu_btn {
-    /* Create a larger click target around the icon. */
-    padding: 0 6px;
-
     opacity: 0.8;
 
     &:hover {
@@ -236,6 +233,12 @@ ul {
 
             &:not(.zulip-icon-bot) {
                 top: 2px;
+            }
+
+            &.popover_action_icon {
+                font-size: 17px;
+                line-height: 1;
+                top: 1px;
             }
         }
     }
