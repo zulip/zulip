@@ -2284,7 +2284,7 @@ def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
 
 # Split the topic name into multiple sections so that we can easily use
 # our common single link matching regex on it.
-basic_link_splitter = re.compile(r"[ !;\?\),\'\"]")
+basic_link_splitter = re.compile(r"[ !;\),\'\"]")
 
 
 def percent_escape_format_string(format_string: str) -> str:

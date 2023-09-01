@@ -1160,6 +1160,36 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
+        # Query strings in a URL should be included in the link.
+        msg.set_topic_name("https://google.com/test?foo=bar")
+        converted_topic = topic_links(realm.id, msg.topic_name())
+        self.assertEqual(
+            converted_topic,
+            [
+                {
+                    "url": "https://google.com/test?foo=bar",
+                    "text": "https://google.com/test?foo=bar",
+                },
+            ],
+        )
+        # But question marks at the end of sentence are not part of the URL.
+        msg.set_topic_name("Have you seen github.com/zulip?")
+        converted_topic = topic_links(realm.id, msg.topic_name())
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://github.com/zulip", "text": "github.com/zulip"},
+            ],
+        )
+        msg.set_topic_name("Do you like https://example.com? I love it.")
+        converted_topic = topic_links(realm.id, msg.topic_name())
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://example.com", "text": "https://example.com"},
+            ],
+        )
+
     def check_add_linkifiers(
         self, linkifiers: List[RealmFilter], expected_linkifier_reprs: List[str]
     ) -> None:
