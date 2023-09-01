@@ -97,7 +97,7 @@
 
        See https://github.com/atomiks/tippyjs/issues/555 for some discussion on this.
     */
-    [data-reference-hidden] {
+    [data-reference-hidden]:not(.show-when-reference-hidden) {
         display: none;
     }
 }
