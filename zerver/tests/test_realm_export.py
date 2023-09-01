@@ -279,7 +279,7 @@ class RealmExportTest(ZulipTestCase):
         self.assert_length(current_log, 0)
 
         exports = []
-        for i in range(0, 5):
+        for i in range(5):
             exports.append(
                 RealmAuditLog(
                     realm=admin.realm,

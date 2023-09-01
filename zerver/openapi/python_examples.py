@@ -1163,7 +1163,7 @@ def update_message_flags(client: Client) -> None:
         "content": "I come not, friends, to steal away your hearts.",
     }
     message_ids = []
-    for i in range(0, 3):
+    for i in range(3):
         message_ids.append(client.send_message(request)["id"])
 
     # {code_example|start}

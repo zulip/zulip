@@ -662,7 +662,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
         othello = self.example_user("othello")
         self.subscribe(hamlet, "Denmark")
 
-        for i in range(0, 4):
+        for i in range(4):
             self.send_stream_message(othello, "Verona", "test")
             self.send_personal_message(othello, hamlet, "test")
 

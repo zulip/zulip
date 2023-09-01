@@ -40,7 +40,7 @@ def renumber_migration(conflicts: List[str], order: List[int], last_correct_migr
 
 def resolve_conflicts(conflicts: List[str], files_list: List[str]) -> None:
     print("Conflicting migrations:")
-    for i in range(0, len(conflicts)):
+    for i in range(len(conflicts)):
         print(str(i + 1) + ". " + conflicts[i])
 
     order_input = input("Enter the order in which these migrations should be arranged: ")

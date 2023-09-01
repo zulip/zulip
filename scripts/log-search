@@ -63,7 +63,7 @@ def parser() -> argparse.ArgumentParser:
         "-H",
         help="Estimated minimum number of hours; includes previous log file, if estimated less than this",
         type=int,
-        choices=range(0, 24),
+        choices=range(24),
         default=3,
     )
     log_selection.add_argument(

@@ -1212,7 +1212,7 @@ class HomeTest(ZulipTestCase):
         step_value = timedelta(seconds=1)
         # Create 11 drafts.
         # TODO: This would be better done as an API request.
-        for i in range(0, settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1):
+        for i in range(settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1):
             draft_objects.append(
                 Draft(
                     user_profile=hamlet,
