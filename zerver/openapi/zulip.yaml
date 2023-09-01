@@ -9343,15 +9343,15 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no emoji exists with the provided name.
+                      An example JSON response for when no emoji exists with the provided name:
                     example:
                       {
+                        "code": "BAD_REQUEST",
                         "result": "error",
                         "msg": "Emoji 'green_tick' does not exist",
                       }
-
   /realm/emoji:
     get:
       operationId: get-custom-emoji
