@@ -3103,20 +3103,6 @@ class Message(AbstractMessage):
     class Meta:
         indexes = [
             GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),
-            models.Index(Upper("subject"), name="upper_subject_idx"),
-            models.Index(
-                "recipient",
-                Upper("subject"),
-                F("id").desc(nulls_last=True),
-                name="zerver_message_recipient_upper_subject",
-            ),
-            models.Index(
-                "recipient",
-                "subject",
-                F("id").desc(nulls_last=True),
-                name="zerver_message_recipient_subject",
-            ),
-            # Indexes prefixed with realm_id
             models.Index(
                 # For moving messages between streams or marking
                 # streams as read.  The "id" at the end makes it easy
@@ -4475,13 +4461,6 @@ class ScheduledMessage(models.Model):
             # user themself via the API; we don't filter failed
             # messages since we will want to display those so that
             # failures don't just disappear into a black hole.
-            models.Index(
-                name="zerver_unsent_scheduled_messages_by_user",
-                fields=["sender", "delivery_type", "scheduled_timestamp"],
-                condition=Q(
-                    delivered=False,
-                ),
-            ),
             models.Index(
                 name="zerver_realm_unsent_scheduled_messages_by_user",
                 fields=["realm_id", "sender", "delivery_type", "scheduled_timestamp"],
