@@ -507,10 +507,10 @@ def rewrite_client_arrays(value_arrays: Dict[str, List[int]]) -> Dict[str, List[
     for label, array in value_arrays.items():
         mapped_label = client_label_map(label)
         if mapped_label in mapped_arrays:
-            for i in range(0, len(array)):
+            for i in range(len(array)):
                 mapped_arrays[mapped_label][i] += value_arrays[label][i]
         else:
-            mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(0, len(array))]
+            mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(len(array))]
     return mapped_arrays
 
 

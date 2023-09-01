@@ -98,7 +98,7 @@ def resize_animated(im: Image.Image, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
     disposals = []
     # If 'loop' info is not set then loop for infinite number of times.
     loop = im.info.get("loop", 0)
-    for frame_num in range(0, im.n_frames):
+    for frame_num in range(im.n_frames):
         im.seek(frame_num)
         new_frame = im.copy()
         new_frame.paste(im, (0, 0), im.convert("RGBA"))

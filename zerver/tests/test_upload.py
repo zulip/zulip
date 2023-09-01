@@ -770,7 +770,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_multiple_message_attachment_file_download(self) -> None:
         hamlet = self.example_user("hamlet")
-        for i in range(0, 5):
+        for i in range(5):
             stream_name = f"test-subscribe {i}"
             self.make_stream(
                 stream_name,

@@ -173,7 +173,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
     def _extra_context_in_missed_stream_messages_mention(
         self, send_as_user: bool, show_message_content: bool = True
     ) -> None:
-        for i in range(0, 11):
+        for i in range(11):
             self.send_stream_message(
                 self.example_user("othello"),
                 "Denmark",
@@ -387,7 +387,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
 
     def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool) -> None:
-        for i in range(0, 11):
+        for i in range(11):
             self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
         msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "12")
@@ -410,7 +410,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         self.subscribe(cordelia, "Denmark")
 
-        for i in range(0, 3):
+        for i in range(3):
             self.send_stream_message(cordelia, "Denmark", str(i))
         msg_id = self.send_stream_message(
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
@@ -432,7 +432,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         topic_name = "threading and so forth"
         othello_user = self.example_user("othello")
         msg_id = -1
-        for i in range(0, 3):
+        for i in range(3):
             msg_id = self.send_stream_message(
                 othello_user,
                 "Denmark",

@@ -1332,7 +1332,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
 
         # there is no longer a usage limit.  Ensure we can send multiple times.
-        for i in range(0, 5):
+        for i in range(5):
             process_missed_message(mm_address, incoming_valid_message)
 
 
@@ -1586,7 +1586,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
     def test_using_mm_address_multiple_times(self) -> None:
         mm_address = self.send_private_message()
         # there is no longer a usage limit.  Ensure we can send multiple times.
-        for i in range(0, 5):
+        for i in range(5):
             result = self.send_offline_message(mm_address, self.example_user("cordelia"))
             self.assert_json_success(result)
 
