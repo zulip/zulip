@@ -6907,14 +6907,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example: {"msg": "Invalid message(s)", "result": "error"}
-                    description: |
-                      A typical JSON response when attempting to
-                      access read receipts for a message ID that
-                      either does not exist or is not accessible to
-                      the current user.
-
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      A typical JSON response when attempting to access read receipts for
+                      a message ID that either does not exist or is not accessible to the
+                      current user:
   /messages/matches_narrow:
     get:
       operationId: check-messages-match-narrow
@@ -19151,11 +19148,12 @@ components:
             }
     InvalidMessageError:
       allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
+        - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           properties:
             result: {}
             msg: {}
+            code: {}
           example:
             {
               "msg": "Invalid message(s)",
