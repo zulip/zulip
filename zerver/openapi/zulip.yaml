@@ -19223,8 +19223,13 @@ components:
                 authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
     InvalidApiKeyError:
       allOf:
-        - $ref: "#/components/schemas/JsonError"
-        - example: {"msg": "Invalid API key", "result": "error"}
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INVALID_API_KEY",
+              "msg": "Invalid API key",
+              "result": "error",
+            }
           description: |
             ## Invalid API key
 
