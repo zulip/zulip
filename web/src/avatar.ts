@@ -8,12 +8,13 @@ import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
 import * as upload_widget from "./upload_widget";
+import type {UploadFunction, UploadWidget} from "./upload_widget";
 
-export function build_bot_create_widget() {
+export function build_bot_create_widget(): UploadWidget {
     // We have to do strange gyrations with the file input to clear it,
     // where we replace it wholesale, so we generalize the file input with
     // a callback function.
-    const get_file_input = function () {
+    const get_file_input = function (): JQuery<HTMLInputElement> {
         return $("#bot_avatar_file_input");
     };
 
@@ -34,9 +35,9 @@ export function build_bot_create_widget() {
     );
 }
 
-export function build_bot_edit_widget($target) {
-    const get_file_input = function () {
-        return $target.find(".edit_bot_avatar_file_input");
+export function build_bot_edit_widget($target: JQuery): UploadWidget {
+    const get_file_input = function (): JQuery<HTMLInputElement> {
+        return $target.find<HTMLInputElement>(".edit_bot_avatar_file_input");
     };
 
     const $file_name_field = $target.find(".edit_bot_avatar_file");
@@ -57,20 +58,20 @@ export function build_bot_edit_widget($target) {
     );
 }
 
-function display_avatar_delete_complete() {
+function display_avatar_delete_complete(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
     $("#user-avatar-source").show();
 }
 
-function display_avatar_delete_started() {
+function display_avatar_delete_started(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
     $("#user-avatar-upload-widget .image-upload-text").hide();
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-export function build_user_avatar_widget(upload_function) {
-    const get_file_input = function () {
+export function build_user_avatar_widget(upload_function: UploadFunction): void {
+    const get_file_input = function (): JQuery<HTMLInputElement> {
         return $("#user-avatar-upload-widget .image_file_input").expectOne();
     };
 
@@ -88,9 +89,9 @@ export function build_user_avatar_widget(upload_function) {
     $("#user-avatar-upload-widget .image-delete-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        function delete_user_avatar() {
+        function delete_user_avatar(): void {
             display_avatar_delete_started();
-            channel.del({
+            void channel.del({
                 url: "/json/users/me/avatar",
                 success() {
                     display_avatar_delete_complete();
@@ -106,7 +107,7 @@ export function build_user_avatar_widget(upload_function) {
                 },
             });
         }
-        const html_body = render_confirm_delete_user_avatar();
+        const html_body = render_confirm_delete_user_avatar({});
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete profile picture"}),

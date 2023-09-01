@@ -1,5 +1,16 @@
 import {$t} from "./i18n";
 
+export type UploadWidget = {
+    clear(): void;
+    close(): void;
+};
+
+export type UploadFunction = (
+    $file_input: JQuery<HTMLInputElement>,
+    night: boolean | null,
+    icon: boolean,
+) => void;
+
 const default_max_file_size = 5;
 
 const supported_types = ["image/jpeg", "image/png", "image/gif", "image/tiff"];
@@ -26,7 +37,7 @@ export function build_widget(
     $preview_text?: JQuery,
     $preview_image?: JQuery,
     max_file_upload_size = default_max_file_size,
-): {clear(): void; close(): void} {
+): UploadWidget {
     function accept(file: File): void {
         $file_name_field.text(file.name);
         $input_error.hide();
@@ -123,11 +134,7 @@ export function build_direct_upload_widget(
     $input_error: JQuery,
     // jQuery button to open file dialog
     $upload_button: JQuery,
-    upload_function: (
-        $file_input: JQuery<HTMLInputElement>,
-        night: boolean | null,
-        icon: boolean,
-    ) => void,
+    upload_function: UploadFunction,
     max_file_upload_size = default_max_file_size,
 ): void {
     // default value of max uploaded file size
