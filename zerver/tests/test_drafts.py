@@ -567,7 +567,7 @@ class DraftFetchTest(ZulipTestCase):
 
         first_draft_id = Draft.objects.filter(user_profile=hamlet).order_by("id")[0].id
         expected_draft_contents: List[Dict[str, object]] = [
-            {"id": first_draft_id + i, **draft_dicts[i]} for i in range(0, 3)
+            {"id": first_draft_id + i, **draft_dicts[i]} for i in range(3)
         ]
 
         self.assertEqual(data["drafts"], expected_draft_contents)

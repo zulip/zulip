@@ -889,7 +889,7 @@ class TestValidateApiKey(ZulipTestCase):
         self.assertFalse(has_api_key_format("33LONGXXXXXXXXXXXXXXXXXXXXXXXXXXX"))
 
         self.assertTrue(has_api_key_format("VIzRVw2CspUOnEm9Yu5vQiQtJNkvETkp"))
-        for i in range(0, 10):
+        for i in range(10):
             self.assertTrue(has_api_key_format(generate_api_key()))
 
     def test_validate_api_key_if_profile_does_not_exist(self) -> None:

@@ -9,7 +9,7 @@ class UnixStreamHTTPConnection(HTTPConnection):
     def connect(self) -> None:
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         connected = False
-        for i in range(0, 2):
+        for i in range(2):
             try:
                 self.sock.connect(self.host)
                 connected = True

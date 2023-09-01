@@ -603,7 +603,7 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
 
 class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
     def test_personal_messages_archiving(self) -> None:
-        msg_ids = [self.send_personal_message(self.sender, self.recipient) for i in range(0, 3)]
+        msg_ids = [self.send_personal_message(self.sender, self.recipient) for i in range(3)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -615,7 +615,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
 
     def test_move_messages_to_archive_with_realm_argument(self) -> None:
         realm = get_realm("zulip")
-        msg_ids = [self.send_personal_message(self.sender, self.recipient) for i in range(0, 3)]
+        msg_ids = [self.send_personal_message(self.sender, self.recipient) for i in range(3)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -627,7 +627,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self.assertEqual(archive_transaction.realm, realm)
 
     def test_stream_messages_archiving(self) -> None:
-        msg_ids = [self.send_stream_message(self.sender, "Verona") for i in range(0, 3)]
+        msg_ids = [self.send_stream_message(self.sender, "Verona") for i in range(3)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -638,7 +638,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._verify_restored_data(msg_ids, usermsg_ids)
 
     def test_archiving_messages_second_time(self) -> None:
-        msg_ids = [self.send_stream_message(self.sender, "Verona") for i in range(0, 3)]
+        msg_ids = [self.send_stream_message(self.sender, "Verona") for i in range(3)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -659,8 +659,8 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         cordelia = self.lear_user("cordelia")
         king = self.lear_user("king")
 
-        zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(0, 3)]
-        lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
+        zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(3)]
+        lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(3)]
         msg_ids = zulip_msg_ids + lear_msg_ids
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
@@ -1088,13 +1088,13 @@ class TestRestoreStreamMessages(ArchiveMessagesTestingBase):
         stream = get_stream(stream_name, realm)
 
         message_ids_to_archive_manually = [
-            self.send_stream_message(cordelia, stream_name, str(i)) for i in range(0, 2)
+            self.send_stream_message(cordelia, stream_name, str(i)) for i in range(2)
         ]
         usermessage_ids_to_archive_manually = self._get_usermessage_ids(
             message_ids_to_archive_manually
         )
         message_ids_to_archive_by_policy = [
-            self.send_stream_message(hamlet, stream_name, str(i)) for i in range(0, 2)
+            self.send_stream_message(hamlet, stream_name, str(i)) for i in range(2)
         ]
         usermessage_ids_to_archive_by_policy = self._get_usermessage_ids(
             message_ids_to_archive_by_policy
@@ -1132,7 +1132,7 @@ class TestDoDeleteMessages(ZulipTestCase):
     def test_do_delete_messages_multiple(self) -> None:
         realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
-        message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(0, 10)]
+        message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
         with self.assert_database_query_count(20):
