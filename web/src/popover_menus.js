@@ -191,18 +191,13 @@ function on_show_prep(instance) {
 }
 
 function get_props_for_popover_centering(popover_props) {
-    // We should put the reference element in the viewport,
-    // otherwise Tippy will think that the reference is
-    // hidden and hide the popover too.
-    const reference_offset = 1;
-
     return {
         arrow: false,
         getReferenceClientRect: () => ({
             width: 0,
             height: 0,
-            left: reference_offset,
-            top: reference_offset,
+            left: 0,
+            top: 0,
         }),
         placement: "top",
         popperOptions: {
@@ -212,15 +207,25 @@ function get_props_for_popover_centering(popover_props) {
                     options: {
                         offset({popper}) {
                             // Calculate the offset needed to place the reference in the center
-                            const x_offset_to_center = window.innerWidth / 2 - reference_offset;
-                            const y_offset_to_center =
-                                window.innerHeight / 2 - popper.height / 2 - reference_offset;
+                            const x_offset_to_center = window.innerWidth / 2;
+                            const y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
 
                             return [x_offset_to_center, y_offset_to_center];
                         },
                     },
                 },
             ],
+        },
+        onShow(instance) {
+            // By default, Tippys with the `data-reference-hidden` attribute aren't displayed.
+            // But when we render them as centered overlays on mobile and use
+            // `getReferenceClientRect` for a virtual reference, Tippy slaps this
+            // hidden attribute on our element, making it invisible. We want to bypass
+            // this in scenarios where we're centering popovers on mobile screens.
+            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+            if (popover_props.onShow) {
+                popover_props.onShow(instance);
+            }
         },
         onMount(instance) {
             $("body").append($("<div>").attr("id", "popover-overlay-background"));
