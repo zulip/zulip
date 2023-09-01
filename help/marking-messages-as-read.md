@@ -61,7 +61,7 @@ stream or topic as read**.
 
 1. Hover over a stream, topic, or **All messages** in the left sidebar.
 
-1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>).
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
 1. Click **Mark all messages as read**.
 
