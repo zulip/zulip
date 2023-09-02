@@ -48,7 +48,7 @@ def update_message_flags(
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.log_data is not None
 
-    count = do_update_message_flags(user_profile, operation, flag, messages)
+    count = do_update_message_flags(user_profile, operation, flag, messages)[0]
 
     target_count_str = str(len(messages))
     log_data_str = f"[{operation} {flag}/{target_count_str}] actually {count}"
@@ -102,19 +102,23 @@ def update_message_flags_for_narrow(
     )
 
     messages = [row[0] for row in query_info.rows]
-    updated_count = do_update_message_flags(user_profile, operation, flag, messages)
-
-    return json_success(
-        request,
-        data={
-            "processed_count": len(messages),
-            "updated_count": updated_count,
-            "first_processed_id": messages[0] if messages else None,
-            "last_processed_id": messages[-1] if messages else None,
-            "found_oldest": query_info.found_oldest,
-            "found_newest": query_info.found_newest,
-        },
+    (updated_count, skipped_marking_unread_stream_ids) = do_update_message_flags(
+        user_profile, operation, flag, messages
     )
+
+    data = {
+        "processed_count": len(messages),
+        "updated_count": updated_count,
+        "first_processed_id": messages[0] if messages else None,
+        "last_processed_id": messages[-1] if messages else None,
+        "found_oldest": query_info.found_oldest,
+        "found_newest": query_info.found_newest,
+    }
+
+    if skipped_marking_unread_stream_ids is not None:
+        data["skipped_marking_unread_stream_ids"] = skipped_marking_unread_stream_ids
+
+    return json_success(request, data)
 
 
 @has_request_variables

@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 209**
+
+* [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow):
+  Added `skipped_marking_unread_stream_ids` field in the response, which
+  is a list of the streams whose messages were skipped to mark as unread
+  because the user is not subscribed to them.
+
 **Feature level 208**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),

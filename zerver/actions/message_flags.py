@@ -1,6 +1,6 @@
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple
 
 from django.db import transaction
 from django.db.models import F
@@ -11,6 +11,7 @@ from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.create_user import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import (
+    access_message,
     bulk_access_messages,
     format_unread_message_details,
     get_raw_unread_data,
@@ -251,7 +252,7 @@ def do_clear_mobile_push_notifications_for_ids(
 
 def do_update_message_flags(
     user_profile: UserProfile, operation: str, flag: str, messages: List[int]
-) -> int:
+) -> Tuple[int, Optional[List[int]]]:
     valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:
         raise JsonableError(_("Invalid flag: '{flag}'").format(flag=flag))
@@ -264,6 +265,7 @@ def do_update_message_flags(
     is_adding = operation == "add"
     flagattr = getattr(UserMessage.flags, flag)
     flag_target = flagattr if is_adding else 0
+    skipped_marking_unread_stream_ids = None
 
     with transaction.atomic(savepoint=False):
         if flag == "read" and not is_adding:
@@ -287,6 +289,13 @@ def do_update_message_flags(
                 for message_id in messages
                 if message_id not in message_ids_in_unsubscribed_streams
             ]
+
+            skipped_marking_unread_stream_ids = list(
+                {
+                    access_message(user_profile, message_id)[0].recipient.type_id
+                    for message_id in message_ids_in_unsubscribed_streams
+                }
+            )
 
         ums = {
             um.message_id: um
@@ -382,4 +391,4 @@ def do_update_message_flags(
             increment=min(1, count),
         )
 
-    return count
+    return (count, skipped_marking_unread_stream_ids)

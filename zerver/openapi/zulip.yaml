@@ -6612,6 +6612,19 @@ paths:
                           bulk update to decide whether to issue
                           another request anchored at
                           `last_processed_id`).
+                      skipped_marking_unread_stream_ids:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in streams
+                          the user is subsubscribed to. This field will contain a list of the
+                          streams whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 8.0 (feature level 209).
                     example:
                       {
                         "result": "success",
@@ -6622,6 +6635,7 @@ paths:
                         "last_processed_id": 55,
                         "found_oldest": false,
                         "found_newest": true,
+                        "skipped_marking_unread_stream_ids": [12, 13, 9],
                       }
   /messages/render:
     post:
