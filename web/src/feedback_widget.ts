@@ -34,8 +34,8 @@ type FeedbackWidgetMeta = {
 type FeedbackWidgetOptions = {
     populate: (element: JQuery) => void;
     title_text: string;
-    undo_button_text: string;
-    on_undo: () => void;
+    undo_button_text?: string;
+    on_undo?: () => void;
 };
 
 const meta: FeedbackWidgetMeta = {
@@ -162,8 +162,17 @@ export function show(opts: FeedbackWidgetOptions): void {
     // add a four second delay before closing up.
     meta.hide_me_time = Date.now() + 4000;
 
+    // Show or hide the undo button based on the presence of on_undo callback
+    // and undo_button_text.
+    const $undo_button = meta.$container.find(".feedback_undo");
+    if (opts.on_undo && opts.undo_button_text) {
+        meta.undo = opts.on_undo;
+        $undo_button.text(opts.undo_button_text);
+    } else {
+        $undo_button.hide();
+    }
+
     meta.$container.find(".feedback_title").text(opts.title_text);
-    meta.$container.find(".feedback_undo").text(opts.undo_button_text);
     opts.populate(meta.$container.find(".feedback_content"));
 
     animate.fadeIn();
