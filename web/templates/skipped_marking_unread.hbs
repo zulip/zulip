@@ -1,0 +1,15 @@
+{{#if stream_names_with_privacy_symbol_html.[1]}}
+    {{#tr}}
+        Because you are not subscribed to <z-streams></z-streams>, messages in these streams were not marked as unread.
+        {{#*inline "z-streams"}}
+            {{~#each stream_names_with_privacy_symbol_html ~}}
+                <strong>{{{this}}}</strong>{{~#unless @last~}}, {{/unless~}}
+            {{~/each~}}
+        {{/inline}}
+    {{/tr}}
+    {{ else }}
+    {{#tr}}
+        Because you are not subscribed to <z-stream></z-stream>, messages in this stream were not marked as unread.
+        {{#*inline "z-stream"}}<strong>{{{stream_names_with_privacy_symbol_html.[0]}}}</strong>{{/inline}}
+    {{/tr}}
+{{/if}}

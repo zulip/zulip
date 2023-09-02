@@ -1,12 +1,15 @@
 import $ from "jquery";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_skipped_marking_unread from "../templates/skipped_marking_unread.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import * as feedback_widget from "./feedback_widget";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -17,6 +20,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
+import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
@@ -174,6 +178,7 @@ export function mark_as_unread_from_here(
     include_anchor = true,
     messages_marked_unread_till_now = 0,
     num_after = INITIAL_BATCH_SIZE - 1,
+    skipped_marking_unread_stream_ids = [],
     narrow,
 ) {
     if (narrow === undefined) {
@@ -194,6 +199,7 @@ export function mark_as_unread_from_here(
         data: opts,
         success(data) {
             messages_marked_unread_till_now += data.updated_count;
+            skipped_marking_unread_stream_ids.push(...data.skipped_marking_unread_stream_ids);
 
             if (!data.found_newest) {
                 // If we weren't able to complete the request fully in
@@ -222,7 +228,11 @@ export function mark_as_unread_from_here(
                     FOLLOWUP_BATCH_SIZE,
                     narrow,
                 );
-            } else if (loading_indicator_displayed) {
+
+                return;
+            }
+
+            if (loading_indicator_displayed) {
                 // If we were showing a loading indicator, then
                 // display that we finished. For the common case where
                 // the operation succeeds in a single batch, we don't
@@ -240,6 +250,29 @@ export function mark_as_unread_from_here(
                     $("#request-progress-status-banner"),
                     true,
                 );
+            }
+
+            if (skipped_marking_unread_stream_ids.length) {
+                // Zulip has an invariant that all unread messages must be
+                // in streams the user is subscribed to. Therefore, here we
+                // notify the user if the narrow contains messages from
+                // unsubscribed streams that are ignored by the server.
+                const stream_names_with_privacy_symbol_html = skipped_marking_unread_stream_ids.map(
+                    (stream_id) => {
+                        const stream = sub_store.get(stream_id);
+                        return render_inline_decorated_stream_name({stream});
+                    },
+                );
+
+                feedback_widget.show({
+                    populate($container) {
+                        const rendered_html = render_skipped_marking_unread({
+                            stream_names_with_privacy_symbol_html,
+                        });
+                        $container.html(rendered_html);
+                    },
+                    title_text: $t({defaultMessage: "Skipped unsubscribed streams"}),
+                });
             }
         },
         error(xhr) {
