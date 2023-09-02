@@ -1,19 +1,22 @@
 import _ from "lodash";
 
 import * as blueslip from "./blueslip";
+import type {User} from "./people";
 
 // This is the data structure that we get from the server on initialization.
-type RealmEmojiMap = Record<
-    string,
-    {
-        id: number;
-        author_id: number;
-        deactivated: boolean;
-        name: string;
-        source_url: string;
-        still_url: string | null;
-    }
->;
+export type ServerEmoji = {
+    id: number;
+    author_id: number;
+    deactivated: boolean;
+    name: string;
+    source_url: string;
+    still_url: string | null;
+
+    // Added later in `settings_emoji.ts` when setting up the emoji settings.
+    author?: User | null;
+};
+
+type RealmEmojiMap = Record<string, ServerEmoji>;
 
 // The data the server provides about unicode emojis.
 type ServerUnicodeEmojiData = {
