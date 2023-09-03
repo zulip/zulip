@@ -1176,24 +1176,6 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
 
-        audit_log_entries = RealmAuditLog.objects.filter(
-            acting_user=hamlet,
-            realm=hamlet.realm,
-            event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-        )
-        self.assert_length(audit_log_entries, len(UserGroup.GROUP_PERMISSION_SETTINGS))
-        self.assertListEqual(
-            [audit_log.extra_data for audit_log in audit_log_entries],
-            [
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: public_group.id,
-                    "property": "can_mention_group",
-                }
-            ],
-        )
-
     def test_change_user_group_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")

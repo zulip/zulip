@@ -67,18 +67,6 @@ def create_user_group_in_database(
             event_time=creation_time,
             modified_user_group=user_group,
         ),
-        RealmAuditLog(
-            realm=realm,
-            acting_user=acting_user,
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-            event_time=creation_time,
-            modified_user_group=user_group,
-            extra_data={
-                RealmAuditLog.OLD_VALUE: None,
-                RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
-                "property": "can_mention_group",
-            },
-        ),
     ] + [
         RealmAuditLog(
             realm=realm,
