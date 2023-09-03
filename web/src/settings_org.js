@@ -577,9 +577,6 @@ function update_dependent_subsettings(property_name) {
     }
 
     switch (property_name) {
-        case "realm_video_chat_provider":
-            set_video_chat_provider_dropdown();
-            break;
         case "realm_allow_message_editing":
             update_message_edit_sub_settings(page_params.realm_allow_message_editing);
             break;
@@ -711,6 +708,9 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_move_messages_within_stream_limit_seconds":
         case "realm_move_messages_between_streams_limit_seconds":
             set_msg_move_limit_setting(property_name);
+            break;
+        case "realm_video_chat_provider":
+            set_video_chat_provider_dropdown();
             break;
         case "realm_message_retention_days":
         case "message_retention_days":
