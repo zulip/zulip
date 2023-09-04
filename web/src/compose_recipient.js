@@ -15,6 +15,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
@@ -110,10 +111,8 @@ export function update_on_recipient_change() {
 
 export function get_posting_policy_error_message() {
     if (selected_recipient_id === "direct") {
-        if (
-            page_params.realm_private_message_policy ===
-            settings_config.private_message_policy_values.disabled.code
-        ) {
+        const recipients = compose_pm_pill.get_user_ids_string();
+        if (!people.user_can_direct_message(recipients)) {
             return $t({
                 defaultMessage: "Direct messages are disabled in this organization.",
             });
