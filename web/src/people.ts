@@ -295,7 +295,7 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
-    const user_ids = user_ids_string.split(",");
+    const user_ids = user_ids_string.length === 0 ? [] : user_ids_string.split(",");
     const ids = user_ids.map(Number);
     return ids;
 }
