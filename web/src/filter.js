@@ -499,8 +499,31 @@ export class Filter {
         // Arguably this should match supports_collapsing_recipients.
         // We may want to standardize on that in the future.  (At
         // present, this function does not allow combining valid filters).
+        if (this.single_term_type_returns_all_messages_of_conversation()) {
+            return true;
+        }
+        const term_types = this.sorted_term_types();
+        if (_.isEqual(term_types, [])) {
+            // "All messages" view
+            return true;
+        }
+        return false;
+    }
+
+    can_mark_messages_read() {
+        if (this._can_mark_messages_read === undefined) {
+            this._can_mark_messages_read = this.calc_can_mark_messages_read();
+        }
+        return this._can_mark_messages_read;
+    }
+
+    single_term_type_returns_all_messages_of_conversation() {
         const term_types = this.sorted_term_types();
 
+        // "topic" alone cannot guarantee all messages of a conversation because
+        // it is limited by the user's message history. Therefore, we check "stream"
+        // and "topic" together to ensure that the current filter will return all the
+        // messages of a conversation.
         if (_.isEqual(term_types, ["stream", "topic"])) {
             return true;
         }
@@ -508,11 +531,6 @@ export class Filter {
         if (_.isEqual(term_types, ["dm"])) {
             return true;
         }
-
-        // TODO: Some users really hate it when Zulip marks messages as read
-        // in interleaved views, so we will eventually have a setting
-        // that early-exits before the subsequent checks.
-        // (in which case, is_common_narrow would also need to be modified)
 
         if (_.isEqual(term_types, ["stream"])) {
             return true;
@@ -526,23 +544,15 @@ export class Filter {
             return true;
         }
 
-        if (_.isEqual(term_types, [])) {
-            // All view
+        if (_.isEqual(term_types, ["in-home"])) {
             return true;
         }
 
-        if (term_types.length === 1 && ["in-home", "in-all"].includes(term_types[0])) {
+        if (_.isEqual(term_types, ["in-all"])) {
             return true;
         }
 
         return false;
-    }
-
-    can_mark_messages_read() {
-        if (this._can_mark_messages_read === undefined) {
-            this._can_mark_messages_read = this.calc_can_mark_messages_read();
-        }
-        return this._can_mark_messages_read;
     }
 
     // This is used to control the behaviour for "exiting search",
@@ -551,23 +561,10 @@ export class Filter {
     // https://paper.dropbox.com/doc/Navbar-behavior-table--AvnMKN4ogj3k2YF5jTbOiVv_AQ-cNOGtu7kSdtnKBizKXJge
     // common narrows show a narrow description and allow the user to
     // close search bar UI and show the narrow description UI.
-    //
-    // TODO: We likely will want to rewrite this to not piggy-back on
-    // can_mark_messages_read, since that might gain some more complex behavior
-    // with near: narrows.
     is_common_narrow() {
-        // can_mark_messages_read tests the following filters:
-        // stream, stream + topic,
-        // is:dm, dm,
-        // is:resolved
-        if (this.can_mark_messages_read()) {
+        if (this.single_term_type_returns_all_messages_of_conversation()) {
             return true;
         }
-        // that leaves us with checking:
-        // is: starred
-        // (which can_mark_messages_read does not check as starred messages are always read)
-        // is: mentioned
-        // (for which can_mark_messages_read returns false, since they don't have conversation context)
         const term_types = this.sorted_term_types();
         if (_.isEqual(term_types, ["is-mentioned"])) {
             return true;
