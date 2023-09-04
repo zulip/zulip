@@ -27,7 +27,9 @@ const compose_fade = mock_esm("../src/compose_fade", {
     set_focused_recipient: noop,
     update_all: noop,
 });
-const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
+    get_user_ids_string: () => "",
+});
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea: noop,
     is_full_size: () => false,
