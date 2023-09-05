@@ -19105,7 +19105,9 @@ components:
     CodedErrorBase:
       allOf:
         - $ref: "#/components/schemas/JsonErrorBase"
-        - properties:
+        - required:
+            - code
+          properties:
             result: {}
             msg: {}
             code:
