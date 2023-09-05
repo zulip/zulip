@@ -2198,7 +2198,7 @@ class InvitationsTestCase(InviteUserBase):
         inviter = UserProfile.objects.exclude(realm=get_realm("zulip")).first()
         assert inviter is not None
         prereg_user = PreregistrationUser.objects.create(
-            email="email", referred_by=inviter, realm=inviter.realm
+            email="email", referred_by=inviter, realm_id=inviter.realm_id
         )
         self.login("iago")
         error_result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")

@@ -3758,7 +3758,7 @@ class StripeTest(StripeTestCase):
             email_found = False
             for email in outbox:
                 recipient = UserProfile.objects.get(email=email.to[0])
-                if recipient.realm == row.realm:
+                if recipient.realm_id == row.realm.id:
                     self.assertIn(
                         f"Your organization, http://{row.realm.string_id}.testserver, has been downgraded",
                         outbox[0].body,
