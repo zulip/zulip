@@ -62,7 +62,7 @@ From image editing program:
         self.set_avatar(twitter_bot, "static/images/features/twitter.png")
 
         bulk_add_subscriptions(
-            realm, [stream], list(UserProfile.objects.filter(realm=realm)), acting_user=None
+            realm, [stream], list(UserProfile.objects.seal().filter(realm=realm)), acting_user=None
         )
 
         staged_messages: List[Dict[str, Any]] = [
