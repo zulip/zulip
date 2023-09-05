@@ -23,7 +23,7 @@ export function bytes_to_size(bytes, kb_with_1024_bytes = false) {
     if (bytes === 0) {
         return "0 B";
     }
-    const i = Number.parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
+    const i = Math.trunc(Math.log(bytes) / Math.log(kb_size));
     let size = Math.round(bytes / Math.pow(kb_size, i));
     if (i > 0 && size < 10) {
         size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
