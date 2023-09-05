@@ -8726,8 +8726,46 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/AddSubscriptionsResponse"
-                  - example:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      subscribed:
+                        type: object
+                        description: |
+                          A dictionary where the key is the Zulip API email address of the user/bot
+                          and the value is a list of the names of the streams that were subscribed
+                          to as a result of the query.
+                        additionalProperties:
+                          description: |
+                            `{email_address}`: List of the names of the streams that were subscribed
+                            to as a result of the query.
+                          type: array
+                          items:
+                            type: string
+                      already_subscribed:
+                        type: object
+                        description: |
+                          A dictionary where the key is the Zulip API email address of the user/bot
+                          and the value is a list of the names of the streams that the user/bot is
+                          already subscribed to.
+                        additionalProperties:
+                          description: |
+                            `{email_address}`: List of the names of the streams that the user is
+                            already subscribed to.
+                          type: array
+                          items:
+                            type: string
+                      unauthorized:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          A list of names of streams that the requesting user/bot was not
+                          authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
+                    example:
                       {
                         "already_subscribed":
                           {"iago@zulip.com": ["new stream"]},
@@ -19025,25 +19063,6 @@ components:
               type: string
             ignored_parameters_unsupported:
               $ref: "#/components/schemas/IgnoredParametersUnsupported"
-    JsonError:
-      allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
-        - additionalProperties: false
-          properties:
-            result: {}
-            msg: {}
-    JsonErrorBase:
-      allOf:
-        - $ref: "#/components/schemas/JsonResponseBase"
-        - required:
-            - result
-            - msg
-          properties:
-            result:
-              enum:
-                - error
-            msg:
-              type: string
     PartiallyCompleted:
       allOf:
         - $ref: "#/components/schemas/JsonResponseBase"
@@ -19104,12 +19123,17 @@ components:
             code: {}
     CodedErrorBase:
       allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
+        - $ref: "#/components/schemas/JsonResponseBase"
         - required:
+            - result
+            - msg
             - code
           properties:
-            result: {}
-            msg: {}
+            result:
+              enum:
+                - error
+            msg:
+              type: string
             code:
               type: string
               description: |
@@ -19199,47 +19223,6 @@ components:
               "result": "error",
               "stream_id": 9,
             }
-    AddSubscriptionsResponse:
-      allOf:
-        - $ref: "#/components/schemas/JsonSuccessBase"
-        - additionalProperties: false
-          properties:
-            result: {}
-            msg: {}
-            ignored_parameters_unsupported: {}
-            subscribed:
-              type: object
-              description: |
-                A dictionary where the key is the Zulip API email address of the user/bot
-                and the value is a list of the names of the streams that were subscribed
-                to as a result of the query.
-              additionalProperties:
-                description: |
-                  `{email_address}`: List of the names of the streams that were subscribed
-                  to as a result of the query.
-                type: array
-                items:
-                  type: string
-            already_subscribed:
-              type: object
-              description: |
-                A dictionary where the key is the Zulip API email address of the user/bot
-                and the value is a list of the names of the streams that the user/bot is
-                already subscribed to.
-              additionalProperties:
-                description: |
-                  `{email_address}`: List of the names of the streams that the user is
-                  already subscribed to.
-                type: array
-                items:
-                  type: string
-            unauthorized:
-              type: array
-              items:
-                type: string
-              description: |
-                A list of names of streams that the requesting user/bot was not
-                authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
     InvalidApiKeyError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
