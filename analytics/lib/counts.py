@@ -317,7 +317,7 @@ def do_increment_logging_stat(
     else:  # CountStat.HOUR:
         end_time = ceiling_to_hour(event_time)
 
-    row, created = table.objects.get_or_create(
+    row, created = table._default_manager.get_or_create(
         property=stat.property,
         subgroup=subgroup,
         end_time=end_time,

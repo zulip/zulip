@@ -298,7 +298,9 @@ def send_apple_push_notification(
             )
             # We remove all entries for this token (There
             # could be multiple for different Zulip servers).
-            DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
+            DeviceTokenClass._default_manager.filter(
+                token=device.token, kind=DeviceTokenClass.APNS
+            ).delete()
         else:
             logger.warning(
                 "APNs: Failed to send for user %s to device %s: %s",
@@ -480,7 +482,7 @@ def send_android_push_notification(
             if reg_id == new_reg_id:
                 # I'm not sure if this should happen. In any case, not really actionable.
                 logger.warning("GCM: Got canonical ref but it already matches our ID %s!", reg_id)
-            elif not DeviceTokenClass.objects.filter(
+            elif not DeviceTokenClass._default_manager.filter(
                 token=new_reg_id, kind=DeviceTokenClass.GCM
             ).count():
                 # This case shouldn't happen; any time we get a canonical ref it should have been
@@ -492,14 +494,16 @@ def send_android_push_notification(
                     new_reg_id,
                     reg_id,
                 )
-                DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).update(
-                    token=new_reg_id
-                )
+                DeviceTokenClass._default_manager.filter(
+                    token=reg_id, kind=DeviceTokenClass.GCM
+                ).update(token=new_reg_id)
             else:
                 # Since we know the new ID is registered in our system we can just drop the old one.
                 logger.info("GCM: Got canonical ref %s, dropping %s", new_reg_id, reg_id)
 
-                DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
+                DeviceTokenClass._default_manager.filter(
+                    token=reg_id, kind=DeviceTokenClass.GCM
+                ).delete()
 
     if "errors" in res:
         for error, reg_ids in res["errors"].items():
@@ -508,7 +512,7 @@ def send_android_push_notification(
                     logger.info("GCM: Removing %s", reg_id)
                     # We remove all entries for this token (There
                     # could be multiple for different Zulip servers).
-                    DeviceTokenClass.objects.filter(
+                    DeviceTokenClass._default_manager.filter(
                         token=reg_id, kind=DeviceTokenClass.GCM
                     ).delete()
             else:

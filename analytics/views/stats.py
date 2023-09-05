@@ -465,17 +465,17 @@ CountT = TypeVar("CountT", bound=BaseCount)
 
 def table_filtered_to_id(table: Type[CountT], key_id: int) -> QuerySet[CountT]:
     if table == RealmCount:
-        return table.objects.filter(realm_id=key_id)
+        return table._default_manager.filter(realm_id=key_id)
     elif table == UserCount:
-        return table.objects.filter(user_id=key_id)
+        return table._default_manager.filter(user_id=key_id)
     elif table == StreamCount:
-        return table.objects.filter(stream_id=key_id)
+        return table._default_manager.filter(stream_id=key_id)
     elif table == InstallationCount:
-        return table.objects.all()
+        return table._default_manager.all()
     elif settings.ZILENCER_ENABLED and table == RemoteInstallationCount:
-        return table.objects.filter(server_id=key_id)
+        return table._default_manager.filter(server_id=key_id)
     elif settings.ZILENCER_ENABLED and table == RemoteRealmCount:
-        return table.objects.filter(realm_id=key_id)
+        return table._default_manager.filter(realm_id=key_id)
     else:
         raise AssertionError(f"Unknown table: {table}")
 

@@ -1923,7 +1923,7 @@ def get_row_ids_in_all_tables() -> Iterator[Tuple[str, Set[int]]]:
         table_name = model._meta.db_table
         if table_name in ignored_tables:
             continue
-        ids = model.objects.all().values_list("id", flat=True)
+        ids = model._default_manager.all().values_list("id", flat=True)
         yield table_name, set(ids)
 
 

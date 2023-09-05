@@ -47,7 +47,7 @@ def do_bulk_backfill_extra_data(
     # We do not need to skip existing entries for other parts of backfilling
     # because we have double-write implemented so that the backfilled value
     # will still be consistent.
-    audit_log_model.objects.filter(
+    audit_log_model._default_manager.filter(
         event_type=USER_FULL_NAME_CHANGED,
         id__range=(id_lower_bound, id_upper_bound),
         extra_data_json={},
@@ -71,7 +71,7 @@ def do_bulk_backfill_extra_data(
     # being overwritten by the migration with a value inconsistent with its
     # previous value.
     inconsistent_extra_data_json.extend(
-        audit_log_model.objects.filter(
+        audit_log_model._default_manager.filter(
             extra_data__isnull=False, id__range=(id_lower_bound, id_upper_bound)
         )
         .annotate(new_extra_data_json=Cast("extra_data", output_field=JSONField()))
@@ -82,7 +82,7 @@ def do_bulk_backfill_extra_data(
         .values_list("id", "extra_data", "extra_data_json", "new_extra_data_json")
     )
     (
-        audit_log_model.objects.filter(
+        audit_log_model._default_manager.filter(
             extra_data__isnull=False,
             id__range=(id_lower_bound, id_upper_bound),
             extra_data_json__inconsistent_old_extra_data__isnull=True,
@@ -92,7 +92,7 @@ def do_bulk_backfill_extra_data(
         .update(extra_data_json=Cast("extra_data", output_field=JSONField()))
     )
 
-    python_valued_audit_log_entries = audit_log_model.objects.filter(
+    python_valued_audit_log_entries = audit_log_model._default_manager.filter(
         extra_data__startswith="{'",
         id__range=(id_lower_bound, id_upper_bound),
         extra_data_json__inconsistent_old_extra_data__isnull=True,
@@ -119,7 +119,9 @@ def do_bulk_backfill_extra_data(
         if old_value not in ({}, new_value):
             inconsistent_extra_data_json.append((audit_log_entry.id, audit_log_entry.extra_data, old_value, new_value))  # type: ignore[attr-defined] # Explained above.
         audit_log_entry.extra_data_json = new_value  # type: ignore[attr-defined] # Explained above.
-    audit_log_model.objects.bulk_update(python_valued_audit_log_entries, fields=["extra_data_json"])
+    audit_log_model._default_manager.bulk_update(
+        python_valued_audit_log_entries, fields=["extra_data_json"]
+    )
 
     if inconsistent_extra_data_json:
         audit_log_entries = []
@@ -129,7 +131,7 @@ def do_bulk_backfill_extra_data(
             old_extra_data_json,
             new_extra_data_json,
         ) in inconsistent_extra_data_json:
-            audit_log_entry = audit_log_model.objects.get(id=audit_log_entry_id)
+            audit_log_entry = audit_log_model._default_manager.get(id=audit_log_entry_id)
             assert isinstance(old_extra_data_json, dict)
             if "inconsistent_old_extra_data" in old_extra_data_json:
                 # Skip entries that have been backfilled and detected as
@@ -149,7 +151,7 @@ def do_bulk_backfill_extra_data(
                     new_value=orjson.dumps(new_extra_data_json).decode(),
                 )
             )
-        audit_log_model.objects.bulk_update(audit_log_entries, fields=["extra_data_json"])
+        audit_log_model._default_manager.bulk_update(audit_log_entries, fields=["extra_data_json"])
 
 
 def backfill_extra_data(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
