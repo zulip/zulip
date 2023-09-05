@@ -50,20 +50,20 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.4.3',
-      'goversion' => '1195',
+      'version'   => '2.4.4',
+      'goversion' => '1206',
       'sha256'    => {
-        'amd64'   => '18e096ab1e3f31df34b81c2e5c9a4435daab9985be854d7ed2166e84a8955d2e',
-        'aarch64' => '85b291bb18e0ca749c8ec26bec750967f6832b346481fb61c789026b2d2d00d9',
+        'amd64'   => 'f726c6e4abfbb0c3cedf05fc0a0b440c2a8056b478d9c62780f682b5a49c6300',
+        'aarch64' => 'a726820e958b827a2801c7f9f13d30757e4d2677276dbd48d998479f21ec06f2',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.20.6',
+      'version' => '1.21.0',
       'sha256'  => {
-        'amd64'   => 'b945ae2bb5db01a0fb4786afde64e6fbab50b67f6fa0eb6cfa4924f16a7ff1eb',
-        'aarch64' => '4e15ab37556e979181a1a1cc60f6d796932223a0f5351d7c83768b356f84429b',
+        'amd64'   => 'd0398903a16ba2232b389fb31032ddf57cac34efda306a0eebac34f0965a0742',
+        'aarch64' => 'f3d4548edf9b22f26bbd49720350bbfe59d75b7090a1a2bff1afad8214febaf3',
       },
     },
 
@@ -87,37 +87,37 @@ class zulip::common {
 
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
-      'version' => '2.19.4',
+      'version' => '2.20.6',
       'sha256'  => {
-        'amd64'   => 'a9fb79e44c5bae6ca8dfd2c66ac918c7e0405e3456edeb100d698961842f057f',
-        'aarch64' => 'ea0021c6c69cf91c7050be105b8faa40d29c252b6d8c63d2aa33460196a41897',
+        'amd64'   => '043c1480ede8e8e093070fa705e2723b2b556763e5c10eaa020e3923fad2da20',
+        'aarch64' => 'ab1d82b6eedf57527cb56d3ec2752f5ebc035e351895d966de4000f0d255a230',
       },
     },
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '10.0.2',
+      'version' => '10.1.1',
       'sha256'  => {
-        'amd64'   => '3249fd2a1c8998e282b8ede00cbfa680a8a3bd17ac07fe264407dfea0acea6ea',
-        'aarch64' => 'c60a610e7eede1bedb651d3f2c3916a7f5e141ba813a7d6809b47c4828f04302',
+        'amd64'   => '4b8d22ba6419a08d631ddbd543683a774f62b39e257fcda83cd1089063075ec1',
+        'aarch64' => 'd5e2d468583ea8c858186d92967705dd9394add6978ceb06fa5b283e76bd7295',
       },
     },
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
-      'version' => '1.6.0',
+      'version' => '1.6.1',
       'sha256'  => {
-        'amd64'   => '0b3573f8a7cb5b5f587df68eb28c3eb7c463f57d4b93e62c7586cb6dc481e515',
-        'aarch64' => 'eb2f24626eca824c077cc7675d762bd520161c5c1a3f33c57b4b8aa0d452d613',
+        'amd64'   => 'ecc41b3b4d53f7b9c16a370419a25a133e48c09dfc49499d63bcc0c5e0cf3d01',
+        'aarch64' => 'f99ea62cec600bca5c926d300522d7a3bb797592d70dc1bcdc20b57811f1d439',
       },
     },
 
     # https://github.com/prometheus-community/postgres_exporter/tags
     'postgres_exporter' => {
-      'version' => '0.13.1',
+      'version' => '0.13.2',
       'sha256'  => {
-        'amd64'   => 'c082c59eea6469b6583c52dea9713e13e3e768c6e1aee40ff377ceea083c17ef',
-        'aarch64' => 'bb0f12221a3aacd2c45bec9a0e2d5fb368a3e3b082f38db81bccf689398c3f2e',
+        'amd64'   => '33f820116a1c0cfc0a069d237036e05c142d216976b6fcb7c11df5abf5a537f8',
+        'aarch64' => '95baed4bc22c9b369eb2b2225c2d8b543ea23e2e7f2f17a8fc2986d4b0a4df19',
       },
     },
 
@@ -132,19 +132,19 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.45.0',
+      'version' => '2.46.0',
       'sha256'  => {
-        'amd64'   => '1c7f489a3cc919c1ed0df2ae673a280309dc4a3eaa6ee3411e7d1f4bdec4d4c5',
-        'aarch64' => 'eb7c3f28a83892dcd1a1c85d0ba7e1f7f9f3e7a74b567fd65a4aa2e7f8aa981a',
+        'amd64'   => 'd2177ea21a6f60046f9510c828d4f8969628cfd35686780b3898917ef9c268b9',
+        'aarch64' => 'f42513c9ef63d6bed652dfc2e986b49ebec714ed784ccaac78e20e0a2a5535bc',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.51.0',
+      'version' => '1.53.0',
       'sha256'  => {
-        'amd64'   => '46e7a17118c02c9a532938756ec209b4d2ac0eadf0a8b94b15b5ef391179522c',
-        'aarch64' => '649e3103421088178b016e46cff68cc98246f78bf35e47e4473ce7fd11b0818f',
+        'amd64'   => '85d34fc0ecd4e602da7adf387ebe331688316071b0c2f3847dda5caa97794c48',
+        'aarch64' => '57bea0a929eeaf4688d49ccfc7aa629693569639582a58ada04c17cf144626ea',
       },
     },
 
