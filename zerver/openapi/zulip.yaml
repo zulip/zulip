@@ -18956,6 +18956,7 @@ components:
             result: {}
             msg: {}
             ignored_parameters_unsupported: {}
+          example: {"msg": "", "result": "success"}
     JsonSuccessBase:
       description: |
         **Changes**: As of Zulip 7.0 (feature level 167), if any
@@ -18979,7 +18980,6 @@ components:
               type: string
             ignored_parameters_unsupported:
               $ref: "#/components/schemas/IgnoredParametersUnsupported"
-          example: {"msg": "", "result": "success"}
     IgnoredParametersSuccess:
       allOf:
         - $ref: "#/components/schemas/IgnoredParametersBase"
