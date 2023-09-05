@@ -182,7 +182,9 @@ class AnalyticsTestCase(ZulipTestCase):
     ) -> None:
         if property is None:
             property = self.current_property
-        queryset = table.objects.filter(property=property, end_time=end_time).filter(**kwargs)
+        queryset = table._default_manager.filter(property=property, end_time=end_time).filter(
+            **kwargs
+        )
         if table is not InstallationCount:
             if realm is None:
                 realm = self.default_realm
@@ -234,8 +236,8 @@ class AnalyticsTestCase(ZulipTestCase):
                     kwargs["realm"] = kwargs["stream"].realm
                 else:
                     kwargs["realm"] = self.default_realm
-            self.assertEqual(table.objects.filter(**kwargs).count(), 1)
-        self.assert_length(arg_values, table.objects.count())
+            self.assertEqual(table._default_manager.filter(**kwargs).count(), 1)
+        self.assert_length(arg_values, table._default_manager.count())
 
 
 class TestProcessCountStat(AnalyticsTestCase):
@@ -1508,11 +1510,11 @@ class TestDeleteStats(AnalyticsTestCase):
 
         analytics = apps.get_app_config("analytics")
         for table in list(analytics.models.values()):
-            self.assertTrue(table.objects.exists())
+            self.assertTrue(table._default_manager.exists())
 
         do_drop_all_analytics_tables()
         for table in list(analytics.models.values()):
-            self.assertFalse(table.objects.exists())
+            self.assertFalse(table._default_manager.exists())
 
     def test_do_drop_single_stat(self) -> None:
         user = self.create_user()
@@ -1532,12 +1534,12 @@ class TestDeleteStats(AnalyticsTestCase):
 
         analytics = apps.get_app_config("analytics")
         for table in list(analytics.models.values()):
-            self.assertTrue(table.objects.exists())
+            self.assertTrue(table._default_manager.exists())
 
         do_drop_single_stat("to_delete")
         for table in list(analytics.models.values()):
-            self.assertFalse(table.objects.filter(property="to_delete").exists())
-            self.assertTrue(table.objects.filter(property="to_save").exists())
+            self.assertFalse(table._default_manager.filter(property="to_delete").exists())
+            self.assertTrue(table._default_manager.filter(property="to_save").exists())
 
 
 class TestActiveUsersAudit(AnalyticsTestCase):

@@ -168,7 +168,7 @@ class Command(BaseCommand):
                 id_args = {"stream": stream, "realm": realm}
 
             for subgroup, values in fixture_data.items():
-                table.objects.bulk_create(
+                table._default_manager.bulk_create(
                     table(
                         property=stat.property,
                         subgroup=subgroup,

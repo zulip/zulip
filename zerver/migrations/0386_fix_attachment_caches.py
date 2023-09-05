@@ -19,18 +19,18 @@ def fix_attachment_caches(apps: StateApps, schema_editor: BaseDatabaseSchemaEdit
     def update_batch(
         attachment_model: Type[Model], message_model: Type[Model], lower_bound: int
     ) -> None:
-        attachment_model.objects.filter(
+        attachment_model._default_manager.filter(
             id__gt=lower_bound, id__lte=lower_bound + BATCH_SIZE
         ).update(
             is_web_public=Exists(
-                message_model.objects.filter(
+                message_model._default_manager.filter(
                     attachment=OuterRef("id"),
                     recipient__stream__invite_only=False,
                     recipient__stream__is_web_public=True,
                 ),
             ),
             is_realm_public=Exists(
-                message_model.objects.filter(
+                message_model._default_manager.filter(
                     attachment=OuterRef("id"),
                     recipient__stream__invite_only=False,
                 )
