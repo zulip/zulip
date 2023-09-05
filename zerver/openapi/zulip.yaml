@@ -763,18 +763,25 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to other users when users have been subscribed to
-                                streams. Sent to all users if the stream is public or to only
-                                the existing subscribers if the stream is private.
+                                Event sent when another user subscribes to a stream, or their
+                                subscription is newly visible to the current user.
 
-                                **Changes**: In Zulip 4.0 (feature level 35), the singular
-                                `user_id` and `stream_id` integers included in this event
-                                were replaced with plural `user_ids` and `stream_ids` integer
-                                arrays.
+                                When a user subscribes to a stream, the current user will receive this
+                                event only if they [have permission to see the stream's subscriber
+                                list](/help/stream-permissions). When the current user gains permission
+                                to see a given stream's subscriber list, they will receive this event
+                                for the existing subscriptions to the stream.
 
-                                In Zulip 3.0 (feature level 19), the `stream_id` field was
-                                added to identify the stream the user subscribed to,
-                                replacing the `name` field.
+                                **Changes**: Prior to Zulip 8.0 (feature level 205), this event was not
+                                sent when a user gained access to a stream due to their [role
+                                changing](/help/roles-and-permissions).
+
+                                In Zulip 4.0 (feature level 35), the singular `user_id` and `stream_id`
+                                integers included in this event were replaced with plural `user_ids` and
+                                `stream_ids` integer arrays.
+
+                                In Zulip 3.0 (feature level 19), the `stream_id` field was added to
+                                identify the stream the user subscribed to, replacing the `name` field.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -790,7 +797,7 @@ paths:
                                 stream_ids:
                                   type: array
                                   description: |
-                                    The IDs of the streams to which the user has subscribed.
+                                    The IDs of streams that have new or updated subscriber data.
 
                                     **Changes**: New in Zulip 4.0 (feature level 35), replacing
                                     the `stream_id` integer.
@@ -799,7 +806,8 @@ paths:
                                 user_ids:
                                   type: array
                                   description: |
-                                    The IDs of the users who subscribed.
+                                    The IDs of the users who are newly visible as subscribed to
+                                    the specified streams.
 
                                     **Changes**: New in Zulip 4.0 (feature level 35), replacing
                                     the `user_id` integer.
