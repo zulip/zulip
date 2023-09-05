@@ -862,7 +862,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         bot_id = result.json()["user_id"]
 
-        test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
+        test_bot = UserProfile.objects.select_related("realm").get(id=bot_id, is_bot=True)
         private_stream = self.make_stream("private_stream", invite_only=True)
         public_stream = self.make_stream("public_stream")
         self.subscribe(test_bot, "private_stream")

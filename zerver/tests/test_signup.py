@@ -3245,7 +3245,7 @@ class UserSignUpTest(ZulipTestCase):
         ):
             self.login_with_return(email, password, HTTP_HOST=subdomain + ".testserver")
 
-            user_profile = UserProfile.objects.get(delivery_email=email)
+            user_profile = UserProfile.objects.select_related("realm").get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
 
@@ -4026,8 +4026,10 @@ class DeactivateUserTest(ZulipTestCase):
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm("zulip")
-        for user_profile in UserProfile.objects.filter(realm=realm).exclude(
-            role=UserProfile.ROLE_REALM_OWNER
+        for user_profile in (
+            UserProfile.objects.select_related("realm")
+            .filter(realm=realm)
+            .exclude(role=UserProfile.ROLE_REALM_OWNER)
         ):
             do_deactivate_user(user_profile, acting_user=None)
         user = self.example_user("desdemona")

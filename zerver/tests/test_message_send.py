@@ -2000,9 +2000,9 @@ class StreamMessagesTest(ZulipTestCase):
         non_ascii_stream_name = "hümbüǵ"
         realm = get_realm("zulip")
         stream = self.make_stream(non_ascii_stream_name)
-        for user_profile in UserProfile.objects.filter(is_active=True, is_bot=False, realm=realm)[
-            0:3
-        ]:
+        for user_profile in UserProfile.objects.select_related("realm").filter(
+            is_active=True, is_bot=False, realm=realm
+        )[0:3]:
             self.subscribe(user_profile, stream.name)
 
         self.assert_stream_message(non_ascii_stream_name, topic_name="hümbüǵ", content="hümbüǵ")

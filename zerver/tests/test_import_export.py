@@ -1059,7 +1059,11 @@ class RealmImportExportTest(ExportFile):
             return recipient
 
         def get_recipient_user(r: Realm) -> Recipient:
-            return assert_is_not_none(UserProfile.objects.get(full_name="Iago", realm=r).recipient)
+            return assert_is_not_none(
+                UserProfile.objects.select_related("recipient")
+                .get(full_name="Iago", realm=r)
+                .recipient
+            )
 
         @getter
         def get_stream_recipient_type(r: Realm) -> int:
