@@ -1634,7 +1634,7 @@ class ScrubRealmTest(ZulipTestCase):
         self.assertEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
         self.assertNotEqual(CustomProfileField.objects.filter(realm=lear).count(), 0)
 
-        zulip_users = UserProfile.objects.filter(realm=zulip)
+        zulip_users = UserProfile.objects.seal().filter(realm=zulip)
         for user in zulip_users:
             self.assertRegex(user.full_name, r"^Scrubbed [a-z0-9]{15}$")
             self.assertRegex(user.email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$")
@@ -1642,7 +1642,7 @@ class ScrubRealmTest(ZulipTestCase):
                 user.delivery_email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$"
             )
 
-        lear_users = UserProfile.objects.filter(realm=lear)
+        lear_users = UserProfile.objects.seal().filter(realm=lear)
         for user in lear_users:
             self.assertNotRegex(user.full_name, r"^Scrubbed [a-z0-9]{15}$")
             self.assertNotRegex(user.email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$")

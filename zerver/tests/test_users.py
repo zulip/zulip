@@ -1334,7 +1334,7 @@ class UserProfileTest(ZulipTestCase):
 
     def test_cross_realm_dicts(self) -> None:
         def user_row(email: str) -> Dict[str, object]:
-            user = UserProfile.objects.get(email=email)
+            user = UserProfile.objects.seal().get(email=email)
             avatar_url = get_avatar_field(
                 user_id=user.id,
                 realm_id=user.realm_id,
@@ -1387,7 +1387,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(actual_dicts, expected_dicts)
 
         # Test cache invalidation
-        welcome_bot = UserProfile.objects.get(email="welcome-bot@zulip.com")
+        welcome_bot = UserProfile.objects.seal().get(email="welcome-bot@zulip.com")
         welcome_bot.full_name = "fred"
         welcome_bot.save()
 
@@ -2522,7 +2522,7 @@ class DeleteUserTest(ZulipTestCase):
 
         do_delete_user(hamlet, acting_user=None)
 
-        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+        replacement_dummy_user = UserProfile.objects.seal().get(id=hamlet_user_id, realm=realm)
 
         self.assertEqual(
             replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
@@ -2595,7 +2595,7 @@ class DeleteUserTest(ZulipTestCase):
 
         do_delete_user_preserving_messages(hamlet)
 
-        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+        replacement_dummy_user = UserProfile.objects.seal().get(id=hamlet_user_id, realm=realm)
 
         self.assertEqual(
             replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"

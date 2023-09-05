@@ -91,7 +91,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         query = "/some/random/endpoint"
         last_visit = timezone_now()
         count = 150
-        for user_profile in UserProfile.objects.all():
+        for user_profile in UserProfile.objects.seal().all():
             UserActivity.objects.get_or_create(
                 user_profile=user_profile,
                 client=client,
@@ -150,7 +150,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user("desdemona"),
             self.example_user("shiva"),
         ]
-        for user_profile in UserProfile.objects.all():
+        for user_profile in UserProfile.objects.seal().all():
             user_profile.long_term_idle = True
             user_profile.save(update_fields=["long_term_idle"])
 

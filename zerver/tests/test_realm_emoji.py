@@ -79,7 +79,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_length(content["emoji"], 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
         self.assertIn("author_id", test_emoji)
-        author = UserProfile.objects.get(id=test_emoji["author_id"])
+        author = UserProfile.objects.seal().get(id=test_emoji["author_id"])
         self.assertEqual(author.email, email)
 
     def test_override_built_in_emoji_by_admin(self) -> None:

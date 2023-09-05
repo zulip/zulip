@@ -223,9 +223,9 @@ class TestSCIMUser(SCIMTestCase):
             "startIndex": 1,
             "Resources": [
                 self.generate_user_schema(user_profile)
-                for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False).order_by(
-                    "id"
-                )
+                for user_profile in UserProfile.objects.seal()
+                .filter(realm=realm, is_bot=False)
+                .order_by("id")
             ],
         }
 
@@ -297,7 +297,7 @@ class TestSCIMUser(SCIMTestCase):
         self.assertEqual(result.status_code, 200)
         output_data = orjson.loads(result.content)
 
-        user_query = UserProfile.objects.filter(
+        user_query = UserProfile.objects.seal().filter(
             realm=realm, is_bot=False, delivery_email__endswith="@zulip.com"
         )
         expected_response_schema = {
@@ -307,9 +307,9 @@ class TestSCIMUser(SCIMTestCase):
             "startIndex": 1,
             "Resources": [
                 self.generate_user_schema(user_profile)
-                for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False).order_by(
-                    "id"
-                )
+                for user_profile in UserProfile.objects.seal()
+                .filter(realm=realm, is_bot=False)
+                .order_by("id")
             ],
         }
 
@@ -335,7 +335,7 @@ class TestSCIMUser(SCIMTestCase):
         new_user_count = UserProfile.objects.count()
         self.assertEqual(new_user_count, original_user_count + 1)
 
-        new_user = UserProfile.objects.last()
+        new_user = UserProfile.objects.seal().last()
         assert new_user is not None
         self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
         self.assertEqual(new_user.full_name, "New User")
@@ -407,7 +407,7 @@ class TestSCIMUser(SCIMTestCase):
         new_user_count = UserProfile.objects.count()
         self.assertEqual(new_user_count, original_user_count + 1)
 
-        new_user = UserProfile.objects.last()
+        new_user = UserProfile.objects.seal().last()
         assert new_user is not None
         self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
         self.assertEqual(new_user.full_name, "New User")

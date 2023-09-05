@@ -864,7 +864,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         bot_id = result.json()["user_id"]
 
-        test_bot = UserProfile.objects.select_related("realm").get(id=bot_id, is_bot=True)
+        test_bot = UserProfile.objects.select_related("realm").seal().get(id=bot_id, is_bot=True)
         private_stream = self.make_stream("private_stream", invite_only=True)
         public_stream = self.make_stream("public_stream")
         self.subscribe(test_bot, "private_stream")
@@ -884,7 +884,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("iago")
         result = self.client_post(f"/json/users/{bot_id}/reactivate")
         self.assert_json_success(result)
-        test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
+        test_bot = UserProfile.objects.seal().get(id=bot_id, is_bot=True)
         assert test_bot.bot_owner_id is not None
         self.assertEqual(test_bot.bot_owner_id, self.example_user("iago").id)
 
@@ -1827,7 +1827,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "config_data": orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
         }
         self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        new_bot = UserProfile.objects.seal().get(full_name="My Stripe Bot")
         config_data = get_bot_config(new_bot)
         self.assertEqual(
             config_data, {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
@@ -1875,7 +1875,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
         }
         self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        new_bot = UserProfile.objects.seal().get(full_name="My Stripe Bot")
         with self.assertRaises(ConfigError):
             get_bot_config(new_bot)
 

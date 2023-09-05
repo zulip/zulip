@@ -14,7 +14,7 @@ class ActivityTest(ZulipTestCase):
         query = "/json/messages/flags"
         last_visit = timezone_now()
         count = 150
-        for activity_user_profile in UserProfile.objects.all():
+        for activity_user_profile in UserProfile.objects.seal().all():
             UserActivity.objects.get_or_create(
                 user_profile=activity_user_profile,
                 client=client,

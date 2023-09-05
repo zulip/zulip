@@ -129,7 +129,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Verify our email actually did change.
-        user = UserProfile.objects.get(delivery_email=new_email)
+        user = UserProfile.objects.seal().get(delivery_email=new_email)
         self.assertEqual(user.id, hamlet_id)
 
         response = self.client_get(activation_url)

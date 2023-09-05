@@ -1123,7 +1123,7 @@ class MissedMessageHookTest(ZulipTestCase):
         }
         result = self.client_post("/json/bots", bot_info)
         response_dict = self.assert_json_success(result)
-        hambot = UserProfile.objects.select_related("realm").get(id=response_dict["user_id"])
+        hambot = UserProfile.objects.select_related("realm").seal().get(id=response_dict["user_id"])
 
         # Our setUp and tearDown methods handle client descriptor for Hamlet,
         # but we need one for hambot

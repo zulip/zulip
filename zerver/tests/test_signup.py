@@ -2480,7 +2480,7 @@ class UserSignUpTest(ZulipTestCase):
             ["Enter your account details to complete registration.", "New Guy", email], result
         )
         result = self.submit_reg_form_for_user(email, password, full_name="New Guy")
-        user_profile = UserProfile.objects.get(delivery_email=email)
+        user_profile = UserProfile.objects.seal().get(delivery_email=email)
         self.assertEqual(user_profile.delivery_email, email)
 
         # Now try to to register using the first confirmation url:
@@ -3144,7 +3144,7 @@ class UserSignUpTest(ZulipTestCase):
             )
             # Didn't create an account
             with self.assertRaises(UserProfile.DoesNotExist):
-                user_profile = UserProfile.objects.get(delivery_email=email)
+                user_profile = UserProfile.objects.seal().get(delivery_email=email)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "/accounts/login/?email=newuser%40zulip.com")
 
@@ -3156,7 +3156,7 @@ class UserSignUpTest(ZulipTestCase):
                 # Pass HTTP_HOST for the target subdomain
                 HTTP_HOST=subdomain + ".testserver",
             )
-            user_profile = UserProfile.objects.get(delivery_email=email)
+            user_profile = UserProfile.objects.seal().get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
 
@@ -3208,7 +3208,7 @@ class UserSignUpTest(ZulipTestCase):
                 # Pass HTTP_HOST for the target subdomain
                 HTTP_HOST=subdomain + ".testserver",
             )
-            user_profile = UserProfile.objects.get(delivery_email=email)
+            user_profile = UserProfile.objects.seal().get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, "First Last")
 
@@ -3245,7 +3245,9 @@ class UserSignUpTest(ZulipTestCase):
         ):
             self.login_with_return(email, password, HTTP_HOST=subdomain + ".testserver")
 
-            user_profile = UserProfile.objects.select_related("realm").get(delivery_email=email)
+            user_profile = (
+                UserProfile.objects.select_related("realm").seal().get(delivery_email=email)
+            )
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
 
@@ -3299,14 +3301,18 @@ class UserSignUpTest(ZulipTestCase):
             subdomain = "zulip"
             self.login_with_return(email, password, HTTP_HOST=subdomain + ".testserver")
 
-            user_profile = UserProfile.objects.get(delivery_email=email, realm=get_realm("zulip"))
+            user_profile = UserProfile.objects.seal().get(
+                delivery_email=email, realm=get_realm("zulip")
+            )
             self.logout()
 
             # Test registration in another realm works.
             subdomain = "test"
             self.login_with_return(email, password, HTTP_HOST=subdomain + ".testserver")
 
-            user_profile = UserProfile.objects.get(delivery_email=email, realm=get_realm("test"))
+            user_profile = UserProfile.objects.seal().get(
+                delivery_email=email, realm=get_realm("test")
+            )
             self.assertEqual(user_profile.delivery_email, email)
 
     @override_settings(
@@ -3359,7 +3365,7 @@ class UserSignUpTest(ZulipTestCase):
                     # Pass HTTP_HOST for the target subdomain
                     HTTP_HOST=subdomain + ".testserver",
                 )
-            user_profile = UserProfile.objects.get(delivery_email=email)
+            user_profile = UserProfile.objects.seal().get(delivery_email=email)
             # Name comes from LDAP session.
             self.assertEqual(user_profile.full_name, "New LDAP fullname")
 
@@ -3483,7 +3489,7 @@ class UserSignUpTest(ZulipTestCase):
             )
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "http://zulip.testserver/")
-            user_profile = UserProfile.objects.get(delivery_email=email)
+            user_profile = UserProfile.objects.seal().get(delivery_email=email)
             # Name comes from the POST request, not LDAP
             self.assertEqual(user_profile.full_name, "Non-LDAP Full Name")
 
@@ -3597,7 +3603,7 @@ class UserSignUpTest(ZulipTestCase):
             )
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "http://zulip.testserver/")
-            user_profile = UserProfile.objects.get(delivery_email=email)
+            user_profile = UserProfile.objects.seal().get(delivery_email=email)
             # Name comes from the POST request, not LDAP
             self.assertEqual(user_profile.full_name, "Non-LDAP Full Name")
 
@@ -3664,7 +3670,7 @@ class UserSignUpTest(ZulipTestCase):
     )
     def test_ldap_invite_user_as_admin(self) -> None:
         self.ldap_invite_and_signup_as(PreregistrationUser.INVITE_AS["REALM_ADMIN"])
-        user_profile = UserProfile.objects.get(delivery_email=self.nonreg_email("newuser"))
+        user_profile = UserProfile.objects.seal().get(delivery_email=self.nonreg_email("newuser"))
         self.assertTrue(user_profile.is_realm_admin)
 
     @override_settings(
@@ -3675,7 +3681,7 @@ class UserSignUpTest(ZulipTestCase):
     )
     def test_ldap_invite_user_as_guest(self) -> None:
         self.ldap_invite_and_signup_as(PreregistrationUser.INVITE_AS["GUEST_USER"])
-        user_profile = UserProfile.objects.get(delivery_email=self.nonreg_email("newuser"))
+        user_profile = UserProfile.objects.seal().get(delivery_email=self.nonreg_email("newuser"))
         self.assertTrue(user_profile.is_guest)
 
     @override_settings(
@@ -3698,7 +3704,7 @@ class UserSignUpTest(ZulipTestCase):
             PreregistrationUser.INVITE_AS["REALM_ADMIN"], streams=[stream_name]
         )
 
-        user_profile = UserProfile.objects.get(delivery_email=self.nonreg_email("newuser"))
+        user_profile = UserProfile.objects.seal().get(delivery_email=self.nonreg_email("newuser"))
         self.assertTrue(user_profile.is_realm_admin)
         sub = get_stream_subscriptions_for_user(user_profile).filter(recipient__type_id=stream.id)
         self.assert_length(sub, 1)
@@ -3731,7 +3737,7 @@ class UserSignUpTest(ZulipTestCase):
                 # Pass HTTP_HOST for the target subdomain
                 HTTP_HOST=subdomain + ".testserver",
             )
-            user_profile = UserProfile.objects.get(delivery_email=email)
+            user_profile = UserProfile.objects.seal().get(delivery_email=email)
             # 'New Name' comes from POST data; not from LDAP session.
             self.assertEqual(user_profile.full_name, "New Name")
 
@@ -3917,7 +3923,7 @@ class UserSignUpTest(ZulipTestCase):
         email = f"user-{count}@zulip.com"
 
         result = self.client_post("/devtools/register_user/")
-        user_profile = UserProfile.objects.all().order_by("id").last()
+        user_profile = UserProfile.objects.seal().all().order_by("id").last()
         assert user_profile is not None
 
         self.assertEqual(result.status_code, 302)
@@ -3939,7 +3945,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"http://{string_id}.testserver")
 
-        user_profile = UserProfile.objects.all().order_by("id").last()
+        user_profile = UserProfile.objects.seal().all().order_by("id").last()
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
@@ -3958,7 +3964,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
 
-        user_profile = UserProfile.objects.all().order_by("id").last()
+        user_profile = UserProfile.objects.seal().all().order_by("id").last()
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
@@ -4028,6 +4034,7 @@ class DeactivateUserTest(ZulipTestCase):
         realm = get_realm("zulip")
         for user_profile in (
             UserProfile.objects.select_related("realm")
+            .seal()
             .filter(realm=realm)
             .exclude(role=UserProfile.ROLE_REALM_OWNER)
         ):

@@ -1355,7 +1355,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         non_subscribers = [
             user_profile
-            for user_profile in UserProfile.objects.all()
+            for user_profile in UserProfile.objects.seal().all()
             if user_profile not in subscribers
         ]
         old_non_subscriber_messages = list(map(message_stream_count, non_subscribers))
@@ -2000,9 +2000,11 @@ class StreamMessagesTest(ZulipTestCase):
         non_ascii_stream_name = "hümbüǵ"
         realm = get_realm("zulip")
         stream = self.make_stream(non_ascii_stream_name)
-        for user_profile in UserProfile.objects.select_related("realm").filter(
-            is_active=True, is_bot=False, realm=realm
-        )[0:3]:
+        for user_profile in (
+            UserProfile.objects.select_related("realm")
+            .seal()
+            .filter(is_active=True, is_bot=False, realm=realm)[0:3]
+        ):
             self.subscribe(user_profile, stream.name)
 
         self.assert_stream_message(non_ascii_stream_name, topic_name="hümbüǵ", content="hümbüǵ")
@@ -2041,7 +2043,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         """
         If you send a personal to yourself, only you see it.
         """
-        old_user_profiles = list(UserProfile.objects.all())
+        old_user_profiles = list(UserProfile.objects.seal().all())
         test_email = self.nonreg_email("test1")
         self.register(test_email, "test1")
 
@@ -2067,7 +2069,9 @@ class PersonalMessageSendTest(ZulipTestCase):
         sender_messages = message_stream_count(sender)
         receiver_messages = message_stream_count(receiver)
 
-        other_user_profiles = UserProfile.objects.filter(~Q(id=sender.id) & ~Q(id=receiver.id))
+        other_user_profiles = UserProfile.objects.seal().filter(
+            ~Q(id=sender.id) & ~Q(id=receiver.id)
+        )
         old_other_messages = list(map(message_stream_count, other_user_profiles))
 
         self.send_personal_message(sender, receiver, content)

@@ -81,7 +81,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         @cache_with_key(invalid_characters_cache_key_function, timeout=1000)
         def get_user_function_with_bad_cache_keys(user_id: int) -> UserProfile:
-            return UserProfile.objects.get(id=user_id)
+            return UserProfile.objects.seal().get(id=user_id)
 
         hamlet = self.example_user("hamlet")
         with patch("zerver.lib.cache.cache_set") as mock_set, self.assertLogs(level="WARNING") as m:
@@ -98,7 +98,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         @cache_with_key(too_long_cache_key_function, timeout=1000)
         def get_user_function_with_bad_cache_keys(user_id: int) -> UserProfile:
-            return UserProfile.objects.get(id=user_id)
+            return UserProfile.objects.seal().get(id=user_id)
 
         hamlet = self.example_user("hamlet")
 
@@ -116,7 +116,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         @cache_with_key(good_cache_key_function, timeout=1000)
         def get_user_function_with_good_cache_keys(user_id: int) -> UserProfile:
-            return UserProfile.objects.get(id=user_id)
+            return UserProfile.objects.seal().get(id=user_id)
 
         hamlet = self.example_user("hamlet")
 
@@ -139,11 +139,11 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
         @cache_with_key(cache_key_function, timeout=1000)
         def get_user_function_can_return_none(user_id: int) -> Optional[UserProfile]:
             try:
-                return UserProfile.objects.get(id=user_id)
+                return UserProfile.objects.seal().get(id=user_id)
             except UserProfile.DoesNotExist:
                 return None
 
-        last_user = UserProfile.objects.last()
+        last_user = UserProfile.objects.seal().last()
         assert last_user is not None
         last_user_id = last_user.id
         with self.assert_database_query_count(1):

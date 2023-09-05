@@ -67,7 +67,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         self.assertEqual(mirror_sender, sender)
 
-        realm_users = UserProfile.objects.filter(realm=sender.realm)
+        realm_users = UserProfile.objects.seal().filter(realm=sender.realm)
         realm_emails = {user.email for user in realm_users}
         self.assertIn(user.email, realm_emails)
         self.assertIn(new_user_email, realm_emails)
@@ -118,7 +118,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         self.assertEqual(mirror_sender, sender)
 
-        realm_users = UserProfile.objects.filter(realm=sender.realm)
+        realm_users = UserProfile.objects.seal().filter(realm=sender.realm)
         realm_emails = {user.email for user in realm_users}
         self.assertIn(self.nonreg_email("alice"), realm_emails)
         self.assertIn("bob@irc.zulip.com", realm_emails)
@@ -147,7 +147,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         self.assertEqual(mirror_sender, sender)
 
-        realm_users = UserProfile.objects.filter(realm=sender.realm)
+        realm_users = UserProfile.objects.seal().filter(realm=sender.realm)
         realm_emails = {user.email for user in realm_users}
         self.assertIn(self.nonreg_email("alice"), realm_emails)
         self.assertIn(self.nonreg_email("bob"), realm_emails)
