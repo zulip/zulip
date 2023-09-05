@@ -19004,6 +19004,13 @@ components:
         A typical successful JSON response with ignored parameters may look like:
 
         [ignored_params]: /api/rest-error-handling#ignored-parameters
+      example:
+        {
+          "ignored_parameters_unsupported":
+            ["invalid_param_1", "invalid_param_2"],
+          "msg": "",
+          "result": "success",
+        }
     IgnoredParametersBase:
       allOf:
         - $ref: "#/components/schemas/JsonResponseBase"
@@ -19018,13 +19025,6 @@ components:
               type: string
             ignored_parameters_unsupported:
               $ref: "#/components/schemas/IgnoredParametersUnsupported"
-          example:
-            {
-              "ignored_parameters_unsupported":
-                ["invalid_param_1", "invalid_param_2"],
-              "msg": "",
-              "result": "success",
-            }
     JsonError:
       allOf:
         - $ref: "#/components/schemas/JsonErrorBase"
