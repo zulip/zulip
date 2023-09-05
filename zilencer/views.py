@@ -387,7 +387,7 @@ def batch_create_table_data(
     BATCH_SIZE = 1000
     while len(row_objects) > 0:
         try:
-            model.objects.bulk_create(row_objects[:BATCH_SIZE])
+            model._default_manager.bulk_create(row_objects[:BATCH_SIZE])
         except IntegrityError:
             logging.warning(
                 "Invalid data saving %s for server %s/%s",

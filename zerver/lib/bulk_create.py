@@ -186,7 +186,7 @@ def bulk_set_users_or_streams_recipient_fields(
         if result is not None:
             result.recipient = recipient
             objects_to_update.add(result)
-    model.objects.bulk_update(objects_to_update, ["recipient"])
+    model._default_manager.bulk_update(objects_to_update, ["recipient"])
 
 
 # This is only sed in populate_db, so doesn't really need tests

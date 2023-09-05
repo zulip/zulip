@@ -1,7 +1,7 @@
 # After editing this file, you MUST afterward run
 # /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
-mypy==1.4.*  # https://github.com/typeddjango/django-stubs/issues/1648
+mypy
 
 boto3-stubs[s3,ses,sns,sqs]
 lxml-stubs

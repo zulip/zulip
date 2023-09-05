@@ -375,16 +375,16 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
         last_id = 0
         while True:
             to_delete = (
-                obj_class.objects.filter(realm_id=realm.id, id__gt=last_id)  # type: ignore[misc]  # Does not recognize shared 'id' PK column
-                .order_by("id")
-                .values_list("id", "path_id")[:batch_size]
+                obj_class._default_manager.filter(realm_id=realm.id, pk__gt=last_id)
+                .order_by("pk")
+                .values_list("pk", "path_id")[:batch_size]
             )
             if len(to_delete) > 0:
                 delete_message_attachments([row[1] for row in to_delete])
                 last_id = to_delete[len(to_delete) - 1][0]
             if len(to_delete) < batch_size:
                 break
-        obj_class.objects.filter(realm=realm).delete()
+        obj_class._default_manager.filter(realm=realm).delete()
 
 
 def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
