@@ -17,7 +17,11 @@ from zerver.models import Realm, UserProfile
 
 def get_users_from_emails(emails: List[str], filter_kwargs: Dict[str, Realm]) -> List[UserProfile]:
     # Bug: Ideally, this would be case-insensitive like our other email queries.
-    users = list(UserProfile.objects.filter(delivery_email__in=emails, **filter_kwargs))
+    users = list(
+        UserProfile.objects.select_related("realm").filter(
+            delivery_email__in=emails, **filter_kwargs
+        )
+    )
 
     if len(users) != len(emails):
         user_emails_found = {user.delivery_email for user in users}

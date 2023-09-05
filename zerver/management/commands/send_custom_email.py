@@ -89,20 +89,24 @@ class Command(ZulipBaseCommand):
         add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None
 
         if options["entire_server"]:
-            users = UserProfile.objects.filter(
+            users = UserProfile.objects.select_related("realm").filter(
                 is_active=True, is_bot=False, is_mirror_dummy=False, realm__deactivated=False
             )
         elif options["marketing"]:
             # Marketing email sent at most once to each email address for users
             # who are recently active (!long_term_idle) users of the product.
-            users = UserProfile.objects.filter(
-                is_active=True,
-                is_bot=False,
-                is_mirror_dummy=False,
-                realm__deactivated=False,
-                enable_marketing_emails=True,
-                long_term_idle=False,
-            ).distinct("delivery_email")
+            users = (
+                UserProfile.objects.select_related("realm")
+                .filter(
+                    is_active=True,
+                    is_bot=False,
+                    is_mirror_dummy=False,
+                    realm__deactivated=False,
+                    enable_marketing_emails=True,
+                    long_term_idle=False,
+                )
+                .distinct("delivery_email")
+            )
 
             def add_marketing_unsubscribe(context: Dict[str, object], user: UserProfile) -> None:
                 context["unsubscribe_link"] = one_click_unsubscribe_link(user, "marketing")
@@ -125,18 +129,24 @@ class Command(ZulipBaseCommand):
                 plan_type=Realm.PLAN_TYPE_STANDARD_FREE, deactivated=False
             )
             admin_roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
-            users = UserProfile.objects.filter(
-                is_active=True,
-                is_bot=False,
-                is_mirror_dummy=False,
-                role__in=admin_roles,
-                realm__deactivated=False,
-                realm__in=sponsored_realms,
-            ).distinct("delivery_email")
+            users = (
+                UserProfile.objects.select_related("realm")
+                .filter(
+                    is_active=True,
+                    is_bot=False,
+                    is_mirror_dummy=False,
+                    role__in=admin_roles,
+                    realm__deactivated=False,
+                    realm__in=sponsored_realms,
+                )
+                .distinct("delivery_email")
+            )
         elif options["json_file"]:
             with open(options["json_file"]) as f:
                 user_data: Dict[str, Dict[str, object]] = orjson.loads(f.read())
-            users = UserProfile.objects.filter(id__in=[int(user_id) for user_id in user_data])
+            users = UserProfile.objects.select_related("realm").filter(
+                id__in=[int(user_id) for user_id in user_data]
+            )
 
             def add_context_from_dict(context: Dict[str, object], user: UserProfile) -> None:
                 context.update(user_data.get(str(user.id), {}))
