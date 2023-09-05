@@ -1076,7 +1076,7 @@ Output:
 
         return list(
             Stream.objects.filter(
-                id__in=get_subscribed_stream_ids_for_user(user_profile)
+                id__in=get_subscribed_stream_ids_for_user(user_profile.id)
             ).values_list("name", flat=True)
         )
 
