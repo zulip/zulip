@@ -83,6 +83,9 @@ format used by the Zulip server that they are interacting with.
 * [`GET /events`](/api/get-events): Events for stream creation and deletion
   are now sent to clients when a user gains or loses access to any streams
   due to a change in their [role](/help/roles-and-permissions).
+* [`GET /events`](/api/get-events): The `subscription` events for `op:
+  "peer_add"` are now sent to clients when a user gains access to a stream
+  due to a change in their role.
 
 **Feature level 204**
 
