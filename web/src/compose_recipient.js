@@ -114,7 +114,7 @@ export function get_posting_policy_error_message() {
         const recipients = compose_pm_pill.get_user_ids_string();
         if (!people.user_can_direct_message(recipients)) {
             return $t({
-                defaultMessage: "Direct messages are disabled in this organization.",
+                defaultMessage: "You are not allowed to send direct messages in this organization.",
             });
         }
         return "";
