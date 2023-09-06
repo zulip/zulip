@@ -1,5 +1,5 @@
 import * as people from "./people";
-import {get_key_from_message} from "./recent_topics_util";
+import {get_key_from_message} from "./recent_view_util";
 
 export const topics = new Map();
 // For stream messages, key is stream-id:topic.

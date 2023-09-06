@@ -21,8 +21,8 @@ import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
-import * as recent_topics_util from "./recent_topics_util";
 import * as recent_view_ui from "./recent_view_ui";
+import * as recent_view_util from "./recent_view_util";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
@@ -232,7 +232,7 @@ export function update_messages(events) {
             }
 
             if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
-                const topic_key = recent_topics_util.get_topic_key(
+                const topic_key = recent_view_util.get_topic_key(
                     anchor_message.stream_id,
                     anchor_message.topic,
                 );

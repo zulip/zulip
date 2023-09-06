@@ -2,7 +2,7 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
 import * as people from "./people";
-import * as recent_topics_util from "./recent_topics_util";
+import * as recent_view_util from "./recent_view_util";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -39,7 +39,7 @@ const unread_messages = new Set();
 
 // Map with keys of the form "{stream_id}:{topic.toLowerCase()}" and
 // values being Sets of message IDs for unread messages mentioning the
-// user within that topic. Use `recent_topics_util.get_topic_key` to
+// user within that topic. Use `recent_view_util.get_topic_key` to
 // calculate keys.
 //
 // Functionally a cache; see clear_and_populate_unread_mention_topics
@@ -499,7 +499,7 @@ function add_message_to_unread_mention_topics(message_id) {
     if (message.type !== "stream") {
         return;
     }
-    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
+    const topic_key = recent_view_util.get_topic_key(message.stream_id, message.topic);
     if (unread_mention_topics.has(topic_key)) {
         unread_mention_topics.get(topic_key).add(message_id);
     }
@@ -521,7 +521,7 @@ function remove_message_from_unread_mention_topics(message_id) {
     }
 
     const topic = per_stream_bucketer.reverse_lookup.get(message_id);
-    const topic_key = recent_topics_util.get_topic_key(stream_id, topic);
+    const topic_key = recent_view_util.get_topic_key(stream_id, topic);
     if (unread_mention_topics.has(topic_key)) {
         unread_mention_topics.get(topic_key).delete(message_id);
     }
@@ -549,7 +549,7 @@ export function clear_and_populate_unread_mention_topics() {
         }
         const per_stream_bucketer = unread_topic_counter.bucketer.get_bucket(stream_id);
         const topic = per_stream_bucketer.reverse_lookup.get(message_id);
-        const topic_key = recent_topics_util.get_topic_key(stream_id, topic);
+        const topic_key = recent_view_util.get_topic_key(stream_id, topic);
         if (unread_mention_topics.has(topic_key)) {
             unread_mention_topics.get(topic_key).add(message_id);
         }
