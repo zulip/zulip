@@ -913,7 +913,7 @@ export function show() {
     // Hide "middle-column" which has html for rendering
     // a messages narrow. We hide it and show Recent Conversations.
     $("#message_feed_container").hide();
-    $("#recent_topics_view").show();
+    $("#recent_view").show();
     set_visible(true);
 
     unread_ui.hide_unread_banner();
@@ -943,12 +943,12 @@ export function hide() {
     // forcefully blur it so that focus returns to the visible
     // focused element.
     const $focused_element = $(document.activeElement);
-    if ($("#recent_topics_view").has($focused_element)) {
+    if ($("#recent_view").has($focused_element)) {
         $focused_element.trigger("blur");
     }
 
     $("#message_feed_container").show();
-    $("#recent_topics_view").hide();
+    $("#recent_view").hide();
     set_visible(false);
 
     // This solves a bug with message_view_header
