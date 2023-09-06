@@ -108,9 +108,9 @@ export function save_narrow(operators) {
 }
 
 function show_all_message_view() {
-    const coming_from_recent_topics = maybe_hide_recent_view();
+    const coming_from_recent_view = maybe_hide_recent_view();
     const is_actively_scrolling = message_scroll.is_actively_scrolling();
-    narrow.deactivate(coming_from_recent_topics, is_actively_scrolling);
+    narrow.deactivate(coming_from_recent_view, is_actively_scrolling);
     left_sidebar_navigation_area.handle_narrow_deactivated();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
