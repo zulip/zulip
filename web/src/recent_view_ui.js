@@ -921,7 +921,7 @@ export function show() {
     // We want to show `new stream message` instead of
     // `new topic`, which we are already doing in this
     // function. So, we reuse it here.
-    compose_closed_ui.update_buttons_for_recent_topics();
+    compose_closed_ui.update_buttons_for_recent_view();
 
     narrow_state.reset_current_filter();
     narrow.update_narrow_title(narrow_state.filter());
