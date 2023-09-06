@@ -171,7 +171,7 @@ mock_esm("../src/sub_store", {
     },
 });
 mock_esm("../src/left_sidebar_navigation_area", {
-    narrow_to_recent_topics: noop,
+    narrow_to_recent_view: noop,
 });
 mock_esm("../src/unread", {
     num_unread_for_topic(stream_id, topic) {
