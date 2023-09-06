@@ -167,8 +167,8 @@ def sent_messages_report(realm: str) -> str:
         """
         select
             series.day::date,
-            humans.cnt,
-            bots.cnt
+            user_messages.humans,
+            user_messages.bots
         from (
             select generate_series(
                 (now()::date - interval '2 week'),
@@ -179,45 +179,25 @@ def sent_messages_report(realm: str) -> str:
         left join (
             select
                 date_sent::date date_sent,
-                count(*) cnt
+                count(*) filter (where not up.is_bot) as humans,
+                count(*) filter (where up.is_bot) as bots
             from zerver_message m
             join zerver_userprofile up on up.id = m.sender_id
             join zerver_realm r on r.id = up.realm_id
             where
                 r.string_id = %s
             and
-                (not up.is_bot)
-            and
                 date_sent > now() - interval '2 week'
             group by
                 date_sent::date
             order by
                 date_sent::date
-        ) humans on
-            series.day = humans.date_sent
-        left join (
-            select
-                date_sent::date date_sent,
-                count(*) cnt
-            from zerver_message m
-            join zerver_userprofile up on up.id = m.sender_id
-            join zerver_realm r on r.id = up.realm_id
-            where
-                r.string_id = %s
-            and
-                up.is_bot
-            and
-                date_sent > now() - interval '2 week'
-            group by
-                date_sent::date
-            order by
-                date_sent::date
-        ) bots on
-            series.day = bots.date_sent
+        ) user_messages on
+            series.day = user_messages.date_sent
     """
     )
     cursor = connection.cursor()
-    cursor.execute(query, [realm, realm])
+    cursor.execute(query, [realm])
     rows = cursor.fetchall()
     cursor.close()
 
