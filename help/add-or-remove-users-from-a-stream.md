@@ -35,6 +35,24 @@ stream][add-users] or [remove other users from a stream][remove-users].
       To add users in bulk, you can copy members from an
       existing stream or [user group](/help/user-groups).
 
+{tab|mobile}
+
+{!mobile-all-streams-view.md!}
+
+{!stream-long-press-menu.md!}
+
+1. Tap **Stream settings**.
+
+1. Tap **Add subscribers**.
+
+1. Start typing the name of the person you want to add, and
+   select their name from the list of suggestions. You can continue
+   adding as many users as you like.
+
+1. Approve by tapping the **checkmark**
+   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="mobile-icon"/>)
+   button in the bottom right corner of the app.
+
 {end_tabs}
 
 {!automated-dm-stream-subscription.md!}
@@ -57,6 +75,24 @@ stream][add-users] or [remove other users from a stream][remove-users].
    will only include users who aren't already subscribed to the stream.
 
 1. Click **Add**.
+
+{tab|mobile}
+
+{!stream-long-press-menu.md!}
+
+1. Tap **Stream settings**.
+
+1. Tap **Add subscribers**.
+
+1. Start typing the name of the person you want to add, and
+   select their name from the list of suggestions. You can continue
+   adding as many users as you like.
+
+1. Approve by tapping the **checkmark**
+   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="mobile-icon"/>)
+   button in the bottom right corner of the app.
+
+{!mobile-stream-settings-menu-tip.md!}
 
 {end_tabs}
 
