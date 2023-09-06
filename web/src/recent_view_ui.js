@@ -292,7 +292,7 @@ export function show_loading_indicator() {
 }
 
 export function hide_loading_indicator() {
-    $("#recent_topics_bottom_whitespace").hide();
+    $("#recent_view_bottom_whitespace").hide();
     loading.destroy_indicator($("#recent_topics_loading_messages_indicator"), {
         abs_positioned: false,
     });
