@@ -6,7 +6,7 @@ import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";
 import * as popovers from "./popovers";
-import * as recent_topics_util from "./recent_topics_util";
+import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
 
@@ -20,7 +20,7 @@ function get_formatted_sub_count(sub_count) {
 
 function make_message_view_header(filter) {
     const message_view_header = {};
-    if (recent_topics_util.is_visible()) {
+    if (recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
             icon: "clock-o",

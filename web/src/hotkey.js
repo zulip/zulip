@@ -36,7 +36,7 @@ import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
-import * as recent_topics_util from "./recent_topics_util";
+import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
@@ -482,7 +482,7 @@ export function process_enter_key(e) {
         return true;
     }
 
-    if (recent_topics_util.is_visible()) {
+    if (recent_view_util.is_visible()) {
         if (e.target === $("body")[0]) {
             // There's a race when using `Esc` and `Enter` to navigate to
             // Recent Conversations and then navigate to the next topic, wherein

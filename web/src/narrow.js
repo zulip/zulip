@@ -33,8 +33,8 @@ import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
-import * as recent_topics_util from "./recent_topics_util";
 import * as recent_view_ui from "./recent_view_ui";
+import * as recent_view_util from "./recent_view_util";
 import * as resize from "./resize";
 import * as search from "./search";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
@@ -77,7 +77,7 @@ export function compute_narrow_title(filter) {
     if (filter === undefined) {
         // "All messages" and "Recent conversations" views have
         // an `undefined` filter.
-        if (recent_topics_util.is_visible()) {
+        if (recent_view_util.is_visible()) {
             return $t({defaultMessage: "Recent conversations"});
         }
         return $t({defaultMessage: "All messages"});
@@ -193,7 +193,7 @@ export function activate(raw_operators, opts) {
         return;
     }
 
-    const coming_from_recent_topics = recent_topics_util.is_visible();
+    const coming_from_recent_topics = recent_view_util.is_visible();
 
     // The empty narrow is the home view; so deactivate any narrow if
     // no operators were specified. Take us to all messages when this
