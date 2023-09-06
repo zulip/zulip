@@ -83,7 +83,7 @@ function set_hash(hash) {
     }
 }
 
-function maybe_hide_recent_topics() {
+function maybe_hide_recent_view() {
     if (recent_view_util.is_visible()) {
         recent_view_ui.hide();
         return true;
@@ -108,7 +108,7 @@ export function save_narrow(operators) {
 }
 
 function show_all_message_view() {
-    const coming_from_recent_topics = maybe_hide_recent_topics();
+    const coming_from_recent_topics = maybe_hide_recent_view();
     const is_actively_scrolling = message_scroll.is_actively_scrolling();
     narrow.deactivate(coming_from_recent_topics, is_actively_scrolling);
     left_sidebar_navigation_area.handle_narrow_deactivated();
@@ -166,7 +166,7 @@ function do_hashchange_normal(from_reload) {
 
     switch (hash[0]) {
         case "#narrow": {
-            maybe_hide_recent_topics();
+            maybe_hide_recent_view();
             let operators;
             try {
                 // TODO: Show possible valid URLs to the user.
