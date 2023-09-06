@@ -145,9 +145,9 @@ export function resize_sidebars() {
     return h;
 }
 
-export function update_recent_topics_filters_height() {
-    const recent_topics_filters_height = $("#recent_topics_filter_buttons").outerHeight(true) ?? 0;
-    $("html").css("--recent-topics-filters-height", `${recent_topics_filters_height}px`);
+export function update_recent_view_filters_height() {
+    const recent_view_filters_height = $("#recent_topics_filter_buttons").outerHeight(true) ?? 0;
+    $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
 }
 
 export function resize_page_components() {
@@ -174,7 +174,7 @@ export function handler() {
     }
     resize_page_components();
     compose_ui.autosize_textarea($("#compose-textarea"));
-    update_recent_topics_filters_height();
+    update_recent_view_filters_height();
 
     // Re-compute and display/remove 'Show more' buttons to messages
     condense.condense_and_collapse(message_lists.all_current_message_rows());
