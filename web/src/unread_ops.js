@@ -16,7 +16,7 @@ import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as people from "./people";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
@@ -166,7 +166,7 @@ function process_newly_read_message(message, options) {
         msg_list.view.show_message_as_read(message, options);
     }
     notifications.close_notification(message);
-    recent_topics_ui.update_topic_unread_count(message);
+    recent_view_ui.update_topic_unread_count(message);
 }
 
 export function mark_as_unread_from_here(
@@ -376,7 +376,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
         list.view.show_messages_as_unread(message_ids);
     }
 
-    recent_topics_ui.complete_rerender();
+    recent_view_ui.complete_rerender();
 
     if (
         !message_lists.current.can_mark_messages_read() &&

@@ -17,7 +17,7 @@ import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as settings from "./settings";
@@ -85,7 +85,7 @@ function set_hash(hash) {
 
 function maybe_hide_recent_topics() {
     if (recent_topics_util.is_visible()) {
-        recent_topics_ui.hide();
+        recent_view_ui.hide();
         return true;
     }
     return false;
@@ -141,7 +141,7 @@ function show_default_view() {
     // We only allow all_messages and recent_topics
     // to be rendered without a hash.
     if (user_settings.default_view === "recent_topics") {
-        recent_topics_ui.show();
+        recent_view_ui.show();
     } else if (user_settings.default_view === "all_messages") {
         show_all_message_view();
     } else {
@@ -221,11 +221,11 @@ function do_hashchange_normal(from_reload) {
             // for #recent permanently. We show the view and then
             // replace the current URL hash in a way designed to hide
             // this detail in the browser's forward/back session history.
-            recent_topics_ui.show();
+            recent_view_ui.show();
             window.location.replace("#recent");
             break;
         case "#recent":
-            recent_topics_ui.show();
+            recent_view_ui.show();
             break;
         case "#all_messages":
             show_all_message_view();

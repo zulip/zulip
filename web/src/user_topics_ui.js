@@ -3,7 +3,7 @@ import $ from "jquery";
 import * as message_lists from "./message_lists";
 import * as overlays from "./overlays";
 import * as popover_menus from "./popover_menus";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as settings_user_topics from "./settings_user_topics";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
@@ -21,7 +21,7 @@ export function handle_topic_updates(user_topic_event) {
     if (message_lists.current !== message_lists.home) {
         message_lists.home.update_muting_and_rerender();
     }
-    recent_topics_ui.update_topic_visibility_policy(
+    recent_view_ui.update_topic_visibility_policy(
         user_topic_event.stream_id,
         user_topic_event.topic_name,
     );

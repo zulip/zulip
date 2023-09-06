@@ -26,7 +26,7 @@ const message_lists = mock_esm("../src/message_lists", {
 const message_view_header = mock_esm("../src/message_view_header", {
     maybe_rerender_title_area_for_stream() {},
 });
-mock_esm("../src/recent_topics_ui", {
+mock_esm("../src/recent_view_ui", {
     complete_rerender() {},
 });
 mock_esm("../src/settings_notifications", {
