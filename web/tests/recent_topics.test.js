@@ -358,7 +358,7 @@ function generate_topic_data(topic_info_array) {
             last_msg_time: "Just now",
             last_msg_url: "https://www.example.com",
             full_last_msg_date_time: "date at time",
-            senders: people.sender_info_for_recent_topics_row([1, 2]),
+            senders: people.sender_info_for_recent_view_row([1, 2]),
             stream_name: "stream_name",
             stream_color: "",
             stream_id,

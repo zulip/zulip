@@ -836,7 +836,7 @@ export function medium_avatar_url_for_person(person: User): string {
     return `/avatar/${person.user_id}/medium?version=${person.avatar_version ?? 0}`;
 }
 
-export function sender_info_for_recent_topics_row(sender_ids: number[]): SenderInfo[] {
+export function sender_info_for_recent_view_row(sender_ids: number[]): SenderInfo[] {
     const senders_info = [];
     for (const id of sender_ids) {
         // TODO: Better handling for optional values w/o the assertion.
