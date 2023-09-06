@@ -196,7 +196,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
             result.content.decode(),
         )
 
-    def test_no_deactivation_notice_with_no_rediect(self) -> None:
+    def test_no_deactivation_notice_with_no_redirect(self) -> None:
         realm = get_realm("zulip")
         do_change_realm_subdomain(
             realm, "new-subdomain-name", acting_user=None, add_deactivated_redirect=False
