@@ -118,7 +118,7 @@ export function is_in_focus() {
 export function set_default_focus() {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
-    $current_focus_elem = $("#recent_topics_search");
+    $current_focus_elem = $("#recent_view_search");
     $current_focus_elem.trigger("focus");
     compose_closed_ui.set_standard_text_for_reply_button();
 }
@@ -584,7 +584,7 @@ export function filters_should_hide_topic(topic_data) {
         }
     }
 
-    const search_keyword = $("#recent_topics_search").val();
+    const search_keyword = $("#recent_view_search").val();
     const stream_name = stream_data.get_stream_name_from_id(msg.stream_id);
     if (!topic_in_search_results(search_keyword, stream_name, msg.topic)) {
         return true;
@@ -849,7 +849,7 @@ export function complete_rerender() {
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
-        search_val: $("#recent_topics_search").val() || "",
+        search_val: $("#recent_view_search").val() || "",
         is_spectator: page_params.is_spectator,
     });
     $("#recent_view_table").html(rendered_body);
@@ -1097,11 +1097,11 @@ export function change_focused_element($elt, input_key) {
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
 
-    if ($elt.attr("id") === "recent_topics_search") {
+    if ($elt.attr("id") === "recent_view_search") {
         // Since the search box a text area, we want the browser to handle
         // Left/Right and selection within the widget; but if the user
         // arrows off the edges, we should move focus to the adjacent widgets..
-        const textInput = $("#recent_topics_search").get(0);
+        const textInput = $("#recent_view_search").get(0);
         const start = textInput.selectionStart;
         const end = textInput.selectionEnd;
         const text_length = textInput.value.length;
@@ -1147,7 +1147,7 @@ export function change_focused_element($elt, input_key) {
                 // We only do this for search because we don't want the focus to
                 // go away from the input box when `revive_current_focus` is called
                 // on rerender when user is typing.
-                $current_focus_elem = $("#recent_topics_search");
+                $current_focus_elem = $("#recent_view_search");
                 compose_closed_ui.set_standard_text_for_reply_button();
                 return true;
             case "escape":
@@ -1166,7 +1166,7 @@ export function change_focused_element($elt, input_key) {
             case "vim_left":
             case "left_arrow":
                 if (filter_buttons().first()[0] === $elt[0]) {
-                    $current_focus_elem = $("#recent_topics_search");
+                    $current_focus_elem = $("#recent_view_search");
                 } else {
                     $current_focus_elem = $elt.prev();
                 }
@@ -1175,7 +1175,7 @@ export function change_focused_element($elt, input_key) {
             case "vim_right":
             case "right_arrow":
                 if (filter_buttons().last()[0] === $elt[0]) {
-                    $current_focus_elem = $("#recent_topics_search");
+                    $current_focus_elem = $("#recent_view_search");
                 } else {
                     $current_focus_elem = $elt.next();
                 }
@@ -1339,7 +1339,7 @@ export function initialize() {
         );
     });
 
-    $("body").on("click", "#recent_topics_search", (e) => {
+    $("body").on("click", "#recent_view_search", (e) => {
         e.stopPropagation();
         change_focused_element($(e.target), "click");
     });
@@ -1402,16 +1402,16 @@ export function initialize() {
     // Search for all table rows (this combines stream & topic names)
     $("body").on(
         "keyup",
-        "#recent_topics_search",
+        "#recent_view_search",
         _.debounce(() => {
             update_filters_view();
             // Wait for user to go idle before initiating search.
         }, 300),
     );
 
-    $("body").on("click", "#recent_topics_search_clear", (e) => {
+    $("body").on("click", "#recent_view_search_clear", (e) => {
         e.stopPropagation();
-        $("#recent_topics_search").val("");
+        $("#recent_view_search").val("");
         update_filters_view();
     });
 }
