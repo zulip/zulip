@@ -4,7 +4,7 @@
             <div class="left_part recent_view_focusable">
                 {{#if is_private}}
                 <span class="fa fa-envelope"></span>
-                <a href="{{pm_url}}">Direct messages</a>
+                <a href="{{pm_url}}">{{t "Direct messages" }}</a>
                 {{else}}
                 <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
                     {{> stream_privacy }}
