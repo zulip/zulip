@@ -413,7 +413,7 @@ function test(label, f) {
     });
 }
 
-test("test_recent_topics_show", ({mock_template, override}) => {
+test("test_recent_view_show", ({mock_template, override}) => {
     override(narrow, "save_pre_narrow_offset_for_reload", () => {});
 
     // Note: unread count and urls are fake,
