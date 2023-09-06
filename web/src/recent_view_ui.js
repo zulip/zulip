@@ -139,7 +139,7 @@ function get_row_type(row) {
     // Return "private" or "stream"
     // We use CSS method for finding row type until topics_widget gets initialized.
     if (!topics_widget) {
-        const $topic_rows = $("#recent_topics_table table tbody tr");
+        const $topic_rows = $("#recent_view_table table tbody tr");
         const $topic_row = $topic_rows.eq(row);
         const is_private = $topic_row.attr("data-private");
         if (is_private) {
@@ -163,7 +163,7 @@ function get_max_selectable_cols(row) {
 }
 
 function set_table_focus(row, col, using_keyboard) {
-    const $topic_rows = $("#recent_topics_table table tbody tr");
+    const $topic_rows = $("#recent_view_table table tbody tr");
     if ($topic_rows.length === 0 || row < 0 || row >= $topic_rows.length) {
         row_focus = 0;
         // return focus back to filters if we cannot focus on the table.
@@ -192,7 +192,7 @@ function set_table_focus(row, col, using_keyboard) {
 
     if (using_keyboard) {
         const scroll_element = document.querySelector(
-            "#recent_topics_table .table_fix_head .simplebar-content-wrapper",
+            "#recent_view_table .table_fix_head .simplebar-content-wrapper",
         );
         const half_height_of_visible_area = scroll_element.offsetHeight / 2;
         const topic_offset = topic_offset_to_visible_area($topic_row);
@@ -226,7 +226,7 @@ function set_table_focus(row, col, using_keyboard) {
 
 export function get_focused_row_message() {
     if (is_table_focused()) {
-        const $topic_rows = $("#recent_topics_table table tbody tr");
+        const $topic_rows = $("#recent_view_table table tbody tr");
         if ($topic_rows.length === 0) {
             return undefined;
         }
@@ -297,7 +297,7 @@ export function hide_loading_indicator() {
         abs_positioned: false,
     });
     // Show empty table text if there are no messages fetched.
-    $("#recent_topics_table tbody").addClass("required-text");
+    $("#recent_view_table tbody").addClass("required-text");
 }
 
 export function process_messages(messages) {
@@ -767,7 +767,7 @@ function topic_offset_to_visible_area(topic_row) {
         // topic and the callers will take care of undefined being returned.
         return undefined;
     }
-    const $scroll_container = $("#recent_topics_table .table_fix_head");
+    const $scroll_container = $("#recent_view_table .table_fix_head");
     const thead_height = 30;
     const under_closed_compose_region_height = 50;
 
@@ -791,8 +791,8 @@ function topic_offset_to_visible_area(topic_row) {
 }
 
 function recenter_focus_if_off_screen() {
-    const table_wrapper_element = document.querySelector("#recent_topics_table .table_fix_head");
-    const $topic_rows = $("#recent_topics_table table tbody tr");
+    const table_wrapper_element = document.querySelector("#recent_view_table .table_fix_head");
+    const $topic_rows = $("#recent_view_table table tbody tr");
 
     if (row_focus >= $topic_rows.length) {
         // User used a filter which reduced
@@ -852,7 +852,7 @@ export function complete_rerender() {
         search_val: $("#recent_topics_search").val() || "",
         is_spectator: page_params.is_spectator,
     });
-    $("#recent_topics_table").html(rendered_body);
+    $("#recent_view_table").html(rendered_body);
 
     // `show_selected_filters` needs to be called after the Recent
     // Conversations view has been added to the DOM, to ensure that filters
@@ -860,12 +860,12 @@ export function complete_rerender() {
     // was not the first view loaded in the app.
     show_selected_filters();
 
-    const $container = $("#recent_topics_table table tbody");
+    const $container = $("#recent_view_table table tbody");
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
-        name: "recent_topics_table",
+        name: "recent_view_table",
         get_item: ListWidget.default_get_item,
-        $parent_container: $("#recent_topics_table"),
+        $parent_container: $("#recent_view_table"),
         modifier(item) {
             return render_recent_view_row(format_conversation(item));
         },
@@ -882,7 +882,7 @@ export function complete_rerender() {
             ...ListWidget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
-        $simplebar_container: $("#recent_topics_table .table_fix_head"),
+        $simplebar_container: $("#recent_view_table .table_fix_head"),
         callback_after_render: () => setTimeout(revive_current_focus, 0),
         is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
@@ -1031,8 +1031,8 @@ function down_arrow_navigation() {
 }
 
 function get_page_up_down_delta() {
-    const table_height = $("#recent_topics_table .table_fix_head").height();
-    const table_header_height = $("#recent_topics_table table thead").height();
+    const table_height = $("#recent_view_table .table_fix_head").height();
+    const table_header_height = $("#recent_view_table table thead").height();
     const compose_box_height = $("#compose").height();
     // One usually wants PageDown to move what had been the bottom row
     // to now be at the top, so one can be confident one will see
@@ -1051,7 +1051,7 @@ function get_page_up_down_delta() {
 
 function page_up_navigation() {
     const $scroll_container = scroll_util.get_scroll_element(
-        $("#recent_topics_table .table_fix_head"),
+        $("#recent_view_table .table_fix_head"),
     );
     const delta = get_page_up_down_delta();
     const new_scrollTop = $scroll_container.scrollTop() - delta;
@@ -1064,11 +1064,11 @@ function page_up_navigation() {
 
 function page_down_navigation() {
     const $scroll_container = scroll_util.get_scroll_element(
-        $("#recent_topics_table .table_fix_head"),
+        $("#recent_view_table .table_fix_head"),
     );
     const delta = get_page_up_down_delta();
     const new_scrollTop = $scroll_container.scrollTop() + delta;
-    const table_height = $("#recent_topics_table .table_fix_head").height();
+    const table_height = $("#recent_view_table .table_fix_head").height();
     if (new_scrollTop >= table_height) {
         row_focus = topics_widget.get_current_list().length - 1;
     }
@@ -1278,7 +1278,7 @@ export function initialize() {
         filters = new Set(ls.get(ls_key));
     }
 
-    $("body").on("click", "#recent_topics_table .participant_profile", function (e) {
+    $("body").on("click", "#recent_view_table .participant_profile", function (e) {
         const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
         e.stopPropagation();
         const user = people.get_by_user_id(participant_user_id);
@@ -1292,7 +1292,7 @@ export function initialize() {
     );
 
     // Mute topic in a unmuted stream
-    $("body").on("click", "#recent_topics_table .stream_unmuted.on_hover_topic_mute", (e) => {
+    $("body").on("click", "#recent_view_table .stream_unmuted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
@@ -1304,7 +1304,7 @@ export function initialize() {
     });
 
     // Unmute topic in a unmuted stream
-    $("body").on("click", "#recent_topics_table .stream_unmuted.on_hover_topic_unmute", (e) => {
+    $("body").on("click", "#recent_view_table .stream_unmuted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
@@ -1316,7 +1316,7 @@ export function initialize() {
     });
 
     // Unmute topic in a muted stream
-    $("body").on("click", "#recent_topics_table .stream_muted.on_hover_topic_unmute", (e) => {
+    $("body").on("click", "#recent_view_table .stream_muted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
@@ -1328,7 +1328,7 @@ export function initialize() {
     });
 
     // Mute topic in a muted stream
-    $("body").on("click", "#recent_topics_table .stream_muted.on_hover_topic_mute", (e) => {
+    $("body").on("click", "#recent_view_table .stream_muted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
@@ -1344,7 +1344,7 @@ export function initialize() {
         change_focused_element($(e.target), "click");
     });
 
-    $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
+    $("body").on("click", "#recent_view_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
         const $elt = $(e.currentTarget);
         const topic_row_index = $elt.closest("tr").index();
