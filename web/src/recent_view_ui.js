@@ -185,7 +185,7 @@ function set_table_focus(row, col, using_keyboard) {
     const $topic_row = $topic_rows.eq(row);
     // We need to allow table to render first before setting focus.
     setTimeout(
-        () => $topic_row.find(".recent_topics_focusable").eq(col).children().trigger("focus"),
+        () => $topic_row.find(".recent_view_focusable").eq(col).children().trigger("focus"),
         0,
     );
     $current_focus_elem = "table";

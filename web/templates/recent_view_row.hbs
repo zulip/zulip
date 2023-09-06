@@ -1,7 +1,7 @@
 <tr id="recent_conversation:{{conversation_key}}" class="{{#if unread_count}}unread_topic{{/if}} {{#if is_private}}private_conversation_row{{/if}}">
     <td class="recent_topic_stream">
         <div class="flex_container flex_container_pm">
-            <div class="left_part recent_topics_focusable">
+            <div class="left_part recent_view_focusable">
                 {{#if is_private}}
                 <span class="fa fa-envelope"></span>
                 <a href="{{pm_url}}">Direct messages</a>
@@ -30,7 +30,7 @@
     </td>
     <td class="recent_topic_name">
         <div class="flex_container">
-            <div class="left_part recent_topics_focusable line_clamp">
+            <div class="left_part recent_view_focusable line_clamp">
                 {{#if is_private}}
                 <a href="{{pm_url}}">{{{rendered_pm_with}}}</a>
                 {{else}}
@@ -40,12 +40,12 @@
             <div class="right_part">
                 {{#if is_private}}
                 <div class="recent_topic_actions">
-                    <div class="recent_topics_focusable">
+                    <div class="recent_view_focusable">
                         <span class="unread_count unread_count_pm {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                     </div>
                 </div>
                 <div class="recent_topic_actions dummy_action_button">
-                    <div class="recent_topics_focusable">
+                    <div class="recent_view_focusable">
                         {{!-- Invisible icon, used only for alignment of unread count. --}}
                         <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon"></i>
                     </div>
@@ -54,12 +54,12 @@
                 <span class="unread_mention_info tippy-zulip-tooltip {{#unless mention_in_unread}}unread_hidden{{/unless}}"
                   data-tippy-content="{{t 'You have mentions'}}">@</span>
                 <div class="recent_topic_actions">
-                    <div class="recent_topics_focusable hidden-for-spectators">
+                    <div class="recent_view_focusable hidden-for-spectators">
                         <span class="unread_count {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                     </div>
                 </div>
                 <div class="recent_topic_actions">
-                    <div class="recent_topics_focusable hidden-for-spectators">
+                    <div class="recent_view_focusable hidden-for-spectators">
                         {{#if development}}
                             <span class="change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
                                 {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}

@@ -27,7 +27,7 @@
             padding: 3px 8px;
         }
 
-        .recent_topics_focusable {
+        .recent_view_focusable {
             display: inline-block;
 
             & > * {
@@ -230,7 +230,7 @@
             visibility: hidden;
         }
 
-        .recent_topic_actions .recent_topics_focusable {
+        .recent_topic_actions .recent_view_focusable {
             /* Keep a uniform distance from the focus-within
                indicator at bottom. */
             padding-bottom: 3px;
