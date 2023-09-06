@@ -930,7 +930,7 @@ export function show() {
     pm_list.handle_narrow_deactivated();
     search.clear_search_form();
     complete_rerender();
-    resize.update_recent_topics_filters_height();
+    resize.update_recent_view_filters_height();
 }
 
 function filter_buttons() {
