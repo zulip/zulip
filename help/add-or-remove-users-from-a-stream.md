@@ -17,6 +17,8 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {relative|stream|all}
 
 1. Select a stream.
@@ -28,20 +30,41 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 1. Click **Add**.
 
-{end_tabs}
-
 !!! tip ""
 
       To add users in bulk, you can copy members from an
       existing stream or [user group](/help/user-groups).
 
+{end_tabs}
+
 {!automated-dm-stream-subscription.md!}
 
-### Mentioning a user in the compose box (alternate method)
+## Alternate methods to add users to a stream
+
+### Via stream settings
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!stream-actions.md!}
+
+1. Click **Stream settings**.
+
+{!select-stream-view-subscribers.md!}
+
+1. Under **Add subscribers**, enter a name or email address. The typeahead
+   will only include users who aren't already subscribed to the stream.
+
+1. Click **Add**.
+
+{end_tabs}
+
+### Via mentioning a user in the compose box
 
 When you [mention a user](/help/mention-a-user-or-group) while composing
-a message, an alert banner appears above the compose box if they are not
-subscribed to the stream.
+a message in the web or desktop app, an alert banner appears above the
+compose box if they are not subscribed to the stream.
 
 Click the **Subscribe them** button on the banner to add the user to the
 stream. You will not see the button if you don't have permission to
@@ -55,6 +78,8 @@ subscribe the user.
 ## Remove users from a stream
 
 {start_tabs}
+
+{tab|desktop-web}
 
 {relative|stream|all}
 
@@ -73,6 +98,8 @@ subscribe the user.
 This method is useful if you need to remove one user from multiple streams.
 
 {start_tabs}
+
+{tab|desktop-web}
 
 {!right-sidebar-view-profile.md!}
 
