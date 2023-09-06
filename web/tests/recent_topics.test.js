@@ -399,7 +399,7 @@ function stub_out_filter_buttons() {
     for (const filter of ["all", "unread", "muted", "participated", "include_private"]) {
         const $stub = $.create(`filter-${filter}-stub`);
         const selector = `[data-filter="${filter}"]`;
-        $("#recent_topics_filter_buttons").set_find_results(selector, $stub);
+        $("#recent_view_filter_buttons").set_find_results(selector, $stub);
     }
 }
 
@@ -608,7 +608,7 @@ test("test_filter_unread", ({mock_template}) => {
         false,
     );
 
-    $("#recent_topics_filter_buttons").removeClass("btn-recent-selected");
+    $("#recent_view_filter_buttons").removeClass("btn-recent-selected");
 
     expected_filter_unread = true;
     rt.set_filter("unread");
@@ -661,12 +661,12 @@ test("test_filter_unread", ({mock_template}) => {
 
     // Unselect "unread" filter by clicking twice.
     expected_filter_unread = false;
-    $("#recent_topics_filter_buttons").addClass("btn-recent-selected");
+    $("#recent_view_filter_buttons").addClass("btn-recent-selected");
     rt.set_filter("unread");
 
     assert.equal(i, row_data.length);
 
-    $("#recent_topics_filter_buttons").removeClass("btn-recent-selected");
+    $("#recent_view_filter_buttons").removeClass("btn-recent-selected");
     // reselect "unread" filter
     rt.set_filter("unread");
 
@@ -740,7 +740,7 @@ test("test_filter_participated", ({mock_template}) => {
     // remove muted filter
     rt.set_filter("muted");
 
-    $("#recent_topics_filter_buttons").removeClass("btn-recent-selected");
+    $("#recent_view_filter_buttons").removeClass("btn-recent-selected");
 
     expected_filter_participated = true;
 

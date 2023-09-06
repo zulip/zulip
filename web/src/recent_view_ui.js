@@ -279,7 +279,7 @@ export function revive_current_focus() {
     if (!filter_button) {
         set_default_focus();
     } else {
-        $current_focus_elem = $("#recent_topics_filter_buttons").find(
+        $current_focus_elem = $("#recent_view_filter_buttons").find(
             `[data-filter='${CSS.escape(filter_button)}']`,
         );
         $current_focus_elem.trigger("focus");
@@ -669,7 +669,7 @@ export function set_filter(filter) {
     // set `filters`.
 
     // Get the button which was clicked.
-    const $filter_elem = $("#recent_topics_filter_buttons").find(
+    const $filter_elem = $("#recent_view_filter_buttons").find(
         `[data-filter="${CSS.escape(filter)}"]`,
     );
 
@@ -691,13 +691,13 @@ function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
     if (filters.size === 0) {
-        $("#recent_topics_filter_buttons")
+        $("#recent_view_filter_buttons")
             .find('[data-filter="all"]')
             .addClass("btn-recent-selected")
             .attr("aria-checked", "true");
     } else {
         for (const filter of filters) {
-            $("#recent_topics_filter_buttons")
+            $("#recent_view_filter_buttons")
                 .find(`[data-filter="${CSS.escape(filter)}"]`)
                 .addClass("btn-recent-selected")
                 .attr("aria-checked", "true");
