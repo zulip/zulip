@@ -6,6 +6,7 @@
     "@babel/preset-env": "^7.5.5",
     "@babel/preset-typescript": "^7.15.0",
     "@babel/register": "^7.6.2",
+    "@fontsource-variable/open-sans": "^5.0.9",
     "@formatjs/intl": "^2.0.0",
     "@giphy/js-components": "^5.0.5",
     "@giphy/js-fetch-api": "^5.0.0",

@@ -25,6 +25,9 @@ dependencies:
   '@babel/register':
     specifier: ^7.6.2
     version: 7.22.15(@babel/core@7.22.19)
+  '@fontsource-variable/open-sans':
+    specifier: ^5.0.9
+    version: 5.0.13
   '@formatjs/intl':
     specifier: ^2.0.0
     version: 2.9.2(typescript@5.2.2)
@@ -2235,6 +2238,10 @@ packages:
     resolution: {integrity: sha512-1S8uAY/MTJqVx0SC4epBq+N2yhuwtNwLbJYNZyhL2pO1ZVKn5HFXav5T41Ryzy9K9V7ZId2JB2oy/W4aCd9/2w==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
+
+  /@fontsource-variable/open-sans@5.0.13:
+    resolution: {integrity: sha512-G/lTR5vVBcwRU0vkeYqFfX1UEqHfCG52ccdVgcjwSOcDvi5jQEL3ta212qA2rKwSdhmdei600yNburmYoT1wsg==}
+    dev: false
 
   /@formatjs/cli@6.1.5:
     resolution: {integrity: sha512-tODw0+EvE14ai6ZNFT1ja879Jk3be/8ydxJPxIBfVIdm9iyoz9mWMemhMR6cGzGGv+3Heu5RxpPArc6tN27FTA==}
