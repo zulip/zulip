@@ -160,7 +160,7 @@ export function initialize() {
     // When the message selection changes, change the label on the Reply button.
     $(document).on("message_selected.zulip", () => {
         if (narrow_state.is_message_feed_visible()) {
-            // message_selected events can occur with recent topics
+            // message_selected events can occur with Recent Conversations
             // open due to "All messages" loading in the background,
             // so we only update if message feed is visible.
             update_reply_recipient_label();

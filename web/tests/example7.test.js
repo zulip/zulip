@@ -92,7 +92,7 @@ run_test("unread_ops", ({override}) => {
         },
     ];
 
-    // We don't want recent topics to process message for this test.
+    // We don't want Recent Conversations to process message for this test.
     recent_topics_util.set_visible(false);
 
     // Make our test message appear to be unread, so that

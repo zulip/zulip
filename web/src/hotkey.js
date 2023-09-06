@@ -241,11 +241,12 @@ export function process_escape_key(e) {
     if (
         recent_topics_ui.is_in_focus() &&
         // This will return false if `e.target` is not
-        // any of the recent topics elements by design.
+        // any of the Recent Conversations elements by design.
         recent_topics_ui.change_focused_element($(e.target), "escape")
     ) {
-        // Recent topics uses escape to switch focus from RT search / filters to topics table.
-        // If focus is already on the table it returns false.
+        // Recent Conversations uses escape to switch focus from
+        // search / filters to the conversations table. If focus is
+        // already on the table, it returns false.
         return true;
     }
 
@@ -484,10 +485,10 @@ export function process_enter_key(e) {
     if (recent_topics_util.is_visible()) {
         if (e.target === $("body")[0]) {
             // There's a race when using `Esc` and `Enter` to navigate to
-            // Recent Topics and then navigate to the next topic, wherein
-            // Recent Topics won't have applied focus to its table yet.
+            // Recent Conversations and then navigate to the next topic, wherein
+            // Recent Conversations won't have applied focus to its table yet.
             //
-            // Recent Topics's own navigation just lets `Enter` be
+            // Recent Conversations' own navigation just lets `Enter` be
             // treated as a click on the highlighted message, so we
             // don't need to do anything there. But if nothing is
             // focused (say, during the race or after clicking on the

@@ -810,7 +810,7 @@ export function stream_has_any_unmuted_mentions(stream_id) {
 
 export function topic_has_any_unread_mentions(stream_id, topic) {
     // Because this function is called in a loop for every displayed
-    // Recent Topics row, it's important for it to run in O(1) time.
+    // Recent Conversations row, it's important for it to run in O(1) time.
     const topic_key = stream_id + ":" + topic.toLowerCase();
     return unread_mention_topics.get(topic_key) && unread_mention_topics.get(topic_key).size > 0;
 }

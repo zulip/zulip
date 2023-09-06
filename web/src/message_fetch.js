@@ -476,7 +476,7 @@ export function initialize(home_view_loaded) {
         if (data.found_newest) {
             if (page_params.is_spectator) {
                 // Since for spectators, this is the main fetch, we
-                // hide the Recent Topics loading indicator here.
+                // hide the Recent Conversations loading indicator here.
                 recent_topics_ui.hide_loading_indicator();
             }
 
@@ -537,11 +537,11 @@ export function initialize(home_view_loaded) {
     // more performant (i.e. avoids this unnecessary extra fetch the
     // results of which are basically discarded) and better represents
     // more than a few hundred messages' history, but this strategy
-    // allows "Recent topics" to always show current data (with gaps)
+    // allows "Recent Conversations" to always show current data (with gaps)
     // on page load; the data will be complete once the algorithm
     // above catches up to present.
     //
-    // (Users will see a weird artifact where Recent topics has a gap
+    // (Users will see a weird artifact where Recent Conversations has a gap
     // between E.g. 6 days ago and 37 days ago while the catchup
     // process runs, so this strategy still results in problematic
     // visual artifacts shortly after page load; just more forgivable
@@ -553,8 +553,8 @@ export function initialize(home_view_loaded) {
         filter: new Filter([{operator: "in", operand: "home"}]),
         excludes_muted_topics: true,
     });
-    // TODO: Ideally we'd have loading indicators for recent topics at
-    // both top and bottom be managed by load_messages, but that
+    // TODO: Ideally we'd have loading indicators for Recent Conversations
+    // at both top and bottom be managed by load_messages, but that
     // likely depends on other reorganizations of the early loading
     // sequence.
     recent_topics_ui.show_loading_indicator();

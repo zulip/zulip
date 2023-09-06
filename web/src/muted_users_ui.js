@@ -55,7 +55,7 @@ export function rerender_for_muted_user() {
     activity.redraw();
     pm_list.update_private_messages();
 
-    // If a user is (un)muted, we want to update their avatars on the recent topics
+    // If a user is (un)muted, we want to update their avatars on the Recent Conversations
     // participants column.
     recent_topics_ui.complete_rerender();
 }

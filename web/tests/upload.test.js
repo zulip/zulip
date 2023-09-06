@@ -717,7 +717,7 @@ test("main_file_drop_compose_mode", ({override_rewire}) => {
     assert.equal(compose_actions_start_called, false);
     assert.equal(compose_actions_respond_to_message_called, true);
 
-    // Test drop on recent topics view
+    // Test drop on Recent Conversations view
     compose_actions_respond_to_message_called = false;
     override_rewire(message_lists, "current", {
         selected_message() {

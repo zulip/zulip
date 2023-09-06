@@ -64,7 +64,7 @@ const MAX_EXTRA_SENDERS = 10;
 // `row_focus` and `col_focus`.
 export let $current_focus_elem = "table";
 
-// If user clicks a topic in recent topics, then
+// If user clicks a topic in Recent Conversations, then
 // we store that topic here so that we can restore focus
 // to that topic when user revisits.
 let last_visited_topic = "";
@@ -105,7 +105,7 @@ export function save_filters() {
 }
 
 export function is_in_focus() {
-    // Check if user is focused on recent topics.
+    // Check if user is focused on Recent Conversations.
     return (
         is_visible() &&
         !compose_state.composing() &&
@@ -245,7 +245,7 @@ export function revive_current_focus() {
     // link and focus to the element prior to the rerender.
 
     // We try to avoid setting focus when user
-    // is not focused on recent topics.
+    // is not focused on Recent Conversations.
     if (!is_in_focus()) {
         return false;
     }
@@ -258,7 +258,7 @@ export function revive_current_focus() {
     if (is_table_focused()) {
         if (last_visited_topic) {
             // If the only message in the topic was deleted,
-            // then the topic will not be in recent topics data.
+            // then the topic will not be in Recent Conversations data.
             if (topics.get(last_visited_topic) !== undefined) {
                 const topic_last_msg_id = topics.get(last_visited_topic).last_msg_id;
                 const current_list = topics_widget.get_current_list();
@@ -563,7 +563,7 @@ export function filters_should_hide_topic(topic_data) {
     }
 
     if (!filters.has("include_muted") && topic_data.type === "stream") {
-        // We want to show the unmuted topics within muted streams in the recent topics.
+        // We want to show the unmuted topics within muted streams in Recent Conversations.
         const topic_unmuted = Boolean(user_topics.is_topic_unmuted(msg.stream_id, msg.topic));
         const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
         const stream_muted = stream_data.is_muted(msg.stream_id);
@@ -903,7 +903,7 @@ export function show() {
 
     if (is_visible()) {
         // If we're already visible, E.g. because the user hit Esc
-        // while already in the recent topics view, do nothing.
+        // while already in the Recent Conversations view, do nothing.
         return;
     }
     // Hide selected elements in the left sidebar.
@@ -911,7 +911,7 @@ export function show() {
     stream_list.handle_narrow_deactivated();
 
     // Hide "middle-column" which has html for rendering
-    // a messages narrow. We hide it and show recent topics.
+    // a messages narrow. We hide it and show Recent Conversations.
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
     set_visible(true);
@@ -953,7 +953,7 @@ export function hide() {
 
     // This solves a bug with message_view_header
     // being broken sometimes when we narrow
-    // to a filter and back to recent topics
+    // to a filter and back to Recent Conversations
     // before it completely re-rerenders.
     message_view_header.render_title_area();
 

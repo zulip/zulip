@@ -197,7 +197,7 @@ export function activate(raw_operators, opts) {
 
     // The empty narrow is the home view; so deactivate any narrow if
     // no operators were specified. Take us to all messages when this
-    // happens from recent conversations view.
+    // happens from Recent Conversations view.
     if (raw_operators.length === 0) {
         deactivate(coming_from_recent_topics);
         return;
@@ -382,7 +382,7 @@ export function activate(raw_operators, opts) {
         if (coming_from_recent_topics) {
             recent_topics_ui.hide();
         } else {
-            // If recent topics was not visible, then we are switching
+            // If Recent Conversations was not visible, then we are switching
             // from another message list view. Save the scroll position in
             // that message list, so that we can restore it if/when we
             // later navigate back to that view.
@@ -1023,7 +1023,7 @@ export function deactivate(coming_from_recent_topics = false, is_actively_scroll
       message_lists.home in it.
      */
     search.clear_search_form();
-    // Both All messages and Recent topics have `undefined` filter.
+    // Both All messages and Recent Conversations have `undefined` filter.
     // Return if already in the All message narrow.
     if (narrow_state.filter() === undefined && !coming_from_recent_topics) {
         return;
