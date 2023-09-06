@@ -279,7 +279,7 @@
         }
 
         .recent_topics_participant_avatar,
-        .recent_topics_participant_overflow {
+        .recent_view_participant_overflow {
             border: 0;
             border-radius: 6px;
             color: hsl(0deg 0% 100%);
@@ -289,7 +289,7 @@
             background-color: hsl(0deg 0% 88%);
         }
 
-        .recent_topics_participant_overflow {
+        .recent_view_participant_overflow {
             color: hsl(0deg 0% 0%);
             line-height: 24px;
         }
