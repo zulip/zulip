@@ -96,7 +96,7 @@ _Released 2023-07-05_
   [common reverse proxy mis-configurations][proxies] are detected.
 
 - Improved [reverse proxy documentation][proxies] to clarify that trust of
-  `X-Fowarded-Proto` is also necessary.
+  `X-Forwarded-Proto` is also necessary.
 
 - Removed [reverse proxy][proxies] nginx configuration files when the
   [`loadbalancer.ips`](../production/deployment.md#ips)

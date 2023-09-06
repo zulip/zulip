@@ -98,11 +98,11 @@ function get_user_info_row(user_id) {
 
 export function allow_sorting_deactivated_users_list_by_email() {
     const deactivated_users = people.get_non_active_realm_users();
-    const deactivated_humans_with_visble_email = deactivated_users.filter(
+    const deactivated_humans_with_visible_email = deactivated_users.filter(
         (user) => !user.is_bot && user.delivery_email,
     );
 
-    return deactivated_humans_with_visble_email.length !== 0;
+    return deactivated_humans_with_visible_email.length !== 0;
 }
 
 export function update_view_on_deactivate(user_id) {

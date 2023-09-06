@@ -1689,7 +1689,7 @@ class GetOldMessagesTest(ZulipTestCase):
             .values_list("recipient_id", flat=True)
             .order_by("id")
         )
-        query_ids["public_streams_recipents"] = ", ".join(str(r) for r in recipients)
+        query_ids["public_streams_recipients"] = ", ".join(str(r) for r in recipients)
         return query_ids
 
     def check_unauthenticated_response(
@@ -4006,13 +4006,13 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id IN ({public_streams_recipents}) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id IN ({public_streams_recipients}) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["streams", "public"]]'}, sql
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (recipient_id NOT IN ({public_streams_recipents})) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (recipient_id NOT IN ({public_streams_recipients})) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {

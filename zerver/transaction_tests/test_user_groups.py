@@ -122,7 +122,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
             t2: RacingThread,
             *,
             success_count: int,
-            error_messsage: str = "",
+            error_message: str = "",
         ) -> None:
             help_msg = """We access the test endpoint that wraps around the
 real subgroup update endpoint by synchronizing them after the acquisition of the
@@ -142,7 +142,7 @@ have no control over the scheduler when the barrier timeouts.
                     succeeded += 1
                     continue
 
-                self.assertEqual(response, error_messsage)
+                self.assertEqual(response, error_message)
             # Race condition resolution should only allow one thread to succeed
             self.assertEqual(
                 succeeded,
@@ -164,7 +164,7 @@ have no control over the scheduler when the barrier timeouts.
                 supergroup_id=foo_chain[0].id,
             ),
             success_count=1,
-            error_messsage="Deadlock detected",
+            error_message="Deadlock detected",
         )
 
         foo_chain = self.create_user_group_chain(realm)
@@ -184,7 +184,7 @@ have no control over the scheduler when the barrier timeouts.
                 supergroup_id=bar_chain[-1].id,
             ),
             success_count=1,
-            error_messsage="Busy lock detected",
+            error_message="Busy lock detected",
         )
 
         foo_chain = self.create_user_group_chain(realm)
