@@ -65,6 +65,9 @@ def invite_users_backend(
         raise JsonableError(_("Insufficient permission"))
 
     require_admin = invite_as in [
+        # Owners can only be invited by owners, checked by separate
+        # logic in check_role_based_permissions.
+        PreregistrationUser.INVITE_AS["REALM_OWNER"],
         PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         PreregistrationUser.INVITE_AS["MODERATOR"],
     ]
