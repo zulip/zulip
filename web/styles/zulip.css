@@ -616,7 +616,7 @@ p.n-margin {
     }
 }
 
-.recent_topics_container #recent_view_table {
+.recent_view_container #recent_view_table {
     margin-top: var(--navbar-fixed-height);
 }
 
