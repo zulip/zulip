@@ -96,7 +96,7 @@ async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
     await page.click(".brand");
 }
 
-async function expect_recent_topics(page: Page): Promise<void> {
+async function expect_recent_view(page: Page): Promise<void> {
     await page.waitForSelector("#recent_view_table", {visible: true});
     assert.strictEqual(await page.title(), "Recent conversations - Zulip Dev - Zulip");
 }
@@ -132,7 +132,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
         `#zhome [title="Narrow to your direct messages with Cordelia, Lear's daughter, King Hamlet"]`,
     );
     await un_narrow_by_clicking_org_icon(page);
-    await expect_recent_topics(page);
+    await expect_recent_view(page);
 }
 
 async function search_and_check(
