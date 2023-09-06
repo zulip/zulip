@@ -33,8 +33,8 @@ import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
-import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
+import * as recent_view_ui from "./recent_view_ui";
 import * as resize from "./resize";
 import * as search from "./search";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
@@ -380,7 +380,7 @@ export function activate(raw_operators, opts) {
         reset_ui_state();
 
         if (coming_from_recent_topics) {
-            recent_topics_ui.hide();
+            recent_view_ui.hide();
         } else {
             // If Recent Conversations was not visible, then we are switching
             // from another message list view. Save the scroll position in

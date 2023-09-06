@@ -35,7 +35,7 @@ import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as search from "./search";
@@ -239,10 +239,10 @@ export function in_content_editable_widget(e) {
 // Returns true if we handled it, false if the browser should.
 export function process_escape_key(e) {
     if (
-        recent_topics_ui.is_in_focus() &&
+        recent_view_ui.is_in_focus() &&
         // This will return false if `e.target` is not
         // any of the Recent Conversations elements by design.
-        recent_topics_ui.change_focused_element($(e.target), "escape")
+        recent_view_ui.change_focused_element($(e.target), "escape")
     ) {
         // Recent Conversations uses escape to switch focus from
         // search / filters to the conversations table. If focus is
@@ -494,7 +494,7 @@ export function process_enter_key(e) {
             // focused (say, during the race or after clicking on the
             // sidebars, it's worth focusing the table so that hitting
             // `Enter` again will navigate you somewhere.
-            const focus_changed = recent_topics_ui.revive_current_focus();
+            const focus_changed = recent_view_ui.revive_current_focus();
             return focus_changed;
         }
 
@@ -626,8 +626,8 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
-            if (recent_topics_ui.is_in_focus()) {
-                return recent_topics_ui.change_focused_element($(e.target), event_name);
+            if (recent_view_ui.is_in_focus()) {
+                return recent_view_ui.change_focused_element($(e.target), event_name);
             }
     }
 

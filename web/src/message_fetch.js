@@ -13,7 +13,7 @@ import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
@@ -52,7 +52,7 @@ function process_result(data, opts) {
     }
 
     huddle_data.process_loaded_messages(messages);
-    recent_topics_ui.process_messages(messages);
+    recent_view_ui.process_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view();
 
@@ -477,7 +477,7 @@ export function initialize(home_view_loaded) {
             if (page_params.is_spectator) {
                 // Since for spectators, this is the main fetch, we
                 // hide the Recent Conversations loading indicator here.
-                recent_topics_ui.hide_loading_indicator();
+                recent_view_ui.hide_loading_indicator();
             }
 
             // See server_events.js for this callback.
@@ -524,7 +524,7 @@ export function initialize(home_view_loaded) {
 
         // This optimization requires a bit of duplicated loading
         // indicator code, here and hiding logic in hide_more.
-        recent_topics_ui.show_loading_indicator();
+        recent_view_ui.show_loading_indicator();
         return;
     }
 
@@ -557,12 +557,12 @@ export function initialize(home_view_loaded) {
     // at both top and bottom be managed by load_messages, but that
     // likely depends on other reorganizations of the early loading
     // sequence.
-    recent_topics_ui.show_loading_indicator();
+    recent_view_ui.show_loading_indicator();
     load_messages({
         anchor: "newest",
         num_before: consts.recent_topics_initial_fetch_size,
         num_after: 0,
         msg_list: recent_topics_message_list,
-        cont: recent_topics_ui.hide_loading_indicator,
+        cont: recent_view_ui.hide_loading_indicator,
     });
 }
