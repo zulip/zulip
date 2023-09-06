@@ -128,7 +128,7 @@ export function update_buttons_for_stream() {
     update_buttons(text_stream);
 }
 
-export function update_buttons_for_recent_topics() {
+export function update_buttons_for_recent_view() {
     const text_stream = $t({defaultMessage: "New stream message"});
     $("#left_bar_compose_stream_button_big").attr(
         "data-tooltip-template-id",
