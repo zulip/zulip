@@ -750,7 +750,7 @@ test_people("message_methods", () => {
     assert.equal(people.medium_avatar_url_for_person(ashton), "/avatar/303/medium?version=0");
 
     muted_users.add_muted_user(30);
-    assert.deepEqual(people.sender_info_for_recent_topics_row([30]), [
+    assert.deepEqual(people.sender_info_for_recent_view_row([30]), [
         {
             avatar_url_small: "http://zulip.zulipdev.com/avatar/30?s=50",
             is_muted: true,

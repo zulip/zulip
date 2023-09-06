@@ -475,7 +475,7 @@ function format_conversation(conversation_data) {
         displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     }
 
-    context.senders = people.sender_info_for_recent_topics_row(senders);
+    context.senders = people.sender_info_for_recent_view_row(senders);
     context.other_senders_count = Math.max(0, all_senders.length - MAX_AVATAR);
     extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
     const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
