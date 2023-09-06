@@ -424,14 +424,14 @@ test("file_drop", ({override, override_rewire}) => {
     dragenter_handler(drag_event);
     assert.equal(prevent_default_counter, 2);
 
-    let stop_propogation_counter = 0;
+    let stop_propagation_counter = 0;
     const files = ["file1", "file2"];
     const drop_event = {
         preventDefault() {
             prevent_default_counter += 1;
         },
         stopPropagation() {
-            stop_propogation_counter += 1;
+            stop_propagation_counter += 1;
         },
         originalEvent: {
             dataTransfer: {
@@ -451,7 +451,7 @@ test("file_drop", ({override, override_rewire}) => {
     drop_handler(drop_event);
     assert.ok(compose_actions_start_called);
     assert.equal(prevent_default_counter, 3);
-    assert.equal(stop_propogation_counter, 1);
+    assert.equal(stop_propagation_counter, 1);
     assert.equal(upload_files_called, true);
 });
 
