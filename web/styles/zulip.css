@@ -120,7 +120,7 @@ body {
     */
     --browser-overlay-scrollbar-width: 10px;
 
-    /* This is a rough estimate for height occupied by recent topics filters.
+    /* This is a rough estimate for height occupied by Recent Conversations filters.
        We expect `resize.js` to update this once UI is initialized. */
     --recent-topics-filters-height: 50px;
 

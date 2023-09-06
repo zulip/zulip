@@ -43,7 +43,7 @@ export function update_top_of_narrow_notices(msg_list) {
     ) {
         const filter = narrow_state.filter();
         if (filter === undefined && !narrow_state.is_message_feed_visible()) {
-            // user moved away from the narrow / filter to recent topics.
+            // user moved away from the narrow / filter to Recent Conversations.
             return;
         }
         // Potentially display the notice that lets users know

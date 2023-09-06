@@ -49,7 +49,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
         timeout: 5000,
         success(data) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
-                // We unnarrowed or moved to Recent Topics in the meantime.
+                // We unnarrowed or moved to Recent Conversations in the meantime.
                 return;
             }
 
@@ -331,7 +331,7 @@ export function update_messages(events) {
                 }
                 moved_message.last_edit_timestamp = event.edit_timestamp;
 
-                // Remove the recent topics entry for the old topics;
+                // Remove the Recent Conversations entry for the old topics;
                 // must be called before we call set_message_topic.
                 //
                 // TODO: Use a single bulk request to do this removal.
@@ -363,7 +363,7 @@ export function update_messages(events) {
                     moved_message.display_recipient = new_stream_name;
                 }
 
-                // Add the recent topics entry for the new stream/topics.
+                // Add the Recent Conversations entry for the new stream/topics.
                 stream_topic_history.add_message({
                     stream_id: moved_message.stream_id,
                     topic_name: moved_message.topic,

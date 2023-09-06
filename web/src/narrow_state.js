@@ -22,7 +22,7 @@ export function active() {
 
 export function filter() {
     // Both, `All messages` and
-    // `Recent topics` have `current_filter=undefined`
+    // `Recent Conversations` have `current_filter=undefined`
     return current_filter;
 }
 

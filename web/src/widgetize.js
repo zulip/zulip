@@ -23,7 +23,7 @@ function set_widget_in_message($row, $widget_elem) {
     const $content_holder = $row.find(".message_content");
 
     // Avoid adding the $widget_elem if it already exists.
-    // This can happen when the app loads in the "Recent topics"
+    // This can happen when the app loads in the "Recent Conversations"
     // view and the user changes the view to "All messages".
     // This is important since jQuery removes all the event handlers
     // on `empty()`ing an element.

@@ -334,7 +334,7 @@ test("process_pms", () => {
         id: 3,
     });
 
-    // Recent topics displays avatars in the opposite order to this since
+    // Recent Conversations displays avatars in the opposite order to this since
     // that was simpler to implement in HTML.
     assert.deepEqual(rs.get_pm_recent_senders(user_ids_string), {
         participants: [1, 3, 2],
