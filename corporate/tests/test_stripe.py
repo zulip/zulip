@@ -2735,7 +2735,7 @@ class StripeTest(StripeTestCase):
                 response = self.client_get("/billing/")
                 self.assert_in_success_response(
                     [
-                        "Your plan will be downgraded to <strong>Zulip Limited</strong> on "
+                        "Your plan will be downgraded to <strong>Zulip Free</strong> on "
                         "<strong>January 2, 2013</strong>",
                         "You plan is scheduled for downgrade on <strong>January 2, 2013</strong>",
                         "Cancel downgrade",
