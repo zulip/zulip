@@ -193,13 +193,13 @@ export function activate(raw_operators, opts) {
         return;
     }
 
-    const coming_from_recent_topics = recent_view_util.is_visible();
+    const coming_from_recent_view = recent_view_util.is_visible();
 
     // The empty narrow is the home view; so deactivate any narrow if
     // no operators were specified. Take us to all messages when this
     // happens from Recent Conversations view.
     if (raw_operators.length === 0) {
-        deactivate(coming_from_recent_topics);
+        deactivate(coming_from_recent_view);
         return;
     }
 
@@ -379,7 +379,7 @@ export function activate(raw_operators, opts) {
         // recursively.
         reset_ui_state();
 
-        if (coming_from_recent_topics) {
+        if (coming_from_recent_view) {
             recent_view_ui.hide();
         } else {
             // If Recent Conversations was not visible, then we are switching
@@ -1006,7 +1006,7 @@ function handle_post_narrow_deactivate_processes() {
     message_feed_top_notices.update_top_of_narrow_notices(message_lists.home);
 }
 
-export function deactivate(coming_from_recent_topics = false, is_actively_scrolling = false) {
+export function deactivate(coming_from_recent_view = false, is_actively_scrolling = false) {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -1025,7 +1025,7 @@ export function deactivate(coming_from_recent_topics = false, is_actively_scroll
     search.clear_search_form();
     // Both All messages and Recent Conversations have `undefined` filter.
     // Return if already in the All message narrow.
-    if (narrow_state.filter() === undefined && !coming_from_recent_topics) {
+    if (narrow_state.filter() === undefined && !coming_from_recent_view) {
         return;
     }
     blueslip.debug("Unnarrowed");
