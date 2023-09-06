@@ -79,10 +79,10 @@ export const COLUMNS = {
     mute: 3,
 };
 
-// The number of selectable actions in a recent_topics.  Used to
-// implement wraparound of elements with the right/left keys.  Must be
-// increased when we add new actions, or rethought if we add optional
-// actions that only appear in some rows.
+// The number of selectable actions in a Recent Conversations view.
+// Used to implement wraparound of elements with the right/left keys.
+// Must be increased when we add new actions, or rethought if we add
+// optional actions that only appear in some rows.
 const MAX_SELECTABLE_TOPIC_COLS = 4;
 const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 3;
 
