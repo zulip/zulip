@@ -269,7 +269,7 @@ export async function log_in(
     await fill_form(page, "#login_form", params);
     await page.$eval("#login_form", (form) => (form as HTMLFormElement).submit());
 
-    await page.waitForSelector("#recent_topics_filter_buttons", {visible: true});
+    await page.waitForSelector("#recent_view_filter_buttons", {visible: true});
 }
 
 export async function log_out(page: Page): Promise<void> {
