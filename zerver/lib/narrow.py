@@ -909,14 +909,18 @@ def exclude_muting_conditions(
 
 
 def get_base_query_for_search(
-    user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
+    realm_id: int, user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
 ) -> Tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
+    realm_cond = column("realm_id", Integer) == literal(realm_id)
     if not need_user_message:
         assert need_message
-        query = select(column("id", Integer).label("message_id")).select_from(
-            table("zerver_message")
+        query = (
+            select(column("id", Integer).label("message_id"))
+            .select_from(table("zerver_message"))
+            .where(realm_cond)
         )
+
         inner_msg_id_col = literal_column("zerver_message.id", Integer)
         return (query, inner_msg_id_col)
 
@@ -924,6 +928,7 @@ def get_base_query_for_search(
     if need_message:
         query = (
             select(column("message_id", Integer), column("flags", Integer))
+            .where(realm_cond)
             .where(column("user_profile_id", Integer) == literal(user_profile.id))
             .select_from(
                 join(
@@ -1004,6 +1009,7 @@ def find_first_unread_anchor(
     need_message = True
 
     query, inner_msg_id_col = get_base_query_for_search(
+        realm_id=user_profile.realm_id,
         user_profile=user_profile,
         need_message=need_message,
         need_user_message=need_user_message,
@@ -1278,6 +1284,7 @@ def fetch_messages(
 
     query: SelectBase
     query, inner_msg_id_col = get_base_query_for_search(
+        realm_id=realm.id,
         user_profile=user_profile,
         need_message=need_message,
         need_user_message=need_user_message,
