@@ -125,7 +125,7 @@
             margin: 0 0 10px;
         }
 
-        #recent_topics_search {
+        #recent_view_search {
             flex-grow: 1;
             padding-right: 20px;
             white-space: nowrap;
