@@ -51,7 +51,7 @@ import "../../styles/left_sidebar.css";
 import "../../styles/right_sidebar.css";
 import "../../styles/lightbox.css";
 import "../../styles/popovers.css";
-import "../../styles/recent_topics.css";
+import "../../styles/recent_view.css";
 import "../../styles/typing_notifications.css";
 import "../../styles/hotspots.css";
 import "../../styles/dark_theme.css";
