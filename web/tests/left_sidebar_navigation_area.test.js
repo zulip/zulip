@@ -45,7 +45,7 @@ run_test("narrowing", () => {
     set_global("setTimeout", (f) => {
         f();
     });
-    left_sidebar_navigation_area.narrow_to_recent_topics();
+    left_sidebar_navigation_area.narrow_to_recent_view();
     assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
