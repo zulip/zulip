@@ -192,7 +192,7 @@ mock_esm("../src/resize", {
 const {all_messages_data} = zrequire("all_messages_data");
 const people = zrequire("people");
 const rt = zrequire("recent_view_ui");
-const recent_topics_util = zrequire("recent_topics_util");
+const recent_view_util = zrequire("recent_view_util");
 const rt_data = zrequire("recent_topics_data");
 const muted_users = zrequire("muted_users");
 
@@ -479,7 +479,7 @@ test("test_filter_all", ({mock_template}) => {
     i = row_data.length;
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    recent_topics_util.set_visible(true);
+    recent_view_util.set_visible(true);
     rt.set_filter("all");
     rt.process_messages([messages[0]]);
 
@@ -538,7 +538,7 @@ test("test_filter_pm", ({mock_template}) => {
 
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    recent_topics_util.set_visible(true);
+    recent_view_util.set_visible(true);
     rt.set_filter("include_private");
 
     expected_data_to_replace_in_list_widget = [
@@ -597,7 +597,7 @@ test("test_filter_unread", ({mock_template}) => {
     });
 
     rt.clear_for_tests();
-    recent_topics_util.set_visible(true);
+    recent_view_util.set_visible(true);
     rt.set_default_focus();
 
     stub_out_filter_buttons();
@@ -718,7 +718,7 @@ test("test_filter_participated", ({mock_template}) => {
     });
 
     rt.clear_for_tests();
-    recent_topics_util.set_visible(true);
+    recent_view_util.set_visible(true);
     rt.set_default_focus();
     stub_out_filter_buttons();
     expected_filter_participated = false;
@@ -799,7 +799,7 @@ test("test_filter_participated", ({mock_template}) => {
 });
 
 test("test_update_unread_count", () => {
-    recent_topics_util.set_visible(false);
+    recent_view_util.set_visible(false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -820,7 +820,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     });
 
     stub_out_filter_buttons();
-    recent_topics_util.set_visible(true);
+    recent_view_util.set_visible(true);
     rt.set_default_focus();
     rt.set_filter("all");
     rt.process_messages(messages);
@@ -949,7 +949,7 @@ test("test_reify_local_echo_message", ({mock_template}) => {
 
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    recent_topics_util.set_visible(true);
+    recent_view_util.set_visible(true);
     rt.set_filter("all");
     rt.process_messages(messages);
 
@@ -996,7 +996,7 @@ test("test_reify_local_echo_message", ({mock_template}) => {
 });
 
 test("test_delete_messages", ({override}) => {
-    recent_topics_util.set_visible(false);
+    recent_view_util.set_visible(false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -1036,7 +1036,7 @@ test("test_delete_messages", ({override}) => {
 
 test("test_topic_edit", ({override}) => {
     override(all_messages_data, "all_messages", () => messages);
-    recent_topics_util.set_visible(false);
+    recent_view_util.set_visible(false);
 
     // NOTE: This test should always run in the end as it modified the messages data.
     rt.clear_for_tests();

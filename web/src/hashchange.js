@@ -18,7 +18,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as recent_view_ui from "./recent_view_ui";
-import * as recent_topics_util from "./recent_topics_util";
+import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -84,7 +84,7 @@ function set_hash(hash) {
 }
 
 function maybe_hide_recent_topics() {
-    if (recent_topics_util.is_visible()) {
+    if (recent_view_util.is_visible()) {
         recent_view_ui.hide();
         return true;
     }

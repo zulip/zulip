@@ -23,7 +23,7 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/spectators", {
     login_to_access() {},
 });
-const recent_topics_util = mock_esm("../src/recent_topics_util", {
+const recent_view_util = mock_esm("../src/recent_view_util", {
     is_visible() {},
 });
 
@@ -775,10 +775,10 @@ run_test("narrow_compute_title", ({override}) => {
 
     // Recent conversations & All messages have `undefined` filter.
     filter = undefined;
-    override(recent_topics_util, "is_visible", () => true);
+    override(recent_view_util, "is_visible", () => true);
     assert.equal(narrow.compute_narrow_title(filter), "translated: Recent conversations");
 
-    override(recent_topics_util, "is_visible", () => false);
+    override(recent_view_util, "is_visible", () => false);
     assert.equal(narrow.compute_narrow_title(filter), "translated: All messages");
 
     // Search & uncommon narrows
