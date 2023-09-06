@@ -1117,7 +1117,7 @@ export function change_focused_element($elt, input_key) {
             case "vim_right":
             case "vim_down":
             case "vim_up":
-            case "open_recent_topics":
+            case "open_recent_view":
                 return false;
             case "shift_tab":
                 $current_focus_elem = filter_buttons().last();
@@ -1203,7 +1203,7 @@ export function change_focused_element($elt, input_key) {
         switch (input_key) {
             case "escape":
                 return false;
-            case "open_recent_topics":
+            case "open_recent_view":
                 set_default_focus();
                 return true;
             case "shift_tab":
