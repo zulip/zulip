@@ -458,7 +458,7 @@
         }
     }
 
-    #recent_topics_bottom_whitespace {
+    #recent_view_bottom_whitespace {
         /* For visual reasons, in a message feed, we require a large
          * bottom_whitespace to make it convenient to display new
          * messages as they come in and prevent occluding the last
