@@ -429,12 +429,12 @@ test("test_recent_topics_show", ({mock_template, override}) => {
         is_spectator: false,
     };
 
-    mock_template("recent_topics_table.hbs", false, (data) => {
+    mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
-        return "<recent_topics table stub>";
+        return "<recent_view table stub>";
     });
 
-    mock_template("recent_topic_row.hbs", false, () => {});
+    mock_template("recent_view_row.hbs", false, () => {});
 
     stub_out_filter_buttons();
     // We don't test the css calls; we just skip over them.
@@ -464,14 +464,14 @@ test("test_filter_all", ({mock_template}) => {
     let row_data;
     let i;
 
-    mock_template("recent_topics_table.hbs", false, (data) => {
+    mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
     });
 
-    mock_template("recent_topic_row.hbs", false, (data) => {
+    mock_template("recent_view_row.hbs", false, (data) => {
         i -= 1;
         assert.deepEqual(data, row_data[i]);
-        return "<recent_topics row stub>";
+        return "<recent_view row stub>";
     });
 
     // topic is not muted
@@ -523,7 +523,7 @@ test("test_filter_pm", ({mock_template}) => {
     ];
     let i = 0;
 
-    mock_template("recent_topics_table.hbs", false, (data) => {
+    mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
     });
 
@@ -532,7 +532,7 @@ test("test_filter_pm", ({mock_template}) => {
         i += 1;
     });
 
-    mock_template("recent_topic_row.hbs", true, (_data, html) => {
+    mock_template("recent_view_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
     });
 
@@ -556,7 +556,7 @@ test("test_filter_unread", ({mock_template}) => {
     let expected_filter_unread = false;
     page_params.is_spectator = false;
 
-    mock_template("recent_topics_table.hbs", false, (data) => {
+    mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, {
             filter_participated: false,
             filter_unread: expected_filter_unread,
@@ -567,10 +567,10 @@ test("test_filter_unread", ({mock_template}) => {
         });
     });
 
-    mock_template("recent_topics_filters.hbs", false, (data) => {
+    mock_template("recent_view_filters.hbs", false, (data) => {
         assert.equal(data.filter_unread, expected_filter_unread);
         assert.equal(data.filter_participated, false);
-        return "<recent_topics table stub>";
+        return "<recent_view table stub>";
     });
 
     let i = 0;
@@ -587,13 +587,13 @@ test("test_filter_unread", ({mock_template}) => {
         [1, "topic-1", 0, false],
     ]);
 
-    mock_template("recent_topic_row.hbs", false, (data) => {
+    mock_template("recent_view_row.hbs", false, (data) => {
         // All the row will be processed.
         if (row_data[i]) {
             assert.deepEqual(data, row_data[i]);
             i += 1;
         }
-        return "<recent_topics row stub>";
+        return "<recent_view row stub>";
     });
 
     rt.clear_for_tests();
@@ -678,7 +678,7 @@ test("test_filter_participated", ({mock_template}) => {
     let expected_filter_participated;
 
     page_params.is_spectator = false;
-    mock_template("recent_topics_table.hbs", false, (data) => {
+    mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, {
             filter_participated: expected_filter_participated,
             filter_unread: false,
@@ -689,10 +689,10 @@ test("test_filter_participated", ({mock_template}) => {
         });
     });
 
-    mock_template("recent_topics_filters.hbs", false, (data) => {
+    mock_template("recent_view_filters.hbs", false, (data) => {
         assert.equal(data.filter_unread, false);
         assert.equal(data.filter_participated, expected_filter_participated);
-        return "<recent_topics table stub>";
+        return "<recent_view table stub>";
     });
 
     const row_data = generate_topic_data([
@@ -708,13 +708,13 @@ test("test_filter_participated", ({mock_template}) => {
     ]);
     let i = 0;
 
-    mock_template("recent_topic_row.hbs", false, (data) => {
+    mock_template("recent_view_row.hbs", false, (data) => {
         // All the row will be processed.
         if (row_data[i]) {
             assert.deepEqual(data, row_data[i]);
             i += 1;
         }
-        return "<recent_topics row stub>";
+        return "<recent_view row stub>";
     });
 
     rt.clear_for_tests();
@@ -814,8 +814,8 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     override_rewire(rt, "inplace_rerender", noop);
     rt.clear_for_tests();
 
-    mock_template("recent_topics_table.hbs", false, () => {});
-    mock_template("recent_topic_row.hbs", true, (_data, html) => {
+    mock_template("recent_view_table.hbs", false, () => {});
+    mock_template("recent_view_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
     });
 
@@ -944,8 +944,8 @@ test("basic assertions", ({mock_template, override_rewire}) => {
 });
 
 test("test_reify_local_echo_message", ({mock_template}) => {
-    mock_template("recent_topics_table.hbs", false, () => {});
-    mock_template("recent_topic_row.hbs", false, () => {});
+    mock_template("recent_view_table.hbs", false, () => {});
+    mock_template("recent_view_row.hbs", false, () => {});
 
     rt.clear_for_tests();
     stub_out_filter_buttons();
