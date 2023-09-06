@@ -10,7 +10,7 @@ import * as overlays from "./overlays";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as settings_muted_users from "./settings_muted_users";
 
 export function mute_user(user_id) {
@@ -57,7 +57,7 @@ export function rerender_for_muted_user() {
 
     // If a user is (un)muted, we want to update their avatars on the Recent Conversations
     // participants column.
-    recent_topics_ui.complete_rerender();
+    recent_view_ui.complete_rerender();
 }
 
 export function handle_user_updates(muted_user_ids) {

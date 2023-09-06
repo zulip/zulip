@@ -24,7 +24,7 @@ mock_esm("../src/message_list_view", {
     MessageListView,
 });
 
-mock_esm("../src/recent_topics_ui", {
+mock_esm("../src/recent_view_ui", {
     process_messages: noop,
     show_loading_indicator: noop,
     hide_loading_indicator: noop,

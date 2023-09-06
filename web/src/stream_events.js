@@ -10,7 +10,7 @@ import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as settings_notifications from "./settings_notifications";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
@@ -54,7 +54,7 @@ export function update_property(stream_id, property, value, other_values) {
         case "is_muted":
             stream_muting.update_is_muted(sub, value);
             stream_list.refresh_muted_or_unmuted_stream(sub);
-            recent_topics_ui.complete_rerender();
+            recent_view_ui.complete_rerender();
             break;
         case "desktop_notifications":
         case "audible_notifications":

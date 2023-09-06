@@ -21,7 +21,7 @@ import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
@@ -308,7 +308,7 @@ export function respond_to_message(opts) {
     let message;
     let msg_type;
     if (recent_topics_util.is_visible()) {
-        message = recent_topics_ui.get_focused_row_message();
+        message = recent_view_ui.get_focused_row_message();
         if (message === undefined) {
             // Open empty compose with nothing pre-filled since
             // user is not focused on any table row.

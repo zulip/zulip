@@ -29,7 +29,7 @@ import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
-import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_view_ui from "./recent_view_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_display from "./settings_display";
@@ -641,7 +641,7 @@ export function initialize() {
         if (!user_ids_string || user_ids_string.split(",").length !== 1) {
             return;
         }
-        const title_data = recent_topics_ui.get_pm_tooltip_data(user_ids_string);
+        const title_data = recent_view_ui.get_pm_tooltip_data(user_ids_string);
         const noop = () => {};
         do_render_buddy_list_tooltip($elem, title_data, noop, noop, false, undefined, false);
     });

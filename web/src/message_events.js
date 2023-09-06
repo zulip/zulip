@@ -21,8 +21,8 @@ import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
-import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
+import * as recent_view_ui from "./recent_view_ui";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
@@ -164,7 +164,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    recent_topics_ui.process_messages(messages);
+    recent_view_ui.process_messages(messages);
 }
 
 export function update_messages(events) {
@@ -236,7 +236,7 @@ export function update_messages(events) {
                     anchor_message.stream_id,
                     anchor_message.topic,
                 );
-                recent_topics_ui.inplace_rerender(topic_key);
+                recent_view_ui.inplace_rerender(topic_key);
             }
         }
 
@@ -510,7 +510,7 @@ export function update_messages(events) {
                 new_topic: post_edit_topic,
             });
             unread.clear_and_populate_unread_mention_topics();
-            recent_topics_ui.process_topic_edit(...args);
+            recent_view_ui.process_topic_edit(...args);
         }
 
         // Rerender "Message edit history" if it was open to the edited message.
@@ -570,7 +570,7 @@ export function remove_messages(message_ids) {
         list.remove_and_rerender(message_ids);
     }
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
-    recent_topics_ui.update_topics_of_deleted_message_ids(message_ids);
+    recent_view_ui.update_topics_of_deleted_message_ids(message_ids);
     starred_messages.remove(message_ids);
     starred_messages_ui.rerender_ui();
 }

@@ -191,7 +191,7 @@ mock_esm("../src/resize", {
 
 const {all_messages_data} = zrequire("all_messages_data");
 const people = zrequire("people");
-const rt = zrequire("recent_topics_ui");
+const rt = zrequire("recent_view_ui");
 const recent_topics_util = zrequire("recent_topics_util");
 const rt_data = zrequire("recent_topics_data");
 const muted_users = zrequire("muted_users");
