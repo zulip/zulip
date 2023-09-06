@@ -312,7 +312,7 @@ export function respond_to_message(opts) {
         if (message === undefined) {
             // Open empty compose with nothing pre-filled since
             // user is not focused on any table row.
-            start("stream", {trigger: "recent_topics_nofocus"});
+            start("stream", {trigger: "recent_view_nofocus"});
             return;
         }
     } else {

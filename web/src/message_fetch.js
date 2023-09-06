@@ -25,7 +25,7 @@ const consts = {
     narrow_after: 50,
     num_before_home_anchor: 200,
     num_after_home_anchor: 200,
-    recent_topics_initial_fetch_size: 400,
+    recent_view_initial_fetch_size: 400,
     backward_batch_size: 100,
     forward_batch_size: 100,
     catch_up_batch_size: 1000,
@@ -549,7 +549,7 @@ export function initialize(home_view_loaded) {
     //
     // This MessageList is defined similarly to home_message_list,
     // without a `table_name` attached.
-    const recent_topics_message_list = new message_list.MessageList({
+    const recent_view_message_list = new message_list.MessageList({
         filter: new Filter([{operator: "in", operand: "home"}]),
         excludes_muted_topics: true,
     });
@@ -560,9 +560,9 @@ export function initialize(home_view_loaded) {
     recent_view_ui.show_loading_indicator();
     load_messages({
         anchor: "newest",
-        num_before: consts.recent_topics_initial_fetch_size,
+        num_before: consts.recent_view_initial_fetch_size,
         num_after: 0,
-        msg_list: recent_topics_message_list,
+        msg_list: recent_view_message_list,
         cont: recent_view_ui.hide_loading_indicator,
     });
 }
