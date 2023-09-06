@@ -1,9 +1,9 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_recent_topic_row from "../templates/recent_topic_row.hbs";
-import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
-import render_recent_topics_body from "../templates/recent_topics_table.hbs";
+import render_recent_view_filters from "../templates/recent_view_filters.hbs";
+import render_recent_view_row from "../templates/recent_view_row.hbs";
+import render_recent_view_body from "../templates/recent_view_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as blueslip from "./blueslip";
@@ -706,7 +706,7 @@ function show_selected_filters() {
 }
 
 export function update_filters_view() {
-    const rendered_filters = render_recent_topics_filters({
+    const rendered_filters = render_recent_view_filters({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
@@ -844,7 +844,7 @@ export function complete_rerender() {
         return;
     }
 
-    const rendered_body = render_recent_topics_body({
+    const rendered_body = render_recent_view_body({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
@@ -867,7 +867,7 @@ export function complete_rerender() {
         get_item: ListWidget.default_get_item,
         $parent_container: $("#recent_topics_table"),
         modifier(item) {
-            return render_recent_topic_row(format_conversation(item));
+            return render_recent_view_row(format_conversation(item));
         },
         filter: {
             // We use update_filters_view & filters_should_hide_topic to do all the
