@@ -246,7 +246,7 @@
             padding-left: 0;
         }
 
-        .recent_topics_participants {
+        .recent_view_participants {
             display: inline-flex; /* Causes LI items to display in row. */
             list-style-type: none;
             margin: auto; /* Centers vertically / horizontally in flex container. */
