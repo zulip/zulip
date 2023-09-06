@@ -812,7 +812,7 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .recent_topics_participant_overflow {
+    .recent_view_participant_overflow {
         color: hsl(0deg 0% 100%) !important;
         background-color: hsl(211deg 18% 25%) !important;
     }
