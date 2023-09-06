@@ -16,7 +16,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
-import * as recent_topics_data from "./recent_topics_data";
+import * as recent_view_data from "./recent_view_data";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
 import * as stream_data from "./stream_data";
@@ -366,7 +366,7 @@ export function reify_message_id(local_id, server_id) {
     message_store.reify_message_id(opts);
     update_message_lists(opts);
     notifications.reify_message_id(opts);
-    recent_topics_data.reify_message_id_if_available(opts);
+    recent_view_data.reify_message_id_if_available(opts);
 }
 
 export function update_message_lists({old_id, new_id}) {
