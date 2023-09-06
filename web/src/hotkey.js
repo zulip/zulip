@@ -163,7 +163,7 @@ const keypress_mappings = {
     113: {name: "query_streams", message_view_only: true}, // 'q'
     114: {name: "reply_message", message_view_only: true}, // 'r'
     115: {name: "toggle_conversation_view", message_view_only: true}, // 's'
-    116: {name: "open_recent_topics", message_view_only: true}, // 't'
+    116: {name: "open_recent_view", message_view_only: true}, // 't'
     117: {name: "show_sender_info", message_view_only: true}, // 'u'
     118: {name: "show_lightbox", message_view_only: true}, // 'v'
     119: {name: "query_users", message_view_only: true}, // 'w'
@@ -625,7 +625,7 @@ export function process_hotkey(e, hotkey) {
         case "vim_right":
         case "tab":
         case "shift_tab":
-        case "open_recent_topics":
+        case "open_recent_view":
             if (recent_view_ui.is_in_focus()) {
                 return recent_view_ui.change_focused_element($(e.target), event_name);
             }
@@ -872,7 +872,7 @@ export function process_hotkey(e, hotkey) {
         case "p_key":
             narrow.narrow_to_next_pm_string({trigger: "hotkey"});
             return true;
-        case "open_recent_topics":
+        case "open_recent_view":
             browser_history.go_to_location("#recent");
             return true;
         case "all_messages":
