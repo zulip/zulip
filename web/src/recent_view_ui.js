@@ -29,7 +29,7 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
-import {get, process_message, topics} from "./recent_topics_data";
+import {get, process_message, topics} from "./recent_view_data";
 import {get_key_from_message, get_topic_key, is_visible, set_visible} from "./recent_view_util";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
