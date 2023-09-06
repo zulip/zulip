@@ -49,7 +49,59 @@ let current_user_sidebar_user_id;
 
 let userlist_placement = "right";
 
+class PopoverMenu {
+    constructor() {
+        this.instance = null;
+    }
+
+    is_open() {
+        return Boolean(this.instance);
+    }
+
+    hide() {
+        if (this.is_open()) {
+            this.instance.destroy();
+            this.instance = undefined;
+        }
+    }
+
+    handle_keyboard(key) {
+        if (!this.is_open()) {
+            blueslip.error("Trying to get the items when popover is closed.");
+            return;
+        }
+
+        const $popover = $(this.instance?.popper);
+        if (!$popover) {
+            blueslip.error("Cannot find popover data.");
+            return;
+        }
+
+        const $items = $("li:not(.divider):visible a", $popover);
+        popover_items_handle_keyboard(key, $items);
+    }
+}
+
+export const manage_menu = new PopoverMenu();
+
+const user_card_popovers = {
+    manage_menu,
+};
+
+export function any_active() {
+    return Object.values(user_card_popovers).some((instance) => instance.is_open());
+}
+
+export function hide_all_instances() {
+    for (const key in user_card_popovers) {
+        if (user_card_popovers[key].hide) {
+            user_card_popovers[key].hide();
+        }
+    }
+}
+
 export function hide_all_user_card_popovers() {
+    hide_all_instances();
     hide_user_card_popover_manage_menu();
     hide_message_user_card_popover();
     hide_user_sidebar_popover();
