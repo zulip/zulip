@@ -471,7 +471,7 @@
          */
         height: 120px;
 
-        #recent_topics_loading_messages_indicator,
+        #recent_view_loading_messages_indicator,
         .bottom-messages-logo {
             display: block;
             position: absolute;

@@ -1404,7 +1404,7 @@
 
     #request-progress-status-banner .loading-indicator,
     #loading_older_messages_indicator,
-    #recent_topics_loading_messages_indicator {
+    #recent_view_loading_messages_indicator {
         & path {
             fill: hsl(0deg 0% 100%);
         }
