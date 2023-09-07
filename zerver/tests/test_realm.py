@@ -1241,6 +1241,10 @@ class RealmAPITest(ZulipTestCase):
                     and not setting_permission_configuration.allow_nobody_group
                 )
                 or (
+                    user_group.name == UserGroup.EVERYONE_GROUP_NAME
+                    and not setting_permission_configuration.allow_everyone_group
+                )
+                or (
                     user_group.name == UserGroup.OWNERS_GROUP_NAME
                     and not setting_permission_configuration.allow_owners_group
                 )

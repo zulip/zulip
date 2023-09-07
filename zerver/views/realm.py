@@ -318,6 +318,7 @@ def update_realm(
                 allow_internet_group=permissions_configuration.allow_internet_group,
                 allow_owners_group=permissions_configuration.allow_owners_group,
                 allow_nobody_group=permissions_configuration.allow_nobody_group,
+                allow_everyone_group=permissions_configuration.allow_everyone_group,
             )
             do_change_realm_permission_group_setting(
                 realm, setting_name, user_group, acting_user=user_profile
