@@ -48,14 +48,13 @@ from zerver.decorator import (
 )
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
-    ErrorCode,
     JsonableError,
     OrganizationOwnerRequiredError,
     ResourceNotFoundError,
 )
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_partial_success, json_success
+from zerver.lib.response import json_success
 from zerver.lib.retention import STREAM_MESSAGE_BATCH_SIZE as RETENTION_STREAM_MESSAGE_BATCH_SIZE
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.stream_traffic import get_streams_traffic
@@ -965,9 +964,9 @@ def delete_in_topic(
     try:
         timeout(50, delete_in_batches)
     except TimeoutExpiredError:
-        return json_partial_success(request, data={"code": ErrorCode.REQUEST_TIMEOUT.name})
+        return json_success(request, data={"complete": False})
 
-    return json_success(request)
+    return json_success(request, data={"complete": True})
 
 
 @require_post

@@ -8,7 +8,7 @@ from zerver.actions.message_flags import (
     do_mark_stream_messages_as_read,
     do_update_message_flags,
 )
-from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.narrow import (
     OptionalNarrowListT,
     fetch_messages,
@@ -16,7 +16,7 @@ from zerver.lib.narrow import (
     parse_anchor_value,
 )
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
-from zerver.lib.response import json_partial_success, json_success
+from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timeout import TimeoutExpiredError, timeout
 from zerver.lib.topic import user_message_exists_for_topic
@@ -123,13 +123,13 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     try:
         count = timeout(50, lambda: do_mark_all_as_read(user_profile))
     except TimeoutExpiredError:
-        return json_partial_success(request, data={"code": ErrorCode.REQUEST_TIMEOUT.name})
+        return json_success(request, data={"complete": False})
 
     log_data_str = f"[{count} updated]"
     assert request_notes.log_data is not None
     request_notes.log_data["extra"] = log_data_str
 
-    return json_success(request)
+    return json_success(request, data={"complete": True})
 
 
 @has_request_variables
