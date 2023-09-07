@@ -1,6 +1,5 @@
 from unittest import mock
 
-import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.streams import do_change_stream_permission
@@ -264,7 +263,8 @@ class TopicDeleteTest(ZulipTestCase):
                 "topic_name": topic_name,
             },
         )
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
         self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
 
         # Try to delete all messages in the topic again. There are no messages accessible
@@ -275,7 +275,8 @@ class TopicDeleteTest(ZulipTestCase):
                 "topic_name": topic_name,
             },
         )
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
         self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
 
         # Make the stream's history public to subscribers
@@ -294,7 +295,8 @@ class TopicDeleteTest(ZulipTestCase):
                     "topic_name": topic_name,
                 },
             )
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
         self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
         self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())
 
@@ -306,7 +308,8 @@ class TopicDeleteTest(ZulipTestCase):
                     "topic_name": topic_name,
                 },
             )
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
         self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
         self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())
 
@@ -329,9 +332,5 @@ class TopicDeleteTest(ZulipTestCase):
                     "topic_name": topic_name,
                 },
             )
-            self.assertEqual(result.status_code, 200)
-
-            result_dict = orjson.loads(result.content)
-            self.assertEqual(
-                result_dict, {"result": "partially_completed", "msg": "", "code": "REQUEST_TIMEOUT"}
-            )
+            result_dict = self.assert_json_success(result)
+            self.assertFalse(result_dict["complete"])

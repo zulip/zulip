@@ -66,7 +66,8 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         # Mark all existing messages as read
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read")
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         # Send a new message (this will be unread)
         new_message_id = self.send_stream_message(self.example_user("othello"), "Verona", "test")
@@ -126,7 +127,8 @@ class FirstUnreadAnchorTests(ZulipTestCase):
 
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read")
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         new_message_id = self.send_stream_message(self.example_user("othello"), "Verona", "test")
 
@@ -674,7 +676,8 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
         self.assertNotEqual(unread_count, 0)
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read", {})
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         new_unread_count = (
             UserMessage.objects.filter(user_profile=hamlet)
@@ -687,12 +690,8 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
         self.login("hamlet")
         with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpiredError):
             result = self.client_post("/json/mark_all_as_read", {})
-            self.assertEqual(result.status_code, 200)
-
-            result_dict = orjson.loads(result.content)
-            self.assertEqual(
-                result_dict, {"result": "partially_completed", "msg": "", "code": "REQUEST_TIMEOUT"}
-            )
+            result_dict = self.assert_json_success(result)
+            self.assertFalse(result_dict["complete"])
 
 
 class GetUnreadMsgsTest(ZulipTestCase):
