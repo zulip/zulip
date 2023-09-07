@@ -3,6 +3,7 @@ type GroupPermissionSetting = {
     allow_internet_group: boolean;
     allow_owners_group: boolean;
     allow_nobody_group: boolean;
+    allow_everyone_group: boolean;
 };
 
 const group_permission_config_dict = new Map<string, GroupPermissionSetting>([
@@ -13,6 +14,7 @@ const group_permission_config_dict = new Map<string, GroupPermissionSetting>([
             allow_internet_group: false,
             allow_owners_group: false,
             allow_nobody_group: false,
+            allow_everyone_group: true,
         },
     ],
     [
@@ -22,6 +24,7 @@ const group_permission_config_dict = new Map<string, GroupPermissionSetting>([
             allow_internet_group: false,
             allow_owners_group: false,
             allow_nobody_group: true,
+            allow_everyone_group: false,
         },
     ],
 ]);

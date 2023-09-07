@@ -399,6 +399,7 @@ def update_stream_backend(
                 allow_internet_group=permissions_configuration.allow_internet_group,
                 allow_owners_group=permissions_configuration.allow_owners_group,
                 allow_nobody_group=permissions_configuration.allow_nobody_group,
+                allow_everyone_group=permissions_configuration.allow_everyone_group,
             )
             do_change_stream_group_based_setting(
                 stream, setting_name, user_group, acting_user=user_profile
