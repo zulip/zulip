@@ -125,14 +125,11 @@ function get_user_info_popover_items() {
     return $("li:not(.divider):visible a", $popover_elt);
 }
 
-function render_user_info_popover(
+function get_user_card_popover_data(
     user,
-    popover_element,
-    is_sender_popover,
     has_message_context,
+    is_sender_popover,
     private_msg_class,
-    template_class,
-    popover_placement,
 ) {
     const is_me = people.is_my_user_id(user.user_id);
 
@@ -207,6 +204,25 @@ function render_user_info_popover(
             args.bot_owner = bot_owner;
         }
     }
+
+    return args;
+}
+
+function render_user_info_popover(
+    user,
+    popover_element,
+    is_sender_popover,
+    has_message_context,
+    private_msg_class,
+    template_class,
+    popover_placement,
+) {
+    const args = get_user_card_popover_data(
+        user,
+        has_message_context,
+        is_sender_popover,
+        private_msg_class,
+    );
 
     const $popover_content = $(render_user_info_popover_content(args));
     popover_element.popover({
