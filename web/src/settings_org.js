@@ -14,6 +14,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html, get_language_name} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
+import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
@@ -652,6 +653,15 @@ export function discard_property_element_changes(elem, for_realm_default_setting
     const property_value = get_property_value(property_name, for_realm_default_settings, sub);
 
     switch (property_name) {
+        case "notification_sound":
+            notifications.update_notification_sound_source(
+                $("#realm-default-notification-sound-audio"),
+                {
+                    notification_sound: property_value,
+                },
+            );
+            set_input_element_value($elem, property_value);
+            break;
         case "realm_authentication_methods":
             populate_auth_methods(property_value);
             break;
