@@ -3104,7 +3104,6 @@ class Message(AbstractMessage):
         indexes = [
             GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),
             models.Index(Upper("subject"), name="upper_subject_idx"),
-            models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
             models.Index(
                 "recipient",
                 Upper("subject"),

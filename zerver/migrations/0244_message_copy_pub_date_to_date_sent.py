@@ -79,8 +79,19 @@ class Migration(migrations.Migration):
         """
         ),
         migrations.RunPython(copy_pub_date_to_date_sent, elidable=True),
-        AddIndexConcurrently(
-            model_name="message",
-            index=models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                AddIndexConcurrently(
+                    model_name="message",
+                    index=models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
+                ),
+            ],
+            state_operations=[
+                migrations.AlterField(
+                    model_name="message",
+                    name="date_sent",
+                    field=models.DateTimeField(db_index=True, null=True, verbose_name="date sent"),
+                ),
+            ],
         ),
     ]
