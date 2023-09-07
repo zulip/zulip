@@ -4639,10 +4639,9 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         assert (
-            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[2].id)
+            not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[2].id)
             .extra(where=[UserMessage.where_unread()])
-            .count()
-            == 0
+            .exists()
         )
 
         # Now move to a weird state and confirm we get the normal topic moved message.
@@ -4712,10 +4711,9 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         assert (
-            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
+            not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
             .extra(where=[UserMessage.where_unread()])
-            .count()
-            == 0
+            .exists()
         )
 
 
