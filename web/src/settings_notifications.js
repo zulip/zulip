@@ -124,13 +124,22 @@ export function set_up(settings_panel) {
     const $notification_sound_elem = $("#realm-default-notification-sound-audio");
     const for_realm_settings = settings_panel.for_realm_settings;
     const $notification_sound_dropdown = $container.find(".setting_notification_sound");
+    const $discard_button = $container.find(".save-discard-widget-button.discard-button");
+
+    $discard_button.on("click", () => {
+        notifications.update_notification_sound_source($notification_sound_elem, settings_object);
+    })
+
+    $notification_sound_dropdown.on("change", () => {
+        const sound = $notification_sound_dropdown.val().toLowerCase();
+        notifications.update_notification_sound_source($notification_sound_elem, {
+            notification_sound: sound,
+        });
+    })
 
     $container.find(".play_notification_sound").on("click", () => {
         const sound = $notification_sound_dropdown.val().toLowerCase();
-        if (settings_object.notification_sound !== "none" && sound !== "none") {
-            notifications.update_notification_sound_source($notification_sound_elem, {
-                notification_sound: sound,
-            });
+        if (sound !== "none") {
             ui_util.play_audio($notification_sound_elem[0]);
         }
     });
