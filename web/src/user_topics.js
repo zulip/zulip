@@ -63,6 +63,10 @@ export function is_topic_muted(stream_id, topic) {
     return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.MUTED;
 }
 
+export function is_topic_unmuted_or_followed(stream_id, topic) {
+    return is_topic_unmuted(stream_id, topic) || is_topic_followed(stream_id, topic);
+}
+
 export function get_user_topics_for_visibility_policy(visibility_policy) {
     const topics = [];
     for (const [stream_id, sub_dict] of all_user_topics) {
