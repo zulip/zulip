@@ -35,6 +35,14 @@ notifications while you are actively using one of the Zulip apps.
 
 {end_tabs}
 
+## Troubleshooting mobile notifications
+
+Some Android vendors have added extra device-level settings that can impact the
+delivery of mobile notifications to apps like Zulip. If you're having issues
+with Zulip notifications on your Android phone, we recommend Signal's excellent
+[troubleshooting guide](https://support.signal.org/hc/en-us/articles/360007318711-Troubleshooting-Notifications#android_notifications_troubleshooting),
+which explains the notification settings for many popular Android vendors.
+
 ## Related articles
 
 * [Stream notifications](/help/stream-notifications)
