@@ -86,6 +86,16 @@ export class DropdownWidget {
         );
     }
 
+    show_empty_if_no_items($popper) {
+        const list_items = this.list_widget.get_current_list();
+        const $no_search_results = $popper.find(".no-dropdown-items");
+        if (list_items.length === 0) {
+            $no_search_results.show();
+        } else {
+            $no_search_results.hide();
+        }
+    }
+
     setup() {
         this.init();
         const delegate_container = this.$events_container.get(0);
@@ -123,13 +133,7 @@ export class DropdownWidget {
                 });
 
                 $search_input.on("input.list_widget_filter", () => {
-                    const list_items = this.list_widget.get_current_list();
-                    const $no_search_results = $popper.find(".no-dropdown-items");
-                    if (list_items.length === 0) {
-                        $no_search_results.show();
-                    } else {
-                        $no_search_results.hide();
-                    }
+                    this.show_empty_if_no_items($popper);
                 });
 
                 // Keyboard handler
@@ -232,6 +236,7 @@ export class DropdownWidget {
                 this.on_show_callback(instance);
             }.bind(this),
             onMount: function (instance) {
+                this.show_empty_if_no_items($(instance.popper));
                 this.on_mount_callback(instance);
             }.bind(this),
             onHidden: function (instance) {
