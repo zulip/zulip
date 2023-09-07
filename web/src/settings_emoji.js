@@ -21,6 +21,7 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
+import * as util from "./util";
 
 const meta = {
     loaded: false,
@@ -68,12 +69,19 @@ export function reset() {
 }
 
 function sort_author_full_name(a, b) {
-    if (a.author.full_name > b.author.full_name) {
-        return 1;
-    } else if (a.author.full_name === b.author.full_name) {
+    const author_a = a.author?.full_name;
+    const author_b = b.author?.full_name;
+
+    if (author_a === author_b) {
         return 0;
     }
-    return -1;
+
+    if (author_a && author_b) {
+        return util.strcmp(author_a, author_b);
+    }
+
+    // If one of the author is null, then we put the null author at the end.
+    return author_a ? -1 : 1;
 }
 
 function is_default_emoji(emoji_name) {
