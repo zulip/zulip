@@ -332,10 +332,11 @@ def get_openapi_parameters(
 def get_openapi_return_values(endpoint: str, method: str) -> Dict[str, Any]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
-    # In cases where we have used oneOf, the schemas only differ in examples
-    # So we can choose any.
-    if "oneOf" in schema:
-        schema = schema["oneOf"][0]
+    # We do not currently have documented endpoints that have multiple schemas
+    # ("oneOf", "anyOf", "allOf") for success ("200") responses. If this changes,
+    # then the assertion below will need to be removed, and this function updated
+    # so that endpoint responses will be rendered as expected.
+    assert "properties" in schema
     return schema["properties"]
 
 
@@ -390,7 +391,7 @@ def validate_against_openapi_schema(
         return True
     # Check if the response matches its code
     if status_code.startswith("2") and (
-        content.get("result", "success").lower() not in ["success", "partially_completed"]
+        content.get("result", "success").lower() != "success"
     ):  # nocoverage
         raise SchemaError("Response is not 200 but is validating against 200 schema")
     # Code is not declared but appears in various 400 responses. If
