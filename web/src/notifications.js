@@ -583,7 +583,7 @@ export function get_muted_narrow(message) {
     if (
         message.type === "stream" &&
         stream_data.is_muted(message.stream_id) &&
-        !user_topics.is_topic_unmuted(message.stream_id, message.topic)
+        !user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic)
     ) {
         return "stream";
     }
