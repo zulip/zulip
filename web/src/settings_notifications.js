@@ -128,14 +128,14 @@ export function set_up(settings_panel) {
 
     $discard_button.on("click", () => {
         notifications.update_notification_sound_source($notification_sound_elem, settings_object);
-    })
+    });
 
     $notification_sound_dropdown.on("change", () => {
         const sound = $notification_sound_dropdown.val().toLowerCase();
         notifications.update_notification_sound_source($notification_sound_elem, {
             notification_sound: sound,
         });
-    })
+    });
 
     $container.find(".play_notification_sound").on("click", () => {
         const sound = $notification_sound_dropdown.val().toLowerCase();
