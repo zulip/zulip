@@ -13,19 +13,16 @@ class Migration(migrations.Migration):
             """
             DROP TRIGGER zerver_message_date_sent_to_pub_date_trigger ON zerver_message;
             DROP FUNCTION zerver_message_date_sent_to_pub_date_trigger_function();
-
-            ALTER TABLE zerver_message ALTER COLUMN date_sent SET NOT NULL;
-            ALTER TABLE zerver_message ALTER COLUMN pub_date DROP NOT NULL;
-            """,
-            state_operations=[
-                # This just tells Django to, after running the above SQL, consider the AlterField below
-                # as done. The building of the index actually happened in the previous migration, not here,
-                # but nevertheless this seems like the correct place to put this fake AlterField.
-                migrations.AlterField(
-                    model_name="message",
-                    name="date_sent",
-                    field=models.DateTimeField(db_index=True, verbose_name="date sent"),
-                ),
-            ],
+            """
+        ),
+        migrations.AlterField(
+            model_name="message",
+            name="date_sent",
+            field=models.DateTimeField(db_index=True, verbose_name="date sent"),
+        ),
+        migrations.AlterField(
+            model_name="message",
+            name="pub_date",
+            field=models.DateTimeField(db_index=True, null=True, verbose_name="date published"),
         ),
     ]
