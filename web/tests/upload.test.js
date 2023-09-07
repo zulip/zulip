@@ -476,6 +476,7 @@ test("copy_paste", ({override, override_rewire}) => {
                 ],
             },
         },
+        preventDefault() {},
     };
     let upload_files_called = false;
     override_rewire(upload, "upload_files", () => {
