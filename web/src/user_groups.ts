@@ -231,8 +231,13 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         return [];
     }
 
-    const {require_system_group, allow_internet_group, allow_owners_group, allow_nobody_group} =
-        group_setting_config;
+    const {
+        require_system_group,
+        allow_internet_group,
+        allow_owners_group,
+        allow_nobody_group,
+        allow_everyone_group,
+    } = group_setting_config;
 
     const system_user_groups = settings_config.system_user_groups_list
         .filter((group) => {
@@ -245,6 +250,10 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             }
 
             if (!allow_nobody_group && group.name === "role:nobody") {
+                return false;
+            }
+
+            if (!allow_everyone_group && group.name === "role:everyone") {
                 return false;
             }
 

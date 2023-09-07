@@ -74,6 +74,7 @@ def add_user_group(
                 allow_internet_group=permission_config.allow_internet_group,
                 allow_owners_group=permission_config.allow_owners_group,
                 allow_nobody_group=permission_config.allow_nobody_group,
+                allow_everyone_group=permission_config.allow_everyone_group,
             )
             group_settings_map[setting_name] = setting_value_group
 
@@ -139,6 +140,7 @@ def edit_user_group(
                 allow_internet_group=permission_config.allow_internet_group,
                 allow_owners_group=permission_config.allow_owners_group,
                 allow_nobody_group=permission_config.allow_nobody_group,
+                allow_everyone_group=permission_config.allow_everyone_group,
             )
             do_change_user_group_permission_setting(
                 user_group, setting_name, setting_value_group, acting_user=user_profile
