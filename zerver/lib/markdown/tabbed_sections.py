@@ -9,7 +9,7 @@ from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
-TAB_CONTENT_REGEX = re.compile(r"^\{tab\|\s*(.+?)\s*\}$")
+TAB_CONTENT_REGEX = re.compile(r"^\{tab\|([^}]+)\}$")
 
 TABBED_SECTION_TEMPLATE = """
 <div class="tabbed-section {tab_class}" markdown="1">
