@@ -4829,38 +4829,50 @@ paths:
       description: |
         Marks all of the current user's unread messages as read.
 
-        **Changes**: Before Zulip 6.0 (feature level 153), this
-        request did a single atomic operation, which could time out
-        with 10,000s of unread messages to mark as read.
+        Because this endpoint marks messages as read in batches, it is possible
+        for the request to time out after only marking some messages as read.
+        When this happens, the `complete` boolean field in the success response
+        will be `false`. Clients should repeat the request when handling such a
+        response. If all messages were marked as read, then the success response
+        will return `"complete": true`.
 
-        It now marks messages as read in batches, starting with the
-        newest messages, so that progress will be made even if the
-        request times out.
+        **Changes**: Before Zulip 8.0 (feature level 211), if the server's
+        processing was interrupted by a timeout, but some messages were marked
+        as read, then it would return `"result": "partially_completed"`, along
+        with a `code` field for an error string, in the success response to
+        indicate that there was a timeout and that the client should repeat the
+        request.
 
-        If the server's processing is interrupted by a timeout, it
-        will return an HTTP 200 success response with result
-        "partially_completed". A correct client should repeat the
-        request when handling such a response.
+        Before Zulip 6.0 (feature level 153), this request did a single atomic
+        operation, which could time out with 10,000s of unread messages to mark
+        as read. As of this feature level, messages are marked as read in
+        batches, starting with the newest messages, so that progress is made
+        even if the request times out. And, instead of returning an error when
+        the request times out and some messages have been marked as read, a
+        success response with `"result": "partially_completed"` is returned.
       responses:
         "200":
-          description: Success or partial success.
+          description: Success.
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - allOf:
-                      - $ref: "#/components/schemas/PartiallyCompleted"
-                      - example:
-                          {
-                            "code": "REQUEST_TIMEOUT",
-                            "msg": "",
-                            "result": "partially_completed",
-                          }
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    required:
+                      - complete
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      complete:
+                        type: boolean
                         description: |
-                          If the request exceeds its processing time limit after having
-                          successfully marked some messages as read, response code 200
-                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
+                          Whether all unread messages were marked as read.
+
+                          Will be `false` if the request successfully marked
+                          some, but not all, messages as read.
+                    example: {"msg": "", "result": "success", "complete": true}
   /mark_stream_as_read:
     post:
       operationId: mark-stream-as-read
@@ -16247,19 +16259,34 @@ paths:
       description: |
         Delete all messages in a topic.
 
-        Topics are a field on messages (not an independent
-        data structure), so deleting all the messages in the topic
-        deletes the topic from Zulip.
+        Topics are a field on messages (not an independent data structure), so
+        deleting all the messages in the topic deletes the topic from Zulip.
 
-        **Changes**: As of Zulip 6.0 (feature level 154), in case
-        of timeout, a success response with "partially_completed"
-        result will now be returned.
+        Because this endpoint deletes messages in batches, it is possible for
+        the request to time out after only deleting some messages in the topic.
+        When this happens, the `complete` boolean field in the success response
+        will be `false`. Clients should repeat the request when handling such a
+        response. If all messages in the topic were deleted, then the success
+        response will return `"complete": true`.
 
-        Before Zulip 6.0 (feature level 147), this request did a
-        single atomic operation, which could time out for very large
-        topics. It now deletes messages in batches, starting with
-        the newest messages, so that progress will be made even if
-        the request times out.
+        **Changes**: Before Zulip 8.0 (feature level 211), if the server's
+        processing was interrupted by a timeout, but some messages in the topic
+        were deleted, then it would return `"result": "partially_completed"`,
+        along with a `code` field for an error string, in the success response
+        to indicate that there was a timeout and that the client should repeat
+        the request.
+
+        As of Zulip 6.0 (feature level 154), instead of returning an error
+        response when a request times out after successfully deleting some of
+        the messages in the topic, a success response is returned with
+        `"result": "partially_completed"` to indicate that some messages were
+        deleted.
+
+        Before Zulip 6.0 (feature level 147), this request did a single atomic
+        operation, which could time out for very large topics. As of this
+        feature level, messages are deleted in batches, starting with the newest
+        messages, so that progress is made even if the request times out and
+        returns an error.
       x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
@@ -16273,24 +16300,27 @@ paths:
           required: true
       responses:
         "200":
-          description: Success or partial success.
+          description: Success.
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - allOf:
-                      - $ref: "#/components/schemas/PartiallyCompleted"
-                      - example:
-                          {
-                            "code": "REQUEST_TIMEOUT",
-                            "msg": "",
-                            "result": "partially_completed",
-                          }
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    required:
+                      - complete
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      complete:
+                        type: boolean
                         description: |
-                          If the request exceeds its processing time limit after having
-                          successfully marked some messages as read, response code 200
-                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
+                          Whether all unread messages were marked as read.
+
+                          Will be `false` if the request successfully marked
+                          some, but not all, messages as read.
+                    example: {"msg": "", "result": "success", "complete": true}
         "400":
           description: Bad request.
           content:

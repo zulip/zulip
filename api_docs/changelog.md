@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 211**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic),
+  [`POST /mark_all_as_read`](/api/mark-all-as-read):
+  Added a `complete` boolean field in the success response to indicate
+  whether all or only some of the targeted messages were processed.
+  This replaces the use of `"result": "partially_completed"` (introduced
+  in feature levels 154 and 153), so that these endpoints now send a
+  `result` string of either `"success"` or `"error"`, like the rest of
+  the Zulip API.
+
 **Feature level 210**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
@@ -538,17 +549,20 @@ No changes; feature level used for Zulip 6.0 release.
 **Feature level 154**
 
 * [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
-  When the process of deleting messages times out, a success response
-  with "partially_completed" result will now be returned by the server,
-  analogically to the `/mark_all_as_read` endpoint.
+  When the process of deleting messages times out, but successfully
+  deletes some messages in the topic (see feature level 147 for when
+  this endpoint started deleting messages in batches), a success
+  response with `"result": "partially_completed"` will now be returned
+  by the server, analogically to the `POST /mark_all_as_read` endpoint
+  (see feature level 153 entry below).
 
 **Feature level 153**
 
 * [`POST /mark_all_as_read`](/api/mark-all-as-read): Messages are now
   marked as read in batches, so that progress will be made even if the
   request times out because of an extremely large number of unread
-  messages to process. Upon timeout, a success response with a
-  "partially_completed" result will be returned by the server.
+  messages to process. Upon timeout, a success response with
+  `"result": "partially_completed"` will be returned by the server.
 
 **Feature level 152**
 

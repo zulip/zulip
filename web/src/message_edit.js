@@ -1156,7 +1156,7 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
             topic_name,
         },
         success(data) {
-            if (data.result === "partially_completed") {
+            if (data.complete === false) {
                 if (failures >= 9) {
                     // Don't keep retrying indefinitely to avoid DoSing the server.
                     return;
