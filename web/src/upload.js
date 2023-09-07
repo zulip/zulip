@@ -329,6 +329,13 @@ export function setup_upload(config) {
             const file = item.getAsFile();
             files.push(file);
         }
+        if (files.length === 0) {
+            // Exit when there are no files from the clipboard
+            return;
+        }
+        // Halt the normal browser paste event, which would otherwise
+        // present a plain-text version of the file name.
+        event.preventDefault();
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.respond_to_message({trigger: "file drop or paste"});
         }
