@@ -454,7 +454,7 @@ def clear_scheduled_emails(user_id: int, email_type: Optional[int] = None) -> No
 
     for item in items:
         item.users.remove(user_id)
-        if item.users.all().count() == 0:
+        if not item.users.all().exists():
             # Due to our transaction holding the row lock we have a guarantee
             # that the obtained COUNT is accurate, thus we can reliably use it
             # to decide whether to delete the ScheduledEmail row.

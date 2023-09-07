@@ -3569,7 +3569,7 @@ class Attachment(AbstractAttachment):
     scheduled_messages = models.ManyToManyField("ScheduledMessage")
 
     def is_claimed(self) -> bool:
-        return self.messages.count() > 0 or self.scheduled_messages.count() > 0
+        return self.messages.exists() or self.scheduled_messages.exists()
 
     def to_dict(self) -> Dict[str, Any]:
         return {

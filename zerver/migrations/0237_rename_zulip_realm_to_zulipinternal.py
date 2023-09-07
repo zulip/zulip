@@ -13,7 +13,7 @@ def rename_zulip_realm_to_zulipinternal(
     Realm = apps.get_model("zerver", "Realm")
     UserProfile = apps.get_model("zerver", "UserProfile")
 
-    if Realm.objects.count() == 0:
+    if not Realm.objects.exists():
         # Database not yet populated, do nothing:
         return
 
