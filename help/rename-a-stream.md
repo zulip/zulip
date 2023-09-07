@@ -4,16 +4,20 @@
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {relative|stream|all}
 
 1. Select a stream.
 
 {!select-stream-view-general.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>)
-   to the right of the stream name. Enter a new name.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon
+   to the right of the stream name, and enter a new stream name.
 
 {!save-changes.md!}
+
+{!stream-settings-general-tab-tip.md!}
 
 {end_tabs}
 
