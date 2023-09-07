@@ -39,7 +39,7 @@ realms used for testing; consider using deactivate_realm instead."""
             customer = get_customer_by_realm(realm)
             if customer and (
                 customer.stripe_customer_id
-                or CustomerPlan.objects.filter(customer=customer).count() > 0
+                or CustomerPlan.objects.filter(customer=customer).exists()
             ):
                 raise CommandError("This realm has had a billing relationship associated with it!")
 

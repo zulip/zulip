@@ -103,7 +103,7 @@ def do_remove_realm_domain(
         },
     )
 
-    if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.emails_restricted_to_domains:
+    if not RealmDomain.objects.filter(realm=realm).exists() and realm.emails_restricted_to_domains:
         # If this was the last realm domain, we mark the realm as no
         # longer restricted to domain, because the feature doesn't do
         # anything if there are no domains, and this is probably less

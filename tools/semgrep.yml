@@ -209,3 +209,27 @@ rules:
       Annotated types containing zerver.lib.typed_endpoint.ApiParamConfig should not be nested inside Optional. Use Annotated[Optional[...], zerver.lib.typed_endpoint.ApiParamConfig(...)] instead.
     languages: [python]
     severity: ERROR
+
+  - id: exists-instead-of-count
+    patterns:
+      - pattern-either:
+          - pattern: ... .count() == 0
+          - pattern: |
+              if not ... .count():
+                  ...
+    message: 'Use "not .exists()" instead; it is more efficient'
+    languages: [python]
+    severity: ERROR
+
+  - id: exists-instead-of-count-not-zero
+    patterns:
+      - pattern-either:
+          - pattern: ... .count() != 0
+          - pattern: ... .count() > 0
+          - pattern: ... .count() >= 1
+          - pattern: |
+              if ... .count():
+                  ...
+    message: 'Use ".exists()" instead; it is more efficient'
+    languages: [python]
+    severity: ERROR

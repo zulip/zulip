@@ -484,7 +484,7 @@ def send_android_push_notification(
                 logger.warning("GCM: Got canonical ref but it already matches our ID %s!", reg_id)
             elif not DeviceTokenClass._default_manager.filter(
                 token=new_reg_id, kind=DeviceTokenClass.GCM
-            ).count():
+            ).exists():
                 # This case shouldn't happen; any time we get a canonical ref it should have been
                 # previously registered in our system.
                 #
