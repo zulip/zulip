@@ -125,6 +125,11 @@
  *   functionality. The `tabIsEnter` option (default true) lets this be
  *   turned off so that tab only does one thing while focus is in the
  *   typeahead -- move focus to the next element.
+ *  
+ * 14. Don't act on blurs that change focus within the `parentElement`:
+ *  
+ *   This allows us to have things like a close button, and be able
+ *   to move focus there without the typeahead closing.
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -539,6 +544,11 @@ import {get_string_diff} from "../../src/util";
   }
 
   , blur: function (e) {
+      // Blurs that move focus to elsewhere within the parent element shouldn't
+      // hide the typeahead.
+      if ($(e.relatedTarget).parents(this.options.parentElement).length > 0) {
+        return;
+      }
       var that = this
       setTimeout(function () {
         if (!that.$container.is(':hover')) {
