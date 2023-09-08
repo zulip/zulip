@@ -702,6 +702,9 @@ user's profile.
   to the response. This generalizes and replaces the previous
   `muted_topics` array, which will no longer be sent if `user_topic`
   is included in `fetch_event_types`.
+* [`GET /events`](/api/get-events): When private streams are made
+  public, `stream` events for `op: "create"` and `subscription` events
+  for `op: "peer_add"` are now sent to clients.
 
 **Feature level 133**
 
