@@ -465,7 +465,7 @@ function abort_message(message) {
 }
 
 export function display_slow_send_loading_spinner(message) {
-    const $row = $(`div[zid="${message.id}"]`);
+    const $row = $(`div[zid="${CSS.escape(message.id)}"]`);
     if (message.locally_echoed && !message.failed_request) {
         $row.find(".slow-send-spinner").removeClass("hidden");
         // We don't need to do anything special to ensure this gets
