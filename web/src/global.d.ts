@@ -23,7 +23,7 @@ declare namespace JQueryValidation {
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 interface JQuery {
-    expectOne<T extends HTMLElement>(): JQuery<T>;
+    expectOne(): this;
     get_offset_to_window(): DOMRect;
     tab(action?: string): this; // From web/third/bootstrap
     modal(action?: string): this; // From web/third/bootstrap
