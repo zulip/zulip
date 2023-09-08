@@ -200,7 +200,7 @@ class DecoratorTestCase(ZulipTestCase):
         request.POST["api_key"] = webhook_bot_api_key
         with self.assertLogs("zulip.zerver.webhooks", level="INFO") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = b"{}"
+                request._body = b"{}"
                 request.content_type = "application/json"
                 my_webhook_raises_exception(request)
 
@@ -212,7 +212,7 @@ class DecoratorTestCase(ZulipTestCase):
         request.POST["api_key"] = webhook_bot_api_key
         with self.assertLogs("zulip.zerver.webhooks", level="INFO") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = b"notjson"
+                request._body = b"notjson"
                 request.content_type = "text/plain"
                 my_webhook_raises_exception(request)
 
@@ -224,7 +224,7 @@ class DecoratorTestCase(ZulipTestCase):
         request.POST["api_key"] = webhook_bot_api_key
         with self.assertLogs("zulip.zerver.webhooks", level="ERROR") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = b"invalidjson"
+                request._body = b"invalidjson"
                 request.content_type = "application/json"
                 request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
                 my_webhook_raises_exception(request)
@@ -242,7 +242,7 @@ class DecoratorTestCase(ZulipTestCase):
         )
         with self.assertLogs("zulip.zerver.webhooks.unsupported", level="ERROR") as log:
             with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
-                request.body = b"invalidjson"
+                request._body = b"invalidjson"
                 request.content_type = "application/json"
                 request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
                 my_webhook_raises_exception_unsupported_event(request)
@@ -381,7 +381,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = b"{}"
+        request._body = b"{}"
         request.content_type = "text/plain"
 
         with self.assertLogs("zulip.zerver.webhooks") as logger:
@@ -404,7 +404,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = b"{}"
+        request._body = b"{}"
         request.content_type = "text/plain"
 
         with mock.patch(
@@ -432,7 +432,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = b"{}"
+        request._body = b"{}"
         request.content_type = "application/json"
 
         with mock.patch("zerver.decorator.webhook_logger.exception") as mock_exception:
