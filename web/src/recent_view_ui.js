@@ -907,7 +907,7 @@ export function show() {
         return;
     }
     // Hide selected elements in the left sidebar.
-    left_sidebar_navigation_area.narrow_to_recent_view();
+    left_sidebar_navigation_area.highlight_recent_view();
     stream_list.handle_narrow_deactivated();
 
     // Hide "middle-column" which has html for rendering

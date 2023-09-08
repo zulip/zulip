@@ -87,7 +87,7 @@ export function handle_narrow_deactivated() {
     $filter_li.addClass("active-filter");
 }
 
-export function narrow_to_recent_view() {
+export function highlight_recent_view() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
