@@ -358,7 +358,7 @@ class HostRequestMock(HttpRequest):
             self.META = meta_data
         self.path = path
         self.user = user_profile or AnonymousUser()
-        self._body = b""
+        self._body = orjson.dumps(post_data)
         self.content_type = ""
 
         RequestNotes.set_notes(
