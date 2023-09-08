@@ -45,10 +45,6 @@ local_partial_types = true
 plugins = ["mypy_django_plugin.main", "pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["zproject.configured_settings", "zproject.settings", "zproject.default_settings"]
-no_implicit_reexport = false
-
-[[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
     "aioapns.*", # https://github.com/Fatal1ty/aioapns/issues/33
@@ -147,6 +143,7 @@ ignore = [
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
     "PERF203", # `try`-`except` within a loop incurs performance overhead
+    "PLC0414", # Import alias does not rename original package
     "PLC1901", # `s == ""` can be simplified to `not s` as an empty string is falsey
     "PLR0911", # Too many return statements
     "PLR0912", # Too many branches
