@@ -3,6 +3,7 @@ import $ from "jquery";
 
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
@@ -199,7 +200,7 @@ export function activate(raw_operators, opts) {
     // no operators were specified. Take us to all messages when this
     // happens from Recent Conversations view.
     if (raw_operators.length === 0) {
-        deactivate(coming_from_recent_view);
+        browser_history.go_to_location("#all_messages");
         return;
     }
 
