@@ -272,6 +272,12 @@ ul {
             top: -1px;
         }
     }
+
+    @media (width >= 1081px) {
+        .respond_button {
+            display: none;
+        }
+    }
 }
 
 /* Important note: The user info popover user_popover class is applied
