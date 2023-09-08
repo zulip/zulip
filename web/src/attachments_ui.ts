@@ -129,7 +129,7 @@ function render_attachments_ui(): void {
     set_upload_space_stats();
 
     const $uploaded_files_table = $("#uploaded_files_table").expectOne();
-    const $search_input = $("#upload_file_search");
+    const $search_input = $<HTMLInputElement>("input#upload_file_search");
 
     ListWidget.create<Attachment>($uploaded_files_table, attachments, {
         name: "uploaded-files-list",

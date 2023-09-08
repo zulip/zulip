@@ -20,7 +20,7 @@ type ListWidgetMeta<Key = unknown, Item = Key> = {
 
 // This type ensures the mutually exclusive nature of the predicate and filterer options.
 type ListWidgetFilterOpts<Item = unknown> = {
-    $element?: JQuery;
+    $element?: JQuery<HTMLInputElement>;
     onupdate?: () => void;
 } & (
     | {
@@ -359,7 +359,7 @@ export function create<Key = unknown, Item = Key>(
             }
 
             opts.filter?.$element?.on("input.list_widget_filter", function () {
-                const value = (this as HTMLInputElement).value.toLocaleLowerCase();
+                const value = this.value.toLocaleLowerCase();
                 widget.set_filter_value(value);
                 widget.hard_redraw();
             });

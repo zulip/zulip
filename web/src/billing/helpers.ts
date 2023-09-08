@@ -154,8 +154,8 @@ export function set_tab(page: string): void {
         $("html").scrollTop(0);
     }
 
-    $(`#${CSS.escape(page)}-tabs.nav-tabs a`).on("click", function () {
-        location.hash = (this as HTMLAnchorElement).hash;
+    $<HTMLAnchorElement>(`#${CSS.escape(page)}-tabs.nav-tabs a`).on("click", function () {
+        location.hash = this.hash;
     });
 
     current_page = page;
