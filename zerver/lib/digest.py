@@ -150,6 +150,23 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
         )
 
 
+last_realm_id: Optional[int] = None
+last_cutoff: Optional[float] = None
+
+
+def maybe_clear_recent_topics_cache(realm_id: int, cutoff: float) -> None:
+    # As an optimization, we clear the digest caches when we switch to
+    # a new realm or cutoff value.  Since these values are part of the
+    # cache key, this is not necessary for correctness -- it merely
+    # helps reduce the memory footprint of the cache.
+    global last_realm_id, last_cutoff
+    if last_realm_id != realm_id or last_cutoff != cutoff:
+        logger.info("Flushing stream cache: %s", get_recent_topics.cache_info())
+        get_recent_topics.cache_clear()
+    last_realm_id = realm_id
+    last_cutoff = cutoff
+
+
 # We cache both by stream-id and cutoff, which ensures the per-stream
 # cache also does not contain data from old digests
 @functools.lru_cache(maxsize=500)
@@ -320,6 +337,8 @@ def bulk_get_digest_context(
 
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
+
+    maybe_clear_recent_topics_cache(realm.id, cutoff)
 
     stream_id_map = get_slim_stream_id_map(realm)
     recently_created_streams = get_recently_created_streams(realm, cutoff_date)

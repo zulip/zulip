@@ -104,11 +104,11 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(get_recent_topics.cache_info().hits, 7)
         self.assertEqual(get_recent_topics.cache_info().currsize, 5)
 
-        # If we use a different cutoff, it makes new cache entries.
+        # If we use a different cutoff, it clears the cache.
         with self.assert_database_query_count(12):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff + 1)
-        self.assertEqual(get_recent_topics.cache_info().hits, 8)
-        self.assertEqual(get_recent_topics.cache_info().currsize, 9)
+        self.assertEqual(get_recent_topics.cache_info().hits, 1)
+        self.assertEqual(get_recent_topics.cache_info().currsize, 4)
 
     def test_bulk_handle_digest_email_skips_deactivated_users(self) -> None:
         """
