@@ -189,5 +189,5 @@ function scroll_to_element($element: JQuery, context: Context): void {
 }
 
 function get_element_by_id(id: number | string, context: Context): JQuery {
-    return $(`[${context.id_attribute_name}='${id}']`);
+    return $(`[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id.toString())}']`);
 }
