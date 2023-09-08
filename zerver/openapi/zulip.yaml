@@ -776,6 +776,9 @@ paths:
                                 sent when a user gained access to a stream due to their [role
                                 changing](/help/roles-and-permissions).
 
+                                Prior to Zulip 6.0 (feature level 134), this event was not sent when a
+                                private stream was made public.
+
                                 In Zulip 4.0 (feature level 35), the singular `user_id` and `stream_id`
                                 integers included in this event were replaced with plural `user_ids` and
                                 `stream_ids` integer arrays.
@@ -1191,6 +1194,9 @@ paths:
                                 Prior to Zulip 8.0 (feature level 192), this event was not sent
                                 when guest users gained access to a public stream by being
                                 subscribed.
+
+                                Prior to Zulip 6.0 (feature level 134), this event was not sent
+                                when a private stream was made public.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
