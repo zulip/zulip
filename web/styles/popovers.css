@@ -514,6 +514,13 @@ ul {
         margin-bottom: 20px;
     }
 
+    .stream-tab-element-header {
+        margin: 0;
+        display: inline-block;
+        font-weight: inherit;
+        font-size: 21px;
+    }
+
     #user-profile-streams-tab {
         .stream_list_info {
             margin-bottom: 8px;
@@ -527,12 +534,6 @@ ul {
             padding-right: 3px;
         }
 
-        .subscribe-widget-header {
-            margin: 0;
-            display: inline-block;
-            font-weight: inherit;
-        }
-
         .user_profile_subscribe_widget {
             display: flex;
             justify-content: space-between;
@@ -543,12 +544,7 @@ ul {
 
     .stream-list-top-section {
         display: flex;
-
-        .stream-list-header {
-            margin: 0;
-            display: inline-block;
-            font-weight: inherit;
-        }
+        margin-top: 12px;
 
         .stream-search {
             margin-left: auto;
