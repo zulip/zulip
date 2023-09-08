@@ -43,7 +43,7 @@ export type RealmDefaultSettings = {
     wildcard_mentions_notify: boolean;
 };
 
-export let realm_user_settings_defaults = {} as RealmDefaultSettings;
+export let realm_user_settings_defaults: RealmDefaultSettings;
 
 export function initialize(params: Record<string, RealmDefaultSettings>): void {
     realm_user_settings_defaults = params.realm_user_settings_defaults;
