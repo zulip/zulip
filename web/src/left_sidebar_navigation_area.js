@@ -37,6 +37,9 @@ export function update_dom_with_unread_counts(counts, skip_animations) {
     }
 }
 
+// TODO: Rewrite how we handle activation of narrows when doing the redesign.
+// We don't want to adjust class for all the buttons when switching narrows.
+
 function remove($elem) {
     $elem.removeClass("active-filter active-sub-filter");
 }
