@@ -1,4 +1,5 @@
 import * as channel from "./channel";
+import * as people from "./people";
 
 /*
     This module simply encapsulates our legacy API for subscribing
@@ -10,6 +11,16 @@ import * as channel from "./channel";
 export function add_user_ids_to_stream(user_ids, sub, success, failure) {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
+    if (user_ids.length === 1 && people.is_my_user_id(Number(user_ids[0]))) {
+        // Self subscribe
+        const color = sub.color;
+        return channel.post({
+            url: "/json/users/me/subscriptions",
+            data: {subscriptions: JSON.stringify([{name: stream_name, color}])},
+            success,
+            error: failure,
+        });
+    }
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {
