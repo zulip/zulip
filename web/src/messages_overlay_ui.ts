@@ -16,9 +16,9 @@ export function row_with_focus(context: Context): JQuery {
     return $(focused_item).parent(`.${CSS.escape(context.row_item_selector)}`);
 }
 
-export function activate_element(elem: JQuery | HTMLElement, context: Context): void {
+export function activate_element(elem: HTMLElement, context: Context): void {
     $(`.${CSS.escape(context.box_item_selector)}`).removeClass("active");
-    $(elem).expectOne().addClass("active");
+    elem.classList.add("active");
     elem.focus();
 }
 
@@ -39,9 +39,9 @@ export function focus_on_sibling_element(context: Context): void {
         elem_to_be_focused_id = $prev_row.attr(context.id_attribute_name);
     }
 
-    const new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
-    if (new_focus_element.length > 0) {
-        activate_element(new_focus_element[0].children[0] as HTMLElement, context);
+    const $new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
+    if ($new_focus_element.length > 0) {
+        activate_element($new_focus_element[0].children[0] as HTMLElement, context);
     }
 }
 
@@ -71,8 +71,8 @@ export function modals_handle_events(event_key: string, context: Context): void 
 
 export function set_initial_element(element_id: string, context: Context): void {
     if (element_id) {
-        const current_element = get_element_by_id(element_id, context);
-        const focus_element = current_element[0].children[0] as HTMLElement;
+        const $current_element = get_element_by_id(element_id, context);
+        const focus_element = $current_element[0].children[0] as HTMLElement;
         activate_element(focus_element, context);
         $(`.${CSS.escape(context.items_list_selector)}`)[0].scrollTop = 0;
     }
@@ -127,7 +127,7 @@ function initialize_focus(event_name: string, context: Context): void {
         return;
     }
 
-    let element: JQuery;
+    let $element: JQuery;
 
     function get_last_element(): JQuery {
         const last_id = modal_items_ids.at(-1) ?? "";
@@ -140,12 +140,12 @@ function initialize_focus(event_name: string, context: Context): void {
     }
 
     if (event_name === "up_arrow") {
-        element = get_last_element();
+        $element = get_last_element();
     } else {
-        element = get_first_element();
+        $element = get_first_element();
     }
 
-    const focus_element = element[0].children[0] as HTMLElement;
+    const focus_element = $element[0].children[0] as HTMLElement;
     activate_element(focus_element, context);
 }
 
