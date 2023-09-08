@@ -9,6 +9,7 @@ import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as components from "./components";
+import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -29,6 +30,7 @@ import * as user_pill from "./user_pill";
 import * as util from "./util";
 
 let user_streams_list_widget;
+let user_profile_subscribe_widget;
 
 function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
@@ -70,6 +72,50 @@ function initialize_bot_owner(element_id, bot_id) {
         user_pills.set(bot_owner.user_id, pills);
     }
     return user_pills;
+}
+
+function render_user_profile_subscribe_widget() {
+    const opts = {
+        widget_name: "user_profile_subscribe",
+        get_options: get_user_unsub_streams,
+        item_click_callback: change_state_of_subscribe_button,
+        $events_container: $("#user-profile-modal"),
+        tippy_props: {
+            placement: "bottom-start",
+        },
+    };
+    user_profile_subscribe_widget = new dropdown_widget.DropdownWidget(opts);
+    user_profile_subscribe_widget.setup();
+}
+
+function change_state_of_subscribe_button(event, dropdown) {
+    dropdown.hide();
+    event.preventDefault();
+    event.stopPropagation();
+    user_profile_subscribe_widget.render();
+    const $subscribe_button = $("#user-profile-modal .add-subscription-button");
+    $subscribe_button.prop("disabled", false);
+}
+
+export function get_user_unsub_streams() {
+    const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
+    return stream_data
+        .get_streams_for_user(target_user_id)
+        .can_subscribe.filter((stream) => stream_data.can_subscribe_others(stream))
+        .map((stream) => ({
+            name: stream.name,
+            unique_id: stream.stream_id.toString(),
+            stream,
+        }))
+        .sort((a, b) => {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                return -1;
+            }
+            if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                return 1;
+            }
+            return 0;
+        });
 }
 
 function format_user_stream_list_item(stream, user) {
@@ -210,6 +256,14 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         .map((f) => get_custom_profile_field_data(user, f, field_types))
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
+    // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
+    // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
+    // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
+    // Therefore, we also check for that condition.
+    const show_user_subscribe_widget =
+        (people.can_admin_user(user) || page_params.is_admin) &&
+        !user.is_system_bot &&
+        people.is_person_active(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
     const args = {
         user_id: user.user_id,
@@ -228,6 +282,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
+        show_user_subscribe_widget,
     };
 
     if (user.is_bot) {
@@ -272,6 +327,9 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
                     render_user_group_list(groups_of_user, user);
                     break;
                 case "user-profile-streams-tab":
+                    if (show_user_subscribe_widget) {
+                        render_user_profile_subscribe_widget();
+                    }
                     render_user_stream_list(user_streams, user);
                     break;
             }
@@ -281,6 +339,9 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const $elem = components.toggle(opts).get();
     $elem.addClass("large allow-overflow");
     $("#tab-toggle").append($elem);
+    if (show_user_subscribe_widget) {
+        $("#user-profile-modal .add-subscription-button").prop("disabled", true);
+    }
 }
 
 function handle_remove_stream_subscription(target_user_id, sub, success, failure) {
@@ -304,6 +365,38 @@ export function register_click_handlers() {
         show_user_profile(user);
         e.stopPropagation();
         e.preventDefault();
+    });
+
+    $("body").on("click", "#user-profile-modal .add-subscription-button", (e) => {
+        e.preventDefault();
+        const stream_id = Number.parseInt(user_profile_subscribe_widget.value(), 10);
+        const sub = sub_store.get(stream_id);
+        const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
+        const $alert_box = $("#user-profile-streams-tab .stream_list_info");
+        function addition_success(data) {
+            if (Object.keys(data.subscribed).length > 0) {
+                ui_report.success(
+                    $t_html({defaultMessage: "Subscribed successfully!"}),
+                    $alert_box,
+                    1200,
+                );
+            } else {
+                ui_report.client_error(
+                    $t_html({defaultMessage: "Already subscribed."}),
+                    $alert_box,
+                    1200,
+                );
+            }
+        }
+        function addition_failure(xhr) {
+            ui_report.error("", xhr, $alert_box, 1200);
+        }
+        subscriber_api.add_user_ids_to_stream(
+            [target_user_id],
+            sub,
+            addition_success,
+            addition_failure,
+        );
     });
 
     $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {

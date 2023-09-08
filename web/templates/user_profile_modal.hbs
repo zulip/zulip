@@ -90,6 +90,13 @@
                     </div>
 
                     <div class="tabcontent" id="user-profile-streams-tab">
+                        <div class="alert stream_list_info"></div>
+                        {{#if show_user_subscribe_widget}}
+                            <div class="header-section">
+                                <h3 class="subscribe-widget-header">{{t 'Subscribe {full_name} to streams'}}</h3>
+                            </div>
+                            {{> user_profile_subscribe_widget}}
+                        {{/if}}
                         <div class="stream-list-top-section">
                             <div class="header-section">
                                 <h3 class="stream-list-header">{{t 'Subscribed streams' }}</h3>
@@ -99,7 +106,6 @@
                                 <i class="fa fa-remove" aria-hidden="true"></i>
                             </button>
                         </div>
-                        <div class="alert stream_list_info"></div>
                         <div class="subscription-stream-list">
                             <table class="user-stream-list" data-empty="{{t 'No stream subscriptions.'}}"></table>
                         </div>

@@ -526,6 +526,19 @@ ul {
         .filter-icon i {
             padding-right: 3px;
         }
+
+        .subscribe-widget-header {
+            margin: 0;
+            display: inline-block;
+            font-weight: inherit;
+        }
+
+        .user_profile_subscribe_widget {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-top: 2px;
+        }
     }
 
     .stream-list-top-section {
