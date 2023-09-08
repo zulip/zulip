@@ -11,14 +11,14 @@ from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
 
 from .config import (
     DEPLOY_ROOT,
-    DEVELOPMENT,
-    PRODUCTION,
     config_file,
     get_config,
     get_from_file_if_exists,
     get_mandatory_secret,
     get_secret,
 )
+from .config import DEVELOPMENT as DEVELOPMENT
+from .config import PRODUCTION as PRODUCTION
 from .configured_settings import (
     ADMINS,
     ALLOWED_HOSTS,
