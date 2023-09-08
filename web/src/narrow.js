@@ -1007,7 +1007,7 @@ function handle_post_narrow_deactivate_processes() {
     message_feed_top_notices.update_top_of_narrow_notices(message_lists.home);
 }
 
-export function deactivate(coming_from_recent_view = false, is_actively_scrolling = false) {
+export function deactivate(coming_from_all_messages = true, is_actively_scrolling = false) {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -1026,7 +1026,7 @@ export function deactivate(coming_from_recent_view = false, is_actively_scrollin
     search.clear_search_form();
     // Both All messages and Recent Conversations have `undefined` filter.
     // Return if already in the All message narrow.
-    if (narrow_state.filter() === undefined && !coming_from_recent_view) {
+    if (narrow_state.filter() === undefined && coming_from_all_messages) {
         return;
     }
     blueslip.debug("Unnarrowed");
