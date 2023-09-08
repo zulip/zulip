@@ -372,14 +372,6 @@ class HostRequestMock(HttpRequest):
             ),
         )
 
-    @property
-    def body(self) -> bytes:
-        return super().body
-
-    @body.setter
-    def body(self, val: bytes) -> None:
-        self._body = val
-
     def get_host(self) -> str:
         return self.host
 
