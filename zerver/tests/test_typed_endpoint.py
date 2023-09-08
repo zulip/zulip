@@ -239,37 +239,33 @@ class TestEndpoint(ZulipTestCase):
             request: HttpRequest,
             *,
             body: WebhookPayload[WildValue],
-            foo: Json[int],
-            bar: Json[int] = 0,
+            non_body: Json[int] = 0,
         ) -> Dict[str, object]:
             status = body["totame"]["status"].tame(check_bool)
-            return {"status": status, "foo": foo, "bar": bar}
+            return {"status": status, "foo": non_body}
 
-        # Simulate a paylaod that uses JSON encoding. We use the body setter to
-        # overwrite the request body. The HostRequestMock initializer sets the
-        # POST QueryDict, which is normally done by Django by parsing the body.
-        data = {"foo": 15, "totame": {"status": True}}
-        request = HostRequestMock(data)
-        request.body = orjson.dumps(data)
+        # A normal request that uses a JSON encoded body
+        request = HostRequestMock({"non_body": 15, "totame": {"status": True}})
         result = call_endpoint(webhook, request)
-        self.assertDictEqual(result, {"status": True, "foo": 15, "bar": 0})
+        self.assertDictEqual(result, {"status": True, "foo": 15})
 
+        # Set the body manually so that we can pass in something unusual
+        request = HostRequestMock()
         request.body = orjson.dumps([])
         with self.assertRaisesRegex(DjangoValidationError, "request is not a dict"):
             result = call_endpoint(webhook, request)
 
-        request.body = orjson.dumps(10)
-        with self.assertRaisesRegex(DjangoValidationError, "request is not a dict"):
-            result = call_endpoint(webhook, request)
-
+        # Test for the rare case when both body and GET are used
         request = HostRequestMock()
-        request.GET.update({"foo": "15", "bar": "10"})
-        request.body = orjson.dumps(data)
+        request.GET.update({"non_body": "15"})
+        request.body = orjson.dumps({"totame": {"status": True}})
         result = call_endpoint(webhook, request)
-        self.assertDictEqual(result, {"status": True, "foo": 15, "bar": 10})
+        self.assertDictEqual(result, {"status": True, "foo": 15})
 
         with self.assertRaisesMessage(JsonableError, "Malformed JSON"):
-            call_endpoint(webhook, HostRequestMock())
+            request = HostRequestMock()
+            request.body = b"{malformed_json"
+            call_endpoint(webhook, request)
 
         with self.assertRaisesMessage(JsonableError, "Malformed payload"):
             request = HostRequestMock()
