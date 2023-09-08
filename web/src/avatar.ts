@@ -72,7 +72,7 @@ function display_avatar_delete_started(): void {
 
 export function build_user_avatar_widget(upload_function: UploadFunction): void {
     const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $("#user-avatar-upload-widget .image_file_input").expectOne();
+        return $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
     };
 
     if (page_params.avatar_source === "G") {

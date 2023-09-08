@@ -26,10 +26,10 @@ $(() => {
         return this[0].getBoundingClientRect();
     };
 
-    $.fn.expectOne = function <T>() {
+    $.fn.expectOne = function () {
         if (blueslip && this.length !== 1) {
             blueslip.error("Expected one element in jQuery set", {length: this.length});
         }
-        return this as JQuery<T>;
+        return this;
     };
 });
