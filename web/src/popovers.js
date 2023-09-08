@@ -6,8 +6,6 @@ import url_template_lib from "url-template";
 
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
-import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
-import render_user_group_info_popover_content from "../templates/user_group_info_popover_content.hbs";
 import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
 import render_user_info_popover_manage_menu from "../templates/user_info_popover_manage_menu.hbs";
 import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
@@ -40,12 +38,11 @@ import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
-import * as user_groups from "./user_groups";
+import * as user_group_popover from "./user_group_popover";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
-import * as util from "./util";
 
 let $current_message_info_popover_elem;
 let $current_user_info_popover_elem;
@@ -160,20 +157,6 @@ function load_medium_avatar(user, $elt) {
     $(sender_avatar_medium).on("load", function () {
         $elt.css("background-image", "url(" + $(this).attr("src") + ")");
     });
-}
-
-function calculate_info_popover_placement(size, $elt) {
-    const ypos = $elt.get_offset_to_window().top;
-
-    if (!(ypos + size / 2 < message_viewport.height() && ypos > size / 2)) {
-        if (ypos + size < message_viewport.height()) {
-            return "bottom";
-        } else if (ypos > size) {
-            return "top";
-        }
-    }
-
-    return undefined;
 }
 
 export function hide_user_info_popover_manage_menu() {
@@ -342,9 +325,6 @@ function render_user_info_popover(
     load_medium_avatar(user, $(".popover-avatar"));
 }
 
-// exporting for testability
-export const _test_calculate_info_popover_placement = calculate_info_popover_placement;
-
 // element is the target element to pop off of
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
@@ -446,62 +426,6 @@ function get_user_info_popover_manage_menu_items() {
     }
 
     return $(".user_info_popover_manage_menu li:not(.divider):visible a", popover_data.$tip);
-}
-
-function fetch_group_members(member_ids) {
-    return member_ids
-        .map((m) => people.maybe_get_user_by_id(m))
-        .filter((m) => m !== undefined)
-        .map((p) => ({
-            ...p,
-            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-            is_active: people.is_active_user_for_popover(p.user_id),
-            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-        }));
-}
-
-function sort_group_members(members) {
-    return members.sort((a, b) => util.strcmp(a.full_name, b.fullname));
-}
-
-// exporting these functions for testing purposes
-export const _test_fetch_group_members = fetch_group_members;
-
-export const _test_sort_group_members = sort_group_members;
-
-// element is the target element to pop off of
-// user is the user whose profile to show
-// message is the message containing it, which should be selected
-function show_user_group_info_popover(element, group, message) {
-    const $last_popover_elem = $current_message_info_popover_elem;
-    // hardcoded pixel height of the popover
-    // note that the actual size varies (in group size), but this is about as big as it gets
-    const popover_size = 390;
-    hide_all();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
-    }
-    message_lists.current.select_id(message.id);
-    const $elt = $(element);
-    if ($elt.data("popover") === undefined) {
-        const args = {
-            group_name: group.name,
-            group_description: group.description,
-            members: sort_group_members(fetch_group_members([...group.members])),
-        };
-        $elt.popover({
-            placement: calculate_info_popover_placement(popover_size, $elt),
-            template: render_user_group_info_popover({class: "message-info-popover"}),
-            content: render_user_group_info_popover_content(args),
-            html: true,
-            trigger: "manual",
-            fixed: true,
-        });
-        $elt.popover("show");
-        $current_message_info_popover_elem = $elt;
-    }
 }
 
 function get_action_menu_menu_items() {
@@ -758,20 +682,6 @@ export function register_click_handlers() {
             user = people.get_by_email(email);
         }
         show_user_info_popover_for_message(this, user, message);
-    });
-
-    $("#main_div").on("click", ".user-group-mention", function (e) {
-        const user_group_id = Number.parseInt($(this).attr("data-user-group-id"), 10);
-        const $row = $(this).closest(".message_row");
-        e.stopPropagation();
-        const message = message_lists.current.get(rows.id($row));
-        try {
-            const group = user_groups.get_user_group_from_id(user_group_id);
-            show_user_group_info_popover(this, group, message);
-        } catch {
-            // This user group has likely been deleted.
-            blueslip.info("Unable to find user group in message" + message.sender_id);
-        }
     });
 
     $("#main_div, #preview_content, #message-history").on(
@@ -1066,6 +976,7 @@ export function any_active() {
     // Expanded sidebars on mobile view count as popovers as well.
     return (
         popover_menus.any_active() ||
+        user_group_popover.is_open() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
         message_info_popped() ||
@@ -1086,6 +997,7 @@ export function hide_all_except_sidebars(opts) {
     }
     emoji_picker.hide_emoji_popover();
     stream_popover.hide_stream_popover();
+    user_group_popover.hide();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
 
