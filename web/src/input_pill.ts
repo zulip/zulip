@@ -435,8 +435,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         });
 
         store.$parent.on("copy", ".pill", (e) => {
-            const $element = e.currentTarget as HTMLElement;
-            const {item} = funcs.getByElement($element)!;
+            const element: HTMLElement = e.currentTarget;
+            const {item} = funcs.getByElement(element)!;
             (e.originalEvent as ClipboardEvent).clipboardData?.setData(
                 "text/plain",
                 store.get_text_from_item(item),
