@@ -3,7 +3,7 @@ import functools
 import heapq
 import logging
 from collections import defaultdict
-from typing import Any, Collection, Dict, List, Set, Tuple
+from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -383,18 +383,21 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
         context = context_map[user.id]
 
         # We don't want to send emails containing almost no information.
-        if enough_traffic(context["hot_conversations"], context["new_streams_count"]):
-            digest_users.append(user)
-            logger.info("Sending digest email for user %s", user.id)
-            # Send now, as a ScheduledEmail
-            send_future_email(
-                "zerver/emails/digest",
-                user.realm,
-                to_user_ids=[user.id],
-                from_name="Zulip Digest",
-                from_address=FromAddress.no_reply_placeholder,
-                context=context,
-            )
+        if not enough_traffic(context["hot_conversations"], context["new_streams_count"]):
+            continue
+
+        digest_users.append(user)
+        logger.info("Sending digest email for user %s", user.id)
+
+        # Send now, as a ScheduledEmail
+        send_future_email(
+            "zerver/emails/digest",
+            user.realm,
+            to_user_ids=[user.id],
+            from_name="Zulip Digest",
+            from_address=FromAddress.no_reply_placeholder,
+            context=context,
+        )
 
     bulk_write_realm_audit_logs(digest_users)
 

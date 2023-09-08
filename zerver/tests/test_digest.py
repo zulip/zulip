@@ -136,6 +136,23 @@ class TestDigestEmailMessages(ZulipTestCase):
             set(emailed_user_ids), {user_id for user_id in user_ids if user_id != hamlet.id}
         )
 
+    @mock.patch("zerver.lib.digest.send_future_email")
+    def test_enough_traffic(self, mock_send_future_email: mock.MagicMock) -> None:
+        othello = self.example_user("othello")
+        self.subscribe(othello, "Verona")
+
+        in_the_future = timezone_now().timestamp() + 60
+
+        bulk_handle_digest_email([othello.id], in_the_future)
+        mock_send_future_email.assert_not_called()
+
+        with mock.patch(
+            "zerver.lib.digest.enough_traffic", return_value=True
+        ) as enough_traffic_mock:
+            bulk_handle_digest_email([othello.id], in_the_future)
+            mock_send_future_email.assert_called()
+            enough_traffic_mock.assert_called_once_with([], 0)
+
     @mock.patch("zerver.lib.digest.enough_traffic")
     @mock.patch("zerver.lib.digest.send_future_email")
     def test_guest_user_multiple_stream_sender(
