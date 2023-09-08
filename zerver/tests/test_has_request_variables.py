@@ -140,18 +140,18 @@ class REQTestCase(ZulipTestCase):
             return json_response(data={"payload": payload})
 
         request = HostRequestMock()
-        request.body = b"\xde\xad\xbe\xef"
+        request._body = b"\xde\xad\xbe\xef"
         with self.assertRaises(JsonableError) as cm:
             get_payload(request)
         self.assertEqual(str(cm.exception), "Malformed payload")
 
         request = HostRequestMock()
-        request.body = b"notjson"
+        request._body = b"notjson"
         with self.assertRaises(JsonableError) as cm:
             get_payload(request)
         self.assertEqual(str(cm.exception), "Malformed JSON")
 
-        request.body = b'{"a": "b"}'
+        request._body = b'{"a": "b"}'
         self.assertEqual(orjson.loads(get_payload(request).content).get("payload"), {"a": "b"})
 
 

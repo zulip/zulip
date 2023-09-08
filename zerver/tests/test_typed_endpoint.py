@@ -262,26 +262,26 @@ class TestEndpoint(ZulipTestCase):
 
         # Set the body manually so that we can pass in something unusual
         request = HostRequestMock()
-        request.body = orjson.dumps([])
+        request._body = orjson.dumps([])
         with self.assertRaisesRegex(DjangoValidationError, "request is not a dict"):
             result = call_endpoint(webhook, request)
 
         # Test for the rare case when both body and GET are used
         request = HostRequestMock()
         request.GET.update({"non_body": "15"})
-        request.body = orjson.dumps({"totame": {"status": True}})
+        request._body = orjson.dumps({"totame": {"status": True}})
         result = call_endpoint(webhook, request)
         self.assertDictEqual(result, {"status": True, "foo": 15})
 
         with self.assertRaisesMessage(JsonableError, "Malformed JSON"):
             request = HostRequestMock()
-            request.body = b"{malformed_json"
+            request._body = b"{malformed_json"
             call_endpoint(webhook, request)
 
         with self.assertRaisesMessage(JsonableError, "Malformed payload"):
             request = HostRequestMock()
             # This body triggers UnicodeDecodeError
-            request.body = b"\x81"
+            request._body = b"\x81"
             call_endpoint(webhook, request)
 
     def test_path_only(self) -> None:
