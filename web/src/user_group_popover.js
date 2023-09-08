@@ -46,22 +46,26 @@ export function handle_keyboard(key) {
     popover_items_handle_keyboard(key, $items);
 }
 
-// element is the target element to pop off of
-// user is the user whose profile to show
-// message is the message containing it, which should be selected
-export function show_user_group_info_popover(element, group, message) {
+// element is the target element to pop off of;
+// message_id is the message id containing it, which should be selected;
+export function toggle_user_group_info_popover(element, message_id) {
     const $last_popover_elem = $current_user_group_popover_elem;
-    // hardcoded pixel height of the popover
-    // note that the actual size varies (in group size), but this is about as big as it gets
-    const popover_size = 390;
     hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
     }
-    message_lists.current.select_id(message.id);
+
+    // hardcoded pixel height of the popover
+    // note that the actual size varies (in group size), but this is about as big as it gets
+    const popover_size = 390;
     const $elt = $(element);
+    const user_group_id = Number.parseInt($elt.attr("data-user-group-id"), 10);
+    const group = user_groups.get_user_group_from_id(user_group_id);
+
+    message_lists.current.select_id(message_id);
+
     if ($elt.data("popover") === undefined) {
         const args = {
             group_name: group.name,
@@ -82,14 +86,15 @@ export function show_user_group_info_popover(element, group, message) {
 }
 
 export function register_click_handlers() {
-    $("#main_div").on("click", ".user-group-mention", function (e) {
-        const user_group_id = Number.parseInt($(this).attr("data-user-group-id"), 10);
-        const $row = $(this).closest(".message_row");
+    $("#main_div").on("click", ".user-group-mention", (e) => {
         e.stopPropagation();
+
+        const $elt = $(e.currentTarget);
+        const $row = $elt.closest(".message_row");
         const message = message_lists.current.get(rows.id($row));
+
         try {
-            const group = user_groups.get_user_group_from_id(user_group_id);
-            show_user_group_info_popover(this, group, message);
+            toggle_user_group_info_popover(e.currentTarget, message.id);
         } catch {
             // This user group has likely been deleted.
             blueslip.info("Unable to find user group in message" + message.sender_id);
