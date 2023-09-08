@@ -110,14 +110,14 @@ export async function play_audio(elem: HTMLVideoElement): Promise<void> {
 export function listener_for_preferred_color_scheme_change(callback: () => void): void {
     const media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
     // MediaQueryList.addEventListener is missing in Safari < 14
-    const listener: () => void = () => {
+    const listener = (): void => {
         if ($(":root").hasClass("color-scheme-automatic")) {
             callback();
         }
     };
-    if ("addEventListener" in media_query_list) {
+    if (media_query_list.addEventListener) {
         media_query_list.addEventListener("change", listener);
     } else {
-        (media_query_list as MediaQueryList).addListener(listener);
+        media_query_list.addListener(listener);
     }
 }

@@ -57,7 +57,7 @@ export type UserSettings = (StreamNotificationSettings &
     send_read_receipts: boolean;
 };
 
-export let user_settings = {} as UserSettings;
+export let user_settings: UserSettings;
 
 export function initialize_user_settings(params: Record<string, UserSettings>): void {
     user_settings = params.user_settings;

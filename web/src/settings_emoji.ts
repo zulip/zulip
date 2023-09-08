@@ -136,7 +136,9 @@ export function populate_emoji(): void {
             return "";
         },
         filter: {
-            $element: $emoji_table.closest(".settings-section").find(".search"),
+            $element: $emoji_table
+                .closest(".settings-section")
+                .find<HTMLInputElement>("input.search"),
             predicate(item, value) {
                 return item.name.toLowerCase().includes(value);
             },
