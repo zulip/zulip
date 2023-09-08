@@ -99,6 +99,17 @@ function change_state_of_subscribe_button(event, dropdown) {
     $subscribe_button.prop("disabled", false);
 }
 
+function reset_subscribe_widget() {
+    $("#user-profile-modal .add-subscription-button").prop("disabled", true);
+    stream_ui_updates.initialize_disable_btn_hint_popover(
+        $("#user-profile-modal .add-subscription-button-wrapper"),
+        $t({defaultMessage: "Select a stream to subscribe"}),
+    );
+    $("#user_profile_subscribe_widget .dropdown_widget_value").text(
+        $t({defaultMessage: "Select a stream"}),
+    );
+}
+
 export function get_user_unsub_streams() {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
     return stream_data
@@ -342,11 +353,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     $elem.addClass("large allow-overflow");
     $("#tab-toggle").append($elem);
     if (show_user_subscribe_widget) {
-        $("#user-profile-modal .add-subscription-button").prop("disabled", true);
-        stream_ui_updates.initialize_disable_btn_hint_popover(
-            $("#user-profile-modal .add-subscription-button-wrapper"),
-            $t({defaultMessage: "Select a stream to subscribe"}),
-        );
+        reset_subscribe_widget();
     }
 }
 
@@ -381,6 +388,7 @@ export function register_click_handlers() {
         const $alert_box = $("#user-profile-streams-tab .stream_list_info");
         function addition_success(data) {
             if (Object.keys(data.subscribed).length > 0) {
+                reset_subscribe_widget();
                 ui_report.success(
                     $t_html({defaultMessage: "Subscribed successfully!"}),
                     $alert_box,
