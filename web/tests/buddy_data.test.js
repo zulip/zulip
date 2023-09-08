@@ -67,6 +67,12 @@ const old_user = {
     email: "old_user@example.com",
 };
 
+const deactivated_user = {
+    user_id: 1006,
+    full_name: "Deactivated user",
+    email: "deactivated_user@example.com",
+};
+
 const bot = {
     user_id: 55555,
     full_name: "Red Herring Bot",
@@ -451,6 +457,12 @@ test("level", () => {
 });
 
 test("user_last_seen_time_status", ({override}) => {
+    people.deactivate(deactivated_user);
+    assert.equal(
+        buddy_data.user_last_seen_time_status(deactivated_user.user_id),
+        "translated: User is deactivated",
+    );
+
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 

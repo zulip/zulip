@@ -300,6 +300,7 @@ test_people("basics", () => {
 
     // Now deactivate isaac
     people.deactivate(isaac);
+    assert.equal(people.verify_non_active_human_id(isaac.user_id), true);
     assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
@@ -1267,6 +1268,14 @@ test_people("get_realm_active_human_users", () => {
     humans = people.get_realm_active_human_users();
     assert.equal(humans.length, 1);
     assert.deepEqual(humans, [me]);
+});
+
+test_people("get_names_for_deactivated_users", () => {
+    people.add_active_user(steven);
+    people.add_active_user(isaac);
+    people.deactivate(isaac);
+    const users = [steven.user_id, isaac.user_id];
+    assert.deepEqual(people.get_names_for_deactivated_users(users), ["Isaac Newton"]);
 });
 
 // reset to native Date()

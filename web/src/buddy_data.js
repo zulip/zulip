@@ -95,6 +95,10 @@ function get_num_unread(user_id) {
 }
 
 export function user_last_seen_time_status(user_id) {
+    if (people.verify_non_active_human_id(Number.parseInt(user_id, 10))) {
+        return $t({defaultMessage: "User is deactivated"});
+    }
+
     const status = presence.get_status(user_id);
     if (status === "active") {
         return $t({defaultMessage: "Active now"});

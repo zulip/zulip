@@ -10,6 +10,7 @@ const {page_params} = require("./lib/zpage_params");
 
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
+const compose_actions = zrequire("../src/compose_actions");
 const narrow_banner = zrequire("narrow_banner");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
@@ -404,6 +405,44 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
+    people.deactivate(alice);
+    set_filter([["pm-with", alice.email]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(people.verify_non_active_human_id(alice.user_id), true);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages with Alice Smith.",
+            "translated HTML: Alice Smith is no longer active in this organization.",
+        ),
+    );
+
+    people.deactivate(alice);
+    set_filter([["pm-with", me.email + "," + alice.email]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        compose_actions.check_pm_deactivated(false, [alice.user_id]).is_user_id_deactivated,
+        true,
+    );
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages with these users.",
+            "translated HTML: Alice Smith is no longer active in this organization.",
+        ),
+    );
+
+    people.add_active_user(alice);
+    set_filter([["pm-with", me.email + "," + alice.email]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages with these users yet.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
     set_filter([["dm", me.email + "," + alice.email]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -452,6 +491,22 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: You have no direct messages including Alice Smith yet."),
+    );
+
+    people.add_active_user(alice);
+    people.deactivate(alice);
+    set_filter([["dm-including", "alice@example.com"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        compose_actions.check_pm_deactivated(false, [alice.user_id]).is_user_id_deactivated,
+        true,
+    );
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages including Alice Smith.",
+            "translated HTML: Alice Smith is no longer active in this organization.",
+        ),
     );
 
     set_filter([["dm-including", me.email]]);

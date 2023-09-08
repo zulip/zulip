@@ -59,11 +59,13 @@ const activity = mock_esm("../src/activity");
 const message_live_update = mock_esm("../src/message_live_update");
 const pm_list = mock_esm("../src/pm_list");
 const settings_users = mock_esm("../src/settings_users");
+const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 
 // Use real versions of these modules.
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
 
+const noop = () => {};
 const bob = {
     email: "bob@example.com",
     user_id: 33,
@@ -79,7 +81,7 @@ run_test("add users with event", ({override}) => {
         op: "add",
         person: bob,
     };
-
+    override(compose_closed_ui, "update_reply_button_deactivated_users", noop);
     assert.ok(!people.is_known_user_id(bob.user_id));
 
     // We need to override a stub here before dispatching the event.

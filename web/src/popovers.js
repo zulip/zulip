@@ -935,7 +935,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".info_popover_actions .sidebar-popover-reactivate-user", (e) => {
+    $("body").on("click", ".sidebar-popover-reactivate-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_all();
         e.stopPropagation();
