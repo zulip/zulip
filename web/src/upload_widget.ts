@@ -135,7 +135,7 @@ export function build_direct_upload_widget(
     // jQuery button to open file dialog
     $upload_button: JQuery,
     upload_function: UploadFunction,
-    max_file_upload_size = default_max_file_size,
+    max_file_upload_size: number,
 ): void {
     // default value of max uploaded file size
     function accept(): void {
