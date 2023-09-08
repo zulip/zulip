@@ -21,7 +21,7 @@ export function all_rendered_message_lists() {
 }
 
 export function all_current_message_rows() {
-    return $(`#${current.table_name}.message-list .message_row`);
+    return $(`#${CSS.escape(current.table_name)}.message-list .message_row`);
 }
 
 export function update_recipient_bar_background_color() {

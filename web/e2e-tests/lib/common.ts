@@ -137,7 +137,7 @@ export async function fill_form(
     params: Record<string, boolean | string>,
 ): Promise<void> {
     async function is_dropdown(page: Page, name: string): Promise<boolean> {
-        return (await page.$(`select[name="${name}"]`)) !== null;
+        return (await page.$(`select[name="${CSS.escape(name)}"]`)) !== null;
     }
     for (const name of Object.keys(params)) {
         const name_selector = `${form_selector} [name="${name}"]`;

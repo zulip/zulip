@@ -111,7 +111,12 @@ export function clear_uploads(): void {
 }
 
 export function clear_unmute_topic_notifications(): void {
-    $(`#compose_banners .${CLASSNAMES.unmute_topic_notification.replaceAll(" ", ".")}`).remove();
+    $(
+        `#compose_banners .${CLASSNAMES.unmute_topic_notification
+            .split(" ")
+            .map((classname) => CSS.escape(classname))
+            .join(".")}`,
+    ).remove();
 }
 
 export function clear_all(): void {
