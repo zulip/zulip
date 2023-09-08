@@ -12,7 +12,7 @@
     {{/unless}}
 
     {{#if msg/should_display_quote_and_reply}}
-    <div class="respond_button message_control_button" data-tippy-content="{{t 'Quote and reply or forward' }} (>)" tabindex="0">
+    <div class="respond_button message_control_button" data-tooltip-template-id="quote-reply-forward-template" tabindex="0">
         <i class="fa fa-reply" aria-label="{{#tr}}Quote and reply or forward{{/tr}} (>)" role="button" aria-haspopup="true" tabindex="0"></i>
     </div>
     {{/if}}
