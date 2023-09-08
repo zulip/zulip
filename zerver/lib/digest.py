@@ -169,7 +169,7 @@ def maybe_clear_recent_topics_cache(realm_id: int, cutoff: float) -> None:
 
 # We cache both by stream-id and cutoff, which ensures the per-stream
 # cache also does not contain data from old digests
-@functools.lru_cache(maxsize=500)
+@functools.lru_cache(maxsize=5000)
 def get_recent_topics(
     realm_id: int,
     stream_id: int,
