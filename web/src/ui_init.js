@@ -117,6 +117,7 @@ import * as unread_ui from "./unread_ui";
 import * as upload from "./upload";
 import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
+import * as user_group_popover from "./user_group_popover";
 import * as user_groups from "./user_groups";
 import * as user_group_settings_ui from "./user_groups_settings_ui";
 import {initialize_user_settings, user_settings} from "./user_settings";
@@ -761,6 +762,7 @@ export function initialize_everything() {
     initialize_unread_ui();
     activity.initialize();
     emoji_picker.initialize();
+    user_group_popover.initialize();
     pm_list.initialize();
     topic_list.initialize({
         on_topic_click(stream_id, topic) {

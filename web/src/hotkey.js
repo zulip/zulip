@@ -48,6 +48,7 @@ import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as unread_ops from "./unread_ops";
+import * as user_group_popover from "./user_group_popover";
 import {user_settings} from "./user_settings";
 import * as user_topics_ui from "./user_topics_ui";
 
@@ -383,6 +384,11 @@ function handle_popover_events(event_name) {
 
     if (stream_popover.stream_popped()) {
         stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (user_group_popover.is_open()) {
+        user_group_popover.handle_keyboard(event_name);
         return true;
     }
 
