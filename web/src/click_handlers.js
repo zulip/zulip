@@ -436,6 +436,17 @@ export function initialize() {
         );
     });
 
+    $("body").on("click", ".respond_button", (e) => {
+        // Make the clicked message a selected message, since the
+        // compose_actions.quote_and_reply function works on the
+        // selected message.
+        const $row = rows.get_closest_row(e.target);
+        message_lists.current.select_id(rows.id($row));
+        compose_actions.quote_and_reply({trigger: "popover respond"});
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {

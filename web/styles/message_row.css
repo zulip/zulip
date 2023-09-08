@@ -132,7 +132,7 @@ $time_column_min_width: 42px; /* + padding */
         grid-template:
             var(--message-box-icon-height) repeat(3, auto) /
             $avatar_column_width minmax(0, 1fr) calc(
-                3 * var(--message-box-icon-width)
+                4 * var(--message-box-icon-width)
             )
             8px minmax($time_column_min_width, max-content);
         /* Named grid areas provide flexibility for positioning grid items
@@ -142,6 +142,14 @@ $time_column_min_width: 42px; /* + padding */
             ".      message   .        . .   "
             ".      more      .        . .   "
             ".      reactions .        . .   ";
+
+        @media (width <= 1080px) {
+            grid-template-columns:
+                $avatar_column_width auto calc(
+                    3 * var(--message-box-icon-width)
+                )
+                8px minmax($time_column_min_width, max-content);
+        }
 
         @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
             grid-template-columns: $avatar_column_width auto max-content 8px minmax(
@@ -160,7 +168,15 @@ $time_column_min_width: 42px; /* + padding */
                 padding: 0 4px;
 
                 /* This is intended to target the first message_controls child
-                   when there are 3 displayed. 4 = 3 + hidden message_failed element. */
+                   when there are 3 displayed. 5 = 3 + hidden respond_button element + hidden message_failed element. */
+                .message_control_button:nth-last-child(5) {
+                    display: none;
+                }
+            }
+
+            @media (width <= 1080px) {
+                /* This is intended to target the second message_controls child
+                   when there are 4 displayed. 4 = 3 + hidden message_failed element. */
                 .message_control_button:nth-last-child(4) {
                     display: none;
                 }
