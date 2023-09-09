@@ -139,6 +139,7 @@ export function initialize() {
         "scroll",
         _.throttle(() => {
             unread_ops.process_visible();
+            message_lists.current.view.update_sticky_recipient_headers();
             scroll_finish();
         }, 50),
     );
