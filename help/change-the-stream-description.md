@@ -28,6 +28,20 @@ disabled. Use Markdown formatting to include a link to a website, Zulip
 
 {!stream-settings-general-tab-tip.md!}
 
+{tab|mobile}
+
+{!mobile-all-streams-view.md!}
+
+{!stream-name-long-press-menu.md!}
+
+1. Tap **Stream settings**.
+
+1. Tap **Edit stream**, and enter a new description.
+
+1. Tap **Save**.
+
+{!stream-name-long-press-menu-tip.md!}
+
 {end_tabs}
 
 {!automated-notice-stream-event.md!}
