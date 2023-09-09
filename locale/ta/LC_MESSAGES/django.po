@@ -1019,7 +1019,7 @@ msgstr "இரத்து"
 #, fuzzy
 #| msgid "Confirm password"
 msgid "Confirm"
-msgstr "கடவுச்சொல்லை உறுதிப்படுத்துக"
+msgstr "கடவுச்சொல்லை உறுதிப்படுத்துக"
 
 #: templates/zerver/close_window.html:5
 msgid "Video call ended"
@@ -3191,7 +3191,7 @@ msgstr "கடவுச்சொல்"
 
 #: templates/zerver/reset_confirm.html:52
 msgid "Confirm password"
-msgstr "கடவுச்சொல்லை உறுதிப்படுத்துக"
+msgstr "கடவுச்சொல்லை உறுதிப்படுத்துக"
 
 #: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used."
