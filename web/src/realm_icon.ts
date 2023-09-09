@@ -3,10 +3,11 @@ import $ from "jquery";
 import * as channel from "./channel";
 import {page_params} from "./page_params";
 import * as upload_widget from "./upload_widget";
+import type {UploadFunction} from "./upload_widget";
 
-export function build_realm_icon_widget(upload_function) {
-    const get_file_input = function () {
-        return $("#realm-icon-upload-widget .image_file_input").expectOne();
+export function build_realm_icon_widget(upload_function: UploadFunction): void {
+    const get_file_input = function (): JQuery<HTMLInputElement> {
+        return $<HTMLInputElement>("#realm-icon-upload-widget .image_file_input").expectOne();
     };
 
     if (!page_params.is_admin) {
@@ -20,7 +21,7 @@ export function build_realm_icon_widget(upload_function) {
     $("#realm-icon-upload-widget .image-delete-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        channel.del({
+        void channel.del({
             url: "/json/realm/icon",
         });
     });
@@ -34,7 +35,7 @@ export function build_realm_icon_widget(upload_function) {
     );
 }
 
-export function rerender() {
+export function rerender(): void {
     $("#realm-icon-upload-widget .image-block").attr("src", page_params.realm_icon_url);
     if (page_params.realm_icon_source === "U") {
         $("#realm-icon-upload-widget .image-delete-button").show();
