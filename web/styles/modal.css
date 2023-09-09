@@ -60,11 +60,21 @@
     padding-right: 1rem;
     max-width: 80%;
     display: flex;
+    align-items: center;
 
     .user_profile_name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    #user_profile_manage_others_edit_button {
+        color: hsl(200deg 100% 50%);
+        cursor: pointer;
+
+        &:hover {
+            color: hsl(200deg 79% 66%);
+        }
     }
 }
 

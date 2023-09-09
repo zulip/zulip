@@ -471,7 +471,7 @@ ul {
     }
 
     .zulip-icon.zulip-icon-bot {
-        padding: 3px 0 0;
+        padding: unset;
     }
 
     #default-section {
