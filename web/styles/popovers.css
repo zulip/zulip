@@ -378,6 +378,17 @@ ul {
         height: 60vh;
         padding-left: 16px;
         padding-right: 16px;
+
+        /*
+            The height of the main body of the profile modal is 60vh. However,
+            the footer is only present in the manage user tab. To make sure the
+            modal doesn't expand while switching between tabs, we can reduce
+            the height of the main body to 52vh - 1px (border radius of the footer)
+            and add a footer of 8vh.
+        */
+        &.modal__body__manage_profile_height {
+            height: calc(52vh - 1px);
+        }
     }
 
     .modal__header {
@@ -624,6 +635,27 @@ ul {
             &:empty {
                 display: block;
                 padding: 5px;
+            }
+        }
+    }
+
+    .manage-profile-tab-footer {
+        height: 0;
+
+        &.modal__footer_wrapper {
+            border-top: 1px solid hsl(0deg 0% 87%);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            height: 8vh;
+
+            /* The default padding of the footer is 20px. However, since we have set */
+            /* the height of the footer wrapper to be 8vh on different screen sizes, */
+            /* the buttons might look odd. Instead of using padding top and bottom, we */
+            /* just use the flex and properties to align them. */
+            .modal__footer {
+                padding-top: unset;
+                padding-bottom: unset;
             }
         }
     }
