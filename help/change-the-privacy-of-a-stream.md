@@ -11,9 +11,9 @@ As an organization administrator, you can always make a public stream
 private, but you must be subscribed to a private stream in order to make it
 public.
 
-### Change the privacy of a stream
-
 {start_tabs}
+
+{tab|desktop-web}
 
 {relative|stream|all}
 
@@ -25,11 +25,13 @@ public.
 
 {!save-changes.md!}
 
+{!stream-settings-general-tab-tip.md!}
+
 {end_tabs}
 
 {!automated-notice-stream-event.md!}
 
 !!! warn ""
 
-    **Warning**: Be careful making a private stream public. All past messages will become
-    accessible, even if the stream previously had protected history.
+    **Warning**: Be careful making a private stream public. All past messages
+    will become accessible, even if the stream previously had protected history.
