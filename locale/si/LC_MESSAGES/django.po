@@ -27,7 +27,7 @@ msgstr "අමුත්තන්ට ඉඩ නැත"
 
 #: analytics/views/stats.py:153
 msgid "Invalid organization"
-msgstr "සංවිධානය වලංගු නොවේ"
+msgstr "සංවිධානය වලංගු නොවේ"
 
 #: analytics/views/stats.py:294
 msgid "Public streams"
@@ -203,7 +203,7 @@ msgstr "සංශෝධනයට කිසිත් නැත."
 
 #: corporate/views/event_status.py:28
 msgid "No customer for this organization!"
-msgstr "මෙම සංවිධානයට පාරිභෝගිකයින් නැත!"
+msgstr "මෙම සංවිධානයට පාරිභෝගිකයින් නැත!"
 
 #: corporate/views/event_status.py:34
 msgid "Session not found"
@@ -420,7 +420,7 @@ msgstr "මනුෂ්‍යයින්"
 
 #: templates/analytics/stats.html:95
 msgid "Bots"
-msgstr "ස්වයංක්‍රමලේඛ"
+msgstr "ස්වයංක්‍රමලේඛ"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
@@ -1215,7 +1215,7 @@ msgstr "ලියාපදිංචිය සම්පූර්ණ කරන්�
 
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
-msgstr "ඔබගේ සුලිප් සංවිධානය සාදන්න"
+msgstr "ඔබගේ සුලිප් සංවිධානය සාදන්න"
 
 #: templates/zerver/emails/confirm_registration.subject.txt:4
 msgid "Activate your Zulip account"
@@ -2148,7 +2148,7 @@ msgstr "වි-තැපැල් ලිපිනය"
 #: templates/zerver/find_account.html:53
 #: templates/zerver/portico-header.html:49
 msgid "Find accounts"
-msgstr "ගිණුම් සොයාගන්න"
+msgstr "ගිණුම් සොයාගන්න"
 
 #: templates/zerver/footer.html:6
 msgid "Product"
@@ -2312,7 +2312,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:111
 msgid "Terms of Service"
-msgstr "සේවාවේ නියම"
+msgstr "සේවාවේ නියම"
 
 #: templates/zerver/footer.html:112
 msgid "Privacy policy"
@@ -2364,7 +2364,7 @@ msgstr ""
 
 #: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
-msgstr "අනුකලන සොයන්න"
+msgstr "අනුකලන සොයන්න"
 
 #: templates/zerver/integrations/index.html:61
 #: templates/zerver/integrations/index.html:88
@@ -2389,7 +2389,7 @@ msgstr ""
 #: templates/zerver/invalid_email.html:4
 #: templates/zerver/invalid_email.html:13
 msgid "Invalid email"
-msgstr "වි-තැපෑල වලංගු නොවේ"
+msgstr "වි-තැපෑල වලංගු නොවේ"
 
 #: templates/zerver/invalid_email.html:15
 msgid "Email not allowed"
@@ -2591,7 +2591,7 @@ msgstr "සංවිධානයේ වර්ගය"
 #: templates/zerver/realm_creation_form.html:39
 #: templates/zerver/register.html:56
 msgid "Organization URL"
-msgstr "සංවිධානයේ ඒ.ස.නි."
+msgstr "සංවිධානයේ ඒ.ස.නි."
 
 #: templates/zerver/realm_creation_form.html:46
 #, python-format
@@ -3094,7 +3094,7 @@ msgstr ""
 #: zerver/actions/message_flags.py:333 zerver/lib/message.py:758
 #: zerver/lib/message.py:764
 msgid "Invalid message(s)"
-msgstr "පණිවිඩ(ය) වලංගු නොවේ"
+msgstr "පණිවිඩ(ය) වලංගු නොවේ"
 
 #: zerver/actions/message_send.py:156
 msgid "Unable to render message"
@@ -3340,7 +3340,7 @@ msgstr ""
 #: zerver/forms.py:123 zerver/forms.py:126 zerver/forms.py:268
 #: zerver/lib/email_validation.py:107
 msgid "Please use your real email address."
-msgstr "ඔබගේ නියම වි-තැපැල් ලිපිනය භාවිතා කරන්න."
+msgstr "ඔබගේ නියම වි-තැපැල් ලිපිනය භාවිතා කරන්න."
 
 #: zerver/forms.py:244
 #, python-brace-format
@@ -3430,11 +3430,11 @@ msgstr "පණිවිඩයට ලබන්නන් සිටිය යුත
 
 #: zerver/lib/addressee.py:145 zerver/lib/outgoing_webhook.py:215
 msgid "Invalid message type"
-msgstr "පණිවිඩ වර්ගය වලංගු නොවේ"
+msgstr "පණිවිඩ වර්ගය වලංගු නොවේ"
 
 #: zerver/lib/attachments.py:24
 msgid "Invalid attachment"
-msgstr "ඇමුණුම වලංගු නොවේ"
+msgstr "ඇමුණුම වලංගු නොවේ"
 
 #: zerver/lib/attachments.py:33
 msgid ""
@@ -3662,7 +3662,7 @@ msgstr "ඔබගේ මුරපදය අබල කර ඇති අතර එ
 
 #: zerver/lib/exceptions.py:338
 msgid "Invalid API key"
-msgstr "යෙ.ක්‍ර.මු. යතුර වලංගු නොවේ"
+msgstr "යෙ.ක්‍ර.මු. යතුර වලංගු නොවේ"
 
 #: zerver/lib/exceptions.py:344
 msgid "Malformed API key"
@@ -4217,7 +4217,7 @@ msgstr ""
 
 #: zerver/lib/user_groups.py:43
 msgid "Invalid user group"
-msgstr "පරිශීලක සමූහය වලංගු නොවේ"
+msgstr "පරිශීලක සමූහය වලංගු නොවේ"
 
 #: zerver/lib/user_groups.py:55
 msgid "Invalid user group ID: {}"
@@ -4282,11 +4282,11 @@ msgstr "වින්‍යාස දත්ත වලංගු නොවේ!"
 
 #: zerver/lib/users.py:158
 msgid "Invalid bot type"
-msgstr "ස්වයංක්‍රමලේඛ වර්ගය වලංගු නොවේ"
+msgstr "ස්වයංක්‍රමලේඛ වර්ගය වලංගු නොවේ"
 
 #: zerver/lib/users.py:163
 msgid "Invalid interface type"
-msgstr "අතුරු මුහුණතෙහි වර්ගය වලංගු නොවේ"
+msgstr "අතුරු මුහුණතෙහි වර්ගය වලංගු නොවේ"
 
 #: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4642
 msgid "Invalid user ID: {}"
@@ -4318,7 +4318,7 @@ msgstr ""
 #: zerver/lib/validator.py:91 zerver/lib/validator.py:176
 #, python-brace-format
 msgid "Invalid {var_name}"
-msgstr "{var_name} වලංගු නොවේ"
+msgstr "{var_name} වලංගු නොවේ"
 
 #: zerver/lib/validator.py:106
 #, python-brace-format
@@ -4737,7 +4737,7 @@ msgstr ""
 
 #: zerver/views/custom_profile_fields.py:113
 msgid "Invalid field type."
-msgstr "ක්ෂේත්‍ර වර්ගය වලංගු නොවේ."
+msgstr "ක්ෂේත්‍ර වර්ගය වලංගු නොවේ."
 
 #: zerver/views/custom_profile_fields.py:160
 #: zerver/views/custom_profile_fields.py:222
@@ -5106,7 +5106,7 @@ msgstr ""
 
 #: zerver/views/upload.py:222
 msgid "Invalid filename"
-msgstr " ගොනුවේ නම වලංගු නොවේ"
+msgstr " ගොනුවේ නම වලංගු නොවේ"
 
 #: zerver/views/upload.py:265
 msgid "You must specify a file to upload"
@@ -5164,7 +5164,7 @@ msgstr "වලංගු නොවන පෙරනිමි_භාෂා"
 
 #: zerver/views/user_settings.py:133
 msgid "Invalid notification sound '{}'"
-msgstr "දැනුම් දීමේ ශබ්දය '{}' වලංගු නොවේ"
+msgstr "දැනුම් දීමේ ශබ්දය '{}' වලංගු නොවේ"
 
 #: zerver/views/user_settings.py:141
 msgid "Invalid email batching period: {} seconds"
@@ -5296,7 +5296,7 @@ msgstr "වෙබ්ඇතීනා පිවිසුම සබල කර න�
 
 #: zerver/views/zephyr.py:59
 msgid "Invalid Kerberos cache"
-msgstr "කර්බර්ඕඑස් නිහිතය වලංගු නොවේ"
+msgstr "කර්බර්ඕඑස් නිහිතය වලංගු නොවේ"
 
 #: zerver/views/zephyr.py:63 zerver/views/zephyr.py:77
 msgid "We were unable to set up mirroring for you"
