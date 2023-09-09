@@ -917,7 +917,7 @@ openapi_rules = RuleList(
 )
 
 txt_rules = RuleList(
-    langs=["txt", "text", "yaml", "rst", "yml"],
+    langs=["txt", "text", "yaml", "yml"],
     rules=whitespace_rules,
 )
 non_py_rules = [
