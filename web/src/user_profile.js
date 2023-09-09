@@ -33,6 +33,7 @@ import * as util from "./util";
 
 let user_streams_list_widget;
 let user_profile_subscribe_widget;
+let toggler;
 
 function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
@@ -265,6 +266,10 @@ export function hide_user_profile() {
     overlays.close_modal_if_open("user-profile-modal");
 }
 
+function show_manage_user_tab(target) {
+    toggler.goto(target);
+}
+
 function initialize_user_type_fields(user) {
     // Avoid duplicate pill fields, by removing existing ones.
     $("#user-profile-modal .pill").remove();
@@ -321,6 +326,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
         show_user_subscribe_widget,
+        can_manage_profile,
     };
 
     if (user.is_bot) {
@@ -394,7 +400,8 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         opts.values.push(manage_profile_tab);
     }
 
-    const $elem = components.toggle(opts).get();
+    toggler = components.toggle(opts);
+    const $elem = toggler.get();
     $elem.addClass("large allow-overflow");
     $("#tab-toggle").append($elem);
     if (show_user_subscribe_widget) {
@@ -519,10 +526,20 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    $("body").on(
+        "click",
+        "#user-profile-modal #name #user_profile_manage_others_edit_button",
+        (e) => {
+            show_manage_user_tab("manage-profile-tab");
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
-    $("body").on("click", "#user-profile-modal #name .user_profile_edit_button", () => {
+    $("body").on("click", "#user-profile-modal #name #user_profile_manage_own_edit_button", () => {
         hide_user_profile();
     });
 
