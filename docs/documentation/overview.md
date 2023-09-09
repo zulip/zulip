@@ -31,7 +31,7 @@ These three systems are documented in detail.
 What you are reading right now is part of the collection of
 documentation targeted at developers and people running their own
 Zulip servers. These docs are written in
-[CommonMark Markdown](https://commonmark.org/) with a small bit of rST.
+[CommonMark Markdown](https://commonmark.org/).
 We've chosen Markdown because it is
 [easy to write](https://commonmark.org/help/). The source for Zulip's
 developer documentation is at `docs/` in the Zulip Git repository, and
@@ -62,7 +62,7 @@ browser. The raw files are available at
 the root of your Zulip checkout).
 
 If you are adding a new page to the table of contents, you will want
-to modify `docs/index.rst` and run `make clean` before `make html`, so
+to modify `docs/index.md` and run `make clean` before `make html`, so
 that other docs besides your new one also get the new entry in the
 table of contents.
 
