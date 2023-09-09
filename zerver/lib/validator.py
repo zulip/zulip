@@ -634,7 +634,7 @@ class WildValue:
     var_name: str
     value: object
 
-    @model_validator(mode="wrap")  # type: ignore[arg-type] # The upstream's type annotation uses a TypeVar that is incorrectly unbounded.
+    @model_validator(mode="wrap")
     @classmethod
     def to_wild_value(
         cls,
