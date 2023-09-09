@@ -471,7 +471,9 @@ $time_column_min_width: 42px; /* + padding */
        for details on how this works */
     .message_row.unread {
         .date_unread_marker {
-            display: none;
+            .unread-marker-fill {
+                opacity: 0;
+            }
         }
     }
 
@@ -479,7 +481,56 @@ $time_column_min_width: 42px; /* + padding */
        and remove the properties set from the previous rule. */
     .message_row.unread ~ .message_row.unread {
         .date_unread_marker {
+            .unread-marker-fill {
+                opacity: 1;
+            }
+        }
+    }
+
+    /* Don't apply mention background color message date row if the previous
+       message don't have user mentioned. */
+    .message_row:not(.direct_mention) + .message_row.direct_mention {
+        /* Since message left border is 1px and unread marker is 2px,
+            we leave 1px transparent so that the border is visible. */
+        .date_unread_marker {
+            background: linear-gradient(
+                to right,
+                transparent,
+                var(--color-background-stream-message-content) 50% 100%
+            );
+        }
+
+        .date_row {
+            background: var(--color-background-stream-message-content);
+        }
+
+        &:not(.unread) .date_unread_marker {
             display: block;
+            opacity: 1;
+
+            .unread-marker-fill {
+                transition: all 2s ease-out;
+                opacity: 0;
+            }
+        }
+
+        .unread .date_unread_marker .unread-marker-fill {
+            opacity: 1;
+        }
+    }
+
+    .message_row:not(.direct_mention)
+        + .message_row.direct_mention.private-message {
+        .date_unread_marker {
+            background: linear-gradient(
+                to right,
+                transparent,
+                var(--color-background-private-message-content) 50% 100%
+            );
+        }
+
+        .date_row {
+            background: var(--color-background-private-message-content);
         }
     }
 }
