@@ -47,7 +47,6 @@ plugins = ["mypy_django_plugin.main", "pydantic.mypy"]
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
-    "aioapns.*", # https://github.com/Fatal1ty/aioapns/issues/33
     "bitfield.*",
     "bmemcached.*",
     "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
