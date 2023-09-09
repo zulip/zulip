@@ -61,7 +61,7 @@ msgstr ""
 #: analytics/views/stats.py:350 analytics/views/stats.py:385
 msgid "No analytics data available. Please contact your server administrator."
 msgstr ""
-"അനലിറ്റിക്സ് ഡാറ്റയൊന്നും ലഭ്യമല്ല. ദയവായി നിങ്ങളുടെ സെർവർ അഡ്മിനിസ്ട്രേറ്ററെ ബന്ധപ്പെടുക."
+"അനലിറ്റിക്സ് ഡാറ്റയൊന്നും ലഭ്യമല്ല. ദയവായി നിങ്ങളുടെ സെർവർ അഡ്മിനിസ്ട്രേറ്ററെ ബന്ധപ്പെടുക."
 
 #: analytics/views/support.py:189 zerver/views/streams.py:306
 #: zerver/views/streams.py:310 zerver/views/streams.py:318

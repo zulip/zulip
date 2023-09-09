@@ -14,5 +14,12 @@ find ./locale \
     -regex '^\./locale/.*/\(mobile\|translations\).json$' \
     -exec ./tools/i18n/unescape-contents {} \;
 
+# Normalize to Unicode Normalization Form C.
+files="$(find locale -type f -name '*.json' -o -name '*.po')"
+mapfile -t files <<<"$files"
+for file in "${files[@]}"; do
+    uconv -x any-nfc "$file" | sponge -- "$file"
+done
+
 ./manage.py compilemessages --ignore='*'
 ./tools/i18n/process-mobile-i18n
