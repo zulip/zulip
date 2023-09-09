@@ -21,6 +21,7 @@ export const page_params: {
     is_owner: boolean;
     is_spectator: boolean;
     max_avatar_file_size_mib: number;
+    max_icon_file_size_mib: number;
     muted_users: {id: number; timestamp: number}[];
     needs_tutorial: boolean;
     page_load_time: number;
@@ -35,6 +36,8 @@ export const page_params: {
     realm_edit_topic_policy: number;
     realm_email_changes_disabled: boolean;
     realm_enable_spectator_access: boolean;
+    realm_icon_source: string;
+    realm_icon_url: string;
     realm_invite_to_realm_policy: number;
     realm_invite_to_stream_policy: number;
     realm_is_zephyr_mirror_realm: boolean;
