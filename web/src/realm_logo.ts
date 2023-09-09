@@ -5,8 +5,9 @@ import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
 import * as ui_util from "./ui_util";
 import * as upload_widget from "./upload_widget";
+import type {UploadFunction} from "./upload_widget";
 
-export function build_realm_logo_widget(upload_function, is_night) {
+export function build_realm_logo_widget(upload_function: UploadFunction, is_night: boolean): void {
     let logo_section_id = "#realm-day-logo-upload-widget";
     let logo_source = page_params.realm_logo_source;
 
@@ -16,11 +17,11 @@ export function build_realm_logo_widget(upload_function, is_night) {
     }
 
     const $delete_button_elem = $(logo_section_id + " .image-delete-button");
-    const $file_input_elem = $(logo_section_id + " .image_file_input");
+    const $file_input_elem = $<HTMLInputElement>(logo_section_id + " .image_file_input");
     const $file_input_error_elem = $(logo_section_id + " .image_file_input_error");
     const $upload_button_elem = $(logo_section_id + " .image_upload_button");
 
-    const get_file_input = function () {
+    const get_file_input = function (): JQuery<HTMLInputElement> {
         return $file_input_elem.expectOne();
     };
 
@@ -38,7 +39,7 @@ export function build_realm_logo_widget(upload_function, is_night) {
     $delete_button_elem.on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        channel.del({
+        void channel.del({
             url: "/json/realm/logo",
             data,
         });
@@ -53,7 +54,11 @@ export function build_realm_logo_widget(upload_function, is_night) {
     );
 }
 
-function change_logo_delete_button(logo_source, $logo_delete_button, $file_input) {
+function change_logo_delete_button(
+    logo_source: string,
+    $logo_delete_button: JQuery,
+    $file_input: JQuery<HTMLInputElement>,
+): void {
     if (logo_source === "U") {
         $logo_delete_button.show();
     } else {
@@ -64,9 +69,11 @@ function change_logo_delete_button(logo_source, $logo_delete_button, $file_input
     }
 }
 
-export function render() {
-    const $file_input = $("#realm-day-logo-upload-widget .image_file_input");
-    const $night_file_input = $("#realm-night-logo-upload-widget .realm-logo-file-input");
+export function render(): void {
+    const $file_input = $<HTMLInputElement>("#realm-day-logo-upload-widget .image_file_input");
+    const $night_file_input = $<HTMLInputElement>(
+        "#realm-night-logo-upload-widget .realm-logo-file-input",
+    );
     $("#realm-day-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);
 
     if (page_params.realm_night_logo_source === "D" && page_params.realm_logo_source !== "D") {
@@ -101,7 +108,7 @@ export function render() {
     );
 }
 
-export function initialize() {
+export function initialize(): void {
     // render once
     render();
 

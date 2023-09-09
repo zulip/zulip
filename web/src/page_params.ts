@@ -22,6 +22,7 @@ export const page_params: {
     is_spectator: boolean;
     max_avatar_file_size_mib: number;
     max_icon_file_size_mib: number;
+    max_logo_file_size_mib: number;
     muted_users: {id: number; timestamp: number}[];
     needs_tutorial: boolean;
     page_load_time: number;
@@ -41,6 +42,10 @@ export const page_params: {
     realm_invite_to_realm_policy: number;
     realm_invite_to_stream_policy: number;
     realm_is_zephyr_mirror_realm: boolean;
+    realm_logo_source: string;
+    realm_logo_url: string;
+    realm_night_logo_source: string;
+    realm_night_logo_url: string;
     realm_move_messages_between_streams_policy: number;
     realm_name_changes_disabled: boolean;
     realm_name: string;
