@@ -344,9 +344,9 @@ def get_visibility_policy_after_merge(
     # rather than hiding them.
     if orig_topic_visibility_policy == target_topic_visibility_policy:
         return orig_topic_visibility_policy
-    elif (
-        orig_topic_visibility_policy == UserTopic.VisibilityPolicy.UNMUTED
-        or target_topic_visibility_policy == UserTopic.VisibilityPolicy.UNMUTED
+    elif UserTopic.VisibilityPolicy.UNMUTED in (
+        orig_topic_visibility_policy,
+        target_topic_visibility_policy,
     ):
         return UserTopic.VisibilityPolicy.UNMUTED
     return UserTopic.VisibilityPolicy.INHERIT
