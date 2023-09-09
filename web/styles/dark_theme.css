@@ -1300,6 +1300,12 @@
         .subscription-group-list .user-group-list tr {
             border-color: hsl(0deg 0% 0% / 40%);
         }
+
+        .manage-profile-tab-footer {
+            &.modal__footer_wrapper {
+                border-top: 1px solid hsl(0deg 0% 100% / 20%);
+            }
+        }
     }
 
     /* Arrows: */
