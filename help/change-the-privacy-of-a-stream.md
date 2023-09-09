@@ -27,6 +27,22 @@ public.
 
 {!stream-settings-general-tab-tip.md!}
 
+{tab|mobile}
+
+{!mobile-all-streams-view.md!}
+
+{!stream-name-long-press-menu.md!}
+
+1. Tap **Stream settings**.
+
+1. Tap **Edit stream**.
+
+1. Tap **Privacy**, and configure **Who can access the stream**.
+
+1. Tap **Save**.
+
+{!stream-name-long-press-menu-tip.md!}
+
 {end_tabs}
 
 {!automated-notice-stream-event.md!}
