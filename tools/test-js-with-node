@@ -142,7 +142,7 @@ EXEMPT_FILES = make_set(
         "web/src/read_receipts.js",
         "web/src/ready.ts",
         "web/src/realm_icon.ts",
-        "web/src/realm_logo.js",
+        "web/src/realm_logo.ts",
         "web/src/realm_playground.ts",
         "web/src/realm_user_settings_defaults.ts",
         "web/src/recent_view_ui.js",
