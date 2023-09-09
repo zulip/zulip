@@ -97,8 +97,11 @@ class WidgetContentTestCase(ZulipTestCase):
         for message in test_messages:
             self.assertEqual(get_widget_data(content=message), (None, None))
 
-        # Add a positive check for context
+        # Add positive checks for context
         self.assertEqual(get_widget_data(content="/todo"), ("todo", None))
+        self.assertEqual(get_widget_data(content="/todo ignore"), ("todo", None))
+        # Test tokenization on newline character
+        self.assertEqual(get_widget_data(content="/todo\nignore"), ("todo", None))
 
     def test_explicit_widget_content(self) -> None:
         # Users can send widget_content directly on messages
