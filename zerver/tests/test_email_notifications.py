@@ -253,7 +253,7 @@ class TestCustomEmails(ZulipTestCase):
 
 
 class TestFollowupEmails(ZulipTestCase):
-    def test_day1_email_context(self) -> None:
+    def test_account_registered_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
         send_account_registered_email(hamlet)
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
@@ -298,7 +298,7 @@ class TestFollowupEmails(ZulipTestCase):
             "ou=users,dc=zulip,dc=com", ldap.SCOPE_ONELEVEL, "(uid=%(email)s)"
         ),
     )
-    def test_day1_email_ldap_case_a_login_credentials(self) -> None:
+    def test_account_registered_email_ldap_case_a_login_credentials(self) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
@@ -325,7 +325,7 @@ class TestFollowupEmails(ZulipTestCase):
             "zproject.backends.ZulipDummyBackend",
         )
     )
-    def test_day1_email_ldap_case_b_login_credentials(self) -> None:
+    def test_account_registered_email_ldap_case_b_login_credentials(self) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
@@ -350,7 +350,7 @@ class TestFollowupEmails(ZulipTestCase):
             "zproject.backends.ZulipDummyBackend",
         )
     )
-    def test_day1_email_ldap_case_c_login_credentials(self) -> None:
+    def test_account_registered_email_ldap_case_c_login_credentials(self) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
@@ -374,7 +374,7 @@ class TestFollowupEmails(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         realm = get_realm("zulip")
 
-        # Hamlet has account only in Zulip realm so day1, day2 and zulip_guide emails should be sent
+        # Hamlet has account only in Zulip realm so all onboarding emails should be sent
         send_account_registered_email(self.example_user("hamlet"))
         enqueue_welcome_emails(self.example_user("hamlet"))
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
@@ -443,7 +443,7 @@ class TestFollowupEmails(ZulipTestCase):
         realm.org_type = Realm.ORG_TYPES["education_nonprofit"]["id"]
         realm.save()
 
-        # Cordelia has account in more than 1 realm so day2 email should not be sent
+        # Cordelia has account in more than 1 realm so onboarding_zulip_topics email should not be sent
         send_account_registered_email(self.example_user("cordelia"))
         enqueue_welcome_emails(self.example_user("cordelia"))
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
@@ -469,7 +469,7 @@ class TestFollowupEmails(ZulipTestCase):
         realm.org_type = Realm.ORG_TYPES["other"]["id"]
         realm.save()
 
-        # In this case, Cordelia should only be sent the day1 email
+        # In this case, Cordelia should only be sent the account_registered email
         send_account_registered_email(self.example_user("cordelia"))
         enqueue_welcome_emails(self.example_user("cordelia"))
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
