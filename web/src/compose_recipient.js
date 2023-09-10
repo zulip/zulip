@@ -133,7 +133,7 @@ export function get_posting_policy_error_message() {
 export function check_posting_policy_for_compose_box() {
     const banner_text = get_posting_policy_error_message();
     if (banner_text === "") {
-        $(".compose_right_float_container").removeClass("disabled-compose-send-button-container");
+        $(".compose-send-button-container").removeClass("disabled-compose-send-button-container");
         compose_banner.clear_errors();
         return;
     }
@@ -142,7 +142,7 @@ export function check_posting_policy_for_compose_box() {
     if (selected_recipient_id === "direct") {
         banner_classname = compose_banner.CLASSNAMES.private_messages_disabled;
     }
-    $(".compose_right_float_container").addClass("disabled-compose-send-button-container");
+    $(".compose-send-button-container").addClass("disabled-compose-send-button-container");
     compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
 }
 

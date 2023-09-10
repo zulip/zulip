@@ -178,13 +178,13 @@
     }
 }
 
-.compose_bottom_top_container {
+.compose-buttons-container {
     display: flex;
     align-items: center;
     margin-top: 6px;
 }
 
-.compose_bottom_bottom_container {
+.enter-sends-container {
     display: flex;
     justify-content: space-between;
 }
@@ -736,7 +736,7 @@ input.recipient_box {
     }
 }
 
-.compose_right_float_container {
+.compose-send-button-container {
     display: flex;
     flex-direction: row;
     white-space: nowrap;

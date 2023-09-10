@@ -82,7 +82,7 @@ export function update_audio_and_video_chat_button_display() {
 
 export function update_video_chat_button_display() {
     const show_video_chat_button = compute_show_video_chat_button();
-    $("compose_bottom_top_container .video_link").toggle(show_video_chat_button);
+    $(".compose-buttons-container .video_link").toggle(show_video_chat_button);
     $(".message-edit-feature-group .video_link").toggle(show_video_chat_button);
 }
 
@@ -452,8 +452,8 @@ export function initialize() {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
 
-    $("compose_bottom_top_container .video_link").toggle(compute_show_video_chat_button());
-    $("compose_bottom_top_container .audio_link").toggle(compute_show_audio_chat_button());
+    $(".compose-buttons-container .video_link").toggle(compute_show_video_chat_button());
+    $(".compose-buttons-container .audio_link").toggle(compute_show_audio_chat_button());
 
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
