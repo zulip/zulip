@@ -137,16 +137,16 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # Reset the email value so we can run this again
     do_change_user_delivery_email(user_profile, registered_email)
 
-    # Initial email with new account information for normal user.
+    # Initial email with new account information for normal user
     send_account_registered_email(user_profile)
 
-    # Follow up day2 and onboarding zulip guide emails for normal user
+    # Onboarding emails for normal user
     enqueue_welcome_emails(user_profile)
 
     # Initial email with new account information for admin user
     send_account_registered_email(get_user_by_delivery_email("iago@zulip.com", realm))
 
-    # Follow up day2 and onboarding zulip guide emails for admin user
+    # Onboarding emails for admin user
     enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm))
 
     # Realm reactivation email
