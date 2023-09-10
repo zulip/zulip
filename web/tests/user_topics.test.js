@@ -7,7 +7,6 @@ const {all_visibility_policies} = require("../src/user_topics");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params} = require("./lib/zpage_params");
 
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
@@ -255,40 +254,40 @@ test("set_user_topics", () => {
     assert.ok(!user_topics.is_topic_unmuted(office.stream_id, "lunch"));
     assert.ok(!user_topics.is_topic_followed(devel.stream_id, "dinner"));
 
-    page_params.user_topics = [
+    const test_user_topics_params = [
         {
             stream_id: social.stream_id,
             topic_name: "breakfast",
-            last_updated: "1577836800",
+            last_updated: 1577836800,
             visibility_policy: all_visibility_policies.MUTED,
         },
         {
             stream_id: design.stream_id,
             topic_name: "typography",
-            last_updated: "1577836800",
+            last_updated: 1577836800,
             visibility_policy: all_visibility_policies.MUTED,
         },
         {
             stream_id: 999, // BOGUS STREAM ID
             topic_name: "random",
-            last_updated: "1577836800",
+            last_updated: 1577836800,
             visibility_policy: all_visibility_policies.MUTED,
         },
         {
             stream_id: office.stream_id,
             topic_name: "lunch",
-            last_updated: "1577836800",
+            last_updated: 1577836800,
             visibility_policy: all_visibility_policies.UNMUTED,
         },
         {
             stream_id: devel.stream_id,
             topic_name: "dinner",
-            last_updated: "1577836800",
+            last_updated: 1577836800,
             visibility_policy: all_visibility_policies.FOLLOWED,
         },
     ];
 
-    user_topics.initialize();
+    user_topics.initialize({user_topics: test_user_topics_params});
 
     assert.deepEqual(
         user_topics
