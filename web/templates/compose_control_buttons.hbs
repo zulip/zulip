@@ -1,15 +1,14 @@
 <div class="compose-control-buttons-container order-1">
     <input type="file" class="file_input notvisible" multiple />
     {{#if file_upload_enabled }}
-    <a role="button" class="compose_control_button compose_upload_file fa fa-paperclip notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0 data-tippy-content="{{t 'Upload files' }}"></a>
+    <a role="button" class="compose_control_button compose_upload_file notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0 data-tippy-content="{{t 'Upload files' }}"> <i class="fa fa-paperclip"></i> </a>
     {{/if}}
-    <a role="button" class="markdown_preview compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0 data-tippy-content="{{t 'Preview' }}"></a>
-    <a role="button" class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" data-tippy-content="{{t 'Write' }}"></a>
-    <a role="button" class="compose_control_button fa fa-video-camera video_link" aria-label="{{t 'Add video call' }}" tabindex=0 data-tippy-content="{{t 'Add video call' }}"></a>
-    <div class="compose_control_button_container" data-tippy-content="{{t 'Add emoji' }}">
-        <a role="button" class="compose_control_button fa fa-smile-o emoji_map" aria-label="{{t 'Add emoji' }}" tabindex=0></a>
-    </div>
-    <a role="button" class="compose_control_button fa fa-clock-o time_pick" aria-label="{{t 'Add global time' }}" tabindex=0 data-tooltip-template-id="add-global-time-tooltip" data-tippy-maxWidth="none"></a>
+    <a role="button" class="compose_control_button markdown_preview" aria-label="{{t 'Preview' }}" tabindex=0 data-tippy-content="{{t 'Preview' }}"> <i class="fa fa-eye"></i> </a>
+    <a role="button" class="compose_control_button undo_markdown_preview" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" data-tippy-content="{{t 'Write' }}"> <i class="fa fa-edit"></i> </a>
+    <a role="button" class="compose_control_button video_link" aria-label="{{t 'Add video call' }}" tabindex=0 data-tippy-content="{{t 'Add video call' }}"> <i class="fa fa-video-camera"></i> </a>
+    <a role="button" class="compose_control_button audio_link" aria-label="{{t 'Add audio call' }}" tabindex=0 data-tippy-content="{{t 'Add audio call' }}"><i class="fa fa-phone"></i> </a>
+    <a role="button" class="compose_control_button" data-tippy-content="{{t 'Add emoji' }}"> <i class="fa fa-smile-o emoji_map" aria-label="{{t 'Add emoji' }}" tabindex=0></i> </a>
+    <a role="button" class="compose_control_button time_pick" aria-label="{{t 'Add global time' }}" tabindex=0 data-tooltip-template-id="add-global-time-tooltip" data-tippy-maxWidth="none"> <i class="fa fa-clock-o"></i> </a>
     <div class="compose_control_button_container {{#unless giphy_enabled }}hide{{/unless}}" data-tippy-content="{{t 'Add GIF' }}">
         <a role="button" class="compose_control_button compose_gif_icon zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0></a>
     </div>
