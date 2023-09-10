@@ -9,7 +9,6 @@ import * as feedback_widget from "./feedback_widget";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as settings_ui from "./settings_ui";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
@@ -196,6 +195,6 @@ export function set_user_topics(user_topics) {
     }
 }
 
-export function initialize() {
-    set_user_topics(page_params.user_topics);
+export function initialize(params) {
+    set_user_topics(params.user_topics);
 }
