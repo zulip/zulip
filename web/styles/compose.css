@@ -872,6 +872,12 @@ input.recipient_box {
     }
 }
 
+@media (width < $sm_min) {
+    .compose-control-buttons-container {
+        margin-bottom: 1.5px;
+    }
+}
+
 @media (width < $mm_min) {
     #compose-content {
         margin-right: 5px;
