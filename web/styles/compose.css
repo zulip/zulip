@@ -655,15 +655,6 @@ input.recipient_box {
     gap: 4px;
     align-items: center;
 
-    /* We use the selector in this manner to maintain specificity. */
-    .compose_control_button_container .compose_gif_icon {
-        font-size: 22px;
-
-        /* Remove top and bottom padding. This is necessary
-         * because `compose_gif_icon` is no longer a flex item.  */
-        padding: 0 5px;
-    }
-
     .compose_control_button {
         padding: 1px 5px 0;
         opacity: 0.7;
@@ -678,6 +669,12 @@ input.recipient_box {
 
     .markdown_preview {
         padding-top: 0;
+    }
+
+    .compose_gif_icon {
+        display: block;
+        font-size: 22px;
+        margin-top: -1.5px;
     }
 
     .compose_control_menu {

@@ -33,8 +33,7 @@ export function initialize() {
         // Only display Tippy content on classes accompanied by a `data-` attribute.
         target: `
         .compose_control_button[data-tooltip-template-id],
-        .compose_control_button[data-tippy-content],
-        .compose_control_button_container
+        .compose_control_button[data-tippy-content]
         `,
         // Add some additional delay when they open
         // so that regular users don't have to see

@@ -9,9 +9,9 @@
     <a role="button" class="compose_control_button audio_link" aria-label="{{t 'Add audio call' }}" tabindex=0 data-tippy-content="{{t 'Add audio call' }}"><i class="fa fa-phone"></i> </a>
     <a role="button" class="compose_control_button" data-tippy-content="{{t 'Add emoji' }}"> <i class="fa fa-smile-o emoji_map" aria-label="{{t 'Add emoji' }}" tabindex=0></i> </a>
     <a role="button" class="compose_control_button time_pick" aria-label="{{t 'Add global time' }}" tabindex=0 data-tooltip-template-id="add-global-time-tooltip" data-tippy-maxWidth="none"> <i class="fa fa-clock-o"></i> </a>
-    <div class="compose_control_button_container {{#unless giphy_enabled }}hide{{/unless}}" data-tippy-content="{{t 'Add GIF' }}">
-        <a role="button" class="compose_control_button compose_gif_icon zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0></a>
-    </div>
+    <a role="button" class="compose_control_button {{#unless giphy_enabled }}hide{{/unless}}" data-tippy-content="{{t 'Add GIF' }}">
+        <i class="zulip-icon zulip-icon-gif compose_gif_icon" aria-label="{{t 'Add GIF' }}" tabindex=0></i>
+    </a>
     <div class="divider hide-sm">|</div>
     <div class="{{#if message_id}}hide-lg{{else}}hide-sm{{/if}}">
         {{> compose_control_buttons_in_popover}}

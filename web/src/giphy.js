@@ -184,7 +184,7 @@ function get_popover_content() {
 }
 
 export function initialize() {
-    popover_menus.register_popover_menu(".compose_control_button.compose_gif_icon", {
+    popover_menus.register_popover_menu(".compose_control_button .compose_gif_icon", {
         placement: "top",
         onCreate(instance) {
             instance.setContent(ui_util.parse_html(get_popover_content()));
