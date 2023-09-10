@@ -311,10 +311,7 @@ export function register_click_handlers() {
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
         const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
-        const target_user_id = Number.parseInt(
-            $stream_row.closest("#user-profile-modal").attr("data-user-id"),
-            10,
-        );
+        const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
         const $alert_box = $("#user-profile-streams-tab .stream_list_info");
 
         function removal_success(data) {
