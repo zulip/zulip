@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import render_topic_muted from "../templates/topic_muted.hbs";
 
@@ -15,7 +16,32 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import {get_time_from_date_muted} from "./util";
 
-const all_user_topics = new Map();
+type ServerUserTopic = z.infer<typeof user_topic_schema>;
+
+export type UserTopic = {
+    stream_id: number;
+    stream: string | undefined;
+    topic: string;
+    date_updated: number;
+    date_updated_str: string;
+    visibility_policy: number;
+};
+
+const user_topic_schema = z.object({
+    stream_id: z.number(),
+    topic_name: z.string(),
+    last_updated: z.number(),
+    visibility_policy: z.number(),
+    stream__name: z.string().optional(),
+});
+
+const all_user_topics = new Map<
+    number,
+    FoldDict<{
+        date_updated: number;
+        visibility_policy: number;
+    }>
+>();
 
 export const all_visibility_policies = {
     INHERIT: 0,
@@ -24,7 +50,12 @@ export const all_visibility_policies = {
     FOLLOWED: 3,
 };
 
-export function update_user_topics(stream_id, topic, visibility_policy, date_updated) {
+export function update_user_topics(
+    stream_id: number,
+    topic: string,
+    visibility_policy: number,
+    date_updated: number,
+): void {
     let sub_dict = all_user_topics.get(stream_id);
     if (visibility_policy === all_visibility_policies.INHERIT && sub_dict) {
         sub_dict.delete(topic);
@@ -38,41 +69,41 @@ export function update_user_topics(stream_id, topic, visibility_policy, date_upd
     }
 }
 
-export function get_topic_visibility_policy(stream_id, topic) {
+export function get_topic_visibility_policy(stream_id: number, topic: string): number | boolean {
     if (stream_id === undefined) {
         return false;
     }
     const sub_dict = all_user_topics.get(stream_id);
     if (sub_dict && sub_dict.get(topic)) {
-        return sub_dict.get(topic).visibility_policy;
+        return sub_dict.get(topic)!.visibility_policy;
     }
 
     return all_visibility_policies.INHERIT;
 }
 
-export function is_topic_followed(stream_id, topic) {
+export function is_topic_followed(stream_id: number, topic: string): boolean {
     return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.FOLLOWED;
 }
 
-export function is_topic_unmuted(stream_id, topic) {
+export function is_topic_unmuted(stream_id: number, topic: string): boolean {
     return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.UNMUTED;
 }
 
-export function is_topic_muted(stream_id, topic) {
+export function is_topic_muted(stream_id: number, topic: string): boolean {
     return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.MUTED;
 }
 
-export function is_topic_unmuted_or_followed(stream_id, topic) {
+export function is_topic_unmuted_or_followed(stream_id: number, topic: string): boolean {
     return is_topic_unmuted(stream_id, topic) || is_topic_followed(stream_id, topic);
 }
 
-export function get_user_topics_for_visibility_policy(visibility_policy) {
-    const topics = [];
+export function get_user_topics_for_visibility_policy(visibility_policy: number): UserTopic[] {
+    const topics: UserTopic[] = [];
     for (const [stream_id, sub_dict] of all_user_topics) {
         const stream = sub_store.maybe_get_stream_name(stream_id);
         for (const topic of sub_dict.keys()) {
-            if (sub_dict.get(topic).visibility_policy === visibility_policy) {
-                const date_updated = sub_dict.get(topic).date_updated;
+            if (sub_dict.get(topic)!.visibility_policy === visibility_policy) {
+                const date_updated = sub_dict.get(topic)!.date_updated;
                 const date_updated_str = timerender.render_now(new Date(date_updated)).time_str;
                 topics.push({
                     stream_id,
@@ -89,27 +120,27 @@ export function get_user_topics_for_visibility_policy(visibility_policy) {
 }
 
 export function set_user_topic_visibility_policy(
-    stream_id,
-    topic,
-    visibility_policy,
-    from_hotkey,
-    from_banner,
-    status_element,
-) {
+    stream_id: number,
+    topic: string,
+    visibility_policy: number,
+    from_hotkey?: boolean,
+    from_banner?: boolean,
+    status_element?: JQuery,
+): void {
     const data = {
         stream_id,
         topic,
         visibility_policy,
     };
 
-    let $spinner;
+    let $spinner: JQuery;
     if (status_element) {
         $spinner = $(status_element).expectOne();
         $spinner.fadeTo(0, 1);
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
     }
 
-    channel.post({
+    void channel.post({
         url: "/json/user_topics",
         data,
         success() {
@@ -146,9 +177,9 @@ export function set_user_topic_visibility_policy(
                 const stream_name = sub_store.maybe_get_stream_name(stream_id);
                 feedback_widget.show({
                     populate($container) {
-                        const rendered_html = render_topic_muted();
+                        const rendered_html = render_topic_muted({});
                         $container.html(rendered_html);
-                        $container.find(".stream").text(stream_name);
+                        $container.find(".stream").text(stream_name ?? "");
                         $container.find(".topic").text(topic);
                     },
                     on_undo() {
@@ -166,13 +197,13 @@ export function set_user_topic_visibility_policy(
     });
 }
 
-export function set_visibility_policy_for_element($elt, visibility_policy) {
-    const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
-    const topic = $elt.attr("data-topic-name");
+export function set_visibility_policy_for_element($elt: JQuery, visibility_policy: number): void {
+    const stream_id = Number.parseInt($elt.attr("data-stream-id")!, 10);
+    const topic = $elt.attr("data-topic-name")!;
     set_user_topic_visibility_policy(stream_id, topic, visibility_policy);
 }
 
-export function set_user_topic(user_topic) {
+export function set_user_topic(user_topic: ServerUserTopic): void {
     const stream_id = user_topic.stream_id;
     const topic = user_topic.topic_name;
     const date_updated = user_topic.last_updated;
@@ -187,7 +218,7 @@ export function set_user_topic(user_topic) {
     update_user_topics(stream_id, topic, user_topic.visibility_policy, date_updated);
 }
 
-export function set_user_topics(user_topics) {
+export function set_user_topics(user_topics: ServerUserTopic[]): void {
     all_user_topics.clear();
 
     for (const user_topic of user_topics) {
@@ -195,6 +226,8 @@ export function set_user_topics(user_topics) {
     }
 }
 
-export function initialize(params) {
-    set_user_topics(params.user_topics);
+export function initialize(params: {user_topics: ServerUserTopic[]}): void {
+    const user_topics = user_topic_schema.array().parse(params.user_topics);
+
+    set_user_topics(user_topics);
 }
