@@ -158,7 +158,6 @@ function format_user_group_list_item(group) {
 }
 
 function render_user_stream_list(streams, user) {
-    $("#user-profile-modal .modal__footer").hide();
     streams.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-stream-list");
     $container.empty();
@@ -179,7 +178,6 @@ function render_user_stream_list(streams, user) {
 }
 
 function render_user_group_list(groups, user) {
-    $("#user-profile-modal .modal__footer").hide();
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
@@ -206,7 +204,6 @@ function render_manage_profile_content(user) {
     } else {
         settings_users.show_edit_user_info_modal(user.user_id, $container);
     }
-    $("#user-profile-modal .modal__footer").show();
 }
 
 export function get_custom_profile_field_data(user, field, field_types) {
@@ -364,13 +361,13 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         callback(_name, key) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
+            $("#user-profile-modal .modal__footer").hide();
             $("#user-profile-modal .modal__body").removeClass("modal__body__manage_profile_height");
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
                 "modal__footer_wrapper",
             );
             switch (key) {
                 case "profile-tab":
-                    $("#user-profile-modal .modal__footer").hide();
                     initialize_user_type_fields(user);
                     break;
                 case "user-profile-groups-tab":
@@ -383,6 +380,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
                     render_user_stream_list(user_streams, user);
                     break;
                 case "manage-profile-tab":
+                    $("#user-profile-modal .modal__footer").show();
                     render_manage_profile_content(user);
                     break;
             }
