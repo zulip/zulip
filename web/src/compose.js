@@ -90,6 +90,7 @@ export function compute_show_audio_chat_button() {
     const available_providers = page_params.realm_available_video_chat_providers;
     if (
         (available_providers.jitsi_meet &&
+            page_params.jitsi_server_url &&
             page_params.realm_video_chat_provider === available_providers.jitsi_meet.id) ||
         (available_providers.zoom &&
             page_params.realm_video_chat_provider === available_providers.zoom.id)
