@@ -190,7 +190,6 @@
 }
 
 #compose-limit-indicator {
-    margin-right: 8px;
     font-size: 12px;
     color: hsl(39deg 100% 50%);
     align-self: center;
@@ -605,12 +604,7 @@ input.recipient_box {
 
 .open_enter_sends_dialog {
     font-size: 12px;
-    height: 14px;
-    padding-left: 4px;
     opacity: 0.7;
-    margin-bottom: 5px;
-    position: relative;
-    top: -2px;
     cursor: pointer;
 
     @media (width < $mm_min) {
@@ -619,6 +613,7 @@ input.recipient_box {
 
     & kbd {
         padding: 0 4px;
+        margin: 0.1em 0.1em 0;
     }
 
     &:hover {
