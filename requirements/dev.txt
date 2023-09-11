@@ -2442,6 +2442,10 @@ responses==0.23.3 \
     # via
     #   -r requirements/dev.in
     #   moto
+returns==0.22.0 \
+    --hash=sha256:c7bd85bd1e0041b44fe46c7e2f68fcc76a0546142c876229e395174bcd674f37 \
+    --hash=sha256:d38d6324692eeb29ec4bd698e1b859ec0ac79fb2c17bf0d302f92c8c42ef35c1
+    # via -r requirements/common.in
 rfc3339-validator==0.1.4 \
     --hash=sha256:138a2abdf93304ad60530167e51d2dfb9549521a836871b88d7f4695d0022f6b \
     --hash=sha256:24f6ec1eda14ef823da9e36ec7113124b39c04d50a4d3d3a3c2859577e7791fa
@@ -3059,6 +3063,7 @@ typing-extensions==4.7.1 \
     #   pyre-check
     #   pyre-extensions
     #   qrcode
+    #   returns
     #   rich
     #   semgrep
     #   sqlalchemy2-stubs

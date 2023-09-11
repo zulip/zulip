@@ -4,7 +4,6 @@ import copy
 import datetime
 import email
 import email.policy
-import functools
 import logging
 import os
 import signal
@@ -43,6 +42,7 @@ from django.db.utils import IntegrityError
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from returns.curry import partial
 from sentry_sdk import add_breadcrumb, configure_scope
 from zulip_bots.lib import extract_query_without_mention
 
@@ -309,7 +309,7 @@ class QueueProcessingWorker(ABC):
                 try:
                     signal.signal(
                         signal.SIGALRM,
-                        functools.partial(self.timer_expired, self.MAX_CONSUME_SECONDS, events),
+                        partial(self.timer_expired, self.MAX_CONSUME_SECONDS, events),
                     )
                     try:
                         signal.alarm(self.MAX_CONSUME_SECONDS * len(events))
@@ -357,7 +357,7 @@ class QueueProcessingWorker(ABC):
         self.do_consume(consume_func, [event])
 
     def timer_expired(
-        self, limit: int, events: List[Dict[str, Any]], signal: int, frame: FrameType
+        self, limit: int, events: List[Dict[str, Any]], signal: int, frame: Optional[FrameType]
     ) -> None:
         raise WorkerTimeoutError(self.queue_name, limit, len(events))
 
@@ -911,7 +911,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             do_update_embedded_data(message.sender, message, message.content, rendering_result)
 
     def timer_expired(
-        self, limit: int, events: List[Dict[str, Any]], signal: int, frame: FrameType
+        self, limit: int, events: List[Dict[str, Any]], signal: int, frame: Optional[FrameType]
     ) -> None:
         assert len(events) == 1
         event = events[0]

@@ -250,3 +250,9 @@ rules:
     message: 'Use ".exists()" instead; it is more efficient'
     languages: [python]
     severity: ERROR
+
+  - id: functools-partial
+    pattern: functools.partial
+    message: "Replace functools.partial with returns.curry.partial for type safety"
+    languages: [python]
+    severity: ERROR

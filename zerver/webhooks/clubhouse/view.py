@@ -1,7 +1,7 @@
-from functools import partial
 from typing import Callable, Dict, Iterable, Iterator, List, Optional
 
 from django.http import HttpRequest, HttpResponse
+from returns.curry import partial
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError

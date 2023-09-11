@@ -3,7 +3,6 @@ import os
 import random
 import shutil
 import unittest
-from functools import partial
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 from unittest import TestSuite, runner
 from unittest.result import TestResult
@@ -14,6 +13,7 @@ from django.db import ProgrammingError, connections
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
+from returns.curry import partial
 from typing_extensions import TypeAlias
 
 from scripts.lib.zulip_tools import (
