@@ -43,6 +43,17 @@ When you deactivate a user:
 
 1. Approve by clicking **Deactivate**.
 
+{tab|via-user-profile}
+
+{!manage-this-user-via-user-profile.md!}
+
+1. Click **Deactivate user** at the bottom of the **Manage user** menu.
+
+1. *(optional)* Select **Notify this user by email?** if desired, and enter a
+   custom comment to include in the notification email.
+
+1. Approve by clicking **Deactivate**.
+
 {tab|via-organization-settings}
 
 {settings_tab|user-list-admin}

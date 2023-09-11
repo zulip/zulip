@@ -27,6 +27,14 @@ organization](/help/deactivate-your-organization) instead).
 
 1. Click **Save changes**. The new permissions will take effect immediately.
 
+{tab|via-user-profile}
+
+{!manage-this-user-via-user-profile.md!}
+
+1. Under **User role**, select a [role](/help/roles-and-permissions).
+
+1. Click **Save changes**. The new permissions will take effect immediately.
+
 {tab|via-organization-settings}
 
 {settings_tab|user-list-admin}
