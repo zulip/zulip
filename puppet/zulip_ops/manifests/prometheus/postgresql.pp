@@ -13,7 +13,7 @@ class zulip_ops::prometheus::postgresql {
 
   zulip::external_dep { 'postgres_exporter-src':
     version        => $version,
-    url            => "https://github.com/Sticksman/postgres_exporter/archive/${version}.tar.gz",
+    url            => "https://github.com/alexmv/postgres_exporter/archive/${version}.tar.gz",
     tarball_prefix => "postgres_exporter-${version}",
   }
 
