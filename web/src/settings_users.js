@@ -8,6 +8,7 @@ import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
@@ -740,6 +741,11 @@ function handle_edit_form($tbody) {
         popovers.hide_all();
 
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        if (people.is_my_user_id(user_id)) {
+            browser_history.go_to_location("#settings/profile");
+            return;
+        }
+
         const user = people.get_by_user_id(user_id);
         user_profile.show_user_profile(user, "manage-profile-tab");
     });
