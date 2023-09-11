@@ -10,7 +10,7 @@ export const state: {
     hash_before_overlay: string | null;
     old_hash: string;
     changing_hash: boolean;
-    spectator_old_hash: string;
+    spectator_old_hash: string | null;
 } = {
     is_internal_change: false,
     hash_before_overlay: null,
@@ -22,7 +22,7 @@ export const state: {
     // hashes are changed without calling `hashchanged` in many ways.
     spectator_old_hash: hash_util.is_spectator_compatible(window.location.hash)
         ? window.location.hash
-        : `#${user_settings.default_view}`,
+        : null,
 };
 
 export function clear_for_testing(): void {
@@ -100,5 +100,5 @@ export function update_hash_internally_if_required(hash: string): void {
 }
 
 export function return_to_web_public_hash(): void {
-    window.location.hash = state.spectator_old_hash;
+    window.location.hash = state.spectator_old_hash ?? `#${user_settings.default_view}`;
 }

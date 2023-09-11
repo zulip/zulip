@@ -8,13 +8,13 @@ const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {user_settings} = require("./lib/zpage_params");
 
-user_settings.default_view = "recent";
 window.location.hash = "#bogus";
 
 const browser_history = zrequire("browser_history");
 
 function test(label, f) {
     run_test(label, (...args) => {
+        user_settings.default_view = "recent";
         window.location.hash = "#bogus";
         browser_history.clear_for_testing();
         f(...args);
