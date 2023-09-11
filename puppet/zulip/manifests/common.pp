@@ -121,6 +121,12 @@ class zulip::common {
       },
     },
 
+    # https://github.com/prometheus-community/postgres_exporter/pull/843
+    'postgres_exporter-src' => {
+      'version' => '4881e566207b1675f8b2ceae9bcd71f61800ccd1',
+      'sha256'  => '1b0aaf32e3834f02e5448fb21c0de114a4e42cc0937300e307899efb8438bf16',
+    },
+
     # https://github.com/ncabatoff/process-exporter/releases
     'process_exporter' => {
       'version' => '0.7.10',

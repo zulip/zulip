@@ -1,5 +1,5 @@
 [program:prometheus_postgres_exporter]
-command=<%= @bin %>
+command=<%= @bin %> --collector.stat_user_indexes
 environment=DATA_SOURCE_NAME="postgresql://prometheus@:5432/zulip?host=/var/run/postgresql"
 priority=10
 autostart=true
