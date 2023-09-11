@@ -42,7 +42,7 @@ export class FoldDict<V> {
         return this._items.delete(this._munge(key));
     }
 
-    *keys(): Iterator<string> {
+    *keys(): IterableIterator<string> {
         for (const {k} of this._items.values()) {
             yield k;
         }
