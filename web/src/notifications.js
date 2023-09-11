@@ -15,7 +15,6 @@ import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
@@ -73,10 +72,6 @@ export function initialize({on_click_scroll_to_selected}) {
     });
 
     update_notification_sound_source($("#user-notification-sound-audio"), user_settings);
-    update_notification_sound_source(
-        $("#realm-default-notification-sound-audio"),
-        realm_user_settings_defaults,
-    );
 
     register_click_handlers({on_click_scroll_to_selected});
 }
