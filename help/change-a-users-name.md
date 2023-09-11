@@ -20,6 +20,14 @@ Organization administrators can always change any user's name.
 
 {!save-changes.md!}
 
+{tab|via-user-profile}
+
+{!manage-this-user-via-user-profile.md!}
+
+1. Under **Full name**, enter a new name.
+
+{!save-changes.md!}
+
 {tab|via-organization-settings}
 
 {settings_tab|user-list-admin}
