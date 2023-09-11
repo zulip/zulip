@@ -431,7 +431,7 @@ export function build_move_topic_to_stream_popover(
     });
 }
 
-export function register_click_handlers() {
+function register_click_handlers() {
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
         e.stopPropagation();
 
@@ -530,4 +530,8 @@ export function register_stream_handlers() {
             $(".popover").addClass("colorpicker-popover");
         }
     });
+}
+
+export function initialize() {
+    register_click_handlers();
 }

@@ -102,6 +102,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
 import * as stream_list_sort from "./stream_list_sort";
+import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
@@ -763,6 +764,7 @@ export function initialize_everything() {
     initialize_unread_ui();
     activity.initialize();
     emoji_picker.initialize();
+    stream_popover.initialize();
     pm_list.initialize();
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
