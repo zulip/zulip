@@ -730,7 +730,7 @@ export function hide_playground_links_popover() {
     }
 }
 
-export function register_click_handlers() {
+function register_click_handlers() {
     $("#main_div").on("click", ".sender_name, .message-avatar", function (e) {
         const $row = $(this).closest(".message_row");
         e.stopPropagation();
@@ -1162,4 +1162,5 @@ export function compute_placement(
 export function initialize() {
     overlays.register_pre_open_hook(hide_all);
     overlays.register_pre_close_hook(hide_all);
+    register_click_handlers();
 }

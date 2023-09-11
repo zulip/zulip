@@ -633,7 +633,6 @@ export function initialize_everything() {
     message_list_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
-    popovers.initialize();
     popover_menus.initialize();
 
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
@@ -708,6 +707,9 @@ export function initialize_everything() {
     spoilers.initialize();
     lightbox.initialize();
     click_handlers.initialize();
+    // Popovers module should be initialized after the right sidebar module
+    // to correctly register popover events.
+    popovers.initialize();
     scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();
     overlays.initialize();

@@ -656,7 +656,6 @@ export function initialize() {
         });
     }
 
-    popovers.register_click_handlers();
     user_profile.register_click_handlers();
     stream_popover.register_click_handlers();
 

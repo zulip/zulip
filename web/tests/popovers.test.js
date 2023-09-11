@@ -102,7 +102,7 @@ function test_ui(label, f) {
         page_params.is_admin = false;
         page_params.custom_profile_fields = [];
         popovers.clear_for_testing();
-        popovers.register_click_handlers();
+        popovers.initialize();
         f(handlers);
     });
 }
