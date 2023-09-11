@@ -3,7 +3,6 @@ import json
 import random
 import secrets
 from base64 import b32encode
-from functools import partial
 from typing import Dict
 from urllib.parse import quote, urlencode, urljoin
 
@@ -21,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
 from requests_oauthlib import OAuth2Session
+from returns.curry import partial
 
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.decorator import zulip_login_required

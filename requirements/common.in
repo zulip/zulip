@@ -8,6 +8,9 @@ Django[argon2]==4.2.*
 # needed for NotRequired, ParamSpec
 typing-extensions
 
+# For type-safe returns.curry.partial
+returns
+
 # Needed for rendering backend templates
 Jinja2
 

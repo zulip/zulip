@@ -4,7 +4,6 @@ import random
 import shutil
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from functools import partial
 from typing import (
     AbstractSet,
     Any,
@@ -25,6 +24,7 @@ import orjson
 import requests
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
+from returns.curry import partial
 from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
