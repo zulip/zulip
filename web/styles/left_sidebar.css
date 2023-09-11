@@ -397,7 +397,7 @@ ul.filters {
         }
 
         & li.unmuted_topic {
-            color: hsl(0deg 0% 20%);
+            color: var(--color-unmuted-topic-list-item);
 
             .unread_count {
                 opacity: 1;
