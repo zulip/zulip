@@ -658,7 +658,6 @@ export function initialize() {
 
     popovers.register_click_handlers();
     user_profile.register_click_handlers();
-    emoji_picker.register_click_handlers();
     stream_popover.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
