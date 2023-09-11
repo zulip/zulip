@@ -1,9 +1,9 @@
 import re
-from functools import partial
 from typing import Dict, List, Optional, Protocol, Union
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
+from returns.curry import partial
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
