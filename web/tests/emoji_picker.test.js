@@ -4,13 +4,15 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {zrequire} = require("./lib/namespace");
+const {zrequire, set_global} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 const emoji = zrequire("emoji");
 const emoji_picker = zrequire("emoji_picker");
 
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
+
+set_global("document", "document-stub");
 
 run_test("initialize", () => {
     emoji.initialize({

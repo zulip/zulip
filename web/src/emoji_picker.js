@@ -695,7 +695,7 @@ export function toggle_emoji_popover(target, id, additional_popover_options) {
         {show_as_overlay},
     );
 }
-export function register_click_handlers() {
+function register_click_handlers() {
     $(document).on("click", ".emoji-popover-emoji.reaction", function (e) {
         // When an emoji is clicked in the popover,
         // if the user has reacted to this message with this emoji
@@ -824,4 +824,5 @@ export function register_click_handlers() {
 
 export function initialize() {
     rebuild_catalog();
+    register_click_handlers();
 }
