@@ -106,7 +106,7 @@ PathOnly: TypeAlias = Annotated[T, ApiParamConfig(path_only=True)]
 OptionalTopic: TypeAlias = Annotated[
     Optional[str],
     StringConstraints(strip_whitespace=True),
-    ApiParamConfig(whence="topic", aliases=("subject")),
+    ApiParamConfig(whence="topic", aliases=("subject",)),
 ]
 
 # Reusable annotation metadata for Annotated types
