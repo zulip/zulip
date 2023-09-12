@@ -742,7 +742,7 @@ def send_confirm_registration_email(
         from_address=FromAddress.tokenized_no_reply_address(),
         language=get_language() if request is not None else None,
         context={
-            "create_realm": (realm is None),
+            "create_realm": realm is None,
             "activate_url": activation_url,
             "corporate_enabled": settings.CORPORATE_ENABLED,
         },

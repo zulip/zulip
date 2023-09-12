@@ -132,11 +132,9 @@ def der_encode_ticket(tkt: Dict[str, Any]) -> bytes:
                 der_encode_sequence(  # EncryptedData
                     [
                         der_encode_int32(tkt["encPart"]["etype"]),
-                        (
-                            der_encode_uint32(tkt["encPart"]["kvno"])
-                            if "kvno" in tkt["encPart"]
-                            else None
-                        ),
+                        der_encode_uint32(tkt["encPart"]["kvno"])
+                        if "kvno" in tkt["encPart"]
+                        else None,
                         der_encode_octet_string(base64.b64decode(tkt["encPart"]["cipher"])),
                     ]
                 ),

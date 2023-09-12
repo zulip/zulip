@@ -1671,12 +1671,12 @@ Output:
 
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
         new_member_user.date_joined = timezone_now() - timedelta(
-            days=(realm.waiting_period_threshold - 1)
+            days=realm.waiting_period_threshold - 1
         )
         new_member_user.save()
 
         member_user.date_joined = timezone_now() - timedelta(
-            days=(realm.waiting_period_threshold + 1)
+            days=realm.waiting_period_threshold + 1
         )
         member_user.save()
 

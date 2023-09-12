@@ -515,7 +515,7 @@ def get_service_bot_events(
         if is_stream and user_profile_id in mentioned_user_ids:
             trigger = "mention"
         # Direct message triggers for personal and huddle messages
-        elif (not is_stream) and (user_profile_id in active_user_ids):
+        elif not is_stream and user_profile_id in active_user_ids:
             trigger = NotificationTriggers.DIRECT_MESSAGE
         else:
             return
@@ -966,7 +966,7 @@ def do_send_messages(
             UserMessageNotificationsData.from_user_id_sets(
                 user_id=user_id,
                 flags=user_flags.get(user_id, []),
-                private_message=(message_type == "private"),
+                private_message=message_type == "private",
                 disable_external_notifications=send_request.disable_external_notifications,
                 online_push_user_ids=send_request.online_push_user_ids,
                 dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,

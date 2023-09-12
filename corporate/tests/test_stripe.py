@@ -3320,14 +3320,14 @@ class StripeTest(StripeTestCase):
         )
         [invoice, _] = stripe.Invoice.list(customer=stripe_customer.id)
         invoice_params = {
-            "amount_due": (8000 * 150 + 8000 * 50),
+            "amount_due": 8000 * 150 + 8000 * 50,
             "amount_paid": 0,
             "attempt_count": 0,
             "auto_advance": True,
             "collection_method": "send_invoice",
             "statement_descriptor": "Zulip Cloud Standard",
             "status": "open",
-            "total": (8000 * 150 + 8000 * 50),
+            "total": 8000 * 150 + 8000 * 50,
         }
         for key, value in invoice_params.items():
             self.assertEqual(invoice.get(key), value)
@@ -4833,7 +4833,7 @@ class InvoiceTest(StripeTestCase):
                 "start": datetime_to_timestamp(self.now + timedelta(days=366)),
                 "end": datetime_to_timestamp(self.now + timedelta(days=2 * 365 + 1)),
             },
-            "quantity": (self.seat_count + 1),
+            "quantity": self.seat_count + 1,
         }
         for key, value in line_item_params.items():
             self.assertEqual(item1.get(key), value)

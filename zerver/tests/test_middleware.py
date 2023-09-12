@@ -133,7 +133,7 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             "/help/",
             "Zulip help center",
-            [("Welcome to the Zulip")],
+            ["Welcome to the Zulip"],
             [],
         )
 
