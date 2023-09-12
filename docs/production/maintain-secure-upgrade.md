@@ -1,6 +1,6 @@
-```{eval-rst}
-:orphan:
-```
+---
+orphan: true
+---
 
 # Maintain, secure, and upgrade
 
