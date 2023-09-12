@@ -1,0 +1,12 @@
+location /health {
+    allow 127.0.0.1;
+    allow ::1;
+
+<% @loadbalancers.each do |host| -%>
+    allow <%= host %>;
+<% end -%>
+
+    deny all;
+
+    include uwsgi_params;
+}
