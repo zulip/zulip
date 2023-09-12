@@ -42,6 +42,7 @@ class ErrorCode(Enum):
     MOVE_MESSAGES_TIME_LIMIT_EXCEEDED = auto()
     REACTION_ALREADY_EXISTS = auto()
     REACTION_DOES_NOT_EXIST = auto()
+    SERVER_NOT_READY = auto()
 
 
 class JsonableError(Exception):
@@ -533,3 +534,8 @@ class ApiParamValidationError(JsonableError):
     def __init__(self, msg: str, error_type: str) -> None:
         super().__init__(msg)
         self.error_type = error_type
+
+
+class ServerNotReadyError(JsonableError):
+    code = ErrorCode.SERVER_NOT_READY
+    http_status_code = 500
