@@ -159,6 +159,7 @@ def do_create_realm(
     invite_required: Optional[bool] = None,
     plan_type: Optional[int] = None,
     org_type: Optional[int] = None,
+    default_language: Optional[str] = None,
     date_created: Optional[datetime.datetime] = None,
     is_demo_organization: bool = False,
     enable_read_receipts: Optional[bool] = None,
@@ -184,6 +185,8 @@ def do_create_realm(
         kwargs["plan_type"] = plan_type
     if org_type is not None:
         kwargs["org_type"] = org_type
+    if default_language is not None:
+        kwargs["default_language"] = default_language
     if enable_spectator_access is not None:
         if enable_spectator_access:
             # Realms with LIMITED plan cannot have spectators enabled.

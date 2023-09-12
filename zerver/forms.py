@@ -28,6 +28,7 @@ from zerver.lib.email_validation import (
     email_reserved_for_system_bots_error,
 )
 from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.i18n import get_language_list
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
 from zerver.lib.send_email import FromAddress, send_email
@@ -140,6 +141,7 @@ class RealmDetailsForm(forms.Form):
     realm_type = forms.TypedChoiceField(
         coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
     )
+    realm_default_language = forms.ChoiceField(choices=[])
     realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -147,6 +149,9 @@ class RealmDetailsForm(forms.Form):
         del kwargs["realm_creation"]
 
         super().__init__(*args, **kwargs)
+        self.fields["realm_default_language"] = forms.ChoiceField(
+            choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
+        )
 
     def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
@@ -190,6 +195,10 @@ class RegistrationForm(RealmDetailsForm):
         self.fields["realm_type"] = forms.TypedChoiceField(
             coerce=int,
             choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+            required=self.realm_creation,
+        )
+        self.fields["realm_default_language"] = forms.ChoiceField(
+            choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
             required=self.realm_creation,
         )
 
