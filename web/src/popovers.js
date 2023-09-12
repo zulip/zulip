@@ -454,7 +454,7 @@ export function popover_items_handle_keyboard(key, $items) {
 
     if (key === "enter" && index >= 0 && index < $items.length) {
         $items[index].click();
-        if ($current_user_info_popover_manage_menu) {
+        if (user_info_manage_menu_popped()) {
             const $items = get_user_info_popover_manage_menu_items();
             focus_first_popover_item($items);
         }
