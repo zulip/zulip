@@ -1,6 +1,6 @@
-```{eval-rst}
-:orphan:
-```
+---
+orphan: true
+---
 
 # Production installation on an existing server
 
