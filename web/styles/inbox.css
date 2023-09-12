@@ -116,25 +116,22 @@
                     outline: 0;
 
                     & a {
-                        padding: 0 4px;
-                        border-radius: 5px;
+                        margin: 0 4px;
+                        padding: 1px 0;
                         text-overflow: ellipsis;
                         overflow: hidden;
                     }
 
                     &:focus a {
-                        color: hsl(0deg 0% 100%);
-                        background-color: hsl(0deg 0% 11%);
+                        box-shadow: inset 0 -3px 0 var(--color-outline-focus);
                     }
                 }
 
                 &:focus {
                     outline: 0;
-                    box-shadow: inset 2px 0 0 0 var(--color-unread-marker);
 
                     .toggle-inbox-header-icon {
                         opacity: 1;
-                        color: hsl(0deg 0% 11%);
                     }
                 }
             }
@@ -203,7 +200,10 @@
                 &:focus {
                     outline: 0;
                     padding: 0;
-                    box-shadow: inset 2px 0 0 0 var(--color-unread-marker);
+
+                    .inbox-topic-name a {
+                        box-shadow: inset 0 -3px 0 var(--color-outline-focus);
+                    }
                 }
 
                 .inbox-left-part {
@@ -248,11 +248,24 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 width: 100%;
+
+                & a {
+                    padding: 1px 0;
+                }
             }
 
             .inbox-left-part-wrapper {
                 display: flex;
                 width: 50%;
+            }
+
+            #inbox-direct-messages-container {
+                /* Since a direct message row can have span to multiple lines,
+                   having an underline focus will not work very well.
+                */
+                .inbox-row:focus {
+                    box-shadow: inset 2px 0 0 0 var(--color-outline-focus);
+                }
             }
 
             #inbox-direct-messages-container .inbox-left-part {
