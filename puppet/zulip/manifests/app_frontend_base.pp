@@ -66,6 +66,14 @@ class zulip::app_frontend_base {
       notify => Service['nginx'],
     }
   }
+  file { '/etc/nginx/zulip-include/app.d/healthcheck.conf':
+    require => File['/etc/nginx/zulip-include/app.d'],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/nginx/healthcheck.conf.template.erb'),
+    notify  => Service['nginx'],
+  }
 
   file { '/etc/nginx/zulip-include/upstreams':
     require => Package[$zulip::common::nginx],
