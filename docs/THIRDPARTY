@@ -25,7 +25,7 @@ Copyright: 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 License: BSD-3-Clause
 
 Files: docs/code-of-conduct.md
-Copyright: 2017, Kandra Labs Inc.
+Copyright: 2017, Kandra Labs, Inc.
 License: CC-BY-SA-4.0
 
 Files: puppet/zulip/files/nagios_plugins/zulip_base/check_debian_packages
