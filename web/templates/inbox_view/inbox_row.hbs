@@ -1,7 +1,7 @@
 {{#if is_stream}}
     {{> inbox_stream_header_row}}
 {{else}}
-    <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}}" tabindex="0">
+    <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}collapsed_container{{/if}}" tabindex="0">
         <div class="inbox-left-part-wrapper">
             <div class="inbox-left-part">
                 <div class="hide fake-collapse-button" tabindex="0"></div>

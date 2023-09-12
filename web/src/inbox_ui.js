@@ -44,9 +44,12 @@ const COLUMNS = {
 let col_focus = COLUMNS.RECIPIENT;
 let row_focus = 0;
 
-const ls_key = "inbox_filters";
+const ls_filter_key = "inbox_filters";
+const ls_collapsed_containers_key = "inbox_collapsed_containers";
+
 const ls = localstorage();
 let filters = new Set();
+let collapsed_containers = new Set();
 
 let search_keyword = "";
 const INBOX_SEARCH_ID = "inbox-search";
@@ -60,8 +63,9 @@ function get_row_from_conversation_key(key) {
     return $(`#${CONVERSATION_ID_PREFIX}` + CSS.escape(`${key}`));
 }
 
-function save_filter() {
-    ls.set(ls_key, [...filters]);
+function save_data_to_ls() {
+    ls.set(ls_filter_key, [...filters]);
+    ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
 }
 
 function should_include_muted() {
@@ -148,8 +152,9 @@ function get_stream_header_row(stream_id) {
     return $stream_header_row;
 }
 
-function load_filter() {
-    filters = new Set(ls.get(ls_key));
+function load_data_from_ls() {
+    filters = new Set(ls.get(ls_filter_key));
+    collapsed_containers = new Set(ls.get(ls_collapsed_containers_key));
     update_filters();
 }
 
@@ -176,7 +181,7 @@ export function toggle_muted_filter() {
     }
 
     update_filters();
-    save_filter();
+    save_data_to_ls();
     update();
 }
 
@@ -206,6 +211,7 @@ function format_dm(user_ids_string, unread_count) {
         user_ids_string,
         unread_count,
         is_hidden: filter_should_hide_row({dm_key: user_ids_string}),
+        is_collapsed: collapsed_containers.has("inbox-dm-header"),
     };
 
     return context;
@@ -246,6 +252,7 @@ function format_stream(stream_id, unread_count_info) {
         stream_id,
         // Will be displayed if any topic is visible.
         is_hidden: true,
+        is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
     };
 }
 
@@ -268,6 +275,7 @@ function format_topic(stream_id, topic, topic_unread_count) {
         conversation_key: get_topic_key(stream_id, topic),
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
         is_hidden: filter_should_hide_row({stream_id, topic}),
+        is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
     };
 
     return context;
@@ -402,9 +410,11 @@ function reset_data() {
     }
 
     topics_dict = get_sorted_stream_topic_dict();
+    const is_dms_collaped = collapsed_containers.has("inbox-dm-header");
 
     return {
         unread_dms_count,
+        is_dms_collaped,
         has_dms_post_filter,
         has_unread,
     };
@@ -414,11 +424,11 @@ export function complete_rerender() {
     if (!is_visible()) {
         return;
     }
-    load_filter();
+    load_data_from_ls();
     const additional_context = reset_data();
     $("#inbox-pane").html(
         render_inbox_view({
-            search_val: $("#inbox_search").val() || "",
+            search_val: search_keyword,
             include_muted: should_include_muted(),
             INBOX_SEARCH_ID,
             MUTED_FILTER_ID,
@@ -493,7 +503,15 @@ export function collapse_or_expand(container_id) {
             `#${CSS.escape(STREAM_HEADER_PREFIX + stream_id)} .toggle-inbox-header-icon`,
         );
     }
-    $toggle_icon.toggleClass("icon_collapsed_state");
+    $toggle_icon.toggleClass("icon-collapsed-state");
+
+    if (collapsed_containers.has(container_id)) {
+        collapsed_containers.delete(container_id);
+    } else {
+        collapsed_containers.add(container_id);
+    }
+
+    save_data_to_ls();
 }
 
 function focus_current_id() {
