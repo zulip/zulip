@@ -247,9 +247,7 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
             message=message_id,
             flags=~UserMessage.flags.historical,
         )
-        .filter(
-            Q(flags__andnz=(UserMessage.flags.mentioned | UserMessage.flags.wildcard_mentioned))
-        )
+        .filter(Q(flags__andnz=UserMessage.flags.mentioned | UserMessage.flags.wildcard_mentioned))
         .values_list("user_profile_id", flat=True)
     )
     return set(mentioned_user_ids)

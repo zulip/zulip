@@ -54,7 +54,7 @@ def sentry_tunnel(
             item_header = orjson.loads(item_header_line.decode("utf-8"))
             length = item_header.get("length")
             if length is None:
-                item_body, envelope_items = ([*rest.split(b"\n", 1), b""])[:2]
+                item_body, envelope_items = [*rest.split(b"\n", 1), b""][:2]
             else:
                 item_body, envelope_items = rest[0:length], rest[length:]
             if item_header.get("type") in ("transaction", "event"):

@@ -895,7 +895,7 @@ class InviteUserTest(InviteUserBase):
 
         hamlet = self.example_user("hamlet")
         hamlet.date_joined = timezone_now() - datetime.timedelta(
-            days=(realm.waiting_period_threshold - 1)
+            days=realm.waiting_period_threshold - 1
         )
 
         email = "issac-test@zulip.com"

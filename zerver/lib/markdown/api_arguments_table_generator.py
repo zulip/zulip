@@ -183,7 +183,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                     required=required_block,
                     deprecated=deprecated_block,
                     description=md_engine.convert(description),
-                    type=(data_type),
+                    type=data_type,
                     object_details=object_block,
                 )
             )
