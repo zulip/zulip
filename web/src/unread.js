@@ -35,6 +35,7 @@ export function clear_old_unreads_missing() {
 }
 
 export const unread_mentions_counter = new Set();
+export const direct_message_with_mention_count = new Set();
 const unread_messages = new Set();
 
 // Map with keys of the form "{stream_id}:{topic.toLowerCase()}" and
@@ -703,6 +704,7 @@ export function update_message_for_mention(message, content_edited = false) {
     // an unread mention of the user.
     if (!message.unread) {
         unread_mentions_counter.delete(message.id);
+        direct_message_with_mention_count.delete(message.id);
         remove_message_from_unread_mention_topics(message.id);
         return false;
     }
@@ -715,8 +717,12 @@ export function update_message_for_mention(message, content_edited = false) {
     if (is_unmuted_mention || message.mentioned_me_directly) {
         unread_mentions_counter.add(message.id);
         add_message_to_unread_mention_topics(message.id);
+        if (!message.stream_id) {
+            direct_message_with_mention_count.add(message.id);
+        }
     } else {
         unread_mentions_counter.delete(message.id);
+        direct_message_with_mention_count.delete(message.id);
         remove_message_from_unread_mention_topics(message.id);
     }
 
@@ -738,6 +744,7 @@ export function mark_as_read(message_id) {
     remove_message_from_unread_mention_topics(message_id);
     unread_topic_counter.delete(message_id);
     unread_mentions_counter.delete(message_id);
+    direct_message_with_mention_count.delete(message_id);
     unread_messages.delete(message_id);
 
     const message = message_store.get(message_id);
@@ -751,6 +758,7 @@ export function declare_bankruptcy() {
     unread_direct_message_counter.clear();
     unread_topic_counter.clear();
     unread_mentions_counter.clear();
+    direct_message_with_mention_count.clear();
     unread_messages.clear();
     unread_mention_topics.clear();
 }
@@ -774,6 +782,7 @@ export function get_counts() {
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
     res.mentioned_message_count = unread_mentions_counter.size;
+    res.direct_message_with_mention_count = direct_message_with_mention_count.size;
 
     // This sets stream_count, topic_count, and home_unread_messages
     const topic_res = unread_topic_counter.get_counts();
@@ -805,7 +814,11 @@ export function calculate_notifiable_count(res) {
         settings_config.desktop_icon_count_display_values.none.code;
     if (only_show_notifiable) {
         // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
-        new_message_count = res.mentioned_message_count + res.private_message_count;
+        new_message_count =
+            res.mentioned_message_count +
+            res.private_message_count -
+            // Avoid double-counting direct messages containing mentions
+            res.direct_message_with_mention_count;
     } else if (no_notifications) {
         // DESKTOP_ICON_COUNT_DISPLAY_NONE
         new_message_count = 0;
@@ -909,9 +922,11 @@ export function initialize(params) {
     unread_direct_message_counter.set_huddles(unread_msgs.huddles);
     unread_direct_message_counter.set_pms(unread_msgs.pms);
     unread_topic_counter.set_streams(unread_msgs.streams);
-
     for (const message_id of unread_msgs.mentions) {
         unread_mentions_counter.add(message_id);
+        if (unread_direct_message_counter.get_msg_ids().includes(message_id)) {
+            direct_message_with_mention_count.add(message_id);
+        }
     }
     clear_and_populate_unread_mention_topics();
 
