@@ -1509,11 +1509,11 @@ class TestDeleteStats(AnalyticsTestCase):
         FillState.objects.create(property="test", end_time=self.TIME_ZERO, state=FillState.DONE)
 
         analytics = apps.get_app_config("analytics")
-        for table in list(analytics.models.values()):
+        for table in analytics.models.values():
             self.assertTrue(table._default_manager.exists())
 
         do_drop_all_analytics_tables()
-        for table in list(analytics.models.values()):
+        for table in analytics.models.values():
             self.assertFalse(table._default_manager.exists())
 
     def test_do_drop_single_stat(self) -> None:
@@ -1533,11 +1533,11 @@ class TestDeleteStats(AnalyticsTestCase):
         FillState.objects.create(property="to_save", end_time=self.TIME_ZERO, state=FillState.DONE)
 
         analytics = apps.get_app_config("analytics")
-        for table in list(analytics.models.values()):
+        for table in analytics.models.values():
             self.assertTrue(table._default_manager.exists())
 
         do_drop_single_stat("to_delete")
-        for table in list(analytics.models.values()):
+        for table in analytics.models.values():
             self.assertFalse(table._default_manager.filter(property="to_delete").exists())
             self.assertTrue(table._default_manager.filter(property="to_save").exists())
 

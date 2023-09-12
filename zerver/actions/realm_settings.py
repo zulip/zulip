@@ -169,7 +169,7 @@ def do_set_realm_authentication_methods(
 ) -> None:
     old_value = realm.authentication_methods_dict()
     with transaction.atomic():
-        for key, value in list(authentication_methods.items()):
+        for key, value in authentication_methods.items():
             # This does queries in a loop, but this isn't a performance sensitive
             # path and is only run rarely.
             if value:
@@ -409,15 +409,13 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     # more secure against bugs that may cause Message.realm to be incorrect for some
     # cross-realm messages to also determine the actual Recipients - to prevent
     # deletion of excessive messages.
-    all_recipient_ids_in_realm = (
-        list(Stream.objects.filter(realm=realm).values_list("recipient_id", flat=True))
-        + list(UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True))
-        + list(
-            Subscription.objects.filter(
-                recipient__type=Recipient.HUDDLE, user_profile__realm=realm
-            ).values_list("recipient_id", flat=True)
-        )
-    )
+    all_recipient_ids_in_realm = [
+        *Stream.objects.filter(realm=realm).values_list("recipient_id", flat=True),
+        *UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
+        *Subscription.objects.filter(
+            recipient__type=Recipient.HUDDLE, user_profile__realm=realm
+        ).values_list("recipient_id", flat=True),
+    ]
     cross_realm_bot_message_ids = list(
         Message.objects.filter(
             # Filtering by both message.recipient and message.realm is

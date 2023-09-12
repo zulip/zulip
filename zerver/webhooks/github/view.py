@@ -892,7 +892,7 @@ def get_zulip_event_name(
             return "issue_milestoned_or_demilestoned"
         else:
             return "issues"
-    elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
+    elif header_event in EVENT_FUNCTION_MAPPER:
         return header_event
     elif header_event in IGNORED_EVENTS:
         return None

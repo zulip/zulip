@@ -46,8 +46,8 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
                 parent.tag == "p"
                 and grandparent.tag == "li"
                 and parent.text is None
-                and len(list(parent)) == 1
-                and len(list(parent.itertext())) == 1
+                and len(parent) == 1
+                and sum(1 for text in parent.itertext()) == 1
             ):
                 # if the parent (<p>) has no text, and no children,
                 # that means that the <code> element inside is its

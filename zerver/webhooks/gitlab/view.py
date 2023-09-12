@@ -526,7 +526,7 @@ def get_event(request: HttpRequest, payload: WildValue, branches: Optional[str])
         if branches.find(branch) == -1:
             return None
 
-    if event in list(EVENT_FUNCTION_MAPPER.keys()):
+    if event in EVENT_FUNCTION_MAPPER:
         return event
 
     raise UnsupportedWebhookEventTypeError(event)

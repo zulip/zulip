@@ -308,16 +308,16 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
 def sanity_check_output(data: TableData) -> None:
     # First, we verify that the export tool has a declared
     # configuration for every table declared in the `models.py` files.
-    target_models = (
-        list(apps.get_app_config("analytics").get_models(include_auto_created=True))
-        + list(apps.get_app_config("django_otp").get_models(include_auto_created=True))
-        + list(apps.get_app_config("otp_static").get_models(include_auto_created=True))
-        + list(apps.get_app_config("otp_totp").get_models(include_auto_created=True))
-        + list(apps.get_app_config("phonenumber").get_models(include_auto_created=True))
-        + list(apps.get_app_config("social_django").get_models(include_auto_created=True))
-        + list(apps.get_app_config("two_factor").get_models(include_auto_created=True))
-        + list(apps.get_app_config("zerver").get_models(include_auto_created=True))
-    )
+    target_models = [
+        *apps.get_app_config("analytics").get_models(include_auto_created=True),
+        *apps.get_app_config("django_otp").get_models(include_auto_created=True),
+        *apps.get_app_config("otp_static").get_models(include_auto_created=True),
+        *apps.get_app_config("otp_totp").get_models(include_auto_created=True),
+        *apps.get_app_config("phonenumber").get_models(include_auto_created=True),
+        *apps.get_app_config("social_django").get_models(include_auto_created=True),
+        *apps.get_app_config("two_factor").get_models(include_auto_created=True),
+        *apps.get_app_config("zerver").get_models(include_auto_created=True),
+    ]
     all_tables_db = {model._meta.db_table for model in target_models}
 
     # These assertion statements will fire when we add a new database

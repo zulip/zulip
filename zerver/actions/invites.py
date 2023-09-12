@@ -422,12 +422,10 @@ def get_valid_invite_confirmations_generated_by_user(
     multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).values_list(
         "id", flat=True
     )
-    confirmations += list(
-        Confirmation.objects.filter(
-            type=Confirmation.MULTIUSE_INVITE,
-            object_id__in=multiuse_invite_ids,
-        ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
-    )
+    confirmations += Confirmation.objects.filter(
+        type=Confirmation.MULTIUSE_INVITE,
+        object_id__in=multiuse_invite_ids,
+    ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
 
     return confirmations
 

@@ -361,8 +361,8 @@ def json_change_settings(
             check_change_full_name(user_profile, full_name, user_profile)
 
     # Loop over user_profile.property_types
-    request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
-    for k, v in list(request_settings.items()):
+    request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
+    for k, v in request_settings.items():
         if v is not None and getattr(user_profile, k) != v:
             do_change_user_setting(user_profile, k, v, acting_user=user_profile)
 

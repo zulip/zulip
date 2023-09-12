@@ -254,10 +254,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         row["string_id"] = realm_activity_link(row["string_id"])
 
     # Count active sites
-    def meets_goal(row: Dict[str, int]) -> bool:
-        return row["dau_count"] >= 5
-
-    num_active_sites = len(list(filter(meets_goal, rows)))
+    num_active_sites = sum(row["dau_count"] >= 5 for row in rows)
 
     # create totals
     total_dau_count = 0

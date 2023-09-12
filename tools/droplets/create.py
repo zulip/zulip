@@ -109,7 +109,7 @@ def assert_droplet_does_not_exist(my_token: str, droplet_name: str, recreate: bo
 
 
 def get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts: List[Dict[str, Any]]) -> str:
-    return "\n".join([userkey_dict["key"] for userkey_dict in userkey_dicts])
+    return "\n".join(userkey_dict["key"] for userkey_dict in userkey_dicts)
 
 
 def generate_dev_droplet_user_data(

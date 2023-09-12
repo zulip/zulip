@@ -2498,7 +2498,7 @@ class GetOldMessagesTest(ZulipTestCase):
         params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
         result = self.client_get("/json/messages/matches_narrow", params)
         messages = self.assert_json_success(result)["messages"]
-        self.assert_length(list(messages.keys()), 1)
+        self.assert_length(messages, 1)
         message = messages[str(good_id)]
         self.assertEqual(
             message["match_content"],
@@ -2514,7 +2514,7 @@ class GetOldMessagesTest(ZulipTestCase):
         params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
         result = self.client_get("/json/messages/matches_narrow", params)
         messages = self.assert_json_success(result)["messages"]
-        self.assert_length(list(messages.keys()), 1)
+        self.assert_length(messages, 1)
         message = messages[str(good_id)]
         self.assertEqual(
             message["match_content"],
@@ -2973,7 +2973,7 @@ class GetOldMessagesTest(ZulipTestCase):
         params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
         result = self.client_get("/json/messages/matches_narrow", params)
         messages = self.assert_json_success(result)["messages"]
-        self.assert_length(list(messages.keys()), 1)
+        self.assert_length(messages, 1)
         message = messages[str(good_id)]
         self.assertIn("a href=", message["match_content"])
         self.assertIn("http://foo.com", message["match_content"])

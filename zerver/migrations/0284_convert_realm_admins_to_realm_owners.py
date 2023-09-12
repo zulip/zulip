@@ -34,7 +34,7 @@ def set_realm_admins_as_realm_owners(
             str(UserProfile.ROLE_MEMBER): 0,
             str(UserProfile.ROLE_GUEST): 0,
         }
-        for value_dict in list(
+        for value_dict in (
             UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True)
             .values("role")
             .annotate(Count("role"))

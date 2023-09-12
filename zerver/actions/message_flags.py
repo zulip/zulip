@@ -224,7 +224,7 @@ def do_clear_mobile_push_notifications_for_ids(
     assert len(user_profile_ids) == 1 or len(message_ids) == 1
 
     messages_by_user = defaultdict(list)
-    notifications_to_update = list(
+    notifications_to_update = (
         UserMessage.objects.filter(
             message_id__in=message_ids,
             user_profile_id__in=user_profile_ids,
