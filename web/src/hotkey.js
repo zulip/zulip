@@ -652,6 +652,10 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "escape":
+        case "vim_up":
+        case "vim_down":
+        case "vim_left":
+        case "vim_right":
             if (inbox_util.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
             }
