@@ -164,6 +164,7 @@ body {
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
+    --color-outline-focus: hsl(215deg 47% 50%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -831,7 +832,7 @@ i.fa:focus,
 i.zulip-icon:focus-visible,
 .auto-select:focus,
 [role="button"]:focus {
-    outline: 2px solid hsl(215deg 47% 50%);
+    outline: 2px solid var(--color-outline-focus);
     /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
 }
 
