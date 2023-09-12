@@ -23,18 +23,18 @@ run_test("update_dom_with_unread_counts", () => {
     $private_li.set_find_results(".unread_count", $total_count);
 
     counts = {
-        private_message_count: 10,
+        direct_message_count: 10,
     };
 
-    pm_list.set_count(counts.private_message_count);
+    pm_list.set_count(counts.direct_message_count);
     assert.equal($total_count.text(), "10");
     assert.equal($total_count.hasClass("hide"), false);
 
     counts = {
-        private_message_count: 0,
+        direct_message_count: 0,
     };
 
-    pm_list.set_count(counts.private_message_count);
+    pm_list.set_count(counts.direct_message_count);
     assert.equal($total_count.text(), "");
     assert.equal($total_count.hasClass("hide"), true);
 });

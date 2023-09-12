@@ -120,7 +120,7 @@ export function update_dom_with_unread_counts(counts) {
     // could matter.
     update_private_messages();
     // This is just the global unread count.
-    set_count(counts.private_message_count);
+    set_count(counts.direct_message_count);
 }
 
 export function highlight_all_private_messages_view() {
