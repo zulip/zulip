@@ -622,7 +622,7 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
         # Our nginx configuration sets this header if:
         #  - there is an X-Forwarded-For set but no proxies configured in Zulip
         #  - proxies are configured but the request did not come from them
-        #  - proxies are configured and the request came from them,
+        #  - proxies are configured and the request came through them,
         #    but there was no X-Forwarded-Proto header
         #
         # Note that the first two may be false-positives.  We only
@@ -639,10 +639,14 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
         # client which is providing proxy headers to a correctly
         # configured Zulip.
         #
-        # There is a complication to the above logic -- we do expect
-        # that requests not through the proxy may happen from
-        # localhost over HTTP (e.g. the email gateway).  Skip warnings
-        # if the remote IP is localhost.
+        # There are a couple complications to the above logic --
+        # first, we do expect that requests not through the proxy may
+        # happen from localhost over HTTP (e.g. the email gateway).
+        # Second, we also expect that the proxy itself may make
+        # healthcheck requests, which will not have an
+        # X-Forwarded-Proto or X-Forwarded-For.  We handle the latter
+        # case in the nginx config (as it involves CIDRs and proxy
+        # ranges) and the former case here.
         if (
             proxy_state_header != ""
             and not request.is_secure()
