@@ -672,10 +672,12 @@ export function change_focused_element(input_key) {
         }
     } else {
         switch (input_key) {
+            case "vim_down":
             case "down_arrow":
                 row_focus += 1;
                 set_list_focus();
                 return true;
+            case "vim_up":
             case "up_arrow":
                 if (row_focus === 0) {
                     set_default_focus();
@@ -684,11 +686,13 @@ export function change_focused_element(input_key) {
                 row_focus -= 1;
                 set_list_focus();
                 return true;
+            case "vim_right":
             case "right_arrow":
             case "tab":
                 col_focus += 1;
                 set_list_focus(input_key);
                 return true;
+            case "vim_left":
             case "left_arrow":
             case "shift_tab":
                 col_focus -= 1;
