@@ -2434,6 +2434,10 @@ class PreregistrationRealm(models.Model):
         default=Realm.ORG_TYPES["unspecified"]["id"],
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
     )
+    default_language = models.CharField(
+        default="en",
+        max_length=MAX_LANGUAGE_ID_LENGTH,
+    )
     string_id = models.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
     email = models.EmailField()
 
