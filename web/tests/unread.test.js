@@ -560,7 +560,7 @@ test("mentions", () => {
         muted_direct_mention_message.id,
         private_mention_me_message.id,
     ]);
-    test_notifiable_count(counts.home_unread_messages, 5);
+    test_notifiable_count(counts.home_unread_messages, 4);
 
     unread.mark_as_read(mention_me_message.id);
     unread.mark_as_read(mention_all_message.id);
