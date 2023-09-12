@@ -960,6 +960,14 @@ export function register_click_handlers() {
         const user = people.get_by_user_id(user_id);
         show_user_info_popover_manage_menu(e.target, user);
     });
+
+    $("body").on("click", ".info_popover_actions .view_full_user_profile", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user = people.get_by_user_id(user_id);
+        user_profile.show_user_profile(user);
+        e.stopPropagation();
+        e.preventDefault();
+    });
 }
 
 export function any_active() {
