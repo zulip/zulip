@@ -333,10 +333,7 @@ def image_preview_enabled(
 def list_of_tlds() -> List[str]:
     # Skip a few overly-common false-positives from file extensions
     common_false_positives = {"java", "md", "mov", "py", "zip"}
-    tlds = list(tld_set - common_false_positives)
-
-    tlds.sort(key=len, reverse=True)
-    return tlds
+    return sorted(tld_set - common_false_positives, key=len, reverse=True)
 
 
 def walk_tree(
@@ -762,9 +759,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if image_info is None:
                 image_info = {}
             image_info["is_image"] = True
-            parsed_url_list = list(parsed_url)
-            parsed_url_list[4] = "raw=1"  # Replaces query
-            image_info["image"] = urllib.parse.urlunparse(parsed_url_list)
+            image_info["image"] = parsed_url._replace(query="raw=1").geturl()
 
             return image_info
         return None
@@ -992,8 +987,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
                 # Find the image size that is smaller than
                 # TWITTER_MAX_IMAGE_HEIGHT px tall or the smallest
-                size_name_tuples = list(media_item["sizes"].items())
-                size_name_tuples.sort(reverse=True, key=lambda x: x[1]["h"])
+                size_name_tuples = sorted(
+                    media_item["sizes"].items(), reverse=True, key=lambda x: x[1]["h"]
+                )
                 for size_name, size in size_name_tuples:
                     if size["h"] < self.TWITTER_MAX_IMAGE_HEIGHT:
                         break

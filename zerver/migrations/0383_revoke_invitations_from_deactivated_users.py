@@ -36,13 +36,11 @@ def revoke_invitations(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
         multiuse_invite_ids = MultiuseInvite.objects.filter(
             referred_by_id__in=user_ids
         ).values_list("id", flat=True)
-        confirmation_ids += list(
-            Confirmation.objects.filter(
-                type=Confirmation.MULTIUSE_INVITE,
-                expiry_date__gte=timezone_now(),
-                object_id__in=multiuse_invite_ids,
-            ).values_list("id", flat=True)
-        )
+        confirmation_ids += Confirmation.objects.filter(
+            type=Confirmation.MULTIUSE_INVITE,
+            expiry_date__gte=timezone_now(),
+            object_id__in=multiuse_invite_ids,
+        ).values_list("id", flat=True)
 
         return confirmation_ids
 

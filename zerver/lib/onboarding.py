@@ -143,7 +143,7 @@ def bot_commands(no_help_command: bool = False) -> str:
     ]
     if not no_help_command:
         commands.append("help")
-    return ", ".join(["`" + command + "`" for command in commands]) + "."
+    return ", ".join("`" + command + "`" for command in commands) + "."
 
 
 def select_welcome_bot_response(human_response_lower: str) -> str:

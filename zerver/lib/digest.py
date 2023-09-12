@@ -145,8 +145,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
         .distinct()
     )
 
-    user_ids = list(realm_user_ids - active_user_ids)
-    user_ids.sort()
+    user_ids = sorted(realm_user_ids - active_user_ids)
 
     # We process batches of 30.  We want a big enough batch
     # to amortize work, but not so big that a single item

@@ -438,8 +438,7 @@ def get_chart_data(
 
 
 def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
-    totals = [(sum(values), label) for label, values in value_arrays.items()]
-    totals.sort(reverse=True)
+    totals = sorted(((sum(values), label) for label, values in value_arrays.items()), reverse=True)
     return [label for total, label in totals]
 
 

@@ -343,7 +343,7 @@ field and send an event. For example:
 def do_set_realm_authentication_methods(
     realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
 ) -> None:
-    for key, value in list(authentication_methods.items()):
+    for key, value in authentication_methods.items():
         index = getattr(realm.authentication_methods, key).number
         realm.authentication_methods.set_bit(index, int(value))
     realm.save(update_fields=['authentication_methods'])

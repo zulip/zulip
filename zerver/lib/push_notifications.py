@@ -264,11 +264,9 @@ def send_apple_push_notification(
             )
             for device in devices
         ]
-        results = list(
-            await asyncio.gather(
-                *(apns_context.apns.send_notification(request) for request in requests),
-                return_exceptions=True,
-            )
+        results = await asyncio.gather(
+            *(apns_context.apns.send_notification(request) for request in requests),
+            return_exceptions=True,
         )
         return zip(devices, results)
 
@@ -724,7 +722,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
     def render_olist(ol: lxml.html.HtmlElement) -> str:
         items = []
         counter = int(ol.get("start")) if ol.get("start") else 1
-        nested_levels = len(list(ol.iterancestors("ol")))
+        nested_levels = sum(1 for ancestor in ol.iterancestors("ol"))
         indent = ("\n" + "  " * nested_levels) if nested_levels else ""
 
         for li in ol:

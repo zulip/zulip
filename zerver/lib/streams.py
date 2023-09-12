@@ -964,8 +964,9 @@ def do_get_streams(
     stream_ids = {stream.id for stream in streams}
     recent_traffic = get_streams_traffic(stream_ids, user_profile.realm)
 
-    stream_dicts = [stream_to_dict(stream, recent_traffic) for stream in streams]
-    stream_dicts.sort(key=lambda elt: elt["name"])
+    stream_dicts = sorted(
+        (stream_to_dict(stream, recent_traffic) for stream in streams), key=lambda elt: elt["name"]
+    )
 
     if include_default:
         default_stream_ids = get_default_stream_ids_for_realm(user_profile.realm_id)

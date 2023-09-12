@@ -166,7 +166,7 @@ def update_realm(
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
-        if True not in list(authentication_methods.values()):
+        if True not in authentication_methods.values():
             raise JsonableError(_("At least one authentication method must be enabled."))
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
@@ -285,7 +285,7 @@ def update_realm(
     req_vars = {}
     req_group_setting_vars = {}
 
-    for k, v in list(locals().items()):
+    for k, v in locals().items():
         if k in realm.property_types:
             req_vars[k] = v
 
@@ -293,7 +293,7 @@ def update_realm(
             if k == permissions_configuration.id_field_name:
                 req_group_setting_vars[k] = v
 
-    for k, v in list(req_vars.items()):
+    for k, v in req_vars.items():
         if v is not None and getattr(realm, k) != v:
             do_set_realm_property(realm, k, v, acting_user=user_profile)
             if isinstance(v, str):
@@ -535,10 +535,8 @@ def update_realm_user_settings_defaults(
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
 
     realm_user_default = RealmUserDefault.objects.get(realm=user_profile.realm)
-    request_settings = {
-        k: v for k, v in list(locals().items()) if (k in RealmUserDefault.property_types)
-    }
-    for k, v in list(request_settings.items()):
+    request_settings = {k: v for k, v in locals().items() if (k in RealmUserDefault.property_types)}
+    for k, v in request_settings.items():
         if v is not None and getattr(realm_user_default, k) != v:
             do_set_realm_user_default_setting(realm_user_default, k, v, acting_user=user_profile)
 

@@ -36,7 +36,7 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
         def inner(value: float, labels: Optional[Mapping[str, str]] = None) -> None:
             label_str = ""
             if labels:
-                label_str = "{" + ",".join([f'{k}="{v}"' for k, v in labels.items()]) + "}"
+                label_str = "{" + ",".join(f'{k}="{v}"' for k, v in labels.items()) + "}"
             self.metric_values[name][label_str] = f"{self.METRIC_PREFIX}{name}{label_str} {value}"
 
         if default_value is not None:

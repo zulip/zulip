@@ -284,7 +284,7 @@ def build_custom_emoji(
     # Build custom emoji
     for rc_emoji in custom_emoji_data["emoji"]:
         # Subject to change with changes in database
-        emoji_file_id = ".".join([rc_emoji["name"], rc_emoji["extension"]])
+        emoji_file_id = f'{rc_emoji["name"]}.{rc_emoji["extension"]}'
 
         emoji_file_info = emoji_file_data[emoji_file_id]
 
@@ -849,9 +849,7 @@ def separate_channel_private_and_livechat_messages(
     private_messages: List[Dict[str, Any]],
     livechat_messages: List[Dict[str, Any]],
 ) -> None:
-    private_channels_list = list(direct_id_to_direct_map.keys()) + list(
-        huddle_id_to_huddle_map.keys()
-    )
+    private_channels_list = [*direct_id_to_direct_map, *huddle_id_to_huddle_map]
     for message in messages:
         if not message.get("rid"):
             # Message does not belong to any channel (might be

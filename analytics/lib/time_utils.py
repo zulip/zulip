@@ -30,4 +30,5 @@ def time_range(
     while current >= start:
         times.append(current)
         current -= step
-    return list(reversed(times))
+    times.reverse()
+    return times
