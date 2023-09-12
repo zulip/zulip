@@ -100,6 +100,7 @@ function pick_empty_narrow_banner() {
     if (num_operators !== 1) {
         // For invalid-multi-operator narrows, we display an invalid narrow message
         const streams = current_filter.operands("stream");
+        const topics = current_filter.operands("topic");
 
         // No message can have multiple streams
         if (streams.length > 1) {
@@ -112,7 +113,7 @@ function pick_empty_narrow_banner() {
             };
         }
         // No message can have multiple topics
-        if (current_filter.operands("topic").length > 1) {
+        if (topics.length > 1) {
             return {
                 title: default_banner_for_multiple_filters,
                 html: $t_html({
@@ -148,6 +149,11 @@ function pick_empty_narrow_banner() {
             // For non web-public streams, show `login_to_access` modal.
             spectators.login_to_access(true);
             return SPECTATOR_STREAM_NARROW_BANNER;
+        }
+
+        // A stream > topic that doesn't exist yet.
+        if (num_operators === 2 && streams.length === 1 && topics.length === 1) {
+            return default_banner;
         }
 
         // For other multi-operator narrows, we just use the default banner
