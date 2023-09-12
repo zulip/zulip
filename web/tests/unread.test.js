@@ -43,7 +43,7 @@ const social = {
 stream_data.add_sub(social);
 
 function assert_zero_counts(counts) {
-    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.direct_message_count, 0);
     assert.equal(counts.home_unread_messages, 0);
     assert.equal(counts.mentioned_message_count, 0);
     assert.equal(counts.stream_count.size, 0);
@@ -387,7 +387,7 @@ test("phantom_messages", () => {
 
 test("private_messages", () => {
     let counts = unread.get_counts();
-    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.direct_message_count, 0);
 
     const message = {
         id: 15,
@@ -399,12 +399,12 @@ test("private_messages", () => {
     unread.process_loaded_messages([message]);
 
     counts = unread.get_counts();
-    assert.equal(counts.private_message_count, 1);
+    assert.equal(counts.direct_message_count, 1);
     assert.equal(counts.pm_count.get("999"), 1);
     test_notifiable_count(counts.home_unread_messages, 1);
     unread.mark_as_read(message.id);
     counts = unread.get_counts();
-    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.direct_message_count, 0);
     assert.equal(counts.pm_count.get("999"), 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
@@ -462,7 +462,7 @@ test("private_messages", () => {
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
     assert.deepEqual(unread.get_all_msg_ids(), []);
     const counts = unread.get_counts();
-    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.direct_message_count, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
@@ -791,6 +791,6 @@ test("errors", () => {
 
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();
-    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.direct_message_count, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });

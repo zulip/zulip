@@ -94,7 +94,7 @@ export function update_unread_counts(skip_animations = false) {
     // 1:1 direct messages there.
     set_count_toggle_button(
         $("#userlist-toggle-unreadcount"),
-        res.right_sidebar_private_message_count,
+        res.right_sidebar_direct_message_count,
     );
 }
 
