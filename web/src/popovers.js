@@ -616,7 +616,7 @@ export function set_suppress_scroll_hide() {
 // Playground_info contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
 // to pop off of.
-export function toggle_playground_link_popover(element, playground_info) {
+function toggle_playground_link_popover(element, playground_info) {
     const $last_popover_elem = $current_playground_links_popover_elem;
     hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
