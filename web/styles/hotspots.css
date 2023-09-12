@@ -11,7 +11,7 @@
         border-radius: 50%;
         position: absolute;
         background-color: hsl(196deg 100% 82% / 30%);
-        border: 2px solid hsl(215deg 47% 50%);
+        border: 2px solid var(--color-outline-focus);
         top: 50%;
         left: 50%;
     }
@@ -39,7 +39,7 @@
             left: -5px;
             bottom: 3px;
             transform: rotate(7deg);
-            color: hsl(215deg 47% 50%);
+            color: var(--color-outline-focus);
             font-size: 2.75em;
             font-weight: 600;
         }
