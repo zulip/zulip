@@ -387,6 +387,7 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
         "tools/setup/emoji/build_emoji",
         "tools/setup/emoji/emoji_setup_utils.py",
         "tools/setup/emoji/emoji_names.py",
+        "zerver/management/data/unified_reactions.json",
     ]
 
     for filename in filenames:
