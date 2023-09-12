@@ -14,6 +14,7 @@ from version import (
     ZULIP_VERSION,
 )
 from zerver.lib.exceptions import InvalidSubdomainError
+from zerver.lib.i18n import get_language_list
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
@@ -259,6 +260,7 @@ def latest_info_context() -> Dict[str, str]:
 
 def get_realm_create_form_context() -> Dict[str, Any]:
     context = {
+        "language_list": get_language_list(),
         "MAX_REALM_NAME_LENGTH": str(Realm.MAX_REALM_NAME_LENGTH),
         "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
         "root_domain_available": is_root_domain_available(),
