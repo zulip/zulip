@@ -21,11 +21,11 @@ Copyright: 2012–2015 Dropbox, Inc., 2015–2023 Kandra Labs, Inc., and contrib
 License: Apache-2.0
 
 Files: confirmation/*
-Copyright: 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
+Copyright: 2008 Jarek Zgoda <jarek.zgoda@gmail.com>
 License: BSD-3-Clause
 
 Files: docs/code-of-conduct.md
-Copyright: 2017, Kandra Labs, Inc.
+Copyright: 2017 Kandra Labs, Inc.
 License: CC-BY-SA-4.0
 
 Files: puppet/zulip/files/nagios_plugins/zulip_base/check_debian_packages
@@ -127,7 +127,7 @@ License: Expat
 Comment: The software has been modified.
 
 Files: web/third/marked/*
-Copyright: 2011-2013, Christopher Jeffrey
+Copyright: 2011-2013 Christopher Jeffrey
 License: Expat
 
 Files: zerver/decorator.py zerver/management/commands/runtornado.py scripts/setup/generate_secrets.py
