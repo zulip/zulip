@@ -71,6 +71,11 @@ Files: web/images/icons/search.svg
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+Files: web/shared/icons/edit.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/ellipsis-v-solid.svg
 Copyright: 2017 Fonticons, Inc.
 License: CC-BY-4.0
@@ -80,6 +85,26 @@ Files: web/shared/icons/globe.svg
 Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, modified to increase the width of the globe outline.
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
+
+Files: web/shared/icons/more-vertical.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/more-vertical-spread.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/move.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/move-alt.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
 
 Files: web/shared/icons/mute.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_mute
@@ -91,6 +116,31 @@ Files: web/shared/icons/smart-toy.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:smart_toy
 Copyright: Google, Inc.
 License: Apache-2.0
+
+Files: web/shared/icons/smile.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/source.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/source-alt.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/star.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/star-filled.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
 
 Files: web/shared/icons/unmute.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_up
