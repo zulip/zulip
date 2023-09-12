@@ -780,7 +780,7 @@ export function get_counts() {
     // Return a data structure with various counts.  This function should be
     // pretty cheap, even if you don't care about all the counts, and you
     // should strive to keep it free of side effects on globals or DOM.
-    res.private_message_count = 0;
+    res.direct_message_count = 0;
     res.mentioned_message_count = unread_mentions_counter.size;
     res.direct_message_with_mention_count = direct_message_with_mention_count.size;
 
@@ -795,8 +795,8 @@ export function get_counts() {
 
     const pm_res = unread_direct_message_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
-    res.private_message_count = pm_res.total_count;
-    res.right_sidebar_private_message_count = pm_res.right_sidebar_count;
+    res.direct_message_count = pm_res.total_count;
+    res.right_sidebar_direct_message_count = pm_res.right_sidebar_count;
     res.home_unread_messages += pm_res.total_count;
 
     return res;
@@ -816,7 +816,7 @@ export function calculate_notifiable_count(res) {
         // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
         new_message_count =
             res.mentioned_message_count +
-            res.private_message_count -
+            res.direct_message_count -
             // Avoid double-counting direct messages containing mentions
             res.direct_message_with_mention_count;
     } else if (no_notifications) {
