@@ -172,7 +172,7 @@
                     opacity: 0.5;
                 }
 
-                .icon_collapsed_state {
+                .icon-collapsed-state {
                     transform: rotate(270deg);
                 }
             }
