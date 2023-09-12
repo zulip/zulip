@@ -245,6 +245,7 @@ function format_stream(stream_id, unread_count_info) {
         invite_only: stream_info.invite_only,
         is_web_public: stream_info.is_web_public,
         stream_name: stream_info.name,
+        pin_to_top: stream_info.pin_to_top,
         stream_color: stream_color.get_stream_privacy_icon_color(stream_info.color),
         stream_header_color: stream_color.get_recipient_bar_color(stream_info.color),
         unread_count,
@@ -338,6 +339,16 @@ function get_sorted_stream_keys() {
     function compare_function(a, b) {
         const stream_a = streams_dict[a];
         const stream_b = streams_dict[b];
+
+        // If one of the streams is pinned, they are sorted higher.
+        if (stream_a.pin_to_top && !stream_b.pin_to_top) {
+            return -1;
+        }
+
+        if (stream_b.pin_to_top && !stream_a.pin_to_top) {
+            return 1;
+        }
+
         const stream_name_a = stream_a ? stream_a.stream_name : "";
         const stream_name_b = stream_b ? stream_b.stream_name : "";
         return util.strcmp(stream_name_a, stream_name_b);
