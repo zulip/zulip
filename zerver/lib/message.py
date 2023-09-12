@@ -1401,9 +1401,11 @@ def format_unread_message_details(
     for message_id, huddle_message_details in raw_unread_data["huddle_dict"].items():
         # The client wants a list of user_ids in the conversation, excluding ourself,
         # that is sorted in numerical order.
-        user_ids = [int(s) for s in huddle_message_details["user_ids_string"].split(",")]
-        user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
-        user_ids.sort()
+        user_ids = sorted(
+            user_id
+            for s in huddle_message_details["user_ids_string"].split(",")
+            if (user_id := int(s)) != my_user_id
+        )
         message_details = MessageDetailsDict(
             type="private",
             user_ids=user_ids,

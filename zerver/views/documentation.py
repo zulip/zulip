@@ -281,7 +281,7 @@ class MarkdownDirectoryView(ApiURLView):
 def add_integrations_context(context: Dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
     alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
-    enabled_integrations_count = len(list(filter(lambda v: v.is_enabled(), INTEGRATIONS.values())))
+    enabled_integrations_count = sum(v.is_enabled() for v in INTEGRATIONS.values())
     # Subtract 1 so saying "Over X integrations" is correct. Then,
     # round down to the nearest multiple of 10.
     integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10

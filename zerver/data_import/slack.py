@@ -797,7 +797,7 @@ def get_messages_iterator(
     not read all the messages into memory at once, because for
     large imports that can OOM kill."""
 
-    dir_names = list(added_channels.keys()) + list(added_mpims.keys()) + list(dm_members.keys())
+    dir_names = [*added_channels, *added_mpims, *dm_members]
     all_json_names: Dict[str, List[str]] = defaultdict(list)
     for dir_name in dir_names:
         dir_path = os.path.join(slack_data_dir, dir_name)

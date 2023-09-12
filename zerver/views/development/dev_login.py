@@ -42,7 +42,7 @@ def get_dev_users(realm: Optional[Realm] = None, extra_users_count: int = 10) ->
     extra_users = users_query.filter(email__startswith="extrauser").order_by("email")
     # Limit the number of extra users we offer by default
     extra_users = extra_users[0:extra_users_count]
-    users = list(shakespearian_users) + list(extra_users)
+    users = [*shakespearian_users, *extra_users]
     return users
 
 

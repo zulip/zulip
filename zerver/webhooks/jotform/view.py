@@ -20,10 +20,10 @@ def api_jotform_webhook(
 ) -> HttpResponse:
     topic = payload["formTitle"].tame(check_string)
     submission_id = payload["submissionID"].tame(check_string)
-    fields_dict = list(payload["pretty"].tame(check_string).split(", "))
+    fields = payload["pretty"].tame(check_string).split(", ")
 
     form_response = f"A new submission (ID {submission_id}) was received:\n"
-    for field in fields_dict:
+    for field in fields:
         form_response += f"* {field}\n"
 
     message = form_response.strip()

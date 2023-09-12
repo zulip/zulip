@@ -470,9 +470,9 @@ def has_request_variables(
             # which could lead to inaccurate output.
             and 200 <= return_value.status_code < 300
         ):
-            ignored_parameters = set(
-                list(request.POST.keys()) + list(request.GET.keys())
-            ).difference(request_notes.processed_parameters)
+            ignored_parameters = {*request.POST, *request.GET}.difference(
+                request_notes.processed_parameters
+            )
 
             # This will be called each time a function decorated with
             # has_request_variables returns a MutableJsonResponse with a

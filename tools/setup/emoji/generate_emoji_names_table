@@ -157,7 +157,7 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
 
 
 def get_sorting_info(category: str, sort_order: int) -> str:
-    return " ".join([category, str(sort_order)])
+    return f"{category} {sort_order}"
 
 
 def get_images_html(emoji_code: str) -> str:

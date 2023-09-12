@@ -135,14 +135,14 @@ class UserGroupTestCase(ZulipTestCase):
             list(get_recursive_group_members(everyone_group)), [desdemona, iago, shiva]
         )
 
-        self.assertIn(leadership_group, list(get_recursive_membership_groups(desdemona)))
-        self.assertIn(staff_group, list(get_recursive_membership_groups(desdemona)))
-        self.assertIn(everyone_group, list(get_recursive_membership_groups(desdemona)))
+        self.assertIn(leadership_group, get_recursive_membership_groups(desdemona))
+        self.assertIn(staff_group, get_recursive_membership_groups(desdemona))
+        self.assertIn(everyone_group, get_recursive_membership_groups(desdemona))
 
-        self.assertIn(staff_group, list(get_recursive_membership_groups(iago)))
-        self.assertIn(everyone_group, list(get_recursive_membership_groups(iago)))
+        self.assertIn(staff_group, get_recursive_membership_groups(iago))
+        self.assertIn(everyone_group, get_recursive_membership_groups(iago))
 
-        self.assertIn(everyone_group, list(get_recursive_membership_groups(shiva)))
+        self.assertIn(everyone_group, get_recursive_membership_groups(shiva))
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")

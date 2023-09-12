@@ -8,9 +8,12 @@ from django.db.migrations.state import StateApps
 # https://www.unicode.org/faq/private_use.html#nonchar4
 unicode_non_chars = {
     chr(x)
-    for x in list(range(0xFDD0, 0xFDF0))  # FDD0 through FDEF, inclusive
-    + list(range(0xFFFE, 0x110000, 0x10000))  # 0xFFFE, 0x1FFFE, ... 0x10FFFE inclusive
-    + list(range(0xFFFF, 0x110000, 0x10000))  # 0xFFFF, 0x1FFFF, ... 0x10FFFF inclusive
+    for r in [
+        range(0xFDD0, 0xFDF0),  # FDD0 through FDEF, inclusive
+        range(0xFFFE, 0x110000, 0x10000),  # 0xFFFE, 0x1FFFE, ... 0x10FFFE inclusive
+        range(0xFFFF, 0x110000, 0x10000),  # 0xFFFF, 0x1FFFF, ... 0x10FFFF inclusive
+    ]
+    for x in r
 }
 
 

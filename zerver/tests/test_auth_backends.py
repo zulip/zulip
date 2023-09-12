@@ -5275,7 +5275,7 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "http://zulip.testserver/")
         self.assert_logged_in_user_id(user_profile.id)
-        self.assertIn("otp_device_id", list(self.client.session.keys()))
+        self.assertIn("otp_device_id", self.client.session.keys())
 
     def test_redirect_to_next_url(self) -> None:
         def do_local_login(formaction: str) -> "TestHttpResponse":
@@ -5937,7 +5937,7 @@ class TestLDAP(ZulipLDAPTestCase):
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
             self.assertCountEqual(
-                list(value.keys()), [*common_attrs, "uid", "thumbnailPhoto", "userAccountControl"]
+                value.keys(), [*common_attrs, "uid", "thumbnailPhoto", "userAccountControl"]
             )
 
         ldap_dir = generate_dev_ldap_dir("b", 9)
@@ -5945,14 +5945,14 @@ class TestLDAP(ZulipLDAPTestCase):
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), [*common_attrs, "uid", "jpegPhoto"])
+            self.assertCountEqual(value.keys(), [*common_attrs, "uid", "jpegPhoto"])
 
         ldap_dir = generate_dev_ldap_dir("c", 8)
         self.assert_length(ldap_dir, 8)
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), [*common_attrs, "uid", "email"])
+            self.assertCountEqual(value.keys(), [*common_attrs, "uid", "email"])
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_dev_ldap_fail_login(self) -> None:

@@ -1349,8 +1349,7 @@ def apply_event(
             for user_group in state["realm_user_groups"]:
                 if user_group["id"] == event["group_id"]:
                     members = set(user_group["members"])
-                    user_group["members"] = list(members - set(event["user_ids"]))
-                    user_group["members"].sort()
+                    user_group["members"] = sorted(members - set(event["user_ids"]))
         elif event["op"] == "add_subgroups":
             for user_group in state["realm_user_groups"]:
                 if user_group["id"] == event["group_id"]:
@@ -1360,10 +1359,9 @@ def apply_event(
             for user_group in state["realm_user_groups"]:
                 if user_group["id"] == event["group_id"]:
                     subgroups = set(user_group["direct_subgroup_ids"])
-                    user_group["direct_subgroup_ids"] = list(
+                    user_group["direct_subgroup_ids"] = sorted(
                         subgroups - set(event["direct_subgroup_ids"])
                     )
-                    user_group["direct_subgroup_ids"].sort()
         elif event["op"] == "remove":
             state["realm_user_groups"] = [
                 ug for ug in state["realm_user_groups"] if ug["id"] != event["group_id"]
@@ -1597,8 +1595,7 @@ def post_process_state(
     See the note above; the same technique applies below.
     """
     if "raw_users" in ret:
-        user_dicts = list(ret["raw_users"].values())
-        user_dicts = sorted(user_dicts, key=lambda x: x["user_id"])
+        user_dicts = sorted(ret["raw_users"].values(), key=lambda x: x["user_id"])
 
         ret["realm_users"] = [d for d in user_dicts if d["is_active"]]
         ret["realm_non_active_users"] = [d for d in user_dicts if not d["is_active"]]

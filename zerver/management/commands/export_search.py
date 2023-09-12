@@ -187,7 +187,7 @@ This is most often used for legal compliance.
                 .values_list("full_name", "delivery_email")
             )
 
-            return ", ".join([format_sender(e[0], e[1]) for e in users]), False
+            return ", ".join(format_sender(e[0], e[1]) for e in users), False
 
         def transform_message(message: Message) -> Dict[str, str]:
             row = {

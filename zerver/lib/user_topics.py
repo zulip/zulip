@@ -229,7 +229,7 @@ def exclude_topic_mutes(
         topic_cond = topic_match_sa(topic_name)
         return and_(stream_cond, topic_cond)
 
-    condition = not_(or_(*list(map(mute_cond, rows))))
+    condition = not_(or_(*map(mute_cond, rows)))
     return [*conditions, condition]
 
 

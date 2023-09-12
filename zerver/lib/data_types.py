@@ -67,7 +67,7 @@ class DictType:
     def schema(self, var_name: str) -> str:
         # Our current schema is lossy, since our OpenAPI configs
         # aren't rigorous about "required" fields yet.
-        keys = sorted(list(self.required_keys) + list(self.optional_keys))
+        keys = sorted([*self.required_keys, *self.optional_keys])
 
         sub_schema = "\n".join(schema(name, data_type) for name, data_type in keys)
         return f"{var_name} (dict):\n{indent(sub_schema)}"

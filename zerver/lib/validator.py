@@ -316,7 +316,7 @@ def check_dict(
             delta_keys = set(val.keys()) - required_keys_set - optional_keys_set
             if len(delta_keys) != 0:
                 raise ValidationError(
-                    _("Unexpected arguments: {keys}").format(keys=", ".join(list(delta_keys)))
+                    _("Unexpected arguments: {keys}").format(keys=", ".join(delta_keys))
                 )
 
         return cast(Dict[str, ResultT], val)
