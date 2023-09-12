@@ -1007,7 +1007,7 @@ div.overlay {
         margin-bottom: 10px;
 
         &.active {
-            outline: 2px solid hsl(215deg 47% 50%);
+            outline: 2px solid var(--color-outline-focus);
             border-radius: 7px;
         }
 

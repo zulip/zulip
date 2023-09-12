@@ -839,7 +839,7 @@ ul {
 
             &:focus {
                 .fa-remove {
-                    outline: 2px solid hsl(215deg 47% 50%);
+                    outline: 2px solid var(--color-outline-focus);
                 }
             }
         }

@@ -36,7 +36,7 @@
 
             &:focus-within {
                 /* Use the same color as the message feed pointer */
-                box-shadow: 0 3px 0 hsl(215deg 47% 50%);
+                box-shadow: 0 3px 0 var(--color-outline-focus);
             }
 
             .change_visibility_policy i {
