@@ -98,28 +98,28 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
 
         start_time = time.time()
         for i in range(3):
-            with mock.patch("time.time", return_value=(start_time + i * 0.1)):
+            with mock.patch("time.time", return_value=start_time + i * 0.1):
                 self.make_request(obj, expect_ratelimited=False)
 
-        with mock.patch("time.time", return_value=(start_time + 0.4)):
+        with mock.patch("time.time", return_value=start_time + 0.4):
             self.make_request(obj, expect_ratelimited=True)
 
-        with mock.patch("time.time", return_value=(start_time + 2.01)):
+        with mock.patch("time.time", return_value=start_time + 2.01):
             self.make_request(obj, expect_ratelimited=False)
 
     def test_clear_history(self) -> None:
         obj = self.create_object("test", [(2, 3)])
         start_time = time.time()
         for i in range(3):
-            with mock.patch("time.time", return_value=(start_time + i * 0.1)):
+            with mock.patch("time.time", return_value=start_time + i * 0.1):
                 self.make_request(obj, expect_ratelimited=False)
-        with mock.patch("time.time", return_value=(start_time + 0.4)):
+        with mock.patch("time.time", return_value=start_time + 0.4):
             self.make_request(obj, expect_ratelimited=True)
 
         obj.clear_history()
         self.requests_record[obj.key()] = []
         for i in range(3):
-            with mock.patch("time.time", return_value=(start_time + i * 0.1)):
+            with mock.patch("time.time", return_value=start_time + i * 0.1):
                 self.make_request(obj, expect_ratelimited=False)
 
     def test_block_unblock_access(self) -> None:
@@ -127,11 +127,11 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
         start_time = time.time()
 
         obj.block_access(1)
-        with mock.patch("time.time", return_value=(start_time)):
+        with mock.patch("time.time", return_value=start_time):
             self.make_request(obj, expect_ratelimited=True, verify_api_calls_left=False)
 
         obj.unblock_access()
-        with mock.patch("time.time", return_value=(start_time)):
+        with mock.patch("time.time", return_value=start_time):
             self.make_request(obj, expect_ratelimited=False, verify_api_calls_left=False)
 
     def test_api_calls_left(self) -> None:
@@ -139,15 +139,15 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
         start_time = time.time()
 
         # Check the edge case when no requests have been made yet.
-        with mock.patch("time.time", return_value=(start_time)):
+        with mock.patch("time.time", return_value=start_time):
             self.verify_api_calls_left(obj)
 
-        with mock.patch("time.time", return_value=(start_time)):
+        with mock.patch("time.time", return_value=start_time):
             self.make_request(obj)
 
         # Check the correct default values again, after the reset has happened on the first rule,
         # but not the other.
-        with mock.patch("time.time", return_value=(start_time + 2.1)):
+        with mock.patch("time.time", return_value=start_time + 2.1):
             self.make_request(obj)
 
 
@@ -158,7 +158,7 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
         self, history: List[float], max_window: int, max_calls: int, now: float
     ) -> Tuple[int, float]:
         latest_timestamp = history[-1]
-        relevant_requests = [t for t in history if (t >= now - max_window)]
+        relevant_requests = [t for t in history if t >= now - max_window]
         relevant_requests_amount = len(relevant_requests)
 
         return max_calls - relevant_requests_amount, latest_timestamp + max_window - now
@@ -211,10 +211,10 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
         start_time = time.time()
 
         obj.block_access(1)
-        with mock.patch("time.time", return_value=(start_time)):
+        with mock.patch("time.time", return_value=start_time):
             self.make_request(obj, expect_ratelimited=True, verify_api_calls_left=False)
 
-        with mock.patch("time.time", return_value=(start_time + 1.01)):
+        with mock.patch("time.time", return_value=start_time + 1.01):
             self.make_request(obj, expect_ratelimited=False, verify_api_calls_left=False)
 
 

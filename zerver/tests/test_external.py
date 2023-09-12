@@ -166,7 +166,7 @@ class RateLimitTests(ZulipTestCase):
 
         start_time = time.time()
         for i in range(6):
-            with mock.patch("time.time", return_value=(start_time + i * 0.1)):
+            with mock.patch("time.time", return_value=start_time + i * 0.1):
                 result = request_func()
             if i < 5:
                 self.assertNotEqual(result.status_code, 429)
@@ -176,7 +176,7 @@ class RateLimitTests(ZulipTestCase):
         # We simulate waiting a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
-        with mock.patch("time.time", return_value=(start_time + 1.01)):
+        with mock.patch("time.time", return_value=start_time + 1.01):
             result = request_func()
 
             self.assertNotEqual(result.status_code, 429)

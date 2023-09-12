@@ -535,7 +535,7 @@ def update_realm_user_settings_defaults(
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
 
     realm_user_default = RealmUserDefault.objects.get(realm=user_profile.realm)
-    request_settings = {k: v for k, v in locals().items() if (k in RealmUserDefault.property_types)}
+    request_settings = {k: v for k, v in locals().items() if k in RealmUserDefault.property_types}
     for k, v in request_settings.items():
         if v is not None and getattr(realm_user_default, k) != v:
             do_set_realm_user_default_setting(realm_user_default, k, v, acting_user=user_profile)

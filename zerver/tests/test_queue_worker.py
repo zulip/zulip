@@ -518,7 +518,7 @@ class WorkerTest(ZulipTestCase):
                     self.assertEqual(mock_mirror_email.call_count, 3)
 
             # After some time passes, emails get accepted again:
-            with patch("time.time", return_value=(start_time + 11.0)):
+            with patch("time.time", return_value=start_time + 11.0):
                 fake_client.enqueue("email_mirror", data[0])
                 worker.start()
                 self.assertEqual(mock_mirror_email.call_count, 4)

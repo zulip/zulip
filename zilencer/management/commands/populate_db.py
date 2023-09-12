@@ -670,7 +670,7 @@ class Command(BaseCommand):
 
             subscriptions_to_add: List[Subscription] = []
             event_time = timezone_now()
-            all_subscription_logs: (List[RealmAuditLog]) = []
+            all_subscription_logs: List[RealmAuditLog] = []
 
             i = 0
             for profile, recipient in subscriptions_list:

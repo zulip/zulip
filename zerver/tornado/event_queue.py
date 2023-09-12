@@ -1340,7 +1340,7 @@ def process_message_update_event(
             user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
                 user_id=user_profile_id,
                 flags=flags,
-                private_message=(stream_name is None),
+                private_message=stream_name is None,
                 disable_external_notifications=disable_external_notifications,
                 online_push_user_ids=online_push_user_ids,
                 dm_mention_push_disabled_user_ids=dm_mention_push_disabled_user_ids,
@@ -1361,9 +1361,9 @@ def process_message_update_event(
                 user_notifications_data=user_notifications_data,
                 message_id=message_id,
                 acting_user_id=acting_user_id,
-                private_message=(stream_name is None),
-                presence_idle=(user_profile_id in presence_idle_user_ids),
-                prior_mentioned=(user_profile_id in prior_mention_user_ids),
+                private_message=stream_name is None,
+                presence_idle=user_profile_id in presence_idle_user_ids,
+                prior_mentioned=user_profile_id in prior_mention_user_ids,
             )
 
         for client in get_client_descriptors_for_user(user_profile_id):

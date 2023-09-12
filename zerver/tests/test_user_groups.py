@@ -1281,9 +1281,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{leadership_group.id}/subgroups", info=params)
         self.assert_json_error(
             result,
-            (
-                "User group {user_group_id} is already a subgroup of one of the passed subgroups."
-            ).format(user_group_id=leadership_group.id),
+            f"User group {leadership_group.id} is already a subgroup of one of the passed subgroups.",
         )
         self.assert_subgroup_membership(support_group, [leadership_group])
 
@@ -1296,9 +1294,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{leadership_group.id}/subgroups", info=params)
         self.assert_json_error(
             result,
-            (
-                "User group {user_group_id} is already a subgroup of one of the passed subgroups."
-            ).format(user_group_id=leadership_group.id),
+            f"User group {leadership_group.id} is already a subgroup of one of the passed subgroups.",
         )
         self.assert_subgroup_membership(test_group, [support_group])
 

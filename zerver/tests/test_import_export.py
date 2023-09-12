@@ -372,7 +372,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm, public_only=True)
 
         # The attachment row shouldn't have been exported:
-        self.assertEqual((read_json("attachment.json")["zerver_attachment"]), [])
+        self.assertEqual(read_json("attachment.json")["zerver_attachment"], [])
 
         # Aside of the attachment row, we also need to verify that the file itself
         # isn't included.

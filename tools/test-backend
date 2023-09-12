@@ -253,17 +253,17 @@ def main() -> None:
     parser.add_argument(
         "--include-webhooks",
         action="store_true",
-        help=("Include webhook tests.  By default, they are skipped for performance."),
+        help="Include webhook tests.  By default, they are skipped for performance.",
     )
     parser.add_argument(
         "--include-transaction-tests",
         action="store_true",
-        help=("Include transaction tests.  By default, they are skipped for performance."),
+        help="Include transaction tests.  By default, they are skipped for performance.",
     )
     parser.add_argument(
         "--generate-stripe-fixtures",
         action="store_true",
-        help=("Generate Stripe test fixtures by making requests to Stripe test network"),
+        help="Generate Stripe test fixtures by making requests to Stripe test network",
     )
     parser.add_argument("args", nargs="*")
     parser.add_argument(

@@ -465,7 +465,7 @@ class FencedBlockPreprocessor(Preprocessor):
                 css_class=self.codehilite_conf["css_class"][0],
                 style=self.codehilite_conf["pygments_style"][0],
                 use_pygments=self.codehilite_conf["use_pygments"][0],
-                lang=(lang or None),
+                lang=lang or None,
                 noclasses=self.codehilite_conf["noclasses"][0],
                 # By default, the Pygments PHP lexers won't highlight
                 # code without a `<?php` marker at the start of the
