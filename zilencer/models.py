@@ -100,12 +100,26 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     """
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    realm_id = models.IntegerField(db_index=True)
+    realm_id = models.IntegerField()
     # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField(db_index=True)
+    remote_id = models.IntegerField()
 
     def __str__(self) -> str:
         return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["server", "remote_id"],
+                name="zilencer_remoterealmauditlog_server_remote",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["server", "realm_id", "remote_id"],
+                name="zilencer_remoterealmauditlog_server_realm_remote",
+            ),
+        ]
 
 
 class RemoteInstallationCount(BaseCount):
@@ -129,9 +143,9 @@ class RemoteInstallationCount(BaseCount):
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
 class RemoteRealmCount(BaseCount):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    realm_id = models.IntegerField(db_index=True)
+    realm_id = models.IntegerField()
     # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField(db_index=True)
+    remote_id = models.IntegerField()
 
     class Meta:
         unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
