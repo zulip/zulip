@@ -175,59 +175,71 @@ export function hide_giphy_popover() {
 }
 
 function toggle_giphy_popover(target) {
-    popover_menus.toggle_popover_menu(target, {
-        placement: "top",
-        onCreate(instance) {
-            instance.setContent(ui_util.parse_html(render_giphy_picker()));
-            $(instance.popper).addClass("giphy-popover");
-        },
-        async onShow(instance) {
-            giphy_popover_instance = instance;
-            const $popper = $(giphy_popover_instance.popper).trigger("focus");
-            gifs_grid = await renderGIPHYGrid($popper.find(".giphy-content")[0]);
-            popovers.hide_all(true);
+    let show_as_overlay = false;
 
-            const $click_target = $(instance.reference);
-            if ($click_target.parents(".message_edit_form").length === 1) {
-                // Store message id in global variable edit_message_id so that
-                // its value can be further used to correctly find the message textarea element.
-                edit_message_id = rows.id($click_target.parents(".message_row"));
-            } else {
-                edit_message_id = undefined;
-            }
+    // If the window is mobile-sized, we will render the
+    // giphy popover centered on the screen with the overlay.
+    if (window.innerWidth <= media_breakpoints_num.md) {
+        show_as_overlay = true;
+    }
 
-            $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
+    popover_menus.toggle_popover_menu(
+        target,
+        {
+            placement: "top",
+            onCreate(instance) {
+                instance.setContent(ui_util.parse_html(render_giphy_picker()));
+                $(instance.popper).addClass("giphy-popover");
+            },
+            async onShow(instance) {
+                giphy_popover_instance = instance;
+                const $popper = $(giphy_popover_instance.popper).trigger("focus");
+                gifs_grid = await renderGIPHYGrid($popper.find(".giphy-content")[0]);
+                popovers.hide_all(true);
+
+                const $click_target = $(instance.reference);
+                if ($click_target.parents(".message_edit_form").length === 1) {
+                    // Store message id in global variable edit_message_id so that
+                    // its value can be further used to correctly find the message textarea element.
+                    edit_message_id = rows.id($click_target.parents(".message_row"));
+                } else {
+                    edit_message_id = undefined;
+                }
+
+                $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
+                    hide_giphy_popover();
+                });
+
+                $popper.on(
+                    "keyup",
+                    "#giphy-search-query",
+                    // Use debounce to create a 300ms interval between
+                    // every search. This makes the UX of searching pleasant
+                    // by allowing user to finish typing before search
+                    // is executed.
+                    _.debounce(update_grid_with_search_term, 300),
+                );
+
+                $popper.on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
+                $popper.on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
+
+                $popper.on("click", "#giphy_search_clear", async (e) => {
+                    e.stopPropagation();
+                    $("#giphy-search-query").val("");
+                    await update_grid_with_search_term();
+                });
+
+                // Focus on search box by default.
+                // This is specially helpful for users
+                // navigating via keyboard.
+                $("#giphy-search-query").trigger("focus");
+            },
+            onHidden() {
                 hide_giphy_popover();
-            });
-
-            $popper.on(
-                "keyup",
-                "#giphy-search-query",
-                // Use debounce to create a 300ms interval between
-                // every search. This makes the UX of searching pleasant
-                // by allowing user to finish typing before search
-                // is executed.
-                _.debounce(update_grid_with_search_term, 300),
-            );
-
-            $popper.on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
-            $popper.on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
-
-            $popper.on("click", "#giphy_search_clear", async (e) => {
-                e.stopPropagation();
-                $("#giphy-search-query").val("");
-                await update_grid_with_search_term();
-            });
-
-            // Focus on search box by default.
-            // This is specially helpful for users
-            // navigating via keyboard.
-            $("#giphy-search-query").trigger("focus");
+            },
         },
-        onHidden() {
-            hide_giphy_popover();
-        },
-    });
+        {show_as_overlay},
+    );
 }
 
 function register_click_handlers() {
