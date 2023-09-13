@@ -37,6 +37,7 @@ mock_esm("../src/rows", {
 mock_esm("../src/people", {
     sender_is_bot: () => false,
     sender_is_guest: () => false,
+    should_add_guest_user_indicator: () => false,
     small_avatar_url: () => "fake/small/avatar/url",
 });
 
