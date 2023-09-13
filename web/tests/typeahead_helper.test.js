@@ -529,7 +529,7 @@ test("sort_recipients dup alls", () => {
         current_topic: "Linux topic",
     });
 
-    const expected = [all_obj, all_obj, a_user];
+    const expected = [all_obj, a_user];
     assertSameEmails(recipients, expected);
 });
 
@@ -545,7 +545,7 @@ test("sort_recipients dup alls direct message", () => {
         query: "a",
     });
 
-    const expected = [a_user, all_obj, all_obj];
+    const expected = [a_user, all_obj];
     assertSameEmails(recipients, expected);
 });
 

@@ -1694,6 +1694,24 @@ test("typeahead_results", () => {
     // Verify we're not matching on a terms that only appear in the description.
     assert_mentions_matches("characters of", []);
 
+    // Verify we suggest only the first matching wildcard mention,
+    // irrespective of how many equivalent wildcard mentions match.
+    const mention_everyone = ct.broadcast_mentions()[1];
+    // Here, we suggest only "everyone" instead of both the matching
+    // "everyone" and "stream" wildcard mentions.
+    assert_mentions_matches("e", [
+        mention_everyone,
+        hal,
+        alice,
+        cordelia,
+        gael,
+        hamlet,
+        lear,
+        othello,
+        hamletcharacters,
+        call_center,
+    ]);
+
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
     assert_slash_matches("dark", [dark_slash]);
