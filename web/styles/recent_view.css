@@ -104,6 +104,19 @@
                 text-align: left;
             }
 
+            .unread_sort {
+                .zulip-icon-unread {
+                    position: absolute;
+                    right: 30px;
+                    top: 11px;
+                }
+
+                &::after {
+                    right: 15px;
+                    top: 7px;
+                }
+            }
+
             td {
                 border-top: 1px solid hsl(0deg 0% 87%);
             }
