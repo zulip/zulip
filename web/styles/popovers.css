@@ -872,14 +872,6 @@ ul {
     }
 }
 
-@media (width < $md_min) {
-    #giphy_grid_in_popover {
-        position: static;
-        top: 0 !important;
-        left: 0 !important;
-    }
-}
-
 .user_info_status_text {
     opacity: 0.8;
 
