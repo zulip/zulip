@@ -390,12 +390,25 @@ export function sort_recipients({
         }
     }
 
+    // We suggest only the first matching wildcard mention,
+    // irrespective of how many equivalent wildcard mentions match.
+    const recipients = [];
+    let wildcard_mention_included = false;
+    for (const item of items) {
+        if (!item.is_broadcast || !wildcard_mention_included) {
+            recipients.push(item);
+            if (item.is_broadcast) {
+                wildcard_mention_included = true;
+            }
+        }
+    }
+
     // We don't push exact matches to the top, like we do with other
     // typeaheads, because in open organizations, it's not uncommon to
     // have a bunch of inactive users with display names that are just
     // FirstName, which we don't want to artificially prioritize over the
     // the lone active user whose name is FirstName LastName.
-    return items.slice(0, max_num_items);
+    return recipients.slice(0, max_num_items);
 }
 
 function slash_command_comparator(slash_command_a, slash_command_b) {
