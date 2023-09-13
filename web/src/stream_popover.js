@@ -127,9 +127,92 @@ function build_stream_popover(opts) {
             $popover.addClass("stream-popover-root");
             instance.setContent(ui_util.parse_html(content));
         },
-        onMount() {
+        onMount(instance) {
+            const $popper = $(instance.popper);
             show_left_sidebar_menu_icon(elt);
-            register_stream_handlers();
+
+            // Stream settings
+            $popper.on("click", ".open_stream_settings", (e) => {
+                const sub = stream_popover_sub(e);
+                hide_stream_popover();
+
+                const stream_edit_hash = hash_util.stream_edit_url(sub);
+                browser_history.go_to_location(stream_edit_hash);
+            });
+
+            // Pin/unpin
+            $popper.on("click", ".pin_to_top", (e) => {
+                const sub = stream_popover_sub(e);
+                hide_stream_popover();
+                stream_settings_ui.toggle_pin_to_top_stream(sub);
+                e.stopPropagation();
+            });
+
+            // Mark all messages in stream as read
+            $popper.on("click", ".mark_stream_as_read", (e) => {
+                const sub = stream_popover_sub(e);
+                hide_stream_popover();
+                unread_ops.mark_stream_as_read(sub.stream_id);
+                e.stopPropagation();
+            });
+
+            // Mute/unmute
+            $popper.on("click", ".toggle_stream_muted", (e) => {
+                const sub = stream_popover_sub(e);
+                hide_stream_popover();
+                stream_settings_ui.set_muted(sub, !sub.is_muted);
+                e.stopPropagation();
+            });
+
+            // New topic in stream menu
+            $popper.on("click", ".popover_new_topic_button", (e) => {
+                const sub = stream_popover_sub(e);
+                hide_stream_popover();
+
+                compose_actions.start("stream", {
+                    trigger: "popover new topic button",
+                    stream: sub.name,
+                    topic: "",
+                });
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            // Unsubscribe
+            $popper.on("click", ".popover_sub_unsub_button", function (e) {
+                $(this).toggleClass("unsub");
+                $(this).closest(".popover").fadeOut(500).delay(500).remove();
+
+                const sub = stream_popover_sub(e);
+                stream_settings_ui.sub_or_unsub(sub);
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            // Choose a different color.
+            $popper.on("click", ".choose_stream_color", (e) => {
+                const $popover = $(e.target).closest(".streams_popover");
+                const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
+                $(".colorpicker-container").show();
+                $colorpicker.spectrum("destroy");
+                $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
+                // In theory this should clean up the old color picker,
+                // but this seems a bit flaky -- the new colorpicker
+                // doesn't fire until you click a button, but the buttons
+                // have been hidden.  We work around this by just manually
+                // fixing it up here.
+                $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
+                $(e.target).hide();
+
+                $(".streams_popover").on("click", "a.sp-cancel", () => {
+                    hide_stream_popover();
+                });
+                if ($(window).width() <= media_breakpoints_num.md) {
+                    $(".popover-inner").hide().fadeIn(300);
+                    $(".popover").addClass("colorpicker-popover");
+                }
+                e.stopPropagation();
+            });
         },
         onHidden() {
             hide_stream_popover();
@@ -413,91 +496,6 @@ export function register_click_handlers() {
             stream_id,
         });
 
-        e.stopPropagation();
-    });
-}
-
-export function register_stream_handlers() {
-    // Stream settings
-    $("body").one("click", ".open_stream_settings", (e) => {
-        const sub = stream_popover_sub(e);
-        hide_stream_popover();
-
-        const stream_edit_hash = hash_util.stream_edit_url(sub);
-        browser_history.go_to_location(stream_edit_hash);
-    });
-
-    // Pin/unpin
-    $("body").one("click", ".pin_to_top", (e) => {
-        const sub = stream_popover_sub(e);
-        hide_stream_popover();
-        stream_settings_ui.toggle_pin_to_top_stream(sub);
-        e.stopPropagation();
-    });
-
-    // Mark all messages in stream as read
-    $("body").one("click", ".mark_stream_as_read", (e) => {
-        const sub = stream_popover_sub(e);
-        hide_stream_popover();
-        unread_ops.mark_stream_as_read(sub.stream_id);
-        e.stopPropagation();
-    });
-
-    // Mute/unmute
-    $("body").one("click", ".toggle_stream_muted", (e) => {
-        const sub = stream_popover_sub(e);
-        hide_stream_popover();
-        stream_settings_ui.set_muted(sub, !sub.is_muted);
-        e.stopPropagation();
-    });
-
-    // New topic in stream menu
-    $("body").one("click", ".popover_new_topic_button", (e) => {
-        const sub = stream_popover_sub(e);
-        hide_stream_popover();
-
-        compose_actions.start("stream", {
-            trigger: "popover new topic button",
-            stream: sub.name,
-            topic: "",
-        });
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    // Unsubscribe
-    $("body").one("click", ".popover_sub_unsub_button", function (e) {
-        $(this).toggleClass("unsub");
-        $(this).closest(".popover").fadeOut(500).delay(500).remove();
-
-        const sub = stream_popover_sub(e);
-        stream_settings_ui.sub_or_unsub(sub);
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    // Choose a different color.
-    $("body").one("click", ".choose_stream_color", (e) => {
-        const $popover = $(e.target).closest(".streams_popover");
-        const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
-        $(".colorpicker-container").show();
-        $colorpicker.spectrum("destroy");
-        $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
-        // In theory this should clean up the old color picker,
-        // but this seems a bit flaky -- the new colorpicker
-        // doesn't fire until you click a button, but the buttons
-        // have been hidden.  We work around this by just manually
-        // fixing it up here.
-        $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
-        $(e.target).hide();
-
-        $(".streams_popover").on("click", "a.sp-cancel", () => {
-            hide_stream_popover();
-        });
-        if ($(window).width() <= media_breakpoints_num.md) {
-            $(".popover-inner").hide().fadeIn(300);
-            $(".popover").addClass("colorpicker-popover");
-        }
         e.stopPropagation();
     });
 }
