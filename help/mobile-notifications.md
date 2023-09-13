@@ -8,6 +8,8 @@ apps.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {settings_tab|notifications}
 
 1. Toggle the checkboxes for **Streams** and **DMs, mentions, and alerts**
@@ -28,6 +30,8 @@ notifications while you are actively using one of the Zulip apps.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {settings_tab|notifications}
 
 1. Under **Mobile message notifications**, toggle
@@ -42,6 +46,29 @@ delivery of mobile notifications to apps like Zulip. If you're having issues
 with Zulip notifications on your Android phone, we recommend Signal's excellent
 [troubleshooting guide](https://support.signal.org/hc/en-us/articles/360007318711-Troubleshooting-Notifications#android_notifications_troubleshooting),
 which explains the notification settings for many popular Android vendors.
+
+### Contacting Zulip support
+
+If you are still having trouble with your push notifications, you can send an
+email to [Zulip support](/help/contact-support). Please be sure to include the
+troubleshooting data provided by the mobile app.
+
+{start_tabs}
+
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Settings**.
+
+1. Tap **Notifications**.
+
+1. Tap **Troubleshooting**.
+
+1. Use the **Copy to clipboard** button or the **Email support@zulip.com**
+   button to email the troubleshooting data to the Zulip support team.
+
+{end_tabs}
 
 ## Related articles
 
