@@ -278,19 +278,38 @@
     border-radius: 5px;
     border: 1px solid;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    /* Baseline alignment ensures the closing X
+       appears centered with the banner text. */
+    align-items: baseline;
     font-size: 15px;
     line-height: 18px;
+
+    .main-view-banner-elements-wrapper {
+        display: flex;
+        /* Baseline alignment ensures the banner
+           and button text appear centered with
+           each other. */
+        align-items: baseline;
+        /* Allow this flex container to grow or
+           shrink to fit the outer container. */
+        flex: 1 1 auto;
+        /* Allow items to wrap; this supports an
+           intrinsic layout for banner text and
+           buttons, which will always occupy the
+           space available, without our having
+           to fiddle with tons of media queries. */
+        flex-wrap: wrap;
+    }
 
     & p {
         margin: 0; /* override bootstrap */
         /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
         padding: 8px 5px 8px 15px;
-    }
-
-    .banner_content {
-        flex-grow: 1;
+        /* The banner text uses a flex-basis of 150px,
+           which is roughly the width at which banner
+           text lines are still comfortably readable.
+           Still, it can grow and shrink as needed. */
+        flex: 1 1 150px;
     }
 
     .main-view-banner-action-button,
@@ -299,12 +318,45 @@
         border-radius: 4px;
         padding: 5px 10px;
         font-weight: 600;
-        margin-left: 10px;
         margin-top: 4.5px;
         margin-bottom: 4.5px;
-        height: 32px;
-        white-space: nowrap;
+        /* Buttons take a minimum height for
+           when their text fits on a single
+           line. */
+        min-height: 32px;
+        /* When we're larger than large mobile
+           scales ($ml_min), flex the button to
+           its max-content, i.e., all its text
+           on a single line. But do not grow in
+           order to avoid awkward, oversized
+           buttons within the flex group. */
+        flex: 0 1 max-content;
+        /* Use this margin-left hack to keep
+           the button to the righthand side of
+           the banner. */
+        margin-left: auto;
 
+        @media (width < $ml_min) {
+            /* When we're smaller than large mobile
+               scales, we allow the button to grow,
+               so that it can span the full width of
+               narrow, mobile-scale banners as it
+               wraps onto a second line.
+
+               We also allow the button to shrink,
+               so that, for example, the text can
+               wrap on the schedule-message button
+               that appears when undoing a scheduled
+               message. */
+            flex: 1 1 max-content;
+            /* Use a 10px left margin to keep the
+               button away from the edge of the
+               banner box to match the banner text;
+               we need this only at small scales,
+               when the button grows to the full
+               width of the flex container. */
+            margin-left: 10px;
+        }
         /* Extra margin to ensure the layout is identical when there is no
            close button. */
         &.right_edge {
