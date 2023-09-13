@@ -7,6 +7,11 @@ settings:
 overrides:
   source-map@^0.6: npm:source-map-js@1.0.1
 
+patchedDependencies:
+  source-sans@3.46.0:
+    hash: 4n7ij66tzyhzaqnxsenbilrxr4
+    path: patches/source-sans@3.46.0.patch
+
 dependencies:
   '@babel/core':
     specifier: ^7.5.5
@@ -211,7 +216,7 @@ dependencies:
     version: 2.38.0
   source-sans:
     specifier: ^3.28.0
-    version: 3.46.0
+    version: 3.46.0(patch_hash=4n7ij66tzyhzaqnxsenbilrxr4)
   spectrum-colorpicker:
     specifier: ^1.8.1
     version: 1.8.1
@@ -10815,9 +10820,10 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: false
 
-  /source-sans@3.46.0:
+  /source-sans@3.46.0(patch_hash=4n7ij66tzyhzaqnxsenbilrxr4):
     resolution: {integrity: sha512-bVC2YX4VNiv5vMcy77dL0XKsNp794ThfynNsr+FqSAwk8TGG0pZsg7eUQi6yHwaRBMVmZ3Aaf4FY46dxIIGgsg==}
     dev: false
+    patched: true
 
   /spawn-wrap@2.0.0:
     resolution: {integrity: sha512-EeajNjfN9zMnULLwhZZQU3GWBoFNkbngTUPfaawT4RkMiviTxcX0qfhVbGey39mfctfDHkWtuecgQ8NJcyQWHg==}
