@@ -174,6 +174,7 @@ def update_realm(
         json_validator=check_string_or_int,
         default=None,
     ),
+    enable_guest_user_indicator: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 
