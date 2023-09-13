@@ -33,13 +33,9 @@ mock_esm("../src/stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
-set_global("document", {
-    to_$: () => $("document-stub"),
-});
-
 const people = zrequire("people");
 const user_status = zrequire("user_status");
-const popovers = zrequire("popovers");
+const user_card_popover = zrequire("user_card_popover");
 
 const alice = {
     email: "alice@example.com",
@@ -101,8 +97,8 @@ function test_ui(label, f) {
     run_test(label, (handlers) => {
         page_params.is_admin = false;
         page_params.custom_profile_fields = [];
-        popovers.clear_for_testing();
-        popovers.register_click_handlers();
+        user_card_popover.clear_for_testing();
+        user_card_popover.initialize();
         f(handlers);
     });
 }

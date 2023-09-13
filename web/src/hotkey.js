@@ -50,6 +50,7 @@ import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as unread_ops from "./unread_ops";
+import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
 import {user_settings} from "./user_settings";
 import * as user_topics_ui from "./user_topics_ui";
@@ -264,8 +265,8 @@ export function process_escape_key(e) {
     }
 
     if (popovers.any_active()) {
-        if (popovers.user_info_manage_menu_popped()) {
-            popovers.hide_user_info_popover_manage_menu();
+        if (user_card_popover.user_info_manage_menu_popped()) {
+            user_card_popover.hide_user_info_popover_manage_menu();
             $("#user_info_popover .user_info_popover_manage_menu_btn").trigger("focus");
             return true;
         }
@@ -369,23 +370,23 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (popovers.user_info_manage_menu_popped()) {
-        popovers.user_info_popover_manage_menu_handle_keyboard(event_name);
+    if (user_card_popover.user_info_manage_menu_popped()) {
+        user_card_popover.user_info_popover_manage_menu_handle_keyboard(event_name);
         return true;
     }
 
-    if (popovers.message_info_popped()) {
-        popovers.user_info_popover_for_message_handle_keyboard(event_name);
+    if (user_card_popover.message_info_popped()) {
+        user_card_popover.user_info_popover_for_message_handle_keyboard(event_name);
         return true;
     }
 
-    if (popovers.user_info_popped()) {
-        popovers.user_info_popover_handle_keyboard(event_name);
+    if (user_card_popover.user_info_popped()) {
+        user_card_popover.user_info_popover_handle_keyboard(event_name);
         return true;
     }
 
-    if (popovers.user_sidebar_popped()) {
-        popovers.user_sidebar_popover_handle_keyboard(event_name);
+    if (user_card_popover.user_sidebar_popped()) {
+        user_card_popover.user_sidebar_popover_handle_keyboard(event_name);
         return true;
     }
 
@@ -735,7 +736,7 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (overlays.settings_open() && !popovers.user_info_popped()) {
+    if (overlays.settings_open() && !user_card_popover.user_info_popped()) {
         return false;
     }
 
@@ -1027,7 +1028,7 @@ export function process_hotkey(e, hotkey) {
             lightbox.show_from_selected_message();
             return true;
         case "show_sender_info":
-            popovers.show_sender_info();
+            user_card_popover.show_sender_info();
             return true;
         // ':': open reactions to message
         case "toggle_reactions_popover": {
