@@ -758,6 +758,20 @@ function topic_sort(a, b) {
     return sort_comparator(topic_sort_key(a), topic_sort_key(b));
 }
 
+function unread_count(conversation_data) {
+    const message = message_store.get(conversation_data.last_msg_id);
+    return message_to_conversation_unread_count(message);
+}
+
+function unread_sort(a, b) {
+    const a_unread_count = unread_count(a);
+    const b_unread_count = unread_count(b);
+    if (a_unread_count !== b_unread_count) {
+        return a_unread_count - b_unread_count;
+    }
+    return a.last_msg_id - b.last_msg_id;
+}
+
 function topic_offset_to_visible_area(topic_row) {
     const $topic_row = $(topic_row);
     if ($topic_row.length === 0) {
@@ -880,6 +894,7 @@ export function complete_rerender() {
         sort_fields: {
             stream_sort,
             topic_sort,
+            unread_sort,
             ...ListWidget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
