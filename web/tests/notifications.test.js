@@ -343,13 +343,16 @@ test("basic_notifications", () => {
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;
     let last_shown_message_id = null;
+    let expected_key;
+    let notification_obj;
 
     // Notifications API stub
     class StubNotification {
-        constructor(_title, {icon, body, tag}) {
+        constructor(title, {icon, body, tag}) {
             this.icon = icon;
             this.body = body;
             this.tag = tag;
+            this.title = title;
             // properties for testing.
             this.tests = {
                 shown: false,
@@ -393,16 +396,19 @@ test("basic_notifications", () => {
     };
 
     // Send notification.
+    expected_key = "Jesse Pinkman to general > whatever";
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has(expected_key), true);
     assert.equal(n.size, 1);
+    notification_obj = n.get(expected_key).obj;
+    assert.equal(notification_obj.title, "translated: Jesse Pinkman (to general > whatever)");
     assert.equal(last_shown_message_id, message_1.id);
 
     // Remove notification.
     notifications.close_notification(message_1);
     n = notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
+    assert.equal(n.has(expected_key), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_1.id);
 
@@ -410,23 +416,49 @@ test("basic_notifications", () => {
     message_1.id = 1001;
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has(expected_key), true);
+    assert.equal(n.size, 1);
+    notification_obj = n.get(expected_key).obj;
+    assert.equal(
+        notification_obj.title,
+        "translated: 2 messages from Jesse Pinkman (to general > whatever)",
+    );
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Process same message again. Notification count shouldn't increase.
     message_1.id = 1002;
+    expected_key = "Jesse Pinkman to general > whatever";
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has(expected_key), true);
     assert.equal(n.size, 1);
+    notification_obj = n.get(expected_key).obj;
+    assert.equal(
+        notification_obj.title,
+        "translated: 2 messages from Jesse Pinkman (to general > whatever)",
+    );
     assert.equal(last_shown_message_id, message_1.id);
 
     // Send another message. Notification count should increase.
     notifications.process_notification({message: message_2, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal(n.has("Gus Fring to general > lunch"), true);
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+
+    assert.equal(n.has(expected_key), true);
+    notification_obj = n.get(expected_key).obj;
+    assert.equal(
+        notification_obj.title,
+        "translated: 2 messages from Jesse Pinkman (to general > whatever)",
+    );
+
+    const other_expected_key = "Gus Fring to general > lunch";
+    assert.equal(n.has(other_expected_key), true);
+    notification_obj = n.get(other_expected_key).obj;
+    assert.equal(
+        notification_obj.title,
+        "translated: 2 messages from Jesse Pinkman (to general > whatever)",
+    );
+
     assert.equal(n.size, 2);
     assert.equal(last_shown_message_id, message_2.id);
 
@@ -434,7 +466,8 @@ test("basic_notifications", () => {
     notifications.close_notification(message_1);
     notifications.close_notification(message_2);
     n = notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
+    assert.equal(n.has(expected_key), false);
+    assert.equal(n.has(other_expected_key), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_2.id);
 });
