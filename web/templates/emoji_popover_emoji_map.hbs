@@ -1,0 +1,8 @@
+{{#each emoji_categories }}
+    <div class="emoji-popover-subheading" data-section="{{name}}">{{name}}</div>
+    <div class="emoji-collection" data-section="{{name}}">
+        {{#each this.emojis }}
+            {{> emoji_popover_emoji type="emoji_picker_emoji" section=@../index index=@index message_id=../../message_id is_status_emoji_popover=../../is_status_emoji_popover emoji_dict=this}}
+        {{/each}}
+    </div>
+{{/each}}
