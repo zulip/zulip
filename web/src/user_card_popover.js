@@ -289,6 +289,7 @@ function get_user_card_popover_data(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
     };
 
     if (user.is_bot) {

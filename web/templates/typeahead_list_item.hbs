@@ -24,6 +24,9 @@
         {{~ primary ~}}
     {{/if}}
 </strong>
+{{~#if should_add_guest_user_indicator}}
+    <i>({{t 'guest'}})</i>
+{{~/if}}
 {{~#if has_status}}
 {{> status_emoji status_emoji_info}}
 {{~/if}}
