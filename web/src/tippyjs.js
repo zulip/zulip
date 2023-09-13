@@ -18,12 +18,17 @@ function get_tooltip_content(reference) {
     return "";
 }
 
-// We use three delay settings for tooltips. The default "instant"
+// We use different delay settings for tooltips. The default "instant"
 // version has just a tiny bit of delay to create a natural feeling
 // transition, while the "long" version is intended for elements where
 // we want to avoid distracting the user with the tooltip
 // unnecessarily.
 const INSTANT_HOVER_DELAY = [100, 20];
+// INTERACTIVE_HOVER_DELAY is for elements like the emoji reactions, where
+// the tooltip includes useful information (who reacted?), but that
+// needs a short delay for users who are just tapping a reaction
+// element and not interested in the tooltip's contents.
+export const INTERACTIVE_HOVER_DELAY = [425, 20];
 export const LONG_HOVER_DELAY = [750, 20];
 // EXTRA_LONG_HOVER_DELAY is for elements like the compose box send
 // button where the tooltip content is almost exactly the same as the
