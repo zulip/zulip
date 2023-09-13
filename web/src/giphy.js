@@ -2,7 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_giphy_picker from "../templates/giphy_picker.hbs";
-import render_giphy_picker_mobile from "../templates/giphy_picker_mobile.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
@@ -175,19 +174,11 @@ export function hide_giphy_popover() {
     return false;
 }
 
-function get_popover_content() {
-    if (window.innerWidth <= media_breakpoints_num.md) {
-        // Show as modal in the center for small screens.
-        return render_giphy_picker_mobile();
-    }
-    return render_giphy_picker();
-}
-
-export function initialize() {
-    popover_menus.register_popover_menu(".compose_control_button.compose_gif_icon", {
+function toggle_giphy_popover(target) {
+    popover_menus.toggle_popover_menu(target, {
         placement: "top",
         onCreate(instance) {
-            instance.setContent(ui_util.parse_html(get_popover_content()));
+            instance.setContent(ui_util.parse_html(render_giphy_picker()));
             $(instance.popper).addClass("giphy-popover");
         },
         async onShow(instance) {
@@ -237,4 +228,14 @@ export function initialize() {
             hide_giphy_popover();
         },
     });
+}
+
+function register_click_handlers() {
+    $("body").on("click", ".compose_control_button.compose_gif_icon", (e) => {
+        toggle_giphy_popover(e.currentTarget);
+    });
+}
+
+export function initialize() {
+    register_click_handlers();
 }
