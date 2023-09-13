@@ -11,7 +11,7 @@
                     {{#if is_bot}}
                         <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                     {{/if}}
-                    <span class="user_profile_name">{{full_name}}</span>
+                    <span class="user_profile_name">{{> user_full_name name=full_name}}</span>
                     {{#if is_me}}
                         <a href="/#settings/profile">
                             <i class="fa fa-edit tippy-zulip-tooltip user_profile_manage_own_edit_button" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>

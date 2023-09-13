@@ -770,6 +770,15 @@ export function user_is_bot(user_id: number): boolean {
     return user.is_bot;
 }
 
+export function should_add_guest_user_indicator(user_id: number): boolean {
+    if (!page_params.realm_enable_guest_user_indicator) {
+        return false;
+    }
+
+    const user = get_by_user_id(user_id);
+    return user.is_guest;
+}
+
 export function user_can_direct_message(recipient_ids_string: string): boolean {
     // Common function for checking if a user can send a direct
     // message to the target user (or group of users) represented by a

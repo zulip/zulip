@@ -366,6 +366,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         user_is_guest: user.is_guest,
         show_user_subscribe_widget,
         can_manage_profile,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
     };
 
     if (user.is_bot) {

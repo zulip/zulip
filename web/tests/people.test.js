@@ -1276,6 +1276,19 @@ test_people("get_realm_active_human_users", () => {
     assert.deepEqual(humans, [me]);
 });
 
+test_people("should_show_guest_user_indicator", () => {
+    people.add_active_user(charles);
+    people.add_active_user(guest);
+
+    page_params.realm_enable_guest_user_indicator = false;
+    assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
+    assert.equal(people.should_add_guest_user_indicator(guest.user_id), false);
+
+    page_params.realm_enable_guest_user_indicator = true;
+    assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
+    assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
+});
+
 // reset to native Date()
 run_test("reset MockDate", () => {
     MockDate.reset();
