@@ -152,6 +152,7 @@ export function info_for(user_id) {
         user_circle_class,
         status_text,
         user_list_style,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
     };
 }
 

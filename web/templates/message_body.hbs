@@ -5,7 +5,7 @@
     {{#if include_sender}}
         <span class="sender_info_hover sender_name" role="button" tabindex="0">
             <span class="view_user_card_tooltip sender_name_text" data-tooltip-template-id="view-user-card-tooltip-template">
-                {{msg/sender_full_name}}
+                {{> user_full_name name=msg/sender_full_name should_add_guest_user_indicator=should_add_guest_indicator_for_sender}}
             </span>
             {{#unless status_message}}
             {{> status_emoji msg/status_emoji_info}}
