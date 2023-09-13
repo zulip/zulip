@@ -4,6 +4,7 @@ import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as typeahead from "../shared/src/typeahead";
 import render_emoji_popover from "../templates/emoji_popover.hbs";
 import render_emoji_popover_content from "../templates/emoji_popover_content.hbs";
+import render_emoji_popover_emoji_map from "../templates/emoji_popover_emoji_map.hbs";
 import render_emoji_popover_search_results from "../templates/emoji_popover_search_results.hbs";
 import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 
@@ -662,9 +663,18 @@ function get_default_emoji_popover_options() {
         },
         onMount(instance) {
             const $popover = $(instance.popper);
+            // Render the emojis after simplebar has been initialized which
+            // saves us ~30% time rendering them.
+            $popover.find(".emoji-popover-emoji-map .simplebar-content").html(
+                render_emoji_popover_emoji_map({
+                    message_id: current_message_id,
+                    emoji_categories: complete_emoji_catalog,
+                    is_status_emoji_popover: user_status_ui.user_status_picker_open(),
+                }),
+            );
             refill_section_head_offsets($popover);
-            register_popover_events($popover);
             show_emoji_catalog();
+            register_popover_events($popover);
             change_focus_to_filter();
         },
         onHidden() {
