@@ -418,6 +418,8 @@ export class MessageListView {
 
         message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
         message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
+        message_container.should_add_guest_indicator_for_sender =
+            people.should_add_guest_user_indicator(message_container.msg.sender_id);
 
         message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
         if (message_container.msg.stream_id) {

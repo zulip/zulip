@@ -173,6 +173,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
                 can_subscribe_other_users,
                 name: mentioned.full_name,
                 classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
+                should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             };
 
             const new_row = render_not_subscribed_warning(context);

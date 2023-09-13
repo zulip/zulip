@@ -140,6 +140,10 @@ IGNORED_PHRASES = [
     r"does not apply to moderators and administrators",
     # Used in message-delete-time-limit setting label
     r"does not apply to administrators",
+    # Used as indicator with names for guest users.
+    r"guest",
+    # Used in pills for deactivated users.
+    r"deactivated",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

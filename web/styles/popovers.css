@@ -223,7 +223,7 @@ ul {
         display: inline-block;
         text-align: center;
 
-        &:not(.popover_action_icon) {
+        &:not(.popover_action_icon, .guest-indicator) {
             width: 14px;
         }
 
