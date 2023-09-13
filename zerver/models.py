@@ -712,6 +712,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # they will not be available regardless of users' personal settings.
     enable_read_receipts = models.BooleanField(default=False)
 
+    # Whether clients should display "(guest)" after names of guest users.
+    enable_guest_user_indicator = models.BooleanField(default=True)
+
     # Duplicates of names for system group; TODO: Clean this up.
     ADMINISTRATORS_GROUP_NAME = "role:administrators"
 
@@ -735,6 +738,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         edit_topic_policy=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
+        enable_guest_user_indicator=bool,
         enable_read_receipts=bool,
         enable_spectator_access=bool,
         giphy_rating=int,

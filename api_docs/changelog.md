@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 216**:
+
+* `PATCH /realm`, [`POST register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `enable_guest_user_indicator`
+  setting to control whether "(guest)" is added to user names in UI.
+
 **Feature level 215**
 
 * [`GET /events`](/api/get-events): Replaced the value `private`
