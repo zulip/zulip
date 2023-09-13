@@ -519,7 +519,7 @@ def remote_server_post_analytics(
 
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
-    last_count = model.objects.filter(server=server).order_by("remote_id").last()
+    last_count = model.objects.filter(server=server).order_by("remote_id").only("remote_id").last()
     if last_count is not None:
         return last_count.remote_id
     return 0
