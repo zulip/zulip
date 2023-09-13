@@ -268,56 +268,59 @@ function remove_sender_from_list_of_recipients(message) {
 }
 
 function get_notification_title(message, content, msg_count) {
-    let title = message.sender_full_name;
+    let base_title;
     let other_recipients;
 
     if (msg_count > 1) {
-        title = $t(
-            {defaultMessage: "{msg_count} messages from {sender_full_name}"},
-            {msg_count, sender_full_name: title},
+        base_title = $t(
+            {defaultMessage: "{msg_count} messages from {sender}"},
+            {msg_count, sender: message.sender_full_name},
         );
+    } else {
+        base_title = message.sender_full_name;
     }
 
     switch (message.type) {
         case "test-notification":
-            other_recipients = remove_sender_from_list_of_recipients(message);
+            return base_title;
             break;
         case "private":
             other_recipients = remove_sender_from_list_of_recipients(message);
+            let title = $t(
+                {defaultMessage: "{notification} (to you and {other_recipients})"},
+                {other_recipients, notification: base_title},
+            );
             if (message.display_recipient.length > 2) {
                 // If the message has too many recipients to list them all...
                 if (content.length + title.length + other_recipients.length > 230) {
                     // Then count how many people are in the conversation and summarize
                     // by saying the conversation is with "you and [number] other people"
                     const recipient_count = recipients.replaceAll(/[^,]/g, "").length;
-                    other_recipients = $t(
+                    title = $t(
                         {
                             defaultMessage:
-                            "{recipient_count} other {recipient_count, plural, two {# people} other {# people}}",
+                                "{notification} (to you and {recipient_count} other {recipient_count, plural, two {# people} other {# people}})",
                         },
-                        {recipient_count},
+                        {
+                            notification: base_title,
+                            recipient_count,
+                        },
                     );
                 }
-
-                title = $t(
-                    {defaultMessage: "{notification} (to you and {other_recipients})"},
-                    {other_recipients, notification: title},
-                );
             } else {
-                title = $t({defaultMessage: "{notification} (to you)"}, {notification: title});
+                title = $t({defaultMessage: "{notification} (to you)"}, {base_title});
             }
+            return title;
             break;
         case "stream": {
             const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-            title = $t(
+            return $t(
                 {defaultMessage: "{notification} (to {stream_name} > {topic_name})"},
-                {stream_name, topic_name: message.topic, notification: title},
+                {stream_name, topic_name: message.topic, notification: base_title},
             );
             break;
         }
     }
-
-    return title;
 }
 
 export function process_notification(notification) {
