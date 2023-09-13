@@ -400,6 +400,7 @@ test("first/prev/next", ({override, mock_template}) => {
                         WITH_STATUS: true,
                         WITH_AVATAR: false,
                     },
+                    should_add_guest_user_indicator: false,
                 });
                 break;
             case fred.user_id:
@@ -419,6 +420,7 @@ test("first/prev/next", ({override, mock_template}) => {
                         WITH_STATUS: true,
                         WITH_AVATAR: false,
                     },
+                    should_add_guest_user_indicator: false,
                 });
                 break;
             /* istanbul ignore next */
@@ -489,6 +491,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
                 WITH_STATUS: true,
                 WITH_AVATAR: false,
             },
+            should_add_guest_user_indicator: false,
         });
         assert.ok(html.startsWith("<li data-user-id="));
         return html;

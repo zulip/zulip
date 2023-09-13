@@ -519,6 +519,7 @@ test("get_items_for_users", () => {
             user_circle_class: "user_circle_green",
             user_id: 1001,
             user_list_style,
+            should_add_guest_user_indicator: false,
         },
         {
             faded: false,
@@ -531,6 +532,7 @@ test("get_items_for_users", () => {
             user_circle_class: "user_circle_empty",
             user_id: 1002,
             user_list_style,
+            should_add_guest_user_indicator: false,
         },
         {
             faded: false,
@@ -543,6 +545,7 @@ test("get_items_for_users", () => {
             user_circle_class: "user_circle_empty",
             user_id: 1003,
             user_list_style,
+            should_add_guest_user_indicator: false,
         },
     ]);
 });

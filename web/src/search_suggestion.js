@@ -34,6 +34,7 @@ function highlight_person(person, highlighter) {
         display_value: new Handlebars.SafeString(highlighted_name),
         has_image: true,
         img_src: avatar_url,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
     };
 }
 

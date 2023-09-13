@@ -53,12 +53,12 @@ export function create_item_from_email(email, current_items) {
         img_src: avatar_url,
         deactivated: false,
         status_emoji_info,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
     };
 
     // We pass deactivated true for a deactivated user
     if (!people.is_person_active(user.user_id)) {
         item.deactivated = true;
-        item.display_value = user.full_name + " (deactivated)";
     }
 
     return item;
@@ -81,6 +81,7 @@ export function append_person(opts) {
         email: person.email,
         img_src: avatar_url,
         status_emoji_info,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
     };
 
     pill_widget.appendValidatedData(pill_data);

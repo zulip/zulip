@@ -92,6 +92,7 @@ export function render_person(person) {
         user_circle_class,
         is_person: true,
         status_emoji_info,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
     };
 
     typeahead_arguments.secondary = person.delivery_email;
