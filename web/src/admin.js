@@ -61,6 +61,9 @@ const admin_settings_label = {
     realm_enable_read_receipts_parens_text: $t({
         defaultMessage: "Users can always disable their personal read receipts.",
     }),
+    realm_enable_guest_user_indicator: $t({
+        defaultMessage: "Display “(guest)” after names of guest users",
+    }),
 };
 
 function insert_tip_box() {
@@ -216,6 +219,7 @@ export function build_page() {
             settings_config.automatically_follow_or_unmute_topics_policy_values,
         automatically_unmute_topics_in_muted_streams_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
+        realm_enable_guest_user_indicator: page_params.realm_enable_guest_user_indicator,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
