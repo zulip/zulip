@@ -375,6 +375,7 @@ function format_conversation(conversation_data) {
     context.unread_count = message_to_conversation_unread_count(last_msg);
     context.last_msg_time = timerender.relative_time_string_from_date({
         date: time,
+        conversation_key: context.conversation_key,
     });
     context.is_private = last_msg.type === "private";
     let all_senders;

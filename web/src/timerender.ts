@@ -14,7 +14,9 @@ import _ from "lodash";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
+import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
+import * as recent_view_util from "./recent_view_util";
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -187,16 +189,44 @@ export function render_now(time: Date, today = new Date()): TimeRender {
     };
 }
 
+// List of the dates that need to be updated when the day changes.
+// Each timestamp is represented as a list of length 2:
+// [id of the span element, Date representing the time]
+type UpdateEntryBase = {
+    needs_update: boolean;
+    time: Date;
+};
+type UpdateEntryWithClassName = UpdateEntryBase & {
+    className: string;
+};
+type UpdateEntryWithKey = UpdateEntryBase & {
+    conversation_key?: string;
+};
+type UpdateEntry = UpdateEntryWithClassName | UpdateEntryWithKey;
+
+const recent_topics_update_list: UpdateEntryWithKey[] = [];
+let update_list: UpdateEntryWithClassName[] = [];
+
 // Relative time rendering for use in most screens like Recent conversations.
 //
 // Current date is passed as an argument for unit testing
 export function relative_time_string_from_date({
     date,
     current_date = new Date(),
+    conversation_key,
 }: {
     date: Date;
     current_date?: Date;
+    conversation_key?: string;
 }): string {
+    maybe_add_update_list_entry(
+        {
+            needs_update: Boolean(conversation_key),
+            conversation_key,
+            time: date,
+        },
+        recent_topics_update_list,
+    );
     const minutes = differenceInMinutes(current_date, date);
     if (minutes <= 2) {
         return $t({defaultMessage: "Just now"});
@@ -290,16 +320,6 @@ export function last_seen_status_from_date(
     );
 }
 
-// List of the dates that need to be updated when the day changes.
-// Each timestamp is represented as a list of length 2:
-//   [id of the span element, Date representing the time]
-type UpdateEntry = {
-    needs_update: boolean;
-    className: string;
-    time: Date;
-};
-let update_list: UpdateEntry[] = [];
-
 // The time at the beginning of the day, when the timestamps were updated.
 // Represented as a Date with hour, minute, second, millisecond 0.
 let last_update: Date;
@@ -308,10 +328,20 @@ export function initialize(): void {
     last_update = startOfToday();
 }
 
-function maybe_add_update_list_entry(entry: UpdateEntry): void {
+function maybe_add_update_list_entry(entry: UpdateEntry, list: UpdateEntry[]): void {
     if (entry.needs_update) {
-        update_list.push(entry);
+        list.push(entry);
     }
+}
+
+function render_recent_topic_timestamp($element: JQuery, new_timestamp: string): void {
+    const current_timestamp = $element.text().trim();
+    if (!current_timestamp || current_timestamp === new_timestamp) {
+        return;
+    }
+
+    const $elem = $element.find("a");
+    $elem.text(new_timestamp);
 }
 
 function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
@@ -333,11 +363,14 @@ export function render_date(time: Date, today: Date): JQuery {
     const rendered_time = render_now(time, today);
     let $node = $("<span>").attr("class", className);
     $node = render_date_span($node, rendered_time);
-    maybe_add_update_list_entry({
-        needs_update: rendered_time.needs_update,
-        className,
-        time,
-    });
+    maybe_add_update_list_entry(
+        {
+            needs_update: rendered_time.needs_update,
+            className,
+            time,
+        },
+        update_list,
+    );
     return $node;
 }
 
@@ -353,6 +386,26 @@ export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragm
         return parse_html(render_markdown_time_tooltip({tz_offset_str}));
     }
     return "";
+}
+
+function update_recent_topics_timestamps(): void {
+    if (recent_view_util.is_visible()) {
+        // Don't update timestamps when the recent_topics view is hidden.
+        return;
+    }
+    for (const entry of recent_topics_update_list) {
+        const conversation_key = entry.conversation_key!;
+        const $element = $(
+            "#" + CSS.escape(`recent_conversation:${conversation_key}`) + " .last_msg_time",
+        );
+        if (!$element.length) {
+            blueslip.warn("Recent topic timestamp element not found.");
+            continue;
+        }
+
+        const rendered_time = relative_time_string_from_date({date: entry.time});
+        render_recent_topic_timestamp($element, rendered_time);
+    }
 }
 
 // This isn't expected to be called externally except manually for
@@ -375,11 +428,14 @@ export function update_timestamps(): void {
                 for (const element of $elements) {
                     render_date_span($(element), rendered_time);
                 }
-                maybe_add_update_list_entry({
-                    needs_update: rendered_time.needs_update,
-                    className,
-                    time,
-                });
+                maybe_add_update_list_entry(
+                    {
+                        needs_update: rendered_time.needs_update,
+                        className,
+                        time,
+                    },
+                    update_list,
+                );
             }
         }
 
@@ -388,6 +444,7 @@ export function update_timestamps(): void {
 }
 
 setInterval(update_timestamps, 60 * 1000);
+setInterval(update_recent_topics_timestamps, 60 * 1000);
 
 // Transform a Unix timestamp into a ISO 8601 formatted date string.
 //   Example: 1978-10-31T13:37:42Z
