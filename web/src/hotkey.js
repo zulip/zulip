@@ -266,7 +266,7 @@ export function process_escape_key(e) {
 
     if (popovers.any_active()) {
         if (user_card_popover.is_user_card_manage_menu_open()) {
-            user_card_popover.hide_user_info_popover_manage_menu();
+            user_card_popover.hide_user_card_popover_manage_menu();
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
         }
