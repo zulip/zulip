@@ -483,6 +483,11 @@ function filter_should_hide_row({stream_id, topic, dm_key}) {
         if (sub === undefined || !sub.subscribed) {
             return true;
         }
+
+        if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
+            return false;
+        }
+
         if (
             !should_include_muted() &&
             (stream_data.is_muted(stream_id) || user_topics.is_topic_muted(stream_id, topic))
