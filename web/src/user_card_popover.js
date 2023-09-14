@@ -402,7 +402,7 @@ export function get_user_info_popover_manage_menu_items() {
         return undefined;
     }
 
-    return $(".user_info_popover_manage_menu li:not(.divider):visible a", popover_data.$tip);
+    return $(".user-card-popover-manage-menu li:not(.divider):visible a", popover_data.$tip);
 }
 
 // message_info
