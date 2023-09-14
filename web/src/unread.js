@@ -283,12 +283,20 @@ class UnreadTopicCounter {
                     stream_count += topic_count;
                 }
 
-                // TODO: These don't agree with the else clause in how
-                // they handle muted streams/topics, and that's
-                // probably a bug.
+                // Note: The format of res.stream_count is completely
+                // different from the else clause; with objects
+                // containing data for individual topics rather than
+                // just muted/unmuted totals, and all muted
+                // streams/topics included so that the inbox view can
+                // easily show/hide topics when its filters are
+                // adjusted.  This should be refactored before the
+                // TypeScript migration for this file.
                 res.stream_count.set(stream_id, topic_unread);
                 res.stream_unread_messages += stream_count;
             } else {
+                // get_stream_count calculates both the number of
+                // unmuted unread as well as the number of muted
+                // unreads.
                 res.stream_count.set(stream_id, this.get_stream_count(stream_id));
                 res.stream_unread_messages += res.stream_count.get(stream_id).unmuted_count;
             }
