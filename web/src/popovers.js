@@ -67,7 +67,7 @@ export function popover_items_handle_keyboard(key, $items) {
     if (key === "enter" && index >= 0 && index < $items.length) {
         $items[index].click();
         if (user_card_popover.is_user_card_manage_menu_open()) {
-            const $items = user_card_popover.get_user_info_popover_manage_menu_items();
+            const $items = user_card_popover.get_user_card_popover_manage_menu_items();
             focus_first_popover_item($items);
         }
         return;
