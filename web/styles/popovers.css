@@ -115,7 +115,7 @@
     }
 }
 
-.info_popover_actions .custom_user_field {
+.user-card-popover-actions .custom_user_field {
     display: flex;
     align-items: center;
 
@@ -145,7 +145,7 @@
     }
 }
 
-.info_popover_actions .user-card-popover-manage-menu-btn {
+.user-card-popover-actions .user-card-popover-manage-menu-btn {
     opacity: 0.8;
 
     &:hover {
@@ -210,7 +210,7 @@
 }
 
 ul {
-    &.info_popover_actions i,
+    &.user-card-popover-actions i,
     &.actions_popover i,
     &.streams_popover i,
     &.topics_popover i {
@@ -255,7 +255,7 @@ ul {
         }
     }
 
-    &.info_popover_actions i.fa-edit {
+    &.user-card-popover-actions i.fa-edit {
         vertical-align: middle;
     }
 }
