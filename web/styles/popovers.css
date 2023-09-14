@@ -101,7 +101,7 @@
     line-height: 1;
 }
 
-.user_info_popover_manage_menu_btn {
+.user-card-popover-manage-menu-btn {
     &:hover,
     &:focus {
         text-decoration: none;
@@ -145,7 +145,7 @@
     }
 }
 
-.info_popover_actions .user_info_popover_manage_menu_btn {
+.info_popover_actions .user-card-popover-manage-menu-btn {
     opacity: 0.8;
 
     &:hover {

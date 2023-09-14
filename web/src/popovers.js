@@ -73,7 +73,7 @@ export function popover_items_handle_keyboard(key, $items) {
         return;
     }
     if (index === -1) {
-        if ($(".user_info_popover_manage_menu_btn").is(":visible")) {
+        if ($(".user-card-popover-manage-menu-btn").is(":visible")) {
             index = 1;
         } else {
             index = 0;
