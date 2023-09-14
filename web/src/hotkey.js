@@ -265,7 +265,7 @@ export function process_escape_key(e) {
     }
 
     if (popovers.any_active()) {
-        if (user_card_popover.user_info_manage_menu_popped()) {
+        if (user_card_popover.is_user_card_manage_menu_open()) {
             user_card_popover.hide_user_info_popover_manage_menu();
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
@@ -370,17 +370,17 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (user_card_popover.user_info_manage_menu_popped()) {
+    if (user_card_popover.is_user_card_manage_menu_open()) {
         user_card_popover.user_info_popover_manage_menu_handle_keyboard(event_name);
         return true;
     }
 
-    if (user_card_popover.message_info_popped()) {
+    if (user_card_popover.is_message_user_card_open()) {
         user_card_popover.user_info_popover_for_message_handle_keyboard(event_name);
         return true;
     }
 
-    if (user_card_popover.user_info_popped()) {
+    if (user_card_popover.is_user_card_open()) {
         user_card_popover.user_info_popover_handle_keyboard(event_name);
         return true;
     }
@@ -736,7 +736,7 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (overlays.settings_open() && !user_card_popover.user_info_popped()) {
+    if (overlays.settings_open() && !user_card_popover.is_user_card_open()) {
         return false;
     }
 

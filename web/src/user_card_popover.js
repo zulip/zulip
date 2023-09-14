@@ -95,13 +95,13 @@ export function toggle_user_info_popover(element, user) {
 }
 
 export function hide_user_info_popover() {
-    if (user_info_popped()) {
+    if (is_user_card_open()) {
         $current_user_info_popover_elem.popover("destroy");
         $current_user_info_popover_elem = undefined;
     }
 }
 
-export function user_info_popped() {
+export function is_user_card_open() {
     return $current_user_info_popover_elem !== undefined;
 }
 
@@ -381,7 +381,7 @@ export function hide_user_info_popover_manage_menu() {
     }
 }
 
-export function user_info_manage_menu_popped() {
+export function is_user_card_manage_menu_open() {
     return $current_user_info_popover_manage_menu !== undefined;
 }
 
@@ -476,12 +476,12 @@ function focus_user_info_popover_item() {
     }
 }
 
-export function message_info_popped() {
+export function is_message_user_card_open() {
     return $current_message_info_popover_elem !== undefined;
 }
 
 export function hide_message_info_popover() {
-    if (message_info_popped()) {
+    if (is_message_user_card_open()) {
         $current_message_info_popover_elem.popover("destroy");
         $current_message_info_popover_elem = undefined;
     }
