@@ -875,7 +875,7 @@ ul {
     }
 }
 
-.user_info_status_text {
+.user-card-status-text {
     opacity: 0.8;
 
     .status-emoji {
