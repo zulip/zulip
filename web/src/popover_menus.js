@@ -511,11 +511,20 @@ export function initialize() {
     register_popover_menu(".compose_control_menu_wrapper", {
         placement: "top",
         onShow(instance) {
+            const parent_row = rows.get_closest_row(instance.reference);
+            let preview_mode_on;
+            // If the popover is opened from a message edit form, we want to
+            // infer the preview mode from that row, else from the compose box.
+            if (parent_row.length) {
+                preview_mode_on = parent_row.hasClass("preview_mode");
+            } else {
+                preview_mode_on = $("#compose").hasClass("preview_mode");
+            }
             instance.setContent(
                 parse_html(
                     render_compose_control_buttons_popover({
                         giphy_enabled: giphy.is_giphy_enabled(),
-                        preview_mode_on: $("#compose").hasClass("preview_mode"),
+                        preview_mode_on,
                     }),
                 ),
             );
