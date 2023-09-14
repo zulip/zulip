@@ -49,11 +49,11 @@ let current_user_sidebar_user_id;
 
 let userlist_placement = "right";
 
-export function hide_all_user_info_popovers() {
-    hide_user_info_popover_manage_menu();
-    hide_message_info_popover();
+export function hide_all_user_card_popovers() {
+    hide_user_card_popover_manage_menu();
+    hide_message_user_card_popover();
     hide_user_sidebar_popover();
-    hide_user_info_popover();
+    hide_user_card_popover();
 }
 
 export function clear_for_testing() {
@@ -94,7 +94,7 @@ export function toggle_user_card_popover(element, user) {
     $current_user_card_popover_elem = $elt;
 }
 
-export function hide_user_info_popover() {
+export function hide_user_card_popover() {
     if (is_user_card_open()) {
         $current_user_card_popover_elem.popover("destroy");
         $current_user_card_popover_elem = undefined;
@@ -342,7 +342,7 @@ function load_medium_avatar(user, $elt) {
 
 function toggle_user_card_popover_manage_menu(element, user) {
     const $last_popover_elem = $current_user_card_popover_manage_menu;
-    hide_user_info_popover_manage_menu();
+    hide_user_card_popover_manage_menu();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         return;
     }
@@ -374,7 +374,7 @@ function toggle_user_card_popover_manage_menu(element, user) {
     $current_user_card_popover_manage_menu = $popover_elt;
 }
 
-export function hide_user_info_popover_manage_menu() {
+export function hide_user_card_popover_manage_menu() {
     if ($current_user_card_popover_manage_menu !== undefined) {
         $current_user_card_popover_manage_menu.popover("destroy");
         $current_user_card_popover_manage_menu = undefined;
@@ -480,7 +480,7 @@ export function is_message_user_card_open() {
     return $current_message_user_card_popover_elem !== undefined;
 }
 
-export function hide_message_info_popover() {
+export function hide_message_user_card_popover() {
     if (is_message_user_card_open()) {
         $current_message_user_card_popover_elem.popover("destroy");
         $current_message_user_card_popover_elem = undefined;
@@ -659,7 +659,7 @@ export function register_click_handlers() {
         const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
-        hide_message_info_popover();
+        hide_message_user_card_popover();
         e.stopPropagation();
         e.preventDefault();
     });
@@ -744,7 +744,7 @@ export function register_click_handlers() {
 
     $("body").on("click", ".sidebar-popover-mute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        hide_all_user_info_popovers();
+        hide_all_user_card_popovers();
         e.stopPropagation();
         e.preventDefault();
         muted_users_ui.confirm_mute_user(user_id);
@@ -752,7 +752,7 @@ export function register_click_handlers() {
 
     $("body").on("click", ".sidebar-popover-unmute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        hide_all_user_info_popovers();
+        hide_all_user_card_popovers();
         muted_users_ui.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
