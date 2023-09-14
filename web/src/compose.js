@@ -125,7 +125,7 @@ export function clear_preview_area() {
     autosize.update($("#compose-textarea"));
 
     // While in preview mode we disable unneeded compose_control_buttons,
-    // so here we are re-enabling that compose_control_buttons
+    // so here we are re-enabling those compose_control_buttons
     $("#compose").removeClass("preview_mode");
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
 }
