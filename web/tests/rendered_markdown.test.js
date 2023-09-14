@@ -100,6 +100,7 @@ const get_content_element = () => {
     $content.set_find_results(".emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
+    $content.set_find_results(".message_inline_video video", $array([]));
     set_closest_dot_find_result($content, []);
 
     // Fend off dumb security bugs by forcing devs to be
@@ -127,6 +128,22 @@ run_test("misc_helpers", () => {
     $elem.addClass("silent");
     rm.set_name_in_mention_element($elem, "Aaron, but silent");
     assert.equal($elem.text(), "Aaron, but silent");
+});
+
+run_test("message_inline_video", () => {
+    const $content = get_content_element();
+    const $elem = $.create("message_inline_video");
+
+    let load_called = false;
+    $elem.load = () => {
+        load_called = true;
+    };
+
+    $content.set_find_results(".message_inline_video video", $array([$elem]));
+    window.GestureEvent = true;
+    rm.update_elements($content);
+    assert.equal(load_called, true);
+    window.GestureEvent = false;
 });
 
 run_test("user-mention", () => {
