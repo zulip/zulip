@@ -106,11 +106,11 @@ export function is_user_card_open() {
 }
 
 export function user_card_popover_handle_keyboard(key) {
-    const $items = get_user_info_popover_items();
+    const $items = get_user_card_popover_items();
     popover_items_handle_keyboard(key, $items);
 }
 
-function get_user_info_popover_items() {
+function get_user_card_popover_items() {
     const $popover_elt = $("div.user-card-popover");
     if (!$current_user_card_popover_elem || !$popover_elt.length) {
         blueslip.error("Trying to get menu items when action popover is closed.");
@@ -386,11 +386,11 @@ export function is_user_card_manage_menu_open() {
 }
 
 export function user_card_popover_manage_menu_handle_keyboard(key) {
-    const $items = get_user_info_popover_manage_menu_items();
+    const $items = get_user_card_popover_manage_menu_items();
     popover_items_handle_keyboard(key, $items);
 }
 
-export function get_user_info_popover_manage_menu_items() {
+export function get_user_card_popover_manage_menu_items() {
     if (!$current_user_card_popover_manage_menu) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
@@ -467,7 +467,7 @@ export function toggle_sender_info() {
 function focus_user_info_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
-    const $items = get_user_info_popover_for_message_items();
+    const $items = get_user_card_popover_for_message_items();
 
     if ($(".user-card-popover-manage-menu-btn").is(":visible")) {
         focus_first_popover_item($items, 1);
@@ -488,11 +488,11 @@ export function hide_message_user_card_popover() {
 }
 
 export function user_card_popover_for_message_handle_keyboard(key) {
-    const $items = get_user_info_popover_for_message_items();
+    const $items = get_user_card_popover_for_message_items();
     popover_items_handle_keyboard(key, $items);
 }
 
-function get_user_info_popover_for_message_items() {
+function get_user_card_popover_for_message_items() {
     if (!$current_message_user_card_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
