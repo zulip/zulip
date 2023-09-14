@@ -284,7 +284,7 @@ ul {
 
 /* Important note: The user info popover user_popover class is applied
    to user info popovers ONLY when they are opened from the right
-   sidebar; otherwise, it will have the user-info-popover class
+   sidebar; otherwise, it will have the user-card-popover class
    instead. */
 .user_popover {
     width: 240px;
@@ -302,8 +302,8 @@ ul {
     }
 }
 
-.message-info-popover,
-.user-info-popover {
+.message-user-card-popover,
+.user-card-popover {
     width: 240px;
     padding: 0;
 
@@ -668,8 +668,8 @@ ul {
 }
 
 @media (width < $md_min) {
-    .message-info-popover,
-    .user-info-popover {
+    .message-user-card-popover,
+    .user-card-popover {
         display: flex !important;
         justify-content: center;
         align-items: center;

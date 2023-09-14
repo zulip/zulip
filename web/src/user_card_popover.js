@@ -88,7 +88,7 @@ export function toggle_user_info_popover(element, user) {
         false,
         false,
         "compose_private_message",
-        "user-info-popover",
+        "user-card-popover",
         "right",
     );
     $current_user_info_popover_elem = $elt;
@@ -111,7 +111,7 @@ export function user_info_popover_handle_keyboard(key) {
 }
 
 function get_user_info_popover_items() {
-    const $popover_elt = $("div.user-info-popover");
+    const $popover_elt = $("div.user-card-popover");
     if (!$current_user_info_popover_elem || !$popover_elt.length) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
@@ -438,7 +438,7 @@ function toggle_user_info_popover_for_message(element, user, message) {
             is_sender_popover,
             true,
             "respond_personal_button",
-            "message-info-popover",
+            "message-user-card-popover",
             "right",
         );
 
@@ -651,7 +651,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".message-info-popover .mention_user", (e) => {
+    $("body").on("click", ".message-user-card-popover .mention_user", (e) => {
         if (!compose_state.composing()) {
             compose_actions.respond_to_message({trigger: "user sidebar popover"});
         }

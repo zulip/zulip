@@ -148,7 +148,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
 
     mock_template("no_arrow_popover.hbs", false, (opts) => {
         assert.deepEqual(opts, {
-            class: "message-info-popover",
+            class: "message-user-card-popover",
         });
         return "popover-html";
     });
