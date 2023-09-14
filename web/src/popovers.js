@@ -242,7 +242,7 @@ export function hide_all_except_sidebars(opts) {
     emoji_picker.hide_emoji_popover();
     stream_popover.hide_stream_popover();
     user_group_popover.hide();
-    user_card_popover.hide_all_user_info_popovers();
+    user_card_popover.hide_all_user_card_popovers();
     hide_playground_links_popover();
 
     // look through all the popovers that have been added and removed.
