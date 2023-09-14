@@ -371,17 +371,17 @@ function handle_popover_events(event_name) {
     }
 
     if (user_card_popover.is_user_card_manage_menu_open()) {
-        user_card_popover.user_info_popover_manage_menu_handle_keyboard(event_name);
+        user_card_popover.user_card_popover_manage_menu_handle_keyboard(event_name);
         return true;
     }
 
     if (user_card_popover.is_message_user_card_open()) {
-        user_card_popover.user_info_popover_for_message_handle_keyboard(event_name);
+        user_card_popover.user_card_popover_for_message_handle_keyboard(event_name);
         return true;
     }
 
     if (user_card_popover.is_user_card_open()) {
-        user_card_popover.user_info_popover_handle_keyboard(event_name);
+        user_card_popover.user_card_popover_handle_keyboard(event_name);
         return true;
     }
 

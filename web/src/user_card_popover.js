@@ -105,7 +105,7 @@ export function is_user_card_open() {
     return $current_user_info_popover_elem !== undefined;
 }
 
-export function user_info_popover_handle_keyboard(key) {
+export function user_card_popover_handle_keyboard(key) {
     const $items = get_user_info_popover_items();
     popover_items_handle_keyboard(key, $items);
 }
@@ -385,7 +385,7 @@ export function is_user_card_manage_menu_open() {
     return $current_user_info_popover_manage_menu !== undefined;
 }
 
-export function user_info_popover_manage_menu_handle_keyboard(key) {
+export function user_card_popover_manage_menu_handle_keyboard(key) {
     const $items = get_user_info_popover_manage_menu_items();
     popover_items_handle_keyboard(key, $items);
 }
@@ -487,7 +487,7 @@ export function hide_message_info_popover() {
     }
 }
 
-export function user_info_popover_for_message_handle_keyboard(key) {
+export function user_card_popover_for_message_handle_keyboard(key) {
     const $items = get_user_info_popover_for_message_items();
     popover_items_handle_keyboard(key, $items);
 }
