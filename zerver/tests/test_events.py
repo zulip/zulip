@@ -550,6 +550,9 @@ class NormalActionsTest(BaseAction):
         check_message("events[0]", events[0])
         assert events[0]["message"]["avatar_url"] is None
 
+    def test_stream_update_message_events(self) -> None:
+        self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
+
         # Verify stream message editing - content only
         message = Message.objects.order_by("-id")[0]
         content = "new content"
