@@ -14,8 +14,8 @@
                 <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             {{#if development_environment}}
-            <li class="top_left_inbox top_left_row hidden-for-spectators" title="{{t 'Inbox' }} (t)">
-                <a href="#inbox">
+            <li class="top_left_inbox top_left_row hidden-for-spectators">
+                <a href="#inbox" class="tippy-left-sidebar-tooltip global-filter-container" data-tooltip-template-id="inbox-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
                     </span>
