@@ -73,7 +73,7 @@ function clipboard_enable(arg) {
     return new ClipboardJS(arg);
 }
 
-// user_info
+// Functions related to user card popover.
 
 export function toggle_user_card_popover(element, user) {
     const $last_popover_elem = $current_user_card_popover_elem;
@@ -338,7 +338,7 @@ function load_medium_avatar(user, $elt) {
     });
 }
 
-// user_info_manage_menu
+// Functions related to manage menu popover.
 
 function toggle_user_card_popover_manage_menu(element, user) {
     const $last_popover_elem = $current_user_card_popover_manage_menu;
@@ -405,7 +405,7 @@ export function get_user_card_popover_manage_menu_items() {
     return $(".user-card-popover-manage-menu li:not(.divider):visible a", popover_data.$tip);
 }
 
-// message_info
+// Functions related to message user card popover.
 
 // element is the target element to pop off of
 // user is the user whose profile to show
@@ -446,7 +446,8 @@ function toggle_user_card_popover_for_message(element, user, message) {
     }
 }
 
-// triggered from keyboard shortcut
+// This function serves as the entry point for toggling
+// the user card popover via keyboard shortcut.
 export function toggle_sender_info() {
     const $message = $(".selected_message");
     let $sender = $message.find(".message-avatar");
@@ -507,7 +508,7 @@ function get_user_card_popover_for_message_items() {
     return $("li:not(.divider):visible a", popover_data.$tip);
 }
 
-// user_sidebar
+// Functions related to the user card popover in the user sidebar.
 
 export function user_sidebar_popped() {
     return current_user_sidebar_popover !== undefined;
