@@ -75,14 +75,14 @@ function clipboard_enable(arg) {
 
 // user_info
 
-export function toggle_user_info_popover(element, user) {
+export function toggle_user_card_popover(element, user) {
     const $last_popover_elem = $current_user_card_popover_elem;
     hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         return;
     }
     const $elt = $(element);
-    render_user_info_popover(
+    render_user_card_popover(
         user,
         $elt,
         false,
@@ -208,7 +208,7 @@ function get_user_card_popover_data(
     return args;
 }
 
-function render_user_info_popover(
+function render_user_card_popover(
     user,
     popover_element,
     is_sender_popover,
@@ -340,7 +340,7 @@ function load_medium_avatar(user, $elt) {
 
 // user_info_manage_menu
 
-function toggle_user_info_popover_manage_menu(element, user) {
+function toggle_user_card_popover_manage_menu(element, user) {
     const $last_popover_elem = $current_user_card_popover_manage_menu;
     hide_user_info_popover_manage_menu();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -410,7 +410,7 @@ export function get_user_info_popover_manage_menu_items() {
 // element is the target element to pop off of
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
-function toggle_user_info_popover_for_message(element, user, message) {
+function toggle_user_card_popover_for_message(element, user, message) {
     const $last_popover_elem = $current_message_user_card_popover_elem;
     hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -432,7 +432,7 @@ function toggle_user_info_popover_for_message(element, user, message) {
         }
 
         const is_sender_popover = message.sender_id === user.user_id;
-        render_user_info_popover(
+        render_user_card_popover(
             user,
             $elt,
             is_sender_popover,
@@ -458,7 +458,7 @@ export function toggle_sender_info() {
 
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
-    toggle_user_info_popover_for_message($sender[0], user, message);
+    toggle_user_card_popover_for_message($sender[0], user, message);
     if ($current_message_user_card_popover_elem && !page_params.is_spectator) {
         focus_user_info_popover_item();
     }
@@ -547,7 +547,7 @@ export function register_click_handlers() {
         e.stopPropagation();
         const message = message_lists.current.get(rows.id($row));
         const user = people.get_by_user_id(message.sender_id);
-        toggle_user_info_popover_for_message(this, user, message);
+        toggle_user_card_popover_for_message(this, user, message);
     });
 
     $("#main_div").on("click", ".user-mention", function (e) {
@@ -568,7 +568,7 @@ export function register_click_handlers() {
         } else {
             user = people.get_by_email(email);
         }
-        toggle_user_info_popover_for_message(this, user, message);
+        toggle_user_card_popover_for_message(this, user, message);
     });
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
@@ -667,7 +667,7 @@ export function register_click_handlers() {
     $("body").on("click", ".view_user_profile", (e) => {
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
-        toggle_user_info_popover(e.target, user);
+        toggle_user_card_popover(e.target, user);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -728,7 +728,7 @@ export function register_click_handlers() {
         const user = people.get_by_user_id(user_id);
         const popover_placement = userlist_placement === "left" ? "right" : "left";
 
-        render_user_info_popover(
+        render_user_card_popover(
             user,
             $target,
             false,
@@ -791,7 +791,7 @@ export function register_click_handlers() {
         e.stopPropagation();
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
-        toggle_user_info_popover_manage_menu(e.target, user);
+        toggle_user_card_popover_manage_menu(e.target, user);
     });
 }
 
