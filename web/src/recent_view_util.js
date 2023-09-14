@@ -18,8 +18,8 @@ export function get_key_from_message(msg) {
         // string containing the user IDs involved in the message in
         // sorted order.
         return msg.to_user_ids;
-    } else if (msg.type === "stream") {
-        return get_topic_key(msg.stream_id, msg.topic);
     }
-    throw new Error(`Invalid message type ${msg.type}`);
+
+    // For messages with type = "stream".
+    return get_topic_key(msg.stream_id, msg.topic);
 }
