@@ -70,6 +70,20 @@ Zulip's SCIM integration has the following limitations:
      * **givenName**
      * **familyName**
 
+1. **Optional:** If you'd like to also sync [user role](/help/roles-and-permissions),
+   you can do it by by adding a custom attribute in Okta. Go to the **Profile Editor**,
+   click into the entry of the SCIM app you've just set up and **Add Attribute**.
+   Configure the following:
+    * **Data type**: `string`
+    * **Variable name**: `role`
+    * **External name**: `role`
+    * **External namespace**: `urn:ietf:params:scim:schemas:core:2.0:User`
+
+    With the attribute added, you will now be able to set it for your users directly
+    or configure an appropriate **Attribute mapping** in the app's **Provisioning**
+    section.
+    The valid values are: **owner**, **administrator**, **moderator**, **member**, **guest**.
+
 1. Now that the integration is ready to manage Zulip user accounts, **assign**
    users to the SCIM app.
      * When you assign a user, Okta will check if the account exists in your

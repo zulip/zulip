@@ -7,6 +7,7 @@ import orjson
 from django.conf import settings
 
 from zerver.actions.user_settings import do_change_full_name
+from zerver.lib.scim import ZulipSCIMUser
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile, get_realm
 
@@ -33,6 +34,7 @@ class SCIMTestCase(ZulipTestCase):
             "userName": user_profile.delivery_email,
             "name": {"formatted": user_profile.full_name},
             "displayName": user_profile.full_name,
+            "role": ZulipSCIMUser.ROLE_TYPE_TO_NAME[user_profile.role],
             "active": True,
             "meta": {
                 "resourceType": "User",
@@ -337,6 +339,49 @@ class TestSCIMUser(SCIMTestCase):
         assert new_user is not None
         self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
         self.assertEqual(new_user.full_name, "New User")
+        self.assertEqual(new_user.role, UserProfile.ROLE_MEMBER)
+
+        expected_response_schema = self.generate_user_schema(new_user)
+        self.assertEqual(output_data, expected_response_schema)
+
+    def test_post_with_role(self) -> None:
+        # A payload for creating a new user with the specified account details, including
+        # specifying the role.
+
+        # Start with a payload with an invalid role value, to test error handling.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "userName": "newuser@zulip.com",
+            "name": {"formatted": "New User", "givenName": "New", "familyName": "User"},
+            "active": True,
+            "role": "wrongrole",
+        }
+
+        result = self.client_post(
+            "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
+        )
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Invalid role: wrongrole. Valid values are: ['owner', 'administrator', 'moderator', 'member', 'guest']",
+                "status": 400,
+            },
+        )
+
+        # Now fix the role to make a valid request to create an administrator and proceed.
+        payload["role"] = "administrator"
+        result = self.client_post(
+            "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
+        )
+
+        self.assertEqual(result.status_code, 201)
+        output_data = orjson.loads(result.content)
+
+        new_user = UserProfile.objects.last()
+        assert new_user is not None
+        self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
+        self.assertEqual(new_user.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         expected_response_schema = self.generate_user_schema(new_user)
         self.assertEqual(output_data, expected_response_schema)
@@ -562,6 +607,28 @@ class TestSCIMUser(SCIMTestCase):
             result, f"['{cordelia.delivery_email} already has an account']"
         )
 
+    def test_put_change_user_role(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet_email = hamlet.delivery_email
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MEMBER)
+
+        # This payload changes hamlet's role to administrator.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "id": hamlet.id,
+            "userName": hamlet_email,
+            "role": "administrator",
+        }
+        result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_user_schema(hamlet)
+        self.assertEqual(output_data, expected_response_schema)
+
     def test_put_deactivate_reactivate_user(self) -> None:
         hamlet = self.example_user("hamlet")
         # This payload flips the active attribute to deactivate the user.
@@ -646,6 +713,20 @@ class TestSCIMUser(SCIMTestCase):
         output_data = orjson.loads(result.content)
         expected_response_schema = self.generate_user_schema(hamlet)
         self.assertEqual(output_data, expected_response_schema)
+
+    def test_patch_change_user_role(self) -> None:
+        hamlet = self.example_user("hamlet")
+        # Payload for a PATCH request to change hamlet's role to administrator.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [{"op": "replace", "path": "role", "value": "administrator"}],
+        }
+
+        result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
     def test_patch_deactivate_reactivate_user(self) -> None:
         hamlet = self.example_user("hamlet")

@@ -11,7 +11,7 @@ from scim2_filter_parser.attr_paths import AttrPath
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.user_settings import check_change_full_name, do_change_user_delivery_email
-from zerver.actions.users import do_deactivate_user
+from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
@@ -30,6 +30,15 @@ class ZulipSCIMUser(SCIMUser):
     """
 
     id_field = "id"
+
+    ROLE_TYPE_TO_NAME = {
+        UserProfile.ROLE_REALM_OWNER: "owner",
+        UserProfile.ROLE_REALM_ADMINISTRATOR: "administrator",
+        UserProfile.ROLE_MODERATOR: "moderator",
+        UserProfile.ROLE_MEMBER: "member",
+        UserProfile.ROLE_GUEST: "guest",
+    }
+    ROLE_NAME_TO_TYPE = {v: k for k, v in ROLE_TYPE_TO_NAME.items()}
 
     def __init__(self, obj: UserProfile, request: Optional[HttpRequest] = None) -> None:
         # We keep the function signature from the superclass, but this actually
@@ -54,6 +63,7 @@ class ZulipSCIMUser(SCIMUser):
         self._email_new_value: Optional[str] = None
         self._is_active_new_value: Optional[bool] = None
         self._full_name_new_value: Optional[str] = None
+        self._role_new_value: Optional[int] = None
         self._password_set_to: Optional[str] = None
 
     def is_new_user(self) -> bool:
@@ -105,6 +115,7 @@ class ZulipSCIMUser(SCIMUser):
             "name": name,
             "displayName": self.display_name,
             "active": self.obj.is_active,
+            "role": self.ROLE_TYPE_TO_NAME[self.obj.role],
             # meta is a property implemented in the superclass
             # TODO: The upstream implementation uses `user_profile.date_joined`
             # as the value of the lastModified meta attribute, which is not
@@ -166,6 +177,11 @@ class ZulipSCIMUser(SCIMUser):
             assert isinstance(active, bool)
             self.change_is_active(active)
 
+        role_name = d.get("role")
+        if role_name:
+            assert isinstance(role_name, str)
+            self.change_role(role_name)
+
     def change_delivery_email(self, new_value: str) -> None:
         # Note that the email_allowed_for_realm check that usually
         # appears adjacent to validate_email is present in save().
@@ -180,6 +196,16 @@ class ZulipSCIMUser(SCIMUser):
     def change_is_active(self, new_value: bool) -> None:
         if new_value != self.obj.is_active:
             self._is_active_new_value = new_value
+
+    def change_role(self, new_role_name: str) -> None:
+        try:
+            role = self.ROLE_NAME_TO_TYPE[new_role_name]
+        except KeyError:
+            raise scim_exceptions.BadRequestError(
+                f"Invalid role: {new_role_name}. Valid values are: {list(self.ROLE_NAME_TO_TYPE.keys())}"
+            )
+        if role != self.obj.role:
+            self._role_new_value = role
 
     def handle_replace(
         self,
@@ -215,6 +241,9 @@ class ZulipSCIMUser(SCIMUser):
             elif path.first_path == ("active", None, None):
                 assert isinstance(val, bool)
                 self.change_is_active(val)
+            elif path.first_path == ("role", None, None):
+                assert isinstance(val, str)
+                self.change_role(val)
             else:
                 raise scim_exceptions.NotImplementedError("Not Implemented")
 
@@ -232,6 +261,7 @@ class ZulipSCIMUser(SCIMUser):
         email_new_value = getattr(self, "_email_new_value", None)
         is_active_new_value = getattr(self, "_is_active_new_value", None)
         full_name_new_value = getattr(self, "_full_name_new_value", None)
+        role_new_value = getattr(self, "_role_new_value", None)
         password = getattr(self, "_password_set_to", None)
 
         # Clean up the internal "pending change" state, now that we've
@@ -240,6 +270,7 @@ class ZulipSCIMUser(SCIMUser):
         self._is_active_new_value = None
         self._full_name_new_value = None
         self._password_set_to = None
+        self._role_new_value = None
 
         if email_new_value:
             try:
@@ -270,6 +301,7 @@ class ZulipSCIMUser(SCIMUser):
                 password,
                 realm,
                 full_name_new_value,
+                role=role_new_value,
                 tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
                 acting_user=None,
             )
@@ -286,6 +318,9 @@ class ZulipSCIMUser(SCIMUser):
 
         if email_new_value:
             do_change_user_delivery_email(self.obj, email_new_value)
+
+        if role_new_value is not None:
+            do_change_user_role(self.obj, role_new_value, acting_user=None)
 
         if is_active_new_value is not None and is_active_new_value:
             do_reactivate_user(self.obj, acting_user=None)

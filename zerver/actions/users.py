@@ -372,7 +372,7 @@ def send_stream_events_for_role_update(
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
