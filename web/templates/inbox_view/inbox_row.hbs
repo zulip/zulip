@@ -2,35 +2,37 @@
     {{> inbox_stream_header_row}}
 {{else}}
     <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}collapsed_container{{/if}}" tabindex="0">
-        <div class="inbox-left-part-wrapper">
-            <div class="inbox-left-part">
-                <div class="hide fake-collapse-button" tabindex="0"></div>
-                {{#if is_direct}}
-                    <a class="recipients_info" href="{{dm_url}}">
-                        {{#each recipients_info}}
-                            <span class="user_block">
-                                {{#if is_bot}}
-                                <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
-                                {{else}}
-                                <span class="{{user_circle_class}} user_circle"></span>
-                                {{/if}}
-                                <span class="recipients_name">{{full_name}}</span>
-                            </span>
-                        {{/each}}
-                    </a>
-                    <span class="unread_count tippy-zulip-tooltip on_hover_dm_read"  data-user-ids-string="{{user_ids_string}}"  data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
-                {{else if is_topic}}
-                    {{!-- Invisible user circle element for alignment of topic text with DM user name --}}
-                    <span class="user_circle_green user_circle invisible"></span>
-                    <div class="inbox-topic-name">
-                        <a tabindex="-1" href="{{topic_url}}">{{topic_name}}</a>
-                    </div>
-                    <span class="unread_count tippy-zulip-tooltip on_hover_topic_read"
-                      data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"
-                      data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">
-                        {{unread_count}}
-                    </span>
-                {{/if}}
+        <div class="inbox-focus-border">
+            <div class="inbox-left-part-wrapper">
+                <div class="inbox-left-part">
+                    <div class="hide fake-collapse-button" tabindex="0"></div>
+                    {{#if is_direct}}
+                        <a class="recipients_info" href="{{dm_url}}">
+                            {{#each recipients_info}}
+                                <span class="user_block">
+                                    {{#if is_bot}}
+                                    <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
+                                    {{else}}
+                                    <span class="{{user_circle_class}} user_circle"></span>
+                                    {{/if}}
+                                    <span class="recipients_name">{{full_name}}</span>
+                                </span>
+                            {{/each}}
+                        </a>
+                        <span class="unread_count tippy-zulip-tooltip on_hover_dm_read"  data-user-ids-string="{{user_ids_string}}"  data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
+                    {{else if is_topic}}
+                        {{!-- Invisible user circle element for alignment of topic text with DM user name --}}
+                        <span class="user_circle_green user_circle invisible"></span>
+                        <div class="inbox-topic-name">
+                            <a tabindex="-1" href="{{topic_url}}">{{topic_name}}</a>
+                        </div>
+                        <span class="unread_count tippy-zulip-tooltip on_hover_topic_read"
+                          data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"
+                          data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">
+                            {{unread_count}}
+                        </span>
+                    {{/if}}
+                </div>
             </div>
         </div>
     </div>
