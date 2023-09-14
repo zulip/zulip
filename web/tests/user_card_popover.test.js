@@ -153,7 +153,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
         return "popover-html";
     });
 
-    mock_template("user_info_popover_title.hbs", false, (opts) => {
+    mock_template("user_card_popover_title.hbs", false, (opts) => {
         assert.deepEqual(opts, {
             user_avatar: "http://zulip.zulipdev.com/avatar/42?s=50",
             user_is_guest: false,
@@ -161,7 +161,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
         return "title-html";
     });
     const $popover_content = $.create("content-html");
-    mock_template("user_info_popover_content.hbs", false, (opts) => {
+    mock_template("user_card_popover_content.hbs", false, (opts) => {
         assert.deepEqual(opts, {
             invisible_mode: false,
             can_send_private_message: true,
