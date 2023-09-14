@@ -24,13 +24,13 @@ import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import {
     focus_first_popover_item,
     hide_all,
     hide_all_except_sidebars,
     popover_items_handle_keyboard,
 } from "./popovers";
-import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
@@ -571,7 +571,7 @@ export function register_click_handlers() {
         toggle_user_info_popover_for_message(this, user, message);
     });
 
-    $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
+    $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
@@ -583,7 +583,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
+    $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
@@ -595,7 +595,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".info_popover_actions .clear_status", (e) => {
+    $("body").on("click", ".user-card-popover-actions .clear_status", (e) => {
         e.preventDefault();
         const me = elem_to_user_id($(e.target).parents("ul"));
         user_status.server_update_status({
@@ -604,12 +604,12 @@ export function register_click_handlers() {
             emoji_name: "",
             emoji_code: "",
             success() {
-                $(".info_popover_actions #status_message").empty();
+                $(".user-card-popover-actions #status_message").empty();
             },
         });
     });
 
-    $("body").on("click", ".info_popover_actions .sidebar-popover-reactivate-user", (e) => {
+    $("body").on("click", ".user-card-popover-actions .sidebar-popover-reactivate-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_all();
         e.stopPropagation();
@@ -630,7 +630,7 @@ export function register_click_handlers() {
         settings_users.confirm_reactivation(user_id, handle_confirm, true);
     });
 
-    $("body").on("click", ".info_popover_actions .view_full_user_profile", (e) => {
+    $("body").on("click", ".user-card-popover-actions .view_full_user_profile", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
         user_profile.show_user_profile(user);
