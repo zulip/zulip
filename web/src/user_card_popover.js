@@ -469,7 +469,7 @@ function focus_user_info_popover_item() {
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_user_info_popover_for_message_items();
 
-    if ($(".user_info_popover_manage_menu_btn").is(":visible")) {
+    if ($(".user-card-popover-manage-menu-btn").is(":visible")) {
         focus_first_popover_item($items, 1);
     } else {
         focus_first_popover_item($items);
@@ -786,7 +786,7 @@ export function register_click_handlers() {
         user_profile.show_user_profile(user, "manage-profile-tab");
     });
 
-    $("body").on("click", ".user_info_popover_manage_menu_btn", (e) => {
+    $("body").on("click", ".user-card-popover-manage-menu-btn", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_id = elem_to_user_id($(e.target).parents("ul"));
