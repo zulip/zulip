@@ -460,11 +460,11 @@ export function toggle_sender_info() {
     const user = people.get_by_user_id(message.sender_id);
     toggle_user_card_popover_for_message($sender[0], user, message);
     if ($current_message_user_card_popover_elem && !page_params.is_spectator) {
-        focus_user_info_popover_item();
+        focus_user_card_popover_item();
     }
 }
 
-function focus_user_info_popover_item() {
+function focus_user_card_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_user_card_popover_for_message_items();
