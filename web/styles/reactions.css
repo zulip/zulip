@@ -151,6 +151,14 @@
     }
 }
 
+.private-message,
+.direct_mention,
+.group_mention {
+    .message_reaction {
+        background-color: var(--color-message-reaction-background-alt);
+    }
+}
+
 .active-emoji-picker-reference,
 .active-playground-links-reference {
     visibility: visible !important;
