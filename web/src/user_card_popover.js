@@ -41,9 +41,9 @@ import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 
-let $current_message_info_popover_elem;
-let $current_user_info_popover_elem;
-let $current_user_info_popover_manage_menu;
+let $current_message_user_card_popover_elem;
+let $current_user_card_popover_elem;
+let $current_user_card_popover_manage_menu;
 let current_user_sidebar_popover;
 let current_user_sidebar_user_id;
 
@@ -57,9 +57,9 @@ export function hide_all_user_info_popovers() {
 }
 
 export function clear_for_testing() {
-    $current_message_info_popover_elem = undefined;
-    $current_user_info_popover_elem = undefined;
-    $current_user_info_popover_manage_menu = undefined;
+    $current_message_user_card_popover_elem = undefined;
+    $current_user_card_popover_elem = undefined;
+    $current_user_card_popover_manage_menu = undefined;
     userlist_placement = "right";
 }
 
@@ -76,7 +76,7 @@ function clipboard_enable(arg) {
 // user_info
 
 export function toggle_user_info_popover(element, user) {
-    const $last_popover_elem = $current_user_info_popover_elem;
+    const $last_popover_elem = $current_user_card_popover_elem;
     hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         return;
@@ -91,18 +91,18 @@ export function toggle_user_info_popover(element, user) {
         "user-card-popover",
         "right",
     );
-    $current_user_info_popover_elem = $elt;
+    $current_user_card_popover_elem = $elt;
 }
 
 export function hide_user_info_popover() {
     if (is_user_card_open()) {
-        $current_user_info_popover_elem.popover("destroy");
-        $current_user_info_popover_elem = undefined;
+        $current_user_card_popover_elem.popover("destroy");
+        $current_user_card_popover_elem = undefined;
     }
 }
 
 export function is_user_card_open() {
-    return $current_user_info_popover_elem !== undefined;
+    return $current_user_card_popover_elem !== undefined;
 }
 
 export function user_card_popover_handle_keyboard(key) {
@@ -112,7 +112,7 @@ export function user_card_popover_handle_keyboard(key) {
 
 function get_user_info_popover_items() {
     const $popover_elt = $("div.user-card-popover");
-    if (!$current_user_info_popover_elem || !$popover_elt.length) {
+    if (!$current_user_card_popover_elem || !$popover_elt.length) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
@@ -341,7 +341,7 @@ function load_medium_avatar(user, $elt) {
 // user_info_manage_menu
 
 function toggle_user_info_popover_manage_menu(element, user) {
-    const $last_popover_elem = $current_user_info_popover_manage_menu;
+    const $last_popover_elem = $current_user_card_popover_manage_menu;
     hide_user_info_popover_manage_menu();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         return;
@@ -371,18 +371,18 @@ function toggle_user_info_popover_manage_menu(element, user) {
     });
 
     $popover_elt.popover("show");
-    $current_user_info_popover_manage_menu = $popover_elt;
+    $current_user_card_popover_manage_menu = $popover_elt;
 }
 
 export function hide_user_info_popover_manage_menu() {
-    if ($current_user_info_popover_manage_menu !== undefined) {
-        $current_user_info_popover_manage_menu.popover("destroy");
-        $current_user_info_popover_manage_menu = undefined;
+    if ($current_user_card_popover_manage_menu !== undefined) {
+        $current_user_card_popover_manage_menu.popover("destroy");
+        $current_user_card_popover_manage_menu = undefined;
     }
 }
 
 export function is_user_card_manage_menu_open() {
-    return $current_user_info_popover_manage_menu !== undefined;
+    return $current_user_card_popover_manage_menu !== undefined;
 }
 
 export function user_card_popover_manage_menu_handle_keyboard(key) {
@@ -391,12 +391,12 @@ export function user_card_popover_manage_menu_handle_keyboard(key) {
 }
 
 export function get_user_info_popover_manage_menu_items() {
-    if (!$current_user_info_popover_manage_menu) {
+    if (!$current_user_card_popover_manage_menu) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
 
-    const popover_data = $current_user_info_popover_manage_menu.data("popover");
+    const popover_data = $current_user_card_popover_manage_menu.data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for actions menu.");
         return undefined;
@@ -411,7 +411,7 @@ export function get_user_info_popover_manage_menu_items() {
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
 function toggle_user_info_popover_for_message(element, user, message) {
-    const $last_popover_elem = $current_message_info_popover_elem;
+    const $last_popover_elem = $current_message_user_card_popover_elem;
     hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -442,7 +442,7 @@ function toggle_user_info_popover_for_message(element, user, message) {
             "right",
         );
 
-        $current_message_info_popover_elem = $elt;
+        $current_message_user_card_popover_elem = $elt;
     }
 }
 
@@ -459,7 +459,7 @@ export function toggle_sender_info() {
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     toggle_user_info_popover_for_message($sender[0], user, message);
-    if ($current_message_info_popover_elem && !page_params.is_spectator) {
+    if ($current_message_user_card_popover_elem && !page_params.is_spectator) {
         focus_user_info_popover_item();
     }
 }
@@ -477,13 +477,13 @@ function focus_user_info_popover_item() {
 }
 
 export function is_message_user_card_open() {
-    return $current_message_info_popover_elem !== undefined;
+    return $current_message_user_card_popover_elem !== undefined;
 }
 
 export function hide_message_info_popover() {
     if (is_message_user_card_open()) {
-        $current_message_info_popover_elem.popover("destroy");
-        $current_message_info_popover_elem = undefined;
+        $current_message_user_card_popover_elem.popover("destroy");
+        $current_message_user_card_popover_elem = undefined;
     }
 }
 
@@ -493,12 +493,12 @@ export function user_card_popover_for_message_handle_keyboard(key) {
 }
 
 function get_user_info_popover_for_message_items() {
-    if (!$current_message_info_popover_elem) {
+    if (!$current_message_user_card_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
 
-    const popover_data = $current_message_info_popover_elem.data("popover");
+    const popover_data = $current_message_user_card_popover_elem.data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for actions menu.");
         return undefined;
