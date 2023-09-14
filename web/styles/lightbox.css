@@ -30,6 +30,21 @@
         }
     }
 
+    .video-player {
+        display: flex;
+        width: 100%;
+        height: calc(100% - 65px - 95px);
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        overflow: hidden;
+
+        & video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    }
+
     .exit {
         flex-shrink: 0;
 
@@ -199,6 +214,11 @@
                 &.selected {
                     opacity: 1;
                 }
+            }
+
+            .lightbox_video video {
+                width: 50px;
+                height: 50px;
             }
         }
     }

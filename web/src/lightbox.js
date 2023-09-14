@@ -177,18 +177,35 @@ export function clear_for_testing() {
 export function render_lightbox_list_images(preview_source) {
     if (!is_open) {
         const images = Array.prototype.slice.call(
-            $(".focused-message-list .message_inline_image img"),
+            $(
+                ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
+            ),
         );
         const $image_list = $("#lightbox_overlay .image-list").empty();
 
         for (const img of images) {
             const src = img.getAttribute("src");
             const className = preview_source === src ? "image selected" : "image";
+            const is_video = img.tagName === "VIDEO";
 
-            const $node = $("<div>")
-                .addClass(className)
-                .attr("data-src", src)
-                .css({backgroundImage: "url(" + src + ")"});
+            let $node;
+            if (is_video) {
+                $node = $("<div>")
+                    .addClass(className)
+                    .addClass("lightbox_video")
+                    .attr("data-src", src);
+
+                const $video = $("<video>");
+                $video.attr("src", src);
+                $video.attr("controls", false);
+
+                $node.html($video);
+            } else {
+                $node = $("<div>")
+                    .addClass(className)
+                    .attr("data-src", src)
+                    .css({backgroundImage: "url(" + src + ")"});
+            }
 
             $image_list.append($node);
 
@@ -204,7 +221,7 @@ export function render_lightbox_list_images(preview_source) {
 function display_image(payload) {
     render_lightbox_list_images(payload.preview);
 
-    $(".player-container").hide();
+    $(".player-container, .video-player").hide();
     $(".image-preview, .image-actions, .image-description, .download, .lightbox-zoom-reset").show();
 
     const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
@@ -241,8 +258,27 @@ function display_video(payload) {
     render_lightbox_list_images(payload.preview);
 
     $(
-        "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-zoom-reset",
+        "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-zoom-reset, .video-player",
     ).hide();
+    $(".player-container").show();
+
+    if (payload.type === "inline-video") {
+        $(".player-container").hide();
+        $(".video-player, .image-description").show();
+        const $video = $("<video>");
+        $video.attr("src", payload.source);
+        $video.attr("controls", true);
+        $(".video-player").html($video);
+        $(".image-actions .open").attr("href", payload.source);
+
+        const filename = payload.url?.split("/").pop();
+        $(".image-description .title")
+            .text(payload.title || "N/A")
+            .attr("aria-label", payload.title || "N/A")
+            .prop("data-filename", filename || "N/A");
+        $(".image-description .user").text(payload.user).prop("title", payload.user);
+        return;
+    }
 
     let source;
     switch (payload.type) {
@@ -272,7 +308,7 @@ function display_video(payload) {
     $iframe.attr("frameborder", 0);
     $iframe.attr("allowfullscreen", true);
 
-    $("#lightbox_overlay .player-container").html($iframe).show();
+    $("#lightbox_overlay .player-container").html($iframe);
     $(".image-actions .open").attr("href", payload.url);
 }
 
@@ -334,7 +370,7 @@ export function build_open_image_function(on_close) {
 export function show_from_selected_message() {
     const $message_selected = $(".selected_message");
     let $message = $message_selected;
-    let $image = $message.find(".message_inline_image img");
+    let $image = $message.find(".message_inline_image img, .message_inline_image video");
     let $prev_traverse = false;
 
     // First, we walk upwards/backwards, starting with the current
@@ -352,12 +388,12 @@ export function show_from_selected_message() {
                 break;
             } else {
                 $message = $prev_message_group.find(".message_row").last();
-                $image = $message.find(".message_inline_image img");
+                $image = $message.find(".message_inline_image img, .message_inline_image video");
                 continue;
             }
         }
         $message = $message.prev();
-        $image = $message.find(".message_inline_image img");
+        $image = $message.find(".message_inline_image img, .message_inline_image video");
     }
 
     if ($prev_traverse) {
@@ -368,12 +404,14 @@ export function show_from_selected_message() {
                     break;
                 } else {
                     $message = $next_message_group.find(".message_row").first();
-                    $image = $message.find(".message_inline_image img");
+                    $image = $message.find(
+                        ".message_inline_image img, .message_inline_image video",
+                    );
                     continue;
                 }
             }
             $message = $message.next();
-            $image = $message.find(".message_inline_image img");
+            $image = $message.find(".message_inline_image img, .message_inline_image video");
         }
     }
 
@@ -398,6 +436,7 @@ export function parse_image_data(image) {
     const is_youtube_video = Boolean($image.closest(".youtube-video").length);
     const is_vimeo_video = Boolean($image.closest(".vimeo-video").length);
     const is_embed_video = Boolean($image.closest(".embed-video").length);
+    const is_inline_video = Boolean($image.closest(".message_inline_video").length);
 
     // check if image is descendent of #compose .preview_content
     const is_compose_preview_image = $image.closest("#compose .preview_content").length === 1;
@@ -406,7 +445,18 @@ export function parse_image_data(image) {
     let type;
     let source;
     const url = $parent.attr("href");
-    if (is_youtube_video) {
+    if (is_inline_video) {
+        type = "inline-video";
+        // Render video from original source to reduce load on our own servers.
+        const original_video_url = $image.attr("data-video-original-url");
+        // `data-video-original-url` is only defined for external URLs in
+        // organizations which have camo enabled.
+        if (!original_video_url) {
+            source = preview_src;
+        } else {
+            source = encodeURI(original_video_url);
+        }
+    } else if (is_youtube_video) {
         type = "youtube-video";
         source = $parent.attr("data-id");
     } else if (is_vimeo_video) {
@@ -478,14 +528,27 @@ export function initialize() {
     };
 
     const open_image = build_open_image_function(reset_lightbox_state);
+    const open_video = build_open_image_function();
 
-    $("#main_div, #compose .preview_content").on("click", ".message_inline_image a", function (e) {
-        // prevent the link from opening in a new page.
+    $("#main_div, #compose .preview_content").on(
+        "click",
+        ".message_inline_image:not(.message_inline_video) a",
+        function (e) {
+            // prevent the link from opening in a new page.
+            e.preventDefault();
+            // prevent the message compose dialog from happening.
+            e.stopPropagation();
+            const $img = $(this).find("img");
+            open_image($img);
+        },
+    );
+
+    $("#main_div, #compose .preview_content").on("click", ".message_inline_video", (e) => {
         e.preventDefault();
-        // prevent the message compose dialog from happening.
         e.stopPropagation();
-        const $img = $(this).find("img");
-        open_image($img);
+
+        const $video = $(e.currentTarget).find("video");
+        open_video($video);
     });
 
     $("#lightbox_overlay .download").on("click", function () {
@@ -494,15 +557,24 @@ export function initialize() {
 
     $("#lightbox_overlay").on("click", ".image-list .image", function () {
         const $image_list = $(this).parent();
-        const $original_image = $(
-            `.message_row img[src='${CSS.escape($(this).attr("data-src"))}']`,
-        );
+        let $original_image;
+        const is_video = $(this).hasClass("lightbox_video");
+        if (is_video) {
+            $original_image = $(
+                `.message_row video[src='${CSS.escape($(this).attr("data-src"))}']`,
+            );
+        } else {
+            $original_image = $(`.message_row img[src='${CSS.escape($(this).attr("data-src"))}']`);
+        }
 
         open_image($original_image);
 
+        if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {
+            pan_zoom_control.reset();
+        }
+
         $(".image-list .image.selected").removeClass("selected");
         $(this).addClass("selected");
-        pan_zoom_control.reset();
 
         const parentOffset = this.parentNode.clientWidth + this.parentNode.scrollLeft;
         // this is the left and right of the image compared to its parent.
@@ -562,6 +634,13 @@ export function initialize() {
         // the window isn't marked as disabled to click to close.
         if (!$(e.target).is("img") && !$("#lightbox_overlay").data("noclose")) {
             reset_lightbox_state();
+            overlays.close_overlay("lightbox");
+        }
+    });
+
+    $("#lightbox_overlay .video-player").on("click", (e) => {
+        // Close lightbox when clicked outside video.
+        if (!$(e.target).is("video")) {
             overlays.close_overlay("lightbox");
         }
     });
