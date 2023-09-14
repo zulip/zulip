@@ -66,7 +66,7 @@ export function popover_items_handle_keyboard(key, $items) {
 
     if (key === "enter" && index >= 0 && index < $items.length) {
         $items[index].click();
-        if (user_card_popover.user_info_manage_menu_popped()) {
+        if (user_card_popover.is_user_card_manage_menu_open()) {
             const $items = user_card_popover.get_user_info_popover_manage_menu_items();
             focus_first_popover_item($items);
         }
@@ -223,8 +223,8 @@ export function any_active() {
         stream_popover.is_open() ||
         user_group_popover.is_open() ||
         user_card_popover.user_sidebar_popped() ||
-        user_card_popover.message_info_popped() ||
-        user_card_popover.user_info_popped() ||
+        user_card_popover.is_message_user_card_open() ||
+        user_card_popover.is_user_card_open() ||
         emoji_picker.is_open() ||
         $("[class^='column-'].expanded").length
     );
