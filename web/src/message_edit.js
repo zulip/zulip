@@ -20,6 +20,7 @@ import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
+import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
@@ -445,6 +446,7 @@ function edit_message($row, raw_content) {
             is_editable,
             content: raw_content,
             file_upload_enabled,
+            giphy_enabled: giphy.is_giphy_enabled(),
             minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
             max_message_length: page_params.max_message_length,
         }),
