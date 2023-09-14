@@ -105,6 +105,8 @@
             }
 
             .unread_sort {
+                padding-left: 6px;
+
                 .zulip-icon-unread {
                     position: absolute;
                     right: 30px;
