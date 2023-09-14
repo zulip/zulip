@@ -129,6 +129,7 @@
 
                 &:focus {
                     outline: 0;
+                    box-shadow: inset 0 0 0 2px var(--color-outline-focus);
 
                     .toggle-inbox-header-icon {
                         opacity: 1;
@@ -198,12 +199,9 @@
                 }
 
                 &:focus {
+                    box-shadow: inset 0 0 0 2px var(--color-outline-focus);
                     outline: 0;
                     padding: 0;
-
-                    .inbox-topic-name a {
-                        box-shadow: inset 0 -3px 0 var(--color-outline-focus);
-                    }
                 }
 
                 .inbox-left-part {
@@ -264,7 +262,7 @@
                    having an underline focus will not work very well.
                 */
                 .inbox-row:focus {
-                    box-shadow: inset 2px 0 0 0 var(--color-outline-focus);
+                    box-shadow: inset 0 0 0 2px var(--color-outline-focus);
                 }
             }
 
