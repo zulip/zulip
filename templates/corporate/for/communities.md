@@ -23,7 +23,9 @@ inclusion, and making efficient use of everyone’s time.
 
 &nbsp;
 
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">When we made the switch to <a href="https://twitter.com/zulip?ref_src=twsrc%5Etfw">@zulip</a> a few months ago for chat, never in my wildest dreams did I imagine it was going to become the beating heart of the community, and so quickly. It&#39;s a game changer. 🧑‍💻🗨️👩‍💻</p>&mdash; Dan Allen (@mojavelinux) <a href="https://twitter.com/mojavelinux/status/1409702273400201217?ref_src=twsrc%5Etfw">June 29, 2021</a></blockquote>
+> “When we made the switch to [@zulip](https://twitter.com/zulip) a few months ago for chat, never in my wildest dreams did I imagine it was going to become the beating heart of the community, and so quickly. It&#39;s a game changer. 🧑‍💻🗨️👩‍💻”
+
+> — Dan Allen (@mojavelinux), [June 29, 2021](https://twitter.com/mojavelinux/status/1409702273400201217)
 &nbsp;
 
 ## Challenges with other communication tools
@@ -73,7 +75,7 @@ many busy individuals can happily participate in.
 
 &nbsp;
 
-> "We just moved the Lichess team (~100 persons) to <a href="https://twitter.com/zulip?ref_src=twsrc%5Etfw">@zulip</a>, and I&#39;m loving it. The topics in particular make it vastly superior to slack &amp; discord, when it comes to dealing with many conversations. Zulip is also open-source!"
+> "We just moved the Lichess team (~100 persons) to <a href="https://twitter.com/zulip">@zulip</a>, and I&#39;m loving it. The topics in particular make it vastly superior to slack &amp; discord, when it comes to dealing with many conversations. Zulip is also open-source!"
 
 > — <a href="https://twitter.com/ornicar">Thibault D (@ornicar)</a>
 
@@ -145,5 +147,3 @@ community. We hope Zulip can help your community succeed too!
 >  track of everything that is going on.”
 
 > — RJ Ryan, Mixxx Developer
-
-<script async src="https://platform.twitter.com/widgets.js"></script>

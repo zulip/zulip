@@ -593,16 +593,11 @@ html_rules: List["Rule"] = [
         "bad_lines": ['<button aria-label="foo"></button>'],
     },
     {
-        "pattern": 'script src="http',
+        "pattern": r'<script[^<>]*\ssrc=[\'"]?(?:https?:|//)',
         "description": "Don't directly load dependencies from CDNs.  See docs/subsystems/html-css.md",
-        "exclude": {
-            "templates/corporate/billing.html",
-            "templates/corporate/hello.html",
-            "templates/corporate/upgrade.html",
-            "templates/corporate/event_status.html",
-        },
         "bad_lines": [
-            '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'
+            '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>',
+            '<script async src="https://platform.twitter.com/widgets.js"></script>',
         ],
     },
     {
