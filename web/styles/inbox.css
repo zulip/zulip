@@ -98,9 +98,21 @@
                 margin-bottom: var(--max-unexpanded-compose-height);
             }
 
-            .inbox-header {
+            .inbox-focus-border {
                 display: flex;
+                min-height: 30px;
+                border: 2px solid transparent;
+                border-radius: 3px;
+                box-sizing: border-box;
+            }
+
+            .inbox-header {
+                display: block;
                 height: 30px;
+
+                .inbox-focus-border {
+                    height: 30px;
+                }
 
                 .inbox-left-part {
                     grid-template: auto / auto min-content;
@@ -129,7 +141,10 @@
 
                 &:focus {
                     outline: 0;
-                    box-shadow: inset 0 0 0 2px var(--color-outline-focus);
+
+                    .inbox-focus-border {
+                        border-color: var(--color-outline-focus);
+                    }
 
                     .toggle-inbox-header-icon {
                         opacity: 1;
@@ -165,7 +180,7 @@
 
                 .zulip-icon-arrow-down {
                     font-size: 16px;
-                    padding: 7px 4px;
+                    padding: 5px 4px;
                     margin-right: 9px;
                     opacity: 0.5;
                 }
@@ -190,8 +205,7 @@
             }
 
             .inbox-row {
-                display: flex;
-                min-height: 30px;
+                display: block;
                 background-color: var(--color-background-inbox-row);
 
                 &:hover {
@@ -199,7 +213,11 @@
                 }
 
                 &:focus {
-                    box-shadow: inset 0 0 0 2px var(--color-outline-focus);
+                    .inbox-focus-border {
+                        border: 2px solid var(--color-outline-focus);
+                        border-radius: 3px;
+                    }
+
                     outline: 0;
                     padding: 0;
                 }
