@@ -41,7 +41,7 @@ const COLUMNS = {
     RECIPIENT: 1,
     UNREAD_COUNT: 2,
 };
-let col_focus = COLUMNS.RECIPIENT;
+let col_focus = COLUMNS.COLLAPSE_BUTTON;
 let row_focus = 0;
 
 const ls_filter_key = "inbox_filters";
