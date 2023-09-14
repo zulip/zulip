@@ -225,7 +225,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ".image-info-wrapper > .image-description > .title",
+        target: ".media-info-wrapper > .media-description > .title",
         appendTo: () => document.body,
         onShow(instance) {
             const title = $(instance.reference).attr("aria-label");

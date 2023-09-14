@@ -57,7 +57,7 @@ test("pan_and_zoom", ({override}) => {
         ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
         {children: []},
     );
-    const open_image = lightbox.build_open_image_function();
+    const open_image = lightbox.build_open_media_function();
     open_image($img);
 
     assert.equal(fetched_zid, 1234);
@@ -94,7 +94,7 @@ test("youtube", ({override}) => {
         {children: []},
     );
 
-    const open_image = lightbox.build_open_image_function();
+    const open_image = lightbox.build_open_media_function();
     open_image($img);
-    assert.equal($(".image-actions .open").attr("href"), href);
+    assert.equal($(".media-actions .open").attr("href"), href);
 });

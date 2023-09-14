@@ -174,19 +174,19 @@ export function clear_for_testing() {
     asset_map.clear();
 }
 
-export function render_lightbox_list_images(preview_source) {
+export function render_lightbox_media_list(preview_source) {
     if (!is_open) {
-        const images = Array.prototype.slice.call(
+        const media_list = Array.prototype.slice.call(
             $(
                 ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
             ),
         );
-        const $image_list = $("#lightbox_overlay .image-list").empty();
+        const $media_list = $("#lightbox_overlay .image-list").empty();
 
-        for (const img of images) {
-            const src = img.getAttribute("src");
+        for (const media of media_list) {
+            const src = media.getAttribute("src");
             const className = preview_source === src ? "image selected" : "image";
-            const is_video = img.tagName === "VIDEO";
+            const is_video = media.tagName === "VIDEO";
 
             let $node;
             if (is_video) {
@@ -207,22 +207,22 @@ export function render_lightbox_list_images(preview_source) {
                     .css({backgroundImage: "url(" + src + ")"});
             }
 
-            $image_list.append($node);
+            $media_list.append($node);
 
             // We parse the data for each image to show in the list,
             // while we still have its original DOM element handy, so
             // that navigating within the list only needs the `src`
             // attribute used to construct the node object above.
-            parse_image_data(img);
+            parse_media_data(media);
         }
     }
 }
 
 function display_image(payload) {
-    render_lightbox_list_images(payload.preview);
+    render_lightbox_media_list(payload.preview);
 
     $(".player-container, .video-player").hide();
-    $(".image-preview, .image-actions, .image-description, .download, .lightbox-zoom-reset").show();
+    $(".image-preview, .media-actions, .media-description, .download, .lightbox-zoom-reset").show();
 
     const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const img = new Image();
@@ -230,53 +230,53 @@ function display_image(payload) {
     $img_container.html(img).show();
 
     const filename = payload.url?.split("/").pop();
-    $(".image-description .title")
+    $(".media-description .title")
         .text(payload.title || "N/A")
         .attr("aria-label", payload.title || "N/A")
         .prop("data-filename", filename || "N/A");
-    $(".image-description .user").text(payload.user).prop("title", payload.user);
+    $(".media-description .user").text(payload.user).prop("title", payload.user);
 
-    $(".image-actions .open").attr("href", payload.source);
+    $(".media-actions .open").attr("href", payload.source);
 
     const url = new URL(payload.source, window.location.href);
     const same_origin = url.origin === window.location.origin;
     if (same_origin && url.pathname.startsWith("/user_uploads/")) {
         // Switch to the "download" handler, so S3 URLs set their Content-Disposition
         url.pathname = "/user_uploads/download/" + url.pathname.slice("/user_uploads/".length);
-        $(".image-actions .download").attr("href", url.href);
+        $(".media-actions .download").attr("href", url.href);
     } else if (same_origin) {
-        $(".image-actions .download").attr("href", payload.source);
+        $(".media-actions .download").attr("href", payload.source);
     } else {
         // If it's not same-origin, and we don't know how to tell the remote service to put a
         // content-disposition on it, the download can't possibly download, just show -- so hide the
         // element.
-        $(".image-actions .download").hide();
+        $(".media-actions .download").hide();
     }
 }
 
 function display_video(payload) {
-    render_lightbox_list_images(payload.preview);
+    render_lightbox_media_list(payload.preview);
 
     $(
-        "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-zoom-reset, .video-player",
+        "#lightbox_overlay .image-preview, .media-description, .download, .lightbox-zoom-reset, .video-player",
     ).hide();
     $(".player-container").show();
 
     if (payload.type === "inline-video") {
         $(".player-container").hide();
-        $(".video-player, .image-description").show();
+        $(".video-player, .media-description").show();
         const $video = $("<video>");
         $video.attr("src", payload.source);
         $video.attr("controls", true);
         $(".video-player").html($video);
-        $(".image-actions .open").attr("href", payload.source);
+        $(".media-actions .open").attr("href", payload.source);
 
         const filename = payload.url?.split("/").pop();
-        $(".image-description .title")
+        $(".media-description .title")
             .text(payload.title || "N/A")
             .attr("aria-label", payload.title || "N/A")
             .prop("data-filename", filename || "N/A");
-        $(".image-description .user").text(payload.user).prop("title", payload.user);
+        $(".media-description .user").text(payload.user).prop("title", payload.user);
         return;
     }
 
@@ -309,10 +309,10 @@ function display_video(payload) {
     $iframe.attr("allowfullscreen", true);
 
     $("#lightbox_overlay .player-container").html($iframe);
-    $(".image-actions .open").attr("href", payload.url);
+    $(".media-actions .open").attr("href", payload.url);
 }
 
-export function build_open_image_function(on_close) {
+export function build_open_media_function(on_close) {
     if (on_close === undefined) {
         on_close = function () {
             $(".player-container iframe").remove();
@@ -321,10 +321,10 @@ export function build_open_image_function(on_close) {
         };
     }
 
-    return function ($image) {
+    return function ($media) {
         // if the asset_map already contains the metadata required to display the
         // asset, just recall that metadata.
-        let $preview_src = $image.attr("src");
+        let $preview_src = $media.attr("src");
         let payload = asset_map.get($preview_src);
         if (payload === undefined) {
             if ($preview_src.endsWith("&size=full")) {
@@ -342,7 +342,7 @@ export function build_open_image_function(on_close) {
                 payload = asset_map.get($preview_src);
             }
             if (payload === undefined) {
-                payload = parse_image_data($image);
+                payload = parse_media_data($media);
             }
         }
 
@@ -370,16 +370,18 @@ export function build_open_image_function(on_close) {
 export function show_from_selected_message() {
     const $message_selected = $(".selected_message");
     let $message = $message_selected;
-    let $image = $message.find(".message_inline_image img, .message_inline_image video");
+    // This is a function to satisfy eslint unicorn/no-array-callback-reference
+    const media_classes = () => ".message_inline_image img, .message_inline_image video";
+    let $media = $message.find(media_classes());
     let $prev_traverse = false;
 
     // First, we walk upwards/backwards, starting with the current
-    // message, looking for an image to preview.
+    // message, looking for an media to preview.
     //
     // Care must be taken, since both recipient_row elements and
     // message_row objects have siblings of different types, such as
     // date elements.
-    while ($image.length === 0) {
+    while ($media.length === 0) {
         if ($message.prev().length === 0) {
             const $prev_message_group = $message.parent().prevAll(".recipient_row").first();
             if ($prev_message_group.length === 0) {
@@ -388,67 +390,65 @@ export function show_from_selected_message() {
                 break;
             } else {
                 $message = $prev_message_group.find(".message_row").last();
-                $image = $message.find(".message_inline_image img, .message_inline_image video");
+                $media = $message.find(media_classes());
                 continue;
             }
         }
         $message = $message.prev();
-        $image = $message.find(".message_inline_image img, .message_inline_image video");
+        $media = $message.find(media_classes());
     }
 
     if ($prev_traverse) {
-        while ($image.length === 0) {
+        while ($media.length === 0) {
             if ($message.next().length === 0) {
                 const $next_message_group = $message.parent().nextAll(".recipient_row").first();
                 if ($next_message_group.length === 0) {
                     break;
                 } else {
                     $message = $next_message_group.find(".message_row").first();
-                    $image = $message.find(
-                        ".message_inline_image img, .message_inline_image video",
-                    );
+                    $media = $message.find(media_classes());
                     continue;
                 }
             }
             $message = $message.next();
-            $image = $message.find(".message_inline_image img, .message_inline_image video");
+            $media = $message.find(media_classes());
         }
     }
 
-    if ($image.length !== 0) {
-        const open_image = build_open_image_function();
-        open_image($image);
+    if ($media.length !== 0) {
+        const open_media = build_open_media_function();
+        open_media($media);
     }
 }
 
 // retrieve the metadata from the DOM and store into the asset_map.
-export function parse_image_data(image) {
-    const $image = $(image);
-    const preview_src = $image.attr("src");
+export function parse_media_data(media) {
+    const $media = $(media);
+    const preview_src = $media.attr("src");
 
     if (asset_map.has(preview_src)) {
-        // check if image's data is already present in asset_map.
+        // check if media's data is already present in asset_map.
         return asset_map.get(preview_src);
     }
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
-    const is_youtube_video = Boolean($image.closest(".youtube-video").length);
-    const is_vimeo_video = Boolean($image.closest(".vimeo-video").length);
-    const is_embed_video = Boolean($image.closest(".embed-video").length);
-    const is_inline_video = Boolean($image.closest(".message_inline_video").length);
+    const is_youtube_video = Boolean($media.closest(".youtube-video").length);
+    const is_vimeo_video = Boolean($media.closest(".vimeo-video").length);
+    const is_embed_video = Boolean($media.closest(".embed-video").length);
+    const is_inline_video = Boolean($media.closest(".message_inline_video").length);
 
-    // check if image is descendent of #compose .preview_content
-    const is_compose_preview_image = $image.closest("#compose .preview_content").length === 1;
+    // check if media is descendent of #compose .preview_content
+    const is_compose_preview_media = $media.closest("#compose .preview_content").length === 1;
 
-    const $parent = $image.parent();
+    const $parent = $media.parent();
     let type;
     let source;
     const url = $parent.attr("href");
     if (is_inline_video) {
         type = "inline-video";
         // Render video from original source to reduce load on our own servers.
-        const original_video_url = $image.attr("data-video-original-url");
+        const original_video_url = $media.attr("data-video-original-url");
         // `data-video-original-url` is only defined for external URLs in
         // organizations which have camo enabled.
         if (!original_video_url) {
@@ -467,14 +467,14 @@ export function parse_image_data(image) {
         source = $parent.attr("data-id");
     } else {
         type = "image";
-        if ($image.attr("data-src-fullsize")) {
-            source = $image.attr("data-src-fullsize");
+        if ($media.attr("data-src-fullsize")) {
+            source = $media.attr("data-src-fullsize");
         } else {
             source = preview_src;
         }
     }
     let sender_full_name;
-    if (is_compose_preview_image) {
+    if (is_compose_preview_media) {
         sender_full_name = people.my_full_name();
     } else {
         const $message = $parent.closest("[zid]");
@@ -527,8 +527,8 @@ export function initialize() {
         }
     };
 
-    const open_image = build_open_image_function(reset_lightbox_state);
-    const open_video = build_open_image_function();
+    const open_image = build_open_media_function(reset_lightbox_state);
+    const open_video = build_open_media_function();
 
     $("#main_div, #compose .preview_content").on(
         "click",
@@ -556,18 +556,20 @@ export function initialize() {
     });
 
     $("#lightbox_overlay").on("click", ".image-list .image", function () {
-        const $image_list = $(this).parent();
-        let $original_image;
+        const $media_list = $(this).parent();
+        let $original_media_element;
         const is_video = $(this).hasClass("lightbox_video");
         if (is_video) {
-            $original_image = $(
+            $original_media_element = $(
                 `.message_row video[src='${CSS.escape($(this).attr("data-src"))}']`,
             );
         } else {
-            $original_image = $(`.message_row img[src='${CSS.escape($(this).attr("data-src"))}']`);
+            $original_media_element = $(
+                `.message_row img[src='${CSS.escape($(this).attr("data-src"))}']`,
+            );
         }
 
-        open_image($original_image);
+        open_image($original_media_element);
 
         if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {
             pan_zoom_control.reset();
@@ -585,7 +587,7 @@ export function initialize() {
 
         if (coords.right > parentOffset) {
             // add 2px margin
-            $image_list.animate(
+            $media_list.animate(
                 {
                     scrollLeft: coords.right - this.parentNode.clientWidth + 2,
                 },
@@ -593,7 +595,7 @@ export function initialize() {
             );
         } else if (coords.left < this.parentNode.scrollLeft) {
             // subtract 2px margin
-            $image_list.animate({scrollLeft: coords.left - 2}, 100);
+            $media_list.animate({scrollLeft: coords.left - 2}, 100);
         }
     });
 
@@ -622,8 +624,8 @@ export function initialize() {
         }
     });
 
-    $("#lightbox_overlay").on("click", ".image-info-wrapper, .center", (e) => {
-        if ($(e.target).is(".image-info-wrapper, .center")) {
+    $("#lightbox_overlay").on("click", ".media-info-wrapper, .center", (e) => {
+        if ($(e.target).is(".media-info-wrapper, .center")) {
             reset_lightbox_state();
             overlays.close_overlay("lightbox");
         }

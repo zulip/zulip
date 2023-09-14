@@ -66,18 +66,18 @@
         opacity: 1;
     }
 
-    .image-info-wrapper {
+    .media-info-wrapper {
         background-color: transparent;
         display: flex;
         flex-flow: row wrap;
     }
 
-    .image-description,
-    .image-actions {
+    .media-description,
+    .media-actions {
         margin: 20px;
     }
 
-    .image-actions {
+    .media-actions {
         flex-shrink: 0;
         margin-left: auto;
 
@@ -112,7 +112,7 @@
         }
     }
 
-    .image-description {
+    .media-description {
         display: flex;
         flex-direction: column;
         max-width: calc(100% - 400px);
@@ -226,13 +226,13 @@
 
 @media only screen and ($ms_min <= width < $md_min) {
     #lightbox_overlay {
-        .image-actions {
+        .media-actions {
             width: 100%;
             padding-left: 15px;
             margin-top: 0;
         }
 
-        .image-description {
+        .media-description {
             max-width: calc(100% - 100px);
             white-space: nowrap;
             overflow: hidden;
@@ -255,7 +255,7 @@
             height: calc(100% - 101px - 104px);
         }
 
-        .image-info-wrapper {
+        .media-info-wrapper {
             align-items: flex-end;
         }
 
