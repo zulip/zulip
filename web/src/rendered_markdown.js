@@ -65,7 +65,18 @@ function get_user_group_id_for_mention_button(elem) {
 }
 
 // Helper function to update a mentioned user's name.
-export function set_name_in_mention_element(element, name) {
+export function set_name_in_mention_element(element, name, user_id) {
+    if (user_id !== undefined && people.should_add_guest_user_indicator(user_id)) {
+        let display_text;
+        if (!$(element).hasClass("silent")) {
+            display_text = $t({defaultMessage: "@{name} (guest)"}, {name});
+        } else {
+            display_text = $t({defaultMessage: "{name} (guest)"}, {name});
+        }
+        $(element).text(display_text);
+        return;
+    }
+
     if ($(element).hasClass("silent")) {
         $(element).text(name);
     } else {
@@ -121,7 +132,7 @@ export const update_elements = ($content) => {
             if (person !== undefined) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import.
-                set_name_in_mention_element(this, person.full_name);
+                set_name_in_mention_element(this, person.full_name, user_id);
             }
         }
     });
