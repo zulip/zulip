@@ -145,6 +145,7 @@ export function any_active() {
         user_card_popover.is_message_user_card_open() ||
         user_card_popover.is_user_card_open() ||
         emoji_picker.is_open() ||
+        playground_links_popover.is_open() ||
         $("[class^='column-'].expanded").length
     );
 }

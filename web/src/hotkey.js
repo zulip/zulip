@@ -34,6 +34,7 @@ import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
@@ -397,6 +398,11 @@ function handle_popover_events(event_name) {
 
     if (user_group_popover.is_open()) {
         user_group_popover.handle_keyboard(event_name);
+        return true;
+    }
+
+    if (playground_links_popover.is_open()) {
+        playground_links_popover.handle_keyboard(event_name);
         return true;
     }
 
