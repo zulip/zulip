@@ -303,6 +303,7 @@ ul {
     }
 }
 
+.group-info-popover,
 .message-user-card-popover,
 .user-card-popover {
     width: 240px;
@@ -669,7 +670,6 @@ ul {
 }
 
 @media (width < $md_min) {
-    .message-user-card-popover,
     .user-card-popover {
         display: flex !important;
         justify-content: center;
@@ -787,7 +787,8 @@ ul {
 }
 
 .giphy-popover,
-.emoji-popover-root {
+.emoji-popover-root,
+.user-group-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
            as it is not necessary for the Giphy popover. */
@@ -796,6 +797,19 @@ ul {
         /* By resetting to the default color from the `body`,
            we can ignore the colors applied from `tippy-box`. */
         color: var(--color-text-default);
+    }
+}
+
+.user-group-popover-root {
+    & .popover-content ul.nav {
+        /* TODO: Clean this logic up after drop Bootstrap styling */
+        margin: 0;
+    }
+
+    & .tippy-box {
+        box-shadow: 0 5px 10px hsl(0deg 0% 0% / 20%);
+        /* User group popover has a bigger border-radius than our usual popovers. */
+        border-radius: 6px;
     }
 }
 
