@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@8.6.12+sha256.3ed40ffc6cbb00790ab325e9d3ff5517a3ed5b763ec53a411707b1702a411174",
+  "packageManager": "pnpm@8.7.5+sha256.c69c54d81c58e23ee23324729e68d012fe3ef3b7e62e2dc521b1141c2a36567e",
   "dependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
@@ -25,7 +25,7 @@
     "clean-css": "^5.1.0",
     "clipboard": "^2.0.4",
     "colord": "^2.9.3",
-    "core-js": "^3.31.1",
+    "core-js": "^3.32.2",
     "css-loader": "^6.2.0",
     "css-minimizer-webpack-plugin": "^5.0.0",
     "date-fns": "^2.16.1",
