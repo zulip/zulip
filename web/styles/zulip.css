@@ -184,6 +184,9 @@ body {
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
     --color-global-filter-icon: hsl(0deg 0% 20% / 70%);
+    --color-vdots-hint: hsl(0deg 0% 0% / 30%);
+    --color-vdots-visible: hsl(0deg 0% 0% / 53%);
+    --color-vdots-hover: hsl(0deg 0% 0%);
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
@@ -264,6 +267,9 @@ body {
     --color-message-action-visible: hsl(217deg 41% 90% / 50%);
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
     --color-global-filter-icon: hsl(0deg 0% 100% / 56%);
+    --color-vdots-hint: hsl(0deg 0% 100% / 30%);
+    --color-vdots-visible: hsl(236deg 33% 80%);
+    --color-vdots-hover: hsl(0deg 0% 100%);
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
