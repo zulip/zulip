@@ -11776,21 +11776,19 @@ paths:
                           pms:
                             type: array
                             description: |
-                              An array of dictionaries where each entry contains details
-                              of unread direct messages with a specific user.
+                              An array of objects where each object contains details of unread
+                              one-on-one direct messages with a specific user.
+
+                              Note that it is possible for a message that the current user sent
+                              to the specified user to be marked as unread and thus appear here.
                             items:
                               type: object
-                              description: |
-                                Object containing the details of unread direct messages with
-                                a specific user. Note that in rare situations, it is possible
-                                for a message that the current user sent to another user to
-                                be marked as unread and thus appear here.
                               additionalProperties: false
                               properties:
                                 other_user_id:
                                   type: integer
                                   description: |
-                                    The user ID of the other participant in this non-group direct
+                                    The user ID of the other participant in this one-on-one direct
                                     message conversation. Will be the current user's ID for messages
                                     that they sent in a one-on-one direct message conversation with
                                     themself.
@@ -11812,34 +11810,30 @@ paths:
                                   type: array
                                   description: |
                                     The message IDs of the recent unread direct messages sent
-                                    by the other user.
+                                    by either user in this one-on-one direct message conversation.
                                   items:
                                     type: integer
                           streams:
                             type: array
                             description: |
-                              An array of dictionaries where each dictionary contains
-                              details of all unread messages of a single subscribed stream,
-                              including muted streams.
+                              An array of objects where each object contains details of unread
+                              messages of a single subscribed stream, including muted streams.
 
-                              **Changes**: Prior to Zulip 5.0 (feature level 90), the
-                              dictionaries included an additional `sender_ids` key listing
-                              the set of IDs of users who had sent the unread messages.
+                              **Changes**: Prior to Zulip 5.0 (feature level 90), these objects
+                              included a `sender_ids` property, which listed the set of IDs of
+                              users who had sent the unread messages.
                             items:
                               type: object
-                              description: |
-                                `{message_id}`: Object containing the details of a unread stream
-                                message with the message_id as the key.
                               additionalProperties: false
                               properties:
                                 topic:
                                   type: string
                                   description: |
-                                    The topic under which the message was sent.
+                                    The topic under which the messages were sent.
                                 stream_id:
                                   type: integer
                                   description: |
-                                    The ID of the stream to which the message was sent.
+                                    The ID of the stream to which the messages were sent.
                                 unread_message_ids:
                                   type: array
                                   description: |
@@ -11849,13 +11843,10 @@ paths:
                           huddles:
                             type: array
                             description: |
-                              An array of dictionaries where each entry contains details
-                              of unread group direct messages with a specific group of users.
+                              An array of objects where each object contains details of unread
+                              group direct messages with a specific group of users.
                             items:
                               type: object
-                              description: |
-                                Object containing the details of unread group direct messages
-                                with a specific group of users.
                               additionalProperties: false
                               properties:
                                 user_ids_string:
