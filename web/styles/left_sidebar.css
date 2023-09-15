@@ -58,6 +58,10 @@ $before_unread_count_padding: 3px;
     }
 }
 
+#global_filters .filter-icon i {
+    color: var(--color-global-filter-icon);
+}
+
 #stream_filters,
 #global_filters {
     margin-right: 12px;
@@ -540,10 +544,6 @@ li.active-sub-filter {
         /* The border takes up space, so we need to
            subtract 1px from the usual 2px margin-top */
         margin-top: 1px !important;
-    }
-
-    & i {
-        opacity: 0.7;
     }
 
     .zulip-icon-inbox {
