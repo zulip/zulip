@@ -76,11 +76,6 @@ Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
 
-Files: web/shared/icons/ellipsis-v-solid.svg
-Copyright: 2017 Fonticons, Inc.
-License: CC-BY-4.0
-Comment: This icon is picked from Version 5.13.0 of Font Awesome
-
 Files: web/shared/icons/globe.svg
 Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, modified to increase the width of the globe outline.
 Copyright: 2015-present Ionic (http://ionic.io/)
