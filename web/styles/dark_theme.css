@@ -728,8 +728,7 @@
     .clear_search_button:active,
     .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
-    .close,
-    #user_presences li:hover .user-list-sidebar-menu-icon {
+    .close {
         color: hsl(236deg 33% 80%);
     }
 
@@ -748,10 +747,6 @@
 
     .spectator_narrow_login_button .login_button i {
         color: hsl(236deg 33% 90%);
-    }
-
-    #user_presences li .user-list-sidebar-menu-icon:hover {
-        color: hsl(0deg 0% 100%) !important;
     }
 
     #streamlist-toggle,
