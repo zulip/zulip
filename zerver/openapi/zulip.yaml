@@ -11862,8 +11862,9 @@ paths:
                                   type: string
                                   description: |
                                     A string containing the IDs of all users in the group
-                                    direct message conversation separated by commas; for
-                                    example: `"1,2,3"`.
+                                    direct message conversation, including the current user,
+                                    separated by commas and sorted numerically; for example:
+                                    `"1,2,3"`.
                                 unread_message_ids:
                                   type: array
                                   description: |
