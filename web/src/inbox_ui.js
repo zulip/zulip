@@ -459,7 +459,11 @@ export function complete_rerender() {
 }
 
 export function search_and_update() {
-    search_keyword = $("#inbox-search").val() || "";
+    const new_keyword = $("#inbox-search").val() || "";
+    if (new_keyword === search_keyword) {
+        return;
+    }
+    search_keyword = new_keyword;
     current_focus_id = INBOX_SEARCH_ID;
     update_triggered_by_user = true;
     update();
