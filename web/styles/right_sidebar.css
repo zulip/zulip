@@ -45,12 +45,6 @@ $user_status_emoji_width: 24px;
                 vertical-align: middle;
             }
 
-            &:hover {
-                display: inline;
-                cursor: pointer;
-                color: hsl(0deg 0% 0%) !important;
-            }
-
             /*
             Hover does not work for touch-based devices like mobile phones.
             Hence the the icons does not appear, making the user unaware of its
@@ -60,6 +54,9 @@ $user_status_emoji_width: 24px;
 
             @media (hover: none) {
                 display: inline;
+                /* Show dots on touchscreens in a less distracting,
+                   lighter shade. */
+                color: var(--color-vdots-hint);
             }
         }
 
@@ -67,7 +64,11 @@ $user_status_emoji_width: 24px;
             .user-list-sidebar-menu-icon {
                 display: inline;
                 cursor: pointer;
-                color: hsl(0deg 0% 53%);
+                color: var(--color-vdots-visible);
+
+                &:hover {
+                    color: var(--color-vdots-hover);
+                }
             }
         }
 
