@@ -162,7 +162,7 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_stream_popover();
     user_group_popover.hide();
     user_card_popover.hide_all_user_card_popovers();
-    playground_links_popover.hide_playground_links_popover();
+    playground_links_popover.hide();
 
     // look through all the popovers that have been added and removed.
     for (const $o of list_of_popovers) {
