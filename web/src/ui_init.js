@@ -67,6 +67,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as playground_links_popover from "./playground_links_popover";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
@@ -770,6 +771,7 @@ export function initialize_everything() {
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
+    playground_links_popover.initialize();
     pm_list.initialize();
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
