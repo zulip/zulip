@@ -38,7 +38,7 @@ function toggle_playground_links_popover(element, playground_info) {
     }
 }
 
-export function hide_playground_links_popover() {
+export function hide() {
     if ($current_playground_links_popover_elem !== undefined) {
         $current_playground_links_popover_elem.popover("destroy");
         $current_playground_links_popover_elem = undefined;
@@ -78,7 +78,7 @@ function register_click_handlers() {
     );
 
     $("body").on("click", ".popover_playground_link", (e) => {
-        hide_playground_links_popover();
+        hide();
         e.stopPropagation();
     });
 }
