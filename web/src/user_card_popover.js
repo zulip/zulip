@@ -210,7 +210,7 @@ function get_user_card_popover_data(
 
 function render_user_card_popover(
     user,
-    popover_element,
+    $popover_element,
     is_sender_popover,
     has_message_context,
     private_msg_class,
@@ -225,7 +225,7 @@ function render_user_card_popover(
     );
 
     const $popover_content = $(render_user_card_popover_content(args));
-    popover_element.popover({
+    $popover_element.popover({
         content: $popover_content.get(0),
         fixed: true,
         placement: popover_placement,
@@ -240,7 +240,7 @@ function render_user_card_popover(
         top_offset: $("#userlist-title").get_offset_to_window().top + 15,
         fix_positions: true,
     });
-    popover_element.popover("show");
+    $popover_element.popover("show");
 
     init_email_clipboard();
     init_email_tooltip(user);
