@@ -134,7 +134,7 @@ function render_attachments_ui(): void {
     ListWidget.create<Attachment>($uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         get_item: ListWidget.default_get_item,
-        modifier(attachment) {
+        modifier_html(attachment) {
             return render_uploaded_files_list({attachment});
         },
         filter: {

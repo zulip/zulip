@@ -133,7 +133,7 @@ export function get_user_unsub_streams() {
         });
 }
 
-function format_user_stream_list_item(stream, user) {
+function format_user_stream_list_item_html(stream, user) {
     const show_unsubscribe_button =
         people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream);
     const show_private_stream_unsub_tooltip =
@@ -150,7 +150,7 @@ function format_user_stream_list_item(stream, user) {
     });
 }
 
-function format_user_group_list_item(group) {
+function format_user_group_list_item_html(group) {
     return render_user_group_list_item({
         group_id: group.id,
         name: group.name,
@@ -164,8 +164,8 @@ function render_user_stream_list(streams, user) {
     user_streams_list_widget = ListWidget.create($container, streams, {
         name: `user-${user.user_id}-stream-list`,
         get_item: ListWidget.default_get_item,
-        modifier(item) {
-            return format_user_stream_list_item(item, user);
+        modifier_html(item) {
+            return format_user_stream_list_item_html(item, user);
         },
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
@@ -184,8 +184,8 @@ function render_user_group_list(groups, user) {
     ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
-        modifier(item) {
-            return format_user_group_list_item(item);
+        modifier_html(item) {
+            return format_user_group_list_item_html(item);
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
     });

@@ -113,7 +113,7 @@ function make_list_widget({$parent_container, name, user_ids, user_can_remove_su
     return ListWidget.create($list_container, users, {
         name,
         get_item: ListWidget.default_get_item,
-        modifier(item) {
+        modifier_html(item) {
             return format_member_list_elem(item, user_can_remove_subscribers);
         },
         filter: {

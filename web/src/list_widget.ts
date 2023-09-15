@@ -36,7 +36,7 @@ type ListWidgetFilterOpts<Item = unknown> = {
 type ListWidgetOpts<Key = unknown, Item = Key> = {
     name?: string;
     get_item: (key: Key) => Item;
-    modifier: (item: Item, filter_value: string) => string;
+    modifier_html: (item: Item, filter_value: string) => string;
     init_sort?: string | SortingFunction<Item>;
     initially_descending_sort?: boolean;
     html_selector?: (item: Item) => JQuery;
@@ -256,16 +256,16 @@ export function create<Key = unknown, Item = Key>(
 
             let html = "";
             for (const item of slice) {
-                const s = opts.modifier(item, meta.filter_value);
+                const item_html = opts.modifier_html(item, meta.filter_value);
 
-                if (typeof s !== "string") {
-                    blueslip.error("List item is not a string", {item: s});
+                if (typeof item_html !== "string") {
+                    blueslip.error("List item is not a string", {item_html});
                     continue;
                 }
 
                 // append the HTML or nothing if corrupt (null, undef, etc.).
-                if (s) {
-                    html += s;
+                if (item_html) {
+                    html += item_html;
                 }
             }
 
@@ -293,7 +293,7 @@ export function create<Key = unknown, Item = Key>(
                 return;
             }
 
-            const html = opts.modifier(item, meta.filter_value);
+            const html = opts.modifier_html(item, meta.filter_value);
             if (typeof html !== "string") {
                 blueslip.error("List item is not a string", {item: html});
                 return;
@@ -432,7 +432,7 @@ export function create<Key = unknown, Item = Key>(
                         "Please specify modifier and html_selector when creating the widget.",
                     );
                 }
-                const rendered_row = opts.modifier(item, meta.filter_value);
+                const rendered_row = opts.modifier_html(item, meta.filter_value);
                 if (insert_index === meta.filtered_list.length - 1) {
                     const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]);
                     $target_row.after(rendered_row);

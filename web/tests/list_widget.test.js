@@ -157,7 +157,7 @@ run_test("scrolling", () => {
     }
 
     const opts = {
-        modifier: (item) => item,
+        modifier_html: (item) => item,
         get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
@@ -206,7 +206,7 @@ run_test("not_scrolling", () => {
     }
 
     const opts = {
-        modifier: (item) => item,
+        modifier_html: (item) => item,
         get_item: (item) => item,
         $simplebar_container: $scroll_container,
         is_scroll_position_for_render: () => false,
@@ -246,7 +246,7 @@ run_test("filtering", () => {
             $element: $search_input,
             predicate: (item, value) => item.includes(value),
         },
-        modifier(item, filter_value) {
+        modifier_html(item, filter_value) {
             last_filter_value = filter_value;
             return div(item);
         },
@@ -292,7 +292,7 @@ run_test("no filtering", () => {
     let callback_called = false;
     // Opts does not require a filter key.
     const opts = {
-        modifier: (item) => div(item),
+        modifier_html: (item) => div(item),
         $simplebar_container: $scroll_container,
         callback_after_render() {
             callback_called = true;
@@ -371,7 +371,7 @@ run_test("wire up filter element", () => {
             filterer: (list, value) => list.filter((item) => item.toLowerCase().includes(value)),
             $element: $filter_element,
         },
-        modifier: (s) => "(" + s + ")",
+        modifier_html: (s) => "(" + s + ")",
         get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
@@ -402,7 +402,7 @@ run_test("sorting", () => {
     const opts = {
         name: "sorting-list",
         $parent_container: $sort_container,
-        modifier: (item) => div(item.name) + div(item.salary),
+        modifier_html: (item) => div(item.name) + div(item.salary),
         get_item: (item) => item,
         filter: {
             predicate: () => true,
@@ -415,7 +415,7 @@ run_test("sorting", () => {
     };
 
     function html_for(people) {
-        return people.map((item) => opts.modifier(item)).join("");
+        return people.map((item) => opts.modifier_html(item)).join("");
     }
 
     ListWidget.create($container, list, opts);
@@ -507,7 +507,7 @@ run_test("custom sort", () => {
 
     ListWidget.create($container, list, {
         name: "custom-sort-list",
-        modifier: (n) => "(" + n.x + ", " + n.y + ")",
+        modifier_html: (n) => "(" + n.x + ", " + n.y + ")",
         get_item: (item) => item,
         sort_fields: {
             product: sort_by_product,
@@ -545,7 +545,7 @@ run_test("clear_event_handlers", () => {
     const opts = {
         name: "list-we-create-twice",
         $parent_container: $sort_container,
-        modifier() {},
+        modifier_html() {},
         get_item() {},
         filter: {
             $element: $filter_element,
@@ -598,7 +598,7 @@ run_test("replace_list_data w/filter update", () => {
 
     ListWidget.create($container, list, {
         name: "replace-list",
-        modifier: (n) => "(" + n.toString() + ")",
+        modifier_html: (n) => "(" + n.toString() + ")",
         get_item: (item) => item,
         filter: {
             predicate: (n) => n % 2 === 0,
@@ -704,7 +704,7 @@ run_test("render item", () => {
 
     const widget = ListWidget.create($container, list, {
         name: "replace-list",
-        modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
+        modifier_html: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item,
         html_selector: (item) => $(`tr[data-item='${item.value}']`),
         $simplebar_container: $scroll_container,
@@ -741,7 +741,7 @@ run_test("render item", () => {
     let get_item_called;
     const widget_2 = ListWidget.create($container, list, {
         name: "replace-list",
-        modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
+        modifier_html: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item(item) {
             get_item_called = true;
             return item;
@@ -757,13 +757,13 @@ run_test("render item", () => {
     let rendering_item = false;
     const widget_3 = ListWidget.create($container, list, {
         name: "replace-list",
-        modifier: (item) => (rendering_item ? undefined : `${item}\n`),
+        modifier_html: (item) => (rendering_item ? undefined : `${item}\n`),
         get_item,
         html_selector: (item) => $(`tr[data-item='${item}']`),
         $simplebar_container: $scroll_container,
     });
     // Once we have initially rendered the widget, change the
-    // behavior of the modifier function.
+    // behavior of the modifier_html function.
     rendering_item = true;
     blueslip.expect("error", "List item is not a string");
     widget_3.render_item(item);
@@ -829,7 +829,7 @@ run_test("Multiselect dropdown retain_selected_items", () => {
 
     const widget = ListWidget.create($container, list, {
         name: "replace-list",
-        modifier: (item) => `<li data-value="${item.value}">${item.name}</li>\n`,
+        modifier_html: (item) => `<li data-value="${item.value}">${item.name}</li>\n`,
         get_item: (item) => item,
         multiselect: {
             selected_items: data,
