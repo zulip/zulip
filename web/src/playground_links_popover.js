@@ -12,7 +12,7 @@ let $current_playground_links_popover_elem;
 // Playground_info contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
 // to pop off of.
-function toggle_playground_link_popover(element, playground_info) {
+function toggle_playground_links_popover(element, playground_info) {
     const $last_popover_elem = $current_playground_links_popover_elem;
     popovers.hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -72,7 +72,7 @@ function register_click_handlers() {
                     const url_template = url_template_lib.parse($playground.url_template);
                     $playground.playground_url = url_template.expand({code: extracted_code});
                 }
-                toggle_playground_link_popover(this, playground_info);
+                toggle_playground_links_popover(this, playground_info);
             }
         },
     );
