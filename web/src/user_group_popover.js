@@ -28,13 +28,13 @@ export function is_open() {
 
 function get_user_group_popover_items() {
     if (!$current_user_group_popover_elem) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
+        blueslip.error("Trying to get menu items when user group popover is closed.");
         return undefined;
     }
 
     const popover_data = $current_user_group_popover_elem.data("popover");
     if (!popover_data) {
-        blueslip.error("Cannot find popover data for actions menu.");
+        blueslip.error("Cannot find user group popover data");
         return undefined;
     }
 
