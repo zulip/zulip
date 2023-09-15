@@ -729,12 +729,7 @@
     .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
     .close,
-    #user_presences li:hover .user-list-sidebar-menu-icon,
-    li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
-    li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
-    li.top_left_drafts:hover .drafts-sidebar-menu-icon,
-    #stream_filters li:hover .stream-sidebar-menu-icon,
-    li.topic-list-item:hover .topic-sidebar-menu-icon {
+    #user_presences li:hover .user-list-sidebar-menu-icon {
         color: hsl(236deg 33% 80%);
     }
 
@@ -755,12 +750,7 @@
         color: hsl(236deg 33% 90%);
     }
 
-    #user_presences li .user-list-sidebar-menu-icon:hover,
-    .all-messages-sidebar-menu-icon:hover,
-    .starred-messages-sidebar-menu-icon:hover,
-    .drafts-sidebar-menu-icon:hover,
-    .stream-sidebar-menu-icon:hover,
-    .topic-sidebar-menu-icon:hover {
+    #user_presences li .user-list-sidebar-menu-icon:hover {
         color: hsl(0deg 0% 100%) !important;
     }
 

@@ -626,14 +626,15 @@ li.top_left_scheduled_messages {
     All of our left sidebar handlers use absolute
     positioning.  We should fix that.
 */
-.all-messages-sidebar-menu-icon,
-.stream-sidebar-menu-icon,
-.starred-messages-sidebar-menu-icon,
-.drafts-sidebar-menu-icon,
-.topic-sidebar-menu-icon {
+.top_left_row .sidebar-menu-icon,
+.bottom_left_row .sidebar-menu-icon {
     position: absolute;
     display: none;
-    right: 10px;
+    top: 1px;
+    right: 0;
+    font-size: 1em;
+    text-align: center;
+    padding: 0 6px;
 
     & i {
         padding-right: 0.35em;
@@ -649,7 +650,7 @@ li.top_left_scheduled_messages {
     */
 
     &:hover {
-        color: hsl(0deg 0% 0%) !important;
+        color: var(--color-vdots-hover);
     }
 
     /*
@@ -661,22 +662,34 @@ li.top_left_scheduled_messages {
 
     @media (hover: none) {
         display: block;
+        /* Show dots on touchscreens in a less distracting,
+           lighter shade. */
+        color: var(--color-vdots-hint);
     }
 }
 
 /*
-    The All messages and stream ellipsis-v (vertical 3 dots) are
-    pretty similar.
+    When you hover over list items, we hover
+    the vdots in light gray.
+
+    The stream icon should always display when
+    any topic is hovered, which is why it gets
+    a more specific selector here.
 */
-.all-messages-sidebar-menu-icon,
-.starred-messages-sidebar-menu-icon,
-.drafts-sidebar-menu-icon,
-.stream-sidebar-menu-icon {
-    top: 1px;
-    right: 0;
-    font-size: 1em;
-    text-align: center;
-    padding: 0 6px;
+#stream_filters li:hover .stream-sidebar-menu-icon,
+.top_left_row:hover .sidebar-menu-icon,
+.bottom_left_row:hover .sidebar-menu-icon {
+    display: inline;
+    cursor: pointer;
+    color: var(--color-vdots-visible);
+
+    /*
+        If you hover directly over the vdots icon,
+        show it in black.
+    */
+    &:hover {
+        color: var(--color-vdots-hover);
+    }
 }
 
 /*
@@ -684,26 +697,12 @@ li.top_left_scheduled_messages {
     font to show they're "lower" in the hierarchy,
     which also affects it positioning.
 */
-.topic-sidebar-menu-icon {
+.bottom_left_row .topic-sidebar-menu-icon {
     top: 2px;
     right: 0;
     font-size: 0.9em;
     text-align: center;
     padding: 1px 6px 0;
-}
-
-/*
-    When you hover over list items, we hover
-    the relevant ellipsis-v(vertical 3 dots) in light gray.
-*/
-li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
-li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
-li.top_left_drafts:hover .drafts-sidebar-menu-icon,
-#stream_filters li:hover .stream-sidebar-menu-icon,
-li.topic-list-item:hover .topic-sidebar-menu-icon {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0deg 0% 53%);
 }
 
 ul.topic-list {
