@@ -883,7 +883,7 @@ export function complete_rerender() {
         name: "recent_view_table",
         get_item: ListWidget.default_get_item,
         $parent_container: $("#recent_view_table"),
-        modifier(item) {
+        modifier_html(item) {
             return render_recent_view_row(format_conversation(item));
         },
         filter: {

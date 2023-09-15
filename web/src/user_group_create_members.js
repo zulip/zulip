@@ -99,7 +99,7 @@ export function build_widgets() {
             id: settings_users.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
-        modifier(user) {
+        modifier_html(user) {
             const item = {
                 email: user.delivery_email,
                 user_id: user.user_id,

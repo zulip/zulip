@@ -62,7 +62,7 @@ function populate_invites(invites_data) {
     ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
         get_item: ListWidget.default_get_item,
-        modifier(item) {
+        modifier_html(item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
             if (item.expiry_date !== null) {
                 item.expiry_date_absolute_time = timerender.absolute_time(item.expiry_date * 1000);

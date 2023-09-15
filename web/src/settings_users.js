@@ -308,7 +308,7 @@ section.bots.create_table = () => {
     bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
-        modifier: render_admin_user_list,
+        modifier_html: render_admin_user_list,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id)}']`),
         filter: {
             $element: $bots_table.closest(".settings-section").find(".search"),
@@ -343,7 +343,7 @@ section.active.create_table = (active_users) => {
     ListWidget.create($users_table, active_users, {
         name: "users_table_list",
         get_item: people.get_by_user_id,
-        modifier(item) {
+        modifier_html(item) {
             const info = human_info(item);
             return render_admin_user_list(info);
         },
@@ -373,7 +373,7 @@ section.deactivated.create_table = (deactivated_users) => {
     ListWidget.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         get_item: people.get_by_user_id,
-        modifier(item) {
+        modifier_html(item) {
             const info = human_info(item);
             return render_admin_user_list(info);
         },

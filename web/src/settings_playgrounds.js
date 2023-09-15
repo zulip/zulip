@@ -36,7 +36,7 @@ export function populate_playgrounds(playgrounds_data) {
     ListWidget.create($playgrounds_table, playgrounds_data, {
         name: "playgrounds_list",
         get_item: ListWidget.default_get_item,
-        modifier(playground) {
+        modifier_html(playground) {
             return render_admin_playground_list({
                 playground: {
                     playground_name: playground.name,
