@@ -134,7 +134,8 @@
     }
 }
 
-.active-emoji-picker-reference {
+.active-emoji-picker-reference,
+.active-playground-links-reference {
     visibility: visible !important;
     pointer-events: all !important;
     opacity: 1 !important;

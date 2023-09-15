@@ -35,6 +35,7 @@ function toggle_playground_links_popover(element, playground_info) {
             fixed: true,
         });
         $elt.popover("show");
+        $elt.addClass("active-playground-links-reference");
         $current_playground_links_popover_elem = $elt;
     }
 }
@@ -45,6 +46,7 @@ export function is_open() {
 
 export function hide() {
     if (is_open()) {
+        $current_playground_links_popover_elem.removeClass("active-playground-links-reference");
         $current_playground_links_popover_elem.popover("destroy");
         $current_playground_links_popover_elem = undefined;
     }
