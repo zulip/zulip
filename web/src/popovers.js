@@ -18,11 +18,6 @@ import * as user_group_popover from "./user_group_popover";
 let $current_playground_links_popover_elem;
 let list_of_popovers = [];
 
-export function clear_for_testing() {
-    $current_playground_links_popover_elem = undefined;
-    list_of_popovers.length = 0;
-}
-
 // this utilizes the proxy pattern to intercept all calls to $.fn.popover
 // and push the $.fn.data($o, "popover") results to an array.
 // this is needed so that when we try to unload popovers, we can kill all dead
