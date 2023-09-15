@@ -105,7 +105,7 @@ export function build_default_stream_table() {
     ListWidget.create($table, subs, {
         name: "default_streams_list",
         get_item: ListWidget.default_get_item,
-        modifier(item) {
+        modifier_html(item) {
             return render_admin_default_streams_list({
                 stream: item,
                 can_modify: page_params.is_admin,

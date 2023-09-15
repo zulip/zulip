@@ -21,12 +21,12 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     let list_widget_create_called = false;
     alert_words_ui.reset();
     const ListWidget = mock_esm("../src/list_widget", {
-        modifier: noop,
+        modifier_html: noop,
         create(_container, words, opts) {
             const alert_words = [];
-            ListWidget.modifier = opts.modifier;
+            ListWidget.modifier_html = opts.modifier_html;
             for (const word of words) {
-                alert_words.push(opts.modifier(word));
+                alert_words.push(opts.modifier_html(word));
             }
             list_widget_create_called = true;
             return alert_words;

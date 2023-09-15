@@ -42,7 +42,7 @@ export function populate_exports_table(exports) {
     ListWidget.create($exports_table, Object.values(exports), {
         name: "admin_exports_list",
         get_item: ListWidget.default_get_item,
-        modifier(data) {
+        modifier_html(data) {
             let failed_timestamp = data.failed_timestamp;
             let deleted_timestamp = data.deleted_timestamp;
 

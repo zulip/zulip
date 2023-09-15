@@ -49,13 +49,13 @@ const all_visibility_policies = {
 let expected_data_to_replace_in_list_widget;
 
 const ListWidget = mock_esm("../src/list_widget", {
-    modifier: noop,
+    modifier_html: noop,
     generic_sort_functions: noop,
     create(_container, mapped_topic_values, opts) {
         const formatted_topics = [];
-        ListWidget.modifier = opts.modifier;
+        ListWidget.modifier_html = opts.modifier_html;
         for (const item of mapped_topic_values) {
-            formatted_topics.push(opts.modifier(item));
+            formatted_topics.push(opts.modifier_html(item));
             opts.filter.predicate(item);
         }
         // Just for coverage, the mechanisms

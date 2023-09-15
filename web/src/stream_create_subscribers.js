@@ -86,7 +86,7 @@ export function build_widgets() {
         name: "new_stream_add_users",
         get_item: people.get_by_user_id,
         $parent_container: $add_people_container,
-        modifier(user) {
+        modifier_html(user) {
             const item = {
                 email: user.delivery_email,
                 user_id: user.user_id,

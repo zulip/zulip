@@ -200,7 +200,7 @@ export function setup_page(callback) {
         group_list_widget = ListWidget.create($container, user_groups_list, {
             name: "user-groups-overlay",
             get_item: ListWidget.default_get_item,
-            modifier(item) {
+            modifier_html(item) {
                 item.is_member = user_groups.is_direct_member_of(
                     people.my_current_user_id(),
                     item.id,

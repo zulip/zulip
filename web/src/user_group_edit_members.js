@@ -73,7 +73,7 @@ function make_list_widget({$parent_container, name, user_ids}) {
             id: settings_users.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
-        modifier(item) {
+        modifier_html(item) {
             return format_member_list_elem(item);
         },
         filter: {

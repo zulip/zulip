@@ -22,7 +22,7 @@ export function populate_list() {
     ListWidget.create($muted_users_table, all_muted_users, {
         name: "muted-users-list",
         get_item: ListWidget.default_get_item,
-        modifier(muted_user) {
+        modifier_html(muted_user) {
             return render_muted_user_ui_row({muted_user});
         },
         filter: {

@@ -120,7 +120,7 @@ export class DropdownWidget {
                 this.list_widget = ListWidget.create($dropdown_list_body, this.get_options(), {
                     name: `${CSS.escape(this.widget_name)}-list-widget`,
                     get_item: ListWidget.default_get_item,
-                    modifier(item) {
+                    modifier_html(item) {
                         return render_dropdown_list({item});
                     },
                     filter: {
