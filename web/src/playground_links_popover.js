@@ -4,51 +4,60 @@ import url_template_lib from "url-template";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
 
 import * as blueslip from "./blueslip";
-import * as message_viewport from "./message_viewport";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as realm_playground from "./realm_playground";
+import * as ui_util from "./ui_util";
 
-let $current_playground_links_popover_elem;
+let playground_links_popover_instance;
 
 // Playground_info contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
 // to pop off of.
 function toggle_playground_links_popover(element, playground_info) {
-    const $last_popover_elem = $current_playground_links_popover_elem;
-    popovers.hide_all();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
+    if (is_open()) {
         return;
     }
-    const $elt = $(element);
-    if ($elt.data("popover") === undefined) {
-        const ypos = $elt.get_offset_to_window().top;
-        $elt.popover({
-            // It's unlikely we'll have more than 3-4 playground links
-            // for one language, so it should be OK to hardcode 120 here.
-            placement: message_viewport.height() - ypos < 120 ? "top" : "bottom",
-            title: "",
-            content: render_playground_links_popover_content({playground_info}),
-            html: true,
-            trigger: "manual",
-            fixed: true,
-        });
-        $elt.popover("show");
-        $elt.addClass("active-playground-links-reference");
-        $current_playground_links_popover_elem = $elt;
-    }
+
+    popover_menus.toggle_popover_menu(element, {
+        placement: "bottom",
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: ["top"],
+                    },
+                },
+            ],
+        },
+        onCreate(instance) {
+            playground_links_popover_instance = instance;
+            instance.setContent(
+                ui_util.parse_html(render_playground_links_popover_content({playground_info})),
+            );
+        },
+        onShow(instance) {
+            const $reference = $(instance.reference);
+            $reference.parent().addClass("active-playground-links-reference");
+        },
+        onHidden() {
+            hide();
+        },
+    });
 }
 
 export function is_open() {
-    return Boolean($current_playground_links_popover_elem);
+    return Boolean(playground_links_popover_instance);
 }
 
 export function hide() {
     if (is_open()) {
-        $current_playground_links_popover_elem.removeClass("active-playground-links-reference");
-        $current_playground_links_popover_elem.popover("destroy");
-        $current_playground_links_popover_elem = undefined;
+        $(playground_links_popover_instance.reference)
+            .parent()
+            .removeClass("active-playground-links-reference");
+        playground_links_popover_instance.destroy();
+        playground_links_popover_instance = undefined;
     }
 }
 
@@ -58,13 +67,13 @@ function get_playground_links_popover_items() {
         return undefined;
     }
 
-    const popover_data = $current_playground_links_popover_elem.data("popover");
-    if (!popover_data) {
+    const $popover = $(playground_links_popover_instance.popper);
+    if (!$popover) {
         blueslip.error("Cannot find playground links popover data");
         return undefined;
     }
 
-    return $("li:not(.divider):visible a", popover_data.$tip);
+    return $("li:not(.divider):visible a", $popover);
 }
 
 export function handle_keyboard(key) {
@@ -99,7 +108,10 @@ function register_click_handlers() {
                     const url_template = url_template_lib.parse($playground.url_template);
                     $playground.playground_url = url_template.expand({code: extracted_code});
                 }
-                toggle_playground_links_popover(this, playground_info);
+                const popover_target = $view_in_playground_button.find(
+                    ".playground-links-popover-container",
+                )[0];
+                toggle_playground_links_popover(popover_target, playground_info);
             }
         },
     );
