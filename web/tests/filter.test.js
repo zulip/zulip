@@ -35,9 +35,17 @@ const steve = {
     full_name: "steve",
 };
 
+const alice = {
+    email: "alice@example.com",
+    user_id: 33,
+    full_name: "alice",
+    is_guest: true,
+};
+
 people.add_active_user(me);
 people.add_active_user(joe);
 people.add_active_user(steve);
+people.add_active_user(alice);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
@@ -1523,6 +1531,7 @@ test("navbar_helpers", () => {
     }
 
     const sender = [{operator: "sender", operand: joe.email}];
+    const guest_sender = [{operator: "sender", operand: alice.email}];
     const in_home = [{operator: "in", operand: "home"}];
     const in_all = [{operator: "in", operand: "all"}];
     const is_starred = [{operator: "is", operand: "starred"}];
@@ -1547,6 +1556,10 @@ test("navbar_helpers", () => {
     ];
     const dm = [{operator: "dm", operand: "joe@example.com"}];
     const dm_group = [{operator: "dm", operand: "joe@example.com,STEVE@foo.com"}];
+    const dm_with_guest = [{operator: "dm", operand: "alice@example.com"}];
+    const dm_group_including_guest = [
+        {operator: "dm", operand: "alice@example.com,joe@example.com"},
+    ];
     const dm_group_including_missing_person = [
         {operator: "dm", operand: "joe@example.com,STEVE@foo.com,sally@doesnotexist.com"},
     ];
@@ -1570,6 +1583,13 @@ test("navbar_helpers", () => {
             icon: undefined,
             title: "translated: Messages sent by " + joe.full_name,
             redirect_url_with_search: "/#narrow/sender/" + joe.user_id + "-joe",
+        },
+        {
+            operator: guest_sender,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Messages sent by translated: alice (guest)",
+            redirect_url_with_search: "/#narrow/sender/" + alice.user_id + "-alice",
         },
         {
             operator: is_starred,
@@ -1678,6 +1698,21 @@ test("navbar_helpers", () => {
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + steve.user_id + "-group",
         },
         {
+            operator: dm_with_guest,
+            is_common_narrow: true,
+            icon: "envelope",
+            title: "translated: alice (guest)",
+            redirect_url_with_search:
+                "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
+        },
+        {
+            operator: dm_group_including_guest,
+            is_common_narrow: true,
+            icon: "envelope",
+            title: "translated: alice (guest), joe",
+            redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
+        },
+        {
             operator: dm_group_including_missing_person,
             is_common_narrow: true,
             icon: "envelope",
@@ -1717,6 +1752,8 @@ test("navbar_helpers", () => {
             redirect_url_with_search: "#",
         },
     ];
+
+    page_params.realm_enable_guest_user_indicator = true;
 
     for (const test_case of test_cases) {
         test_helpers(test_case);
@@ -1773,6 +1810,35 @@ test("navbar_helpers", () => {
     };
 
     test_get_title(stream_topic_search_operator_test_case);
+
+    page_params.realm_enable_guest_user_indicator = false;
+    const guest_user_test_cases_without_indicator = [
+        {
+            operator: guest_sender,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Messages sent by alice",
+            redirect_url_with_search: "/#narrow/sender/" + alice.user_id + "-alice",
+        },
+        {
+            operator: dm_with_guest,
+            is_common_narrow: true,
+            icon: "envelope",
+            title: properly_separated_names([alice.full_name]),
+            redirect_url_with_search:
+                "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
+        },
+        {
+            operator: dm_group_including_guest,
+            is_common_narrow: true,
+            icon: "envelope",
+            title: properly_separated_names([alice.full_name, joe.full_name]),
+            redirect_url_with_search:
+                "/#narrow/dm/" + Number(alice.user_id) + "," + joe.user_id + "-group",
+        },
+    ];
+
+    test_get_title(guest_user_test_cases_without_indicator);
 
     // this is actually wrong, but the code is currently not robust enough to throw an error here
     // also, used as an example of triggering last return statement.
