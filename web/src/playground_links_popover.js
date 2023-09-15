@@ -38,8 +38,12 @@ function toggle_playground_links_popover(element, playground_info) {
     }
 }
 
+function is_open() {
+    return Boolean($current_playground_links_popover_elem);
+}
+
 export function hide() {
-    if ($current_playground_links_popover_elem !== undefined) {
+    if (is_open()) {
         $current_playground_links_popover_elem.popover("destroy");
         $current_playground_links_popover_elem = undefined;
     }
