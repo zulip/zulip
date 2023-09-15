@@ -867,7 +867,7 @@ button#register_auth_button_gitlab {
     gap: 5px;
     align-items: center;
 
-    i {
+    & i {
         position: relative;
         top: -1px;
         font-size: 0.8em;
