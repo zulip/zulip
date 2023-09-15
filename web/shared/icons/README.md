@@ -5,4 +5,4 @@ Icons placed in this directory are compiled by the web application
 build system into a custom icon font. You can use them in HTML using
 the following syntax:
 
-`<i class="zulip-icon zulip-icon-ellipsis-v-solid">`
+`<i class="zulip-icon zulip-icon-more-vertical">`
