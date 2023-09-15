@@ -819,6 +819,26 @@ function get_focus_class_for_row() {
     return focus_class;
 }
 
+function center_focus_if_offscreen($elt) {
+    if ($elt.length === 0) {
+        return;
+    }
+
+    const element_above = document.querySelector("#inbox-filters");
+    const element_down = document.querySelector("#compose");
+    const visible_top = element_above.getBoundingClientRect().bottom;
+    const visible_bottom = element_down.getBoundingClientRect().top;
+
+    const elt_pos = $elt[0].getBoundingClientRect();
+    if (elt_pos.top >= visible_top && elt_pos.bottom <= visible_bottom) {
+        // Element is visible.
+        return;
+    }
+
+    // Scroll element into center if offscreen.
+    $elt[0].scrollIntoView({block: "center"});
+}
+
 export function initialize() {
     $("body").on(
         "keyup",
@@ -912,5 +932,10 @@ export function initialize() {
         } else {
             unread_ops.mark_stream_as_read(stream_id);
         }
+    });
+
+    $("body").on("focus", ".inbox-row, .inbox-header", (e) => {
+        const $elt = $(e.currentTarget);
+        center_focus_if_offscreen($elt);
     });
 }
