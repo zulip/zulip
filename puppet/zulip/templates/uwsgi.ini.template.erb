@@ -7,8 +7,10 @@ env=LANG=C.UTF-8
 uid=zulip
 gid=zulip
 
-# Where the main application is located
-chdir=/home/zulip/deployments/current/
+# We run the main process in /, and chdir to the current "current"
+# directory in each forked process
+chdir=/
+hook-post-fork=chdir:/home/zulip/deployments/current
 
 # lazy-apps means that the application is loaded after forking (and
 # thus chdir'ing).  This lets us do rolling restarts into new
@@ -29,7 +31,7 @@ chown-socket=zulip:zulip
 socket=/home/zulip/deployments/uwsgi-socket
 listen=<%= @uwsgi_listen_backlog_limit %>
 
-# Create a control socket, allowing fancier runtime control
+# Create a control socket, allowing rolling restarts ("chain reloading").
 master-fifo=/home/zulip/deployments/uwsgi-control
 
 
@@ -64,14 +66,6 @@ post-buffering=4096
 stats=/home/zulip/deployments/uwsgi-stats
 
 
-<% if @uwsgi_rolling_restart -%>
-# If we are doing a rolling restart, re-chdir to the current "current"
-# directory in each forked process
-hook-post-fork=chdir:/home/zulip/deployments/current
-
-
-
-<% end -%>
 # Silence warnings from clients closing their connection early
 ignore-sigpipe = true
 ignore-write-errors = true
