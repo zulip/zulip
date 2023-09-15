@@ -706,10 +706,15 @@ export class Filter {
         ) {
             const emails = this.operands("dm")[0].split(",");
             const names = emails.map((email) => {
-                if (!people.get_by_email(email)) {
+                const person = people.get_by_email(email);
+                if (!person) {
                     return email;
                 }
-                return people.get_by_email(email).full_name;
+
+                if (people.should_add_guest_user_indicator(person.user_id)) {
+                    return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
+                }
+                return person.full_name;
             });
 
             // We use join to handle the addition of a comma and space after every name
@@ -725,8 +730,14 @@ export class Filter {
                 if (people.is_my_user_id(user.user_id)) {
                     return $t({defaultMessage: "Messages sent by you"});
                 }
-                sender = user.full_name;
+
+                if (people.should_add_guest_user_indicator(user.user_id)) {
+                    sender = $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+                } else {
+                    sender = user.full_name;
+                }
             }
+
             return $t(
                 {defaultMessage: "Messages sent by {sender}"},
                 {
