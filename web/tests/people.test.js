@@ -470,16 +470,32 @@ test_people("get_display_full_names", () => {
     people.add_active_user(steven);
     people.add_active_user(bob);
     people.add_active_user(charles);
-    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id];
+    people.add_active_user(guest);
+    page_params.realm_enable_guest_user_indicator = true;
+
+    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
     let names = people.get_display_full_names(user_ids);
 
     // This doesn't do anything special for the current user. The caller has
     // to take care of such cases and do the appropriate.
-    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "Charles Dickens"]);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "Charles Dickens",
+        "translated: Guest User (guest)",
+    ]);
 
     muted_users.add_muted_user(charles.user_id);
+    page_params.realm_enable_guest_user_indicator = false;
     names = people.get_display_full_names(user_ids);
-    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "translated: Muted user"]);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "Guest User",
+    ]);
 });
 
 test_people("my_custom_profile_data", () => {
