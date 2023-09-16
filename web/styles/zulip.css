@@ -2482,7 +2482,13 @@ div.topic_edit_spinner {
     vertical-align: middle;
 }
 
-div.topic_edit_spinner .loading_indicator_spinner {
+div.toggle_resolve_topic_spinner {
+    margin-top: -12px;
+    padding-left: 9px;
+}
+
+div.topic_edit_spinner .loading_indicator_spinner,
+div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 14px;
     height: 14px;
 

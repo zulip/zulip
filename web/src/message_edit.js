@@ -598,6 +598,14 @@ export function start($row, edit_box_open_callback) {
     });
 }
 
+function show_toggle_resolve_topic_spinner($row) {
+    const $spinner = $row.find(".toggle_resolve_topic_spinner");
+    loading.make_indicator($spinner);
+    $spinner.css({width: "18px"});
+    $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").hide();
+    $row.find(".toggle_resolve_topic_spinner").show();
+}
+
 function get_resolve_topic_time_limit_error_string(time_limit, time_limit_unit, topic_is_resolved) {
     if (topic_is_resolved) {
         if (time_limit_unit === "minute") {
@@ -682,13 +690,22 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved) {
     });
 }
 
-export function toggle_resolve_topic(message_id, old_topic_name, report_errors_in_global_banner) {
+export function toggle_resolve_topic(
+    message_id,
+    old_topic_name,
+    report_errors_in_global_banner,
+    $row,
+) {
     let new_topic_name;
     const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
     if (topic_is_resolved) {
         new_topic_name = resolved_topic.unresolve_name(old_topic_name);
     } else {
         new_topic_name = resolved_topic.resolve_name(old_topic_name);
+    }
+
+    if ($row) {
+        show_toggle_resolve_topic_spinner($row);
     }
 
     const request = {
@@ -701,7 +718,13 @@ export function toggle_resolve_topic(message_id, old_topic_name, report_errors_i
     channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
+        success() {
+            const $spinner = $row.find(".toggle_resolve_topic_spinner");
+            loading.destroy_indicator($spinner);
+        },
         error(xhr) {
+            const $spinner = $row.find(".toggle_resolve_topic_spinner");
+            loading.destroy_indicator($spinner);
             if (xhr.responseJSON) {
                 if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                     handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
