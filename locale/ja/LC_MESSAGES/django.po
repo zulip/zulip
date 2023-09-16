@@ -9,11 +9,11 @@
 # Guy Kouakou <kkfguy@gmail.com>, 2023
 # YorimiMOCHIDA, 2023
 # Taiki Choda, 2023
-# oribe1115, 2023
 # sigmy <ripsigma@gmail.com>, 2023
 # Aoi Okubo, 2023
 # Transifex Bot <>, 2023
 # stmkza <stmkza@stmkza.net>, 2023
+# oribe1115, 2023
 # 
 #, fuzzy
 msgid ""
@@ -22,7 +22,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-12 23:45+0000\n"
 "PO-Revision-Date: 2023-06-12 23:55+0000\n"
-"Last-Translator: stmkza <stmkza@stmkza.net>, 2023\n"
+"Last-Translator: oribe1115, 2023\n"
 "Language-Team: Japanese (https://app.transifex.com/zulip/teams/53893/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3617,7 +3617,7 @@ msgstr ""
 
 #: zerver/actions/scheduled_messages.py:161
 msgid "Scheduled message was already sent"
-msgstr ""
+msgstr "予約メッセージが送信されました"
 
 #: zerver/actions/scheduled_messages.py:166
 #: zerver/views/scheduled_messages.py:89
@@ -4562,7 +4562,7 @@ msgstr "引数「{}」は正しいJSONではありません。"
 
 #: zerver/lib/scheduled_messages.py:20
 msgid "Scheduled message does not exist"
-msgstr ""
+msgstr "予約メッセージがありません"
 
 #: zerver/lib/send_email.py:72
 msgid "Zulip Account Security"
