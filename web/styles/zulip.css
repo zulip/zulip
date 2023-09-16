@@ -247,6 +247,7 @@ body {
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-background-modal: hsl(212deg 28% 18%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
+    --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -2484,6 +2485,10 @@ div.topic_edit_spinner {
 div.topic_edit_spinner .loading_indicator_spinner {
     width: 14px;
     height: 14px;
+
+    & path {
+        fill: var(--color-recipient-bar-controls-spinner);
+    }
 }
 
 .message_edit_spinner {
