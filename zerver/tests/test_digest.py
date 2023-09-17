@@ -118,7 +118,9 @@ class TestDigestEmailMessages(ZulipTestCase):
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")
         user_ids = list(
-            UserProfile.objects.filter(is_bot=False, realm=realm).values_list("id", flat=True)
+            UserProfile.objects.filter(is_bot=False, realm=realm, is_active=True).values_list(
+                "id", flat=True
+            )
         )
 
         do_deactivate_user(hamlet, acting_user=None)

@@ -19732,7 +19732,7 @@ components:
         The target user's ID.
       schema:
         type: integer
-      example: 12
+      example: 13
       required: true
     MutedUserId:
       name: muted_user_id

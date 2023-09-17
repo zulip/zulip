@@ -588,6 +588,7 @@ Output:
         polonius="polonius@zulip.com",
         desdemona="desdemona@zulip.com",
         shiva="shiva@zulip.com",
+        imported_user="imported_user@example.com",
         webhook_bot="webhook-bot@zulip.com",
         welcome_bot="welcome-bot@zulip.com",
         outgoing_webhook_bot="outgoing-webhook@zulip.com",

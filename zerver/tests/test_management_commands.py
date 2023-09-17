@@ -191,7 +191,8 @@ class TestZulipBaseCommand(ZulipTestCase):
 
     def test_get_non_bot_users(self) -> None:
         expected_user_profiles = sorted(
-            UserProfile.objects.filter(realm=self.zulip_realm, is_bot=False), key=lambda x: x.email
+            UserProfile.objects.filter(realm=self.zulip_realm, is_bot=False, is_active=True),
+            key=lambda x: x.email,
         )
         user_profiles = self.get_users_sorted(
             dict(users=None, all_users=True), self.zulip_realm, is_bot=False

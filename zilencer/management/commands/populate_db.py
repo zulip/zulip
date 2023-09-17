@@ -383,6 +383,7 @@ class Command(BaseCommand):
                 ("Polonius", "polonius@zulip.com"),
                 ("Desdemona", "desdemona@zulip.com"),
                 ("शिव", "shiva@zulip.com"),
+                ("Imported User", "imported_user@example.com"),
             ]
 
             # For testing really large batches:
@@ -621,7 +622,9 @@ class Command(BaseCommand):
 
             subscriptions_list: List[Tuple[UserProfile, Recipient]] = []
             profiles: Sequence[UserProfile] = list(
-                UserProfile.objects.select_related("realm").filter(is_bot=False).order_by("email")
+                UserProfile.objects.select_related("realm")
+                .filter(is_bot=False, is_mirror_dummy=False)
+                .order_by("email")
             )
 
             if options["test_suite"]:

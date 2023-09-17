@@ -414,7 +414,7 @@ class RealmImportExportTest(ExportFile):
 
         data = read_json("realm.json")
         self.assert_length(data["zerver_userprofile_crossrealm"], 3)
-        self.assert_length(data["zerver_userprofile_mirrordummy"], 0)
+        self.assert_length(data["zerver_userprofile_mirrordummy"], 1)
 
         exported_user_emails = self.get_set(data["zerver_userprofile"], "delivery_email")
         self.assertIn(self.example_email("cordelia"), exported_user_emails)
@@ -596,7 +596,7 @@ class RealmImportExportTest(ExportFile):
         data = read_json("realm.json")
 
         self.assert_length(data["zerver_userprofile_crossrealm"], 3)
-        self.assert_length(data["zerver_userprofile_mirrordummy"], 0)
+        self.assert_length(data["zerver_userprofile_mirrordummy"], 1)
 
         exported_user_emails = self.get_set(data["zerver_userprofile"], "delivery_email")
         self.assertIn(self.example_email("cordelia"), exported_user_emails)
@@ -957,7 +957,7 @@ class RealmImportExportTest(ExportFile):
         )
 
         # Check recipient_id was generated correctly for the imported users and streams.
-        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+        for user_profile in UserProfile.objects.filter(realm=imported_realm, is_active=True):
             self.assertEqual(
                 user_profile.recipient_id,
                 Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
