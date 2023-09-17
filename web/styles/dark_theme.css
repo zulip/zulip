@@ -722,7 +722,6 @@
     .narrow_to_compose_recipients,
     .expand_composebox_button,
     .collapse_composebox_button,
-    #message_edit_tooltip,
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
@@ -732,7 +731,6 @@
         color: hsl(236deg 33% 80%);
     }
 
-    #message_edit_tooltip:hover,
     .clear_search_button:hover {
         color: hsl(0deg 0% 100%);
     }
