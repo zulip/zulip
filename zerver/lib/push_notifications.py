@@ -38,7 +38,6 @@ from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
-from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
@@ -942,7 +941,7 @@ def get_message_payload_gcm(
         data.update(
             event="message",
             zulip_message_id=message.id,  # message_id is reserved for CCS
-            time=datetime_to_timestamp(message.date_sent),
+            time=message.date_sent.timestamp(),
             content=content,
             content_truncated=truncated,
             sender_full_name=message.sender.full_name,
