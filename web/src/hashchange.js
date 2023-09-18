@@ -149,20 +149,30 @@ function show_default_view() {
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
-    // We only allow all_messages and recent_topics
-    // to be rendered without a hash.
-    if (user_settings.default_view === "recent_topics") {
-        recent_view_ui.show();
-    } else if (user_settings.default_view === "all_messages") {
-        show_all_message_view();
-    } else {
-        // NOTE: Setting a hash which is not rendered on
-        // empty hash (like a stream narrow) will
-        // introduce a bug that user will not be able to
-        // go back in browser history. See
-        // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
-        // for detailed description of the issue.
-        window.location.hash = user_settings.default_view;
+    // We only allow the primary recommended options for default views
+    // rendered without a hash.
+    switch (user_settings.default_view) {
+        case "recent_topics": {
+            recent_view_ui.show();
+            break;
+        }
+        case "all_messages": {
+            show_all_message_view();
+            break;
+        }
+        case "inbox": {
+            inbox_ui.show();
+            break;
+        }
+        default: {
+            // NOTE: Setting a hash which is not rendered on
+            // empty hash (like a stream narrow) will
+            // introduce a bug that user will not be able to
+            // go back in browser history. See
+            // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
+            // for detailed description of the issue.
+            window.location.hash = user_settings.default_view;
+        }
     }
 }
 

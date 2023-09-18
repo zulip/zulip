@@ -424,7 +424,7 @@ def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpRespo
 
 
 emojiset_choices = {emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()}
-default_view_options = ["recent_topics", "all_messages"]
+default_view_options = ["recent_topics", "inbox", "all_messages"]
 
 
 @require_realm_admin

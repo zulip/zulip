@@ -9814,6 +9814,7 @@ paths:
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
+            - "inbox" - Inbox view
             - "all_messages" - All messages view
           schema:
             type: string
@@ -12099,6 +12100,7 @@ paths:
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
+                              - "inbox" - Inbox view
                               - "all_messages" - All messages view
                           escape_navigates_to_default_view:
                             type: boolean
@@ -14224,6 +14226,7 @@ paths:
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
+                              - "inbox" - Inbox view
                               - "all_messages" - All messages view
                           escape_navigates_to_default_view:
                             type: boolean
@@ -15266,6 +15269,7 @@ paths:
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
+            - "inbox" - Inbox view
             - "all_messages" - All messages view
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
