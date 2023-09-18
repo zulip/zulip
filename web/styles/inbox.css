@@ -31,7 +31,7 @@
         .search_group {
             position: sticky;
             top: var(--navbar-fixed-height);
-            background: var(--color-background);
+            background: var(--color-background-inbox);
             display: flex;
             padding: 15px 0 10px;
             z-index: 1;
@@ -100,6 +100,12 @@
                 border: 2px solid transparent;
                 border-radius: 3px;
                 box-sizing: border-box;
+            }
+
+            .inbox-empty-text {
+                display: none;
+                font-style: italic;
+                opacity: 0.8;
             }
 
             .inbox-header {
