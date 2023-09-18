@@ -64,7 +64,14 @@ export function popover_items_handle_keyboard(key, $items) {
         return;
     }
     if (index === -1) {
-        if ($(".user-card-popover-manage-menu-btn").is(":visible")) {
+        if (
+            $(".user-card-popover-manage-menu-btn").is(":visible") &&
+            !user_card_popover.is_user_card_manage_menu_open()
+        ) {
+            // If we have a "Manage Menu" button in the user card popover,
+            // the first item to receive focus shouldn't be that button.
+            // However, if the Manage Menu is open, focus should shift to
+            // the first item in that popover.
             index = 1;
         } else {
             index = 0;
