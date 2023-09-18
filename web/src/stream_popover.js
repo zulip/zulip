@@ -35,7 +35,7 @@ let $stream_header_colorblock;
 
 // Keep the menu icon over which the popover is based off visible.
 function show_left_sidebar_menu_icon(element) {
-    $(element).closest("[class*='-sidebar-menu-icon']").addClass("left_sidebar_menu_icon_visible");
+    $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
 }
 
 // Remove the class from element when popover is closed
