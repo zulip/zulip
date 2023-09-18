@@ -209,7 +209,7 @@ body {
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
-    --color-background-inbox: hsl(0deg 0% 100% / 50%);
+    --color-background-inbox: hsl(0deg 6.67% 97.06%);
     --color-background-inbox-search: hsl(0deg 0% 0% / 5%);
     --color-icon-search-inbox: hsl(0deg 0% 0% / 50%);
     --color-background-inbox-search-focus: hsl(0deg 0% 100%);
