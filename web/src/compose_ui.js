@@ -252,6 +252,9 @@ export function compute_placeholder_text(opts) {
         const recipient_names = recipient_list
             .map((recipient) => {
                 const user = people.get_by_email(recipient);
+                if (people.should_add_guest_user_indicator(user.user_id)) {
+                    return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+                }
                 return user.full_name;
             })
             .join(", ");
