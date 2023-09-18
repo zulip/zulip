@@ -9,7 +9,18 @@ gid=zulip
 
 # Where the main application is located
 chdir=/home/zulip/deployments/current/
+
+# lazy-apps means that the application is loaded after forking (and
+# thus chdir'ing).  This lets us do rolling restarts into new
+# versions.
+# https://uwsgi-docs.readthedocs.io/en/latest/articles/TheArtOfGracefulReloading.html#preforking-vs-lazy-apps-vs-lazy
+lazy-apps=true
+
+# Entrypoint of the application
 module=zproject.wsgi:application
+
+
+
 
 # Start a master process listening on this socket
 master=true
@@ -57,10 +68,6 @@ stats=/home/zulip/deployments/uwsgi-stats
 # If we are doing a rolling restart, re-chdir to the current "current"
 # directory in each forked process
 hook-post-fork=chdir:/home/zulip/deployments/current
-
-# lazy-apps are required for rolling restarts:
-# https://uwsgi-docs.readthedocs.io/en/latest/articles/TheArtOfGracefulReloading.html#preforking-vs-lazy-apps-vs-lazy
-lazy-apps=true
 
 
 
