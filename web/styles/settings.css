@@ -716,6 +716,10 @@ input[type="checkbox"] {
 
     .emoji_name_input {
         margin-top: 10px;
+
+        & label {
+            display: table;
+        }
     }
 
     #emoji-file-name {
