@@ -60,7 +60,6 @@ from zerver.lib.remote_server import (
 from zerver.lib.response import json_response_from_error
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
@@ -2255,7 +2254,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "user_id": hamlet.id,
             "event": "message",
             "zulip_message_id": message.id,
-            "time": datetime_to_timestamp(message.date_sent),
+            "time": message.date_sent.timestamp(),
             "content": content,
             "content_truncated": truncate_content,
             "server": settings.EXTERNAL_HOST,
@@ -2313,7 +2312,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "user_id": hamlet.id,
                 "event": "message",
                 "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
+                "time": message.date_sent.timestamp(),
                 "content": message.content,
                 "content_truncated": False,
                 "server": settings.EXTERNAL_HOST,
@@ -2345,7 +2344,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "user_id": hamlet.id,
                 "event": "message",
                 "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
+                "time": message.date_sent.timestamp(),
                 "content": "*This organization has disabled including message content in mobile push notifications*",
                 "content_truncated": False,
                 "server": settings.EXTERNAL_HOST,
