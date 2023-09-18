@@ -8,7 +8,6 @@ import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import {is_visible, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -725,9 +724,6 @@ export function change_focused_element(input_key) {
                 col_focus -= 1;
                 set_list_focus(input_key);
                 return true;
-            case "escape":
-                hashchange.set_hash_to_default_view();
-                return false;
         }
     }
 
