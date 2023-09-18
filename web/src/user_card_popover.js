@@ -115,7 +115,7 @@ export function clear_for_testing() {
     userlist_placement = "right";
 }
 
-export function elem_to_user_id($elem) {
+function elem_to_user_id($elem) {
     return Number.parseInt($elem.attr("data-user-id"), 10);
 }
 
@@ -573,7 +573,7 @@ export function user_sidebar_popover_handle_keyboard(key) {
     popover_items_handle_keyboard(key, $items);
 }
 
-export function register_click_handlers() {
+function register_click_handlers() {
     $("#main_div").on("click", ".sender_name, .message-avatar", function (e) {
         const $row = $(this).closest(".message_row");
         e.stopPropagation();
