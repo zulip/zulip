@@ -29,6 +29,7 @@ import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as sidebar_ui from "./sidebar_ui";
 import * as timerender from "./timerender";
+import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as user_deactivation_ui from "./user_deactivation_ui";
@@ -829,6 +830,16 @@ function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
         toggle_user_card_popover_manage_menu(e.target, user);
+    });
+    new ClipboardJS(".copy-custom-field-url", {
+        text(trigger) {
+            return $(trigger)
+                .closest(".custom-user-url-field")
+                .find(".custom-profile-fields-link")
+                .attr("href");
+        },
+    }).on("success", (e) => {
+        show_copied_confirmation(e.trigger);
     });
 }
 

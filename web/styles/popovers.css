@@ -146,6 +146,36 @@
     }
 }
 
+.custom-user-url-field {
+    display: flex;
+    overflow: hidden;
+
+    .custom-profile-fields-link {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .copy-custom-field-url {
+        background-color: transparent;
+        border: 0;
+        padding: 0;
+
+        #clipboard_image {
+            /* Adjust margin to align the copy icon */
+            margin: -2px 0 0 6px;
+
+            &:hover path {
+                fill: hsl(204deg 100% 40%);
+            }
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+}
+
 .user-card-popover-actions .user-card-popover-manage-menu-btn {
     opacity: 0.8;
 
