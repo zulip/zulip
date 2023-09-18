@@ -93,6 +93,8 @@
             border-radius: 5px;
             border: 1px solid hsl(0deg 0% 0% / 20%);
             margin-bottom: var(--max-unexpanded-compose-height);
+            /* Width of muted filter(130) + margin(10) + search padding(50) = 190px */
+            max-width: calc(var(--width-inbox-search) + 190px);
 
             .inbox-focus-border {
                 display: flex;
@@ -274,7 +276,7 @@
 
             .inbox-left-part-wrapper {
                 display: flex;
-                width: 50%;
+                width: 80%;
             }
 
             #inbox-direct-messages-container {
