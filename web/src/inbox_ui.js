@@ -393,6 +393,7 @@ function reset_data() {
         }
     }
 
+    let has_topics_post_filter = false;
     if (unread_stream_msg_count) {
         for (const [stream_id, topic_dict] of unread_streams_dict) {
             const stream_unread = unread.num_unread_for_stream(stream_id);
@@ -408,6 +409,7 @@ function reset_data() {
                         topics_dict[stream_key][topic_key] = topic_data;
                         if (!topic_data.is_hidden) {
                             stream_data.is_hidden = false;
+                            has_topics_post_filter = true;
                         }
                     }
                 }
@@ -418,6 +420,7 @@ function reset_data() {
         }
     }
 
+    const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
     topics_dict = get_sorted_stream_topic_dict();
     const is_dms_collaped = collapsed_containers.has("inbox-dm-header");
 
@@ -425,7 +428,24 @@ function reset_data() {
         unread_dms_count,
         is_dms_collaped,
         has_dms_post_filter,
+        has_visible_unreads,
     };
+}
+
+function show_empty_inbox_text(has_visible_unreads) {
+    if (!has_visible_unreads) {
+        $("#inbox-list").css("border-width", 0);
+        if (search_keyword) {
+            $("#inbox-empty-with-search").show();
+            $("#inbox-empty-without-search").hide();
+        } else {
+            $("#inbox-empty-with-search").hide();
+            $("#inbox-empty-without-search").show();
+        }
+    } else {
+        $(".inbox-empty-text").hide();
+        $("#inbox-list").css("border-width", "1px");
+    }
 }
 
 export function complete_rerender() {
@@ -433,7 +453,7 @@ export function complete_rerender() {
         return;
     }
     load_data_from_ls();
-    const additional_context = reset_data();
+    const {has_visible_unreads, ...additional_context} = reset_data();
     $("#inbox-pane").html(
         render_inbox_view({
             search_val: search_keyword,
@@ -447,6 +467,7 @@ export function complete_rerender() {
         }),
     );
     update_filters();
+    show_empty_inbox_text(has_visible_unreads);
 
     setTimeout(() => {
         // We don't want to focus on simplebar ever.
@@ -726,7 +747,6 @@ export function update() {
     const unread_streams_dict = unread_stream_message.stream_count;
 
     let has_dms_post_filter = false;
-
     for (const [key, value] of unread_dms_dict) {
         if (value !== 0) {
             const old_dm_data = dms_dict[key];
@@ -753,6 +773,7 @@ export function update() {
         $inbox_dm_header.find(".unread_count").text(unread_dms_count);
     }
 
+    let has_topics_post_filter = false;
     for (const [stream_id, topic_dict] of unread_streams_dict) {
         const stream_unread = unread.num_unread_for_stream(stream_id);
         const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
@@ -774,6 +795,7 @@ export function update() {
                     rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data);
                     if (!new_topic_data.is_hidden) {
                         new_stream_data.is_hidden = false;
+                        has_topics_post_filter = true;
                     }
                 } else {
                     get_row_from_conversation_key(topic_key).remove();
@@ -788,6 +810,9 @@ export function update() {
             get_stream_container(stream_key).remove();
         }
     }
+
+    const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
+    show_empty_inbox_text(has_visible_unreads);
 
     if (update_triggered_by_user) {
         setTimeout(revive_current_focus, 0);
