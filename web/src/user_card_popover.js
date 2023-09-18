@@ -392,13 +392,13 @@ export function user_card_popover_manage_menu_handle_keyboard(key) {
 
 export function get_user_card_popover_manage_menu_items() {
     if (!$current_user_card_popover_manage_menu) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
+        blueslip.error("Trying to get menu items when manage menu popover is closed.");
         return undefined;
     }
 
     const popover_data = $current_user_card_popover_manage_menu.data("popover");
     if (!popover_data) {
-        blueslip.error("Cannot find popover data for actions menu.");
+        blueslip.error("Cannot find popover data for manage menu.");
         return undefined;
     }
 
@@ -495,13 +495,13 @@ export function user_card_popover_for_message_handle_keyboard(key) {
 
 function get_user_card_popover_for_message_items() {
     if (!$current_message_user_card_popover_elem) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
+        blueslip.error("Trying to get menu items when message user card popover is closed.");
         return undefined;
     }
 
     const popover_data = $current_message_user_card_popover_elem.data("popover");
     if (!popover_data) {
-        blueslip.error("Cannot find popover data for actions menu.");
+        blueslip.error("Cannot find popover data for message user card menu.");
         return undefined;
     }
 
