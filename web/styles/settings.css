@@ -1156,7 +1156,6 @@ $option_title_width: 180px;
         }
 
         .status-text {
-            display: inline-block;
             opacity: 0.75;
             font-size: 90%;
 
