@@ -10,8 +10,8 @@ from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Model
 from django.http import HttpRequest, HttpResponse
-from django.utils import timezone
 from django.utils.crypto import constant_time_compare
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
@@ -179,7 +179,7 @@ def register_remote_push_device(
                 token=token,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
-                last_updated=timezone.now(),
+                last_updated=timezone_now(),
                 **kwargs,
             )
     except IntegrityError:
