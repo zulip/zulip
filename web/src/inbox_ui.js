@@ -393,8 +393,6 @@ function reset_data() {
         }
     }
 
-    const has_unread = unread_dms_count + unread_stream_msg_count > 0;
-
     if (unread_stream_msg_count) {
         for (const [stream_id, topic_dict] of unread_streams_dict) {
             const stream_unread = unread.num_unread_for_stream(stream_id);
@@ -427,7 +425,6 @@ function reset_data() {
         unread_dms_count,
         is_dms_collaped,
         has_dms_post_filter,
-        has_unread,
     };
 }
 
