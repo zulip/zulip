@@ -66,10 +66,12 @@ const overlays = mock_esm("../src/overlays", {
     is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
 const popovers = mock_esm("../src/user_card_popover", {
-    is_user_card_manage_menu_open: () => false,
     is_message_user_card_open: () => false,
     user_sidebar_popped: () => false,
     is_user_card_open: () => false,
+    manage_menu: {
+        is_open: () => false,
+    },
 });
 const popover_menus = mock_esm("../src/popover_menus", {
     get_visible_instance: () => undefined,

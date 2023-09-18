@@ -24,6 +24,7 @@ import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import {
     focus_first_popover_item,
@@ -36,6 +37,7 @@ import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
+import * as ui_util from "./ui_util";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
@@ -43,7 +45,6 @@ import * as user_status_ui from "./user_status_ui";
 
 let $current_message_user_card_popover_elem;
 let $current_user_card_popover_elem;
-let $current_user_card_popover_manage_menu;
 let current_user_sidebar_popover;
 let current_user_sidebar_user_id;
 
@@ -102,7 +103,6 @@ export function hide_all_instances() {
 
 export function hide_all_user_card_popovers() {
     hide_all_instances();
-    hide_user_card_popover_manage_menu();
     hide_message_user_card_popover();
     hide_user_sidebar_popover();
     hide_user_card_popover();
@@ -111,7 +111,7 @@ export function hide_all_user_card_popovers() {
 export function clear_for_testing() {
     $current_message_user_card_popover_elem = undefined;
     $current_user_card_popover_elem = undefined;
-    $current_user_card_popover_manage_menu = undefined;
+    manage_menu.instance = undefined;
     userlist_placement = "right";
 }
 
@@ -393,12 +393,6 @@ function load_medium_avatar(user, $elt) {
 // Functions related to manage menu popover.
 
 function toggle_user_card_popover_manage_menu(element, user) {
-    const $last_popover_elem = $current_user_card_popover_manage_menu;
-    hide_user_card_popover_manage_menu();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        return;
-    }
-
     const is_me = people.is_my_user_id(user.user_id);
     const is_muted = muted_users.is_user_muted(user.user_id);
     const is_system_bot = user.is_system_bot;
@@ -413,48 +407,33 @@ function toggle_user_card_popover_manage_menu(element, user) {
         user_id: user.user_id,
     };
 
-    const $popover_elt = $(element);
-    $popover_elt.popover({
-        content: render_user_card_popover_manage_menu(args),
+    popover_menus.toggle_popover_menu(element, {
         placement: "bottom",
-        html: true,
-        trigger: "manual",
-        fixed: true,
+        onCreate(instance) {
+            manage_menu.instance = instance;
+            const $popover = $(instance.popper);
+            $popover.addClass("manage-menu-popover-root");
+            instance.setContent(ui_util.parse_html(render_user_card_popover_manage_menu(args)));
+        },
+        onHidden() {
+            manage_menu.hide();
+        },
     });
-
-    $popover_elt.popover("show");
-    $current_user_card_popover_manage_menu = $popover_elt;
-}
-
-export function hide_user_card_popover_manage_menu() {
-    if ($current_user_card_popover_manage_menu !== undefined) {
-        $current_user_card_popover_manage_menu.popover("destroy");
-        $current_user_card_popover_manage_menu = undefined;
-    }
-}
-
-export function is_user_card_manage_menu_open() {
-    return $current_user_card_popover_manage_menu !== undefined;
-}
-
-export function user_card_popover_manage_menu_handle_keyboard(key) {
-    const $items = get_user_card_popover_manage_menu_items();
-    popover_items_handle_keyboard(key, $items);
 }
 
 export function get_user_card_popover_manage_menu_items() {
-    if (!$current_user_card_popover_manage_menu) {
+    if (!manage_menu.is_open()) {
         blueslip.error("Trying to get menu items when manage menu popover is closed.");
         return undefined;
     }
 
-    const popover_data = $current_user_card_popover_manage_menu.data("popover");
-    if (!popover_data) {
+    const $popover = $(manage_menu.instance.popper);
+    if (!$popover) {
         blueslip.error("Cannot find popover data for manage menu.");
         return undefined;
     }
 
-    return $(".user-card-popover-manage-menu li:not(.divider):visible a", popover_data.$tip);
+    return $(".user-card-popover-manage-menu li:not(.divider):visible a", $popover);
 }
 
 // Functions related to message user card popover.
