@@ -83,6 +83,11 @@ export function compute_narrow_title(filter) {
         if (recent_view_util.is_visible()) {
             return $t({defaultMessage: "Recent conversations"});
         }
+
+        if (inbox_util.is_visible()) {
+            return $t({defaultMessage: "Inbox"});
+        }
+
         return $t({defaultMessage: "All messages"});
     }
 
