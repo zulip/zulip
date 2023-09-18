@@ -880,8 +880,16 @@ input[type="checkbox"] {
             color: hsl(0deg 56% 73%);
         }
 
-        .copy-gold {
-            color: hsl(51deg 90% 50%);
+        .copy_zuliprc {
+            padding: 0 4px;
+
+            #clipboard_image {
+                margin: 0 -2px 0 0;
+
+                path {
+                    fill: hsl(51deg 90% 50%);
+                }
+            }
         }
 
         .purple {
