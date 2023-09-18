@@ -1089,6 +1089,7 @@ input[type="checkbox"] {
 label.display-settings-radio-choice-label {
     border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
     padding: 8px 0 10px;
+    display: flex;
 
     &:last-of-type {
         border-bottom: none;
@@ -1117,7 +1118,8 @@ label.display-settings-radio-choice-label {
     }
 
     .right {
-        float: right;
+        /* Push to far right in flex container. */
+        margin-left: auto;
     }
 }
 
@@ -1147,10 +1149,8 @@ $option_title_width: 180px;
         overflow-x: hidden;
         overflow-y: visible;
         position: relative;
-        height: 36px;
 
         .user-name-and-status-text {
-            margin-top: -4px;
             display: flex;
             flex-direction: column;
         }
