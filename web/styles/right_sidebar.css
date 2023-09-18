@@ -131,9 +131,9 @@ $user_status_emoji_width: 24px;
 
 .user_list_style_values {
     .user-name-and-status-emoji {
-        display: block;
+        display: flex;
+        align-items: center;
         width: 100%;
-        height: 20px;
 
         .user-name {
             display: inline-block;
@@ -144,7 +144,7 @@ $user_status_emoji_width: 24px;
 
         .status-emoji {
             line-height: 20px;
-            top: -2px;
+            margin-left: 6px;
         }
     }
 
