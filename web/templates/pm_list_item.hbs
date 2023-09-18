@@ -12,7 +12,7 @@
         </div>
 
         <a href='{{url}}' class="conversation-partners">
-            {{recipients}}
+            <span class="conversation-partners-list">{{recipients}}</span>
             {{> status_emoji status_emoji_info}}
         </a>
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
