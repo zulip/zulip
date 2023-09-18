@@ -57,7 +57,7 @@ export function popover_items_handle_keyboard(key, $items) {
 
     if (key === "enter" && index >= 0 && index < $items.length) {
         $items[index].click();
-        if (user_card_popover.is_user_card_manage_menu_open()) {
+        if (user_card_popover.manage_menu.is_open()) {
             const $items = user_card_popover.get_user_card_popover_manage_menu_items();
             focus_first_popover_item($items);
         }
@@ -66,7 +66,7 @@ export function popover_items_handle_keyboard(key, $items) {
     if (index === -1) {
         if (
             $(".user-card-popover-manage-menu-btn").is(":visible") &&
-            !user_card_popover.is_user_card_manage_menu_open()
+            !user_card_popover.manage_menu.is_open()
         ) {
             // If we have a "Manage Menu" button in the user card popover,
             // the first item to receive focus shouldn't be that button.
