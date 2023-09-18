@@ -389,9 +389,10 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
     # We go directly to the database to get user objects,
     # since inactive users are likely to not be in the cache.
     users = (
-        UserProfile.objects.filter(id__in=user_ids, is_active=True, realm__deactivated=False)
+        UserProfile.objects.select_related("realm")
+        .seal()
+        .filter(id__in=user_ids, is_active=True, realm__deactivated=False)
         .order_by("id")
-        .select_related("realm")
     )
     digest_users = []
 

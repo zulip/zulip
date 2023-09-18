@@ -1051,8 +1051,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         user_profile_dict["password"] = None
         user_profile_dict["api_key"] = generate_api_key()
         # Since Zulip doesn't use these permissions, drop them
-        del user_profile_dict["user_permissions"]
-        del user_profile_dict["groups"]
+        if "user_permissions" in user_profile_dict:
+            del user_profile_dict["user_permissions"]
+        if "groups" in user_profile_dict:
+            del user_profile_dict["groups"]
         # The short_name field is obsolete in Zulip, but it's
         # convenient for third party exports to populate it.
         if "short_name" in user_profile_dict:
@@ -1079,7 +1081,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Ensure RealmEmoji get the .author set to a reasonable default, if the value
     # wasn't provided in the import data.
     first_user_profile = (
-        UserProfile.objects.filter(realm=realm, is_active=True, role=UserProfile.ROLE_REALM_OWNER)
+        UserProfile.objects.seal()
+        .filter(realm=realm, is_active=True, role=UserProfile.ROLE_REALM_OWNER)
         .order_by("id")
         .first()
     )
@@ -1123,7 +1126,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     update_model_ids(Recipient, data, "recipient")
     bulk_import_model(data, Recipient)
     bulk_set_users_or_streams_recipient_fields(Stream, Stream.objects.filter(realm=realm))
-    bulk_set_users_or_streams_recipient_fields(UserProfile, UserProfile.objects.filter(realm=realm))
+    bulk_set_users_or_streams_recipient_fields(
+        UserProfile, UserProfile.objects.seal().filter(realm=realm)
+    )
 
     re_map_foreign_keys(data, "zerver_subscription", "user_profile", related_table="user_profile")
     get_huddles_from_subscription(data, "zerver_subscription")

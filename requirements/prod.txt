@@ -448,6 +448,7 @@ django[argon2]==4.2.5 \
     #   django-otp
     #   django-phonenumber-field
     #   django-scim2
+    #   django-seal
     #   django-stubs-ext
     #   django-two-factor-auth
     #   social-auth-app-django
@@ -480,6 +481,10 @@ django-phonenumber-field==6.4.0 \
 django-scim2==0.19.1 \
     --hash=sha256:8126111160e76a880f6699babc5259f0345c9316c8018ce5dcc3f7579ccb9e89 \
     --hash=sha256:845eaa64e72e4ddfe2aa54d21865721f8c1d59ecd9c06e72341eeb03ed6ba94e
+    # via -r requirements/common.in
+django-seal==1.5.1 \
+    --hash=sha256:03264b7d760b412f0de3f8a215822a0e375fd5a58d92fe989d990917c177f808 \
+    --hash=sha256:c9fc8b14cc1b35015b018f1a95bc7bd930a9a3155ba7b54c240b14a472645065
     # via -r requirements/common.in
 django-stubs-ext==4.2.2 \
     --hash=sha256:c69d1cc46f1c4c3b7894b685a5022c29b2a36c7cfb52e23762eaf357ebfc2c98 \

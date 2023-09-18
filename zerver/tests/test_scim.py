@@ -223,9 +223,9 @@ class TestSCIMUser(SCIMTestCase):
             "startIndex": 1,
             "Resources": [
                 self.generate_user_schema(user_profile)
-                for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False).order_by(
-                    "id"
-                )
+                for user_profile in UserProfile.objects.seal()
+                .filter(realm=realm, is_bot=False)
+                .order_by("id")
             ],
         }
 
@@ -297,7 +297,7 @@ class TestSCIMUser(SCIMTestCase):
         self.assertEqual(result.status_code, 200)
         output_data = orjson.loads(result.content)
 
-        user_query = UserProfile.objects.filter(
+        user_query = UserProfile.objects.seal().filter(
             realm=realm, is_bot=False, delivery_email__endswith="@zulip.com"
         )
         expected_response_schema = {
@@ -307,9 +307,9 @@ class TestSCIMUser(SCIMTestCase):
             "startIndex": 1,
             "Resources": [
                 self.generate_user_schema(user_profile)
-                for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False).order_by(
-                    "id"
-                )
+                for user_profile in UserProfile.objects.seal()
+                .filter(realm=realm, is_bot=False)
+                .order_by("id")
             ],
         }
 
@@ -335,7 +335,7 @@ class TestSCIMUser(SCIMTestCase):
         new_user_count = UserProfile.objects.count()
         self.assertEqual(new_user_count, original_user_count + 1)
 
-        new_user = UserProfile.objects.last()
+        new_user = UserProfile.objects.seal().last()
         assert new_user is not None
         self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
         self.assertEqual(new_user.full_name, "New User")
@@ -407,7 +407,7 @@ class TestSCIMUser(SCIMTestCase):
         new_user_count = UserProfile.objects.count()
         self.assertEqual(new_user_count, original_user_count + 1)
 
-        new_user = UserProfile.objects.last()
+        new_user = UserProfile.objects.seal().last()
         assert new_user is not None
         self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
         self.assertEqual(new_user.full_name, "New User")
@@ -551,7 +551,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.delivery_email, "bjensen@zulip.com")
         self.assertEqual(hamlet.full_name, "Ms. Barbara J Jensen III")
 
@@ -578,7 +578,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.delivery_email, hamlet_email)
         self.assertEqual(hamlet.full_name, "Ms. Barbara J Jensen III")
 
@@ -622,7 +622,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         output_data = orjson.loads(result.content)
@@ -641,7 +641,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.is_active, False)
 
         # We modify the active attribute in the payload to cause reactivation of the user.
@@ -649,7 +649,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.is_active, True)
 
     def test_patch_with_path(self) -> None:
@@ -663,7 +663,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.delivery_email, "hamlet_new@zulip.com")
 
         output_data = orjson.loads(result.content)
@@ -682,7 +682,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.full_name, "New Name")
         self.assertEqual(hamlet.delivery_email, "hamlet_new2@zulip.com")
 
@@ -707,7 +707,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.delivery_email, "hamlet_new@zulip.com")
 
         output_data = orjson.loads(result.content)
@@ -725,7 +725,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
     def test_patch_deactivate_reactivate_user(self) -> None:
@@ -739,7 +739,7 @@ class TestSCIMUser(SCIMTestCase):
         result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.is_active, False)
 
         # Payload for a PATCH request to reactivate the user.
@@ -749,7 +749,7 @@ class TestSCIMUser(SCIMTestCase):
         }
         result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
-        hamlet.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
         self.assertEqual(hamlet.is_active, True)
 
     def test_patch_unsupported_attribute(self) -> None:

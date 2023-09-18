@@ -153,7 +153,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
         # Test the default mode excluding bots and deactivated users
         expected_user_profiles = sorted(
-            UserProfile.objects.filter(realm=self.zulip_realm, is_active=True, is_bot=False),
+            UserProfile.objects.seal().filter(realm=self.zulip_realm, is_active=True, is_bot=False),
             key=lambda x: x.email,
         )
         user_profiles = self.get_users_sorted(
@@ -163,7 +163,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
         # Test the default mode excluding bots and deactivated users
         expected_user_profiles = sorted(
-            UserProfile.objects.filter(realm=self.zulip_realm, is_active=True),
+            UserProfile.objects.seal().filter(realm=self.zulip_realm, is_active=True),
             key=lambda x: x.email,
         )
         user_profiles = self.get_users_sorted(dict(users=None, all_users=True), self.zulip_realm)
@@ -171,7 +171,8 @@ class TestZulipBaseCommand(ZulipTestCase):
 
         # Test include_deactivated
         expected_user_profiles = sorted(
-            UserProfile.objects.filter(realm=self.zulip_realm, is_bot=False), key=lambda x: x.email
+            UserProfile.objects.seal().filter(realm=self.zulip_realm, is_bot=False),
+            key=lambda x: x.email,
         )
         user_profiles = self.get_users_sorted(
             dict(users=None, all_users=True),
@@ -191,7 +192,8 @@ class TestZulipBaseCommand(ZulipTestCase):
 
     def test_get_non_bot_users(self) -> None:
         expected_user_profiles = sorted(
-            UserProfile.objects.filter(realm=self.zulip_realm, is_bot=False), key=lambda x: x.email
+            UserProfile.objects.seal().filter(realm=self.zulip_realm, is_bot=False),
+            key=lambda x: x.email,
         )
         user_profiles = self.get_users_sorted(
             dict(users=None, all_users=True), self.zulip_realm, is_bot=False

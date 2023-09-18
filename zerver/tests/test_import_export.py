@@ -944,7 +944,7 @@ class RealmImportExportTest(ExportFile):
             '<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n'
             f'<p><span class="user-mention" data-user-id="{orig_polonius_user.id}">@Polonius</span></p>',
         )
-        imported_polonius_user = UserProfile.objects.get(
+        imported_polonius_user = UserProfile.objects.seal().get(
             delivery_email=self.example_email("polonius"), realm=imported_realm
         )
         imported_msg = Message.objects.get(
@@ -957,7 +957,7 @@ class RealmImportExportTest(ExportFile):
         )
 
         # Check recipient_id was generated correctly for the imported users and streams.
-        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+        for user_profile in UserProfile.objects.seal().filter(realm=imported_realm):
             self.assertEqual(
                 user_profile.recipient_id,
                 Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
@@ -984,7 +984,7 @@ class RealmImportExportTest(ExportFile):
             original_scheduled_message.scheduled_timestamp,
         )
 
-        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+        for user_profile in UserProfile.objects.seal().filter(realm=imported_realm):
             # Check that all Subscriptions have the correct is_user_active set.
             self.assertEqual(
                 Subscription.objects.filter(
@@ -1059,7 +1059,11 @@ class RealmImportExportTest(ExportFile):
             return recipient
 
         def get_recipient_user(r: Realm) -> Recipient:
-            return assert_is_not_none(UserProfile.objects.get(full_name="Iago", realm=r).recipient)
+            return assert_is_not_none(
+                UserProfile.objects.select_related("recipient")
+                .get(full_name="Iago", realm=r)
+                .recipient
+            )
 
         @getter
         def get_stream_recipient_type(r: Realm) -> int:
@@ -1247,13 +1251,13 @@ class RealmImportExportTest(ExportFile):
         # test botstoragedata and botconfigdata
         @getter
         def get_botstoragedata(r: Realm) -> Dict[str, object]:
-            bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
+            bot_profile = UserProfile.objects.seal().get(full_name="bot", realm=r)
             bot_storage_data = BotStorageData.objects.get(bot_profile=bot_profile)
             return {"key": bot_storage_data.key, "data": bot_storage_data.value}
 
         @getter
         def get_botconfigdata(r: Realm) -> Dict[str, object]:
-            bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
+            bot_profile = UserProfile.objects.seal().get(full_name="bot", realm=r)
             bot_config_data = BotConfigData.objects.get(bot_profile=bot_profile)
             return {"key": bot_config_data.key, "data": bot_config_data.value}
 
@@ -1282,7 +1286,7 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_user_mention(r: Realm) -> str:
-            mentioned_user = UserProfile.objects.get(
+            mentioned_user = UserProfile.objects.seal().get(
                 delivery_email=self.example_email("hamlet"), realm=r
             )
             data_user_id = f'data-user-id="{mentioned_user.id}"'
@@ -1411,7 +1415,9 @@ class RealmImportExportTest(ExportFile):
         self.assertTrue(os.path.isfile(emoji_file_path))
 
         # Test avatars
-        user_profile = UserProfile.objects.get(full_name=user.full_name, realm=imported_realm)
+        user_profile = UserProfile.objects.seal().get(
+            full_name=user.full_name, realm=imported_realm
+        )
         avatar_path_id = user_avatar_path(user_profile) + ".original"
         avatar_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path_id)
         self.assertTrue(os.path.isfile(avatar_file_path))
@@ -1475,7 +1481,9 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(emoji_key.key, emoji_path)
 
         # Test avatars
-        user_profile = UserProfile.objects.get(full_name=user.full_name, realm=imported_realm)
+        user_profile = UserProfile.objects.seal().get(
+            full_name=user.full_name, realm=imported_realm
+        )
         avatar_path_id = user_avatar_path(user_profile) + ".original"
         original_image_key = avatar_bucket.Object(avatar_path_id)
         self.assertEqual(original_image_key.key, avatar_path_id)
@@ -1587,7 +1595,7 @@ class RealmImportExportTest(ExportFile):
 
         # Make sure that all users get logged as a member in their
         # corresponding system groups.
-        for user in UserProfile.objects.filter(realm=imported_realm):
+        for user in UserProfile.objects.seal().filter(realm=imported_realm):
             expected_group_names = {UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user.role]["name"]}
             if UserGroup.MEMBERS_GROUP_NAME in expected_group_names:
                 expected_group_names.add(UserGroup.FULL_MEMBERS_GROUP_NAME)

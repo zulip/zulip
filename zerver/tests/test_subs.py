@@ -105,6 +105,7 @@ from zerver.models import (
     get_default_stream_groups,
     get_realm,
     get_stream,
+    get_stream_by_id_in_realm,
     get_user,
     get_user_profile_by_id_in_realm,
     validate_attachment_request,
@@ -1078,6 +1079,9 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.make_stream("stream", realm=realm)
         stream_id = self.subscribe(user_profile, "stream").id
 
+        def fresh_stream() -> Stream:
+            return get_stream_by_id_in_realm(stream_id, realm)
+
         params = {
             "is_default_stream": orjson.dumps(True).decode(),
         }
@@ -1095,7 +1099,9 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "A default stream cannot be private.")
-        stream.refresh_from_db()
+
+        stream = fresh_stream()
+
         self.assertFalse(stream.invite_only)
 
         params = {
@@ -1104,7 +1110,9 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_success(result)
-        stream.refresh_from_db()
+
+        stream = fresh_stream()
+
         self.assertTrue(stream.invite_only)
         self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
 
@@ -1117,7 +1125,9 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/streams/{stream_2_id}", bad_params)
         self.assert_json_error(result, "A default stream cannot be private.")
-        stream.refresh_from_db()
+
+        stream = fresh_stream()
+
         self.assertFalse(stream_2.invite_only)
         self.assertFalse(stream_2_id in get_default_stream_ids_for_realm(realm.id))
 
@@ -1137,7 +1147,9 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/streams/{private_stream_id}", params)
         self.assert_json_success(result)
-        private_stream.refresh_from_db()
+
+        private_stream = get_stream_by_id_in_realm(private_stream_id, realm)
+
         self.assertFalse(private_stream.invite_only)
         self.assertTrue(private_stream_id in get_default_stream_ids_for_realm(realm.id))
 
@@ -1151,11 +1163,19 @@ class StreamAdminTest(ZulipTestCase):
 
         owner = self.example_user("desdemona")
         realm = owner.realm
-        stream = self.make_stream("test_stream", realm=realm)
+        self.make_stream("test_stream", realm=realm)
         self.subscribe(owner, "test_stream")
         body = f"First message ...[zulip.txt](http://{realm.host}" + url + ")"
         msg_id = self.send_stream_message(owner, "test_stream", body, "test")
-        attachment = Attachment.objects.get(messages__id=msg_id)
+
+        def fresh_stream() -> Stream:
+            return get_stream("test_stream", realm)
+
+        def fresh_attachment() -> Attachment:
+            return Attachment.objects.get(messages__id=msg_id)
+
+        attachment = fresh_attachment()
+        stream = fresh_stream()
 
         self.assertFalse(stream.is_web_public)
         self.assertFalse(attachment.is_web_public)
@@ -1169,8 +1189,9 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_success(result)
 
-        attachment.refresh_from_db()
-        stream.refresh_from_db()
+        attachment = fresh_attachment()
+        stream = fresh_stream()
+
         self.assertFalse(stream.is_web_public)
         self.assertFalse(attachment.is_web_public)
         self.assertTrue(stream.invite_only)
@@ -1179,7 +1200,8 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         self.assertFalse(validate_attachment_request(cordelia, attachment.path_id))
         self.assertTrue(validate_attachment_request(owner, attachment.path_id))
-        attachment.refresh_from_db()
+
+        attachment = fresh_attachment()
         self.assertFalse(attachment.is_realm_public)
         self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
 
@@ -1191,20 +1213,25 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_success(result)
 
-        attachment.refresh_from_db()
-        stream.refresh_from_db()
+        attachment = fresh_attachment()
+        stream = fresh_stream()
+
         self.assertFalse(stream.invite_only)
         self.assertTrue(stream.is_web_public)
         self.assertIsNone(attachment.is_realm_public)
         self.assertIsNone(attachment.is_web_public)
 
         self.assertTrue(validate_attachment_request_for_spectator_access(realm, attachment))
-        attachment.refresh_from_db()
+
+        attachment = fresh_attachment()
+
         self.assertTrue(attachment.is_web_public)
         self.assertIsNone(attachment.is_realm_public)
 
         self.assertTrue(validate_attachment_request(cordelia, attachment.path_id))
-        attachment.refresh_from_db()
+
+        attachment = fresh_attachment()
+
         self.assertTrue(attachment.is_realm_public)
 
         params = {
@@ -1215,15 +1242,18 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_success(result)
 
-        attachment.refresh_from_db()
-        stream.refresh_from_db()
+        attachment = fresh_attachment()
+        stream = fresh_stream()
+
         self.assertIsNone(attachment.is_web_public)
         self.assertFalse(stream.invite_only)
         self.assertTrue(attachment.is_realm_public)
 
         self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
-        attachment.refresh_from_db()
-        stream.refresh_from_db()
+
+        attachment = fresh_attachment()
+        stream = fresh_stream()
+
         self.assertFalse(attachment.is_web_public)
 
         # Verify moving a message to another public stream doesn't reset cache.
@@ -1237,7 +1267,9 @@ class StreamAdminTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        attachment.refresh_from_db()
+
+        attachment = fresh_attachment()
+
         self.assertFalse(attachment.is_web_public)
         self.assertTrue(attachment.is_realm_public)
 
@@ -1252,13 +1284,17 @@ class StreamAdminTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        attachment.refresh_from_db()
+
+        attachment = fresh_attachment()
+
         self.assertFalse(attachment.is_web_public)
         self.assertIsNone(attachment.is_realm_public)
 
         self.assertFalse(validate_attachment_request(cordelia, attachment.path_id))
         self.assertTrue(validate_attachment_request(owner, attachment.path_id))
-        attachment.refresh_from_db()
+
+        attachment = fresh_attachment()
+
         self.assertFalse(attachment.is_realm_public)
 
         # Verify moving a message to a web-public stream
@@ -1271,12 +1307,16 @@ class StreamAdminTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        attachment.refresh_from_db()
+
+        attachment = fresh_attachment()
+
         self.assertIsNone(attachment.is_web_public)
         self.assertIsNone(attachment.is_realm_public)
 
         self.assertTrue(validate_attachment_request_for_spectator_access(realm, attachment))
-        attachment.refresh_from_db()
+
+        attachment = fresh_attachment()
+
         self.assertTrue(attachment.is_web_public)
 
     def test_try_make_stream_public_with_private_history(self) -> None:
@@ -4397,30 +4437,20 @@ class SubscriptionAPITest(ZulipTestCase):
             "create_web_public_stream_policy", invite_only=False, is_web_public=True
         )
 
-    def _test_can_create_streams(self, stream_policy: str, invite_only: bool) -> None:
-        if invite_only:
-
-            def validation_func(user_profile: UserProfile) -> bool:
-                user_profile.refresh_from_db()
-                return user_profile.can_create_private_streams()
-
-        else:
-
-            def validation_func(user_profile: UserProfile) -> bool:
-                user_profile.refresh_from_db()
-                return user_profile.can_create_public_streams()
-
-        self.check_has_permission_policies(stream_policy, validation_func)
-
-    def test_can_create_private_streams(self) -> None:
-        self._test_can_create_streams("create_private_stream_policy", invite_only=True)
-
-    def test_can_create_public_streams(self) -> None:
-        self._test_can_create_streams("create_public_stream_policy", invite_only=False)
-
-    def test_can_create_web_public_streams(self) -> None:
+    def test_private_stream_policies(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
+            return user_profile.can_create_private_streams()
+
+        self.check_has_permission_policies("create_private_stream_policy", validation_func)
+
+    def test_public_stream_policies(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            return user_profile.can_create_public_streams()
+
+        self.check_has_permission_policies("create_public_stream_policy", validation_func)
+
+    def test_web_public_stream_policies(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
             return user_profile.can_create_web_public_streams()
 
         self.check_has_permission_policies("create_web_public_stream_policy", validation_func)
@@ -4522,7 +4552,6 @@ class SubscriptionAPITest(ZulipTestCase):
         """
 
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_subscribe_other_users()
 
         self.check_has_permission_policies("invite_to_stream_policy", validation_func)

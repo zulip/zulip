@@ -184,7 +184,7 @@ class UserStatusTest(ZulipTestCase):
         # Setting away is a deprecated way of accessing a user's presence_enabled
         # setting. Can be removed when clients migrate "away" (also referred to as
         # "unavailable") feature to directly use the presence_enabled setting.
-        user = UserProfile.objects.get(id=hamlet.id)
+        user = UserProfile.objects.seal().get(id=hamlet.id)
         self.assertEqual(user.presence_enabled, False)
 
         # Server should fill emoji_code and reaction_type by emoji_name.
@@ -243,7 +243,7 @@ class UserStatusTest(ZulipTestCase):
         # Setting away is a deprecated way of accessing a user's presence_enabled
         # setting. Can be removed when clients migrate "away" (also referred to as
         # "unavailable") feature to directly use the presence_enabled setting.
-        user = UserProfile.objects.get(id=hamlet.id)
+        user = UserProfile.objects.seal().get(id=hamlet.id)
         self.assertEqual(user.presence_enabled, True)
 
         # And now just update your info.
@@ -277,7 +277,7 @@ class UserStatusTest(ZulipTestCase):
         # Setting away is a deprecated way of accessing a user's presence_enabled
         # setting. Can be removed when clients migrate "away" (also referred to as
         # "unavailable") feature to directly use the presence_enabled setting.
-        user = UserProfile.objects.get(id=hamlet.id)
+        user = UserProfile.objects.seal().get(id=hamlet.id)
         self.assertEqual(user.presence_enabled, False)
 
         # And set status text while away.

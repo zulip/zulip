@@ -31,7 +31,7 @@ def user_cache_items(
 ) -> None:
     for api_key in get_all_api_keys(user_profile):
         items_for_remote_cache[user_profile_by_api_key_cache_key(api_key)] = (user_profile,)
-    items_for_remote_cache[user_profile_cache_key(user_profile.email, user_profile.realm)] = (
+    items_for_remote_cache[user_profile_cache_key(user_profile.email, user_profile.realm_id)] = (
         user_profile,
     )
     # We have other user_profile caches, but none of them are on the
@@ -76,8 +76,10 @@ def get_active_realm_ids() -> ValuesQuerySet[RealmCount, int]:
 
 
 def get_users() -> QuerySet[UserProfile]:
-    return UserProfile.objects.select_related("realm", "bot_owner").filter(
-        long_term_idle=False, realm__in=get_active_realm_ids()
+    return (
+        UserProfile.objects.select_related("realm", "bot_owner")
+        .seal()
+        .filter(long_term_idle=False, realm__in=get_active_realm_ids())
     )
 
 

@@ -126,7 +126,9 @@ class UserPresenceTests(ZulipTestCase):
                     last_active_time=initial_presence,
                     last_connected_time=initial_presence,
                 )
-                for user_profile in UserProfile.objects.filter(realm=realm)
+                for user_profile in UserProfile.objects.select_related("realm")
+                .seal()
+                .filter(realm=realm)
             ]
         )
 

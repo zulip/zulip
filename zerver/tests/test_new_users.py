@@ -289,7 +289,8 @@ class TestNotifyNewUser(ZulipTestCase):
 
         realm.signup_notifications_stream = None
         realm.save(update_fields=["signup_notifications_stream"])
-        new_user.refresh_from_db()
+
+        new_user = self.refresh_user(new_user)
         notify_new_user(new_user)
         self.assertEqual(self.get_message_count(), message_count + 1)
 

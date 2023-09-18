@@ -1006,8 +1006,10 @@ def find_account(
             for email in emails:
                 emails_q |= Q(delivery_email__iexact=email)
 
-            user_profiles = UserProfile.objects.filter(
-                emails_q, is_active=True, is_bot=False, realm__deactivated=False
+            user_profiles = (
+                UserProfile.objects.select_related("realm")
+                .seal()
+                .filter(emails_q, is_active=True, is_bot=False, realm__deactivated=False)
             )
 
             # We organize the data in preparation for sending exactly

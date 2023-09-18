@@ -403,8 +403,11 @@ class StripeTestCase(ZulipTestCase):
         ]
 
         # Deactivate all users in our realm that aren't in our whitelist.
-        for user_profile in UserProfile.objects.filter(realm_id=realm.id).exclude(
-            delivery_email__in=active_emails
+        for user_profile in (
+            UserProfile.objects.select_related("realm")
+            .seal()
+            .filter(realm_id=realm.id)
+            .exclude(delivery_email__in=active_emails)
         ):
             do_deactivate_user(user_profile, acting_user=None)
 
@@ -3755,8 +3758,8 @@ class StripeTest(StripeTestCase):
 
             email_found = False
             for email in outbox:
-                recipient = UserProfile.objects.get(email=email.to[0])
-                if recipient.realm == row.realm:
+                recipient = UserProfile.objects.seal().get(email=email.to[0])
+                if recipient.realm_id == row.realm.id:
                     self.assertIn(
                         f"Your organization, http://{row.realm.string_id}.testserver, has been downgraded",
                         outbox[0].body,

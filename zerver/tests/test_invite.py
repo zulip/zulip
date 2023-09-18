@@ -801,7 +801,6 @@ class InviteUserTest(InviteUserBase):
 
     def test_can_invite_others_to_realm(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_invite_users_by_email()
 
         realm = get_realm("zulip")
@@ -2196,10 +2195,10 @@ class InvitationsTestCase(InviteUserBase):
         self.check_sent_emails([invitee])
 
     def test_accessing_invites_in_another_realm(self) -> None:
-        inviter = UserProfile.objects.exclude(realm=get_realm("zulip")).first()
+        inviter = UserProfile.objects.seal().exclude(realm=get_realm("zulip")).first()
         assert inviter is not None
         prereg_user = PreregistrationUser.objects.create(
-            email="email", referred_by=inviter, realm=inviter.realm
+            email="email", referred_by=inviter, realm_id=inviter.realm_id
         )
         self.login("iago")
         error_result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
@@ -2212,7 +2211,7 @@ class InvitationsTestCase(InviteUserBase):
         password = "password"
         realm = get_realm("zulip")
 
-        inviter = UserProfile.objects.filter(realm=realm).first()
+        inviter = UserProfile.objects.seal().filter(realm=realm).first()
         prereg_user = PreregistrationUser.objects.create(
             email=email, referred_by=inviter, realm=realm
         )

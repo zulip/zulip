@@ -118,15 +118,19 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_change_email_link_cant_be_reused(self) -> None:
         new_email = "hamlet-new@zulip.com"
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
+        hamlet = self.example_user("hamlet")
+        hamlet_id = hamlet.id
+        self.login_user(hamlet)
+
+        self.assertNotEqual(hamlet.delivery_email, new_email)
 
         activation_url = self.generate_email_change_link(new_email)
         response = self.client_get(activation_url)
         self.assertEqual(response.status_code, 200)
 
-        user_profile.refresh_from_db()
-        self.assertEqual(user_profile.delivery_email, new_email)
+        # Verify our email actually did change.
+        user = UserProfile.objects.seal().get(delivery_email=new_email)
+        self.assertEqual(user.id, hamlet_id)
 
         response = self.client_get(activation_url)
         self.assertEqual(response.status_code, 404)

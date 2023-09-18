@@ -350,8 +350,8 @@ class PermissionTest(ZulipTestCase):
         # it doesn't need to be, but client-side changes would be
         # required in apps like the mobile apps.
         # delivery_email is sent for admins.
-        admin.refresh_from_db()
-        user.refresh_from_db()
+        admin = self.refresh_user(admin)
+        user = self.refresh_user(user)
         self.login_user(admin)
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         members = self.assert_json_success(result)["members"]
@@ -1029,7 +1029,8 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(
-            new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id)
+            new_user.recipient_id,
+            Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id).id,
         )
 
         # we can't create the same user twice.
@@ -1333,7 +1334,7 @@ class UserProfileTest(ZulipTestCase):
 
     def test_cross_realm_dicts(self) -> None:
         def user_row(email: str) -> Dict[str, object]:
-            user = UserProfile.objects.get(email=email)
+            user = UserProfile.objects.seal().get(email=email)
             avatar_url = get_avatar_field(
                 user_id=user.id,
                 realm_id=user.realm_id,
@@ -1386,7 +1387,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(actual_dicts, expected_dicts)
 
         # Test cache invalidation
-        welcome_bot = UserProfile.objects.get(email="welcome-bot@zulip.com")
+        welcome_bot = UserProfile.objects.seal().get(email="welcome-bot@zulip.com")
         welcome_bot.full_name = "fred"
         welcome_bot.save()
 
@@ -1507,12 +1508,12 @@ class ActivateTest(ZulipTestCase):
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
-        user.refresh_from_db()
+        user = self.refresh_user(user)
         self.assertFalse(user.is_active)
 
         # Reactivate user
         do_reactivate_user(user, acting_user=None)
-        user.refresh_from_db()
+        user = self.refresh_user(user)
         self.assertTrue(user.is_active)
 
         # Verify no email sent by default.
@@ -1523,7 +1524,7 @@ class ActivateTest(ZulipTestCase):
             ),
         )
         self.assert_json_success(result)
-        user.refresh_from_db()
+        user = self.refresh_user(user)
         self.assertFalse(user.is_active)
 
         self.assert_length(outbox, 1)
@@ -2491,15 +2492,16 @@ class DeleteUserTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        hamlet_personal_recipient = hamlet.recipient
+        hamlet_personal_recipient_id = hamlet.recipient_id
         hamlet_user_id = hamlet.id
         hamlet_date_joined = hamlet.date_joined
 
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
 
+        assert hamlet_personal_recipient_id is not None
         personal_message_ids_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient_id=hamlet_personal_recipient_id
         ).values_list("id", flat=True)
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
@@ -2520,7 +2522,7 @@ class DeleteUserTest(ZulipTestCase):
 
         do_delete_user(hamlet, acting_user=None)
 
-        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+        replacement_dummy_user = UserProfile.objects.seal().get(id=hamlet_user_id, realm=realm)
 
         self.assertEqual(
             replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
@@ -2558,15 +2560,16 @@ class DeleteUserTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        hamlet_personal_recipient = hamlet.recipient
+        hamlet_personal_recipient_id = hamlet.recipient_id
         hamlet_user_id = hamlet.id
         hamlet_date_joined = hamlet.date_joined
 
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
 
+        assert hamlet_personal_recipient_id is not None
         personal_message_ids_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient_id=hamlet_personal_recipient_id
         ).values_list("id", flat=True)
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
@@ -2592,7 +2595,7 @@ class DeleteUserTest(ZulipTestCase):
 
         do_delete_user_preserving_messages(hamlet)
 
-        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+        replacement_dummy_user = UserProfile.objects.seal().get(id=hamlet_user_id, realm=realm)
 
         self.assertEqual(
             replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
@@ -2668,9 +2671,9 @@ class TestBulkRegenerateAPIKey(ZulipTestCase):
 
         bulk_regenerate_api_keys([hamlet.id, cordelia.id])
 
-        hamlet.refresh_from_db()
-        cordelia.refresh_from_db()
-        othello.refresh_from_db()
+        hamlet = self.refresh_user(hamlet)
+        cordelia = self.refresh_user(cordelia)
+        othello = self.refresh_user(othello)
 
         self.assertNotEqual(hamlet_old_api_key, hamlet.api_key)
         self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)

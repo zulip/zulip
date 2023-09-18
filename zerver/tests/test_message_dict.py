@@ -451,9 +451,9 @@ class MessageHydrationTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         message_id = self.send_personal_message(hamlet, cordelia, "test")
 
-        cordelia_recipient = cordelia.recipient
         # Cause the display_recipient to get cached:
-        assert cordelia_recipient is not None
+        assert cordelia.recipient_id is not None
+        cordelia_recipient = Recipient.objects.get(id=cordelia.recipient_id)
         get_display_recipient(cordelia_recipient)
 
         # Change cordelia's email:

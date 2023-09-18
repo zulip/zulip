@@ -341,7 +341,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     def active_human_users(self, realm: Realm) -> List[UserProfile]:
         users = list(
-            UserProfile.objects.filter(
+            UserProfile.objects.seal().filter(
                 realm=realm,
                 is_active=True,
                 is_bot=False,

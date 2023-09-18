@@ -909,7 +909,7 @@ def get_streams_for_user(
                 query_filter |= option
 
         if include_subscribed:
-            subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile)
+            subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile.id)
             recipient_check = Q(id__in=set(subscribed_stream_ids))
             add_filter_option(recipient_check)
         if include_public:
@@ -925,9 +925,9 @@ def get_streams_for_user(
             )
             add_filter_option(web_public_check)
         if include_owner_subscribed and user_profile.is_bot:
-            bot_owner = user_profile.bot_owner
-            assert bot_owner is not None
-            owner_stream_ids = get_subscribed_stream_ids_for_user(bot_owner)
+            bot_owner_id = user_profile.bot_owner_id
+            assert bot_owner_id is not None
+            owner_stream_ids = get_subscribed_stream_ids_for_user(bot_owner_id)
             owner_subscribed_check = Q(id__in=set(owner_stream_ids))
             add_filter_option(owner_subscribed_check)
 

@@ -27,11 +27,15 @@ def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> Optional
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
         # and beginning of email address
-        user = UserProfile.objects.filter(
-            Q(full_name__iexact=harbor_username) | Q(email__istartswith=harbor_username),
-            is_active=True,
-            realm=realm,
-        ).order_by("id")[0]
+        user = (
+            UserProfile.objects.seal()
+            .filter(
+                Q(full_name__iexact=harbor_username) | Q(email__istartswith=harbor_username),
+                is_active=True,
+                realm=realm,
+            )
+            .order_by("id")[0]
+        )
         return user  # nocoverage
     except IndexError:
         return None

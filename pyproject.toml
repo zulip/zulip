@@ -75,6 +75,7 @@ module = [
     "pyuca.*",
     "re2.*",
     "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
+    "seal.*",
     "scim2_filter_parser.attr_paths",
     "scrapy.*", # https://github.com/scrapy/scrapy/issues/4041
     "social_core.*",

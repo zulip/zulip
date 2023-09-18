@@ -598,7 +598,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
     bot_profiles = bot_profiles.select_related(
         "default_sending_stream", "default_events_register_stream"
-    )
+    ).seal()
     bot_profiles = bot_profiles.order_by("date_joined")
 
     def bot_info(bot_profile: UserProfile) -> Dict[str, Any]:

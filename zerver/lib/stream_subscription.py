@@ -50,10 +50,10 @@ def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet[Su
 
 
 def get_subscribed_stream_ids_for_user(
-    user_profile: UserProfile,
+    user_profile_id: int,
 ) -> ValuesQuerySet[Subscription, int]:
     return Subscription.objects.filter(
-        user_profile_id=user_profile,
+        user_profile_id=user_profile_id,
         recipient__type=Recipient.STREAM,
         active=True,
     ).values_list("recipient__type_id", flat=True)

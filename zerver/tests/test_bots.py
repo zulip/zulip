@@ -299,8 +299,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result["default_sending_stream"], "Denmark")
 
         profile = get_user(email, realm)
-        assert profile.default_sending_stream is not None
-        self.assertEqual(profile.default_sending_stream.name, "Denmark")
+        assert profile.default_sending_stream_id is not None
+        self.assertEqual(profile.default_sending_stream_id, get_stream("Denmark", realm).id)
 
     def test_add_bot_with_default_sending_stream_not_subscribed(self) -> None:
         email = "hambot-bot@zulip.testserver"
@@ -312,8 +312,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result["default_sending_stream"], "Rome")
 
         profile = get_user(email, realm)
-        assert profile.default_sending_stream is not None
-        self.assertEqual(profile.default_sending_stream.name, "Rome")
+        assert profile.default_sending_stream_id is not None
+        self.assertEqual(profile.default_sending_stream_id, get_stream("Rome", realm).id)
 
     def test_add_bot_email_address_visibility(self) -> None:
         # Test that we don't mangle the email field with
@@ -326,7 +326,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
-        user.refresh_from_db()
+
+        # refresh user
+        user = self.example_user("hamlet")
 
         self.login_user(user)
         self.assert_num_bots_equal(0)
@@ -433,8 +435,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = "hambot-bot@zulip.testserver"
         realm = get_realm("zulip")
         profile = get_user(email, realm)
-        assert profile.default_sending_stream is not None
-        self.assertEqual(profile.default_sending_stream.name, "Denmark")
+        assert profile.default_sending_stream_id is not None
+        self.assertEqual(profile.default_sending_stream_id, stream.id)
 
         (event,) = (e for e in events if e["event"]["type"] == "realm_bot")
         self.assertEqual(
@@ -492,8 +494,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result["default_events_register_stream"], "Denmark")
 
         profile = get_user(bot_email, bot_realm)
-        assert profile.default_events_register_stream is not None
-        self.assertEqual(profile.default_events_register_stream.name, "Denmark")
+        assert profile.default_events_register_stream_id is not None
+        self.assertEqual(
+            profile.default_events_register_stream_id, get_stream("Denmark", bot_realm).id
+        )
 
     def test_add_bot_with_default_events_register_stream_private_allowed(self) -> None:
         self.login("hamlet")
@@ -516,8 +520,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_email = "hambot-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
         bot_profile = get_user(bot_email, bot_realm)
-        assert bot_profile.default_events_register_stream is not None
-        self.assertEqual(bot_profile.default_events_register_stream.name, "Denmark")
+        assert bot_profile.default_events_register_stream_id is not None
+        self.assertEqual(bot_profile.default_events_register_stream_id, stream.id)
 
         (event,) = (e for e in events if e["event"]["type"] == "realm_bot")
         self.assertEqual(
@@ -860,7 +864,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         bot_id = result.json()["user_id"]
 
-        test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
+        test_bot = UserProfile.objects.select_related("realm").seal().get(id=bot_id, is_bot=True)
         private_stream = self.make_stream("private_stream", invite_only=True)
         public_stream = self.make_stream("public_stream")
         self.subscribe(test_bot, "private_stream")
@@ -880,9 +884,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("iago")
         result = self.client_post(f"/json/users/{bot_id}/reactivate")
         self.assert_json_success(result)
-        test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
-        assert test_bot.bot_owner is not None
-        self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
+        test_bot = UserProfile.objects.seal().get(id=bot_id, is_bot=True)
+        assert test_bot.bot_owner_id is not None
+        self.assertEqual(test_bot.bot_owner_id, self.example_user("iago").id)
 
         self.assertFalse(
             Subscription.objects.filter(
@@ -1127,7 +1131,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{bot_user.id}", bot_info)
         self.assert_json_success(result)
 
-        bot_user.refresh_from_db()
+        # refresh bot user for next check
+        bot_user = get_user(bot_email, bot_realm)
         self.assertEqual(bot_user.bot_owner, cordelia)
 
     def test_patch_bot_owner_with_private_streams(self) -> None:
@@ -1822,7 +1827,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "config_data": orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
         }
         self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        new_bot = UserProfile.objects.seal().get(full_name="My Stripe Bot")
         config_data = get_bot_config(new_bot)
         self.assertEqual(
             config_data, {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
@@ -1870,7 +1875,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
         }
         self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        new_bot = UserProfile.objects.seal().get(full_name="My Stripe Bot")
         with self.assertRaises(ConfigError):
             get_bot_config(new_bot)
 

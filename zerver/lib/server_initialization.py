@@ -63,7 +63,7 @@ def create_internal_realm() -> None:
     ]
     create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
     # Set the owners for these bots to the bots themselves
-    bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_bots])
+    bots = UserProfile.objects.seal().filter(email__in=[bot_info[1] for bot_info in internal_bots])
     for bot in bots:
         bot.bot_owner = bot
         bot.save()

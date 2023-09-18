@@ -36,7 +36,7 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
 
 
 def transfer_avatars_to_s3(processes: int) -> None:
-    users = list(UserProfile.objects.all())
+    users = list(UserProfile.objects.select_related("realm").seal().all())
     if processes == 1:
         for user in users:
             _transfer_avatar_to_s3(user)

@@ -79,7 +79,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_length(content["emoji"], 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
         self.assertIn("author_id", test_emoji)
-        author = UserProfile.objects.get(id=test_emoji["author_id"])
+        author = UserProfile.objects.seal().get(id=test_emoji["author_id"])
         self.assertEqual(author.email, email)
 
     def test_override_built_in_emoji_by_admin(self) -> None:
@@ -161,7 +161,6 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_can_add_custom_emoji(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_add_custom_emoji()
 
         self.check_has_permission_policies("add_custom_emoji_policy", validation_func)
