@@ -100,8 +100,10 @@
                         <span>{{this.description}}</span>
                         <span class="right preview">
                             {{#if (eq this.code 1)}}
-                            <span class="user-name">{{../full_name}}</span>
-                            <div class="emoji status-emoji emoji-1f3e0"></div>
+                            <div class="user-name-and-status-emoji">
+                                <span class="user-name">{{../full_name}}</span>
+                                {{> ../status_emoji emoji_code="1f3e0"}}
+                            </div>
                             {{/if}}
                             {{#if (eq this.code 2)}}
                             <div class="user-name-and-status-text">
