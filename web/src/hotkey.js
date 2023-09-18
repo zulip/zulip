@@ -658,7 +658,6 @@ export function process_hotkey(e, hotkey) {
         case "right_arrow":
         case "tab":
         case "shift_tab":
-        case "escape":
         case "vim_up":
         case "vim_down":
         case "vim_left":
