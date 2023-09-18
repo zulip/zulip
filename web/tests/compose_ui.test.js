@@ -6,6 +6,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
+const {page_params} = require("./lib/zpage_params");
 
 const noop = () => {};
 
@@ -244,6 +245,19 @@ run_test("compute_placeholder_text", () => {
 
     // group direct message
     opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message Alice, Bob"}),
+    );
+
+    alice.is_guest = true;
+    page_params.realm_enable_guest_user_indicator = true;
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message translated: Alice (guest), Bob"}),
+    );
+
+    page_params.realm_enable_guest_user_indicator = false;
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice, Bob"}),
