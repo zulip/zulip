@@ -394,11 +394,7 @@ def update_stream_backend(
                 user_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permission_configuration.require_system_group,
-                allow_internet_group=permission_configuration.allow_internet_group,
-                allow_owners_group=permission_configuration.allow_owners_group,
-                allow_nobody_group=permission_configuration.allow_nobody_group,
-                allow_everyone_group=permission_configuration.allow_everyone_group,
+                permission_configuration=permission_configuration,
             )
             do_change_stream_group_based_setting(
                 stream, setting_name, user_group, acting_user=user_profile
@@ -578,12 +574,14 @@ def add_subscriptions_backend(
     color_map = {}
 
     if can_remove_subscribers_group_id is not None:
+        permission_configuration = Stream.stream_permission_group_settings[
+            "can_remove_subscribers_group"
+        ]
         can_remove_subscribers_group = access_user_group_for_setting(
             can_remove_subscribers_group_id,
             user_profile,
             setting_name="can_remove_subscribers_group",
-            require_system_group=True,
-            allow_nobody_group=False,
+            permission_configuration=permission_configuration,
         )
     else:
         can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
