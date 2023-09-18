@@ -37,8 +37,18 @@
             border-radius: 4px 0 0 4px;
         }
 
-        .pill-value {
+        .pill-label {
+            /* Treat as flex container to better position status
+               emoji and control ellipsis on the pill value. */
+            display: flex;
+            /* Allow label to collapse for ellipsis effect. */
+            min-width: 0;
+            align-items: center;
             margin: 0 5px;
+        }
+
+        .pill-value {
+            flex: 0 1 auto;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
