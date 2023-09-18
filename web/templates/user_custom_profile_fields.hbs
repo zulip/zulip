@@ -4,9 +4,9 @@
             <div class="name">{{this.name}}</div>
         {{/unless}}
         {{#if this.is_link}}
-            <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{this.value}}</a>
+            <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{this.value}}</a>
         {{else if this.is_external_account}}
-            <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
+            <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
                 {{#if (eq this.subtype "github") }}
                 <i class="fa fa-github" aria-hidden="true"></i>
                 {{else if (eq this.subtype "twitter") }}
