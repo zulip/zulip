@@ -95,6 +95,10 @@ export const default_view_values = {
         code: "all_messages",
         description: $t({defaultMessage: "All messages"}),
     },
+    inbox: {
+        code: "inbox",
+        description: $t({defaultMessage: "Inbox"}),
+    },
 };
 
 export const color_scheme_values = {
