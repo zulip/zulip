@@ -7,6 +7,7 @@
     border-radius: 4px;
     border-right: 1px solid var(--color-border-inbox);
     border-left: 1px solid var(--color-border-inbox);
+    min-height: 100vh;
 
     #inbox-pane {
         max-width: 100%;
