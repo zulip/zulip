@@ -11,7 +11,7 @@
                     <span class="global-filter-name">{{t 'All messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
-                <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+                <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             {{#if development_environment}}
             <li class="top_left_inbox top_left_row hidden-for-spectators">
@@ -52,7 +52,7 @@
                     <span class="global-filter-name">{{t 'Starred messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
-                <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+                <span class="arrow sidebar-menu-icon starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_drafts top_left_row hidden-for-spectators">
                 <a href="#drafts" class="tippy-left-sidebar-tooltip global-filter-container" data-tooltip-template-id="drafts-tooltip-template">
@@ -63,7 +63,7 @@
                     <span class="global-filter-name">{{t 'Drafts' }}</span>
                     <span class="unread_count"></span>
                 </a>
-                <span class="arrow drafts-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+                <span class="arrow sidebar-menu-icon drafts-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_scheduled_messages top_left_row hidden-for-spectators">
                 <a class="global-filter-container" href="#scheduled">
