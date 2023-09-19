@@ -37,6 +37,17 @@
                     {{/if}}
                 </div>
             </div>
+            {{#unless is_direct}}
+            <div class="inbox-right-part-wrapper">
+                <div class="inbox-right-part">
+                    <div class="inbox-action-button inbox-topic-menu"
+                      {{#if is_topic}}data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"
+                      data-topic-url="{{topic_url}}"{{/if}}>
+                        <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
+                    </div>
+                </div>
+            </div>
+            {{/unless}}
         </div>
     </div>
 {{/if}}

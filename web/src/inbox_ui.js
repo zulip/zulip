@@ -899,7 +899,7 @@ export function initialize() {
         }
     });
 
-    $("body").on("click", "#inbox-list .inbox-row, #inbox-list .inbox-header", (e) => {
+    $("body").on("click", "#inbox-list .inbox-left-part-wrapper", (e) => {
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.RECIPIENT;
         focus_clicked_element($elt);
