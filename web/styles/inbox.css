@@ -102,6 +102,7 @@
                 border: 2px solid transparent;
                 border-radius: 3px;
                 box-sizing: border-box;
+                justify-content: space-between;
             }
 
             .inbox-empty-text {
@@ -330,12 +331,54 @@
             }
         }
 
+        .inbox-right-part-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
         #inbox_filter_mute_toggle {
             font-size: 16px;
             width: 16px;
             height: 16px;
             position: relative;
             top: 1px;
+        }
+
+        .inbox-row {
+            &:focus,
+            &:focus-within,
+            &:hover {
+                .inbox-action-button {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .inbox-action-button {
+            display: flex;
+            border-radius: 3px;
+            outline: none;
+            opacity: 0;
+
+            &.hide {
+                display: none;
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 2px var(--color-outline-focus);
+            }
+
+            & i {
+                padding: 5px;
+                font-size: 16px;
+                opacity: 0.3;
+                color: var(--color-vdots-hover);
+
+                &:hover {
+                    opacity: 1;
+                    cursor: pointer;
+                }
+            }
         }
     }
 }
