@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 212**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  `PATCH /realm`: Added the `jitsi_server_url` field to the `realm` object,
+  allowing organizations to set a custom Jitsi Meet server. Previously, this
+  was only available as a server-level configuration.
+
+* [`POST /register`](/api/register-queue): Added `server_jitsi_server_url`
+  fields to the `realm` object. The existing `jitsi_server_url` will now be
+  calculated as `realm_jitsi_server_url || server_jitsi_server_url`.
+
 **Feature level 211**
 
 * [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic),

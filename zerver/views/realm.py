@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Mapping, Optional, Union
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -37,10 +37,21 @@ from zerver.lib.validator import (
     check_int_in,
     check_string_in,
     check_string_or_int,
+    check_union,
+    check_url,
     to_non_negative_int,
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.views.user_settings import check_settings_values
+
+
+def parse_jitsi_server_url(
+    value: str, special_values_map: Mapping[str, Optional[str]]
+) -> Optional[str]:
+    if value in special_values_map:
+        return special_values_map[value]
+
+    return value
 
 
 @require_realm_admin
@@ -131,6 +142,13 @@ def update_realm(
         json_validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
     ),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
+    jitsi_server_url_raw: Optional[str] = REQ(
+        "jitsi_server_url",
+        json_validator=check_union(
+            [check_string_in(list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys())), check_url]
+        ),
+        default=None,
+    ),
     giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
     default_code_block_language: Optional[str] = REQ(default=None),
     digest_weekday: Optional[int] = REQ(
@@ -275,6 +293,28 @@ def update_realm(
             data[
                 "move_messages_between_streams_limit_seconds"
             ] = move_messages_between_streams_limit_seconds
+
+    jitsi_server_url: Optional[str] = None
+    if jitsi_server_url_raw is not None:
+        jitsi_server_url = parse_jitsi_server_url(
+            jitsi_server_url_raw,
+            Realm.JITSI_SERVER_SPECIAL_VALUES_MAP,
+        )
+
+        # We handle the "None" case separately here because
+        # in the loop below, do_set_realm_property is called only when
+        # the setting value is not "None". For values other than "None",
+        # the loop itself sets the value of 'jitsi_server_url' by
+        # calling do_set_realm_property.
+        if jitsi_server_url is None and realm.jitsi_server_url is not None:
+            do_set_realm_property(
+                realm,
+                "jitsi_server_url",
+                jitsi_server_url,
+                acting_user=user_profile,
+            )
+
+            data["jitsi_server_url"] = jitsi_server_url
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
