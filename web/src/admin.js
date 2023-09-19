@@ -99,6 +99,7 @@ export function build_page() {
         realm_name: page_params.realm_name,
         realm_org_type: page_params.realm_org_type,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
+        server_jitsi_server_url: page_params.server_jitsi_server_url,
         giphy_rating_options: page_params.giphy_rating_options,
         giphy_api_key_empty: page_params.giphy_api_key === "",
         realm_description: page_params.realm_description,

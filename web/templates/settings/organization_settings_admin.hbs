@@ -114,6 +114,32 @@
                             <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
+
+                    <div class="dependent-settings-block" id="realm_jitsi_server_url_setting">
+                        <div>
+                            <label for="id_realm_jitsi_server_url" class="dropdown-title">
+                                {{t "Jitsi server URL" }}
+                            </label>
+                            <select name="realm_jitsi_server_url" id="id_realm_jitsi_server_url" class="setting-widget prop-element settings_select bootstrap-focus-style" data-setting-widget-type="jitsi-server-url-setting">
+                                {{#if server_jitsi_server_url}}
+                                    <option value="server_default">
+                                        {{#tr}}{server_jitsi_server_url} (default){{/tr}}
+                                    </option>
+                                {{else}}
+                                    <option value="server_default">{{t 'Disabled' }}</option>
+                                {{/if}}
+                                <option value="custom">{{t 'Custom URL' }}</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="id_realm_jitsi_server_url_custom_input" class="jitsi_server_url_custom_input_label">
+                                {{t 'URL' }}
+                            </label>
+                            <input type="text" id="id_realm_jitsi_server_url_custom_input" autocomplete="off"
+                              name="realm_jitsi_server_url_custom_input" class="realm_jitsi_server_url_custom_input settings_url_input"/>
+                        </div>
+                    </div>
                 </div>
                 <div class="input-group">
                     <label for="realm_giphy_rating" class="dropdown-title">

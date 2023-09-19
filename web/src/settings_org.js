@@ -266,9 +266,70 @@ function set_realm_waiting_period_setting() {
     );
 }
 
+function is_video_chat_provider_jitsi_meet() {
+    const video_chat_provider_id = Number.parseInt($("#id_realm_video_chat_provider").val(), 10);
+    const jitsi_meet_id = page_params.realm_available_video_chat_providers.jitsi_meet.id;
+    return video_chat_provider_id === jitsi_meet_id;
+}
+
+function get_jitsi_server_url_setting_value($input_elem, for_api_data = true) {
+    // If the video chat provider dropdown is not set to Jitsi, we return
+    // `realm_jitsi_server_url` to indicate that the property remains unchanged.
+    // This ensures the appropriate state of the save button and prevents the
+    // addition of the `jitsi_server_url` in the API data.
+    if (!is_video_chat_provider_jitsi_meet()) {
+        return page_params.realm_jitsi_server_url;
+    }
+
+    const select_elem_val = $input_elem.val();
+    if (select_elem_val === "server_default") {
+        if (!for_api_data) {
+            return null;
+        }
+        return JSON.stringify("default");
+    }
+
+    const $custom_input_elem = $("#id_realm_jitsi_server_url_custom_input");
+    if (!for_api_data) {
+        return $custom_input_elem.val();
+    }
+    return JSON.stringify($custom_input_elem.val());
+}
+
+function update_jitsi_server_url_custom_input(dropdown_val) {
+    const custom_input = "id_realm_jitsi_server_url_custom_input";
+    change_element_block_display_property(custom_input, dropdown_val === "custom");
+
+    if (dropdown_val !== "custom") {
+        return;
+    }
+
+    const $custom_input_elem = $(`#${CSS.escape(custom_input)}`);
+    $custom_input_elem.val(page_params.realm_jitsi_server_url);
+}
+
+function set_jitsi_server_url_dropdown() {
+    if (!is_video_chat_provider_jitsi_meet()) {
+        $("#realm_jitsi_server_url_setting").hide();
+        return;
+    }
+
+    $("#realm_jitsi_server_url_setting").show();
+
+    let dropdown_val = "server_default";
+    if (page_params.realm_jitsi_server_url) {
+        dropdown_val = "custom";
+    }
+
+    $("#id_realm_jitsi_server_url").val(dropdown_val);
+    update_jitsi_server_url_custom_input(dropdown_val);
+}
+
 function set_video_chat_provider_dropdown() {
     const chat_provider_id = page_params.realm_video_chat_provider;
     $("#id_realm_video_chat_provider").val(chat_provider_id);
+
+    set_jitsi_server_url_dropdown();
 }
 
 function set_giphy_rating_dropdown() {
@@ -712,6 +773,9 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_video_chat_provider":
             set_video_chat_provider_dropdown();
             break;
+        case "realm_jitsi_server_url":
+            set_jitsi_server_url_dropdown();
+            break;
         case "realm_message_retention_days":
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
@@ -888,6 +952,8 @@ export function get_input_element_value(input_elem, input_type) {
         }
         case "time-limit":
             return get_time_limit_setting_value($input_elem);
+        case "jitsi-server-url-setting":
+            return get_jitsi_server_url_setting_value($input_elem);
         case "message-retention-setting":
             return get_message_retention_setting_value($input_elem);
         case "dropdown-list-widget":
@@ -1002,6 +1068,9 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
         case "realm_message_retention_days":
         case "message_retention_days":
             proposed_val = get_message_retention_setting_value($elem, false);
+            break;
+        case "realm_jitsi_server_url":
+            proposed_val = get_jitsi_server_url_setting_value($elem, false);
             break;
         case "realm_default_language":
             proposed_val = $(
@@ -1212,8 +1281,23 @@ function check_maximum_valid_value($custom_input_elem, property_name) {
     return setting_value <= MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE;
 }
 
-function enable_or_disable_save_button($subsection_elem) {
-    const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
+function is_valid_url(jitsi_url) {
+    const url_pattern = /^(https?:\/\/)/;
+    return url_pattern.test(jitsi_url);
+}
+
+function should_disable_save_button_for_jitsi_server_url_setting() {
+    if (!is_video_chat_provider_jitsi_meet()) {
+        return false;
+    }
+
+    const $dropdown_elem = $("#id_realm_jitsi_server_url");
+    const $custom_input_elem = $("#id_realm_jitsi_server_url_custom_input");
+
+    return $dropdown_elem.val() === "custom" && !is_valid_url($custom_input_elem.val());
+}
+
+function should_disable_save_button_for_time_limit_settings(time_limit_settings) {
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
         const $dropdown_elem = $(setting_elem).find("select");
@@ -1245,6 +1329,20 @@ function enable_or_disable_save_button($subsection_elem) {
             break;
         }
     }
+
+    return disable_save_btn;
+}
+
+function enable_or_disable_save_button($subsection_elem) {
+    const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
+
+    let disable_save_btn = false;
+    if (time_limit_settings.length) {
+        disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
+    } else if ($subsection_elem.attr("id") === "org-other-settings") {
+        disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
+    }
+
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
 }
 
@@ -1451,6 +1549,15 @@ export function build_page() {
 
     $("#id_realm_message_content_delete_limit_seconds").on("change", () => {
         update_custom_value_input("realm_message_content_delete_limit_seconds");
+    });
+
+    $("#id_realm_video_chat_provider").on("change", () => {
+        set_jitsi_server_url_dropdown();
+    });
+
+    $("#id_realm_jitsi_server_url").on("change", (e) => {
+        const dropdown_val = e.target.value;
+        update_jitsi_server_url_custom_input(dropdown_val);
     });
 
     $("#id_realm_message_retention_days").on("change", (e) => {

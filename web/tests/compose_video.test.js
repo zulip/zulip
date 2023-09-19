@@ -119,15 +119,33 @@ test("videos", ({override}) => {
 
         page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
 
-        page_params.jitsi_server_url = null;
+        page_params.realm_jitsi_server_url = null;
+        page_params.server_jitsi_server_url = null;
         handler(ev);
         assert.ok(!called);
 
-        page_params.jitsi_server_url = "https://meet.jit.si";
+        page_params.realm_jitsi_server_url = null;
+        page_params.server_jitsi_server_url = "https://server.example.com";
         handler(ev);
         // video link ids consist of 15 random digits
-        const video_link_regex =
-            /\[translated: Join video call\.]\(https:\/\/meet.jit.si\/\d{15}#config.startWithVideoMuted=false\)/;
+        let video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/server.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+
+        page_params.realm_jitsi_server_url = "https://realm.example.com";
+        page_params.server_jitsi_server_url = null;
+        handler(ev);
+        video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+
+        page_params.realm_jitsi_server_url = "https://realm.example.com";
+        page_params.server_jitsi_server_url = "https://server.example.com";
+        handler(ev);
+        video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
@@ -252,7 +270,7 @@ test("test_video_chat_button_toggle enabled", ({override}) => {
     override(upload, "feature_check", () => {});
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
-    page_params.jitsi_server_url = "https://meet.jit.si";
+    page_params.realm_jitsi_server_url = "https://meet.jit.si";
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);
 });

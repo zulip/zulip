@@ -59,6 +59,11 @@ let uppy;
 export function get_compose_upload_object() {
     return uppy;
 }
+
+function get_jitsi_server_url() {
+    return page_params.realm_jitsi_server_url ?? page_params.server_jitsi_server_url;
+}
+
 export function compute_show_video_chat_button() {
     const available_providers = page_params.realm_available_video_chat_providers;
     if (page_params.realm_video_chat_provider === available_providers.disabled.id) {
@@ -67,7 +72,7 @@ export function compute_show_video_chat_button() {
 
     if (
         page_params.realm_video_chat_provider === available_providers.jitsi_meet.id &&
-        !page_params.jitsi_server_url
+        !get_jitsi_server_url()
     ) {
         return false;
     }
@@ -90,7 +95,7 @@ export function compute_show_audio_chat_button() {
     const available_providers = page_params.realm_available_video_chat_providers;
     if (
         (available_providers.jitsi_meet &&
-            page_params.jitsi_server_url &&
+            get_jitsi_server_url() &&
             page_params.realm_video_chat_provider === available_providers.jitsi_meet.id) ||
         (available_providers.zoom &&
             page_params.realm_video_chat_provider === available_providers.zoom.id)
@@ -940,7 +945,7 @@ function generate_and_insert_audio_or_video_call_link($target_element, is_audio_
     } else {
         // TODO: Use `new URL` to generate the URLs here.
         const video_call_id = util.random_int(100000000000000, 999999999999999);
-        const video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
+        const video_call_link = get_jitsi_server_url() + "/" + video_call_id;
         if (is_audio_call) {
             insert_audio_call_url(
                 video_call_link + "#config.startWithVideoMuted=true",
