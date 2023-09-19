@@ -73,8 +73,8 @@ export function create_handlers($container) {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
         $parent_container: $container,
-        pill_selector: ".add_subscribers_container .input",
-        button_selector: ".add_subscribers_container button.add-subscriber-button",
+        pill_selector: ".add_members_container .input",
+        button_selector: ".add_members_container button.add-member-button",
         action: add_users,
     });
 }
