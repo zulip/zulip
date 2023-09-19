@@ -135,7 +135,8 @@
     background-color: hsl(0deg 86% 86%) !important;
 }
 
-.add_subscribers_container .pill-container {
+.add_subscribers_container .pill-container,
+.add_members_container .pill-container {
     width: 100%;
     background-color: hsl(0deg 0% 100%);
 
