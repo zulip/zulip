@@ -1630,7 +1630,7 @@ update_message_flags_remove_event = event_dict_type(
         ("type", Equals("update_message_flags")),
         ("op", Equals("remove")),
         ("operation", Equals("remove")),
-        ("flag", EnumType(["read", "starred"])),
+        ("flag", str),
         ("messages", ListType(int)),
         ("all", bool),
     ],
