@@ -305,7 +305,7 @@ export function initialize() {
     delegate("body", {
         target: [
             "#deactivate_account_container.disabled_setting_tooltip",
-            "#edit-user-form .deactivate_user_button_tooltip",
+            "#edit-user-form .deactivate_or_reactivate_user_button_tooltip",
         ],
         content: $t({
             defaultMessage:

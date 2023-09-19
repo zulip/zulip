@@ -647,6 +647,7 @@ function handle_reactivation($tbody) {
 
 export function show_edit_user_info_modal(user_id, $container) {
     const person = people.maybe_get_user_by_id(user_id);
+    const is_active = people.is_person_active(user_id);
 
     if (!person) {
         return;
@@ -659,6 +660,7 @@ export function show_edit_user_info_modal(user_id, $container) {
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: person.is_owner && !page_params.is_owner,
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
+        action: is_active ? "Deactivate user" : "Reactivate user",
     });
 
     $container.append(html_body);
@@ -683,15 +685,24 @@ export function show_edit_user_info_modal(user_id, $container) {
     );
 
     // Handle deactivation
-    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+    $("#edit-user-form").on("click", ".deactivate_or_reactivate_user_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_id = $("#edit-user-form").data("user-id");
         function handle_confirm() {
-            const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url);
+            if (is_active) {
+                const url = "/json/users/" + encodeURIComponent(user_id);
+                dialog_widget.submit_api_request(channel.del, url);
+            } else {
+                const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+                dialog_widget.submit_api_request(channel.post, url);
+            }
         }
-        confirm_deactivation(user_id, handle_confirm, true);
+        if (is_active) {
+            confirm_deactivation(user_id, handle_confirm, true);
+        } else {
+            confirm_reactivation(user_id, handle_confirm, true);
+        }
     });
 
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
