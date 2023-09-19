@@ -1068,11 +1068,13 @@ exports.fixtures = {
     },
 
     user_status__set_status_emoji: {
+        id: 1,
         type: "user_status",
         user_id: test_user.user_id,
         emoji_name: "smiley",
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
+        status_text: "",
     },
 
     user_status__set_status_text: {
