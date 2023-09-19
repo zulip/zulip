@@ -316,13 +316,9 @@ export function get_emoji_details_by_name(emoji_name: string): EmojiRenderingDet
 
 export function get_emoji_details_for_rendering(opts: {
     emoji_name: string;
-    emoji_code: string | number;
+    emoji_code: string;
     reaction_type: string;
 }): EmojiRenderingDetails {
-    if (!opts.emoji_name || !opts.emoji_code || !opts.reaction_type) {
-        throw new Error("Invalid params.");
-    }
-
     if (opts.reaction_type !== "unicode_emoji") {
         const realm_emoji = all_realm_emojis.get(opts.emoji_code);
         if (!realm_emoji) {
