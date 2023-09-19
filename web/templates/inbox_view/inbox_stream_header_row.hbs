@@ -9,6 +9,9 @@
                     </span>
                     <a tabindex="-1" href="{{stream_url}}">{{stream_name}}</a>
                 </div>
+                <span class="unread_mention_info tippy-zulip-tooltip
+                  {{#unless mention_in_unread}}hidden{{/unless}}"
+                  data-tippy-content="{{t 'You have mentions'}}">@</span>
                 <span class="unread_count tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
             </div>
         </div>
