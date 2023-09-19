@@ -674,6 +674,9 @@ export function change_focused_element(input_key) {
                 focus_muted_filter();
                 return true;
             case "escape":
+                if (get_all_rows().length === 0) {
+                    return false;
+                }
                 set_list_focus();
                 return true;
             case "shift_tab":
