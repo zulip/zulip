@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from django.core.management.base import CommandError
 
-from zerver.actions.streams import deactivated_streams_by_old_name, do_reactivate_stream
+from zerver.actions.streams import deactivated_streams_by_old_name, do_unarchive_stream
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import RealmAuditLog, Stream
 
@@ -88,4 +88,4 @@ class Command(ZulipBaseCommand):
             )
 
         assert stream is not None
-        do_reactivate_stream(stream, new_name, acting_user=None)
+        do_unarchive_stream(stream, new_name, acting_user=None)

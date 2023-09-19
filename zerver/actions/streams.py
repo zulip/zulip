@@ -158,7 +158,7 @@ def deactivated_streams_by_old_name(realm: Realm, stream_name: str) -> QuerySet[
 
 
 @transaction.atomic(savepoint=False)
-def do_reactivate_stream(
+def do_unarchive_stream(
     stream: Stream, new_name: str, *, acting_user: Optional[UserProfile]
 ) -> None:
     realm = stream.realm
