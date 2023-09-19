@@ -58,8 +58,28 @@ export function popover_items_handle_keyboard(key, $items) {
     if (key === "enter" && index >= 0 && index < $items.length) {
         $items[index].click();
         if (user_card_popover.manage_menu.is_open()) {
-            const $items = user_card_popover.get_user_card_popover_manage_menu_items();
-            focus_first_popover_item($items);
+            // If we just opened the little manage menu via the
+            // keyboard, we need to focus the first item for a
+            // continuation of the keyboard experience.
+
+            // TODO: This might be cleaner to just call
+            // toggle_user_card_popover_manage_menu rather than
+            // triggering a click.
+
+            const previously_defined_on_mount =
+                user_card_popover.manage_menu.instance.props.onMount;
+            user_card_popover.manage_menu.instance.setProps({
+                onMount() {
+                    // We're monkey patching the onMount method here to ensure we start
+                    // focusing on the item after the popover is mounted to the DOM;
+                    // otherwise, it won't work correctly.
+                    if (previously_defined_on_mount) {
+                        previously_defined_on_mount();
+                    }
+                    const $items = user_card_popover.get_user_card_popover_manage_menu_items();
+                    focus_first_popover_item($items);
+                },
+            });
         }
         return;
     }
