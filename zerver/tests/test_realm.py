@@ -864,6 +864,36 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
 
+    def test_jitsi_server_url(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        self.assertEqual(realm.video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"])
+
+        req = dict(jitsi_server_url=orjson.dumps("").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
+        req = dict(jitsi_server_url=orjson.dumps("invalidURL").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
+        req = dict(jitsi_server_url=orjson.dumps(12).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
+        valid_url = "https://jitsi.example.com"
+        req = dict(jitsi_server_url=orjson.dumps(valid_url).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.jitsi_server_url, valid_url)
+
+        req = dict(jitsi_server_url=orjson.dumps("default").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.jitsi_server_url, None)
+
     def test_do_create_realm(self) -> None:
         realm = do_create_realm("realm_string_id", "realm name")
 
@@ -1179,6 +1209,11 @@ class RealmAPITest(ZulipTestCase):
                     ).decode(),
                 ),
             ],
+            jitsi_server_url=[
+                dict(
+                    jitsi_server_url=orjson.dumps("https://example.jit.si").decode(),
+                ),
+            ],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["y"]["id"],
                 Realm.GIPHY_RATING_OPTIONS["r"]["id"],
@@ -1200,7 +1235,7 @@ class RealmAPITest(ZulipTestCase):
         if vals is None:
             raise AssertionError(f"No test created for {name}")
 
-        if name == "video_chat_provider":
+        if name in ("video_chat_provider", "jitsi_server_url"):
             self.set_up_db(name, vals[0][name])
             realm = self.update_with_api_multiple_value(vals[0])
             self.assertEqual(getattr(realm, name), orjson.loads(vals[0][name]))

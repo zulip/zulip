@@ -2933,6 +2933,7 @@ class RealmPropertyActionTest(BaseAction):
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],
+            jitsi_server_url=["https://jitsi1.example.com", "https://jitsi2.example.com"],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["disabled"]["id"],
             ],

@@ -337,10 +337,15 @@ def fetch_initial_state_data(
         state["realm_push_notifications_enabled"] = push_notifications_enabled()
         state["realm_default_external_accounts"] = get_default_external_accounts()
 
-        if settings.JITSI_SERVER_URL is not None:
-            state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
-        else:  # nocoverage
-            state["jitsi_server_url"] = None
+        server_default_jitsi_server_url = (
+            settings.JITSI_SERVER_URL.rstrip("/") if settings.JITSI_SERVER_URL is not None else None
+        )
+        state["server_jitsi_server_url"] = server_default_jitsi_server_url
+        state["jitsi_server_url"] = (
+            realm.jitsi_server_url
+            if realm.jitsi_server_url is not None
+            else server_default_jitsi_server_url
+        )
 
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
@@ -1067,6 +1072,13 @@ def apply_event(
                 # Then there are some extra fields that also need to be set.
                 state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
                 state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
+
+            if field == "realm_jitsi_server_url":
+                state["jitsi_server_url"] = (
+                    state["realm_jitsi_server_url"]
+                    if state["realm_jitsi_server_url"] is not None
+                    else state["server_jitsi_server_url"]
+                )
 
             policy_permission_dict = {
                 "create_public_stream_policy": "can_create_public_streams",
