@@ -666,7 +666,7 @@ export function setup_page(callback) {
             },
         });
 
-        $("#streams_overlay_container .search-container").prepend(sort_toggler.get());
+        $("#streams_overlay_container .list-toggler-container").prepend(sort_toggler.get());
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".
@@ -684,7 +684,7 @@ export function setup_page(callback) {
 
         if (should_list_all_streams()) {
             const toggler_elem = toggler.get();
-            $("#streams_overlay_container .search-container").prepend(toggler_elem);
+            $("#streams_overlay_container .list-toggler-container").prepend(toggler_elem);
         }
         if (page_params.is_guest) {
             toggler.disable_tab("all-streams");
