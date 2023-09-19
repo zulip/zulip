@@ -19063,23 +19063,6 @@ components:
               type: string
             ignored_parameters_unsupported:
               $ref: "#/components/schemas/IgnoredParametersUnsupported"
-    PartiallyCompleted:
-      allOf:
-        - $ref: "#/components/schemas/JsonResponseBase"
-        - required:
-            - result
-            - code
-          additionalProperties: false
-          properties:
-            result:
-              enum:
-                - partially_completed
-            code:
-              type: string
-              description: |
-                A string that identifies the cause of the partial completion of the request.
-            msg:
-              type: string
     ApiKeyResponse:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
