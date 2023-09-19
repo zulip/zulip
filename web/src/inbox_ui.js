@@ -253,6 +253,25 @@ function format_stream(stream_id) {
     };
 }
 
+function update_stream_data(stream_id, stream_key, topic_dict) {
+    topics_dict[stream_key] = {};
+    const stream_data = format_stream(stream_id);
+    let stream_post_filter_unread_count = 0;
+    for (const [topic, topic_unread_count] of topic_dict) {
+        const topic_key = get_topic_key(stream_id, topic);
+        if (topic_unread_count) {
+            const topic_data = format_topic(stream_id, topic, topic_unread_count);
+            topics_dict[stream_key][topic_key] = topic_data;
+            if (!topic_data.is_hidden) {
+                stream_post_filter_unread_count += topic_data.unread_count;
+            }
+        }
+    }
+    stream_data.is_hidden = stream_post_filter_unread_count === 0;
+    stream_data.unread_count = stream_post_filter_unread_count;
+    streams_dict[stream_key] = stream_data;
+}
+
 function rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data) {
     for (const property in new_stream_data) {
         if (new_stream_data[property] !== old_stream_data[property]) {
@@ -279,24 +298,8 @@ function format_topic(stream_id, topic, topic_unread_count) {
 }
 
 function insert_stream(stream_id, topic_dict) {
-    const stream_data = format_stream(stream_id);
     const stream_key = get_stream_key(stream_id);
-    topics_dict[stream_key] = {};
-    let stream_post_filter_unread_count = 0;
-    for (const [topic, topic_unread_count] of topic_dict) {
-        const topic_key = get_topic_key(stream_id, topic);
-        if (topic_unread_count) {
-            const topic_data = format_topic(stream_id, topic, topic_unread_count);
-            topics_dict[stream_key][topic_key] = topic_data;
-            if (!topic_data.is_hidden) {
-                stream_post_filter_unread_count += topic_data.unread_count;
-            }
-        }
-    }
-    stream_data.is_hidden = stream_post_filter_unread_count === 0;
-    stream_data.unread_count = stream_post_filter_unread_count;
-    streams_dict[stream_key] = stream_data;
-
+    update_stream_data(stream_id, stream_key, topic_dict);
     const sorted_stream_keys = get_sorted_stream_keys();
     const stream_index = sorted_stream_keys.indexOf(stream_key);
     const rendered_stream = render_inbox_stream_container({
@@ -397,24 +400,11 @@ function reset_data() {
             const stream_unread = unread.num_unread_for_stream(stream_id);
             const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
             const stream_key = get_stream_key(stream_id);
-            let stream_post_filter_unread_count = 0;
             if (stream_unread_count > 0) {
-                topics_dict[stream_key] = {};
-                const stream_data = format_stream(stream_id);
-                for (const [topic, topic_unread_count] of topic_dict) {
-                    if (topic_unread_count) {
-                        const topic_key = get_topic_key(stream_id, topic);
-                        const topic_data = format_topic(stream_id, topic, topic_unread_count);
-                        topics_dict[stream_key][topic_key] = topic_data;
-                        if (!topic_data.is_hidden) {
-                            has_topics_post_filter = true;
-                            stream_post_filter_unread_count += topic_data.unread_count;
-                        }
-                    }
+                update_stream_data(stream_id, stream_key, topic_dict);
+                if (!streams_dict[stream_key].is_hidden) {
+                    has_topics_post_filter = true;
                 }
-                stream_data.is_hidden = stream_post_filter_unread_count === 0;
-                stream_data.unread_count = stream_post_filter_unread_count;
-                streams_dict[stream_key] = stream_data;
             } else {
                 delete topics_dict[stream_key];
             }
