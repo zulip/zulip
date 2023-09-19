@@ -665,15 +665,17 @@ h4.user_group_setting_subsection_title {
     color: hsl(0deg 0% 67%);
 }
 
-.subscriber_list_settings {
-    .add_subscribers_disabled {
+.subscriber_list_settings .add_subscribers_disabled,
+.member_list_settings .add_members_disabled {
+    cursor: not-allowed;
+
+    .pill-container {
         cursor: not-allowed;
-
-        .pill-container {
-            cursor: not-allowed;
-        }
     }
+}
 
+.subscriber_list_settings,
+.member_list_settings {
     & button[disabled] {
         pointer-events: none;
     }
