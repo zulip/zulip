@@ -1508,7 +1508,8 @@ $option_title_width: 180px;
     }
 }
 
-.time-limit-custom-input {
+.time-limit-custom-input,
+.realm_jitsi_server_url_custom_input {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border: 1px solid hsl(0deg 0% 80%);
@@ -1522,6 +1523,16 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#realm_jitsi_server_url_setting {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    .jitsi_server_url_custom_input_label {
+        margin-bottom: 3px;
     }
 }
 
