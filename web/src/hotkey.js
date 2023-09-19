@@ -256,7 +256,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (inbox_util.is_in_focus() && inbox_ui.change_focused_element($(e.target), "escape")) {
+    if (inbox_util.is_in_focus() && inbox_ui.change_focused_element("escape")) {
         return true;
     }
 
