@@ -232,12 +232,10 @@ function rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data) {
     }
 }
 
-function format_stream(stream_id, unread_count_info) {
+function format_stream(stream_id) {
+    // NOTE: Unread count is not included in this function as it is more
+    // efficient for the callers to calculate it based on filters.
     const stream_info = sub_store.get(stream_id);
-    let unread_count = unread_count_info.unmuted_count;
-    if (should_include_muted()) {
-        unread_count += unread_count_info.muted_count;
-    }
 
     return {
         is_stream: true,
@@ -247,7 +245,6 @@ function format_stream(stream_id, unread_count_info) {
         pin_to_top: stream_info.pin_to_top,
         stream_color: stream_color.get_stream_privacy_icon_color(stream_info.color),
         stream_header_color: stream_color.get_recipient_bar_color(stream_info.color),
-        unread_count,
         stream_url: hash_util.by_stream_url(stream_id),
         stream_id,
         // Will be displayed if any topic is visible.
@@ -281,21 +278,23 @@ function format_topic(stream_id, topic, topic_unread_count) {
     return context;
 }
 
-function insert_stream(stream_id, topic_dict, stream_unread) {
-    const stream_data = format_stream(stream_id, stream_unread);
+function insert_stream(stream_id, topic_dict) {
+    const stream_data = format_stream(stream_id);
     const stream_key = get_stream_key(stream_id);
     topics_dict[stream_key] = {};
+    let stream_post_filter_unread_count = 0;
     for (const [topic, topic_unread_count] of topic_dict) {
         const topic_key = get_topic_key(stream_id, topic);
         if (topic_unread_count) {
             const topic_data = format_topic(stream_id, topic, topic_unread_count);
             topics_dict[stream_key][topic_key] = topic_data;
             if (!topic_data.is_hidden) {
-                stream_data.is_hidden = false;
+                stream_post_filter_unread_count += topic_data.unread_count;
             }
         }
     }
-
+    stream_data.is_hidden = stream_post_filter_unread_count === 0;
+    stream_data.unread_count = stream_post_filter_unread_count;
     streams_dict[stream_key] = stream_data;
 
     const sorted_stream_keys = get_sorted_stream_keys();
@@ -398,20 +397,23 @@ function reset_data() {
             const stream_unread = unread.num_unread_for_stream(stream_id);
             const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
             const stream_key = get_stream_key(stream_id);
+            let stream_post_filter_unread_count = 0;
             if (stream_unread_count > 0) {
                 topics_dict[stream_key] = {};
-                const stream_data = format_stream(stream_id, stream_unread);
+                const stream_data = format_stream(stream_id);
                 for (const [topic, topic_unread_count] of topic_dict) {
                     if (topic_unread_count) {
                         const topic_key = get_topic_key(stream_id, topic);
                         const topic_data = format_topic(stream_id, topic, topic_unread_count);
                         topics_dict[stream_key][topic_key] = topic_data;
                         if (!topic_data.is_hidden) {
-                            stream_data.is_hidden = false;
                             has_topics_post_filter = true;
+                            stream_post_filter_unread_count += topic_data.unread_count;
                         }
                     }
                 }
+                stream_data.is_hidden = stream_post_filter_unread_count === 0;
+                stream_data.unread_count = stream_post_filter_unread_count;
                 streams_dict[stream_key] = stream_data;
             } else {
                 delete topics_dict[stream_key];
@@ -774,14 +776,15 @@ export function update() {
         const stream_unread = unread.num_unread_for_stream(stream_id);
         const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
         const stream_key = get_stream_key(stream_id);
+        let stream_post_filter_unread_count = 0;
         if (stream_unread_count > 0) {
             // Stream isn't rendered.
             if (topics_dict[stream_key] === undefined) {
-                insert_stream(stream_id, topic_dict, stream_unread);
+                insert_stream(stream_id, topic_dict);
                 continue;
             }
 
-            const new_stream_data = format_stream(stream_id, stream_unread);
+            const new_stream_data = format_stream(stream_id);
             for (const [topic, topic_unread_count] of topic_dict) {
                 const topic_key = get_topic_key(stream_id, topic);
                 if (topic_unread_count) {
@@ -790,14 +793,16 @@ export function update() {
                     topics_dict[stream_key][topic_key] = new_topic_data;
                     rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data);
                     if (!new_topic_data.is_hidden) {
-                        new_stream_data.is_hidden = false;
                         has_topics_post_filter = true;
+                        stream_post_filter_unread_count += new_topic_data.unread_count;
                     }
                 } else {
                     get_row_from_conversation_key(topic_key).remove();
                 }
             }
             const old_stream_data = streams_dict[stream_key];
+            new_stream_data.is_hidden = stream_post_filter_unread_count === 0;
+            new_stream_data.unread_count = stream_post_filter_unread_count;
             streams_dict[stream_key] = new_stream_data;
             rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data);
         } else {
