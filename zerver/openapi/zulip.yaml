@@ -4365,6 +4365,19 @@ paths:
 
                                         **Changes**: None added as an option in Zulip 3.0 (feature level 1)
                                         to disable video call UI.
+                                    jitsi_server_url:
+                                      type: string
+                                      nullable: true
+                                      description: |
+                                        The URL of the custom Jitsi Meet server configured in this organization's
+                                        settings.
+
+                                        `null`, the default, means that the organization is using the should use the
+                                        server-level configuration, `server_jitsi_server_url`.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                                        available as a server-level configuration, and required a server restart to
+                                        change.
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -13553,6 +13566,21 @@ paths:
 
                           **Changes**: None added as an option in Zulip 3.0 (feature level 1)
                           to disable video call UI.
+                      realm_jitsi_server_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          The URL of the custom Jitsi Meet server configured in this organization's
+                          settings.
+
+                          `null`, the default, means that the organization is using the should use the
+                          server-level configuration, `server_jitsi_server_url`. A correct client
+                          supporting only the modern API should use `realm_jitsi_server_url ||
+                          server_jitsi_server_url` to create calls.
+
+                          **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                          available as a server-level configuration, which was available via the
+                          `jitsi_server_url` field.
                       realm_giphy_rating:
                         type: integer
                         description: |
@@ -14009,10 +14037,21 @@ paths:
                                 on the external site.
                       jitsi_server_url:
                         type: string
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The base URL the organization uses to create Jitsi video calls.
+                          The base URL to be used to create Jitsi video calls. Equals
+                          `realm_jitsi_server_url || server_jitsi_server_url`.
+
+                          **Changes**: Deprecated in Zulip 8.0 (feature level 212) and will
+                          eventually be removed. Previously, the Jitsi server to use was not
+                          configurable on a per-realm basis, and this field contained the server's
+                          configured Jitsi server. (Which is now provided as
+                          `server_jitsi_server_url`). Clients supporting older versions should fall
+                          back to this field when creating calls: using `realm_jitsi_server_url ||
+                          server_jitsi_server_url` with newer servers and using `jitsi_server_url`
+                          with servers below feature level 212.
                       development_environment:
                         type: boolean
                         description: |
@@ -14164,6 +14203,16 @@ paths:
                           since the last request.
 
                           **Changes**: New in Zulip 6.0 (feature level 140).
+                      server_jitsi_server_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          The URL of the Jitsi server that the Zulip server is configured to use by
+                          default; the organization-level setting `realm_jitsi_server_url` takes
+                          precedence over this setting when both are set.
+
+                          **Changes**: New in Zulip 8.0 (feature level 212). Previously, this value
+                          was available as the now-deprecated `jitsi_server_url`.
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |
