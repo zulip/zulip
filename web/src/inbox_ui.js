@@ -696,6 +696,7 @@ export function change_focused_element(input_key) {
             case "down_arrow":
                 row_focus += 1;
                 set_list_focus();
+                center_focus_if_offscreen();
                 return true;
             case "vim_up":
             case "up_arrow":
@@ -705,6 +706,7 @@ export function change_focused_element(input_key) {
                 }
                 row_focus -= 1;
                 set_list_focus();
+                center_focus_if_offscreen();
                 return true;
             case "vim_right":
             case "right_arrow":
@@ -838,7 +840,8 @@ function get_focus_class_for_row() {
     return focus_class;
 }
 
-function center_focus_if_offscreen($elt) {
+function center_focus_if_offscreen() {
+    const $elt = $(".inbox-row:focus, .inbox-header:focus");
     if ($elt.length === 0) {
         return;
     }
@@ -951,10 +954,5 @@ export function initialize() {
         } else {
             unread_ops.mark_stream_as_read(stream_id);
         }
-    });
-
-    $("body").on("focus", ".inbox-row, .inbox-header", (e) => {
-        const $elt = $(e.currentTarget);
-        center_focus_if_offscreen($elt);
     });
 }
