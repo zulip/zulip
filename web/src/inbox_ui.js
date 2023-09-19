@@ -829,6 +829,9 @@ function get_focus_class_for_header() {
             focus_class = ".unread_count";
             break;
         }
+        case COLUMNS.ACTION_MENU: {
+            focus_class = ".inbox-stream-menu";
+        }
     }
 
     return focus_class;
