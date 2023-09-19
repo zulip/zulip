@@ -2726,7 +2726,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to a user when [message flags][message-flags] are added
-                                to a message.
+                                to messages.
 
                                 [message-flags]: /api/update-message-flags#available-flags
                               properties:
@@ -2744,17 +2744,17 @@ paths:
                                 operation:
                                   deprecated: true
                                   description: |
-                                    Old name for `op` for this event type.
+                                    Old name for the `op` field in this event type.
 
-                                    **Deprecated**: This is deprecated; please use `op` instead
-                                    starting with Zulip 4.0 (feature level 32).
+                                    **Deprecated** in Zulip 4.0 (feature level 32), and
+                                    replaced by the `op` field.
                                   type: string
                                   enum:
                                     - add
                                 flag:
                                   type: string
                                   description: |
-                                    The flag that was added.
+                                    The [flag][message-flags] that was added.
                                 messages:
                                   type: array
                                   description: |
@@ -2765,9 +2765,12 @@ paths:
                                 all:
                                   type: boolean
                                   description: |
-                                    Whether the flag was added to all messages (E.g. all messages
-                                    were marked as read).
-                                    If this is true, then the `messages` array will be empty.
+                                    Whether the specified flag was added to all messages.
+                                    This field is only relevant for the `"read"` flag, and
+                                    will be `false` for all other flags.
+
+                                    When `true` for the `"read"` flag, then the `messages`
+                                    array will be empty.
                               example:
                                 {
                                   "type": "update_message_flags",
@@ -2782,19 +2785,9 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to a user when [message flags][message-flags] are
-                                removed from a message.
+                                removed from messages.
 
                                 [message-flags]: /api/update-message-flags#available-flags
-                              required:
-                                [
-                                  "id",
-                                  "type",
-                                  "op",
-                                  "operation",
-                                  "flag",
-                                  "messages",
-                                  "all",
-                                ]
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2811,19 +2804,16 @@ paths:
                                   deprecated: true
                                   type: string
                                   description: |
-                                    Old name for `op` for this event type.
+                                    Old name for the `op` field in this event type.
 
-                                    **Deprecated**: This is deprecated; please use `op` instead
-                                    starting with Zulip 4.0 (feature level 32).
+                                    **Deprecated** in Zulip 4.0 (feature level 32), and
+                                    replaced by the `op` field.
                                   enum:
                                     - remove
                                 flag:
                                   type: string
                                   description: |
-                                    The flag to be removed.
-                                  enum:
-                                    - starred
-                                    - read
+                                    The [flag][message-flags] to be removed.
                                 messages:
                                   type: array
                                   description: |
@@ -2832,18 +2822,19 @@ paths:
                                   items:
                                     type: integer
                                 all:
+                                  deprecated: true
                                   type: boolean
                                   description: |
-                                    Whether the flag was removed from all messages.
-                                    If this is true then the `messages` array will be empty.
+                                    Will be `false` for all specified flags.
+
+                                    **Deprecated** and will be removed in a future release.
                                 message_details:
                                   description: |
-                                    Present if `message` and `update_message_flags` are both present in
-                                    `event_types` and the `flag` is `read` and the `op` is `remove`.
+                                    Only present if the specified `flag` is `"read"`.
 
                                     A set of data structures describing the messages that
                                     are being marked as unread with additional details to
-                                    allow a client to update the `unread_msgs` data
+                                    allow clients to update the `unread_msgs` data
                                     structure for these messages (which may not be
                                     otherwise known to the client).
 
@@ -2898,8 +2889,7 @@ paths:
                                         type: boolean
                                         deprecated: true
                                         description: |
-                                          **Deprecated**
-                                          Internal implementation detail. Clients should
+                                          **Deprecated** internal implementation detail. Clients should
                                           ignore this field as it will be removed in the future.
                               example:
                                 {
