@@ -250,6 +250,7 @@ function format_stream(stream_id) {
         // Will be displayed if any topic is visible.
         is_hidden: true,
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
+        mention_in_unread: unread.stream_has_any_unread_mentions(stream_id),
     };
 }
 
@@ -292,6 +293,7 @@ function format_topic(stream_id, topic, topic_unread_count) {
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
         is_hidden: filter_should_hide_row({stream_id, topic}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
+        mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
     };
 
     return context;

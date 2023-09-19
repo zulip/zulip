@@ -119,8 +119,8 @@
                 }
 
                 .inbox-left-part {
-                    grid-template: auto / auto min-content;
-                    grid-template-areas: "header_name unread_count";
+                    grid-template: auto / auto min-content min-content;
+                    grid-template-areas: "header_name unread_mention_info unread_count";
                 }
 
                 .inbox-header-name {
@@ -227,8 +227,8 @@
                 }
 
                 .inbox-left-part {
-                    grid-template: auto / min-content auto min-content;
-                    grid-template-areas: "match_topic_and_dm_start recipient_info unread_count";
+                    grid-template: auto / min-content auto min-content min-content;
+                    grid-template-areas: "match_topic_and_dm_start recipient_info unread_mention_info unread_count";
                 }
 
                 .fake-collapse-button,
@@ -247,6 +247,10 @@
                 margin-right: 5px;
                 margin-left: 10px;
                 align-self: center;
+            }
+
+            .unread_mention_info {
+                grid-area: unread_mention_info;
             }
 
             .stream-privacy {
