@@ -39,6 +39,7 @@ const COLUMNS = {
     COLLAPSE_BUTTON: 0,
     RECIPIENT: 1,
     UNREAD_COUNT: 2,
+    ACTION_MENU: 3,
 };
 let col_focus = COLUMNS.COLLAPSE_BUTTON;
 let row_focus = 0;
@@ -600,20 +601,22 @@ function set_list_focus(input_key) {
     }
 
     const $row_to_focus = $($all_rows.get(row_focus));
+    const $cols_to_focus = $row_to_focus.find("[tabindex=0]");
+    const total_cols = $cols_to_focus.length;
     current_focus_id = $row_to_focus.attr("id");
     const not_a_header_row = !is_row_a_header($row_to_focus);
 
-    if (col_focus > COLUMNS.UNREAD_COUNT) {
-        col_focus = COLUMNS.COLLAPSE_BUTTON;
-    } else if (col_focus < COLUMNS.COLLAPSE_BUTTON) {
-        col_focus = COLUMNS.UNREAD_COUNT;
+    // Loop through columns.
+    if (col_focus > total_cols) {
+        col_focus = 0;
+    } else if (col_focus < 0) {
+        col_focus = total_cols;
     }
 
     // Since header rows always have a collapse button, other rows have one less element to focus.
     if (col_focus === COLUMNS.COLLAPSE_BUTTON) {
         if (not_a_header_row && ["left_arrow", "shift_tab"].includes(input_key)) {
-            // Focus on unread count.
-            col_focus = COLUMNS.UNREAD_COUNT;
+            col_focus = total_cols - 1;
         } else {
             $row_to_focus.trigger("focus");
             return;
@@ -632,7 +635,6 @@ function set_list_focus(input_key) {
         }
     }
 
-    const $cols_to_focus = $row_to_focus.find("[tabindex=0]");
     $($cols_to_focus.get(col_focus - 1)).trigger("focus");
 }
 
@@ -836,6 +838,8 @@ function get_focus_class_for_row() {
     let focus_class = ".inbox-left-part";
     if (col_focus === COLUMNS.UNREAD_COUNT) {
         focus_class = ".unread_count";
+    } else if (col_focus === COLUMNS.ACTION_MENU) {
+        focus_class = ".inbox-topic-menu";
     }
     return focus_class;
 }
