@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
-import render_user_group_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
+import render_user_group_membership_request_result from "../templates/user_group_settings/user_group_membership_request_result.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as blueslip from "./blueslip";
@@ -112,17 +112,15 @@ function show_user_group_membership_request_result({
     message,
     add_class,
     remove_class,
-    subscribed_users,
-    already_subscribed_users,
+    already_added_users,
     ignored_deactivated_users,
 }) {
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
     ).expectOne();
-    const html = render_user_group_subscription_request_result({
+    const html = render_user_group_membership_request_result({
         message,
-        subscribed_users,
-        already_subscribed_users,
+        already_added_users,
         ignored_deactivated_users,
     });
     scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
@@ -161,9 +159,9 @@ function add_new_members({pill_user_ids}) {
             return false;
         }
         if (user_groups.is_user_in_group(group.id, user_id)) {
-            // we filter out already subscribed users before sending
+            // we filter out already added users before sending
             // add member request as the endpoint is not so robust and
-            // fails complete request if any already subscribed member
+            // fails complete request if any already added member
             // is present in the request.
             already_added_users.add(user_id);
             return false;
@@ -200,10 +198,10 @@ function add_new_members({pill_user_ids}) {
 
     if (user_id_set.size === 0) {
         show_user_group_membership_request_result({
-            message: $t({defaultMessage: "No user to subscribe."}),
+            message: $t({defaultMessage: "No users to add."}),
             add_class: "text-error",
             remove_class: "text-success",
-            already_subscribed_users: ignored_already_added_users,
+            already_added_users: ignored_already_added_users,
             ignored_deactivated_users,
         });
         return;
@@ -216,13 +214,13 @@ function add_new_members({pill_user_ids}) {
             message: $t({defaultMessage: "Added successfully."}),
             add_class: "text-success",
             remove_class: "text-error",
-            already_subscribed_users: ignored_already_added_users,
+            already_added_users: ignored_already_added_users,
             ignored_deactivated_users,
         });
     }
 
     function invite_failure(xhr) {
-        let message = "Failed to subscribe user!";
+        let message = "Failed to add user!";
         if (xhr.responseJSON?.msg) {
             message = xhr.responseJSON.msg;
         }
