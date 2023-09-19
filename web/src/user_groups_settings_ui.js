@@ -248,7 +248,7 @@ export function setup_page(callback) {
             },
         });
 
-        $("#groups_overlay_container .search-container").prepend(group_list_toggler.get());
+        $("#groups_overlay_container .list-toggler-container").prepend(group_list_toggler.get());
     }
 
     function populate_and_fill() {
