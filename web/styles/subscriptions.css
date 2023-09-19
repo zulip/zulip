@@ -687,7 +687,8 @@ h4.user_group_setting_subsection_title {
         outline: none;
         -webkit-overflow-scrolling: touch;
 
-        .stream-creation-simplebar-container {
+        .stream-creation-simplebar-container,
+        .user-group-creation-simplebar-container {
             height: calc(
                 var(--modal-container-height) -
                     var(--modal-container-subscriptions-header-height) -
