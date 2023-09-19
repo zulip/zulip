@@ -35,9 +35,11 @@ export function update_add_members_elements(group) {
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
         $add_members_container[0]._tippy?.destroy();
+        $add_members_container.removeClass("add_members_disabled");
     } else {
         $input_element.prop("disabled", true);
         $button_element.prop("disabled", true);
+        $add_members_container.addClass("add_members_disabled");
 
         stream_ui_updates.initialize_disable_btn_hint_popover(
             $add_members_container,
