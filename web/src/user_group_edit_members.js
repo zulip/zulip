@@ -300,7 +300,7 @@ export function initialize() {
         get_pill_widget: () => pill_widget,
         $parent_container: $("#groups_overlay_container"),
         pill_selector: ".edit_members_for_user_group .pill-container",
-        button_selector: ".edit_members_for_user_group .add-subscriber-button",
+        button_selector: ".edit_members_for_user_group .add-member-button",
         action: add_new_members,
     });
 

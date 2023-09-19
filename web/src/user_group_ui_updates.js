@@ -17,7 +17,7 @@ export function update_add_members_elements(group) {
     }
 
     // We are only concerned with the Members tab for editing groups.
-    const $add_members_container = $(".edit_members_for_user_group .add_subscribers_container");
+    const $add_members_container = $(".edit_members_for_user_group .add_members_container");
 
     if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_members feature.
@@ -26,11 +26,9 @@ export function update_add_members_elements(group) {
     }
 
     // Otherwise, we adjust whether the widgets are disabled based on
-    // whether this user is authorized to add subscribers.
+    // whether this user is authorized to add members.
     const $input_element = $add_members_container.find(".input").expectOne();
-    const $button_element = $add_members_container
-        .find('button[name="add_subscriber"]')
-        .expectOne();
+    const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
     if (user_group_edit.can_edit(group.id)) {
         $input_element.prop("disabled", false);
