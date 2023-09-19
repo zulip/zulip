@@ -120,6 +120,10 @@ function build_stream_popover(opts) {
     });
 
     popover_menus.toggle_popover_menu(elt, {
+        // Add a delay to separate `hideOnClick` and `onShow` so that
+        // `onShow` is called after `hideOnClick`.
+        // See https://github.com/atomiks/tippyjs/issues/230 for more details.
+        delay: [100, 0],
         ...left_sidebar_tippy_options,
         onCreate(instance) {
             stream_popover_instance = instance;
@@ -490,6 +494,18 @@ export function register_click_handlers() {
         const elt = e.currentTarget;
         const $stream_li = $(elt).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
+
+        build_stream_popover({
+            elt,
+            stream_id,
+        });
+
+        e.stopPropagation();
+    });
+
+    $("body").on("click", ".inbox-stream-menu", (e) => {
+        const elt = e.currentTarget;
+        const stream_id = Number.parseInt($(elt).attr("data-stream-id"), 10);
 
         build_stream_popover({
             elt,

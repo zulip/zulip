@@ -344,7 +344,8 @@
             top: 1px;
         }
 
-        .inbox-row {
+        .inbox-row,
+        .inbox-header {
             &:focus,
             &:focus-within,
             &:hover {
