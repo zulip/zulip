@@ -472,14 +472,32 @@ test("mentions", () => {
     assert.deepEqual(unread.get_msg_ids_for_mentions(), []);
     test_notifiable_count(counts.home_unread_messages, 0);
 
-    const muted_stream_id = 401;
+    const muted_stream_id = 900;
+    const unmuted_stream_id = 901;
 
-    user_topics.update_user_topics(401, "lunch", user_topics.all_visibility_policies.MUTED);
+    sub_store.add_hydrated_sub(muted_stream_id, {
+        muted_stream_id,
+        name: "muted stream for testing unread mentions",
+        subscribed: true,
+        is_muted: true,
+    });
+    sub_store.add_hydrated_sub(unmuted_stream_id, {
+        unmuted_stream_id,
+        name: "unmuted stream for testing unread mention",
+        subscribed: true,
+        is_muted: false,
+    });
+
+    user_topics.update_user_topics(
+        muted_stream_id,
+        "lunch",
+        user_topics.all_visibility_policies.MUTED,
+    );
 
     const already_read_message = {
         id: 14,
         type: "stream",
-        stream_id: 400,
+        stream_id: unmuted_stream_id,
         topic: "lunch",
         mentioned: true,
         mentioned_me_directly: true,
@@ -489,7 +507,7 @@ test("mentions", () => {
     const mention_me_message = {
         id: 15,
         type: "stream",
-        stream_id: 400,
+        stream_id: unmuted_stream_id,
         topic: "lunch",
         mentioned: true,
         mentioned_me_directly: true,
@@ -499,7 +517,7 @@ test("mentions", () => {
     const mention_all_message = {
         id: 16,
         type: "stream",
-        stream_id: 400,
+        stream_id: unmuted_stream_id,
         topic: "lunch",
         mentioned: true,
         mentioned_me_directly: false,
@@ -577,8 +595,10 @@ test("mentions", () => {
 });
 
 test("mention updates", () => {
+    // Unread message in an unmuted stream.
     const message = {
         id: 17,
+        stream_id: 901,
         unread: false,
         type: "stream",
         topic: "hello",
