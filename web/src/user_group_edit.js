@@ -277,6 +277,7 @@ export function initialize() {
                     .addClass("save-button")
                     .attr("data-group-id", user_group_id);
             },
+            update_submit_disabled_state_on_change: true,
         });
     });
 
@@ -328,9 +329,6 @@ export function initialize() {
         const new_name = $("#change_user_group_name").val().trim();
         const new_description = $("#change_user_group_description").val().trim();
 
-        if (new_name === group.name && new_description === group.description) {
-            return;
-        }
         if (new_name !== group.name) {
             data.name = new_name;
         }
