@@ -144,10 +144,11 @@ $time_column_min_width: 42px; /* + padding */
             ".      reactions .        . .   ";
 
         @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-            grid-template-columns: $avatar_column_width minmax(0, 1fr) max-content 8px minmax(
-                    $time_column_min_width,
-                    max-content
-                );
+            grid-template-columns:
+                $avatar_column_width minmax(0, 1fr) calc(
+                    2 * var(--message-box-icon-width)
+                )
+                8px minmax($time_column_min_width, max-content);
         }
 
         .message_controls {
