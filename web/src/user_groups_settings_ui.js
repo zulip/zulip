@@ -15,6 +15,7 @@ import * as settings_data from "./settings_data";
 import * as user_group_create from "./user_group_create";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
+import * as util from "./util";
 
 let group_list_widget;
 let group_list_toggler;
@@ -210,14 +211,19 @@ export function change_state(section) {
     group_list_toggler.goto("your-groups");
 }
 
+function compare_by_name(a, b) {
+    return util.strcmp(a.name, b.name);
+}
+
 function redraw_left_panel(tab_name) {
+    let groups_list_data;
     if (tab_name === "all-groups") {
-        group_list_widget.replace_list_data(user_groups.get_realm_user_groups());
+        groups_list_data = user_groups.get_realm_user_groups();
     } else if (tab_name === "your-groups") {
-        group_list_widget.replace_list_data(
-            user_groups.get_user_groups_of_user(people.my_current_user_id()),
-        );
+        groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id());
     }
+    groups_list_data.sort(compare_by_name);
+    group_list_widget.replace_list_data(groups_list_data);
 }
 
 export function redraw_user_group_list() {
