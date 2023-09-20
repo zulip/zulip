@@ -217,9 +217,6 @@ dependencies:
   source-sans:
     specifier: ^3.28.0
     version: 3.46.0(patch_hash=4n7ij66tzyhzaqnxsenbilrxr4)
-  spectrum-colorpicker:
-    specifier: ^1.8.1
-    version: 1.8.1
   stackframe:
     specifier: ^1.3.4
     version: 1.3.4
@@ -10945,10 +10942,6 @@ packages:
       spdy-transport: 3.0.0
     transitivePeerDependencies:
       - supports-color
-
-  /spectrum-colorpicker@1.8.1:
-    resolution: {integrity: sha512-x1picQ5giVso71ESII7jZ3+ZFdit8WthNkzwJqLNdPDPzrltKUQGpTohWyPfSAID+bK1zGdO6bDbSh1S6GoLYA==}
-    dev: false
 
   /sprintf-js@1.0.3:
     resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}

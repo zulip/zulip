@@ -3,7 +3,6 @@ import lchPlugin from "colord/plugins/lch";
 import mixPlugin from "colord/plugins/mix";
 import $ from "jquery";
 
-import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
@@ -93,11 +92,31 @@ function update_message_recipient_color(stream_name, color) {
     }
 }
 
-const stream_color_palette = [
-    ["a47462", "c2726a", "e4523d", "e7664d", "ee7e4a", "f4ae55"],
-    ["76ce90", "53a063", "94c849", "bfd56f", "fae589", "f5ce6e"],
-    ["a6dcbf", "addfe5", "a6c7e5", "4f8de4", "95a5fd", "b0a5fd"],
-    ["c2c2c2", "c8bebf", "c6a8ad", "e79ab5", "bd86e5", "9987e1"],
+export const stream_color_palette = [
+    "a47462",
+    "c2726a",
+    "e4523d",
+    "e7664d",
+    "ee7e4a",
+    "f4ae55",
+    "76ce90",
+    "53a063",
+    "94c849",
+    "bfd56f",
+    "fae589",
+    "f5ce6e",
+    "a6dcbf",
+    "addfe5",
+    "a6c7e5",
+    "4f8de4",
+    "95a5fd",
+    "b0a5fd",
+    "c2c2c2",
+    "c8bebf",
+    "c6a8ad",
+    "e79ab5",
+    "bd86e5",
+    "9987e1",
 ];
 
 const subscriptions_table_colorpicker_options = {
@@ -124,14 +143,11 @@ export function update_stream_color(sub, color) {
         color,
     );
     // The swatch in the color picker.
-    set_colorpicker_color(
-        $(
-            `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
-                stream_id,
-            )}'] .colorpicker`,
-        ),
-        color,
-    );
+    $(
+        `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
+            stream_id,
+        )}'] .dropdown-color-preview`,
+    ).css("background-color", color);
     $(
         `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
             stream_id,
@@ -143,32 +159,32 @@ export function update_stream_color(sub, color) {
     message_view_header.colorize_message_view_header();
 }
 
-export const sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: false,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    cancelText: "",
-    chooseText: $t({defaultMessage: "Confirm"}),
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
+export function update_chosen_color($target) {
+    let selected_color;
+    if ($target.hasClass("colorpicker-input")) {
+        selected_color = $target.val();
+    }
+    if ($target.hasClass("color-block")) {
+        selected_color = $target.data("color");
+    }
 
-function picker_do_change_color(color) {
-    $(".colorpicker").spectrum("destroy");
-    $(".colorpicker").spectrum(sidebar_popover_colorpicker_options_full);
-    const stream_id = Number.parseInt($(this).attr("stream_id"), 10);
-    const hex_color = color.toHexString();
-    stream_settings_ui.set_color(stream_id, hex_color);
+    if (selected_color) {
+        const $colorpicker = $target.closest(".colorpicker");
+        const $preview_color_elem = $colorpicker.find(".preview-color");
+
+        $colorpicker.find(".colorpicker-input").val(selected_color);
+
+        $preview_color_elem.css("background-color", selected_color);
+        $preview_color_elem.data("color", selected_color);
+    }
 }
-subscriptions_table_colorpicker_options.change = picker_do_change_color;
 
-export const sidebar_popover_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPaletteOnly: true,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
+export function save_color($target, sub) {
+    const stream_color = sub.color;
+    const $save_btn = $target.closest(".submit-color-btn");
+    const selected_color = $save_btn.find(".preview-color").data("color");
+
+    if (selected_color !== stream_color) {
+        stream_settings_ui.set_color(sub.stream_id, selected_color);
+    }
+}

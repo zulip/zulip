@@ -154,54 +154,11 @@
     }
 }
 
-.sp-container {
-    z-index: 106;
-}
-
 .streams_popover {
     .topic-name {
         text-align: center;
         margin-top: 5px;
         margin-bottom: 5px;
-    }
-
-    .colorpicker-container {
-        display: none;
-        margin-right: 10px;
-
-        .sp-container {
-            background-color: hsl(0deg 0% 100%);
-            cursor: pointer;
-            border: none;
-
-            .sp-palette-container {
-                border-right: none;
-            }
-
-            & input {
-                box-sizing: inherit; /* IE */
-                box-sizing: initial;
-
-                width: calc(100% - 13px);
-            }
-
-            & button {
-                background-color: hsl(0deg 0% 100%);
-                background-image: none;
-                border: 1px solid hsl(0deg 0% 80%);
-                border-radius: 4px;
-                color: hsl(0deg 0% 25%);
-                font-size: 12px;
-                padding: 6px;
-                text-transform: capitalize;
-                text-align: center;
-                text-shadow: none;
-            }
-
-            .sp-picker-container {
-                border-left: solid 1px hsl(0deg 0% 88%);
-            }
-        }
     }
 
     .popover_sub_unsub_button {
@@ -712,16 +669,6 @@ ul {
         .popover-inner {
             background-color: hsl(0deg 0% 100%);
             pointer-events: all;
-        }
-
-        @media (width < $sm_min) {
-            .popover-inner {
-                width: 70%;
-            }
-
-            .sp-picker-container {
-                border-left: none !important;
-            }
         }
     }
 

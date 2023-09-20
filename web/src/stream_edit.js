@@ -134,9 +134,6 @@ export function update_stream_description(sub) {
 function show_subscription_settings(sub) {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
 
-    const $colorpicker = $edit_container.find(".colorpicker");
-    const color = stream_data.get_color(sub.stream_id);
-    stream_color.set_colorpicker_color($colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
     if (!sub.render_subscribers) {
@@ -255,6 +252,7 @@ export function show_settings_for(node) {
             page_params.realm_org_type === settings_config.all_org_type_values.business.code,
         is_admin: page_params.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
+        stream_color_palette: stream_color.stream_color_palette,
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -601,6 +599,21 @@ export function initialize() {
         ".sub_setting_checkbox .sub_setting_control",
         stream_setting_changed,
     );
+
+    $("#streams_overlay_container").on("input click", ".color-choice", (e) => {
+        e.stopPropagation();
+
+        stream_color.update_chosen_color($(e.target));
+    });
+
+    $("#streams_overlay_container").on("click", ".submit-color-btn", (e) => {
+        e.stopPropagation();
+
+        $("#toggle-colorpicker").dropdown("toggle");
+
+        const sub = get_sub_for_target(e.target);
+        stream_color.save_color($(e.target), sub);
+    });
 
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.

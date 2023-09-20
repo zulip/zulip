@@ -1,6 +1,6 @@
 {{! Contents of the "stream actions" popup }}
 <ul class="nav nav-list streams_popover" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
-    <li>
+    <li class="show-colorpicker">
         <p class="topic-name">
             <span class="stream-privacy-original-color-{{stream.stream_id}} stream-privacy filter-icon" style="color: {{stream.color}}">
                 {{> stream_privacy
@@ -11,7 +11,7 @@
         </p>
     </li>
 
-    <hr />
+    <hr class="show-colorpicker"/>
 
     {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
     <li>
@@ -60,11 +60,13 @@
         </a>
     </li>
     <li class="hidden-for-spectators">
-        <span class="colorpicker-container"><input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
         <a tabindex="0" class="choose_stream_color">
             <i class="fa fa-eyedropper" aria-hidden="true"></i>
             {{t "Change color" }}
         </a>
     </li>
 
+    <li class="show-colorpicker" style="display: none;">
+        {{> stream_settings/stream_colorpicker is_left_sidebar_menu=false stream_color=stream.color}}
+    </li>
 </ul>

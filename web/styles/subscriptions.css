@@ -29,18 +29,6 @@
     border-radius: 4px;
 }
 
-.sp-preview {
-    width: 20px;
-    border: none;
-    box-shadow: 0 0 1px hsl(0deg 0% 0%);
-}
-
-.sp-replacer {
-    margin-right: 12px;
-    border: none;
-    box-shadow: 0 0 2px hsl(0deg 0% 0% / 80%);
-}
-
 .stream-email .email-address {
     display: block;
     margin: auto;
@@ -947,8 +935,37 @@ h4.user_group_setting_subsection_title {
             border-bottom: none;
         }
 
-        .sp-replacer {
-            box-shadow: none;
+        .dropdown {
+            .colorpicker-dropdown-btn {
+                position: relative;
+                width: 3rem;
+                height: 35px;
+                color: hsl(0deg 0% 40%);
+                cursor: pointer;
+
+                .dropdown-color-preview {
+                    position: absolute;
+                    inset: 0;
+                    border-radius: 4px;
+                    border: 1px solid hsl(0deg 0% 93%);
+                }
+
+                .dropdown-icon {
+                    position: absolute;
+                    right: 0;
+                    top: 0;
+                    bottom: 0;
+                    padding: 0 2px;
+                    background-color: hsl(0deg 0% 93%);
+                    border-radius: 0 4px 4px 0;
+                    display: flex;
+                    align-items: center;
+                }
+            }
+
+            .colorpicker {
+                margin: 0 10px;
+            }
         }
 
         & input[type="radio"] {

@@ -105,10 +105,18 @@
                     {{/each}}
 
                     <div class="input-group">
-                        <label for="streamcolor">{{t "Stream color" }}</label>
-                        <span class="sub_setting_control">
-                            <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
-                        </span>
+                        <span>{{t "Stream color" }}</span>
+                        <div class="dropdown">
+                            <div class="colorpicker-dropdown-btn dropdown-toggle" type="button" id="toggle-colorpicker" data-toggle="dropdown" aria-haspopup="true">
+                                <div class="dropdown-color-preview" style="background-color: {{sub.color}};"></div>
+                                <div class="dropdown-icon">
+                                    <i class="fa fa-caret-down" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                            <div class="dropdown-menu">
+                                {{> stream_colorpicker stream_color=sub.color}}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>

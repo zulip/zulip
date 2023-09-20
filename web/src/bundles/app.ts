@@ -5,7 +5,6 @@ import "../../third/bootstrap-typeahead/typeahead";
 import "../../third/bootstrap-tooltip/tooltip";
 import "jquery-caret-plugin/dist/jquery.caret";
 import "../../third/jquery-idle/jquery.idle";
-import "spectrum-colorpicker";
 import "jquery-validation";
 import "flatpickr";
 
@@ -24,7 +23,6 @@ import "../zulip_test";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
 import "../../third/bootstrap-tooltip/tooltip.css";
-import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";

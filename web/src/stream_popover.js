@@ -117,6 +117,7 @@ function build_stream_popover(opts) {
     popovers.hide_all_except_sidebars();
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
+        stream_color_palette: stream_color.stream_color_palette,
     });
 
     popover_menus.toggle_popover_menu(elt, {
@@ -192,25 +193,29 @@ function build_stream_popover(opts) {
             // Choose a different color.
             $popper.on("click", ".choose_stream_color", (e) => {
                 const $popover = $(e.target).closest(".streams_popover");
-                const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
-                $(".colorpicker-container").show();
-                $colorpicker.spectrum("destroy");
-                $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
-                // In theory this should clean up the old color picker,
-                // but this seems a bit flaky -- the new colorpicker
-                // doesn't fire until you click a button, but the buttons
-                // have been hidden.  We work around this by just manually
-                // fixing it up here.
-                $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
-                $(e.target).hide();
+                const $show_colorpicker = $popover.find(".show-colorpicker");
+                $popover.children().hide();
+                $show_colorpicker.show();
 
-                $(".streams_popover").on("click", "a.sp-cancel", () => {
-                    hide_stream_popover();
-                });
-                if ($(window).width() <= media_breakpoints_num.md) {
+                if ($(window).width() <= media_breakpoints_num.sm) {
                     $(".popover-inner").hide().fadeIn(300);
                     $(".popover").addClass("colorpicker-popover");
                 }
+                e.stopPropagation();
+            });
+
+            $popper.on("input click", ".color-choice", (e) => {
+                stream_color.update_chosen_color($(e.target));
+
+                e.stopPropagation();
+            });
+
+            $popper.on("click", ".submit-color-btn", (e) => {
+                hide_stream_popover();
+
+                const sub = stream_popover_sub(e);
+                stream_color.save_color($(e.target), sub);
+
                 e.stopPropagation();
             });
         },

@@ -860,7 +860,6 @@ export function launch(section) {
             $overlay: $("#subscription_overlay"),
             on_close() {
                 browser_history.exit_overlay();
-                $(".colorpicker").spectrum("destroy");
             },
         });
         change_state(section);

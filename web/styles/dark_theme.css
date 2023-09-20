@@ -380,17 +380,19 @@
         border-color: hsl(0deg 0% 100% / 40%);
     }
 
-    .streams_popover .sp-container {
-        background-color: transparent;
+    .colorpicker .colorpicker-button-container {
+        & > button {
+            background-color: hsl(0deg 0% 0% / 20%);
+            border-color: hsl(0deg 0% 0%);
+            color: hsl(0deg 0% 100%);
 
-        & button {
-            background-color: hsl(208deg 35% 11%);
-            border: 1px solid hsl(210deg 36% 4%);
-            color: hsl(236deg 31% 90%);
+            &:hover {
+                background-color: hsl(0deg 0% 0% / 50%);
+            }
         }
 
-        .sp-picker-container {
-            border-left: solid 1px hsl(210deg 36% 4%);
+        .colorpicker-input {
+            opacity: 0;
         }
     }
 

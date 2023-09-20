@@ -1,0 +1,22 @@
+<div class="colorpicker" {{#if is_left_sidebar_menu}}style="display: none;"{{/if}} data-stream-color="{{stream_color}}">
+    {{#if is_left_sidebar_menu}}<hr />{{/if}}
+    <div class="palette-container">
+        {{#each stream_color_palette}}
+            <button class="color-block color-choice" style="background-color: #{{this}};" data-color="#{{this}}"></button>
+        {{/each}}
+    </div>
+    <hr />
+    <div class="colorpicker-button-container">
+        <button type="button" class="btn btn-default more-colors-btn">
+            <label>
+                More Colors
+                <input id="colorpicker-input" type="color" class="colorpicker-input color-choice" value="{{stream_color}}"/>
+            </label>
+        </button>
+        <button type="button" class="btn btn-default flex submit-color-btn">
+            <span class="color-block preview-color" style="background-color: {{stream_color}};" data-color="{{stream_color}}"></span>
+            <span>Save</span>
+        </button>
+    </div>
+</div>
+

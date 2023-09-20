@@ -136,3 +136,66 @@ button.dropdown-toggle {
         transition: none;
     }
 }
+
+.colorpicker {
+    & > div,
+    & > hr {
+        margin: 10px 0;
+    }
+
+    .palette-container {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+        justify-items: center;
+    }
+
+    .colorpicker-button-container {
+        display: flex;
+        gap: 10px;
+
+        & > button {
+            border-radius: 40px;
+            width: 90px;
+
+            &:focus {
+                outline: 0;
+            }
+        }
+
+        .more-colors-btn {
+            position: relative;
+
+            .colorpicker-input {
+                position: absolute;
+                top: 0;
+                left: 0;
+                opacity: 0;
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        .submit-color-btn {
+            justify-content: space-around;
+
+            .preview-color {
+                pointer-events: none;
+            }
+        }
+    }
+
+    .color-block {
+        width: 17px;
+        height: 17px;
+        border: none;
+        border-radius: 50%;
+        transition: all 0.1s ease-in-out;
+
+        &:hover,
+        &:focus {
+            transform: scale(1.1);
+            outline: 0;
+        }
+    }
+}
