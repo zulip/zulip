@@ -309,7 +309,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
         )
     ).format(
         default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-        start_topic_help_url="/help/start-a-new-topic",
+        start_topic_help_url="/help/starting-a-new-topic",
     )
 
     welcome_messages: List[Dict[str, str]] = [
