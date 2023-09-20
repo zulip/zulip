@@ -454,6 +454,7 @@ export function initialize() {
                     .addClass("save-button")
                     .attr("data-stream-id", stream_id);
             },
+            update_submit_disabled_state_on_change: true,
         });
     });
 
@@ -504,10 +505,6 @@ export function initialize() {
         const new_name = $("#change_stream_name").val().trim();
         const new_description = $("#change_stream_description").val().trim();
 
-        if (new_name === sub.name && new_description === sub.description) {
-            dialog_widget.hide_dialog_spinner();
-            return;
-        }
         if (new_name !== sub.name) {
             data.new_name = new_name;
         }
