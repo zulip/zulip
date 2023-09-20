@@ -376,18 +376,18 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (user_card_popover.is_message_user_card_open()) {
-        user_card_popover.user_card_popover_for_message_handle_keyboard(event_name);
+    if (user_card_popover.message_user_card.is_open()) {
+        user_card_popover.message_user_card.handle_keyboard(event_name);
         return true;
     }
 
-    if (user_card_popover.is_user_card_open()) {
-        user_card_popover.user_card_popover_handle_keyboard(event_name);
+    if (user_card_popover.user_card.is_open()) {
+        user_card_popover.user_card.handle_keyboard(event_name);
         return true;
     }
 
-    if (user_card_popover.user_sidebar_popped()) {
-        user_card_popover.user_sidebar_popover_handle_keyboard(event_name);
+    if (user_card_popover.user_sidebar.is_open()) {
+        user_card_popover.user_sidebar.handle_keyboard(event_name);
         return true;
     }
 
@@ -741,7 +741,7 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (overlays.settings_open() && !user_card_popover.is_user_card_open()) {
+    if (overlays.settings_open() && !user_card_popover.user_card.is_open()) {
         return false;
     }
 
