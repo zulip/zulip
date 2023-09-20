@@ -144,7 +144,7 @@ $time_column_min_width: 42px; /* + padding */
             ".      reactions .        . .   ";
 
         @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-            grid-template-columns: $avatar_column_width auto max-content 8px minmax(
+            grid-template-columns: $avatar_column_width minmax(0, 1fr) max-content 8px minmax(
                     $time_column_min_width,
                     max-content
                 );
