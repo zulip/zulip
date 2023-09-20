@@ -33,21 +33,6 @@ function compute_send_times(now = new Date()) {
     return send_times;
 }
 
-export function is_send_later_timestamp_missing_or_expired(
-    timestamp_in_seconds,
-    current_time_in_seconds,
-) {
-    if (!timestamp_in_seconds) {
-        return true;
-    }
-    // Determine if the selected timestamp is less than the minimum
-    // scheduled message delay
-    if (timestamp_in_seconds - current_time_in_seconds < MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS) {
-        return true;
-    }
-    return false;
-}
-
 export function add_scheduled_messages(scheduled_messages) {
     for (const scheduled_message of scheduled_messages) {
         scheduled_messages_data[scheduled_message.scheduled_message_id] = scheduled_message;
@@ -194,8 +179,7 @@ export function get_selected_send_later_timestamp() {
 }
 
 export function get_formatted_selected_send_later_time() {
-    const current_time = Date.now() / 1000; // seconds, like selected_send_later_timestamp
-    if (is_send_later_timestamp_missing_or_expired(selected_send_later_timestamp, current_time)) {
+    if (!selected_send_later_timestamp) {
         return undefined;
     }
     return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
