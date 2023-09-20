@@ -719,12 +719,17 @@ export function toggle_resolve_topic(
         url: "/json/messages/" + message_id,
         data: request,
         success() {
-            const $spinner = $row.find(".toggle_resolve_topic_spinner");
-            loading.destroy_indicator($spinner);
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
         },
         error(xhr) {
-            const $spinner = $row.find(".toggle_resolve_topic_spinner");
-            loading.destroy_indicator($spinner);
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
+
             if (xhr.responseJSON) {
                 if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                     handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);

@@ -462,7 +462,10 @@ export function complete_rerender() {
     );
     update_filters();
     show_empty_inbox_text(has_visible_unreads);
-
+    // If the focus is not on the inbox rows, the inbox view scrolls
+    // downwhen moving from other views to the inbox view. To avoid
+    // this, we scroll to top before restoring focus.
+    $("html").scrollTop(0);
     setTimeout(() => {
         // We don't want to focus on simplebar ever.
         $("#inbox-list .simplebar-content-wrapper").attr("tabindex", "-1");
