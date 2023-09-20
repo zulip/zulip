@@ -162,9 +162,9 @@ export function any_active() {
         popover_menus.any_active() ||
         stream_popover.is_open() ||
         user_group_popover.is_open() ||
-        user_card_popover.user_sidebar_popped() ||
-        user_card_popover.is_message_user_card_open() ||
-        user_card_popover.is_user_card_open() ||
+        user_card_popover.user_sidebar.is_open() ||
+        user_card_popover.message_user_card.is_open() ||
+        user_card_popover.user_card.is_open() ||
         emoji_picker.is_open() ||
         playground_links_popover.is_open() ||
         $("[class^='column-'].expanded").length
