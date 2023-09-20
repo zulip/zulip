@@ -709,10 +709,17 @@ export function update_message_for_mention(message, content_edited = false) {
         return false;
     }
 
+    // A message is said to have an unmuted mention if message contains a mention and
+    // if the message is a direct message or
+    // if the message is in a non muted topic in an unmuted stream or
+    // if the message is in a followed or an unmuted topic in a muted stream.
     const is_unmuted_mention =
-        message.type === "stream" &&
         message.mentioned &&
-        !user_topics.is_topic_muted(message.stream_id, message.topic);
+        (message.type === "private" ||
+            (!stream_data.is_muted(message.stream_id) &&
+                !user_topics.is_topic_muted(message.stream_id, message.topic)) ||
+            (stream_data.is_muted(message.stream_id) &&
+                user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic)));
 
     if (is_unmuted_mention || message.mentioned_me_directly) {
         unread_mentions_counter.add(message.id);
