@@ -76,6 +76,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/web-public-streams", "/help/public-access-option"),
     URLRedirect("/help/starting-a-new-private-thread", "/help/starting-a-new-direct-message"),
     URLRedirect("/help/edit-or-delete-a-message", "/help/delete-a-message"),
+    URLRedirect("/help/start-a-new-topic", "/help/starting-a-new-topic"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

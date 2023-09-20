@@ -127,7 +127,7 @@
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
-* [Start a new topic](/help/start-a-new-topic)
+* [Start a new topic](/help/starting-a-new-topic)
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
