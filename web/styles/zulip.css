@@ -3103,7 +3103,6 @@ select.invite-as {
 
     .include-sender .message_controls {
         background: none !important;
-        padding: 0 !important;
         border: none !important;
     }
 }

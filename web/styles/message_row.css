@@ -153,12 +153,9 @@ $time_column_min_width: 42px; /* + padding */
         .message_controls {
             grid-area: controls;
             justify-self: end;
-            padding: 0;
 
             @media (width < $sm_min),
                 ((width >= $md_min) and (width < $mc_min)) {
-                padding: 0 4px;
-
                 /* This is intended to target the first message_controls child
                    when there are 3 displayed. 4 = 3 + hidden message_failed element. */
                 .message_control_button:nth-last-child(4) {
