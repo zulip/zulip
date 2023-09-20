@@ -89,14 +89,11 @@ li.show-more-topics {
 
 .streams_inline_icon_wrapper {
     float: right;
+    margin-right: 8px;
 }
 
 .streams_filter_icon.web_public {
     margin-right: 10px;
-}
-
-#streams_inline_icon {
-    margin-right: 8px;
 }
 
 .tooltip {
