@@ -163,9 +163,6 @@
                  center--but this patch makes the popover more
                  likely to be usable.  (If the screen is super
                  small, obviously we can't fit it completely.)
-
-                 If you use this fix_positions option, you want
-                 to also use the "no_arrow_popover" template.
               */
               if (top < 0) {
                   top = 0;

@@ -283,11 +283,11 @@ ul {
     }
 }
 
-/* Important note: The user info popover user_popover class is applied
-   to user info popovers ONLY when they are opened from the right
-   sidebar; otherwise, it will have the user-card-popover class
-   instead. */
-.user_popover {
+/* Important note: The user info popover user-sidebar-popover-root
+   class is applied to user info popovers ONLY when they are opened
+   from the right sidebar; otherwise, it will have the
+   user-card-popover-root class instead. */
+.user-sidebar-popover-root {
     width: 240px;
 
     margin: -14px;
@@ -304,8 +304,8 @@ ul {
 }
 
 .group-info-popover,
-.message-user-card-popover,
-.user-card-popover {
+.message-user-card-popover-root,
+.user-card-popover-root {
     width: 240px;
     padding: 0;
 
@@ -670,27 +670,6 @@ ul {
 }
 
 @media (width < $md_min) {
-    .user-card-popover {
-        display: flex !important;
-        justify-content: center;
-        align-items: center;
-
-        /* these are to override JS embedded inline styles. */
-        top: 0 !important;
-        left: 0 !important;
-        margin: 0 !important;
-        width: 100%;
-        height: 100%;
-
-        background-color: hsl(0deg 0% 0% / 70%) !important;
-        border-radius: 0;
-        border: none;
-
-        .popover-inner {
-            background-color: hsl(0deg 0% 100%);
-        }
-    }
-
     .colorpicker-popover {
         display: flex !important;
         justify-content: center;
@@ -788,7 +767,10 @@ ul {
 
 .giphy-popover,
 .emoji-popover-root,
-.user-group-popover-root {
+.user-group-popover-root,
+.user-sidebar-popover-root,
+.message-user-card-popover-root,
+.user-card-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
            as it is not necessary for the Giphy popover. */
@@ -797,6 +779,11 @@ ul {
         /* By resetting to the default color from the `body`,
            we can ignore the colors applied from `tippy-box`. */
         color: var(--color-text-default);
+    }
+
+    & .popover-content ul.nav {
+        /* TODO: Clean this logic up after drop Bootstrap styling */
+        margin: 0;
     }
 }
 
