@@ -303,6 +303,16 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
         self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
 
+        # Test emtpty group name.
+        params = {
+            "name": "",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Test empty group",
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group name can't be empty!")
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+
         # Test invalid prefixes for user group name.
         params = {
             "name": "@test",
@@ -479,6 +489,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"name": "a" * (UserGroup.MAX_NAME_LENGTH + 1)}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
+
+        # Test emtpty group name.
+        params = {"name": ""}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "User group name can't be empty!")
 
         # Test invalid prefixes for user group name.
         params = {"name": "@test"}
