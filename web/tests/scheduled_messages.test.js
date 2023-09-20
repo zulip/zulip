@@ -141,19 +141,11 @@ run_test("scheduled_modal_opts", () => {
     }
 });
 
-run_test("missing_or_expired_timestamps", () => {
-    let now_in_seconds = new Date("2023-05-03T08:54:00").getTime();
+run_test("missing_timestamps", () => {
+    const now_in_seconds = new Date("2023-05-03T08:54:00").getTime();
     // The today at 9am option is not expired as of 8:54am (false)
     assert.ok(
-        !scheduled_messages.is_send_later_timestamp_missing_or_expired(
-            per_day_stamps["2023-05-03"].today_nine_am / 1000,
-            now_in_seconds / 1000,
-        ),
-    );
-    // The today at 9am option is expired as of 8:57am (true)
-    now_in_seconds = new Date("2023-05-03T08:57:00").getTime();
-    assert.ok(
-        scheduled_messages.is_send_later_timestamp_missing_or_expired(
+        !scheduled_messages.is_send_later_timestamp_missing(
             per_day_stamps["2023-05-03"].today_nine_am / 1000,
             now_in_seconds / 1000,
         ),
