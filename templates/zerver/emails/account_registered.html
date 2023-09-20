@@ -54,7 +54,7 @@
 
 <p>
     {% if corporate_enabled %}
-        {% trans %}Questions? <a href="{{ support_email }}">Contact us</a> — we'd love to help!{% endtrans %}
+        {% trans %}Questions? <a href="mailto:{{ support_email }}">Contact us</a> — we'd love to help!{% endtrans %}
     {% else %}
         {{macros.contact_us_self_hosted(support_email)}}
     {% endif %}
