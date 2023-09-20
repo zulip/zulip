@@ -214,6 +214,9 @@ def access_user_group_for_setting(
 
 
 def check_user_group_name(group_name: str) -> str:
+    if group_name.strip() == "":
+        raise JsonableError(_("User group name can't be empty!"))
+
     if len(group_name) > UserGroup.MAX_NAME_LENGTH:
         raise JsonableError(
             _("User group name cannot exceed {max_length} characters.").format(
