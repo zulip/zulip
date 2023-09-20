@@ -380,8 +380,8 @@ td .button {
     }
 }
 
-.user_role {
-    min-width: 95px;
+.user_name_column {
+    min-width: 30%;
 }
 
 .button,
@@ -1663,10 +1663,6 @@ $option_title_width: 180px;
     }
 }
 
-#admin-user-list .last_active {
-    width: 100px;
-}
-
 .required-text {
     &:empty::after {
         content: attr(data-empty);
@@ -1798,6 +1794,10 @@ $option_title_width: 180px;
 }
 
 @media (width < $lg_min) {
+    .settings-email-column {
+        display: none;
+    }
+
     .upload-size {
         display: none;
     }
@@ -1909,6 +1909,10 @@ $option_title_width: 180px;
     #change_email_modal {
         width: 400px;
     }
+
+    .user_name_column {
+        min-width: 40%;
+    }
 }
 
 @media (width < $ml_min) {
@@ -1931,6 +1935,13 @@ $option_title_width: 180px;
     #change_password_modal,
     #change_email_modal {
         width: 300px;
+    }
+
+    #user_column_header,
+    .user_name_column {
+        position: sticky;
+        z-index: 2;
+        left: 0;
     }
 }
 
@@ -2015,5 +2026,41 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+.pill_container {
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+    border: 1px solid hsl(0deg 0% 0% / 15%);
+    background-color: hsl(0deg 0% 0% / 7%);
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px;
+
+    &:hover {
+        border: 1px solid hsl(0deg 0% 20%);
+    }
+
+    .pill-image {
+        height: 20px;
+        width: 20px;
+        border-radius: 4px 0 0 4px;
+    }
+
+    .pill-value {
+        margin: 0 5px;
+        color: hsl(0deg 0% 15%);
+        text-decoration: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .deactivated-user-icon {
+        display: flex;
+        align-items: center;
+        margin-left: -5px;
     }
 }
