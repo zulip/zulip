@@ -143,6 +143,15 @@ $time_column_min_width: 42px; /* + padding */
             ".      more      .        . .   "
             ".      reactions .        . .   ";
 
+        &.content_edit_mode {
+            /* Set the controls area to 0 to give more space
+               to the edit/source view area. */
+            grid-template-columns: $avatar_column_width minmax(0, 1fr) 0 8px minmax(
+                    $time_column_min_width,
+                    max-content
+                );
+        }
+
         @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
             grid-template-columns:
                 $avatar_column_width minmax(0, 1fr) calc(
