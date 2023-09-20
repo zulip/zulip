@@ -3100,11 +3100,6 @@ select.invite-as {
     #navbar-buttons ul.nav li.active .dropdown-toggle {
         top: -8px;
     }
-
-    .include-sender .message_controls {
-        background: none !important;
-        border: none !important;
-    }
 }
 
 @media (width < $mm_min) {
