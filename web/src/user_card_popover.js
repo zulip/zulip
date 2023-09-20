@@ -48,8 +48,6 @@ let $current_user_card_popover_elem;
 let current_user_sidebar_popover;
 let current_user_sidebar_user_id;
 
-let userlist_placement = "right";
-
 class PopoverMenu {
     constructor() {
         this.instance = null;
@@ -112,7 +110,6 @@ export function clear_for_testing() {
     $current_message_user_card_popover_elem = undefined;
     $current_user_card_popover_elem = undefined;
     manage_menu.instance = undefined;
-    userlist_placement = "right";
 }
 
 function elem_to_user_id($elem) {
@@ -544,7 +541,6 @@ function get_user_card_popover_for_message_items() {
 function toggle_sidebar_user_card_popover($target) {
     const user_id = elem_to_user_id($target.find("a"));
     const user = people.get_by_user_id(user_id);
-    const popover_placement = userlist_placement === "left" ? "right" : "left";
 
     // Hiding popovers may mutate current_user_sidebar_user_id.
     const previous_user_sidebar_id = current_user_sidebar_user_id;
@@ -565,7 +561,7 @@ function toggle_sidebar_user_card_popover($target) {
         false,
         "compose_private_message",
         "user_popover",
-        popover_placement,
+        "left",
     );
 
     current_user_sidebar_user_id = user.user_id;
