@@ -183,6 +183,28 @@ function set_topic_edit_properties(group, message) {
     }
 }
 
+function get_users_for_recipient_row(message) {
+    const user_ids = people.pm_with_user_ids(message);
+    const users = user_ids.map((user_id) => {
+        let full_name;
+        if (muted_users.is_user_muted(user_id)) {
+            full_name = $t({defaultMessage: "Muted user"});
+        } else {
+            full_name = people.get_full_name(user_id);
+        }
+        return {
+            full_name,
+            should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
+        };
+    });
+
+    function compare_by_name(a, b) {
+        return a.full_name < b.full_name ? -1 : a.full_name > b.full_name ? 1 : 0;
+    }
+
+    return users.sort(compare_by_name);
+}
+
 function populate_group_from_message_container(group, message_container) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
@@ -225,7 +247,8 @@ function populate_group_from_message_container(group, message_container) {
         group.all_visibility_policies = user_topics.all_visibility_policies;
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
-        group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
+        group.recipient_users = get_users_for_recipient_row(message_container.msg);
+        group.display_reply_to_for_tooltip = message_store.get_pm_full_names(message_container.msg);
     }
     group.display_recipient = message_container.msg.display_recipient;
     group.topic_links = message_container.msg.topic_links;
