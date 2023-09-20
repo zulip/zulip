@@ -17,7 +17,6 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
-import * as settings_ui from "./settings_ui";
 import * as ui_report from "./ui_report";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_ui_updates from "./user_group_ui_updates";
@@ -271,6 +270,7 @@ export function initialize() {
             ),
             html_body: change_user_group_info_modal,
             id: "change_group_info_modal",
+            loading_spinner: true,
             on_click: save_group_info,
             post_render() {
                 $("#change_group_info_modal .dialog_submit_button")
@@ -338,8 +338,6 @@ export function initialize() {
             data.description = new_description;
         }
 
-        const $status_element = $(".group_change_property_info");
-        dialog_widget.close_modal();
-        settings_ui.do_settings_change(channel.patch, url, data, $status_element);
+        dialog_widget.submit_api_request(channel.patch, url, data);
     }
 }
