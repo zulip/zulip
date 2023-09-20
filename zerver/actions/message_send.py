@@ -541,7 +541,6 @@ def build_message_send_dict(
     stream: Optional[Stream] = None,
     local_id: Optional[str] = None,
     sender_queue_id: Optional[str] = None,
-    realm: Optional[Realm] = None,
     widget_content_dict: Optional[Dict[str, Any]] = None,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
@@ -552,9 +551,7 @@ def build_message_send_dict(
     production, this is always called by check_message, but some
     testing code paths call it directly.
     """
-    if realm is None:
-        realm = message.realm
-    assert realm == message.realm
+    realm = message.realm
 
     if mention_backend is None:
         mention_backend = MentionBackend(realm.id)
@@ -1534,7 +1531,6 @@ def check_message(
         stream=stream,
         local_id=local_id,
         sender_queue_id=sender_queue_id,
-        realm=realm,
         widget_content_dict=widget_content_dict,
         email_gateway=email_gateway,
         mention_backend=mention_backend,
