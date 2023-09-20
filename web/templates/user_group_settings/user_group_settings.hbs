@@ -2,7 +2,7 @@
     <div class="tab-container"></div>
     <div class="button-group">
         {{#if can_edit}}
-        <button class="button small rounded btn-danger deactivate tippy-zulip-tooltip" data-tippy-content="{{t 'Delete group'}}" type="button" name="delete_button"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        <button class="button small rounded btn-danger deactivate tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Delete group'}}" type="button" name="delete_button"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
         {{/if}}
     </div>
 </div>
@@ -16,7 +16,7 @@
                 </div>
                 <div class="group_change_property_info alert-notification"></div>
                 <div class="button-group" {{#unless can_edit}}style="display:none"{{/unless}}>
-                    <button id="open_group_info_modal" class="button rounded small btn-warning tippy-zulip-tooltip" data-tippy-content="{{t 'Change group info' }}">
+                    <button id="open_group_info_modal" class="button rounded small btn-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change group info' }}">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </button>
                 </div>
