@@ -4,7 +4,9 @@ to receive Front notifications without leaving Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to the **Settings** page of your Front organization. Click on the
 **Integrations** tab, and enable the **Webhooks** integration. Click on

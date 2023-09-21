@@ -4,7 +4,9 @@ Canarytokens from Thinkst's paid product, not [canarytokens.org][canarytokens] -
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to your Thinkst Canary settings, and click on **Webhooks** on
    the left sidebar. Select the **Generic** tab. Press

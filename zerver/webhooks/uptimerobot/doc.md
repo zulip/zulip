@@ -2,7 +2,9 @@ Receive Zulip notifications from UptimeRobot!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. On UptimeRobot, go to **My Settings** and select **Add Alert Contact**.
    Set **Alert Contact Type** to **webhook**.
