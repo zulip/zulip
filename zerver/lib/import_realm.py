@@ -63,6 +63,7 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
+    SystemGroups,
     UserActivity,
     UserActivityInterval,
     UserGroup,
@@ -192,7 +193,7 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
 def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
     table = get_db_table(Stream)
     admins_group = UserGroup.objects.get(
-        name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+        name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
     )
     for stream in data[table]:
         stream["can_remove_subscribers_group"] = admins_group
@@ -1675,7 +1676,7 @@ def add_users_to_system_user_groups(
     realm: Realm, user_profiles: List[UserProfile], role_system_groups_dict: Dict[int, UserGroup]
 ) -> None:
     full_members_system_group = UserGroup.objects.get(
-        name=UserGroup.FULL_MEMBERS_GROUP_NAME,
+        name=SystemGroups.FULL_MEMBERS,
         realm=realm,
         is_system_group=True,
     )

@@ -233,6 +233,7 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserPresence,
@@ -3752,7 +3753,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
 
         moderators_group = UserGroup.objects.get(
-            name=UserGroup.MODERATORS_GROUP_NAME,
+            name=SystemGroups.MODERATORS,
             is_system_group=True,
             realm=self.user_profile.realm,
         )

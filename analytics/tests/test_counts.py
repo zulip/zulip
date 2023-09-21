@@ -66,6 +66,7 @@ from zerver.models import (
     RealmAuditLog,
     Recipient,
     Stream,
+    SystemGroups,
     UserActivityInterval,
     UserGroup,
     UserProfile,
@@ -89,7 +90,9 @@ class AnalyticsTestCase(ZulipTestCase):
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
         )
         self.administrators_user_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=self.default_realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm=self.default_realm,
+            is_system_group=True,
         )
 
         # used to generate unique names in self.create_*

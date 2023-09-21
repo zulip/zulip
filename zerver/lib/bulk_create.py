@@ -13,6 +13,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -127,10 +128,10 @@ def bulk_create_users(
     Subscription.objects.bulk_create(subscriptions_to_create)
 
     full_members_system_group = UserGroup.objects.get(
-        name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+        name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
     )
     members_system_group = UserGroup.objects.get(
-        name=UserGroup.MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+        name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
     )
     group_memberships_to_create: List[UserGroupMembership] = []
     for user_profile in profiles_to_create:
@@ -196,7 +197,7 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
         name.lower() for name in Stream.objects.filter(realm=realm).values_list("name", flat=True)
     }
     administrators_user_group = UserGroup.objects.get(
-        name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True, realm=realm
+        name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
     )
     streams_to_create: List[Stream] = []
     for name, options in stream_dict.items():
