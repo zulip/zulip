@@ -132,7 +132,7 @@ export function copy_handler() {
     // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
     // entirely by the browser, our HTML layout, and our use of the
-    // no-select/auto-select CSS classes).  We put considerable effort
+    // no-select CSS classes).  We put considerable effort
     // into producing a nice result that pastes well into other tools.
     // Our user-facing specification is the following:
     //
