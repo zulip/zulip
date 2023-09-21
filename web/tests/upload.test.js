@@ -7,9 +7,6 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
-const compose_state = zrequire("compose_state");
-const rows = zrequire("rows");
-
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
@@ -24,7 +21,9 @@ mock_esm("@uppy/core", {
 mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
 
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_state = mock_esm("../src/compose_state");
 mock_esm("../src/csrf", {csrf_token: "csrf_token"});
+const rows = mock_esm("../src/rows");
 
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
@@ -408,6 +407,7 @@ test("file_input", ({override_rewire}) => {
 });
 
 test("file_drop", ({override, override_rewire}) => {
+    override(compose_state, "composing", () => false);
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -456,6 +456,7 @@ test("file_drop", ({override, override_rewire}) => {
 });
 
 test("copy_paste", ({override, override_rewire}) => {
+    override(compose_state, "composing", () => false);
     upload.setup_upload({mode: "compose"});
 
     const paste_handler = $("#compose").get_on_handler("paste");
@@ -632,7 +633,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     assert.equal($("#compose-textarea").val(), "user modified text");
 });
 
-test("main_file_drop_compose_mode", ({override_rewire}) => {
+test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     uppy_stub = function () {
         return {
             setMeta() {},
@@ -685,14 +686,14 @@ test("main_file_drop_compose_mode", ({override_rewire}) => {
     override_rewire(upload, "upload_files", () => {
         upload_files_called = true;
     });
-    compose_state.composing = () => true;
+    override(compose_state, "composing", () => true);
     drop_handler(drop_event);
     assert.equal(upload_files_called, true);
     assert.equal(prevent_default_counter, 3);
 
     // Test reply to message if no edit and compose box open
     upload_files_called = false;
-    compose_state.composing = () => false;
+    override(compose_state, "composing", () => false);
     const msg = {
         type: "stream",
         stream: "Denmark",
@@ -732,7 +733,7 @@ test("main_file_drop_compose_mode", ({override_rewire}) => {
     assert.equal(compose_actions_respond_to_message_called, false);
 });
 
-test("main_file_drop_edit_mode", ({override_rewire}) => {
+test("main_file_drop_edit_mode", ({override, override_rewire}) => {
     uppy_stub = function () {
         return {
             setMeta() {},
@@ -746,7 +747,7 @@ test("main_file_drop_edit_mode", ({override_rewire}) => {
 
     upload.setup_upload({mode: "edit", row: 40});
     upload.initialize();
-    compose_state.composing = () => false;
+    override(compose_state, "composing", () => false);
     let prevent_default_counter = 0;
     const drag_event = {
         preventDefault() {
@@ -784,7 +785,7 @@ test("main_file_drop_edit_mode", ({override_rewire}) => {
         upload_files_called = true;
     });
     $(".message_edit_form form").last = () => ({length: 1});
-    rows.get_message_id = () => 40;
+    override(rows, "get_message_id", () => 40);
 
     // Edit box which registered the event handler no longer exists.
     $drag_drop_container.closest = (element) => {
@@ -803,7 +804,7 @@ test("main_file_drop_edit_mode", ({override_rewire}) => {
     // Drag and dropped in one of the edit boxes. The event would be taken care of by
     // drag_drop_container event handlers.
 
-    rows.get_message_id = () => 40;
+    override(rows, "get_message_id", () => 40);
     // Edit box open
     $(".message_edit_form form").last = () => ({length: 1});
     drop_handler(drop_event);
