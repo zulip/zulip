@@ -363,6 +363,10 @@ $time_column_min_width: 42px; /* + padding */
                         white-space: normal;
                         display: inline;
                     }
+
+                    .sender_name_text {
+                        max-width: 100%;
+                    }
                 }
 
                 &.content_edit_mode {
