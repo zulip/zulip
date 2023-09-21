@@ -24,8 +24,8 @@
                         <form id="searchbox_form" class="navbar-search">
                             <div id="searchbox-input-container" class="input-append">
                                 <i class="search_icon zulip-icon zulip-icon-search"></i>
-                                <input class="search-input input-block-level home-page-input" id="search_query" type="text" placeholder="{{t 'Search' }}"
-                                  autocomplete="off"/>
+                                <div class="search-input input input-block-level home-page-input" id="search_query" type="text" data-placeholder-text="{{t 'Search' }}"
+                                  autocomplete="off" contenteditable="true"></div>
                                 <button class="search_close_button tippy-zulip-delayed-tooltip" type="button" id="search_exit" aria-label="{{t 'Exit search' }}" data-tippy-content="Close"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
                             </div>
                         </form>

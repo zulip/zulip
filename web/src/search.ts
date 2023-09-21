@@ -18,13 +18,11 @@ export let is_using_input_method = false;
 let search_typeahead: Typeahead<string>;
 
 export function set_search_bar_text(text: string): void {
-    $("#search_query").val(text);
+    $("#search_query").text(text);
 }
 
 function get_search_bar_text(): string {
-    const val = $<HTMLInputElement>("#search_query").val();
-    assert(val !== undefined);
-    return val;
+    return $("#search_query").text();
 }
 
 // TODO/typescript: Add the rest of the options when converting narrow.js to typescript.
@@ -76,7 +74,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $search_query_box,
-        type: "input",
+        type: "contenteditable",
     };
     search_typeahead = new Typeahead(bootstrap_typeahead_input, {
         source(query: string): string[] {

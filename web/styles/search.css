@@ -173,7 +173,11 @@
 
         color: var(--color-text-search);
 
-        &::placeholder {
+        display: flex;
+        align-items: center;
+
+        &:empty::before {
+            content: attr(data-placeholder-text);
             color: var(--color-text-search-placeholder);
         }
     }
