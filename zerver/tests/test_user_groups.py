@@ -34,6 +34,7 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     GroupGroupMembership,
     Realm,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -65,24 +66,22 @@ class UserGroupTestCase(ZulipTestCase):
         user_groups = user_groups_in_realm_serialized(realm)
         self.assert_length(user_groups, 10)
         self.assertEqual(user_groups[0]["id"], user_group.id)
-        self.assertEqual(user_groups[0]["name"], UserGroup.NOBODY_GROUP_NAME)
+        self.assertEqual(user_groups[0]["name"], SystemGroups.NOBODY)
         self.assertEqual(user_groups[0]["description"], "Nobody")
         self.assertEqual(user_groups[0]["members"], [])
         self.assertEqual(user_groups[0]["direct_subgroup_ids"], [])
 
-        owners_system_group = UserGroup.objects.get(name=UserGroup.OWNERS_GROUP_NAME, realm=realm)
+        owners_system_group = UserGroup.objects.get(name=SystemGroups.OWNERS, realm=realm)
         membership = UserGroupMembership.objects.filter(user_group=owners_system_group).values_list(
             "user_profile_id", flat=True
         )
         self.assertEqual(user_groups[1]["id"], owners_system_group.id)
-        self.assertEqual(user_groups[1]["name"], UserGroup.OWNERS_GROUP_NAME)
+        self.assertEqual(user_groups[1]["name"], SystemGroups.OWNERS)
         self.assertEqual(user_groups[1]["description"], "Owners of this organization")
         self.assertEqual(set(user_groups[1]["members"]), set(membership))
         self.assertEqual(user_groups[1]["direct_subgroup_ids"], [])
 
-        admins_system_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm
-        )
+        admins_system_group = UserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
         self.assertEqual(user_groups[2]["id"], admins_system_group.id)
         # Check that owners system group is present in "direct_subgroup_ids"
         self.assertEqual(user_groups[2]["direct_subgroup_ids"], [owners_system_group.id])
@@ -101,7 +100,7 @@ class UserGroupTestCase(ZulipTestCase):
         user_group_names = [group.name for group in user_groups]
         self.assertEqual(
             set(user_group_names),
-            {"support", UserGroup.MEMBERS_GROUP_NAME, UserGroup.FULL_MEMBERS_GROUP_NAME},
+            {"support", SystemGroups.MEMBERS, SystemGroups.FULL_MEMBERS},
         )
 
     def test_recursive_queries_for_user_groups(self) -> None:
@@ -145,26 +144,26 @@ class UserGroupTestCase(ZulipTestCase):
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
         owners_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.OWNERS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
         )
         admins_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
         )
         moderators_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
         full_members_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
         members_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.MEMBERS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
         )
         everyone_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.EVERYONE_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.EVERYONE, is_system_group=True
         )
         everyone_on_internet_group = UserGroup.objects.get(
             realm=realm,
-            name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
+            name=SystemGroups.EVERYONE_ON_INTERNET,
             is_system_group=True,
         )
 
@@ -215,10 +214,10 @@ class UserGroupTestCase(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         moderators_group = UserGroup.objects.get(
-            name=UserGroup.MODERATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         administrators_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
         self.assertTrue(is_user_in_group(moderators_group, shiva))
@@ -236,7 +235,7 @@ class UserGroupTestCase(ZulipTestCase):
         zulip_realm = get_realm("zulip")
         zulip_group = check_add_user_group(zulip_realm, "zulip", [], acting_user=None)
         moderators_group = UserGroup.objects.get(
-            name=UserGroup.MODERATORS_GROUP_NAME, realm=zulip_realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm=zulip_realm, is_system_group=True
         )
 
         lear_realm = get_realm("lear")
@@ -1138,7 +1137,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         aaron = self.example_user("aaron")
 
         user_group = UserGroup.objects.get(
-            realm=iago.realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
+            realm=iago.realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
 
         def check_support_group_permission(acting_user: UserProfile) -> None:
@@ -1175,7 +1174,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         full_members_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
 
         self.assertTrue(
@@ -1336,7 +1335,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         iago = self.example_user("iago")
         othello = self.example_user("othello")
         admins_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
         )
 
         # Invalid user ID.
@@ -1402,7 +1401,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
         moderators_group = UserGroup.objects.get(
-            name=UserGroup.MODERATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         self.login("iago")
 
@@ -1444,13 +1443,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
     def test_get_subgroups_of_user_group(self) -> None:
         realm = get_realm("zulip")
         owners_group = UserGroup.objects.get(
-            name=UserGroup.OWNERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
         admins_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
         moderators_group = UserGroup.objects.get(
-            name=UserGroup.MODERATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         self.login("iago")
 

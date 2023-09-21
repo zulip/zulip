@@ -15,6 +15,7 @@ from zerver.models import (
     GroupGroupMembership,
     Realm,
     RealmAuditLog,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -181,7 +182,7 @@ def access_user_group_for_setting(
 
     if (
         not permission_configuration.allow_internet_group
-        and user_group.name == UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME
+        and user_group.name == SystemGroups.EVERYONE_ON_INTERNET
     ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:internet' group.").format(
@@ -189,20 +190,14 @@ def access_user_group_for_setting(
             )
         )
 
-    if (
-        not permission_configuration.allow_owners_group
-        and user_group.name == UserGroup.OWNERS_GROUP_NAME
-    ):
+    if not permission_configuration.allow_owners_group and user_group.name == SystemGroups.OWNERS:
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:owners' group.").format(
                 setting_name=setting_name
             )
         )
 
-    if (
-        not permission_configuration.allow_nobody_group
-        and user_group.name == UserGroup.NOBODY_GROUP_NAME
-    ):
+    if not permission_configuration.allow_nobody_group and user_group.name == SystemGroups.NOBODY:
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:nobody' group.").format(
                 setting_name=setting_name
@@ -211,7 +206,7 @@ def access_user_group_for_setting(
 
     if (
         not permission_configuration.allow_everyone_group
-        and user_group.name == UserGroup.EVERYONE_GROUP_NAME
+        and user_group.name == SystemGroups.EVERYONE
     ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:everyone' group.").format(
@@ -436,21 +431,21 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         role_system_groups_dict[role] = user_group
 
     full_members_system_group = UserGroup(
-        name=UserGroup.FULL_MEMBERS_GROUP_NAME,
+        name=SystemGroups.FULL_MEMBERS,
         description="Members of this organization, not including new accounts and guests",
         realm=realm,
         is_system_group=True,
         can_mention_group_id=initial_group_setting_value,
     )
     everyone_on_internet_system_group = UserGroup(
-        name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
+        name=SystemGroups.EVERYONE_ON_INTERNET,
         description="Everyone on the Internet",
         realm=realm,
         is_system_group=True,
         can_mention_group_id=initial_group_setting_value,
     )
     nobody_system_group = UserGroup(
-        name=UserGroup.NOBODY_GROUP_NAME,
+        name=SystemGroups.NOBODY,
         description="Nobody",
         realm=realm,
         is_system_group=True,

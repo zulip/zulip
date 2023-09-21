@@ -64,6 +64,7 @@ from zerver.models import (
     Message,
     RealmEmoji,
     RealmFilter,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -2682,7 +2683,7 @@ class MarkdownTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         moderators_group = UserGroup.objects.get(
-            realm=iago.realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
+            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
         content = "@*role:moderators* @**King Hamlet** test message"
 

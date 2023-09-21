@@ -28,6 +28,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserProfile,
     active_non_guest_user_ids,
@@ -142,7 +143,7 @@ def create_stream_if_needed(
 
     if can_remove_subscribers_group is None:
         can_remove_subscribers_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True, realm=realm
+            name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
         )
 
     assert can_remove_subscribers_group is not None
