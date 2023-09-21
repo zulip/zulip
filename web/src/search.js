@@ -11,7 +11,7 @@ import * as search_suggestion from "./search_suggestion";
 // Exported for unit testing
 export let is_using_input_method = false;
 
-export function narrow_or_search_for_term(search_string, {on_narrow_search}) {
+function narrow_or_search_for_term(search_string, {on_narrow_search}) {
     if (search_string === "") {
         exit_search({keep_search_narrow_open: true});
         return "";
