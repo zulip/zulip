@@ -163,6 +163,7 @@ export function populate_linkifiers(linkifiers_data) {
     if (page_params.is_admin) {
         Sortable.create($linkifiers_table[0], {
             onUpdate: update_linkifiers_order,
+            handle: ".move-handle",
             filter: "input",
             preventOnFilter: false,
         });
