@@ -8,7 +8,9 @@ Bitbucket Server click [here](./bitbucket3).
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
     {!git-webhook-url-with-branches.md!}
 
