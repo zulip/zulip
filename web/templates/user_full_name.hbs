@@ -1,5 +1,5 @@
 {{#if should_add_guest_user_indicator}}
-{{#tr}}{name} <i class="guest-indicator">(guest)</i>{{/tr}}
+<span class="user-name">{{name}}</span>&nbsp;<i class="guest-indicator">({{t 'guest' }})</i>
 {{else}}
 <span class="user-name">{{name}}</span>
 {{/if}}
