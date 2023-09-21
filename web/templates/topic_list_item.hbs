@@ -3,20 +3,22 @@
         <span class="sidebar-topic-check">
             {{topic_resolved_prefix}}
         </span>
-        <a href='{{url}}' class="topic-name" title="{{topic_name}}">
+        <a href="{{url}}" class="topic-name" title="{{topic_name}}">
             {{topic_display_name}}
         </a>
-        {{#if contains_unread_mention}}
-            <span class="unread_mention_info">
-                @
+        <div class="topic-markers-and-controls">
+            {{#if contains_unread_mention}}
+                <span class="unread_mention_info">
+                    @
+                </span>
+            {{else if is_followed}}
+                <i class="zulip-icon zulip-icon-follow" aria-hidden="true"> </i>
+                &nbsp;
+            {{/if}}
+            <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
+                {{unread}}
             </span>
-        {{else if is_followed}}
-            <i class="zulip-icon zulip-icon-follow" aria-hidden="true"> </i>
-            &nbsp;
-        {{/if}}
-        <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
-            {{unread}}
-        </span>
+        </div>
         <span class="sidebar-menu-icon topic-sidebar-menu-icon">
             <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
         </span>
