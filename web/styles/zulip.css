@@ -1784,8 +1784,13 @@ td.pointer {
 
     .sender_name_text {
         overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
+        display: inline-flex;
+
+        .user-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 }
 
