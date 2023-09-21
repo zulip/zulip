@@ -12,11 +12,11 @@ import * as search_suggestion from "./search_suggestion";
 export let is_using_input_method = false;
 
 export function set_search_bar_text(text) {
-    $("#search_query").val(text);
+    $("#search_query").text(text);
 }
 
 function get_search_bar_text() {
-    return $("#search_query").val();
+    return $("#search_query").text();
 }
 
 function narrow_or_search_for_term(search_string, {on_narrow_search}) {
@@ -67,6 +67,7 @@ export function initialize({on_narrow_search}) {
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
+        stopAdvance: true,
         highlighter(item) {
             const obj = search_map.get(item);
             return render_search_list_item(obj);
@@ -195,6 +196,9 @@ export function initiate_search() {
     // Open the typeahead after opening the search bar, so that we don't
     // get a weird visual jump where the typeahead results are narrow
     // before the search bar expands and then wider it expands.
+
+    // TODO: this doesn't work because "select" doesn't work for
+    // contentedible fields.
     $("#search_query").typeahead("lookup").trigger("select");
 }
 
