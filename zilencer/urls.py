@@ -18,7 +18,7 @@ from zilencer.views import (
 i18n_urlpatterns: Any = []
 
 # Zilencer views following the REST API style
-v1_api_and_json_patterns = [
+push_bouncer_patterns = [
     remote_server_path("remotes/push/register", POST=register_remote_push_device),
     remote_server_path("remotes/push/unregister", POST=unregister_remote_push_device),
     remote_server_path("remotes/push/unregister/all", POST=unregister_all_remote_push_devices),
@@ -32,6 +32,5 @@ v1_api_and_json_patterns = [
 ]
 
 urlpatterns = [
-    path("api/v1/", include(v1_api_and_json_patterns)),
-    path("json/", include(v1_api_and_json_patterns)),
+    path("api/v1/", include(push_bouncer_patterns)),
 ]
