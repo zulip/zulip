@@ -11,6 +11,14 @@ import * as search_suggestion from "./search_suggestion";
 // Exported for unit testing
 export let is_using_input_method = false;
 
+export function set_search_bar_text(text) {
+    $("#search_query").val(text);
+}
+
+function get_search_bar_text() {
+    return $("#search_query").val();
+}
+
 function narrow_or_search_for_term(search_string, {on_narrow_search}) {
     if (search_string === "") {
         exit_search({keep_search_narrow_open: true});
@@ -21,7 +29,7 @@ function narrow_or_search_for_term(search_string, {on_narrow_search}) {
         // Neither narrow nor search when using input tools as
         // `updater` is also triggered when 'enter' is triggered
         // while using input tool
-        return $search_query_box.val();
+        return get_search_bar_text();
     }
 
     const terms = Filter.parse(search_string);
@@ -34,7 +42,7 @@ function narrow_or_search_for_term(search_string, {on_narrow_search}) {
     // Narrowing will have already put some terms in the search box,
     // so leave the current text in.
     $search_query_box.trigger("blur");
-    return $search_query_box.val();
+    return get_search_bar_text();
 }
 
 export function initialize({on_narrow_search}) {
@@ -87,7 +95,7 @@ export function initialize({on_narrow_search}) {
             // Don't close the search bar if the user has changed
             // the text from the default, they might accidentally
             // click away and not want to lose it.
-            if (get_initial_search_string() !== $("#search_query").val()) {
+            if (get_initial_search_string() !== get_search_bar_text()) {
                 return;
             }
             const filter = narrow_state.filter();
@@ -130,7 +138,7 @@ export function initialize({on_narrow_search}) {
                 // indicate that they've done what they need to do)
 
                 // Pill is already added during keydown event of input pills.
-                narrow_or_search_for_term($search_query_box.val(), {on_narrow_search});
+                narrow_or_search_for_term(get_search_bar_text(), {on_narrow_search});
                 $search_query_box.trigger("blur");
             }
         });
@@ -191,7 +199,7 @@ export function initiate_search() {
 }
 
 export function clear_search_form() {
-    $("#search_query").val("");
+    set_search_bar_text("");
     $("#search_query").trigger("blur");
 }
 
@@ -210,7 +218,7 @@ function get_initial_search_string() {
 // we rely entirely on this function to ensure
 // the searchbar has the right text.
 function reset_searchbox_text() {
-    $("#search_query").val(get_initial_search_string());
+    set_search_bar_text(get_initial_search_string());
 }
 
 function exit_search(opts) {
@@ -233,7 +241,7 @@ export function open_search_bar_and_close_narrow_description() {
     // Preserve user input if they've already started typing, but
     // otherwise fill the input field with the text terms for
     // the current narrow.
-    if ($("#search_query").val() === "") {
+    if (get_search_bar_text() === "") {
         reset_searchbox_text();
     }
     $(".navbar-search").addClass("expanded");
@@ -247,7 +255,7 @@ export function close_search_bar_and_open_narrow_description() {
     // in width as the search bar closes, which doesn't look great.
     $("#searchbox_form .dropdown-menu").hide();
 
-    $("#search_query").val("");
+    set_search_bar_text("");
     $(".navbar-search").removeClass("expanded");
     $("#message_view_header").removeClass("hidden");
 }
