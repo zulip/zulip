@@ -189,9 +189,6 @@ import {get_string_diff} from "../../src/util";
     if (this.fixed) {
       this.$container.css('position', 'fixed');
     }
-    // The naturalSearch option causes arrow keys to immediately
-    // update the search box with the underlying values from the
-    // search suggestions.
     this.listen()
   }
 
@@ -407,10 +404,6 @@ import {get_string_diff} from "../../src/util";
       }
 
       next.addClass('active')
-
-      if (this.options.naturalSearch) {
-        this.set_value();
-      }
     }
 
   , prev: function (event) {
@@ -430,10 +423,6 @@ import {get_string_diff} from "../../src/util";
       }
 
       prev.addClass('active')
-
-      if (this.options.naturalSearch) {
-        this.set_value();
-      }
     }
 
   , listen: function () {
