@@ -912,13 +912,12 @@ def get_base_query_for_search(
     realm_id: int, user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
 ) -> Tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
-    realm_cond = column("realm_id", Integer) == literal(realm_id)
     if not need_user_message:
         assert need_message
         query = (
             select(column("id", Integer).label("message_id"))
             .select_from(table("zerver_message"))
-            .where(realm_cond)
+            .where(column("realm_id", Integer) == literal(realm_id))
         )
 
         inner_msg_id_col = literal_column("zerver_message.id", Integer)
@@ -928,9 +927,11 @@ def get_base_query_for_search(
     if need_message:
         query = (
             select(column("message_id", Integer), column("flags", Integer))
-            .where(realm_cond)
-            .where(column("user_profile_id", Integer) == literal(user_profile.id))
-            .select_from(
+            # We don't limit by realm_id despite the join to
+            # zerver_messages, since the user_profile_id limit in
+            # usermessage is more selective, and the query planner
+            # can't know about that cross-table correlation.
+            .where(column("user_profile_id", Integer) == literal(user_profile.id)).select_from(
                 join(
                     table("zerver_usermessage"),
                     table("zerver_message"),
