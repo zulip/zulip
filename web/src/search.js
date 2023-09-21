@@ -13,11 +13,11 @@ import * as search_suggestion from "./search_suggestion";
 export let is_using_input_method = false;
 
 export function set_search_bar_text(text) {
-    $("#search_query").val(text);
+    $("#search_query").text(text);
 }
 
 function get_search_bar_text() {
-    return $("#search_query").val();
+    return $("#search_query").text();
 }
 
 function narrow_or_search_for_term(search_string, {on_narrow_search}) {
@@ -197,6 +197,9 @@ export function initiate_search() {
     // get a weird visual jump where the typeahead results are narrow
     // before the search bar expands and then wider it expands.
     bootstrap_typeahead.lookup($("#search_query"));
+
+    // TODO: this doesn't work because "select" doesn't work for
+    // contenteditable fields.
     $("#search_query").trigger("select");
 }
 

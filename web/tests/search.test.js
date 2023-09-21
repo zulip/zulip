@@ -171,7 +171,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             /* Test updater */
             const _setup = (search_box_val) => {
                 is_blurred = false;
-                $search_query_box.val(search_box_val);
+                $search_query_box.text(search_box_val);
                 Filter.parse = (search_string) => {
                     assert.equal(search_string, search_box_val);
                     return terms;
@@ -217,7 +217,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         },
     });
 
-    $search_query_box.val("test string");
+    $search_query_box.text("test string");
     narrow_state.search_string = () => "ver";
 
     search.__Rewire__("is_using_input_method", false);
@@ -257,7 +257,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
     const _setup = (search_box_val) => {
         is_blurred = false;
-        $search_query_box.val(search_box_val);
+        $search_query_box.text(search_box_val);
         Filter.parse = (search_string) => {
             assert.equal(search_string, search_box_val);
             return terms;
@@ -322,9 +322,10 @@ run_test("initiate_search", ({override}) => {
     });
 
     $(".navbar-search.expanded").length = 0;
+    $("#search_query").text("");
     search.initiate_search();
     assert.ok(typeahead_forced_open);
     assert.ok(is_searchbox_text_selected);
     // test that we append space for user convenience
-    assert.equal($("#search_query").val(), "ver ");
+    assert.equal($("#search_query").text(), "ver ");
 });
