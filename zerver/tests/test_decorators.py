@@ -1134,11 +1134,11 @@ class TestAuthenticatedRequirePostDecorator(ZulipTestCase):
             )
 
         with self.assertLogs(level="WARNING") as mock_warning:
-            result = self.client_get(r"/json/remotes/server/register", {"stream": "Verona"})
+            result = self.client_get(r"/json/subscriptions/exists", {"stream": "Verona"})
             self.assertEqual(result.status_code, 405)
             self.assertEqual(
                 mock_warning.output,
-                ["WARNING:root:Method Not Allowed (GET): /json/remotes/server/register"],
+                ["WARNING:root:Method Not Allowed (GET): /json/subscriptions/exists"],
             )
 
 
@@ -1466,7 +1466,7 @@ class RestAPITest(ZulipTestCase):
         self.assert_in_response("Method Not Allowed", result)
 
         with self.settings(ZILENCER_ENABLED=True):
-            result = self.client_patch("/json/remotes/push/register")
+            result = self.client_patch("/api/v1/remotes/push/register")
             self.assertEqual(result.status_code, 405)
             self.assert_in_response("Method Not Allowed", result)
 
