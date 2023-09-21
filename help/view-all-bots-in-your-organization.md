@@ -19,3 +19,4 @@ Organization [administrators](/help/roles-and-permissions) can also
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Edit a bot](/help/edit-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [View your bots](/help/view-your-bots)
