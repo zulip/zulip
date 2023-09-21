@@ -76,7 +76,6 @@ $before_unread_count_padding: 3px;
 li.show-more-topics {
     & a {
         font-size: 12px;
-        margin-left: $topic_resolve_width;
     }
 }
 
@@ -136,7 +135,7 @@ li.show-more-topics {
             margin-left: 0;
 
             &.topic-list li {
-                padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
+                padding: 2px 0;
 
                 &.filter-topics {
                     padding-bottom: 0;
@@ -600,21 +599,72 @@ li.top_left_scheduled_messages {
     font-size: 13px;
 }
 
+/* New .topic-box grid definitions here. */
 .topic-box {
-    padding-left: 5px;
-    margin-right: 30px;
+    /* Padding from original .topic-box definition. */
+    padding-top: 1px;
+    display: grid;
+    align-items: center;
+    /* This general pattern of elements applies to every single row in the left
+       sidebar, to some degree or another. Eventually, these template areas
+       could be applied to all rows, with different `grid-template-column`
+       values applied as needed (and shared as needed). For example, an element
+       with no "starting-offset" sets that area to `0`; so too with other non-
+       existent elements.
+
+       The offsets themselves are meant to greedily assign all of the available
+       horizontal space to the content area of the row. That space can then be
+       modified or reassigned as needed, without running up against `padding`
+       (which alters the box size) or `margin` (which notoriously bleeds outside
+       of the element it's defined on). */
+    grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+    grid-template-columns:
+        25px $topic_resolve_width minmax(0, 1fr) minmax(0, max-content)
+        30px 0;
+}
+
+.topic-box .zero_count {
+    display: none;
 }
 
 .sidebar-topic-check {
-    display: flex;
-    align-items: center;
-    min-width: $topic_resolve_width;
+    grid-area: starting-anchor-element;
     font-size: 15px;
     height: 20px;
 }
 
+.topic-name {
+    grid-area: row-content;
+    padding: 1px 0;
+
+    /* TODO: We should figure out how to remove this without changing the spacing */
+    line-height: 1.1;
+
+    /* TODO: Consolidate these styles with conversation partners and stream name
+       once grid rewrite is complete on all sidebar rows.
+
+       Also: note that these styles will be moot for topic names once we allow
+       for multiline topics. If we hold multiline topics to a certain number
+       of lines, we'll likely need a JavaScript-based solution like Clamp.js
+       to display an ellipsis on the final visible line. */
+    white-space: nowrap;
+    /* Both `hidden` and `clip` are shown for the sake
+       of older browsers that do not support `clip`. */
+    overflow-x: hidden;
+    overflow-x: clip;
+    text-overflow: ellipsis;
+}
+
+.topic-markers-and-controls {
+    grid-area: markers-and-controls;
+}
+
+.bottom_left_row .topic-box .sidebar-menu-icon {
+    position: static;
+    grid-area: ending-anchor-element;
+}
+
 .conversation-partners-list,
-.topic-name,
 .stream-name {
     flex: auto;
     min-width: 0;
@@ -629,11 +679,6 @@ li.top_left_scheduled_messages {
     /* Don't allow growth, so that status emoji
        remain adjacent the username. */
     flex: 0 1 auto;
-}
-
-.topic-name {
-    /* TODO: We should figure out how to remove this without changing the spacing */
-    line-height: 1.1;
 }
 
 .left_sidebar_menu_icon_visible {
@@ -716,11 +761,11 @@ li.top_left_scheduled_messages {
     which also affects it positioning.
 */
 .bottom_left_row .topic-sidebar-menu-icon {
-    top: 2px;
-    right: 0;
     font-size: 0.9em;
-    text-align: center;
-    padding: 1px 6px 0;
+    /* Strip the line height back to the font size,
+       so that vertical positioning is handled by
+       grid exclusively. */
+    line-height: 1;
 }
 
 ul.topic-list {
@@ -733,14 +778,9 @@ li.topic-list-item {
     padding-right: 5px;
 }
 
-.pm-box,
-.topic-box {
+.pm-box {
     display: flex;
     padding-top: 1px;
-    align-items: center;
-}
-
-.pm-box {
     margin-right: 16px;
     align-items: baseline; /* Sets .user_circle alignment relative to text; standard icons do not participate in flex. */
 
@@ -760,8 +800,7 @@ li.topic-list-item {
     }
 }
 
-.zero-pm-unreads .pm-box,
-.zero-topic-unreads .topic-box {
+.zero-pm-unreads .pm-box {
     margin-right: 15px;
 }
 
