@@ -227,6 +227,7 @@
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Request an integration](/help/request-an-integration)
 * [Restrict bot creation](/help/restrict-bot-creation)
+* [View your bots](/help/view-your-bots)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Support
