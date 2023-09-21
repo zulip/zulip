@@ -49,6 +49,12 @@ $before_unread_count_padding: 3px;
     }
 }
 
+.sidebar-topic-check,
+.topic-name,
+.topic-markers-and-controls {
+    cursor: pointer;
+}
+
 #left-sidebar .filter-icon i {
     padding-right: 3px;
 
@@ -731,7 +737,6 @@ li.topic-list-item {
 .topic-box {
     display: flex;
     padding-top: 1px;
-    cursor: pointer;
     align-items: center;
 }
 
