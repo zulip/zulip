@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
 import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
 import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
+import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
@@ -27,6 +28,7 @@ import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
@@ -193,20 +195,30 @@ function format_dm(user_ids_string, unread_count) {
     }
 
     const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-    const recipients_info = [];
+    const rendered_dm_with = recipient_ids
+        .map((recipient_id) =>
+            render_user_with_status_icon({
+                name: people.get_display_full_name(recipient_id),
+                status_emoji_info: user_status.get_status_emoji(recipient_id),
+            }),
+        )
+        .sort()
+        .join(", ");
 
-    for (const user_id of recipient_ids) {
-        const recipient_user_obj = people.get_by_user_id(user_id);
-        if (!recipient_user_obj.is_bot) {
-            const user_circle_class = buddy_data.get_user_circle_class(user_id);
-            recipient_user_obj.user_circle_class = user_circle_class;
-        }
-        recipients_info.push(recipient_user_obj);
+    let user_circle_class;
+    let is_bot = false;
+    if (recipient_ids.length === 1) {
+        is_bot = people.get_by_user_id(recipient_ids[0]).is_bot;
+        user_circle_class = is_bot ? false : buddy_data.get_user_circle_class(recipient_ids[0]);
     }
+
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        recipients_info,
+        rendered_dm_with,
+        is_group: recipient_ids.length > 1,
+        user_circle_class,
+        is_bot,
         dm_url: hash_util.pm_with_url(reply_to),
         user_ids_string,
         unread_count,
