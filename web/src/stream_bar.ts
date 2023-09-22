@@ -4,10 +4,7 @@ import * as stream_data from "./stream_data";
 // color look like the stream being used.
 // (In particular, if there's a color associated with it,
 //  have that color be reflected here too.)
-export function decorate(stream_id, $element) {
-    if (stream_id === undefined) {
-        return;
-    }
+export function decorate(stream_id: number | "", $element: JQuery): void {
     const color = stream_data.get_color(stream_id);
     $element.css("background-color", color);
 }
