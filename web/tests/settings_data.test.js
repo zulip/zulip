@@ -371,3 +371,36 @@ run_test("user_can_create_multiuse_invite", () => {
     page_params.user_id = member_user_id;
     assert.equal(settings_data.user_can_create_multiuse_invite(), false);
 });
+
+run_test("can_edit_user_group", () => {
+    const students = {
+        description: "Students group",
+        name: "Students",
+        id: 0,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4, 5]),
+        can_mention_group: 2,
+    };
+    user_groups.initialize({
+        realm_user_groups: [students],
+    });
+
+    delete page_params.user_id;
+    assert.ok(!settings_data.can_edit_user_group(students.id));
+
+    page_params.user_id = 3;
+    page_params.is_guest = true;
+    assert.ok(!settings_data.can_edit_user_group(students.id));
+
+    page_params.is_guest = false;
+    page_params.is_moderator = true;
+    assert.ok(settings_data.can_edit_user_group(students.id));
+
+    page_params.is_moderator = false;
+    assert.ok(!settings_data.can_edit_user_group(students.id));
+
+    page_params.user_id = 2;
+    page_params.realm_waiting_period_threshold = 0;
+    assert.ok(settings_data.can_edit_user_group(students.id));
+});

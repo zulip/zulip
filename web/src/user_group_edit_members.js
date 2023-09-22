@@ -14,8 +14,8 @@ import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
+import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
-import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 
 export let pill_widget;
@@ -49,7 +49,7 @@ function format_member_list_elem(person) {
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
         email: person.delivery_email,
-        can_remove_subscribers: user_group_edit.can_edit(current_group_id),
+        can_remove_subscribers: settings_data.can_edit_user_group(current_group_id),
     });
 }
 
