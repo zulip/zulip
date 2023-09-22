@@ -40,7 +40,8 @@ def list_realm_custom_profile_fields(
     request: HttpRequest, user_profile: UserProfile
 ) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
-    return json_success(request, data={"custom_fields": [f.as_dict() for f in fields]})
+    custom_fields = [f.as_dict() for f in fields] # TODO: Update logic to see what fields I can show to the user
+    return json_success(request, data={"custom_fields": custom_fields})
 
 
 hint_validator = check_capped_string(CustomProfileField.HINT_MAX_LENGTH)
