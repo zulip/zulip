@@ -145,7 +145,13 @@ export function set_hash_to_default_view() {
     }
 }
 
+function hide_non_message_list_views() {
+    maybe_hide_inbox();
+    maybe_hide_recent_view();
+}
+
 function show_default_view() {
+    hide_non_message_list_views();
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
@@ -187,8 +193,7 @@ function do_hashchange_normal(from_reload) {
 
     switch (hash[0]) {
         case "#narrow": {
-            maybe_hide_recent_view();
-            maybe_hide_inbox();
+            hide_non_message_list_views();
             let operators;
             try {
                 // TODO: Show possible valid URLs to the user.
