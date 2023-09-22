@@ -954,6 +954,7 @@ export function initialize() {
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".typeahead").length &&
                 !$(e.target).closest(".enter_sends").length &&
+                !$(e.target).closest(".flatpickr-calendar").length &&
                 $(e.target).closest("body").length
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
