@@ -47,9 +47,11 @@ class zulip_ops::prometheus::postgresql {
     require => Exec['compile postgres_exporter'],
   }
 
+  include zulip::postgresql_client
   exec { 'create prometheus postgres user':
+    require => Package['postgresql-client'],
     command => '/usr/bin/createuser -g pg_monitor prometheus',
-    unless  => '/usr/bin/psql -tAc "select usename from pg_user" | /bin/grep -xq prometheus',
+    unless  => 'test -f /usr/bin/psql && /usr/bin/psql -tAc "select usename from pg_user" | /bin/grep -xq prometheus',
     user    => 'postgres',
   }
 
