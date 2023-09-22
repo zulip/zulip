@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
@@ -36,9 +37,7 @@ function get_potential_members() {
 }
 
 export function update_member_list_widget(group_id, member_ids) {
-    if (!user_group_edit.is_editing_group(group_id)) {
-        return;
-    }
+    assert(group_id === current_group_id, "Unexpected group rerendering members list");
     const users = people.get_users_from_ids(member_ids);
     people.sort_but_pin_current_user_on_top(users);
     member_list_widget.replace_list_data(users);
