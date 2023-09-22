@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as settings_data from "./settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as user_group_edit from "./user_group_edit";
 
@@ -30,7 +31,7 @@ export function update_add_members_elements(group) {
     const $input_element = $add_members_container.find(".input").expectOne();
     const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
-    if (user_group_edit.can_edit(group.id)) {
+    if (settings_data.can_edit_user_group(group.id)) {
         $input_element.prop("disabled", false);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
