@@ -160,7 +160,7 @@ export function by_conversation_and_time_url(message: Message): string {
     const suffix = "/near/" + internal_url.encodeHashComponent(message.id.toString());
 
     if (message.type === "stream") {
-        return absolute_url + by_stream_topic_url(message.stream_id!, message.topic) + suffix;
+        return absolute_url + by_stream_topic_url(message.stream_id, message.topic) + suffix;
     }
 
     return absolute_url + people.pm_perma_link(message) + suffix;
