@@ -33,7 +33,7 @@ type ApiGenericStreamSubscription =
     | ApiStreamSubscription
     | (Stream & {stream_weekly_traffic: number | null; subscribers: number[]});
 
-type InviteStreamData = {
+export type InviteStreamData = {
     name: string;
     stream_id: number;
     invite_only: boolean;
