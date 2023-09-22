@@ -799,6 +799,9 @@ export function update() {
                         stream_post_filter_unread_count += new_topic_data.unread_count;
                     }
                 } else {
+                    // Remove old topic data since it can act as false data for renamed / a new
+                    // topic having the same name as old topic.
+                    delete topics_dict[stream_key][topic_key];
                     get_row_from_conversation_key(topic_key).remove();
                 }
             }
