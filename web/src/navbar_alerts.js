@@ -172,11 +172,15 @@ export function initialize() {
             rendered_alert_content_html: render_desktop_notifications_alert_content(),
         });
     } else if (unread_ui.should_display_bankruptcy_banner()) {
+        const old_unreads_missing = unread.old_unreads_missing;
         const unread_msgs_count = unread.get_unread_message_count();
         open({
             data_process: "bankruptcy",
             custom_class: "bankruptcy",
-            rendered_alert_content_html: render_bankruptcy_alert_content({unread_msgs_count}),
+            rendered_alert_content_html: render_bankruptcy_alert_content({
+                old_unreads_missing,
+                unread_msgs_count,
+            }),
         });
     } else if (check_profile_incomplete()) {
         open({
