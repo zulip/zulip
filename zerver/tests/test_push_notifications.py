@@ -1981,6 +1981,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2023,6 +2024,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2054,6 +2056,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": self.sender.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2091,6 +2094,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2129,6 +2133,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "user_id": user_profile.id,
                     "mentioned_user_group_id": user_group.id,
                     "mentioned_user_group_name": user_group.name,
+                    "time": message.date_sent.timestamp(),
                 }
             },
         }
@@ -2164,6 +2169,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2224,6 +2230,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
