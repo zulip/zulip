@@ -23,5 +23,5 @@ export function get_key_from_message(msg: Message): string | undefined {
     }
 
     // For messages with type = "stream".
-    return get_topic_key(msg.stream_id!, msg.topic);
+    return get_topic_key(msg.stream_id, msg.topic);
 }

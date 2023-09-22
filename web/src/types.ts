@@ -5,7 +5,6 @@ export type MatchedMessage = {
 };
 
 // TODO/typescript: Move this to message_store
-export type MessageType = "private" | "stream";
 export type MessageReactionType = "unicode_emoji" | "realm_emoji" | "zulip_extra_emoji";
 
 // TODO/typescript: Move these types to message_store
@@ -71,17 +70,27 @@ export type RawMessage = {
     sender_full_name: string;
     sender_id: number;
     sender_realm_str: string;
-    stream_id?: number;
-    subject: string;
     submessages: Submessage[];
     timestamp: number;
-    topic_links: TopicLink[];
-    type: MessageType;
     flags: string[];
-} & MatchedMessage;
+} & (
+    | {
+          type: "private";
+      }
+    | {
+          type: "stream";
+          stream_id: number;
+          subject: string;
+          topic_links: TopicLink[];
+      }
+) &
+    MatchedMessage;
 
 // We add these boolean properties to Raw message in `message_store.set_message_booleans` method.
-export type MessageWithBooleans = Omit<RawMessage, "flags"> & {
+export type MessageWithBooleans = (
+    | Omit<RawMessage & {type: "private"}, "flags">
+    | Omit<RawMessage & {type: "stream"}, "flags">
+) & {
     unread: boolean;
     historical: boolean;
     starred: boolean;
@@ -108,26 +117,38 @@ export type MessageCleanReaction = {
 };
 
 // TODO/typescript: Move this to message_store
-export type Message = Omit<MessageWithBooleans, "reactions"> & {
+export type Message = (
+    | Omit<MessageWithBooleans & {type: "private"}, "reactions">
+    | Omit<MessageWithBooleans & {type: "stream"}, "reactions">
+) & {
     // Added in `reactions.set_clean_reactions`.
     clean_reactions: Map<string, MessageCleanReaction>;
 
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;
-    is_private?: boolean;
-    is_stream?: boolean;
-    stream?: string;
     reply_to: string;
     display_reply_to?: string;
-    pm_with_url?: string;
-    to_user_ids?: string;
-    topic: string;
 
     // These properties are used in `message_list_view.js`.
     starred_status: string;
     message_reactions: MessageCleanReaction[];
     url: string;
-};
+} & (
+        | {
+              type: "private";
+              is_private: true;
+              is_stream: false;
+              pm_with_url: string;
+              to_user_ids: string;
+          }
+        | {
+              type: "stream";
+              is_private: false;
+              is_stream: true;
+              stream: string;
+              topic: string;
+          }
+    );
 
 // TODO/typescript: Move this to server_events_dispatch
 export type UserGroupUpdateEvent = {
