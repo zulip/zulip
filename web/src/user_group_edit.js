@@ -109,9 +109,11 @@ export function handle_member_edit_event(group_id, user_ids) {
     }
     const group = user_groups.get_user_group_from_id(group_id);
 
-    // update members list.
+    // update members list if currently rendered.
     const members = [...group.members];
-    user_group_edit_members.update_member_list_widget(group_id, members);
+    if (is_editing_group(group_id)) {
+        user_group_edit_members.update_member_list_widget(group_id, members);
+    }
 
     // update display of group-rows on left panel.
     // We need this update only if your-groups tab is active
