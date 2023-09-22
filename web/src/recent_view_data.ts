@@ -1,26 +1,33 @@
 import * as people from "./people";
 import {get_key_from_message} from "./recent_view_util";
+import type {Message} from "./types";
 
-export const topics = new Map();
+export type TopicData = {
+    last_msg_id: number;
+    participated: boolean;
+    type: "private" | "stream";
+};
+export const topics = new Map<string | undefined, TopicData>();
 // For stream messages, key is stream-id:topic.
 // For pms, key is the user IDs to whom the message is being sent.
 
-export function process_message(msg) {
+export function process_message(msg: Message): boolean {
     // Return whether any conversation data is updated.
     let conversation_data_updated = false;
 
     // Initialize conversation data
     const key = get_key_from_message(msg);
-    if (!topics.has(key)) {
-        topics.set(key, {
+    let topic_data = topics.get(key);
+    if (topic_data === undefined) {
+        topic_data = {
             last_msg_id: -1,
             participated: false,
             type: msg.type,
-        });
+        };
+        topics.set(key, topic_data);
         conversation_data_updated = true;
     }
     // Update conversation data
-    const topic_data = topics.get(key);
     if (topic_data.last_msg_id < msg.id) {
         // NOTE: This also stores locally echoed msg_id which
         // has not been successfully received from the server.
@@ -41,16 +48,16 @@ export function process_message(msg) {
     return conversation_data_updated;
 }
 
-function get_sorted_topics() {
+function get_sorted_topics(): Map<string | undefined, TopicData> {
     // Sort all recent topics by last message time.
     return new Map([...topics.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id));
 }
 
-export function get() {
+export function get(): Map<string | undefined, TopicData> {
     return get_sorted_topics();
 }
 
-export function reify_message_id_if_available(opts) {
+export function reify_message_id_if_available(opts: {old_id: number; new_id: number}): boolean {
     // We don't need to reify the message_id of the topic
     // if a new message arrives in the topic from another user,
     // since it replaces the last_msg_id of the topic which
