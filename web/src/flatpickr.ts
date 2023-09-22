@@ -1,24 +1,31 @@
 import {formatISO} from "date-fns";
-import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
+import flatpickr from "flatpickr";
+import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import {$t} from "./i18n";
 import {user_settings} from "./user_settings";
 
-function is_numeric_key(key) {
+function is_numeric_key(key: string): boolean {
     return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
 }
 
-export function show_flatpickr(element, callback, default_timestamp, options = {}) {
-    const $flatpickr_input = $("<input>").attr("id", "#timestamp_flatpickr");
+export function show_flatpickr(
+    element: HTMLElement,
+    callback: (time: string) => void,
+    default_timestamp: flatpickr.Options.DateOption,
+    options: flatpickr.Options.Options = {},
+): flatpickr.Instance {
+    const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
-    const instance = $flatpickr_input.flatpickr({
+    const instance = flatpickr($flatpickr_input[0], {
         mode: "single",
         enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
         plugins: [
-            new ConfirmDatePlugin({
+            confirmDatePlugin({
                 showAlways: true,
                 confirmText: $t({defaultMessage: "Confirm"}),
                 confirmIcon: "",
@@ -57,6 +64,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
                 const target = elems[Math.floor(remain >= 0 ? remain : remain + n)];
                 event.preventDefault();
                 event.stopPropagation();
+                assert(target !== undefined);
                 target.focus();
             } else {
                 // Prevent keypresses from propagating to our general hotkey.js
@@ -69,7 +77,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         ...options,
     });
 
-    const $container = $(instance.innerContainer).parent();
+    const $container = $(instance.calendarContainer);
 
     $container.on("keydown", (e) => {
         // Main keyboard UI implementation.
@@ -116,16 +124,19 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
     });
 
     $container.on("click", ".flatpickr-confirm", () => {
-        callback($flatpickr_input.val());
+        const time = $flatpickr_input.val();
+        assert(typeof time === "string");
+        callback(time);
         instance.close();
         instance.destroy();
     });
     instance.open();
+    assert(instance.selectedDateElem !== undefined);
     instance.selectedDateElem.focus();
 
     return instance;
 }
 
-export function close_all() {
+export function close_all(): void {
     $(".flatpickr-calendar").removeClass("open");
 }
