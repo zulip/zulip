@@ -330,7 +330,7 @@ function insert_stream(stream_id, topic_dict) {
         const previous_stream_key = sorted_stream_keys[stream_index - 1];
         $(rendered_stream).insertAfter(get_stream_container(previous_stream_key));
     }
-    return get_stream_container(stream_key);
+    return !topics_dict[stream_key].is_hidden;
 }
 
 function rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data) {
@@ -794,7 +794,7 @@ export function update() {
         if (stream_unread_count > 0) {
             // Stream isn't rendered.
             if (topics_dict[stream_key] === undefined) {
-                insert_stream(stream_id, topic_dict);
+                has_topics_post_filter = insert_stream(stream_id, topic_dict);
                 continue;
             }
 
