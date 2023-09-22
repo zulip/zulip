@@ -10,8 +10,9 @@ from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, NamedUserGroup, UserProfile
+from zerver.models import Message, NamedUserGroup, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -914,7 +915,62 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertEqual(stream.first_message_id, message_ids[1])
 
         all_messages = Message.objects.filter(id__in=message_ids)
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(26):
             do_delete_messages(realm, all_messages, acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, None)
+
+    @mock.patch("zerver.lib.push_notifications.send_push_notifications")
+    @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
+    def test_clear_push_notifications_on_message_deletion(
+        self,
+        mock_push_notifications: mock.MagicMock,
+        mock_send_push_notifications: mock.MagicMock,
+    ) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.register_push_device(cordelia.id)
+        do_change_user_setting(cordelia, "enable_stream_push_notifications", True, acting_user=None)
+
+        def get_message_ids_with_active_push_notification(user_profile: UserProfile) -> list[int]:
+            return list(
+                UserMessage.objects.filter(
+                    user_profile=user_profile,
+                )
+                .extra(  # noqa: S610
+                    where=[UserMessage.where_active_push_notification()],
+                )
+                .order_by("message_id")
+                .values_list("message_id", flat=True)
+            )
+
+        # Initially, no active push notifications.
+        self.assertEqual(get_message_ids_with_active_push_notification(cordelia), [])
+
+        self.subscribe(cordelia, "Verona")
+        message_ids = [self.send_stream_message(hamlet, "Verona")]
+
+        # Verify push notifications sent to `cordelia` for `message_ids`
+        self.assertEqual(
+            get_message_ids_with_active_push_notification(cordelia),
+            message_ids,
+        )
+
+        messages = Message.objects.filter(id__in=message_ids)
+        with (
+            mock.patch(
+                "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification"
+            ) as mock_handle_remove_push_notification,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            do_delete_messages(realm, messages, acting_user=None)
+
+        # Verify messages deleted, `handle_remove_push_notification` called
+        # to clear/revoke push notifications, usermessages deleted.
+        self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
+        mock_handle_remove_push_notification.assert_called_once()
+        self.assertEqual(
+            get_message_ids_with_active_push_notification(cordelia),
+            [],
+        )

@@ -2,6 +2,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from typing import TypedDict
 
+from zerver.actions.message_flags import do_clear_mobile_push_notifications_for_ids
 from zerver.lib import retention
 from zerver.lib.message import event_recipient_ids_for_action_on_messages
 from zerver.lib.retention import move_messages_to_archive
@@ -105,12 +106,14 @@ def do_delete_messages(
     When the Recipient.PERSONAL is no longer a case to consider, this
     restriction can be deleted.
     """
+    message_ids = []
     private_messages_by_recipient: defaultdict[int, list[Message]] = defaultdict(list)
     stream_messages_by_recipient_and_topic: defaultdict[tuple[int, str], list[Message]] = (
         defaultdict(list)
     )
     stream_by_recipient_id = {}
     for message in messages:
+        message_ids.append(message.id)
         if message.is_channel_message:
             recipient_id = message.recipient_id
             # topics are case-insensitive.
@@ -119,6 +122,8 @@ def do_delete_messages(
         else:
             recipient_id = message.recipient.id
             private_messages_by_recipient[recipient_id].append(message)
+
+    do_clear_mobile_push_notifications_for_ids(user_profile_ids=None, message_ids=message_ids)
 
     for recipient_id, grouped_messages in sorted(private_messages_by_recipient.items()):
         _process_grouped_messages_deletion(
