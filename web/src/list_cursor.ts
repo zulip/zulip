@@ -3,26 +3,25 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as scroll_util from "./scroll_util";
 
-export class ListCursor {
-    constructor({highlight_class, list}) {
-        const config_ok =
-            highlight_class &&
-            list &&
-            list.scroll_container_sel &&
-            list.find_li &&
-            list.first_key &&
-            list.prev_key &&
-            list.next_key;
-        if (!config_ok) {
-            blueslip.error("Programming error");
-            return;
-        }
+type List<Key> = {
+    scroll_container_sel: string;
+    find_li(opts: {key: Key; force_render: boolean}): JQuery;
+    first_key(): Key | undefined;
+    prev_key(key: Key): Key | undefined;
+    next_key(key: Key): Key | undefined;
+};
 
+export class ListCursor<Key> {
+    highlight_class: string;
+    list: List<Key>;
+    curr_key?: Key;
+
+    constructor({highlight_class, list}: {highlight_class: string; list: List<Key>}) {
         this.highlight_class = highlight_class;
         this.list = list;
     }
 
-    clear() {
+    clear(): void {
         if (this.curr_key === undefined) {
             return;
         }
@@ -33,11 +32,11 @@ export class ListCursor {
         this.curr_key = undefined;
     }
 
-    get_key() {
+    get_key(): Key | undefined {
         return this.curr_key;
     }
 
-    get_row(key) {
+    get_row(key: Key | undefined): {highlight(): void; clear(): void} | undefined {
         // TODO: The list class should probably do more of the work
         //       here, so we're not so coupled to jQuery, and
         //       so we instead just get back a widget we can say
@@ -69,12 +68,12 @@ export class ListCursor {
         };
     }
 
-    adjust_scroll($li) {
+    adjust_scroll($li: JQuery): void {
         const $scroll_container = $(this.list.scroll_container_sel);
         scroll_util.scroll_element_into_container($li, $scroll_container);
     }
 
-    redraw() {
+    redraw(): void {
         // We should only call this for situations like the buddy
         // list where we redraw the whole list without necessarily
         // changing it, so we just want to re-highlight the current
@@ -88,7 +87,7 @@ export class ListCursor {
         row.highlight();
     }
 
-    go_to(key) {
+    go_to(key: Key | undefined): void {
         if (key === undefined) {
             blueslip.error("Caller is not checking keys for ListCursor.go_to");
             return;
@@ -106,7 +105,7 @@ export class ListCursor {
         row.highlight();
     }
 
-    reset() {
+    reset(): void {
         this.clear();
         const key = this.list.first_key();
         if (key === undefined) {
@@ -116,7 +115,7 @@ export class ListCursor {
         this.go_to(key);
     }
 
-    prev() {
+    prev(): void {
         if (this.curr_key === undefined) {
             return;
         }
@@ -128,7 +127,7 @@ export class ListCursor {
         this.go_to(key);
     }
 
-    next() {
+    next(): void {
         if (this.curr_key === undefined) {
             // This is sort of a special case where we went from
             // an empty filter to having data.

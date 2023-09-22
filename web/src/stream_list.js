@@ -691,8 +691,8 @@ export function initialize_stream_cursor() {
             scroll_container_sel: "#left_sidebar_scroll_container",
             find_li(opts) {
                 const stream_id = opts.key;
-                const li = get_stream_li(stream_id);
-                return li;
+                const $li = get_stream_li(stream_id);
+                return $li;
             },
             first_key: stream_list_sort.first_stream_id,
             prev_key: stream_list_sort.prev_stream_id,

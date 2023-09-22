@@ -9,11 +9,6 @@ const $ = require("./lib/zjquery");
 
 const {ListCursor} = zrequire("list_cursor");
 
-run_test("config errors", () => {
-    blueslip.expect("error", "Programming error");
-    new ListCursor({});
-});
-
 function basic_conf({first_key, prev_key, next_key}) {
     const list = {
         scroll_container_sel: "whatever",
