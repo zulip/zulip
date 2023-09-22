@@ -7,17 +7,17 @@
                 <div class="inbox-left-part">
                     <div class="hide fake-collapse-button" tabindex="0"></div>
                     {{#if is_direct}}
-                        <a class="recipients_info" href="{{dm_url}}">
-                            {{#each recipients_info}}
-                                <span class="user_block">
-                                    {{#if is_bot}}
-                                    <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
-                                    {{else}}
-                                    <span class="{{user_circle_class}} user_circle"></span>
-                                    {{/if}}
-                                    <span class="recipients_name">{{full_name}}</span>
-                                </span>
-                            {{/each}}
+                        <a class="recipients_info {{#unless user_circle_class}}inbox-group-or-bot-dm{{/unless}}" href="{{dm_url}}">
+                            <span class="user_block">
+                                {{#if is_bot}}
+                                <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
+                                {{else if is_group}}
+                                <span class="fa fa-group" aria-hidden="true"></span>
+                                {{else}}
+                                <span class="{{user_circle_class}} user_circle"></span>
+                                {{/if}}
+                                <span class="recipients_name">{{{rendered_dm_with}}}</span>
+                            </span>
                         </a>
                         <span class="unread_count tippy-zulip-tooltip on_hover_dm_read"  data-user-ids-string="{{user_ids_string}}"  data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                     {{else if is_topic}}
