@@ -3,7 +3,6 @@ import {hideAll} from "tippy.js";
 
 import * as blueslip from "./blueslip";
 import * as emoji_picker from "./emoji_picker";
-import * as message_viewport from "./message_viewport";
 import * as overlays from "./overlays";
 import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
@@ -204,53 +203,6 @@ export function hide_all(not_hide_tippy_instances) {
     hide_all_except_sidebars({
         not_hide_tippy_instances,
     });
-}
-
-export function compute_placement(
-    $elt,
-    popover_height,
-    popover_width,
-    prefer_vertical_positioning,
-) {
-    const client_rect = $elt.get(0).getBoundingClientRect();
-    const distance_from_top = client_rect.top;
-    const distance_from_bottom = message_viewport.height() - client_rect.bottom;
-    const distance_from_left = client_rect.left;
-    const distance_from_right = message_viewport.width() - client_rect.right;
-
-    const elt_will_fit_horizontally =
-        distance_from_left + $elt.width() / 2 > popover_width / 2 &&
-        distance_from_right + $elt.width() / 2 > popover_width / 2;
-
-    const elt_will_fit_vertically =
-        distance_from_bottom + $elt.height() / 2 > popover_height / 2 &&
-        distance_from_top + $elt.height() / 2 > popover_height / 2;
-
-    // default to placing the popover in the center of the screen
-    let placement = "viewport_center";
-
-    // prioritize left/right over top/bottom
-    if (distance_from_top > popover_height && elt_will_fit_horizontally) {
-        placement = "top";
-    }
-    if (distance_from_bottom > popover_height && elt_will_fit_horizontally) {
-        placement = "bottom";
-    }
-
-    if (prefer_vertical_positioning && placement !== "viewport_center") {
-        // If vertical positioning is preferred and the popover fits in
-        // either top or bottom position then return.
-        return placement;
-    }
-
-    if (distance_from_left > popover_width && elt_will_fit_vertically) {
-        placement = "left";
-    }
-    if (distance_from_right > popover_width && elt_will_fit_vertically) {
-        placement = "right";
-    }
-
-    return placement;
 }
 
 export function initialize() {
