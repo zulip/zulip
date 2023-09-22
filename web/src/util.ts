@@ -253,7 +253,7 @@ export function is_topic_synonym(operator: string): boolean {
 }
 
 export function convert_message_topic(message: Message): void {
-    if (message.topic === undefined) {
+    if (message.type === "stream" && message.topic === undefined) {
         message.topic = message.subject;
     }
 }
