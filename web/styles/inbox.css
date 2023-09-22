@@ -245,13 +245,13 @@
 
             .unread_count {
                 grid-area: unread_count;
-                margin-right: 5px;
-                margin-left: 10px;
+                margin: 0 5px;
                 align-self: center;
             }
 
             .unread_mention_info {
                 grid-area: unread_mention_info;
+                margin-right: 0;
             }
 
             .stream-privacy {
