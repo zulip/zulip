@@ -1297,8 +1297,8 @@ export function initialize() {
         filters = new Set(ls.get(ls_key));
     }
 
-    $("body").on("click", "#recent_view_table .participant_profile", function (e) {
-        const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
+    $("body").on("click", "#recent_view_table .recent_view_participant_avatar", function (e) {
+        const participant_user_id = Number.parseInt($(this).parent().attr("data-user-id"), 10);
         e.stopPropagation();
         const user = people.get_by_user_id(participant_user_id);
         user_card_popover.toggle_user_card_popover(this, user);
