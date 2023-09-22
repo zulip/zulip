@@ -8075,7 +8075,7 @@ paths:
       summary: Deactivate own user
       tags: ["users"]
       description: |
-        Deactivates the user's account. See also the administrative endpoint for
+        Deactivates the current user's account. See also the administrative endpoint for
         [deactivating another user](/api/deactivate-user).
 
         This endpoint is primarily useful to Zulip clients providing a user settings UI.
@@ -8088,16 +8088,45 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
+                  - $ref: "#/components/schemas/CodedErrorBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      code: {}
+                      entity:
+                        type: string
+                        description: |
+                          An internationalized string that notes if the current user is the only
+                          organization owner or the only user in the organization.
+                      is_last_owner:
+                        type: boolean
+                        description: |
+                          Whether the current user is the only organization owner (meaning there
+                          are other active users in the organization) or the only active user in the
+                          organzation.
+                    required:
+                      - entity
+                      - is_last_owner
+                    example:
                       {
-                        "code": "BAD_REQUEST",
+                        "code": "CANNOT_DEACTIVATE_LAST_USER",
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
+                        "entity": "organization owner",
+                        "is_last_owner": true,
                       }
                     description: |
-                      An example JSON error response when attempting to deactivate the only
-                      organization owner in an organization:
+                      If the current user is the only organization owner or only user in the
+                      organization, their account cannot be deactivated and an error response
+                      will be returned. The `is_last_owner` field in the error response
+                      indicates whether the user is the only owner (`true`) or the only user
+                      (`false`). The `entity` field in the error response is a internationalized
+                      string that notes if the current user is the only organization owner or
+                      the only user.
+
+                      An example JSON error response when the current user is the only
+                      organization owner in the organization:
   /users/me/alert_words:
     get:
       operationId: get-alert-words
