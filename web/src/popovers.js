@@ -132,11 +132,6 @@ export function set_suppress_scroll_hide() {
 }
 
 export function register_click_handlers() {
-    $("body").on("click", ".flatpickr-calendar", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     {
         let last_scroll = 0;
 
