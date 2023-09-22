@@ -650,8 +650,7 @@ test("test compare directly for direct message", () => {
 
 test("highlight_with_escaping", () => {
     function highlight(query, item) {
-        const regex = th.build_highlight_regex(query);
-        return th.highlight_with_escaping_and_regex(regex, item);
+        return th.make_query_highlighter(query)(item);
     }
 
     let item = "Denmark";
