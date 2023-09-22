@@ -13,7 +13,6 @@ import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
@@ -49,21 +48,6 @@ function get_user_group_for_target(target) {
         return undefined;
     }
     return group;
-}
-
-export function can_edit(group_id) {
-    if (!settings_data.user_can_edit_user_groups()) {
-        return false;
-    }
-
-    // Admins and moderators are allowed to edit user groups even if they
-    // are not a member of that user group. Members can edit user groups
-    // only if they belong to that group.
-    if (page_params.is_admin || page_params.is_moderator) {
-        return true;
-    }
-
-    return user_groups.is_direct_member_of(people.my_current_user_id(), group_id);
 }
 
 export function get_edit_container(group) {
@@ -141,7 +125,7 @@ export function handle_member_edit_event(group_id, user_ids) {
     }
 
     // update_settings buttons.
-    if (can_edit(group_id)) {
+    if (settings_data.can_edit_user_group(group_id)) {
         enable_group_edit_settings(group);
     } else {
         disable_group_edit_settings(group);
@@ -157,7 +141,7 @@ export function update_settings_pane(group) {
 export function show_settings_for(group) {
     const html = render_user_group_settings({
         group,
-        can_edit: can_edit(group.id),
+        can_edit: settings_data.can_edit_user_group(group.id),
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
@@ -288,7 +272,7 @@ export function initialize() {
         const group_id = active_group_data.id;
         const user_group = user_groups.get_user_group_from_id(group_id);
 
-        if (!user_group || !can_edit(group_id)) {
+        if (!user_group || !settings_data.can_edit_user_group(group_id)) {
             return;
         }
         function delete_user_group() {
