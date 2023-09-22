@@ -6,9 +6,9 @@ import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";
-import * as popovers from "./popovers";
 import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
+import * as search from "./search";
 
 function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
@@ -97,74 +97,17 @@ function build_message_view_header(filter) {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
-        open_search_bar_and_close_narrow_description();
+        search.open_search_bar_and_close_narrow_description();
         $("#search_query").val(narrow_state.search_string());
     } else {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
-        close_search_bar_and_open_narrow_description();
+        search.close_search_bar_and_open_narrow_description();
     }
-}
-
-// This is what the default searchbox text would be for this narrow,
-// NOT what might be currently displayed there. We can use this both
-// to set the initial text and to see if the user has changed it.
-export function get_initial_search_string() {
-    let search_string = narrow_state.search_string();
-    if (search_string !== "" && !narrow_state.filter().is_search()) {
-        // saves the user a keystroke for quick searches
-        search_string = search_string + " ";
-    }
-    return search_string;
-}
-
-// we rely entirely on this function to ensure
-// the searchbar has the right text.
-export function reset_searchbox_text() {
-    $("#search_query").val(get_initial_search_string());
-}
-
-export function exit_search() {
-    const filter = narrow_state.filter();
-    if (!filter || filter.is_common_narrow()) {
-        // for common narrows, we change the UI (and don't redirect)
-        close_search_bar_and_open_narrow_description();
-    } else {
-        // for "searching narrows", we redirect
-        window.location.href = filter.generate_redirect_url();
-    }
-    $("#search_query").trigger("blur");
-    $(".app").trigger("focus");
 }
 
 export function initialize() {
     render_title_area();
-
-    // register searchbar click handler
-    $("#search_exit").on("click", (e) => {
-        popovers.hide_all();
-        exit_search();
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    $("#search_exit").on("blur", (e) => {
-        // Blurs that move focus to elsewhere within the search input shouldn't
-        // close search.
-        if ($(e.relatedTarget).parents("#searchbox-input-container").length > 0) {
-            return;
-        }
-        // But otherwise, it should behave like the input blurring.
-        $("#search_query").trigger("blur");
-    });
-    // This prevents a bug where tab shows a visual change before the blur handler kicks in
-    $("#search_exit").on("keydown", (e) => {
-        if (e.key === "tab") {
-            popovers.hide_all();
-            exit_search();
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
 }
 
 export function render_title_area() {
@@ -180,26 +123,4 @@ export function maybe_rerender_title_area_for_stream(modified_sub) {
     if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
         render_title_area();
     }
-}
-
-export function open_search_bar_and_close_narrow_description() {
-    // Preserve user input if they've already started typing, but
-    // otherwise fill the input field with the text operators for
-    // the current narrow.
-    if ($("#search_query").val() === "") {
-        reset_searchbox_text();
-    }
-    $(".navbar-search").addClass("expanded");
-    $("#message_view_header").addClass("hidden");
-}
-
-export function close_search_bar_and_open_narrow_description() {
-    // Hide the dropdown before closing the search bar. We do this
-    // to avoid being in a situation where the typeahead gets narrow
-    // in width as the search bar closes, which doesn't look great.
-    $("#searchbox_form .dropdown-menu").hide();
-
-    $("#search_query").val("");
-    $(".navbar-search").removeClass("expanded");
-    $("#message_view_header").removeClass("hidden");
 }
