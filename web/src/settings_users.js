@@ -414,7 +414,7 @@ export function update_user_data(user_id, new_data) {
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
-        $user_row.find(".user_name").text(new_data.full_name);
+        $user_row.find(".user_name .view_user_profile").text(new_data.full_name);
     }
 
     if (new_data.role !== undefined) {
