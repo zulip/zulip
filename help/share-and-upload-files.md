@@ -4,9 +4,9 @@ Zulip supports attaching multiple files to messages, including images,
 documents, sound, and video. You can edit the names of the files others see
 after you upload them.
 
-Zulip will automatically generate a **thumbnail** for each file when you send
-the message, if it can. Image thumbnails will be shown directly in the message,
-and you can click on a thumbnail to [view the full image](/help/view-and-browse-images).
+For images and videos, a small preview will be shown directly in the message.
+People reading the message can click on the preview to
+[view the full-size image or video](/help/view-and-browse-images).
 
 ## Uploading files
 
@@ -125,5 +125,5 @@ This limit can be changed by the server administrator.
 ## Related articles
 
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
-* [View and browse images](/help/view-and-browse-images)
+* [View images and videos](/help/view-and-browse-images)
 * [Animated GIFs](/help/animated-gifs-from-giphy)
