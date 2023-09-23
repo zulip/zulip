@@ -121,6 +121,21 @@ export function clear_private_stream_alert() {
     $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.private_stream_warning)}`).remove();
 }
 
+export function show_preview_area() {
+    const content = $("#compose-textarea").val();
+    $("#compose-textarea").hide();
+    $("#compose .markdown_preview").hide();
+    $("#compose .undo_markdown_preview").show();
+    $("#compose .undo_markdown_preview").trigger("focus");
+    $("#compose .preview_message_area").show();
+
+    render_and_show_preview(
+        $("#compose .markdown_preview_spinner"),
+        $("#compose .preview_content"),
+        content,
+    );
+}
+
 export function clear_preview_area() {
     $("#compose-textarea").show();
     $("#compose-textarea").trigger("focus");
@@ -735,18 +750,7 @@ export function initialize() {
         $("#compose").addClass("preview_mode");
         $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-        const content = $("#compose-textarea").val();
-        $("#compose-textarea").hide();
-        $("#compose .markdown_preview").hide();
-        $("#compose .undo_markdown_preview").show();
-        $("#compose .undo_markdown_preview").trigger("focus");
-        $("#compose .preview_message_area").show();
-
-        render_and_show_preview(
-            $("#compose .markdown_preview_spinner"),
-            $("#compose .preview_content"),
-            content,
-        );
+        show_preview_area();
     });
 
     $("#compose").on("click", ".undo_markdown_preview", (e) => {
