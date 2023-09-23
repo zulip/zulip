@@ -7,6 +7,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
+import {show_copied_confirmation} from "./copied_tooltip";
 import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
@@ -14,7 +15,6 @@ import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
-import {show_copied_confirmation} from "./tippyjs";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 
