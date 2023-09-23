@@ -14,23 +14,16 @@ import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
-import * as message_view_header from "./message_view_header";
-import * as narrow from "./narrow";
-import * as narrow_state from "./narrow_state";
-import * as navigate from "./navigate";
 import * as people from "./people";
-import * as pm_list from "./pm_list";
-import * as search from "./search";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
+import * as views_util from "./views_util";
 
 let dms_dict = {};
 let topics_dict = {};
@@ -75,59 +68,21 @@ function should_include_muted() {
 }
 
 export function show() {
-    // hashchange library is expected to hide other views.
-    if (narrow.has_shown_message_list_view) {
-        narrow.save_pre_narrow_offset_for_reload();
-    }
-
-    if (is_visible()) {
-        return;
-    }
-
-    left_sidebar_navigation_area.highlight_inbox_view();
-    stream_list.handle_narrow_deactivated();
-
-    $("#message_feed_container").hide();
-    $("#inbox-view").show();
-    set_visible(true);
-
-    unread_ui.hide_unread_banner();
-    narrow_state.reset_current_filter();
-    message_view_header.render_title_area();
-    narrow.handle_middle_pane_transition();
-
-    narrow_state.reset_current_filter();
-    narrow.update_narrow_title(narrow_state.filter());
-    message_view_header.render_title_area();
-    pm_list.handle_narrow_deactivated();
-    search.clear_search_form();
-    complete_rerender();
-    compose_closed_ui.set_standard_text_for_reply_button();
+    views_util.show({
+        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_inbox_view,
+        $view: $("#inbox-view"),
+        update_compose: compose_closed_ui.set_standard_text_for_reply_button,
+        is_visible,
+        set_visible,
+        complete_rerender,
+    });
 }
 
 export function hide() {
-    const $focused_element = $(document.activeElement);
-
-    if ($("#inbox-view").has($focused_element)) {
-        $focused_element.trigger("blur");
-    }
-
-    $("#message_feed_container").show();
-    $("#inbox-view").hide();
-    set_visible(false);
-
-    // This solves a bug with message_view_header
-    // being broken sometimes when we narrow
-    // to a filter and back to recent topics
-    // before it completely re-rerenders.
-    message_view_header.render_title_area();
-
-    // Fire our custom event
-    $("#message_feed_container").trigger("message_feed_shown");
-
-    // This makes sure user lands on the selected message
-    // and not always at the top of the narrow.
-    navigate.plan_scroll_to_selected();
+    views_util.hide({
+        $view: $("#inbox-view"),
+        set_visible,
+    });
 }
 
 function get_topic_key(stream_id, topic) {

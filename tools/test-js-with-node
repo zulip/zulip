@@ -240,6 +240,7 @@ EXEMPT_FILES = make_set(
         "web/src/user_status_ui.js",
         "web/src/user_topics.ts",
         "web/src/user_topics_ui.js",
+        "web/src/views_util.js",
         "web/src/webpack_public_path.js",
         "web/src/zcommand.js",
         "web/src/zform.js",
