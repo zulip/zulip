@@ -1,26 +1,37 @@
-# View and browse images
+# View images and videos
 
-When someone pastes or attaches an image to a message, Zulip shows a small
-preview. Click on the image preview to open the **image viewer**.
+Zulip shows previews of attached images and videos, unless previews are
+[disabled](/help/allow-image-link-previews) in your organization. You
+can click on a preview to view an image in more detail, or to play a
+video. Zulip also makes it convenient to browse all images and videos
+attached to messages in your current view.
 
-In the image viewer, you can:
+## Using the image viewer
 
-* Zoom in and out of the image
+{start_tabs}
 
-* Click and drag the image
+{tab|desktop-web}
 
-* **Reset zoom** so that the image is recentered and its original size
+1. Click an image preview to open the **image viewer**.
 
-* **Open** the image in a new browser tab
+1. You can interact with the image.
 
-* **Download** the image
+    * Zoom in and out of the image
 
-* Browse other images in the current view. For example, if you're in a
-  stream view, the image browser will show all the images from that stream. If
-  you do a [search](/help/search-for-messages), the image browser will show
-  all images in messages that matched that search.
+    * Click and drag the image
 
-Exit the image viewer by clicking anywhere outside the image.
+    * **Reset zoom** so that the image is recentered and back to its original size
+
+    * **Open** the image in a new browser tab if you are using the Zulip web app
+
+    * **Download** the image
+
+1. Click anywhere outside the image to close the image viewer once you are done.
+
+!!! tip ""
+
+    You can click on the file name to download an image rather than viewing it
+    in the Zulip app.
 
 !!! keyboard_tip ""
 
@@ -28,9 +39,30 @@ Exit the image viewer by clicking anywhere outside the image.
     <kbd>Z</kbd> and <kbd>Z</kbd> to zoom in and out of the image. Use
     <kbd>V</kbd> or <kbd>Esc</kbd> to **close** the image viewer.
 
-## Troubleshooting
+{end_tabs}
 
-To open the image viewer, you must click on the image preview, not the file name.
+## Using the image browser
+
+In the Zulip desktop or web app, you can browse the images in the current view.
+For example, if you're in a conversation view, the image browser will show all
+the images from that stream. If you do a [search](/help/search-for-messages),
+the image browser will show all images in messages that matched that search.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Click an image preview or use <kbd>V</kbd> to open the **image viewer**.
+
+1. You can click an image or use the left and right buttons at the bottom of
+   the viewer to browse images.
+
+!!! keyboard_tip ""
+
+    Use <kbd class="arrow-key">←</kbd> and <kbd class="arrow-key">→</kbd>
+    to scroll through the images.
+
+{end_tabs}
 
 ## Related articles
 
