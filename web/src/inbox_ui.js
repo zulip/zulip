@@ -211,6 +211,7 @@ function format_stream(stream_id) {
         is_web_public: stream_info.is_web_public,
         stream_name: stream_info.name,
         pin_to_top: stream_info.pin_to_top,
+        is_muted: stream_info.is_muted,
         stream_color: stream_color.get_stream_privacy_icon_color(stream_info.color),
         stream_header_color: stream_color.get_recipient_bar_color(stream_info.color),
         stream_url: hash_util.by_stream_url(stream_id),
@@ -318,6 +319,16 @@ function get_sorted_stream_keys() {
 
         if (stream_b.pin_to_top && !stream_a.pin_to_top) {
             return 1;
+        }
+
+        // The muted stream is sorted lower.
+        // (Both stream are either pinned or not pinned right now)
+        if (stream_a.is_muted && !stream_b.is_muted) {
+            return 1;
+        }
+
+        if (stream_b.is_muted && !stream_a.is_muted) {
+            return -1;
         }
 
         const stream_name_a = stream_a ? stream_a.stream_name : "";
