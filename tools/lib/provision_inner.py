@@ -93,9 +93,10 @@ def setup_shell_profile(shell_profile: str) -> None:
             with open(shell_profile_path, "w") as shell_profile_file:
                 shell_profile_file.writelines(command + "\n")
 
-    host_machine_wsl = os.path.exists("/proc/sys/fs/binfmt_misc/WSLInterop")
-    host_machine_native_linux = os.path.exists("/etc/os-release")
-    if not host_machine_wsl or not host_machine_native_linux:
+    vagrant = os.path.exists('/vagrant')
+    docker = os.path.exists('/var/run/docker.sock')
+    droplet = os.path.exists('/etc/digitalocean')
+    if vagrant or docker or droplet:
         source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
         write_command(source_activate_command)
 
