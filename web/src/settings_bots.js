@@ -13,6 +13,7 @@ import render_generate_integration_url_modal from "../templates/settings/generat
 import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
@@ -22,7 +23,6 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
-import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as user_profile from "./user_profile";
 
