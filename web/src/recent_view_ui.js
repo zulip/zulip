@@ -18,33 +18,25 @@ import * as loading from "./loading";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
-import * as message_view_header from "./message_view_header";
 import * as muted_users from "./muted_users";
-import * as narrow from "./narrow";
-import * as narrow_state from "./narrow_state";
-import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_view_data";
 import {get_key_from_message, get_topic_key, is_visible, set_visible} from "./recent_view_util";
-import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
-import * as search from "./search";
 import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
 import * as user_card_popover from "./user_card_popover";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
+import * as views_util from "./views_util";
 
 let topics_widget;
 // Sets the number of avatars to display.
@@ -916,40 +908,18 @@ export function complete_rerender() {
 }
 
 export function show() {
-    if (narrow.has_shown_message_list_view) {
-        narrow.save_pre_narrow_offset_for_reload();
-    }
-
-    if (is_visible()) {
-        // If we're already visible, E.g. because the user hit Esc
-        // while already in the Recent Conversations view, do nothing.
-        return;
-    }
-    // Hide selected elements in the left sidebar.
-    left_sidebar_navigation_area.highlight_recent_view();
-    stream_list.handle_narrow_deactivated();
-
-    // Hide "middle-column" which has html for rendering
-    // a messages narrow. We hide it and show Recent Conversations.
-    $("#message_feed_container").hide();
-    $("#recent_view").show();
-    set_visible(true);
-
-    unread_ui.hide_unread_banner();
-
-    // We want to show `new stream message` instead of
-    // `new topic`, which we are already doing in this
-    // function. So, we reuse it here.
-    compose_closed_ui.update_buttons_for_recent_view();
-
-    narrow_state.reset_current_filter();
-    narrow.update_narrow_title(narrow_state.filter());
-    message_view_header.render_title_area();
-    narrow.handle_middle_pane_transition();
-    pm_list.handle_narrow_deactivated();
-    search.clear_search_form();
-    complete_rerender();
-    resize.update_recent_view_filters_height();
+    views_util.show({
+        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_recent_view,
+        $view: $("#recent_view"),
+        // We want to show `new stream message` instead of
+        // `new topic`, which we are already doing in this
+        // function. So, we reuse it here.
+        update_compose: compose_closed_ui.update_buttons_for_recent_view,
+        is_recent_view: true,
+        is_visible,
+        set_visible,
+        complete_rerender,
+    });
 }
 
 function filter_buttons() {
@@ -957,28 +927,10 @@ function filter_buttons() {
 }
 
 export function hide() {
-    // On firefox (and flaky on other browsers), focus
-    // remains on the focused element even after it is hidden. We
-    // forcefully blur it so that focus returns to the visible
-    // focused element.
-    const $focused_element = $(document.activeElement);
-    if ($("#recent_view").has($focused_element)) {
-        $focused_element.trigger("blur");
-    }
-
-    $("#message_feed_container").show();
-    $("#recent_view").hide();
-    set_visible(false);
-
-    // This solves a bug with message_view_header
-    // being broken sometimes when we narrow
-    // to a filter and back to Recent Conversations
-    // before it completely re-rerenders.
-    message_view_header.render_title_area();
-
-    // This makes sure user lands on the selected message
-    // and not always at the top of the narrow.
-    navigate.plan_scroll_to_selected();
+    views_util.hide({
+        $view: $("#recent_view"),
+        set_visible,
+    });
 }
 
 function is_focus_at_last_table_row() {
