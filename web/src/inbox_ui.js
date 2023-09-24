@@ -41,10 +41,12 @@ let row_focus = 0;
 
 const ls_filter_key = "inbox_filters";
 const ls_collapsed_containers_key = "inbox_collapsed_containers";
+const ls_expanded_muted_streams_key = "inbox_expanded_muted_streams";
 
 const ls = localstorage();
 let filters = new Set();
 let collapsed_containers = new Set();
+let expanded_muted_streams = new Set();
 
 let search_keyword = "";
 const INBOX_SEARCH_ID = "inbox-search";
@@ -61,6 +63,7 @@ function get_row_from_conversation_key(key) {
 function save_data_to_ls() {
     ls.set(ls_filter_key, [...filters]);
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
+    ls.set(ls_expanded_muted_streams_key, [...expanded_muted_streams]);
 }
 
 function should_include_muted() {
@@ -112,6 +115,7 @@ function get_stream_header_row(stream_id) {
 function load_data_from_ls() {
     filters = new Set(ls.get(ls_filter_key));
     collapsed_containers = new Set(ls.get(ls_collapsed_containers_key));
+    expanded_muted_streams = new Set(ls.get(ls_expanded_muted_streams_key));
     update_filters();
 }
 
@@ -200,6 +204,14 @@ function rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data) {
     }
 }
 
+function is_stream_collpased(stream_id, is_muted) {
+    let is_collapsed = collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id);
+    if (is_muted) {
+        is_collapsed = !expanded_muted_streams.has(STREAM_HEADER_PREFIX + stream_id);
+    }
+    return is_collapsed;
+}
+
 function format_stream(stream_id) {
     // NOTE: Unread count is not included in this function as it is more
     // efficient for the callers to calculate it based on filters.
@@ -218,7 +230,7 @@ function format_stream(stream_id) {
         stream_id,
         // Will be displayed if any topic is visible.
         is_hidden: true,
-        is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
+        is_collapsed: is_stream_collpased(stream_id, stream_info.is_muted),
         mention_in_unread: unread.stream_has_any_unread_mentions(stream_id),
     };
 }
@@ -261,7 +273,7 @@ function format_topic(stream_id, topic, topic_unread_count) {
         conversation_key: get_topic_key(stream_id, topic),
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
         is_hidden: filter_should_hide_row({stream_id, topic}),
-        is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
+        is_collapsed: is_stream_collpased(stream_id, stream_data.is_muted(stream_id)),
         mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
     };
 
@@ -504,12 +516,14 @@ function filter_should_hide_row({stream_id, topic, dm_key}) {
 export function collapse_or_expand(container_id) {
     let $toggle_icon;
     let $container;
+    let is_muted = false;
     if (container_id === "inbox-dm-header") {
         $container = $(`#inbox-direct-messages-container`);
         $container.children().toggleClass("collapsed_container");
         $toggle_icon = $("#inbox-dm-header .toggle-inbox-header-icon");
     } else {
         const stream_id = container_id.slice(STREAM_HEADER_PREFIX.length);
+        is_muted = stream_data.is_muted(Number.parseInt(stream_id, 10));
         $container = get_topics_container(stream_id);
         $container.children().toggleClass("collapsed_container");
         $toggle_icon = $(
@@ -518,10 +532,11 @@ export function collapse_or_expand(container_id) {
     }
     $toggle_icon.toggleClass("icon-collapsed-state");
 
-    if (collapsed_containers.has(container_id)) {
-        collapsed_containers.delete(container_id);
+    const ls_set_to_modify = is_muted ? expanded_muted_streams : collapsed_containers;
+    if (ls_set_to_modify.has(container_id)) {
+        ls_set_to_modify.delete(container_id);
     } else {
-        collapsed_containers.add(container_id);
+        ls_set_to_modify.add(container_id);
     }
 
     save_data_to_ls();
