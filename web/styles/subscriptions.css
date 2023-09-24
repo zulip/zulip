@@ -73,6 +73,10 @@
     margin-right: 10px;
 }
 
+#remove_subscriber_stream {
+    margin-right: 20px;
+}
+
 .create_user_group_plus_button,
 .create_stream_plus_button {
     font-size: 24px;
