@@ -4,7 +4,6 @@ import * as activity from "./activity";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
-import * as inbox_ui from "./inbox_ui";
 import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
@@ -59,7 +58,8 @@ export function rerender_for_muted_user() {
     // If a user is (un)muted, we want to update their avatars on the Recent Conversations
     // participants column.
     recent_view_ui.complete_rerender();
-    inbox_ui.update();
+    // Ideally, we would update inbox here too but since muting user does have the
+    // side effect of marking every message the user sent as read, it will update inbox too.
 }
 
 export function handle_user_updates(muted_user_ids) {

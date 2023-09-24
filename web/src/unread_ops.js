@@ -7,7 +7,6 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
-import * as inbox_ui from "./inbox_ui";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -168,7 +167,6 @@ function process_newly_read_message(message, options) {
     }
     notifications.close_notification(message);
     recent_view_ui.update_topic_unread_count(message);
-    inbox_ui.update();
 }
 
 export function mark_as_unread_from_here(
@@ -312,7 +310,6 @@ export function process_read_messages_event(message_ids) {
     }
 
     unread_ui.update_unread_counts();
-    inbox_ui.update();
 }
 
 export function process_unread_messages_event({message_ids, message_details}) {
@@ -389,7 +386,6 @@ export function process_unread_messages_event({message_ids, message_details}) {
     }
 
     unread_ui.update_unread_counts();
-    inbox_ui.update();
 }
 
 // Takes a list of messages and marks them as read.
