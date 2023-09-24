@@ -9,7 +9,6 @@ import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as huddle_data from "./huddle_data";
-import * as inbox_ui from "./inbox_ui";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
@@ -166,7 +165,6 @@ export function insert_new_messages(messages, sent_by_this_client) {
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
     recent_view_ui.process_messages(messages);
-    inbox_ui.update();
 }
 
 export function update_messages(events) {
@@ -239,7 +237,6 @@ export function update_messages(events) {
                     anchor_message.topic,
                 );
                 recent_view_ui.inplace_rerender(topic_key);
-                inbox_ui.update();
             }
         }
 
@@ -514,7 +511,6 @@ export function update_messages(events) {
             });
             unread.clear_and_populate_unread_mention_topics();
             recent_view_ui.process_topic_edit(...args);
-            inbox_ui.update();
         }
 
         // Rerender "Message edit history" if it was open to the edited message.
@@ -575,7 +571,6 @@ export function remove_messages(message_ids) {
     }
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
     recent_view_ui.update_topics_of_deleted_message_ids(message_ids);
-    inbox_ui.update();
     starred_messages.remove(message_ids);
     starred_messages_ui.rerender_ui();
 }

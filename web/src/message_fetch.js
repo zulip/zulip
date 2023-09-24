@@ -4,7 +4,6 @@ import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
-import * as inbox_ui from "./inbox_ui";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
@@ -54,7 +53,6 @@ function process_result(data, opts) {
 
     huddle_data.process_loaded_messages(messages);
     recent_view_ui.process_messages(messages);
-    inbox_ui.update();
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view();
 
