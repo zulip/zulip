@@ -11851,9 +11851,11 @@ paths:
                           count:
                             type: integer
                             description: |
-                              The total number of unread messages to display; this includes one-on-one
-                              and group direct messages, as well as all messages to unmuted topics
-                              on unmuted streams.
+                              The total number of unread messages to display. This includes one-on-one and group
+                              direct messages, as well as stream messages that are not [muted](/help/mute-a-topic).
+
+                              **Changes**: Before Zulip 8.0 (feature level 213), the unmute and follow
+                              topic features were not handled correctly in calculating this field.
                           pms:
                             type: array
                             description: |
@@ -11897,8 +11899,9 @@ paths:
                           streams:
                             type: array
                             description: |
-                              An array of objects where each object contains details of unread
-                              messages of a single subscribed stream, including muted streams.
+                              An array of dictionaries where each dictionary contains details of all
+                              unread messages of a single subscribed stream. This includes muted streams
+                              and muted topics, even though those messages are excluded from count.
 
                               **Changes**: Prior to Zulip 5.0 (feature level 90), these objects
                               included a `sender_ids` property, which listed the set of IDs of
@@ -11947,9 +11950,12 @@ paths:
                           mentions:
                             type: array
                             description: |
-                              Array containing the IDs of all unread messages in which the user has been
-                              mentioned. For muted streams, wildcard mentions will not be considered for
-                              this array.
+                              Array containing the IDs of all unread messages in which the user was
+                              mentioned directly, and unread [non-muted](/help/mute-a-topic) messages
+                              in which the user was mentioned through a wildcard.
+
+                              **Changes**: Before Zulip 8.0 (feature level 213), the unmute and follow
+                              topic features were not handled correctly in calculating this field.
                             items:
                               type: integer
                           old_unreads_missing:

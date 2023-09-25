@@ -53,7 +53,7 @@ from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_N
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.user_topics import build_get_topic_visibility_policy, topic_has_visibility_policy
+from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -1114,10 +1114,19 @@ def extract_unread_data_from_um_rows(
     get_topic_visibility_policy = build_get_topic_visibility_policy(user_profile)
 
     def is_row_muted(stream_id: int, recipient_id: int, topic: str) -> bool:
-        if stream_id in muted_stream_ids:
+        stream_muted = stream_id in muted_stream_ids
+        visibility_policy = get_topic_visibility_policy(recipient_id, topic)
+
+        if stream_muted and visibility_policy in [
+            UserTopic.VisibilityPolicy.UNMUTED,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+        ]:
+            return False
+
+        if stream_muted:
             return True
 
-        visibility_policy = get_topic_visibility_policy(recipient_id, topic)
+        # muted topic in unmuted stream
         if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
             return True
 
@@ -1317,12 +1326,15 @@ def apply_unread_message_event(
             topic=topic,
         )
 
-        if (
-            stream_id not in state["muted_stream_ids"]
-            # This next check hits the database.
-            and not topic_has_visibility_policy(
-                user_profile, stream_id, topic, UserTopic.VisibilityPolicy.MUTED
-            )
+        stream_muted = stream_id in state["muted_stream_ids"]
+        visibility_policy = get_topic_visibility_policy(user_profile, stream_id, topic)
+        # A stream message is unmuted if it belongs to:
+        # * a not muted topic in a normal stream
+        # * an unmuted or followed topic in a muted stream
+        if (not stream_muted and visibility_policy != UserTopic.VisibilityPolicy.MUTED) or (
+            stream_muted
+            and visibility_policy
+            in [UserTopic.VisibilityPolicy.UNMUTED, UserTopic.VisibilityPolicy.FOLLOWED]
         ):
             state["unmuted_stream_msgs"].add(message_id)
 

@@ -704,7 +704,9 @@ class GetUnreadMsgsTest(ZulipTestCase):
         subscription.is_muted = True
         subscription.save()
 
-    def mute_topic(self, user_profile: UserProfile, stream_name: str, topic_name: str) -> None:
+    def set_topic_visibility_policy(
+        self, user_profile: UserProfile, stream_name: str, topic_name: str, visibility_policy: int
+    ) -> None:
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
 
@@ -712,7 +714,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile,
             stream,
             topic_name,
-            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            visibility_policy=visibility_policy,
         )
 
     def test_raw_unread_stream(self) -> None:
@@ -752,10 +754,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
             stream=get_stream("test here", realm),
         )
 
-        self.mute_topic(
+        self.set_topic_visibility_policy(
             user_profile=hamlet,
             stream_name="devel",
             topic_name="ruby",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
         raw_unread_data = get_raw_unread_data(
@@ -960,7 +963,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
         muted_stream = self.subscribe(user_profile, "Muted stream")
         self.subscribe(sender, muted_stream.name)
         self.mute_stream(user_profile, muted_stream)
-        self.mute_topic(user_profile, "Denmark", "muted-topic")
+        self.set_topic_visibility_policy(
+            user_profile, "Denmark", "muted-topic", UserTopic.VisibilityPolicy.MUTED
+        )
+        self.set_topic_visibility_policy(
+            user_profile, "Muted stream", "unmuted-topic", UserTopic.VisibilityPolicy.UNMUTED
+        )
 
         stream_message_id = self.send_stream_message(sender, "Denmark", "hello")
         muted_stream_message_id = self.send_stream_message(sender, "Muted stream", "hello")
@@ -968,6 +976,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
             sender,
             "Denmark",
             topic_name="muted-topic",
+            content="hello",
+        )
+        unmuted_topic_muted_stream_message_id = self.send_stream_message(
+            sender,
+            "Muted stream",
+            topic_name="unmuted-topic",
             content="hello",
         )
 
@@ -982,17 +996,18 @@ class GetUnreadMsgsTest(ZulipTestCase):
             aggregated_data = aggregate_unread_data(raw_unread_data)
             return aggregated_data
 
-        with mock.patch("zerver.lib.message.MAX_UNREAD_MESSAGES", 4):
+        with mock.patch("zerver.lib.message.MAX_UNREAD_MESSAGES", 5):
             result = get_unread_data()
-            self.assertEqual(result["count"], 2)
+            self.assertEqual(result["count"], 3)
             self.assertTrue(result["old_unreads_missing"])
 
         result = get_unread_data()
 
-        # The count here reflects the count of unread messages that we will
-        # report to users in the bankruptcy dialog, and it excludes unread messages
-        # from muted streams and muted topics.
-        self.assertEqual(result["count"], 4)
+        # The count here reflects the count of unread messages that we will report
+        # to users in the bankruptcy dialog, and it excludes unread messages from:
+        # * muted topics in unmuted streams
+        # * default or muted topics in muted streams
+        self.assertEqual(result["count"], 5)
         self.assertFalse(result["old_unreads_missing"])
 
         unread_pm = result["pms"][0]
@@ -1015,6 +1030,15 @@ class GetUnreadMsgsTest(ZulipTestCase):
         )
         self.assertEqual(unread_stream["topic"], "test")
         self.assertEqual(unread_stream["unread_message_ids"], [muted_stream_message_id])
+
+        unread_stream = result["streams"][3]
+        self.assertEqual(
+            unread_stream["stream_id"], get_stream("Muted stream", user_profile.realm).id
+        )
+        self.assertEqual(unread_stream["topic"], "unmuted-topic")
+        self.assertEqual(
+            unread_stream["unread_message_ids"], [unmuted_topic_muted_stream_message_id]
+        )
 
         huddle_string = ",".join(
             str(uid) for uid in sorted([sender_id, user_profile.id, othello.id])
@@ -1070,6 +1094,21 @@ class GetUnreadMsgsTest(ZulipTestCase):
         um.save()
         result = get_unread_data()
         self.assertEqual(result["mentions"], [])
+
+        um.flags = 0
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [])
+
+        # Test with a unmuted topic in muted stream
+        um = UserMessage.objects.get(
+            user_profile_id=user_profile.id,
+            message_id=unmuted_topic_muted_stream_message_id,
+        )
+        um.flags = UserMessage.flags.wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [unmuted_topic_muted_stream_message_id])
 
         um.flags = 0
         um.save()

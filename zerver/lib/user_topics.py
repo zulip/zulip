@@ -109,6 +109,21 @@ def set_topic_visibility_policy(
         )
 
 
+def get_topic_visibility_policy(
+    user_profile: UserProfile,
+    stream_id: int,
+    topic_name: str,
+) -> int:
+    try:
+        user_topic = UserTopic.objects.get(
+            user_profile=user_profile, stream_id=stream_id, topic_name__iexact=topic_name
+        )
+        visibility_policy = user_topic.visibility_policy
+    except UserTopic.DoesNotExist:
+        visibility_policy = UserTopic.VisibilityPolicy.INHERIT
+    return visibility_policy
+
+
 @transaction.atomic(savepoint=False)
 def bulk_set_user_topic_visibility_policy_in_database(
     user_profiles: List[UserProfile],

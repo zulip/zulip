@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 213**
+
+* [`POST /register`](/api/register-queue): Fixed incorrect handling of
+  unmuted and followed topics in calculating the `mentions` and
+  `count` fields of the `unread_msgs` object.
+
 **Feature level 212**
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
