@@ -9,24 +9,6 @@ import * as stream_popover from "./stream_popover";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
 
-let list_of_popovers = [];
-
-// this utilizes the proxy pattern to intercept all calls to $.fn.popover
-// and push the $.fn.data($o, "popover") results to an array.
-// this is needed so that when we try to unload popovers, we can kill all dead
-// ones that no longer have valid parents in the DOM.
-const old_popover = $.fn.popover;
-$.fn.popover = Object.assign(function (...args) {
-    // apply the jQuery object as `this`, and popover function arguments.
-    old_popover.apply(this, args);
-
-    // if there is a valid "popover" key in the jQuery data object then
-    // push it to the array.
-    if (this.data("popover")) {
-        list_of_popovers.push(this.data("popover"));
-    }
-}, old_popover);
-
 export function any_active() {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.
@@ -57,14 +39,6 @@ export function hide_all_except_sidebars(opts) {
     user_group_popover.hide();
     user_card_popover.hide_all_user_card_popovers();
     playground_links_popover.hide();
-
-    // look through all the popovers that have been added and removed.
-    for (const $o of list_of_popovers) {
-        if (!document.body.contains($o.$element[0]) && $o.$tip) {
-            $o.$tip.remove();
-        }
-    }
-    list_of_popovers = [];
 }
 
 // This function will hide all the popovers, including the mobile web
