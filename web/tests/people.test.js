@@ -239,8 +239,8 @@ const all2 = {
 
 // This is for error checking--never actually
 // tell people.js about this user.
-const unknown_user = {
-    email: "unknown@example.com",
+const invalid_user = {
+    email: "invalid@example.com",
     user_id: 999,
     unknown_local_echo_user: true,
 };
@@ -352,7 +352,7 @@ test_people("basics", () => {
     assert.equal(person.full_name, "Me Myself");
 
     // Test undefined people
-    assert.equal(people.is_cross_realm_email("unknown@example.com"), false);
+    assert.equal(people.is_cross_realm_email("invalid@example.com"), false);
 
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);
@@ -655,7 +655,7 @@ test_people("filtered_users", () => {
     assert.ok(filtered_people.has(noah.user_id));
 
     // Test filtering with undefined user
-    users.push(unknown_user);
+    users.push(invalid_user);
 
     filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
     assert.equal(filtered_people.size, 1);
@@ -876,7 +876,7 @@ test_people("extract_people_from_message", () => {
     // Get line coverage
     message = {
         type: "private",
-        display_recipient: [unknown_user],
+        display_recipient: [invalid_user],
     };
     people.extract_people_from_message(message);
 });
@@ -906,8 +906,8 @@ test_people("maybe_incr_recipient_count", () => {
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
 
-    const unknown_recip = {
-        email: "unknown@example.com",
+    const other_invalid_recip = {
+        email: "invalid2@example.com",
         id: 500,
         unknown_local_echo_user: true,
     };
@@ -915,7 +915,7 @@ test_people("maybe_incr_recipient_count", () => {
     message = {
         type: "private",
         sent_by_me: true,
-        display_recipient: [unknown_recip],
+        display_recipient: [other_invalid_recip],
     };
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
@@ -1020,7 +1020,7 @@ test_people("update_email_in_reply_to", () => {
         "charles@example.com,maria@example.com",
     );
 
-    reply_to = "    charles@example.com,   athens@example.com, unknown@example.com";
+    reply_to = "    charles@example.com,   athens@example.com, invalid@example.com";
     assert.equal(people.update_email_in_reply_to(reply_to, 9999, "whatever"), reply_to);
 });
 
