@@ -16,6 +16,7 @@ import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as components from "./components";
 import {csrf_token} from "./csrf";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
@@ -25,7 +26,6 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
-import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -286,10 +286,9 @@ function initialize_user_type_fields(user) {
     // Avoid duplicate pill fields, by removing existing ones.
     $("#user-profile-modal .pill").remove();
     if (!user.is_bot) {
-        settings_account.initialize_custom_user_type_fields(
+        custom_profile_fields_ui.initialize_custom_user_type_fields(
             "#user-profile-modal #content",
             user.user_id,
-            false,
             false,
         );
     } else {
@@ -676,14 +675,18 @@ export function show_edit_user_info_modal(user_id, $container) {
 
     const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
     $(custom_profile_field_form_selector).empty();
-    settings_account.append_custom_profile_fields(custom_profile_field_form_selector, user_id);
-    settings_account.initialize_custom_date_type_fields(custom_profile_field_form_selector);
-    settings_account.initialize_custom_pronouns_type_fields(custom_profile_field_form_selector);
-    const fields_user_pills = settings_account.initialize_custom_user_type_fields(
+    custom_profile_fields_ui.append_custom_profile_fields(
+        custom_profile_field_form_selector,
+        user_id,
+    );
+    custom_profile_fields_ui.initialize_custom_date_type_fields(custom_profile_field_form_selector);
+    custom_profile_fields_ui.initialize_custom_pronouns_type_fields(
+        custom_profile_field_form_selector,
+    );
+    const fields_user_pills = custom_profile_fields_ui.initialize_custom_user_type_fields(
         custom_profile_field_form_selector,
         user_id,
         true,
-        false,
     );
 
     // Handle deactivation
