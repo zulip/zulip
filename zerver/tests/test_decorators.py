@@ -583,7 +583,10 @@ class DeactivatedRealmTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         do_deactivate_realm(
-            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+            get_realm("zulip"),
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
 
         result = self.client_post(
@@ -652,7 +655,10 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         do_deactivate_realm(
-            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+            get_realm("zulip"),
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
         user_profile = self.example_user("hamlet")
         api_key = get_api_key(user_profile)

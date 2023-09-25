@@ -98,7 +98,10 @@ def do_change_realm_subdomain(
     if add_deactivated_redirect:
         placeholder_realm = do_create_realm(old_subdomain, realm.name)
         do_deactivate_realm(
-            placeholder_realm, acting_user=None, deactivation_reason="subdomain_change"
+            placeholder_realm,
+            acting_user=None,
+            deactivation_reason="subdomain_change",
+            email_owners=False,
         )
         do_add_deactivated_redirect(placeholder_realm, realm.url)
 

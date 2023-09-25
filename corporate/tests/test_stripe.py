@@ -4319,7 +4319,10 @@ class StripeTest(StripeTestCase):
         self.assertEqual(last_ledger_entry.licenses_at_next_renewal, 20)
 
         do_deactivate_realm(
-            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+            get_realm("zulip"),
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
 
         plan.refresh_from_db()
@@ -4355,7 +4358,10 @@ class StripeTest(StripeTestCase):
             )
 
         do_deactivate_realm(
-            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+            get_realm("zulip"),
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
         self.assertTrue(get_realm("zulip").deactivated)
         do_reactivate_realm(get_realm("zulip"))

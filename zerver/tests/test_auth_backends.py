@@ -215,7 +215,10 @@ class AuthBackendTest(ZulipTestCase):
 
         # Verify auth fails with a deactivated realm
         do_deactivate_realm(
-            user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+            user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
         result = backend.authenticate(**good_kwargs)
 
@@ -4992,7 +4995,10 @@ class FetchAPIKeyTest(ZulipTestCase):
 
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(
-            self.user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+            self.user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
         result = self.client_post(
             "/api/v1/fetch_api_key",
@@ -5056,7 +5062,10 @@ class DevFetchAPIKeyTest(ZulipTestCase):
 
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(
-            self.user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+            self.user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         self.assert_json_error_contains(result, "This organization has been deactivated", 401)
@@ -6350,7 +6359,10 @@ class TestLDAP(ZulipLDAPTestCase):
             backend = self.backend
             email = "nonexisting@zulip.com"
             do_deactivate_realm(
-                backend._realm, acting_user=None, deactivation_reason="owner_request"
+                backend._realm,
+                acting_user=None,
+                deactivation_reason="owner_request",
+                email_owners=False,
             )
             with self.assertRaisesRegex(Exception, "Realm has been deactivated"):
                 backend.get_or_build_user(email, _LDAPUser())
@@ -7473,7 +7485,10 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
     def test_inactive_realm_failure(self) -> None:
         payload = {"email": self.email}
         do_deactivate_realm(
-            self.user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+            self.user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]

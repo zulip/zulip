@@ -161,7 +161,10 @@ class EmailChangeTestCase(ZulipTestCase):
         activation_url = self.generate_email_change_link(new_email)
 
         do_deactivate_realm(
-            user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+            user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
 
         response = self.client_get(activation_url)
