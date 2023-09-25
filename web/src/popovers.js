@@ -54,47 +54,8 @@ export function popover_items_handle_keyboard(key, $items) {
 
     let index = $items.index($items.filter(":focus"));
 
-    if (key === "enter" && index >= 0 && index < $items.length) {
-        $items[index].click();
-        if (user_card_popover.manage_menu.is_open()) {
-            // If we just opened the little manage menu via the
-            // keyboard, we need to focus the first item for a
-            // continuation of the keyboard experience.
-
-            // TODO: This might be cleaner to just call
-            // toggle_user_card_popover_manage_menu rather than
-            // triggering a click.
-
-            const previously_defined_on_mount =
-                user_card_popover.manage_menu.instance.props.onMount;
-            user_card_popover.manage_menu.instance.setProps({
-                onMount() {
-                    // We're monkey patching the onMount method here to ensure we start
-                    // focusing on the item after the popover is mounted to the DOM;
-                    // otherwise, it won't work correctly.
-                    if (previously_defined_on_mount) {
-                        previously_defined_on_mount();
-                    }
-                    const $items = user_card_popover.get_user_card_popover_manage_menu_items();
-                    focus_first_popover_item($items);
-                },
-            });
-        }
-        return;
-    }
     if (index === -1) {
-        if (
-            $(".user-card-popover-manage-menu-btn").is(":visible") &&
-            !user_card_popover.manage_menu.is_open()
-        ) {
-            // If we have a "Manage Menu" button in the user card popover,
-            // the first item to receive focus shouldn't be that button.
-            // However, if the Manage Menu is open, focus should shift to
-            // the first item in that popover.
-            index = 1;
-        } else {
-            index = 0;
-        }
+        index = 0;
     } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
         index += 1;
     } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
