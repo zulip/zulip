@@ -1567,6 +1567,20 @@ class ActivateTest(ZulipTestCase):
         result = self.client_post(f"/json/users/{invalid_user_id}/reactivate")
         self.assert_json_error(result, "No such user")
 
+    def test_api_with_mirrordummy_user(self) -> None:
+        self.login("iago")
+        desdemona = self.example_user("desdemona")
+        change_user_is_active(desdemona, False)
+
+        desdemona.is_mirror_dummy = True
+        desdemona.save(update_fields=["is_mirror_dummy"])
+
+        # Cannot deactivate a user which is marked as "mirror dummy" from importing
+        result = self.client_post(f"/json/users/{desdemona.id}/reactivate")
+        self.assert_json_error(
+            result, "Cannot activate a placeholder account; ask the user to sign up, instead."
+        )
+
     def test_api_with_insufficient_permissions(self) -> None:
         non_admin = self.example_user("othello")
         do_change_user_role(non_admin, UserProfile.ROLE_MEMBER, acting_user=None)
