@@ -55,16 +55,13 @@ $before_unread_count_padding: 3px;
     cursor: pointer;
 }
 
-#left-sidebar .filter-icon i {
-    padding-right: 3px;
-
-    &.zulip-icon-lock {
-        position: relative;
-        top: 2px;
-    }
+#stream_filters .zulip-icon-lock {
+    position: relative;
+    top: 2px;
 }
 
 #global_filters .filter-icon i {
+    padding-right: 3px;
     color: var(--color-global-filter-icon);
 }
 
@@ -147,33 +144,16 @@ li.show-more-topics {
         }
     }
 
-    .subscription_block {
-        margin-right: 25px;
-        margin-left: $far_left_gutter_size;
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-
-        & .unread_count {
-            margin-right: 15px;
-        }
-
-        & .masked_unread_count {
-            /* TODO: In theory this should be 19, to make it center aligned with
-               unread_count span which has a padding of 4px
-               horizontally in addition to 15px margin. But 18px looks
-               better centered. */
-            margin-right: 18px;
-        }
-
-        &.stream-with-count {
-            margin-right: 15px;
-        }
-    }
-
     .stream-with-count.hide_unread_counts {
         .masked_unread_count {
-            display: inline;
+            display: block;
+            /* Shift masked dot to align with
+               the least-significant digit on
+               unreads in other rows.
+               We have to do this with margin,
+               because width or padding will
+               distort the CSS-created dot. */
+            margin-right: 3px;
         }
 
         .unread_count {
@@ -600,9 +580,8 @@ li.top_left_scheduled_messages {
 }
 
 /* New .topic-box grid definitions here. */
+.subscription_block,
 .topic-box {
-    /* Padding from original .topic-box definition. */
-    padding-top: 1px;
     display: grid;
     align-items: center;
     /* This general pattern of elements applies to every single row in the left
@@ -618,6 +597,26 @@ li.top_left_scheduled_messages {
        (which alters the box size) or `margin` (which notoriously bleeds outside
        of the element it's defined on). */
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+}
+
+.subscription_block {
+    grid-template-columns:
+        7px 22px minmax(0, 1fr) minmax(0, max-content)
+        30px 0;
+    white-space: nowrap;
+
+    .stream-privacy {
+        grid-area: starting-anchor-element;
+    }
+
+    .stream-name {
+        grid-area: row-content;
+    }
+}
+
+.topic-box {
+    /* Padding from original .topic-box definition. */
+    padding-top: 1px;
     grid-template-columns:
         25px $topic_resolve_width minmax(0, 1fr) minmax(0, max-content)
         30px 0;
@@ -655,6 +654,7 @@ li.top_left_scheduled_messages {
     text-overflow: ellipsis;
 }
 
+.stream-markers-and-controls,
 .topic-markers-and-controls {
     grid-area: markers-and-controls;
     display: flex;
@@ -675,6 +675,7 @@ li.top_left_scheduled_messages {
     }
 }
 
+.bottom_left_row .subscription_block .sidebar-menu-icon,
 .bottom_left_row .topic-box .sidebar-menu-icon {
     position: static;
     grid-area: ending-anchor-element;
