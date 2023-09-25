@@ -53,7 +53,7 @@ from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_N
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.user_topics import build_topic_mute_checker, topic_has_visibility_policy
+from zerver.lib.user_topics import build_get_topic_visibility_policy, topic_has_visibility_policy
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -1111,13 +1111,14 @@ def extract_unread_data_from_um_rows(
     muted_stream_ids = get_muted_stream_ids(user_profile)
     raw_unread_messages["muted_stream_ids"] = muted_stream_ids
 
-    topic_mute_checker = build_topic_mute_checker(user_profile)
+    get_topic_visibility_policy = build_get_topic_visibility_policy(user_profile)
 
     def is_row_muted(stream_id: int, recipient_id: int, topic: str) -> bool:
         if stream_id in muted_stream_ids:
             return True
 
-        if topic_mute_checker(recipient_id, topic):
+        visibility_policy = get_topic_visibility_policy(recipient_id, topic)
+        if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
             return True
 
         # Messages sent by muted users are never unread, so we don't
