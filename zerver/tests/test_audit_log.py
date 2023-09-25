@@ -421,7 +421,7 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_realm_activation(self) -> None:
         realm = get_realm("zulip")
         user = self.example_user("desdemona")
-        do_deactivate_realm(realm, acting_user=user)
+        do_deactivate_realm(realm, acting_user=user, email_owners=False)
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
         )

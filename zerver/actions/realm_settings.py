@@ -14,7 +14,7 @@ from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.retention import move_messages_to_archive
-from zerver.lib.send_email import FromAddress, send_email_to_admins
+from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
@@ -295,7 +295,9 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+def do_deactivate_realm(
+    realm: Realm, *, acting_user: Optional[UserProfile], email_owners: bool
+) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -337,6 +339,12 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     # active longpoll connections for the realm.
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
     send_event(realm, event, active_user_ids(realm.id))
+
+    # Flag to send deactivated realm email to organization owners; is false
+    # for realm exports and realm subdomain changes so that those actions
+    # do not email active organization owners.
+    if email_owners:
+        do_send_realm_deactivation_email(realm, acting_user)
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -552,3 +560,73 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
         language=language,
         context=context,
     )
+
+
+def do_send_realm_deactivation_email(realm: Realm, acting_user: Optional[UserProfile]) -> None:
+    deactivation_date = timezone_now().date()
+    shared_context = {
+        "realm_name": realm.name,
+        "event_date": deactivation_date,
+        "corporate_enabled": settings.CORPORATE_ENABLED,
+    }
+    language = realm.default_language
+    owner_emails = set(realm.get_human_owner_users().values_list("delivery_email", flat=True))
+
+    not_deactivated_by_owner = False
+
+    # This is an optional parameter for the deactivate_realm management command;
+    # there is no deactivating user name for the email to owners.
+    if acting_user is None:
+        not_deactivated_by_owner = True
+
+    # This is realm deactivation is from the support panel;
+    # we do not share the deactivating user's name in this case.
+    if acting_user is not None and acting_user.delivery_email not in owner_emails:
+        not_deactivated_by_owner = True
+
+    if not_deactivated_by_owner:
+        not_owner_context = shared_context.copy()
+        not_owner_context["no_acting_user"] = True
+        send_email(
+            "zerver/emails/realm_deactivated",
+            to_emails=list(owner_emails),
+            from_name=FromAddress.security_email_from_name(language=language),
+            from_address=FromAddress.tokenized_no_reply_address(),
+            language=language,
+            context=not_owner_context,
+            realm=realm,
+        )
+    else:
+        assert acting_user is not None
+        owner_emails.discard(acting_user.delivery_email)
+        shared_context["no_acting_user"] = False
+
+        # We adjust the email text for the organization owner
+        # who did the realm deactivation.
+        acting_owner_context = shared_context.copy()
+        acting_owner_context["is_acting_owner"] = True
+        send_email(
+            "zerver/emails/realm_deactivated",
+            to_emails=[acting_user.delivery_email],
+            from_name=FromAddress.security_email_from_name(language=language),
+            from_address=FromAddress.tokenized_no_reply_address(),
+            language=language,
+            context=acting_owner_context,
+            realm=realm,
+        )
+
+        # If there are other active organization owners, then they
+        # receive an email that includes the deactivating owner's name.
+        other_owners_context = shared_context.copy()
+        other_owners_context["deactivating_owner"] = acting_user.full_name
+        other_owners_context["is_acting_owner"] = False
+        if owner_emails:
+            send_email(
+                "zerver/emails/realm_deactivated",
+                to_emails=list(owner_emails),
+                from_name=FromAddress.security_email_from_name(language=language),
+                from_address=FromAddress.tokenized_no_reply_address(),
+                language=language,
+                context=other_owners_context,
+                realm=realm,
+            )

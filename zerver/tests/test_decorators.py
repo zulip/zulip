@@ -577,7 +577,7 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         realm = get_realm("zulip")
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(get_realm("zulip"), acting_user=None, email_owners=False)
 
         result = self.client_post(
             "/json/messages",
@@ -644,7 +644,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         Using a webhook while in a deactivated realm fails
 
         """
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(get_realm("zulip"), acting_user=None, email_owners=False)
         user_profile = self.example_user("hamlet")
         api_key = get_api_key(user_profile)
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"

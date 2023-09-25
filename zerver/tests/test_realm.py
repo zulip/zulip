@@ -7,6 +7,7 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
+from django.core import mail
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
@@ -282,7 +283,7 @@ class RealmTest(ZulipTestCase):
         hamlet_id = self.example_user("hamlet").id
         get_user_profile_by_id(hamlet_id)
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         user = get_user_profile_by_id(hamlet_id)
         self.assertTrue(user.realm.deactivated)
 
@@ -329,7 +330,7 @@ class RealmTest(ZulipTestCase):
             delay=datetime.timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
-        do_deactivate_realm(user.realm, acting_user=None)
+        do_deactivate_realm(user.realm, acting_user=None, email_owners=False)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
     def test_do_change_realm_description_clears_cached_descriptions(self) -> None:
@@ -353,10 +354,10 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertFalse(realm.deactivated)
 
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         self.assertTrue(realm.deactivated)
 
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         self.assertTrue(realm.deactivated)
 
     def test_do_set_deactivated_redirect_on_deactivated_realm(self) -> None:
@@ -364,7 +365,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
 
         redirect_url = "new_server.zulip.com"
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         self.assertTrue(realm.deactivated)
         do_add_deactivated_redirect(realm, redirect_url)
         self.assertEqual(realm.deactivated_redirect, redirect_url)
@@ -376,7 +377,7 @@ class RealmTest(ZulipTestCase):
 
     def test_do_reactivate_realm(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         self.assertTrue(realm.deactivated)
 
         do_reactivate_realm(realm)
@@ -406,7 +407,7 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_reactivation_link(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         self.assertTrue(realm.deactivated)
 
         obj = RealmReactivationStatus.objects.create(realm=realm)
@@ -419,13 +420,13 @@ class RealmTest(ZulipTestCase):
         self.assertFalse(realm.deactivated)
 
         # Make sure the link can't be reused.
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         response = self.client_get(confirmation_url)
         self.assertEqual(response.status_code, 404)
 
     def test_realm_reactivation_confirmation_object(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         self.assertTrue(realm.deactivated)
         obj = RealmReactivationStatus.objects.create(realm=realm)
         create_confirmation_link(obj, Confirmation.REALM_REACTIVATION)
@@ -434,22 +435,66 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(confirmation.content_object, obj)
         self.assertEqual(confirmation.realm, realm)
 
+    def test_do_send_realm_deactivation_email_no_acting_user(self) -> None:
+        realm = get_realm("zulip")
+        do_deactivate_realm(realm, acting_user=None, email_owners=True)
+        self.assertEqual(realm.deactivated, True)
+        self.assert_length(mail.outbox, 1)
+        self.assertIn(
+            "Your Zulip organization Zulip Dev has been deactivated", mail.outbox[0].subject
+        )
+        self.assertIn("Your Zulip organization, Zulip Dev, was deactivated on", mail.outbox[0].body)
+
+    def test_do_send_realm_deactivation_email_by_support(self) -> None:
+        realm = get_realm("lear")
+        iago = self.example_user("iago")
+        do_deactivate_realm(realm, acting_user=iago, email_owners=True)
+        self.assertEqual(realm.deactivated, True)
+        self.assert_length(mail.outbox, 1)
+        self.assertIn(
+            "Your Zulip organization Lear & Co. has been deactivated", mail.outbox[0].subject
+        )
+        self.assertIn(
+            "Your Zulip organization, Lear & Co., was deactivated on",
+            mail.outbox[0].body,
+        )
+
+    def test_do_send_realm_deactivation_email_by_owner(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        iago.role = UserProfile.ROLE_REALM_OWNER
+        iago.save(update_fields=["role"])
+        do_deactivate_realm(realm, acting_user=iago, email_owners=True)
+        self.assertEqual(realm.deactivated, True)
+        self.assert_length(mail.outbox, 2)
+        self.assertIn(
+            "Your Zulip organization Zulip Dev has been deactivated", mail.outbox[0].subject
+        )
+        self.assertIn(
+            "You have deactivated your Zulip organization, Zulip Dev, on", mail.outbox[0].body
+        )
+        self.assertIn(
+            "Your Zulip organization Zulip Dev has been deactivated", mail.outbox[1].subject
+        )
+        self.assertIn(
+            "Your Zulip organization, Zulip Dev, was deactivated by Iago on", mail.outbox[1].body
+        )
+
     def test_do_send_realm_reactivation_email(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, email_owners=False)
         self.assertEqual(realm.deactivated, True)
         iago = self.example_user("iago")
         do_send_realm_reactivation_email(realm, acting_user=iago)
-        from django.core.mail import outbox
 
-        self.assert_length(outbox, 1)
-        self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assert_length(mail.outbox, 1)
+        self.assertEqual(self.email_envelope_from(mail.outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
-            self.email_display_from(outbox[0]),
+            self.email_display_from(mail.outbox[0]),
             rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
-        self.assertIn("Reactivate your Zulip organization", outbox[0].subject)
-        self.assertIn("Dear former administrators", outbox[0].body)
+        self.assertIn("Reactivate your Zulip organization", mail.outbox[0].subject)
+        self.assertIn("Dear former administrators", mail.outbox[0].body)
         admins = realm.get_human_admin_users()
         confirmation_url = self.get_confirmation_url_from_outbox(admins[0].delivery_email)
         response = self.client_get(confirmation_url)
