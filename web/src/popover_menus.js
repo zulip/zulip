@@ -72,9 +72,52 @@ const popover_instances = {
     change_visibility_policy: null,
 };
 
+/* Keyboard UI functions */
+export function popover_items_handle_keyboard(key, $items) {
+    if (!$items) {
+        return;
+    }
+
+    let index = $items.index($items.filter(":focus"));
+
+    if (index === -1) {
+        index = 0;
+    } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
+        index += 1;
+    } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
+        index -= 1;
+    }
+    $items.eq(index).trigger("focus");
+}
+
+export function focus_first_popover_item($items, index = 0) {
+    if (!$items) {
+        return;
+    }
+
+    $items.eq(index).expectOne().trigger("focus");
+}
+
+function get_action_menu_menu_items() {
+    const $current_actions_popover_elem = $("[data-tippy-root] .actions_popover");
+    if (!$current_actions_popover_elem) {
+        blueslip.error("Trying to get menu items when action popover is closed.");
+        return undefined;
+    }
+
+    return $current_actions_popover_elem.find("li:not(.divider):visible a");
+}
+
+function focus_first_action_popover_item() {
+    // For now I recommend only calling this when the user opens the menu with a hotkey.
+    // Our popup menus act kind of funny when you mix keyboard and mouse.
+    const $items = get_action_menu_menu_items();
+    focus_first_popover_item($items);
+}
+
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
     const items = get_popover_items_for_instance(instance);
-    popovers.popover_items_handle_keyboard(key, items);
+    popover_items_handle_keyboard(key, items);
 }
 
 export function get_visible_instance() {
@@ -818,7 +861,7 @@ export function initialize() {
         },
         onMount(instance) {
             if (message_actions_popover_keyboard_toggle) {
-                popovers.focus_first_action_popover_item();
+                focus_first_action_popover_item();
                 message_actions_popover_keyboard_toggle = false;
             }
             popover_instances.message_actions = instance;

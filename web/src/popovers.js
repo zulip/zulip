@@ -1,7 +1,6 @@
 import $ from "jquery";
 import {hideAll} from "tippy.js";
 
-import * as blueslip from "./blueslip";
 import * as emoji_picker from "./emoji_picker";
 import * as overlays from "./overlays";
 import * as playground_links_popover from "./playground_links_popover";
@@ -28,48 +27,6 @@ $.fn.popover = Object.assign(function (...args) {
         list_of_popovers.push(this.data("popover"));
     }
 }, old_popover);
-
-function get_action_menu_menu_items() {
-    const $current_actions_popover_elem = $("[data-tippy-root] .actions_popover");
-    if (!$current_actions_popover_elem) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
-        return undefined;
-    }
-
-    return $current_actions_popover_elem.find("li:not(.divider):visible a");
-}
-
-export function focus_first_popover_item($items, index = 0) {
-    if (!$items) {
-        return;
-    }
-
-    $items.eq(index).expectOne().trigger("focus");
-}
-
-export function popover_items_handle_keyboard(key, $items) {
-    if (!$items) {
-        return;
-    }
-
-    let index = $items.index($items.filter(":focus"));
-
-    if (index === -1) {
-        index = 0;
-    } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
-        index += 1;
-    } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
-        index -= 1;
-    }
-    $items.eq(index).trigger("focus");
-}
-
-export function focus_first_action_popover_item() {
-    // For now I recommend only calling this when the user opens the menu with a hotkey.
-    // Our popup menus act kind of funny when you mix keyboard and mouse.
-    const $items = get_action_menu_menu_items();
-    focus_first_popover_item($items);
-}
 
 // On mobile web, opening the keyboard can trigger a resize event
 // (which in turn can trigger a scroll event).  This will have the
