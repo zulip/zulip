@@ -24,13 +24,13 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
 import {
     focus_first_popover_item,
     hide_all,
     hide_all_except_sidebars,
     popover_items_handle_keyboard,
 } from "./popovers";
+import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
@@ -659,7 +659,7 @@ function register_click_handlers() {
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
         user_sidebar.hide();
-        popovers.hide_userlist_sidebar();
+        right_sidebar_ui.hide_userlist_sidebar();
         e.stopPropagation();
         e.preventDefault();
     });

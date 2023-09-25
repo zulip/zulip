@@ -29,6 +29,7 @@ const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
 const stream_popover = mock_esm("../src/stream_popover");
 const resize = mock_esm("../src/resize");
+const right_sidebar_ui = mock_esm("../src/right_sidebar_ui");
 
 set_global("document", _document);
 
@@ -106,7 +107,7 @@ test("escape_search", ({override}) => {
 });
 
 test("blur search right", ({override}) => {
-    override(popovers, "show_userlist_sidebar", () => {});
+    override(right_sidebar_ui, "show_userlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
     override(resize, "resize_sidebars", () => {});
@@ -198,7 +199,7 @@ test("click on user header to toggle display", ({override}) => {
 
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
-    override(popovers, "show_userlist_sidebar", () => {});
+    override(right_sidebar_ui, "show_userlist_sidebar", () => {});
     override(resize, "resize_sidebars", () => {});
 
     page_params.realm_presence_disabled = true;
