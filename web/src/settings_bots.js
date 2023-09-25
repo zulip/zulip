@@ -1,7 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
-import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
 import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
@@ -21,6 +20,7 @@ import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
+import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
@@ -320,20 +320,6 @@ export function add_a_new_bot() {
     });
 }
 
-export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner) {
-    const bot = people.get_by_user_id(bot_id);
-    const html_body = render_settings_deactivation_bot_modal();
-
-    dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
-        help_link: "/help/deactivate-or-reactivate-a-bot",
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Deactivate"}),
-        on_click: handle_confirm,
-        loading_spinner,
-    });
-}
-
 export function show_generate_integration_url_modal(api_key) {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
@@ -514,7 +500,7 @@ export function set_up() {
             };
             dialog_widget.submit_api_request(channel.del, url, {}, opts);
         }
-        confirm_bot_deactivation(bot_id, handle_confirm, true);
+        user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
     });
 
     $("#inactive_bots_list").on("click", "button.reactivate_bot", (e) => {
