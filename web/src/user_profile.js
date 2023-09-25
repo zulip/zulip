@@ -19,6 +19,7 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
+import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
@@ -335,7 +336,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
             const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;
         }
-        args.bot_type = settings_bots.type_id_to_string(user.bot_type);
+        args.bot_type = settings_data.type_id_to_string(user.bot_type);
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));

@@ -253,3 +253,13 @@ export function user_email_not_configured(): boolean {
     // page_params.demo_organization_scheduled_deletion_date
     return page_params.is_owner && page_params.delivery_email === "";
 }
+
+export function type_id_to_string(type_id: number): string | undefined {
+    const bot_type = page_params.bot_types.find((bot_type) => bot_type.type_id === type_id);
+
+    if (bot_type === undefined) {
+        return undefined;
+    }
+
+    return bot_type.name;
+}

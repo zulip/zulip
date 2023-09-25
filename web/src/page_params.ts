@@ -4,6 +4,11 @@ const t1 = performance.now();
 export const page_params: {
     apps_page_url: string;
     avatar_source: string;
+    bot_types: {
+        type_id: number;
+        name: string;
+        allowed: boolean;
+    }[];
     corporate_enabled: boolean;
     development_environment: boolean;
     language_list: {

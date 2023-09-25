@@ -23,6 +23,7 @@ import * as scroll_util from "./scroll_util";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -241,7 +242,7 @@ function bot_info(bot_user_id) {
     info.user_role_text = people.get_user_type(bot_user_id);
 
     // Convert bot type id to string for viewing to the users.
-    info.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
+    info.bot_type = settings_data.type_id_to_string(bot_user.bot_type);
 
     info.bot_owner_full_name = bot_owner_full_name(owner_id);
 
