@@ -164,10 +164,7 @@ class RegistrationForm(RealmDetailsForm):
         required=False,
         coerce=int,
         empty_value=None,
-        choices=[
-            (value, name)
-            for value, name in UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()
-        ],
+        choices=list(UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()),
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -209,10 +206,7 @@ class ToSForm(forms.Form):
         required=False,
         coerce=int,
         empty_value=None,
-        choices=[
-            (value, name)
-            for value, name in UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()
-        ],
+        choices=list(UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()),
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
