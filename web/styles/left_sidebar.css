@@ -27,25 +27,24 @@ $before_unread_count_padding: 3px;
 }
 
 .stream-privacy {
-    font-size: 15px;
+    height: 16px;
     font-weight: 700;
-    min-width: $left_col_size;
     text-align: center;
 
     .zulip-icon.zulip-icon-globe {
         font-size: 12px;
-        position: relative;
-        top: 1px;
     }
 
     .zulip-icon.zulip-icon-hashtag {
         font-size: 13px;
-        position: relative;
-        top: 1.5px;
     }
 
     .zulip-icon.zulip-icon-lock {
         font-size: 13px;
+        /* Slight vertical adjustment so the lock
+           doesn't sit too high, relative to the
+           other stream icons. */
+        padding-top: 2px;
     }
 }
 
@@ -53,11 +52,6 @@ $before_unread_count_padding: 3px;
 .topic-name,
 .topic-markers-and-controls {
     cursor: pointer;
-}
-
-#stream_filters .zulip-icon-lock {
-    position: relative;
-    top: 2px;
 }
 
 #global_filters .filter-icon i {
