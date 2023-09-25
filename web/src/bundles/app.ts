@@ -2,7 +2,6 @@ import "./common";
 
 // Import third party jQuery plugins
 import "../../third/bootstrap-typeahead/typeahead";
-import "../../third/bootstrap-tooltip/tooltip";
 import "jquery-caret-plugin/dist/jquery.caret";
 import "../../third/jquery-idle/jquery.idle";
 import "spectrum-colorpicker";
