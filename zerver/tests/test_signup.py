@@ -1834,11 +1834,11 @@ class RealmCreationTest(ZulipTestCase):
             "-id": "cannot start or end with a",
             "string-ID": "lowercase letters",
             "string_id": "lowercase letters",
-            "stream": "unavailable",
-            "streams": "unavailable",
-            "about": "unavailable",
-            "abouts": "unavailable",
-            "zephyr": "unavailable",
+            "stream": "reserved",
+            "streams": "reserved",
+            "about": "reserved",
+            "abouts": "reserved",
+            "zephyr": "already in use",
         }
         for string_id, error_msg in errors.items():
             result = self.submit_realm_creation_form(
@@ -1870,7 +1870,7 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
 
         result = self.submit_realm_creation_form(email, realm_subdomain="test", realm_name="Test")
-        self.assert_in_response("Subdomain unavailable. Please choose a different one.", result)
+        self.assert_in_response("Subdomain reserved. Please choose a different one.", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions_root_domain(self) -> None:
@@ -1883,7 +1883,7 @@ class RealmCreationTest(ZulipTestCase):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="", realm_name=realm_name
             )
-            self.assert_in_response("unavailable", result)
+            self.assert_in_response("already in use", result)
 
         # test valid use of root domain
         result = self.submit_realm_creation_form(email, realm_subdomain="", realm_name=realm_name)
@@ -1910,7 +1910,7 @@ class RealmCreationTest(ZulipTestCase):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="abcdef", realm_name=realm_name, realm_in_root_domain="true"
             )
-            self.assert_in_response("unavailable", result)
+            self.assert_in_response("already in use", result)
 
         # test valid use of root domain
         result = self.submit_realm_creation_form(
@@ -1945,7 +1945,7 @@ class RealmCreationTest(ZulipTestCase):
     def test_subdomain_check_api(self) -> None:
         result = self.client_get("/json/realm/subdomain/zulip")
         self.assert_in_success_response(
-            ["Subdomain unavailable. Please choose a different one."], result
+            ["Subdomain already in use. Please choose a different one."], result
         )
 
         result = self.client_get("/json/realm/subdomain/zu_lip")
@@ -1956,12 +1956,13 @@ class RealmCreationTest(ZulipTestCase):
         with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"):
             result = self.client_get("/json/realm/subdomain/zulipauth")
             self.assert_in_success_response(
-                ["Subdomain unavailable. Please choose a different one."], result
+                ["Subdomain reserved. Please choose a different one."], result
             )
 
         result = self.client_get("/json/realm/subdomain/hufflepuff")
         self.assert_in_success_response(["available"], result)
-        self.assert_not_in_success_response(["unavailable"], result)
+        self.assert_not_in_success_response(["already in use"], result)
+        self.assert_not_in_success_response(["reserved"], result)
 
     def test_subdomain_check_management_command(self) -> None:
         # Short names should not work, even with the flag
@@ -2700,7 +2701,7 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assert_in_success_response(
             [
-                "Subdomain unavailable. Please choose a different one.",
+                "Subdomain already in use. Please choose a different one.",
                 'value="Test"',
                 'name="realm_name"',
             ],
