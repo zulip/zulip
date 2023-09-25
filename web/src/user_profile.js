@@ -1,6 +1,7 @@
 import {parseISO} from "date-fns";
 import $ from "jquery";
 
+import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
@@ -216,7 +217,7 @@ function render_manage_profile_content(user) {
     if (user.is_bot) {
         show_edit_bot_info_modal(user.user_id, $container);
     } else {
-        settings_users.show_edit_user_info_modal(user.user_id, $container);
+        show_edit_user_info_modal(user.user_id, $container);
     }
 }
 
@@ -610,6 +611,131 @@ export function show_edit_bot_info_modal(user_id, $container) {
             settings_bots.show_generate_integration_url_modal(current_bot_data.api_key);
         });
     }
+}
+
+function get_human_profile_data(fields_user_pills) {
+    /*
+        This formats custom profile field data to send to the server.
+        See render_admin_human_form and open_human_form
+        to see how the form is built.
+
+        TODO: Ideally, this logic would be cleaned up or deduplicated with
+        the settings_account.js logic.
+    */
+    const new_profile_data = [];
+    $("#edit-user-form .custom_user_field_value").each(function () {
+        // Remove duplicate datepicker input element generated flatpickr library
+        if (!$(this).hasClass("form-control")) {
+            new_profile_data.push({
+                id: Number.parseInt(
+                    $(this).closest(".custom_user_field").attr("data-field-id"),
+                    10,
+                ),
+                value: $(this).val(),
+            });
+        }
+    });
+    // Append user type field values also
+    for (const [field_id, field_pills] of fields_user_pills) {
+        if (field_pills) {
+            const user_ids = user_pill.get_user_ids(field_pills);
+            new_profile_data.push({
+                id: field_id,
+                value: user_ids,
+            });
+        }
+    }
+
+    return new_profile_data;
+}
+
+export function show_edit_user_info_modal(user_id, $container) {
+    const person = people.maybe_get_user_by_id(user_id);
+
+    if (!person) {
+        return;
+    }
+
+    const html_body = render_admin_human_form({
+        user_id,
+        email: person.delivery_email,
+        full_name: person.full_name,
+        user_role_values: settings_config.user_role_values,
+        disable_role_dropdown: person.is_owner && !page_params.is_owner,
+        owner_is_only_user_in_organization: people.get_active_human_count() === 1,
+    });
+
+    $container.append(html_body);
+    // Set role dropdown and fields user pills
+    $("#user-role-select").val(person.role);
+    if (!page_params.is_owner) {
+        $("#user-role-select")
+            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
+            .hide();
+    }
+
+    const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
+    $(custom_profile_field_form_selector).empty();
+    settings_account.append_custom_profile_fields(custom_profile_field_form_selector, user_id);
+    settings_account.initialize_custom_date_type_fields(custom_profile_field_form_selector);
+    settings_account.initialize_custom_pronouns_type_fields(custom_profile_field_form_selector);
+    const fields_user_pills = settings_account.initialize_custom_user_type_fields(
+        custom_profile_field_form_selector,
+        user_id,
+        true,
+        false,
+    );
+
+    // Handle deactivation
+    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const user_id = $("#edit-user-form").data("user-id");
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            dialog_widget.submit_api_request(channel.del, url);
+        }
+        settings_users.confirm_deactivation(user_id, handle_confirm, true);
+    });
+
+    $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
+        const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+        const $full_name = $("#edit-user-form").find("input[name='full_name']");
+        const profile_data = get_human_profile_data(fields_user_pills);
+
+        const url = "/json/users/" + encodeURIComponent(user_id);
+        const data = {
+            full_name: $full_name.val(),
+            role: JSON.stringify(role),
+            profile_data: JSON.stringify(profile_data),
+        };
+
+        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
+        settings_users.show_button_spinner($submit_btn);
+        $cancel_btn.prop("disabled", true);
+
+        channel.patch({
+            url,
+            data,
+            success() {
+                hide_user_profile();
+            },
+            error(xhr) {
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed"}),
+                    xhr,
+                    $("#edit-user-form-error"),
+                );
+                // Scrolling modal to top, to make error visible to user.
+                $("#edit-user-form")
+                    .closest(".simplebar-content-wrapper")
+                    .animate({scrollTop: 0}, "fast");
+                settings_users.hide_button_spinner($submit_btn);
+                $cancel_btn.prop("disabled", false);
+            },
+        });
+    });
 }
 
 export function register_click_handlers() {
