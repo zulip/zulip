@@ -2,7 +2,6 @@ import $ from "jquery";
 import {hideAll} from "tippy.js";
 
 import * as emoji_picker from "./emoji_picker";
-import * as overlays from "./overlays";
 import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
 import * as right_sidebar_ui from "./right_sidebar_ui";
@@ -76,9 +75,4 @@ export function hide_all(not_hide_tippy_instances) {
     hide_all_except_sidebars({
         not_hide_tippy_instances,
     });
-}
-
-export function initialize() {
-    overlays.register_pre_open_hook(hide_all);
-    overlays.register_pre_close_hook(hide_all);
 }
