@@ -118,6 +118,8 @@ export function get_posting_policy_error_message() {
             });
         }
         return "";
+    } else if (selected_recipient_id === "") {
+        return "";
     }
 
     const stream = sub_store.get(selected_recipient_id);
