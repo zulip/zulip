@@ -28,42 +28,6 @@ $.fn.popover = Object.assign(function (...args) {
     }
 }, old_popover);
 
-// On mobile web, opening the keyboard can trigger a resize event
-// (which in turn can trigger a scroll event).  This will have the
-// side effect of closing popovers, which we don't want.  So we
-// suppress the first hide from scrolling after a resize using this
-// variable.
-let suppress_scroll_hide = false;
-
-export function set_suppress_scroll_hide() {
-    suppress_scroll_hide = true;
-}
-
-export function register_click_handlers() {
-    {
-        let last_scroll = 0;
-
-        $(document).on("scroll", () => {
-            if (suppress_scroll_hide) {
-                suppress_scroll_hide = false;
-                return;
-            }
-
-            const date = Date.now();
-
-            // only run `popovers.hide_all()` if the last scroll was more
-            // than 250ms ago.
-            if (date - last_scroll > 250) {
-                hide_all();
-            }
-
-            // update the scroll time on every event to make sure it doesn't
-            // retrigger `hide_all` while still scrolling.
-            last_scroll = date;
-        });
-    }
-}
-
 export function any_active() {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.

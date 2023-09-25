@@ -9,6 +9,7 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as util from "./util";
 
@@ -184,7 +185,7 @@ export function handler() {
     // try to scroll to one.
     if (message_lists.current.selected_id() !== -1) {
         if (mobile) {
-            popovers.set_suppress_scroll_hide();
+            popover_menus.set_suppress_scroll_hide();
         }
 
         navigate.scroll_to_selected();
