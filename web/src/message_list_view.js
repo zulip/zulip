@@ -209,6 +209,7 @@ function populate_group_from_message_container(group, message_container) {
             group.stream_id = sub.stream_id;
             group.stream_muted = sub.is_muted;
         }
+        group.is_subscribed = stream_data.is_subscribed(group.stream_id);
         group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
         group.topic_muted = user_topics.is_topic_muted(group.stream_id, group.topic);
         group.topic_unmuted = user_topics.is_topic_unmuted(group.stream_id, group.topic);
