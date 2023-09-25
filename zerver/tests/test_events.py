@@ -529,8 +529,9 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_stream_send_message_events(self) -> None:
+        user_profile = self.example_user("hamlet")
         events = self.verify_action(
-            lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
+            lambda: self.send_stream_message(user_profile, "Verona", "hello"),
             client_gravatar=False,
         )
         check_message("events[0]", events[0])
@@ -544,11 +545,30 @@ class NormalActionsTest(BaseAction):
         )
 
         events = self.verify_action(
-            lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
+            lambda: self.send_stream_message(user_profile, "Verona", "hello"),
             client_gravatar=True,
         )
         check_message("events[0]", events[0])
         assert events[0]["message"]["avatar_url"] is None
+
+        # Here we add coverage for the case where 'apply_unread_message_event'
+        # should be called and unread messages in unmuted or followed topic in
+        # muted stream is treated as unmuted stream message, thus added to 'unmuted_stream_msgs'.
+        stream = get_stream("Verona", user_profile.realm)
+        sub = get_subscription(stream.name, user_profile)
+        do_change_subscription_property(
+            user_profile, sub, stream, "is_muted", True, acting_user=None
+        )
+        do_set_user_topic_visibility_policy(
+            user_profile,
+            stream,
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+        )
+        self.verify_action(
+            lambda: self.send_stream_message(self.example_user("aaron"), "Verona", "hello"),
+            state_change_expected=True,
+        )
 
     def test_stream_update_message_events(self) -> None:
         self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
