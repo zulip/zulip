@@ -1399,7 +1399,7 @@ export function report_late_add(user_id: number, email: string): void {
     }
 }
 
-function make_user(user_id: number, email: string, full_name: string): User {
+export function make_user(user_id: number, email: string, full_name: string): User {
     // Used to create fake user objects for users who we see via some
     // API call, such as fetching a message sent by the user, before
     // we receive a full user object for the user via the events

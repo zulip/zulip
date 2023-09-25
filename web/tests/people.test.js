@@ -45,11 +45,15 @@ const isaac = {
     full_name: "Isaac Newton",
 };
 
+const unknown_user = people.make_user(1500, "unknown@example.com", "Unknown user");
+
 function initialize() {
     people.init();
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
     muted_users.set_muted_users([]);
+
+    people._add_user(unknown_user);
 }
 
 function test_people(label, f) {
@@ -254,7 +258,7 @@ test_people("basics", () => {
 
     assert.deepEqual(people.get_realm_users(), [me]);
 
-    assert.equal(persons.length, 1);
+    assert.equal(persons.length, 2);
     assert.equal(persons[0].full_name, "Me Myself");
 
     let realm_persons = people.get_realm_users();
@@ -513,12 +517,15 @@ test_people("user_timezone", () => {
 
     user_settings.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
+
+    assert.deepEqual(people.get_user_time_preferences(unknown_user.user_id), undefined);
 });
 
 test_people("utcToZonedTime", ({override}) => {
     MockDate.set(parseISO("20130208T080910").getTime());
     user_settings.twenty_four_hour_time = true;
 
+    assert.deepEqual(people.get_user_time(unknown_user.user_id), undefined);
     assert.equal(people.get_user_time(me.user_id), "0:09");
 
     override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
@@ -994,7 +1001,7 @@ test_people("updates", () => {
     assert.ok(!people.is_cross_realm_email(new_email));
 
     const all_people = get_all_persons();
-    assert.equal(all_people.length, 2);
+    assert.equal(all_people.length, 3);
 
     person = all_people.find((p) => p.email === new_email);
     assert.equal(person.full_name, "Foo Barson");
