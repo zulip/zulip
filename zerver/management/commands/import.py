@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
-from zerver.forms import check_subdomain_available
+from zerver.forms import OverridableValidationError, check_subdomain_available
 from zerver.lib.import_realm import do_import_realm
 
 
@@ -79,11 +79,13 @@ import a database dump from one or more JSON files."""
 
         try:
             check_subdomain_available(subdomain, allow_reserved_subdomain)
-        except ValidationError as e:
+        except OverridableValidationError as e:
             raise CommandError(
                 e.messages[0]
                 + "\nPass --allow-reserved-subdomain to override subdomain restrictions."
             )
+        except ValidationError as e:
+            raise CommandError(e.messages[0])
 
         paths = []
         for path in options["export_paths"]:
