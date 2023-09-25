@@ -103,6 +103,7 @@ EXEMPT_FILES = make_set(
         "web/src/inbox_ui.js",
         "web/src/inbox_util.js",
         "web/src/info_overlay.js",
+        "web/src/integration_url_modal.js",
         "web/src/invite.ts",
         "web/src/lightbox.js",
         "web/src/list_util.ts",
