@@ -24,11 +24,11 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
+import * as popovers from "./popovers";
 import {
     focus_first_popover_item,
     hide_all,
     hide_all_except_sidebars,
-    popover_items_handle_keyboard,
 } from "./popovers";
 import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
@@ -73,7 +73,8 @@ class PopoverMenu {
         }
 
         const $items = $("li:not(.divider):visible a", $popover);
-        popover_items_handle_keyboard(key, $items);
+
+        popover_items_handle_keyboard_with_overrides(key, $items);
     }
 }
 
@@ -81,6 +82,61 @@ export const manage_menu = new PopoverMenu();
 export const user_sidebar = new PopoverMenu();
 export const message_user_card = new PopoverMenu();
 export const user_card = new PopoverMenu();
+
+function popover_items_handle_keyboard_with_overrides(key, $items) {
+    /* Variant of popover_items_handle_keyboard with somewhat hacky
+     * logic for for opening the manage menu. */
+    if (!$items) {
+        return;
+    }
+
+    const index = $items.index($items.filter(":focus"));
+
+    if (key === "enter" && index >= 0 && index < $items.length) {
+        $items[index].click();
+        if (manage_menu.is_open()) {
+            // If we just opened the little manage menu via the
+            // keyboard, we need to focus the first item for a
+            // continuation of the keyboard experience.
+
+            // TODO: This might be cleaner to just call
+            // toggle_user_card_popover_manage_menu rather than
+            // triggering a click.
+
+            const previously_defined_on_mount = manage_menu.instance.props.onMount;
+            manage_menu.instance.setProps({
+                onMount() {
+                    // We're monkey patching the onMount method here to ensure we start
+                    // focusing on the item after the popover is mounted to the DOM;
+                    // otherwise, it won't work correctly.
+                    if (previously_defined_on_mount) {
+                        previously_defined_on_mount();
+                    }
+                    const $items = get_user_card_popover_manage_menu_items();
+                    popovers.focus_first_popover_item($items);
+                },
+            });
+        }
+        return;
+    }
+
+    if (
+        index === -1 &&
+        $(".user-card-popover-manage-menu-btn").is(":visible") &&
+        !manage_menu.is_open()
+    ) {
+        // If we have a "Manage Menu" button in the user card popover,
+        // the first item to receive focus shouldn't be that button.
+        // However, if the Manage Menu is open, focus should shift to
+        // the first item in that popover.
+        const adjusted_index = 1;
+        $items.eq(adjusted_index).trigger("focus");
+        return;
+    }
+
+    /* Otherwise, use the base implementation */
+    popovers.popover_items_handle_keyboard(key, $items);
+}
 
 function get_popover_classname(popover) {
     const popovers = {
