@@ -599,21 +599,29 @@ class TestSupportEndpoint(ZulipTestCase):
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-name"}
         )
         self.assert_in_success_response(
-            ["Subdomain unavailable. Please choose a different one."], result
+            ["Subdomain already in use. Please choose a different one."], result
         )
 
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "zulip"}
         )
         self.assert_in_success_response(
-            ["Subdomain unavailable. Please choose a different one."], result
+            ["Subdomain already in use. Please choose a different one."], result
         )
 
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "lear"}
         )
         self.assert_in_success_response(
-            ["Subdomain unavailable. Please choose a different one."], result
+            ["Subdomain already in use. Please choose a different one."], result
+        )
+
+        # Test renaming to a "reserved" subdomain
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "your-org"}
+        )
+        self.assert_in_success_response(
+            ["Subdomain reserved. Please choose a different one."], result
         )
 
     def test_downgrade_realm(self) -> None:

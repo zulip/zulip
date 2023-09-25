@@ -223,7 +223,7 @@ class RealmTest(ZulipTestCase):
         )
         realm.save()
         result = self.client_patch("/json/realm", data)
-        self.assert_json_error(result, "Subdomain unavailable. Please choose a different one.")
+        self.assert_json_error(result, "Subdomain already in use. Please choose a different one.")
 
         # Now try to change the string_id to something available.
         data = dict(string_id="coolrealm")
