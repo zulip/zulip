@@ -81,12 +81,17 @@ def email_is_not_mit_mailing_list(email: str) -> None:
                 raise AssertionError("Unexpected DNS error")
 
 
+class OverridableValidationError(ValidationError):
+    pass
+
+
 def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = False) -> None:
     error_strings = {
         "too short": _("Subdomain needs to have length 3 or greater."),
         "extremal dash": _("Subdomain cannot start or end with a '-'."),
         "bad character": _("Subdomain can only have lowercase letters, numbers, and '-'s."),
-        "unavailable": _("Subdomain unavailable. Please choose a different one."),
+        "unavailable": _("Subdomain already in use. Please choose a different one."),
+        "reserved": _("Subdomain reserved. Please choose a different one."),
     }
 
     if subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
@@ -102,7 +107,10 @@ def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = F
     if Realm.objects.filter(string_id=subdomain).exists():
         raise ValidationError(error_strings["unavailable"])
     if is_reserved_subdomain(subdomain) and not allow_reserved_subdomain:
-        raise ValidationError(error_strings["unavailable"])
+        raise OverridableValidationError(
+            error_strings["reserved"],
+            "Pass --allow-reserved-subdomain to override",
+        )
 
 
 def email_not_system_bot(email: str) -> None:
