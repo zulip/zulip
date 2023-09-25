@@ -24,12 +24,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
-import {
-    focus_first_popover_item,
-    hide_all,
-    hide_all_except_sidebars,
-} from "./popovers";
+import {hide_all, hide_all_except_sidebars} from "./popovers";
 import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
@@ -113,7 +108,7 @@ function popover_items_handle_keyboard_with_overrides(key, $items) {
                         previously_defined_on_mount();
                     }
                     const $items = get_user_card_popover_manage_menu_items();
-                    popovers.focus_first_popover_item($items);
+                    popover_menus.focus_first_popover_item($items);
                 },
             });
         }
@@ -135,7 +130,7 @@ function popover_items_handle_keyboard_with_overrides(key, $items) {
     }
 
     /* Otherwise, use the base implementation */
-    popovers.popover_items_handle_keyboard(key, $items);
+    popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
 function get_popover_classname(popover) {
@@ -553,9 +548,9 @@ function focus_user_card_popover_item() {
     const $items = get_user_card_popover_for_message_items();
 
     if ($(".user-card-popover-manage-menu-btn").is(":visible")) {
-        focus_first_popover_item($items, 1);
+        popover_menus.focus_first_popover_item($items, 1);
     } else {
-        focus_first_popover_item($items);
+        popover_menus.focus_first_popover_item($items);
     }
 }
 

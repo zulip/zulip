@@ -9,7 +9,6 @@ import * as message_lists from "./message_lists";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
-import {popover_items_handle_keyboard} from "./popovers";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 import * as user_groups from "./user_groups";
@@ -45,7 +44,7 @@ function get_user_group_popover_items() {
 
 export function handle_keyboard(key) {
     const $items = get_user_group_popover_items();
-    popover_items_handle_keyboard(key, $items);
+    popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
 // element is the target element to pop off of;

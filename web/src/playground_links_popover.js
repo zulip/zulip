@@ -5,7 +5,6 @@ import render_playground_links_popover_content from "../templates/playground_lin
 
 import * as blueslip from "./blueslip";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
 import * as realm_playground from "./realm_playground";
 import * as ui_util from "./ui_util";
 
@@ -78,7 +77,7 @@ function get_playground_links_popover_items() {
 
 export function handle_keyboard(key) {
     const $items = get_playground_links_popover_items();
-    popovers.popover_items_handle_keyboard(key, $items);
+    popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
 function register_click_handlers() {
