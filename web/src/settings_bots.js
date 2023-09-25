@@ -21,6 +21,7 @@ import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
@@ -60,10 +61,6 @@ function is_local_part(value) {
     return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
 }
 
-export function type_id_to_string(type_id) {
-    return page_params.bot_types.find((bot_type) => bot_type.type_id === type_id).name;
-}
-
 export function render_bots() {
     $("#active_bots_list").empty();
     $("#inactive_bots_list").empty();
@@ -76,7 +73,7 @@ export function render_bots() {
             name: elem.full_name,
             email: elem.email,
             user_id: elem.user_id,
-            type: type_id_to_string(elem.bot_type),
+            type: settings_data.type_id_to_string(elem.bot_type),
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
             is_active: elem.is_active,

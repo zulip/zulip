@@ -404,3 +404,22 @@ run_test("can_edit_user_group", () => {
     page_params.realm_waiting_period_threshold = 0;
     assert.ok(settings_data.can_edit_user_group(students.id));
 });
+
+run_test("type_id_to_string", () => {
+    page_params.bot_types = [
+        {
+            type_id: 1,
+            name: "Generic bot",
+            allowed: true,
+        },
+        {
+            type_id: 2,
+            name: "Incoming webhook",
+            allowed: true,
+        },
+    ];
+
+    assert.equal(settings_data.type_id_to_string(1), "Generic bot");
+    assert.equal(settings_data.type_id_to_string(2), "Incoming webhook");
+    assert.equal(settings_data.type_id_to_string(5), undefined);
+});
