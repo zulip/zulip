@@ -557,7 +557,10 @@ class PasswordResetTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
         do_deactivate_realm(
-            user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+            user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
 
         # start the password reset process by supplying an email address
@@ -4353,7 +4356,10 @@ class TestFindMyTeam(ZulipTestCase):
 
     def test_find_team_deactivated_realm(self) -> None:
         do_deactivate_realm(
-            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+            get_realm("zulip"),
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
         )
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
