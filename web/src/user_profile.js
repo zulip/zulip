@@ -21,6 +21,7 @@ import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as integration_url_modal from "./integration_url_modal";
 import * as ListWidget from "./list_widget";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -607,7 +608,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
             e.preventDefault();
             e.stopPropagation();
             const current_bot_data = bot_data.get(bot.user_id);
-            settings_bots.show_generate_integration_url_modal(current_bot_data.api_key);
+            integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
         });
     }
 }
