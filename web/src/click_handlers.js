@@ -30,6 +30,7 @@ import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
+import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_display from "./settings_display";
@@ -495,7 +496,7 @@ export function initialize() {
         const sidebarHidden = !$(".app-main .column-right").hasClass("expanded");
         popovers.hide_all();
         if (sidebarHidden) {
-            popovers.show_userlist_sidebar();
+            right_sidebar_ui.show_userlist_sidebar();
         }
     });
 
