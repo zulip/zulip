@@ -212,9 +212,14 @@ export function warn_if_topic_resolved(topic_changed) {
 
     const stream_id = compose_state.stream_id();
     const message_content = compose_state.message_content();
-    const sub = stream_data.get_sub_by_id(stream_id);
 
-    if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
+    let sub;
+    if (
+        stream_id !== "" &&
+        (sub = stream_data.get_sub_by_id(stream_id)) &&
+        message_content !== "" &&
+        resolved_topic.is_resolved(topic_name)
+    ) {
         if (compose_state.has_recipient_viewed_topic_resolved_banner()) {
             // We display the resolved topic banner at most once per narrow.
             return;

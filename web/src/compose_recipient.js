@@ -164,8 +164,8 @@ function switch_message_type(message_type) {
 }
 
 function update_recipient_label(stream_id) {
-    const stream = stream_data.get_sub_by_id(stream_id);
-    if (stream === undefined) {
+    let stream;
+    if (stream_id === "" || (stream = stream_data.get_sub_by_id(stream_id)) === undefined) {
         $("#compose_select_recipient_widget .dropdown_widget_value").text(
             $t({defaultMessage: "Select a stream"}),
         );

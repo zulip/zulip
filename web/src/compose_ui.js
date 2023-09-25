@@ -224,7 +224,7 @@ export function compute_placeholder_text(opts) {
     // We return text with the stream and topic name unescaped,
     // because the caller is expected to insert this into the
     // placeholder field in a way that does HTML escaping.
-    if (opts.message_type === "stream") {
+    if (opts.message_type === "stream" && opts.stream_id !== "") {
         const stream = stream_data.get_sub_by_id(opts.stream_id);
         const stream_name = stream ? stream.name : "";
 

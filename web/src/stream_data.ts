@@ -515,7 +515,10 @@ export function canonicalized_name(stream_name: string): string {
     return stream_name.toString().toLowerCase();
 }
 
-export function get_color(stream_id: number): string {
+export function get_color(stream_id: number | ""): string {
+    if (stream_id === "") {
+        return DEFAULT_COLOR;
+    }
     const sub = get_sub_by_id(stream_id);
     if (sub === undefined) {
         return DEFAULT_COLOR;

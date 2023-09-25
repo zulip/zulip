@@ -61,12 +61,12 @@ function message_in_home(message) {
     // The home view contains messages not sent to muted streams, with
     // additional logic for unmuted topics, mentions, and
     // single-stream windows.
-    const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     if (
         message.type === "private" ||
         message.mentioned ||
         (page_params.narrow_stream !== undefined &&
-            stream_name.toLowerCase() === page_params.narrow_stream.toLowerCase())
+            stream_data.get_stream_name_from_id(message.stream_id).toLowerCase() ===
+                page_params.narrow_stream.toLowerCase())
     ) {
         return true;
     }

@@ -205,7 +205,8 @@ export function restore_message(draft) {
     let compose_args;
 
     if (draft.type === "stream") {
-        const stream_name = stream_data.get_stream_name_from_id(draft.stream_id);
+        const stream_name =
+            draft.stream_id === "" ? "" : stream_data.get_stream_name_from_id(draft.stream_id);
         compose_args = {
             type: "stream",
             stream_id: draft.stream_id,

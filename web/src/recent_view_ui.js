@@ -587,10 +587,12 @@ export function filters_should_hide_topic(topic_data) {
         }
     }
 
-    const search_keyword = $("#recent_view_search").val();
-    const stream_name = stream_data.get_stream_name_from_id(msg.stream_id);
-    if (!topic_in_search_results(search_keyword, stream_name, msg.topic)) {
-        return true;
+    if (topic_data.type === "stream") {
+        const search_keyword = $("#recent_view_search").val();
+        const stream_name = stream_data.get_stream_name_from_id(msg.stream_id);
+        if (!topic_in_search_results(search_keyword, stream_name, msg.topic)) {
+            return true;
+        }
     }
 
     return false;
