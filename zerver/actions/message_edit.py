@@ -996,7 +996,7 @@ def do_update_message(
     send_event(user_profile.realm, event, users_to_be_notified)
 
     resolved_topic_message_id = None
-    if topic_name is not None and content is None and len(changed_messages) > 0:
+    if topic_name is not None and content is None:
         # When stream is changed and topic is marked as resolved or unresolved
         # in the same API request, resolved or unresolved notification should
         # be sent to "new_stream".
@@ -1014,11 +1014,7 @@ def do_update_message(
             changed_messages=changed_messages,
         )
 
-    if (
-        len(changed_messages) > 0
-        and (new_stream is not None or topic_name is not None)
-        and stream_being_edited is not None
-    ):
+    if (new_stream is not None or topic_name is not None) and stream_being_edited is not None:
         # Notify users that the topic was moved.
         changed_messages_count = len(changed_messages)
 
