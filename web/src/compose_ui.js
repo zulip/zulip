@@ -377,19 +377,18 @@ export function format_text($textarea, type, inserted_content) {
     range = $textarea.range();
     const selected_text = range.text;
 
-    const is_selection_formatted = (syntax) =>
-        // First check if there are enough characters before/after selection.
-        range.start >= syntax.length &&
-        text.length - range.end >= syntax.length &&
-        // And then if the characters have syntax around them.
-        text.slice(range.start - syntax.length, range.start) === syntax &&
-        text.slice(range.end, range.end + syntax.length) === syntax;
+    // Check if the selection is already surrounded by syntax
+    const is_selection_formatted = (syntax_start, syntax_end = syntax_start) =>
+        range.start >= syntax_start.length &&
+        text.length - range.end >= syntax_end.length &&
+        text.slice(range.start - syntax_start.length, range.start) === syntax_start &&
+        text.slice(range.end, range.end + syntax_end.length) === syntax_end;
 
-    const is_inner_text_formatted = (syntax) =>
-        // Check if selected text itself has bold_syntax inside it.
-        range.length > 4 &&
-        selected_text.slice(0, syntax.length) === syntax &&
-        selected_text.slice(-syntax.length) === syntax;
+    // Check if selected text itself has syntax inside it.
+    const is_inner_text_formatted = (syntax_start, syntax_end = syntax_start) =>
+        range.length >= syntax_start.length + syntax_end.length &&
+        selected_text.slice(0, syntax_start.length) === syntax_start &&
+        selected_text.slice(-syntax_end.length) === syntax_end;
 
     const section_off_selected_lines = () => {
         // Divide all lines of text (separated by `\n`) into those entirely or
@@ -505,31 +504,46 @@ export function format_text($textarea, type, inserted_content) {
         }
     };
 
-    const format = (syntax) => {
-        // If the selection is already surrounded by syntax,
-        // remove it rather than adding another copy.
-        if (is_selection_formatted(syntax)) {
-            // Remove the syntax from text.
+    const format = (syntax_start, syntax_end = syntax_start) => {
+        let linebreak_start = "";
+        let linebreak_end = "";
+        if (syntax_start[0] === "\n") {
+            linebreak_start = "\n";
+        }
+        if (syntax_end.at(-1) === "\n") {
+            linebreak_end = "\n";
+        }
+        if (is_selection_formatted(syntax_start, syntax_end)) {
             text =
-                text.slice(0, range.start - syntax.length) +
+                text.slice(0, range.start - syntax_start.length) +
+                linebreak_start +
                 text.slice(range.start, range.end) +
-                text.slice(range.end + syntax.length);
+                linebreak_end +
+                text.slice(range.end + syntax_end.length);
             set(field, text);
-            field.setSelectionRange(range.start - syntax.length, range.end - syntax.length);
+            field.setSelectionRange(
+                range.start - syntax_start.length,
+                range.end - syntax_start.length,
+            );
             return;
-        } else if (is_inner_text_formatted(syntax)) {
+        } else if (is_inner_text_formatted(syntax_start, syntax_end)) {
             // Remove syntax inside the selection, if present.
             text =
                 text.slice(0, range.start) +
-                text.slice(range.start + syntax.length, range.end - syntax.length) +
+                linebreak_start +
+                text.slice(range.start + syntax_start.length, range.end - syntax_end.length) +
+                linebreak_end +
                 text.slice(range.end);
             set(field, text);
-            field.setSelectionRange(range.start, range.end - syntax.length * 2);
+            field.setSelectionRange(
+                range.start,
+                range.end - syntax_start.length - syntax_end.length,
+            );
             return;
         }
-    
-        // Otherwise, we don't have syntax, so we add it.
-        wrapSelection(field, syntax);
+
+        // Otherwise, we don't have syntax within or around, so we add it.
+        wrapSelection(field, syntax_start, syntax_end);
     };
 
     switch (type) {
@@ -555,7 +569,7 @@ export function format_text($textarea, type, inserted_content) {
                 if (is_selection_formatted(bold_syntax)) {
                     // If text has bold_syntax around it.
                     if (
-                        range.start >= 3 &&
+                        range.start > bold_syntax.length &&
                         text.length - range.end >= bold_and_italic_syntax.length
                     ) {
                         // If text is both bold and italic.
