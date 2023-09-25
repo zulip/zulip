@@ -26,7 +26,6 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
-import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
@@ -37,6 +36,7 @@ import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
+import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 import * as util from "./util";
@@ -600,7 +600,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
                 const url = "/json/bots/" + encodeURIComponent(bot_id);
                 dialog_widget.submit_api_request(channel.del, url);
             }
-            settings_bots.confirm_bot_deactivation(bot_id, handle_confirm, true);
+            user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
         });
 
         $("#bot-edit-form").on("click", ".generate_url_for_integration", (e) => {
@@ -698,7 +698,7 @@ export function show_edit_user_info_modal(user_id, $container) {
             const url = "/json/users/" + encodeURIComponent(user_id);
             dialog_widget.submit_api_request(channel.del, url);
         }
-        settings_users.confirm_deactivation(user_id, handle_confirm, true);
+        user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
 
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
