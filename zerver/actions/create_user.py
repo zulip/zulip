@@ -19,6 +19,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
@@ -591,6 +592,10 @@ def do_activate_mirror_dummy_user(
 @transaction.atomic(savepoint=False)
 def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     """Reactivate a user that had previously been deactivated"""
+    if user_profile.is_mirror_dummy:
+        raise JsonableError(
+            _("Cannot activate a placeholder account; ask the user to sign up, instead.")
+        )
     change_user_is_active(user_profile, True)
 
     event_time = timezone_now()
