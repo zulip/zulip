@@ -14,8 +14,12 @@
         </div>
 
         <a href='{{url}}' class="conversation-partners">
+            {{#if is_deactivated}}
+            <span class="conversation-partners-list">User Deactivated</span>
+            {{ else }}
             <span class="conversation-partners-list">{{recipients}}</span>
             {{> status_emoji status_emoji_info}}
+            {{/if}}
         </a>
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
             {{unread}}

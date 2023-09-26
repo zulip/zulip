@@ -37,6 +37,7 @@ mock_esm("../src/rows", {
 mock_esm("../src/people", {
     sender_is_bot: () => false,
     sender_is_guest: () => false,
+    sender_is_deactivated: () => false,
     small_avatar_url: () => "fake/small/avatar/url",
 });
 
@@ -338,6 +339,7 @@ test("muted_message_vars", () => {
         // sanity check on mocked values
         assert.equal(result[1].sender_is_bot, false);
         assert.equal(result[1].sender_is_guest, false);
+        assert.equal(result[1].sender_is_deactivated, false);
         assert.equal(result[1].small_avatar_url, "fake/small/avatar/url");
 
         // Check that `is_hidden` is false on all messages, and `include_sender` has not changed.

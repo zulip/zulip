@@ -1996,6 +1996,25 @@ div.focused-message-list {
     }
 }
 
+.inline_profile_picture.deactivated {
+    position: relative;
+}
+
+.inline_profile_picture.deactivated > img {
+    opacity: 0.5;
+}
+
+.inline_profile_picture .deactivated-user-icon {
+    background-color: hsl(0deg 0% 100%);
+    color: hsl(0deg 0% 0%);
+    padding: 0.2em;
+    font-size: 0.7em;
+    position: absolute;
+    border-radius: 10px;
+    bottom: 0;
+    right: 0;
+}
+
 .home-error-bar {
     margin-top: 5px;
     display: none;
