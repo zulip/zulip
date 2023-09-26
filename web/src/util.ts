@@ -215,8 +215,9 @@ export const move_array_elements_to_front = function util_move_array_elements_to
 
 // check by the userAgent string if a user's client is likely mobile.
 export function is_mobile(): boolean {
-    const regex = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
-    return new RegExp(regex, "i").test(window.navigator.userAgent);
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+        window.navigator.userAgent,
+    );
 }
 
 export function sorted_ids(ids: number[]): number[] {
