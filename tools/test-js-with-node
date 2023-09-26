@@ -218,7 +218,6 @@ EXEMPT_FILES = make_set(
         "web/src/spectators.ts",
         "web/src/spoilers.ts",
         "web/src/starred_messages_ui.js",
-        "web/src/stream_bar.js",
         "web/src/stream_color.js",
         "web/src/stream_color_events.js",
         "web/src/stream_create.js",
