@@ -29,7 +29,6 @@ export function any_active() {
 // userlist sidebars use the popover infrastructure, but doesn't work
 // like a popover structurally).
 export function hide_all_except_sidebars(opts) {
-    $(".has_popover").removeClass("has_popover has_actions_popover has_emoji_popover");
     if (!opts || !opts.not_hide_tippy_instances) {
         // hideAll hides all tippy instances (tooltips and popovers).
         hideAll();
