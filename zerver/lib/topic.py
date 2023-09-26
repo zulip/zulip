@@ -173,9 +173,9 @@ def update_messages_for_topic_edit(
         # If we're moving the messages between streams, only move
         # messages that the acting user can access, so that one cannot
         # gain access to messages through moving them.
-        from zerver.lib.message import bulk_access_messages
+        from zerver.lib.message import bulk_access_stream_messages_query
 
-        messages_list = bulk_access_messages(acting_user, messages, stream=old_stream)
+        messages_list = list(bulk_access_stream_messages_query(acting_user, messages, old_stream))
     else:
         # For single-message edits or topic moves within a stream, we
         # allow moving history the user may not have access in order
