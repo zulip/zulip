@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as popovers from "./popovers";
 import * as resize from "./resize";
 
 export function hide_userlist_sidebar() {
@@ -13,14 +12,22 @@ export function show_userlist_sidebar() {
 }
 
 export function register_click_handlers() {
-    $("#userlist-toggle-button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    document.addEventListener(
+        "click",
+        (e) => {
+            const $right_column = $(".app-main .column-right");
+            const sidebarHidden = !$right_column.hasClass("expanded");
+            const $elt = $(e.target);
+            const toggle_button_clicked = Boolean($elt.closest("#userlist-toggle-button").length);
+            const click_outside_right_sidebar = !$elt.closest($right_column).length;
+            if (!sidebarHidden && (click_outside_right_sidebar || toggle_button_clicked)) {
+                hide_userlist_sidebar();
+            }
 
-        const sidebarHidden = !$(".app-main .column-right").hasClass("expanded");
-        popovers.hide_all();
-        if (sidebarHidden) {
-            show_userlist_sidebar();
-        }
-    });
+            if (sidebarHidden && toggle_button_clicked) {
+                show_userlist_sidebar();
+            }
+        },
+        {capture: true},
+    );
 }

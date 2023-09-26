@@ -515,14 +515,22 @@ export function register_click_handlers() {
         e.stopPropagation();
     });
 
-    $("#streamlist-toggle-button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    document.addEventListener(
+        "click",
+        (e) => {
+            const $left_column = $(".app-main .column-left");
+            const sidebarHidden = !$left_column.hasClass("expanded");
+            const $elt = $(e.target);
+            const toggle_button_clicked = Boolean($elt.closest("#streamlist-toggle-button").length);
+            const click_outside_left_sidebar = !$elt.closest($left_column).length;
+            if (!sidebarHidden && (click_outside_left_sidebar || toggle_button_clicked)) {
+                hide_streamlist_sidebar();
+            }
 
-        const sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
-        popovers.hide_all();
-        if (sidebarHidden) {
-            show_streamlist_sidebar();
-        }
-    });
+            if (sidebarHidden && toggle_button_clicked) {
+                show_streamlist_sidebar();
+            }
+        },
+        {capture: true},
+    );
 }
