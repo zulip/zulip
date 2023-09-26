@@ -39,6 +39,7 @@ import * as pm_list from "./pm_list";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as resize from "./resize";
+import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
 import * as search from "./search";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
@@ -922,6 +923,7 @@ export function to_compose_target() {
 
 function handle_post_view_change(msg_list) {
     const filter = msg_list.data.filter;
+    scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
 
     if (filter.contains_only_private_messages()) {
