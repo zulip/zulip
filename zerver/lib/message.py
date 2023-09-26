@@ -110,7 +110,7 @@ class RawUnreadMessagesResult(TypedDict):
     stream_dict: Dict[int, RawUnreadStreamDict]
     huddle_dict: Dict[int, RawUnreadHuddleDict]
     mentions: Set[int]
-    muted_stream_ids: List[int]
+    muted_stream_ids: Set[int]
     unmuted_stream_msgs: Set[int]
     old_unreads_missing: bool
 
@@ -1014,7 +1014,7 @@ def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
     return inactive_recipient_ids
 
 
-def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
+def get_muted_stream_ids(user_profile: UserProfile) -> Set[int]:
     rows = (
         get_stream_subscriptions_for_user(user_profile)
         .filter(
@@ -1025,7 +1025,7 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
             "recipient__type_id",
         )
     )
-    muted_stream_ids = [row["recipient__type_id"] for row in rows]
+    muted_stream_ids = {row["recipient__type_id"] for row in rows}
     return muted_stream_ids
 
 
@@ -1090,6 +1090,7 @@ def extract_unread_data_from_um_rows(
 ) -> RawUnreadMessagesResult:
     pm_dict: Dict[int, RawUnreadDirectMessageDict] = {}
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
+    muted_stream_ids: Set[int] = set()
     unmuted_stream_msgs: Set[int] = set()
     huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
     mentions: Set[int] = set()
@@ -1098,7 +1099,7 @@ def extract_unread_data_from_um_rows(
     raw_unread_messages: RawUnreadMessagesResult = dict(
         pm_dict=pm_dict,
         stream_dict=stream_dict,
-        muted_stream_ids=[],
+        muted_stream_ids=muted_stream_ids,
         unmuted_stream_msgs=unmuted_stream_msgs,
         huddle_dict=huddle_dict,
         mentions=mentions,
@@ -1109,7 +1110,6 @@ def extract_unread_data_from_um_rows(
         return raw_unread_messages
 
     muted_stream_ids = get_muted_stream_ids(user_profile)
-    raw_unread_messages["muted_stream_ids"] = muted_stream_ids
 
     get_topic_visibility_policy = build_get_topic_visibility_policy(user_profile)
 
