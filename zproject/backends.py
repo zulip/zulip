@@ -51,7 +51,7 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2 import compat as onelogin_saml2_compat
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
-from onelogin.saml2.errors import OneLogin_Saml2_Error
+from onelogin.saml2.errors import OneLogin_Saml2_Error, OneLogin_Saml2_ValidationError
 from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
 from onelogin.saml2.logout_response import OneLogin_Saml2_Logout_Response
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -2250,7 +2250,12 @@ class SAMLDocument:
     for wrapping the fiddly logic of handling these SAML XML documents.
     """
 
-    SAML_PARSING_EXCEPTIONS = (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError)
+    SAML_PARSING_EXCEPTIONS = (
+        OneLogin_Saml2_Error,
+        OneLogin_Saml2_ValidationError,
+        binascii.Error,
+        XMLSyntaxError,
+    )
 
     def __init__(self, encoded_saml_message: str, backend: "SAMLAuthBackend") -> None:
         """

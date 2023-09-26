@@ -2717,6 +2717,39 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 ],
             )
 
+        # Now test a slightly different case, where instead of an invalid issuer,
+        # the issuer is not included in the SAMLResponse at all.
+        # self.generate_saml_response doesn't support something as fiddly as a SAMLResponse
+        # with no issuers and it doesn't make sense to clutter it with such a "feature", so
+        # we manually load and tweak the fixture here.
+        unencoded_saml_response = self.fixture_data("samlresponse.txt", type="saml").format(
+            email=self.example_email("hamlet"),
+            first_name="King",
+            last_name="Hamlet",
+            extra_attrs="",
+        )
+        # Simple regex to remove Issuer occurrences from the XML.
+        unencoded_saml_response_without_issuer = re.sub(
+            r"\<saml2:Issuer.+</saml2:Issuer>", "", unencoded_saml_response
+        )
+
+        # SAMLResponse needs to be base64-encoded.
+        saml_response_without_issuer: str = base64.b64encode(
+            unencoded_saml_response_without_issuer.encode()
+        ).decode()
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            post_params = {"RelayState": relay_state, "SAMLResponse": saml_response_without_issuer}
+            result = self.client_post("/complete/saml/", post_params)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual("/login/", result["Location"])
+        self.assertEqual(
+            m.output,
+            [
+                "ERROR:zulip.auth.saml:Error parsing SAMLResponse: Issuer of the Assertion not found or multiple.",
+                "INFO:zulip.auth.saml:/complete/saml/: No valid IdP as issuer of the SAMLResponse.",
+            ],
+        )
+
     def test_social_auth_complete_valid_get_idp_bad_samlresponse(self) -> None:
         """
         This tests for a hypothetical scenario where our basic parsing of the SAMLResponse
