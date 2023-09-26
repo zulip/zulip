@@ -9970,7 +9970,7 @@ paths:
             unread messages.
 
             - 1 - All streams
-            - 2 - Unmuted streams
+            - 2 - Unmuted streams and topics
             - 3 - No streams
 
             **Changes**: New in Zulip 8.0 (feature level 210).
@@ -12231,7 +12231,7 @@ paths:
                               unread messages.
 
                               - 1 - All streams
-                              - 2 - Unmuted streams
+                              - 2 - Unmuted streams and topics
                               - 3 - No streams
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
@@ -14393,7 +14393,7 @@ paths:
                               unread messages.
 
                               - 1 - All streams
-                              - 2 - Unmuted streams
+                              - 2 - Unmuted streams and topics
                               - 3 - No streams
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
@@ -15478,7 +15478,7 @@ paths:
             unread messages.
 
             - 1 - All streams
-            - 2 - Unmuted streams
+            - 2 - Unmuted streams and topics
             - 3 - No streams
 
             **Changes**: New in Zulip 8.0 (feature level 210).
