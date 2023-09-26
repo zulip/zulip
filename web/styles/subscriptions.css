@@ -16,6 +16,7 @@
     overflow-wrap: break-word;
 }
 
+
 .subscription_settings .btn {
     border-radius: 2px;
 }
@@ -244,16 +245,14 @@ h4.user_group_setting_subsection_title {
     margin-bottom: 0;
 }
 
-.add_subscribers_container,
-.add_members_container {
+.add_subscribers_container {
     display: inline-flex;
     width: 100%;
     align-items: center;
-}
 
-.add_subscribers_container .add_subscriber_btn_wrapper,
-.add_members_container .add_member_btn_wrapper {
-    padding-left: 5px;
+    .add_subscriber_btn_wrapper {
+        padding-left: 5px;
+    }
 }
 
 .remove-subscriber-form {
@@ -284,9 +283,7 @@ h4.user_group_setting_subsection_title {
 
 .user-groups-container .user-groups-header.slide-left .fa-chevron-left,
 .subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
-#settings_overlay_container 
-    .settings-header.mobile.slide-left 
-    .fa-chevron-left {
+#settings_overlay_container .settings-header.mobile.slide-left .fa-chevron-left {
     transform: translate(0, 0);
     opacity: 1;
 }
@@ -302,7 +299,7 @@ h4.user_group_setting_subsection_title {
     max-width: 1200px;
     max-height: var(--modal-container-max-height);
 
-    .list-toggler-container .tab-switcher .ind-tab {
+    .search-container .tab-switcher .ind-tab {
         width: auto;
     }
 
@@ -372,7 +369,7 @@ h4.user_group_setting_subsection_title {
     .left {
         border-right: 1px solid hsl(0deg 0% 87%);
 
-        .list-toggler-container {
+        .search-container {
             padding: 6px 8px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
             display: flex;
@@ -630,6 +627,7 @@ h4.user_group_setting_subsection_title {
             margin-top: 2px;
             line-height: 1.5;
         }
+
         .bottom-bar>div {
             display: inline-block;
             vertical-align: bottom;
@@ -639,6 +637,7 @@ h4.user_group_setting_subsection_title {
     &.active {
         background-color: hsl(0deg 0% 93%);
     }
+
     >div {
         display: inline-block;
         vertical-align: top;
@@ -667,17 +666,15 @@ h4.user_group_setting_subsection_title {
     color: hsl(0deg 0% 67%);
 }
 
-.subscriber_list_settings .add_subscribers_disabled,
-.member_list_settings .add_members_disabled {
-    cursor: not-allowed;
-
-    .pill-container {
+.subscriber_list_settings {
+    .add_subscribers_disabled {
         cursor: not-allowed;
-    }
-}
 
-.subscriber_list_settings,
-.member_list_settings {
+        .pill-container {
+            cursor: not-allowed;
+        }
+    }
+
     & button[disabled] {
         pointer-events: none;
     }
@@ -685,26 +682,16 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
+
     #user-group-creation,
     #stream-creation {
         overflow: auto;
         outline: none;
         -webkit-overflow-scrolling: touch;
 
-        .stream-creation-simplebar-container,
-        .user-group-creation-simplebar-container {
-            height: calc(
-                var(--modal-container-height) -
-                    var(--modal-container-subscriptions-header-height) -
-                    var(--modal-container-subscriptions-display-type-height) -
-                    var(--modal-container-subscriptions-modal-footer-height)
-            );
-            max-height: calc(
-                var(--modal-container-max-height) -
-                    var(--modal-container-subscriptions-header-height) -
-                    var(--modal-container-subscriptions-display-type-height) -
-                    var(--modal-container-subscriptions-modal-footer-height)
-            );
+        .stream-creation-simplebar-container {
+            height: calc(var(--modal-container-height) - var(--modal-container-subscriptions-header-height) - var(--modal-container-subscriptions-display-type-height) - var(--modal-container-subscriptions-modal-footer-height));
+            max-height: calc(var(--modal-container-max-height) - var(--modal-container-subscriptions-header-height) - var(--modal-container-subscriptions-display-type-height) - var(--modal-container-subscriptions-modal-footer-height));
         }
 
         .user-group-creation-body,
@@ -1057,6 +1044,7 @@ div.settings-radio-input-parent {
     margin-bottom: 4px;
     box-sizing: border-box;
 }
+
 .stream-permissions .stream-message-retention-days-input input[type="text"] {
     border-radius: 5px;
     box-shadow: none;
@@ -1084,11 +1072,11 @@ div.settings-radio-input-parent {
 }
 
 @media (width < $lg_min) {
-    .subscriptions-container .left .list-toggler-container {
+    .subscriptions-container .left .search-container {
         flex-wrap: wrap;
     }
 
-    .list-toggler-container {
+    .search-container {
         text-align: center;
     }
 
@@ -1104,12 +1092,13 @@ div.settings-radio-input-parent {
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
 @media (width < $md_min) {
+
     .user-groups-container,
     .subscriptions-container {
         position: relative;
         overflow: hidden;
 
-        .list-toggler-container {
+        .search-container {
             text-align: left;
         }
 
@@ -1159,6 +1148,7 @@ div.settings-radio-input-parent {
 
     #subscription_overlay,
     #groups_overlay {
+
         .user-groups-container,
         .subscriptions-container {
             height: 95%;
@@ -1172,6 +1162,7 @@ div.settings-radio-input-parent {
 }
 
 @media (width < $sm_min) {
+
     #groups_overlay .user_group_settings_wrapper,
     #subscription_overlay .subscription_settings {
         .button-group {
@@ -1213,14 +1204,18 @@ div.settings-radio-input-parent {
         }
     }
 }
+
 @media (width <=500px) {
+
     #groups_overlay,
     #subscription_overlay {
+
         .groups_settings_header,
         .stream_settings_header {
             display: block;
             text-align: center;
             margin-left: 0;
+
             .tab-container {
                 .ind-tab {
                     width: 85px;
@@ -1228,4 +1223,7 @@ div.settings-radio-input-parent {
             }
         }
     }
+}
+#remove_subscriber_stream {
+    margin-right: 20px;
 }
