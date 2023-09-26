@@ -21,7 +21,7 @@ import ahocorasick
 import orjson
 from django.conf import settings
 from django.db import connection
-from django.db.models import Max, QuerySet, Sum
+from django.db.models import Exists, Max, OuterRef, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_stubs_ext import ValuesQuerySet
@@ -994,6 +994,38 @@ def bulk_access_messages(
         ):
             filtered_messages.append(message)
     return filtered_messages
+
+
+def bulk_access_stream_messages_query(
+    user_profile: UserProfile, messages: QuerySet[Message], stream: Stream
+) -> QuerySet[Message]:
+    """This function mirrors bulk_access_messages, above, but applies the
+    limits to a QuerySet and returns a new QuerySet which only
+    contains messages in the given stream which the user can access.
+    Note that this only works with streams.  It may return an empty
+    QuerySet if the user has access to no messages (for instance, for
+    a private stream which the user is not subscribed to).
+
+    """
+
+    messages = messages.filter(realm_id=user_profile.realm_id, recipient_id=stream.recipient_id)
+
+    if stream.is_public() and user_profile.can_access_public_streams():
+        return messages
+
+    if not Subscription.objects.filter(
+        user_profile=user_profile, active=True, recipient=stream.recipient
+    ).exists():
+        return Message.objects.none()
+    if not stream.is_history_public_to_subscribers():
+        messages = messages.annotate(
+            has_usermessage=Exists(
+                UserMessage.objects.filter(
+                    user_profile_id=user_profile.id, message_id=OuterRef("id")
+                )
+            )
+        ).filter(has_usermessage=1)
+    return messages
 
 
 def get_messages_with_usermessage_rows_for_user(
