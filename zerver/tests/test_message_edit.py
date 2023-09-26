@@ -1431,7 +1431,7 @@ class EditMessageTest(EditMessageTestCase):
         # state + 1/user with a UserTopic row for the events data)
         # beyond what is typical were there not UserTopic records to
         # update. Ideally, we'd eliminate the per-user component.
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(24):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1528,7 +1528,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1559,7 +1559,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(33):
+        with self.assert_database_query_count(34):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1592,7 +1592,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1615,7 +1615,7 @@ class EditMessageTest(EditMessageTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(24):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -1714,7 +1714,7 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -3783,7 +3783,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(52), self.assert_memcached_count(14):
+        with self.assert_database_query_count(53), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -3808,6 +3808,47 @@ class EditMessageTest(EditMessageTestCase):
             f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
         self.assert_json_success(result)
+
+    def test_move_many_messages_to_stream_and_topic(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "first origin stream", "first destination stream", "first topic"
+        )
+
+        with queries_captured() as queries:
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "propagate_mode": "change_all",
+                    "send_notification_to_old_thread": "true",
+                    "stream_id": new_stream.id,
+                    "topic": "first topic",
+                },
+            )
+            self.assert_json_success(result)
+
+        # Adding more messages should not increase the number of
+        # queries
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "second origin stream", "second destination stream", "second topic"
+        )
+        for i in range(1, 5):
+            self.send_stream_message(
+                user_profile,
+                "second origin stream",
+                topic_name="second topic",
+                content=f"Extra message {i}",
+            )
+        with self.assert_database_query_count(len(queries)):
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "propagate_mode": "change_all",
+                    "send_notification_to_old_thread": "true",
+                    "stream_id": new_stream.id,
+                    "topic": "second topic",
+                },
+            )
+            self.assert_json_success(result)
 
     def test_inaccessible_msg_after_stream_change(self) -> None:
         """Simulates the case where message is moved to a stream where user is not a subscribed"""
