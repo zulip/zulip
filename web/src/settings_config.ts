@@ -78,7 +78,7 @@ export const web_stream_unreads_count_display_policy_values = {
     },
     unmuted_streams: {
         code: 2,
-        description: $t({defaultMessage: "Unmuted streams"}),
+        description: $t({defaultMessage: "Unmuted streams and topics"}),
     },
     no_streams: {
         code: 3,
