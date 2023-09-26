@@ -85,7 +85,7 @@ export function stream_id() {
     if (typeof stream_id === "number") {
         return stream_id;
     }
-    return "";
+    return undefined;
 }
 
 export function stream_name() {
@@ -162,7 +162,7 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
         case "stream_message_recipient_topic":
             return topic() === "";
         case "compose_select_recipient_widget_wrapper":
-            return stream_id() === "";
+            return stream_id() === undefined;
     }
 
     return false;
@@ -182,7 +182,7 @@ export function has_message_content() {
 
 export function has_full_recipient() {
     if (message_type === "stream") {
-        return stream_id() !== "" && topic() !== "";
+        return stream_id() !== undefined && topic() !== "";
     }
     return private_message_recipient() !== "";
 }
