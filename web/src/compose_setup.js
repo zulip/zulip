@@ -130,7 +130,7 @@ export function initialize() {
             event.preventDefault();
 
             const stream_id = compose_state.stream_id();
-            if (stream_id === "") {
+            if (stream_id === undefined) {
                 return;
             }
             const sub = stream_data.get_sub_by_id(stream_id);

@@ -127,7 +127,7 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     // Start stream message
     compose_defaults = {
-        stream_id: "",
+        stream_id: undefined,
         topic: "topic1",
     };
 

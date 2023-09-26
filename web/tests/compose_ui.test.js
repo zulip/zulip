@@ -185,7 +185,7 @@ run_test("replace_syntax", ({override}) => {
 run_test("compute_placeholder_text", () => {
     let opts = {
         message_type: "stream",
-        stream_id: "",
+        stream_id: undefined,
         topic: "",
         private_message_recipient: "",
     };
@@ -214,7 +214,7 @@ run_test("compute_placeholder_text", () => {
     // direct message narrows
     opts = {
         message_type: "private",
-        stream_id: "",
+        stream_id: undefined,
         topic: "",
         private_message_recipient: "",
     };
