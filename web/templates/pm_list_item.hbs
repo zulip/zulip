@@ -6,7 +6,9 @@
             <span class="fa fa-group"></span>
             {{else if is_bot}}
             <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
-            {{else}}
+            {{else if is_deactivated}}
+            <i class="fa fa-ban deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="User is deactivated"></i>
+            {{ else }}
             <span class="{{user_circle_class}} user_circle"></span>
             {{/if}}
         </div>
