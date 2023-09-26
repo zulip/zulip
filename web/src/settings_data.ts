@@ -254,7 +254,7 @@ export function user_email_not_configured(): boolean {
     return page_params.is_owner && page_params.delivery_email === "";
 }
 
-export function type_id_to_string(type_id: number): string | undefined {
+export function bot_type_id_to_string(type_id: number): string | undefined {
     const bot_type = page_params.bot_types.find((bot_type) => bot_type.type_id === type_id);
 
     if (bot_type === undefined) {

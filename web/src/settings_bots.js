@@ -68,7 +68,7 @@ export function render_bots() {
             name: elem.full_name,
             email: elem.email,
             user_id: elem.user_id,
-            type: settings_data.type_id_to_string(elem.bot_type),
+            type: settings_data.bot_type_id_to_string(elem.bot_type),
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
             is_active: elem.is_active,

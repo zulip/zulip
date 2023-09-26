@@ -237,7 +237,7 @@ function bot_info(bot_user_id) {
     info.user_role_text = people.get_user_type(bot_user_id);
 
     // Convert bot type id to string for viewing to the users.
-    info.bot_type = settings_data.type_id_to_string(bot_user.bot_type);
+    info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
 
     info.bot_owner_full_name = bot_owner_full_name(owner_id);
 
