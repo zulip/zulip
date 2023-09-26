@@ -10,11 +10,12 @@
 
 {!topic-actions.md!}
 
-1. Select **Mute topic** or **Unmute topic**.
+1. Select **Mute** or **Default** notifications from the row of icons at the top
+   of the menu.
 
 !!! tip ""
 
-    You can also click the **mute** (<i class="zulip-icon zulip-icon-mute"></i>) icon
+    You can also configure notifications by clicking the topic notifications icon
     in the message recipient bar or in **Recent conversations**.
 
 {tab|mobile}
@@ -35,11 +36,12 @@
 
 {!topic-actions.md!}
 
-1. Select **Unmute topic** or **Mute topic**.
+1. Select **Mute**, **Default**, or **Unmute** notifications from the row of
+   icons at the top of the menu.
 
 !!! tip ""
 
-    You can also click the **unmute** (<i class="zulip-icon zulip-icon-unmute"></i>) icon
+    You can also configure notifications by clicking the topic notifications icon
     in the message recipient bar or in **Recent conversations**.
 
 {tab|mobile}
