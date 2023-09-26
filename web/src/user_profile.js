@@ -349,7 +349,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
             const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;
         }
-        args.bot_type = settings_data.type_id_to_string(user.bot_type);
+        args.bot_type = settings_data.bot_type_id_to_string(user.bot_type);
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));

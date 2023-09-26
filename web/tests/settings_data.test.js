@@ -419,7 +419,7 @@ run_test("type_id_to_string", () => {
         },
     ];
 
-    assert.equal(settings_data.type_id_to_string(1), "Generic bot");
-    assert.equal(settings_data.type_id_to_string(2), "Incoming webhook");
-    assert.equal(settings_data.type_id_to_string(5), undefined);
+    assert.equal(settings_data.bot_type_id_to_string(1), "Generic bot");
+    assert.equal(settings_data.bot_type_id_to_string(2), "Incoming webhook");
+    assert.equal(settings_data.bot_type_id_to_string(5), undefined);
 });
