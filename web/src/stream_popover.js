@@ -514,4 +514,15 @@ export function register_click_handlers() {
 
         e.stopPropagation();
     });
+
+    $("#streamlist-toggle-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
+        popovers.hide_all();
+        if (sidebarHidden) {
+            show_streamlist_sidebar();
+        }
+    });
 }

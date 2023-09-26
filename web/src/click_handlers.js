@@ -489,28 +489,6 @@ export function initialize() {
         window.location.href = hash_util.build_login_link();
     });
 
-    $("#userlist-toggle-button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const sidebarHidden = !$(".app-main .column-right").hasClass("expanded");
-        popovers.hide_all();
-        if (sidebarHidden) {
-            right_sidebar_ui.show_userlist_sidebar();
-        }
-    });
-
-    $("#streamlist-toggle-button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
-        popovers.hide_all();
-        if (sidebarHidden) {
-            stream_popover.show_streamlist_sidebar();
-        }
-    });
-
     $("#user_presences")
         .expectOne()
         .on("click", ".selectable_sidebar_block", (e) => {
@@ -671,6 +649,7 @@ export function initialize() {
 
     user_profile.register_click_handlers();
     stream_popover.register_click_handlers();
+    right_sidebar_ui.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");
