@@ -647,20 +647,20 @@
     }
 
     & a {
-        color: hsl(200deg 100% 40%);
+        color: var(--color-markdown-link);
         text-decoration: none;
 
         & code {
-            color: hsl(200deg 100% 40%);
+            color: var(--color-markdown-code-link);
         }
 
         &:hover,
         &:focus {
-            color: hsl(200deg 100% 25%);
+            color: var(--color-markdown-link-hover);
             text-decoration: underline;
 
             & code {
-                color: hsl(200deg 100% 25%);
+                color: var(--color-markdown-code-link-hover);
             }
         }
     }
@@ -701,11 +701,11 @@
         font-size: 0.825em;
         unicode-bidi: embed;
         direction: ltr;
-        color: hsl(0deg 0% 0%);
         white-space: pre-wrap;
         padding: 0 4px;
-        background-color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(240deg 13% 90%);
+        color: var(--color-markdown-code-text);
+        background-color: var(--color-markdown-code-background);
+        border: 1px solid var(--color-markdown-code-border);
         border-radius: 3px;
     }
 
@@ -801,6 +801,16 @@
     display: block !important;
     border: none !important;
     background: none !important;
+
+    & code,
+    & pre {
+        color: var(--color-markdown-pre-text);
+        background-color: var(--color-markdown-pre-background);
+    }
+
+    & pre {
+        border: 1px solid var(--color-markdown-pre-border);
+    }
 }
 
 /* Both the horizontal scrollbar in <pre/> as well as
