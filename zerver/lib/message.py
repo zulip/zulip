@@ -499,7 +499,7 @@ class MessageDict:
 
     @staticmethod
     def to_dict_uncached(
-        messages: List[Message], realm_id: Optional[int] = None
+        messages: Collection[Message], realm_id: Optional[int] = None
     ) -> Dict[int, bytes]:
         messages_dict = MessageDict.to_dict_uncached_helper(messages, realm_id)
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
@@ -507,7 +507,7 @@ class MessageDict:
 
     @staticmethod
     def to_dict_uncached_helper(
-        messages: List[Message], realm_id: Optional[int] = None
+        messages: Collection[Message], realm_id: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects
@@ -1816,7 +1816,7 @@ def parse_message_time_limit_setting(
 
 
 def update_to_dict_cache(
-    changed_messages: List[Message], realm_id: Optional[int] = None
+    changed_messages: Collection[Message], realm_id: Optional[int] = None
 ) -> List[int]:
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
