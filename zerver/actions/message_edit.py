@@ -5,7 +5,7 @@ from typing import AbstractSet, Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -144,7 +144,7 @@ def maybe_send_resolve_topic_notifications(
     stream: Stream,
     old_topic_name: str,
     new_topic_name: str,
-    changed_messages: List[Message],
+    changed_messages: QuerySet[Message],
 ) -> Optional[int]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
@@ -177,9 +177,11 @@ def maybe_send_resolve_topic_notifications(
     # Compute the users who either sent or reacted to messages that
     # were moved via the "resolve topic' action. Only those users
     # should be eligible for this message being managed as unread.
-    affected_participant_ids = {message.sender_id for message in changed_messages} | set(
-        Reaction.objects.filter(message__in=changed_messages).values_list(
-            "user_profile_id", flat=True
+    affected_participant_ids = set(
+        changed_messages.values_list("sender_id", flat=True).union(
+            Reaction.objects.filter(message__in=changed_messages).values_list(
+                "user_profile_id", flat=True
+            )
         )
     )
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
@@ -428,8 +430,6 @@ def do_update_message(
         "timestamp": event["edit_timestamp"],
     }
 
-    changed_messages = [target_message]
-
     realm = user_profile.realm
 
     stream_being_edited = None
@@ -650,6 +650,12 @@ def do_update_message(
             realm.id, target_stream.recipient_id, target_topic_name
         ).exists()
 
+    changed_messages = Message.objects.filter(id=target_message.id)
+    changed_message_ids = [target_message.id]
+    changed_messages_count = 1
+    save_changes_for_propagation_mode = lambda: Message.objects.filter(
+        id=target_message.id
+    ).select_related(*Message.DEFAULT_SELECT_RELATED)
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
         assert stream_being_edited is not None
@@ -666,7 +672,7 @@ def do_update_message(
             topic_only_edit_history_event["prev_stream"] = edit_history_event["prev_stream"]
             topic_only_edit_history_event["stream"] = edit_history_event["stream"]
 
-        messages_list = update_messages_for_topic_edit(
+        later_messages, save_changes_for_propagation_mode = update_messages_for_topic_edit(
             acting_user=user_profile,
             edited_message=target_message,
             propagate_mode=propagate_mode,
@@ -677,12 +683,12 @@ def do_update_message(
             edit_history_event=topic_only_edit_history_event,
             last_edit_time=timestamp,
         )
-        changed_messages += messages_list
+        changed_messages |= later_messages
+        changed_message_ids = list(changed_messages.values_list("id", flat=True))
+        changed_messages_count = len(changed_message_ids)
 
         if new_stream is not None:
             assert stream_being_edited is not None
-            changed_message_ids = [msg.id for msg in changed_messages]
-
             if gaining_usermessage_user_ids:
                 ums_to_create = []
                 for message_id in changed_message_ids:
@@ -707,7 +713,7 @@ def do_update_message(
             # very expensive, since it's N guest users x M messages.
             UserMessage.objects.filter(
                 user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages],
-                message_id__in=changed_message_ids,
+                message_id__in=changed_messages,
             ).delete()
 
             delete_event: DeleteMessagesEvent = {
@@ -722,23 +728,31 @@ def do_update_message(
             # Reset the Attachment.is_*_public caches for all messages
             # moved to another stream with different access permissions.
             if new_stream.invite_only != stream_being_edited.invite_only:
-                Attachment.objects.filter(messages__in=changed_message_ids).update(
+                Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
                     is_realm_public=None,
                 )
-                ArchivedAttachment.objects.filter(messages__in=changed_message_ids).update(
+                ArchivedAttachment.objects.filter(
+                    messages__in=changed_messages.values("id")
+                ).update(
                     is_realm_public=None,
                 )
 
             if new_stream.is_web_public != stream_being_edited.is_web_public:
-                Attachment.objects.filter(messages__in=changed_message_ids).update(
+                Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
                     is_web_public=None,
                 )
-                ArchivedAttachment.objects.filter(messages__in=changed_message_ids).update(
+                ArchivedAttachment.objects.filter(
+                    messages__in=changed_messages.values("id")
+                ).update(
                     is_web_public=None,
                 )
 
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
+
+    # This updates any later messages, if any.  It returns the
+    # freshly-fetched-from-the-database changed messages.
+    changed_messages = save_changes_for_propagation_mode()
 
     realm_id: Optional[int] = None
     if stream_being_edited is not None:
@@ -1012,8 +1026,6 @@ def do_update_message(
 
     if (new_stream is not None or topic_name is not None) and stream_being_edited is not None:
         # Notify users that the topic was moved.
-        changed_messages_count = len(changed_messages)
-
         old_thread_notification_string = None
         if send_notification_to_old_thread:
             if moved_all_visible_messages:
@@ -1052,8 +1064,6 @@ def do_update_message(
             assert stream_for_new_topic.recipient_id is not None
 
             new_topic_name = topic_name if topic_name is not None else orig_topic_name
-
-            changed_message_ids = [changed_message.id for changed_message in changed_messages]
 
             # We calculate whether the user moved the entire topic
             # using that user's own permissions, which is important to
@@ -1096,7 +1106,7 @@ def do_update_message(
             changed_messages_count,
         )
 
-    return len(changed_messages)
+    return changed_messages_count
 
 
 def check_time_limit_for_change_all_propagate_mode(
