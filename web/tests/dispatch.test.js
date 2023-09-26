@@ -43,7 +43,9 @@ const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
 const reload = mock_esm("../src/reload");
 const scheduled_messages = mock_esm("../src/scheduled_messages");
+const scheduled_messages_feed_ui = mock_esm("../src/scheduled_messages_feed_ui");
 const scheduled_messages_overlay_ui = mock_esm("../src/scheduled_messages_overlay_ui");
+const scheduled_messages_ui = mock_esm("../src/scheduled_messages_ui");
 const scroll_bar = mock_esm("../src/scroll_bar");
 const settings_account = mock_esm("../src/settings_account");
 const settings_bots = mock_esm("../src/settings_bots");
@@ -383,6 +385,9 @@ run_test("reaction", ({override}) => {
 run_test("scheduled_messages", ({override}) => {
     override(scheduled_messages_overlay_ui, "rerender", noop);
     override(scheduled_messages_overlay_ui, "remove_scheduled_message_id", noop);
+    override(scheduled_messages_feed_ui, "update_schedule_message_indicator", noop);
+    override(scheduled_messages_ui, "hide_scheduled_message_success_compose_banner", noop);
+
     let event = event_fixtures.scheduled_messages__add;
     {
         const stub = make_stub();
