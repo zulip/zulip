@@ -16,7 +16,6 @@
     overflow-wrap: break-word;
 }
 
-
 .subscription_settings .btn {
     border-radius: 2px;
 }
@@ -283,7 +282,9 @@ h4.user_group_setting_subsection_title {
 
 .user-groups-container .user-groups-header.slide-left .fa-chevron-left,
 .subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
-#settings_overlay_container .settings-header.mobile.slide-left .fa-chevron-left {
+#settings_overlay_container 
+    .settings-header.mobile.slide-left 
+    .fa-chevron-left {
     transform: translate(0, 0);
     opacity: 1;
 }
@@ -627,7 +628,6 @@ h4.user_group_setting_subsection_title {
             margin-top: 2px;
             line-height: 1.5;
         }
-
         .bottom-bar>div {
             display: inline-block;
             vertical-align: bottom;
@@ -637,7 +637,6 @@ h4.user_group_setting_subsection_title {
     &.active {
         background-color: hsl(0deg 0% 93%);
     }
-
     >div {
         display: inline-block;
         vertical-align: top;
@@ -682,7 +681,6 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
-
     #user-group-creation,
     #stream-creation {
         overflow: auto;
@@ -690,8 +688,18 @@ h4.user_group_setting_subsection_title {
         -webkit-overflow-scrolling: touch;
 
         .stream-creation-simplebar-container {
-            height: calc(var(--modal-container-height) - var(--modal-container-subscriptions-header-height) - var(--modal-container-subscriptions-display-type-height) - var(--modal-container-subscriptions-modal-footer-height));
-            max-height: calc(var(--modal-container-max-height) - var(--modal-container-subscriptions-header-height) - var(--modal-container-subscriptions-display-type-height) - var(--modal-container-subscriptions-modal-footer-height));
+            height: calc(
+                var(--modal-container-height) -
+                    var(--modal-container-subscriptions-header-height) -
+                    var(--modal-container-subscriptions-display-type-height) -
+                    var(--modal-container-subscriptions-modal-footer-height)
+            );
+            max-height: calc(
+                var(--modal-container-max-height) -
+                    var(--modal-container-subscriptions-header-height) -
+                    var(--modal-container-subscriptions-display-type-height) -
+                    var(--modal-container-subscriptions-modal-footer-height)
+            );
         }
 
         .user-group-creation-body,
@@ -1044,7 +1052,6 @@ div.settings-radio-input-parent {
     margin-bottom: 4px;
     box-sizing: border-box;
 }
-
 .stream-permissions .stream-message-retention-days-input input[type="text"] {
     border-radius: 5px;
     box-shadow: none;
@@ -1092,7 +1099,6 @@ div.settings-radio-input-parent {
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
 @media (width < $md_min) {
-
     .user-groups-container,
     .subscriptions-container {
         position: relative;
@@ -1148,7 +1154,6 @@ div.settings-radio-input-parent {
 
     #subscription_overlay,
     #groups_overlay {
-
         .user-groups-container,
         .subscriptions-container {
             height: 95%;
@@ -1162,7 +1167,6 @@ div.settings-radio-input-parent {
 }
 
 @media (width < $sm_min) {
-
     #groups_overlay .user_group_settings_wrapper,
     #subscription_overlay .subscription_settings {
         .button-group {
@@ -1204,18 +1208,14 @@ div.settings-radio-input-parent {
         }
     }
 }
-
 @media (width <=500px) {
-
     #groups_overlay,
     #subscription_overlay {
-
         .groups_settings_header,
         .stream_settings_header {
             display: block;
             text-align: center;
             margin-left: 0;
-
             .tab-container {
                 .ind-tab {
                     width: 85px;
