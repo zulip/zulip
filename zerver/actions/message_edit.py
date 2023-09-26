@@ -33,7 +33,7 @@ from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     access_message,
-    bulk_access_messages,
+    bulk_access_stream_messages_query,
     check_user_group_mention_allowed,
     normalize_body,
     stream_wildcard_mention_allowed,
@@ -827,27 +827,23 @@ def do_update_message(
             # full-topic move.
             #
             # For security model reasons, we don't want to allow a
-            # user to take any action that would leak information
-            # about older messages they cannot access (E.g. the only
-            # remaining messages are in a stream without shared
-            # history). The bulk_access_messages call below addresses
+            # user to take any action (e.g. post a message about
+            # having not moved the whole topic) that would leak
+            # information about older messages they cannot access
+            # (e.g. there were earlier inaccessible messages in the
+            # topic, in a stream without shared history). The
+            # bulk_access_stream_messages_query call below addresses
             # that concern.
-            #
-            # bulk_access_messages is inefficient for this task, since
-            # we just want to do the exists() version of this
-            # query. But it's nice to reuse code, and this bulk
-            # operation is likely cheaper than a `GET /messages`
-            # unless the topic has thousands of messages of history.
             assert stream_being_edited.recipient_id is not None
             unmoved_messages = messages_for_topic(
                 realm.id,
                 stream_being_edited.recipient_id,
                 orig_topic_name,
             )
-            visible_unmoved_messages = bulk_access_messages(
-                user_profile, unmoved_messages, stream=stream_being_edited
+            visible_unmoved_messages = bulk_access_stream_messages_query(
+                user_profile, unmoved_messages, stream_being_edited
             )
-            moved_all_visible_messages = len(visible_unmoved_messages) == 0
+            moved_all_visible_messages = not visible_unmoved_messages.exists()
 
     # Migrate 'topic with visibility_policy' configuration in the following
     # circumstances:
@@ -1064,24 +1060,15 @@ def do_update_message(
             # avoid leaking information about whether there are
             # messages in the destination topic's deeper history that
             # the acting user does not have permission to access.
-            #
-            # TODO: These queries are quite inefficient, in that we're
-            # fetching full copies of all the messages in the
-            # destination topic to answer the question of whether the
-            # current user has access to at least one such message.
-            #
-            # The main strength of the current implementation is that
-            # it reuses existing logic, which is good for keeping it
-            # correct as we maintain the codebase.
             preexisting_topic_messages = messages_for_topic(
                 realm.id, stream_for_new_topic.recipient_id, new_topic_name
             ).exclude(id__in=[*changed_message_ids, resolved_topic_message_id])
 
-            visible_preexisting_messages = bulk_access_messages(
-                user_profile, preexisting_topic_messages, stream=stream_for_new_topic
+            visible_preexisting_messages = bulk_access_stream_messages_query(
+                user_profile, preexisting_topic_messages, stream_for_new_topic
             )
 
-            no_visible_preexisting_messages = len(visible_preexisting_messages) == 0
+            no_visible_preexisting_messages = not visible_preexisting_messages.exists()
 
             if no_visible_preexisting_messages and moved_all_visible_messages:
                 new_thread_notification_string = gettext_lazy(
