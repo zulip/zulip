@@ -1528,7 +1528,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(28):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1559,7 +1559,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(34):
+        with self.assert_database_query_count(33):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1592,7 +1592,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(28):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1615,7 +1615,7 @@ class EditMessageTest(EditMessageTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(23):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -3783,7 +3783,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(55), self.assert_memcached_count(14):
+        with self.assert_database_query_count(52), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
