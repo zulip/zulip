@@ -856,16 +856,6 @@
             background-color: hsl(22deg 70% 35%);
         }
 
-        .codehilite code,
-        .codehilite pre {
-            color: hsl(212deg 98% 82%);
-            background-color: hsl(212deg 0% 11%);
-        }
-
-        .codehilite pre {
-            border: 1px solid hsl(0deg 0% 0% / 50%);
-        }
-
         .codehilite .hll {
             background-color: hsl(0deg 0% 13%);
         }
@@ -1246,7 +1236,6 @@
     }
 
     #feedback_container,
-    code,
     .typeahead.dropdown-menu {
         background-color: hsl(212deg 25% 15%);
         border-color: hsl(0deg 0% 0% / 50%);

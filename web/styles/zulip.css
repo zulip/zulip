@@ -282,6 +282,18 @@ body {
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
 
+    /* Markdown code colors */
+    --color-markdown-code-text: hsl(0deg 0% 0%);
+    --color-markdown-code-background: hsl(0deg 0% 100%);
+    --color-markdown-code-border: hsl(240deg 13% 90%);
+    --color-markdown-pre-text: hsl(0deg 0% 20%);
+    --color-markdown-pre-background: hsl(0deg 0% 100%);
+    --color-markdown-pre-border: hsl(0deg 0% 0% / 15%);
+    --color-markdown-link: hsl(200deg 100% 40%);
+    --color-markdown-link-hover: hsl(200deg 100% 25%);
+    --color-markdown-code-link: var(--color-markdown-link);
+    --color-markdown-code-link-hover: var(--color-markdown-link-hover);
+
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
     --color-message-action-visible: hsl(216deg 43% 20% / 50%);
@@ -565,6 +577,16 @@ body {
         hsl(0deg 0% 75%) 75%,
         hsl(0deg 0% 11%)
     );
+
+    /* Markdown code colors */
+    /* Note that Markdown code-link colors are identical
+       to light theme, and so are not redeclared here. */
+    --color-markdown-code-text: var(--color-text-message-default);
+    --color-markdown-code-background: hsl(212deg 25% 15%);
+    --color-markdown-code-border: hsl(0deg 0% 0% / 50%);
+    --color-markdown-pre-text: hsl(212deg 98% 82%);
+    --color-markdown-pre-background: hsl(212deg 0% 11%);
+    --color-markdown-pre-border: hsl(0deg 0% 0% / 50%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
