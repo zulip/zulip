@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import orjson
 from django.db import connection
@@ -154,7 +154,7 @@ def update_messages_for_topic_edit(
     old_stream: Stream,
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
-) -> List[Message]:
+) -> Tuple[QuerySet[Message], Callable[[], QuerySet[Message]]]:
     # Uses index: zerver_message_realm_recipient_upper_subject
     messages = Message.objects.filter(
         realm_id=old_stream.realm_id,
@@ -222,12 +222,15 @@ def update_messages_for_topic_edit(
     # update, and then return a fresh collection -- so we know their
     # metadata has been updated for the UPDATE command, and the caller
     # can update the remote cache with that.
-    message_ids = list(messages.values_list("id", flat=True))
-    messages.update(**update_fields)
+    message_ids = [edited_message.id, *messages.values_list("id", flat=True)]
 
-    return list(
-        Message.objects.filter(id__in=message_ids).select_related(*Message.DEFAULT_SELECT_RELATED)
-    )
+    def propagate() -> QuerySet[Message]:
+        messages.update(**update_fields)
+        return Message.objects.filter(id__in=message_ids).select_related(
+            *Message.DEFAULT_SELECT_RELATED
+        )
+
+    return messages, propagate
 
 
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
