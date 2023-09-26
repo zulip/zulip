@@ -295,7 +295,7 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
-    const user_ids = user_ids_string.split(",");
+    const user_ids = user_ids_string.length === 0 ? [] : user_ids_string.split(",");
     const ids = user_ids.map(Number);
     return ids;
 }
@@ -1399,7 +1399,7 @@ export function report_late_add(user_id: number, email: string): void {
     }
 }
 
-function make_user(user_id: number, email: string, full_name: string): User {
+export function make_user(user_id: number, email: string, full_name: string): User {
     // Used to create fake user objects for users who we see via some
     // API call, such as fetching a message sent by the user, before
     // we receive a full user object for the user via the events

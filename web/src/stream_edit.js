@@ -13,6 +13,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as components from "./components";
 import * as confirm_dialog from "./confirm_dialog";
+import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
@@ -32,7 +33,6 @@ import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
-import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
@@ -454,6 +454,7 @@ export function initialize() {
                     .addClass("save-button")
                     .attr("data-stream-id", stream_id);
             },
+            update_submit_disabled_state_on_change: true,
         });
     });
 
@@ -504,10 +505,6 @@ export function initialize() {
         const new_name = $("#change_stream_name").val().trim();
         const new_description = $("#change_stream_description").val().trim();
 
-        if (new_name === sub.name && new_description === sub.description) {
-            dialog_widget.hide_dialog_spinner();
-            return;
-        }
         if (new_name !== sub.name) {
             data.new_name = new_name;
         }

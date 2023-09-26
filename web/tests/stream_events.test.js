@@ -11,6 +11,7 @@ const $ = require("./lib/zjquery");
 const noop = () => {};
 
 const color_data = mock_esm("../src/color_data");
+const compose_fade = mock_esm("../src/compose_fade");
 const stream_color = mock_esm("../src/stream_color");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
@@ -19,7 +20,6 @@ const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
     update_empty_left_panel_message: noop,
 });
 const unread_ui = mock_esm("../src/unread_ui");
-
 const message_lists = mock_esm("../src/message_lists", {
     current: {},
 });
@@ -32,10 +32,10 @@ mock_esm("../src/recent_view_ui", {
 mock_esm("../src/settings_notifications", {
     update_page() {},
 });
-
 mock_esm("../src/overlays", {
     streams_open: () => true,
 });
+const user_profile = mock_esm("../src/user_profile");
 
 const {Filter} = zrequire("../src/filter");
 const narrow_state = zrequire("narrow_state");
@@ -44,8 +44,6 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
 const compose_recipient = zrequire("compose_recipient");
-const compose_fade = zrequire("compose_fade");
-const user_profile = mock_esm("../src/user_profile");
 
 const george = {
     email: "george@zulip.com",
@@ -457,7 +455,7 @@ test("process_subscriber_update", ({override}) => {
     stream_settings_ui.update_subscribers_ui = subsStub.f;
 
     const fadedUsersStub = make_stub();
-    compose_fade.update_faded_users = fadedUsersStub.f;
+    override(compose_fade, "update_faded_users", fadedUsersStub.f);
 
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
     // Sample user IDs

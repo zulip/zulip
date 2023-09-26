@@ -102,6 +102,7 @@
                 border: 2px solid transparent;
                 border-radius: 3px;
                 box-sizing: border-box;
+                justify-content: space-between;
             }
 
             .inbox-empty-text {
@@ -119,8 +120,8 @@
                 }
 
                 .inbox-left-part {
-                    grid-template: auto / auto min-content;
-                    grid-template-areas: "header_name unread_count";
+                    grid-template: auto / auto min-content min-content;
+                    grid-template-areas: "header_name unread_mention_info unread_count";
                 }
 
                 .inbox-header-name {
@@ -154,10 +155,6 @@
                         opacity: 1;
                     }
                 }
-            }
-
-            .fa-group {
-                margin-right: 7px;
             }
 
             .fa-lock {
@@ -203,9 +200,10 @@
             }
 
             .zulip-icon-bot {
+                opacity: 0.7;
                 font-size: 11px;
-                margin-left: -2px;
                 margin-right: 5px;
+                margin-left: 1px;
             }
 
             .inbox-row {
@@ -227,8 +225,8 @@
                 }
 
                 .inbox-left-part {
-                    grid-template: auto / min-content auto min-content;
-                    grid-template-areas: "match_topic_and_dm_start recipient_info unread_count";
+                    grid-template: auto / min-content auto min-content min-content;
+                    grid-template-areas: "match_topic_and_dm_start recipient_info unread_mention_info unread_count";
                 }
 
                 .fake-collapse-button,
@@ -244,9 +242,13 @@
 
             .unread_count {
                 grid-area: unread_count;
-                margin-right: 5px;
-                margin-left: 10px;
+                margin: 0 5px;
                 align-self: center;
+            }
+
+            .unread_mention_info {
+                grid-area: unread_mention_info;
+                margin-right: 0;
             }
 
             .stream-privacy {
@@ -307,23 +309,52 @@
                     cursor: pointer;
                 }
 
+                .inbox-group-or-bot-dm {
+                    position: relative;
+                    left: -3px;
+                }
+
                 .recipients_info {
                     display: flex;
                     flex-wrap: wrap;
                     column-gap: 10px;
                     grid-area: recipient_info;
+                    overflow: hidden;
 
                     .user_block {
                         display: flex;
                         align-items: center;
                         white-space: nowrap;
+                        overflow: hidden;
+
+                        .fa-group {
+                            font-size: 11px;
+                            margin-right: 5px;
+                            align-self: flex-start;
+                            margin-top: 5px;
+                            opacity: 0.7;
+                        }
+
+                        .user_status_icon_wrapper {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
                     }
 
                     .recipients_name {
+                        display: flex;
+                        flex-wrap: wrap;
                         white-space: nowrap;
+                        gap: 2px;
+                        overflow: hidden;
                     }
                 }
             }
+        }
+
+        .inbox-right-part-wrapper {
+            display: flex;
+            align-items: center;
         }
 
         #inbox_filter_mute_toggle {
@@ -332,6 +363,44 @@
             height: 16px;
             position: relative;
             top: 1px;
+        }
+
+        .inbox-row,
+        .inbox-header {
+            &:focus,
+            &:focus-within,
+            &:hover {
+                .inbox-action-button {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .inbox-action-button {
+            display: flex;
+            border-radius: 3px;
+            outline: none;
+            opacity: 0;
+
+            &.hide {
+                display: none;
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 2px var(--color-outline-focus);
+            }
+
+            & i {
+                padding: 5px;
+                font-size: 16px;
+                opacity: 0.3;
+                color: var(--color-vdots-hover);
+
+                &:hover {
+                    opacity: 1;
+                    cursor: pointer;
+                }
+            }
         }
     }
 }

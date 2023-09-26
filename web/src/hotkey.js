@@ -256,7 +256,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (inbox_util.is_in_focus() && inbox_ui.change_focused_element($(e.target), "escape")) {
+    if (inbox_util.is_in_focus() && inbox_ui.change_focused_element("escape")) {
         return true;
     }
 
@@ -266,8 +266,8 @@ export function process_escape_key(e) {
     }
 
     if (popovers.any_active()) {
-        if (user_card_popover.is_user_card_manage_menu_open()) {
-            user_card_popover.hide_user_card_popover_manage_menu();
+        if (user_card_popover.manage_menu.is_open()) {
+            user_card_popover.manage_menu.hide();
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
         }
@@ -371,23 +371,23 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (user_card_popover.is_user_card_manage_menu_open()) {
-        user_card_popover.user_card_popover_manage_menu_handle_keyboard(event_name);
+    if (user_card_popover.manage_menu.is_open()) {
+        user_card_popover.manage_menu.handle_keyboard(event_name);
         return true;
     }
 
-    if (user_card_popover.is_message_user_card_open()) {
-        user_card_popover.user_card_popover_for_message_handle_keyboard(event_name);
+    if (user_card_popover.message_user_card.is_open()) {
+        user_card_popover.message_user_card.handle_keyboard(event_name);
         return true;
     }
 
-    if (user_card_popover.is_user_card_open()) {
-        user_card_popover.user_card_popover_handle_keyboard(event_name);
+    if (user_card_popover.user_card.is_open()) {
+        user_card_popover.user_card.handle_keyboard(event_name);
         return true;
     }
 
-    if (user_card_popover.user_sidebar_popped()) {
-        user_card_popover.user_sidebar_popover_handle_keyboard(event_name);
+    if (user_card_popover.user_sidebar.is_open()) {
+        user_card_popover.user_sidebar.handle_keyboard(event_name);
         return true;
     }
 
@@ -741,7 +741,7 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (overlays.settings_open() && !user_card_popover.is_user_card_open()) {
+    if (overlays.settings_open() && !user_card_popover.user_card.is_open()) {
         return false;
     }
 

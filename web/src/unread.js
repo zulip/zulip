@@ -360,7 +360,7 @@ class UnreadTopicCounter {
         for (const [topic, msgs] of per_stream_bucketer) {
             const topic_count = msgs.size;
 
-            if (user_topics.is_topic_unmuted(stream_id, topic)) {
+            if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
                 unmuted_count += topic_count;
             } else if (user_topics.is_topic_muted(stream_id, topic)) {
                 muted_count += topic_count;
@@ -464,7 +464,7 @@ class UnreadTopicCounter {
             const topic = stream_bucketer.reverse_lookup.get(message_id);
             const stream_is_muted = sub_store.get(stream_id)?.is_muted;
             if (stream_is_muted) {
-                if (user_topics.is_topic_unmuted(stream_id, topic)) {
+                if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
                     streams_with_unmuted_mentions.add(stream_id);
                 }
             } else {

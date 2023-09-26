@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as inbox_ui from "./inbox_ui";
 import * as message_lists from "./message_lists";
 import * as overlays from "./overlays";
 import * as popover_menus from "./popover_menus";
@@ -26,7 +25,6 @@ export function handle_topic_updates(user_topic_event) {
         user_topic_event.stream_id,
         user_topic_event.topic_name,
     );
-    inbox_ui.update();
 
     if (overlays.settings_open() && settings_user_topics.loaded) {
         const stream_id = user_topic_event.stream_id;

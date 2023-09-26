@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as settings_data from "./settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as user_group_edit from "./user_group_edit";
 
@@ -17,7 +18,7 @@ export function update_add_members_elements(group) {
     }
 
     // We are only concerned with the Members tab for editing groups.
-    const $add_members_container = $(".edit_members_for_user_group .add_subscribers_container");
+    const $add_members_container = $(".edit_members_for_user_group .add_members_container");
 
     if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_members feature.
@@ -26,20 +27,20 @@ export function update_add_members_elements(group) {
     }
 
     // Otherwise, we adjust whether the widgets are disabled based on
-    // whether this user is authorized to add subscribers.
+    // whether this user is authorized to add members.
     const $input_element = $add_members_container.find(".input").expectOne();
-    const $button_element = $add_members_container
-        .find('button[name="add_subscriber"]')
-        .expectOne();
+    const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
-    if (user_group_edit.can_edit(group.id)) {
+    if (settings_data.can_edit_user_group(group.id)) {
         $input_element.prop("disabled", false);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
         $add_members_container[0]._tippy?.destroy();
+        $add_members_container.removeClass("add_members_disabled");
     } else {
         $input_element.prop("disabled", true);
         $button_element.prop("disabled", true);
+        $add_members_container.addClass("add_members_disabled");
 
         stream_ui_updates.initialize_disable_btn_hint_popover(
             $add_members_container,

@@ -29,16 +29,24 @@ export function build_highlight_regex(query) {
 }
 
 export function highlight_with_escaping_and_regex(regex, item) {
+    // if regex is empty return entire item highlighted and escaped
+    if (regex.source === "()") {
+        return "<strong>" + Handlebars.Utils.escapeExpression(item) + "</strong>";
+    }
+
     // We need to assemble this manually (as opposed to doing 'join') because we need to
     // (1) escape all the pieces and (2) the regex is case-insensitive, and we need
     // to know the case of the content we're replacing (you can't just use a bolded
     // version of 'query')
 
-    const pieces = item.split(regex);
+    const pieces = item.split(regex).filter(Boolean);
     let result = "";
 
-    for (const piece of pieces) {
-        if (regex.test(piece)) {
+    for (let i = 0; i < pieces.length; i += 1) {
+        const piece = pieces[i];
+        if (regex.test(piece) && (i === 0 || pieces[i - 1].endsWith(" "))) {
+            // only highlight if the matching part is a word prefix, ie
+            // if it is the 1st piece or if there was a space before it
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
             result += Handlebars.Utils.escapeExpression(piece);
@@ -49,21 +57,12 @@ export function highlight_with_escaping_and_regex(regex, item) {
 }
 
 export function make_query_highlighter(query) {
-    let i;
     query = query.toLowerCase();
 
     const regex = build_highlight_regex(query);
 
     return function (phrase) {
-        let result = "";
-        const parts = phrase.split(" ");
-        for (i = 0; i < parts.length; i += 1) {
-            if (i > 0) {
-                result += " ";
-            }
-            result += highlight_with_escaping_and_regex(regex, parts[i]);
-        }
-        return result;
+        return highlight_with_escaping_and_regex(regex, phrase);
     };
 }
 

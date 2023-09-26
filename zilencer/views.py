@@ -1,7 +1,7 @@
 import datetime
 import logging
 from collections import Counter
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
 import orjson
@@ -10,8 +10,8 @@ from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Model
 from django.http import HttpRequest, HttpResponse
-from django.utils import timezone
 from django.utils.crypto import constant_time_compare
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
@@ -179,7 +179,7 @@ def register_remote_push_device(
                 token=token,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
-                last_updated=timezone.now(),
+                last_updated=timezone_now(),
                 **kwargs,
             )
     except IntegrityError:
@@ -316,6 +316,25 @@ def remote_server_notify_push(
     )
     if apple_devices and user_id is not None and user_uuid is not None:
         apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
+
+    remote_queue_latency: Optional[str] = None
+    sent_time: Optional[Union[float, int]] = gcm_payload.get(
+        "time", apns_payload["custom"]["zulip"].get("time")
+    )
+    if sent_time is not None:
+        if isinstance(sent_time, int):
+            # The 'time' field only used to have whole-integer
+            # granularity, so if so we only report with
+            # whole-second granularity
+            remote_queue_latency = str(int(timezone_now().timestamp()) - sent_time)
+        else:
+            remote_queue_latency = f"{timezone_now().timestamp() - sent_time:.3f}"
+        logger.info(
+            "Remote queuing latency for %s:%s is %s seconds",
+            server.uuid,
+            user_identity,
+            remote_queue_latency,
+        )
 
     logger.info(
         "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",

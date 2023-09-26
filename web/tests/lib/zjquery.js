@@ -179,15 +179,7 @@ function make_zjquery() {
     };
 
     zjquery.fn = new Proxy(fn, {
-        set(obj, prop, value) {
-            if (prop === "popover") {
-                // We allow our popovers test to modify
-                // $.fn so we can bypass a gruesome hack
-                // in our popovers.js module.
-                obj[prop] = value;
-                return true;
-            }
-
+        set(_obj, _prop, _value) {
             /* istanbul ignore next */
             throw new Error(`
                 Please don't use node tests to test code

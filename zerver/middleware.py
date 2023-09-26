@@ -539,7 +539,7 @@ class HostDomainMiddleware(MiddlewareMixin):
         #
         # API authentication will end up checking for an invalid
         # realm, and throw a JSON-format error if appropriate.
-        if request.path.startswith(("/static/", "/api/", "/json/")):
+        if request.path.startswith(("/static/", "/api/", "/json/")) or request.path == "/health":
             return None
 
         subdomain = get_subdomain(request)

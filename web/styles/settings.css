@@ -753,10 +753,28 @@ input[type="checkbox"] {
 
 .admin_profile_fields_table,
 .edit_profile_field_choices_container,
-.admin_linkifiers_table,
 .profile_field_choices_table {
     .movable-row {
         cursor: move;
+
+        .fa-ellipsis-v {
+            color: hsl(0deg 0% 75%);
+            position: relative;
+            top: 1px;
+
+            + i {
+                margin-right: 5px;
+            }
+        }
+    }
+}
+
+.admin_linkifiers_table {
+    .movable-row {
+        .move-handle {
+            cursor: move;
+            user-select: none;
+        }
 
         .fa-ellipsis-v {
             color: hsl(0deg 0% 75%);
@@ -868,6 +886,10 @@ input[type="checkbox"] {
 
         .purple {
             color: hsl(278deg 62% 68%);
+        }
+
+        .steel-blue {
+            color: hsl(207deg 44% 49%);
         }
     }
 
@@ -1067,6 +1089,7 @@ input[type="checkbox"] {
 label.display-settings-radio-choice-label {
     border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
     padding: 8px 0 10px;
+    display: flex;
 
     &:last-of-type {
         border-bottom: none;
@@ -1095,7 +1118,8 @@ label.display-settings-radio-choice-label {
     }
 
     .right {
-        float: right;
+        /* Push to far right in flex container. */
+        margin-left: auto;
     }
 }
 
@@ -1125,16 +1149,13 @@ $option_title_width: 180px;
         overflow-x: hidden;
         overflow-y: visible;
         position: relative;
-        height: 36px;
 
         .user-name-and-status-text {
-            margin-top: -4px;
             display: flex;
             flex-direction: column;
         }
 
         .status-text {
-            display: inline-block;
             opacity: 0.75;
             font-size: 90%;
 
@@ -1487,7 +1508,8 @@ $option_title_width: 180px;
     }
 }
 
-.time-limit-custom-input {
+.time-limit-custom-input,
+.realm_jitsi_server_url_custom_input {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border: 1px solid hsl(0deg 0% 80%);
@@ -1501,6 +1523,16 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#realm_jitsi_server_url_setting {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    .jitsi_server_url_custom_input_label {
+        margin-bottom: 3px;
     }
 }
 
@@ -2015,5 +2047,35 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#generate-integration-url-modal {
+    .inline {
+        display: inline;
+    }
+
+    .integration-url {
+        font-family: "Source Code Pro", monospace;
+        padding: 10px;
+        font-size: 0.85rem;
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        overflow-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .integration-url-stream-wrapper .dropdown_widget_value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .integration-url-stream-wrapper .dropdown-widget-button {
+        width: 75%;
+    }
+
+    #stream-not-specified-notice {
+        margin-top: -10px;
     }
 }

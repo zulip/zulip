@@ -18,6 +18,7 @@ import * as compose_validate from "./compose_validate";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
+import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
@@ -35,7 +36,6 @@ import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
-import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -719,12 +719,17 @@ export function toggle_resolve_topic(
         url: "/json/messages/" + message_id,
         data: request,
         success() {
-            const $spinner = $row.find(".toggle_resolve_topic_spinner");
-            loading.destroy_indicator($spinner);
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
         },
         error(xhr) {
-            const $spinner = $row.find(".toggle_resolve_topic_spinner");
-            loading.destroy_indicator($spinner);
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
+
             if (xhr.responseJSON) {
                 if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                     handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);

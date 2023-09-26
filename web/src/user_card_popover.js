@@ -3,7 +3,6 @@ import {parseISO} from "date-fns";
 import $ from "jquery";
 import tippy from "tippy.js";
 
-import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_user_card_popover_content from "../templates/user_card_popover_content.hbs";
 import render_user_card_popover_manage_menu from "../templates/user_card_popover_manage_menu.hbs";
 import render_user_card_popover_title from "../templates/user_card_popover_title.hbs";
@@ -24,46 +23,161 @@ import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popovers from "./popovers";
-import {
-    focus_first_popover_item,
-    hide_all,
-    hide_all_except_sidebars,
-    popover_items_handle_keyboard,
-} from "./popovers";
+import * as popover_menus from "./popover_menus";
+import {hide_all, hide_all_except_sidebars} from "./popovers";
+import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
+import * as ui_util from "./ui_util";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 
-let $current_message_user_card_popover_elem;
-let $current_user_card_popover_elem;
-let $current_user_card_popover_manage_menu;
-let current_user_sidebar_popover;
 let current_user_sidebar_user_id;
 
-let userlist_placement = "right";
+class PopoverMenu {
+    constructor() {
+        this.instance = null;
+    }
+
+    is_open() {
+        return Boolean(this.instance);
+    }
+
+    hide() {
+        if (this.is_open()) {
+            this.instance.destroy();
+            this.instance = undefined;
+        }
+    }
+
+    handle_keyboard(key) {
+        if (!this.is_open()) {
+            blueslip.error("Trying to get the items when popover is closed.");
+            return;
+        }
+
+        const $popover = $(this.instance?.popper);
+        if (!$popover) {
+            blueslip.error("Cannot find popover data.");
+            return;
+        }
+
+        const $items = $("li:not(.divider):visible a", $popover);
+
+        popover_items_handle_keyboard_with_overrides(key, $items);
+    }
+}
+
+export const manage_menu = new PopoverMenu();
+export const user_sidebar = new PopoverMenu();
+export const message_user_card = new PopoverMenu();
+export const user_card = new PopoverMenu();
+
+function popover_items_handle_keyboard_with_overrides(key, $items) {
+    /* Variant of popover_items_handle_keyboard with somewhat hacky
+     * logic for for opening the manage menu. */
+    if (!$items) {
+        return;
+    }
+
+    const index = $items.index($items.filter(":focus"));
+
+    if (key === "enter" && index >= 0 && index < $items.length) {
+        $items[index].click();
+        if (manage_menu.is_open()) {
+            // If we just opened the little manage menu via the
+            // keyboard, we need to focus the first item for a
+            // continuation of the keyboard experience.
+
+            // TODO: This might be cleaner to just call
+            // toggle_user_card_popover_manage_menu rather than
+            // triggering a click.
+
+            const previously_defined_on_mount = manage_menu.instance.props.onMount;
+            manage_menu.instance.setProps({
+                onMount() {
+                    // We're monkey patching the onMount method here to ensure we start
+                    // focusing on the item after the popover is mounted to the DOM;
+                    // otherwise, it won't work correctly.
+                    if (previously_defined_on_mount) {
+                        previously_defined_on_mount();
+                    }
+                    const $items = get_user_card_popover_manage_menu_items();
+                    popover_menus.focus_first_popover_item($items);
+                },
+            });
+        }
+        return;
+    }
+
+    if (
+        index === -1 &&
+        $(".user-card-popover-manage-menu-btn").is(":visible") &&
+        !manage_menu.is_open()
+    ) {
+        // If we have a "Manage Menu" button in the user card popover,
+        // the first item to receive focus shouldn't be that button.
+        // However, if the Manage Menu is open, focus should shift to
+        // the first item in that popover.
+        const adjusted_index = 1;
+        $items.eq(adjusted_index).trigger("focus");
+        return;
+    }
+
+    /* Otherwise, use the base implementation */
+    popover_menus.popover_items_handle_keyboard(key, $items);
+}
+
+function get_popover_classname(popover) {
+    const popovers = {
+        user_sidebar: "user-sidebar-popover-root",
+        message_user_card: "message-user-card-popover-root",
+        user_card: "user-card-popover-root",
+    };
+
+    return popovers[popover];
+}
+
+user_sidebar.hide = function () {
+    PopoverMenu.prototype.hide.call(this);
+    current_user_sidebar_user_id = undefined;
+};
+
+const user_card_popovers = {
+    manage_menu,
+    user_sidebar,
+    message_user_card,
+    user_card,
+};
+
+export function any_active() {
+    return Object.values(user_card_popovers).some((instance) => instance.is_open());
+}
+
+export function hide_all_instances() {
+    for (const key in user_card_popovers) {
+        if (user_card_popovers[key].hide) {
+            user_card_popovers[key].hide();
+        }
+    }
+}
 
 export function hide_all_user_card_popovers() {
-    hide_user_card_popover_manage_menu();
-    hide_message_user_card_popover();
-    hide_user_sidebar_popover();
-    hide_user_card_popover();
+    hide_all_instances();
 }
 
 export function clear_for_testing() {
-    $current_message_user_card_popover_elem = undefined;
-    $current_user_card_popover_elem = undefined;
-    $current_user_card_popover_manage_menu = undefined;
-    userlist_placement = "right";
+    message_user_card.instance = undefined;
+    user_card.instance = undefined;
+    manage_menu.instance = undefined;
 }
 
-export function elem_to_user_id($elem) {
+function elem_to_user_id($elem) {
     return Number.parseInt($elem.attr("data-user-id"), 10);
 }
 
@@ -76,53 +190,15 @@ function clipboard_enable(arg) {
 // Functions related to user card popover.
 
 export function toggle_user_card_popover(element, user) {
-    const $last_popover_elem = $current_user_card_popover_elem;
-    hide_all();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        return;
-    }
-    const $elt = $(element);
     render_user_card_popover(
         user,
-        $elt,
+        $(element),
         false,
         false,
         "compose_private_message",
-        "user-card-popover",
+        "user_card",
         "right",
     );
-    $current_user_card_popover_elem = $elt;
-}
-
-export function hide_user_card_popover() {
-    if (is_user_card_open()) {
-        $current_user_card_popover_elem.popover("destroy");
-        $current_user_card_popover_elem = undefined;
-    }
-}
-
-export function is_user_card_open() {
-    return $current_user_card_popover_elem !== undefined;
-}
-
-export function user_card_popover_handle_keyboard(key) {
-    const $items = get_user_card_popover_items();
-    popover_items_handle_keyboard(key, $items);
-}
-
-function get_user_card_popover_items() {
-    const $popover_elt = $("div.user-card-popover");
-    if (!$current_user_card_popover_elem || !$popover_elt.length) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
-        return undefined;
-    }
-
-    if ($popover_elt.length >= 2) {
-        blueslip.error("More than one user info popovers cannot be opened at same time.");
-        return undefined;
-    }
-
-    return $("li:not(.divider):visible a", $popover_elt);
 }
 
 function get_user_card_popover_data(
@@ -216,6 +292,8 @@ function render_user_card_popover(
     private_msg_class,
     template_class,
     popover_placement,
+    show_as_overlay,
+    on_mount,
 ) {
     const args = get_user_card_popover_data(
         user,
@@ -224,46 +302,64 @@ function render_user_card_popover(
         private_msg_class,
     );
 
-    const $popover_content = $(render_user_card_popover_content(args));
-    $popover_element.popover({
-        content: $popover_content.get(0),
-        fixed: true,
-        placement: popover_placement,
-        template: render_no_arrow_popover({class: template_class}),
-        title: render_user_card_popover_title({
-            // See the load_medium_avatar comment for important background.
-            user_avatar: people.small_avatar_url_for_person(user),
-            user_is_guest: user.is_guest,
-        }),
-        html: true,
-        trigger: "manual",
-        top_offset: $("#userlist-title").get_offset_to_window().top + 15,
-        fix_positions: true,
-    });
-    $popover_element.popover("show");
+    popover_menus.toggle_popover_menu(
+        $popover_element[0],
+        {
+            placement: popover_placement,
+            arrow: false,
+            onCreate(instance) {
+                user_card_popovers[template_class].instance = instance;
+                instance.setContent(ui_util.parse_html(render_user_card_popover_content(args)));
 
-    init_email_clipboard();
-    init_email_tooltip(user);
-    const $user_name_element = $popover_content.find(".user_full_name");
-    const $bot_owner_element = $popover_content.find(".bot_owner");
-    if ($user_name_element.prop("clientWidth") < $user_name_element.prop("scrollWidth")) {
-        $user_name_element.addClass("tippy-zulip-tooltip");
-    }
-    if (
-        args.bot_owner &&
-        $bot_owner_element.prop("clientWidth") < $bot_owner_element.prop("scrollWidth")
-    ) {
-        $bot_owner_element.addClass("tippy-zulip-tooltip");
-    }
+                const $popover = $(instance.popper);
+                const $popover_title = $popover.find(".popover-title");
 
-    // Note: We pass the normal-size avatar in initial rendering, and
-    // then query the server to replace it with the medium-size
-    // avatar.  The purpose of this double-fetch approach is to take
-    // advantage of the fact that the browser should already have the
-    // low-resolution image cached and thus display a low-resolution
-    // avatar rather than a blank area during the network delay for
-    // fetching the medium-size one.
-    load_medium_avatar(user, $(".popover-avatar"));
+                $popover.addClass(get_popover_classname(template_class));
+                $popover_title.append(
+                    render_user_card_popover_title({
+                        // See the load_medium_avatar comment for important background.
+                        user_avatar: people.small_avatar_url_for_person(user),
+                        user_is_guest: user.is_guest,
+                    }),
+                );
+            },
+            onHidden() {
+                user_card_popovers[template_class].hide();
+            },
+            onMount(instance) {
+                if (on_mount) {
+                    on_mount(instance);
+                }
+                // Note: We pass the normal-size avatar in initial rendering, and
+                // then query the server to replace it with the medium-size
+                // avatar.  The purpose of this double-fetch approach is to take
+                // advantage of the fact that the browser should already have the
+                // low-resolution image cached and thus display a low-resolution
+                // avatar rather than a blank area during the network delay for
+                // fetching the medium-size one.
+                load_medium_avatar(user, $(".popover-avatar"));
+                init_email_clipboard();
+                init_email_tooltip(user);
+
+                const $popover = $(instance.popper);
+                const $user_name_element = $popover.find(".user_full_name");
+                const $bot_owner_element = $popover.find(".bot_owner");
+
+                if (
+                    $user_name_element.prop("clientWidth") < $user_name_element.prop("scrollWidth")
+                ) {
+                    $user_name_element.addClass("tippy-zulip-tooltip");
+                }
+                if (
+                    args.bot_owner &&
+                    $bot_owner_element.prop("clientWidth") < $bot_owner_element.prop("scrollWidth")
+                ) {
+                    $bot_owner_element.addClass("tippy-zulip-tooltip");
+                }
+            },
+        },
+        {show_as_overlay},
+    );
 }
 
 function copy_email_handler(e) {
@@ -341,12 +437,6 @@ function load_medium_avatar(user, $elt) {
 // Functions related to manage menu popover.
 
 function toggle_user_card_popover_manage_menu(element, user) {
-    const $last_popover_elem = $current_user_card_popover_manage_menu;
-    hide_user_card_popover_manage_menu();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        return;
-    }
-
     const is_me = people.is_my_user_id(user.user_id);
     const is_muted = muted_users.is_user_muted(user.user_id);
     const is_system_bot = user.is_system_bot;
@@ -361,48 +451,33 @@ function toggle_user_card_popover_manage_menu(element, user) {
         user_id: user.user_id,
     };
 
-    const $popover_elt = $(element);
-    $popover_elt.popover({
-        content: render_user_card_popover_manage_menu(args),
+    popover_menus.toggle_popover_menu(element, {
         placement: "bottom",
-        html: true,
-        trigger: "manual",
-        fixed: true,
+        onCreate(instance) {
+            manage_menu.instance = instance;
+            const $popover = $(instance.popper);
+            $popover.addClass("manage-menu-popover-root");
+            instance.setContent(ui_util.parse_html(render_user_card_popover_manage_menu(args)));
+        },
+        onHidden() {
+            manage_menu.hide();
+        },
     });
-
-    $popover_elt.popover("show");
-    $current_user_card_popover_manage_menu = $popover_elt;
-}
-
-export function hide_user_card_popover_manage_menu() {
-    if ($current_user_card_popover_manage_menu !== undefined) {
-        $current_user_card_popover_manage_menu.popover("destroy");
-        $current_user_card_popover_manage_menu = undefined;
-    }
-}
-
-export function is_user_card_manage_menu_open() {
-    return $current_user_card_popover_manage_menu !== undefined;
-}
-
-export function user_card_popover_manage_menu_handle_keyboard(key) {
-    const $items = get_user_card_popover_manage_menu_items();
-    popover_items_handle_keyboard(key, $items);
 }
 
 export function get_user_card_popover_manage_menu_items() {
-    if (!$current_user_card_popover_manage_menu) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
+    if (!manage_menu.is_open()) {
+        blueslip.error("Trying to get menu items when manage menu popover is closed.");
         return undefined;
     }
 
-    const popover_data = $current_user_card_popover_manage_menu.data("popover");
-    if (!popover_data) {
-        blueslip.error("Cannot find popover data for actions menu.");
+    const $popover = $(manage_menu.instance.popper);
+    if (!$popover) {
+        blueslip.error("Cannot find popover data for manage menu.");
         return undefined;
     }
 
-    return $(".user-card-popover-manage-menu li:not(.divider):visible a", popover_data.$tip);
+    return $(".user-card-popover-manage-menu li:not(.divider):visible a", $popover);
 }
 
 // Functions related to message user card popover.
@@ -410,17 +485,10 @@ export function get_user_card_popover_manage_menu_items() {
 // element is the target element to pop off of
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
-function toggle_user_card_popover_for_message(element, user, message) {
-    const $last_popover_elem = $current_message_user_card_popover_elem;
-    hide_all();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
-    }
+function toggle_user_card_popover_for_message(element, user, message, on_mount) {
     message_lists.current.select_id(message.id);
     const $elt = $(element);
-    if ($elt.data("popover") === undefined) {
+    if (!message_user_card.is_open()) {
         if (user === undefined) {
             // This is never supposed to happen, not even for deactivated
             // users, so we'll need to debug this error if it occurs.
@@ -438,17 +506,25 @@ function toggle_user_card_popover_for_message(element, user, message) {
             is_sender_popover,
             true,
             "respond_personal_button",
-            "message-user-card-popover",
+            "message_user_card",
             "right",
+            undefined,
+            on_mount,
         );
-
-        $current_message_user_card_popover_elem = $elt;
     }
 }
 
 // This function serves as the entry point for toggling
 // the user card popover via keyboard shortcut.
 export function toggle_sender_info() {
+    if (message_user_card.is_open()) {
+        // We need to call the hide method here because
+        // the event wasn't triggered by the mouse.
+        // The Tippy unTrigger event wasn't called,
+        // so we have to manually hide the popover.
+        message_user_card.hide();
+        return;
+    }
     const $message = $(".selected_message");
     let $sender = $message.find(".message-avatar");
     if ($sender.length === 0) {
@@ -459,10 +535,11 @@ export function toggle_sender_info() {
 
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
-    toggle_user_card_popover_for_message($sender[0], user, message);
-    if ($current_message_user_card_popover_elem && !page_params.is_spectator) {
-        focus_user_card_popover_item();
-    }
+    toggle_user_card_popover_for_message($sender[0], user, message, () => {
+        if (!page_params.is_spectator) {
+            focus_user_card_popover_item();
+        }
+    });
 }
 
 function focus_user_card_popover_item() {
@@ -471,79 +548,65 @@ function focus_user_card_popover_item() {
     const $items = get_user_card_popover_for_message_items();
 
     if ($(".user-card-popover-manage-menu-btn").is(":visible")) {
-        focus_first_popover_item($items, 1);
+        popover_menus.focus_first_popover_item($items, 1);
     } else {
-        focus_first_popover_item($items);
+        popover_menus.focus_first_popover_item($items);
     }
-}
-
-export function is_message_user_card_open() {
-    return $current_message_user_card_popover_elem !== undefined;
-}
-
-export function hide_message_user_card_popover() {
-    if (is_message_user_card_open()) {
-        $current_message_user_card_popover_elem.popover("destroy");
-        $current_message_user_card_popover_elem = undefined;
-    }
-}
-
-export function user_card_popover_for_message_handle_keyboard(key) {
-    const $items = get_user_card_popover_for_message_items();
-    popover_items_handle_keyboard(key, $items);
 }
 
 function get_user_card_popover_for_message_items() {
-    if (!$current_message_user_card_popover_elem) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
+    if (!message_user_card.is_open()) {
+        blueslip.error("Trying to get menu items when message user card popover is closed.");
         return undefined;
     }
 
-    const popover_data = $current_message_user_card_popover_elem.data("popover");
-    if (!popover_data) {
-        blueslip.error("Cannot find popover data for actions menu.");
+    const $popover = $(message_user_card.instance.popper);
+    if (!$popover) {
+        blueslip.error("Cannot find popover data for message user card menu.");
         return undefined;
     }
 
-    return $("li:not(.divider):visible a", popover_data.$tip);
+    return $("li:not(.divider):visible a", $popover);
 }
 
 // Functions related to the user card popover in the user sidebar.
 
-export function user_sidebar_popped() {
-    return current_user_sidebar_popover !== undefined;
-}
+function toggle_sidebar_user_card_popover($target) {
+    const user_id = elem_to_user_id($target.find("a"));
+    const user = people.get_by_user_id(user_id);
 
-export function hide_user_sidebar_popover() {
-    if (user_sidebar_popped()) {
-        // this hide_* method looks different from all the others since
-        // the presence list may be redrawn. Due to funkiness with jQuery's .data()
-        // this would confuse $.popover("destroy"), which looks at the .data() attached
-        // to a certain element. We thus save off the .data("popover") in the
-        // toggle_user_sidebar_popover and inject it here before calling destroy.
-        $("#user_presences").data("popover", current_user_sidebar_popover);
-        $("#user_presences").popover("destroy");
-        current_user_sidebar_user_id = undefined;
-        current_user_sidebar_popover = undefined;
-    }
-}
+    // Hiding popovers may mutate current_user_sidebar_user_id.
+    const previous_user_sidebar_id = current_user_sidebar_user_id;
 
-function get_user_sidebar_popover_items() {
-    if (!current_user_sidebar_popover) {
-        blueslip.error("Trying to get menu items when user sidebar popover is closed.");
-        return undefined;
+    // Hide popovers, but we don't want to hide the sidebars on
+    // smaller browser windows.
+    hide_all_except_sidebars();
+
+    if (previous_user_sidebar_id === user_id) {
+        // If the popover is already shown, clicking again should toggle it.
+        return;
     }
 
-    return $("li:not(.divider):visible a", current_user_sidebar_popover.$tip);
+    render_user_card_popover(
+        user,
+        $target,
+        false,
+        false,
+        "compose_private_message",
+        "user_sidebar",
+        "left",
+        undefined,
+        (instance) => {
+            /* See comment in get_props_for_popover_centering for explanation of this. */
+            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+        },
+    );
+
+    current_user_sidebar_user_id = user.user_id;
 }
 
-export function user_sidebar_popover_handle_keyboard(key) {
-    const $items = get_user_sidebar_popover_items();
-    popover_items_handle_keyboard(key, $items);
-}
-
-export function register_click_handlers() {
-    $("#main_div").on("click", ".sender_name, .message-avatar", function (e) {
+function register_click_handlers() {
+    $("#main_div").on("click", ".sender_name, .inline_profile_picture", function (e) {
         const $row = $(this).closest(".message_row");
         e.stopPropagation();
         const message = message_lists.current.get(rows.id($row));
@@ -638,7 +701,7 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
-    $("body").on("click", ".user_popover .mention_user", (e) => {
+    $("body").on("click", ".user-card-popover-root .mention_user", (e) => {
         if (!compose_state.composing()) {
             compose_actions.start("stream", {trigger: "sidebar user actions"});
         }
@@ -646,13 +709,13 @@ export function register_click_handlers() {
         const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
-        hide_user_sidebar_popover();
-        popovers.hide_userlist_sidebar();
+        user_sidebar.hide();
+        right_sidebar_ui.hide_userlist_sidebar();
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $("body").on("click", ".message-user-card-popover .mention_user", (e) => {
+    $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
         if (!compose_state.composing()) {
             compose_actions.respond_to_message({trigger: "user sidebar popover"});
         }
@@ -660,7 +723,7 @@ export function register_click_handlers() {
         const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
-        hide_message_user_card_popover();
+        message_user_card.hide();
         e.stopPropagation();
         e.preventDefault();
     });
@@ -709,38 +772,11 @@ export function register_click_handlers() {
         open_user_status_modal,
     );
 
-    $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {
+    $("#user_presences").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
+        const $target = $(e.currentTarget).closest("li");
 
-        const $target = $(this).closest("li");
-        const user_id = elem_to_user_id($target.find("a"));
-        // Hiding popovers may mutate current_user_sidebar_user_id.
-        const previous_user_sidebar_id = current_user_sidebar_user_id;
-
-        // Hide popovers, but we don't want to hide the sidebars on
-        // smaller browser windows.
-        hide_all_except_sidebars();
-
-        if (previous_user_sidebar_id === user_id) {
-            // If the popover is already shown, clicking again should toggle it.
-            return;
-        }
-
-        const user = people.get_by_user_id(user_id);
-        const popover_placement = userlist_placement === "left" ? "right" : "left";
-
-        render_user_card_popover(
-            user,
-            $target,
-            false,
-            false,
-            "compose_private_message",
-            "user_popover",
-            popover_placement,
-        );
-
-        current_user_sidebar_user_id = user.user_id;
-        current_user_sidebar_popover = $target.data("popover");
+        toggle_sidebar_user_card_popover($target);
     });
 
     $("body").on("click", ".sidebar-popover-mute-user", (e) => {

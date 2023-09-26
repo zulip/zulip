@@ -7,9 +7,9 @@ import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as message_viewport from "./message_viewport";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as popovers from "./popovers";
 
 // popover orientations
 const TOP = "top";
@@ -19,8 +19,8 @@ const BOTTOM = "bottom";
 const LEFT_BOTTOM = "left_bottom";
 const VIEWPORT_CENTER = "viewport_center";
 
-// popover orientation can optionally be fixed here (property: popover),
-// otherwise popovers.compute_placement is used to compute orientation
+// popover orientation can optionally be fixed here to override the
+// defaults calculated by compute_placement.
 const HOTSPOT_LOCATIONS = new Map([
     [
         "intro_streams",
@@ -60,6 +60,48 @@ const HOTSPOT_LOCATIONS = new Map([
 const meta = {
     opened_hotspot_name: null,
 };
+
+function compute_placement($elt, popover_height, popover_width, prefer_vertical_positioning) {
+    const client_rect = $elt.get(0).getBoundingClientRect();
+    const distance_from_top = client_rect.top;
+    const distance_from_bottom = message_viewport.height() - client_rect.bottom;
+    const distance_from_left = client_rect.left;
+    const distance_from_right = message_viewport.width() - client_rect.right;
+
+    const elt_will_fit_horizontally =
+        distance_from_left + $elt.width() / 2 > popover_width / 2 &&
+        distance_from_right + $elt.width() / 2 > popover_width / 2;
+
+    const elt_will_fit_vertically =
+        distance_from_bottom + $elt.height() / 2 > popover_height / 2 &&
+        distance_from_top + $elt.height() / 2 > popover_height / 2;
+
+    // default to placing the popover in the center of the screen
+    let placement = "viewport_center";
+
+    // prioritize left/right over top/bottom
+    if (distance_from_top > popover_height && elt_will_fit_horizontally) {
+        placement = "top";
+    }
+    if (distance_from_bottom > popover_height && elt_will_fit_horizontally) {
+        placement = "bottom";
+    }
+
+    if (prefer_vertical_positioning && placement !== "viewport_center") {
+        // If vertical positioning is preferred and the popover fits in
+        // either top or bottom position then return.
+        return placement;
+    }
+
+    if (distance_from_left > popover_width && elt_will_fit_vertically) {
+        placement = "left";
+    }
+    if (distance_from_right > popover_width && elt_will_fit_vertically) {
+        placement = "right";
+    }
+
+    return placement;
+}
 
 export function post_hotspot_as_read(hotspot_name) {
     channel.post({
@@ -124,12 +166,7 @@ function place_popover(hotspot) {
     let arrow_placement;
     const orientation =
         hotspot.location.popover ||
-        popovers.compute_placement(
-            $(hotspot.location.element),
-            popover_height,
-            popover_width,
-            false,
-        );
+        compute_placement($(hotspot.location.element), popover_height, popover_width, false);
 
     switch (orientation) {
         case TOP:

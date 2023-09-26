@@ -143,22 +143,28 @@ $time_column_min_width: 42px; /* + padding */
             ".      more      .        . .   "
             ".      reactions .        . .   ";
 
-        @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-            grid-template-columns: $avatar_column_width auto max-content 8px minmax(
+        &.content_edit_mode {
+            /* Set the controls area to 0 to give more space
+               to the edit/source view area. */
+            grid-template-columns: $avatar_column_width minmax(0, 1fr) 0 8px minmax(
                     $time_column_min_width,
                     max-content
                 );
         }
 
+        @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+            grid-template-columns:
+                $avatar_column_width minmax(0, 1fr) calc(
+                    2 * var(--message-box-icon-width)
+                )
+                8px minmax($time_column_min_width, max-content);
+        }
+
         .message_controls {
             grid-area: controls;
-            justify-self: end;
-            padding: 0;
 
             @media (width < $sm_min),
                 ((width >= $md_min) and (width < $mc_min)) {
-                padding: 0 4px;
-
                 /* This is intended to target the first message_controls child
                    when there are 3 displayed. 4 = 3 + hidden message_failed element. */
                 .message_control_button:nth-last-child(4) {
@@ -414,10 +420,6 @@ $time_column_min_width: 42px; /* + padding */
                 vertical-align: baseline;
                 /* A bit of margin here helps these not look associated with the name. */
                 margin-left: 4px;
-            }
-
-            .message_controls {
-                grid-area: controls;
             }
 
             .message_sender {

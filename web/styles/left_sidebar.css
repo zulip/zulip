@@ -89,14 +89,11 @@ li.show-more-topics {
 
 .streams_inline_icon_wrapper {
     float: right;
+    margin-right: 8px;
 }
 
 .streams_filter_icon.web_public {
     margin-right: 10px;
-}
-
-#streams_inline_icon {
-    margin-right: 8px;
 }
 
 .tooltip {
@@ -576,6 +573,15 @@ li.top_left_scheduled_messages {
 
 .conversation-partners {
     line-height: 1.25;
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+}
+
+.conversation-partners .status-emoji {
+    /* Prevent status emoji from colliding
+       with unread counts. */
+    margin-right: 3px;
 }
 
 .top_left_all_messages i.fa-align-left {
@@ -601,7 +607,7 @@ li.top_left_scheduled_messages {
     height: 20px;
 }
 
-.conversation-partners,
+.conversation-partners-list,
 .topic-name,
 .stream-name {
     flex: auto;
@@ -611,6 +617,12 @@ li.top_left_scheduled_messages {
     overflow-x: clip;
     text-overflow: ellipsis;
     padding: 1px $before_unread_count_padding 1px 0;
+}
+
+.conversation-partners-list {
+    /* Don't allow growth, so that status emoji
+       remain adjacent the username. */
+    flex: 0 1 auto;
 }
 
 .topic-name {

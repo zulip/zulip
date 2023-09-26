@@ -671,6 +671,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
     )
 
+    JITSI_SERVER_SPECIAL_VALUES_MAP = {"default": None}
+    jitsi_server_url = models.URLField(null=True, default=None)
+
     # Please access this via get_giphy_rating_options.
     GIPHY_RATING_OPTIONS = {
         "disabled": {
@@ -740,6 +743,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         invite_required=bool,
         invite_to_realm_policy=int,
         invite_to_stream_policy=int,
+        jitsi_server_url=(str, type(None)),
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=(int, type(None)),

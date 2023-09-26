@@ -476,7 +476,6 @@
     .pill-container,
     .user-status-content-wrapper,
     #custom-expiration-time-input,
-    #searchbox #search_query,
     #org-join-settings .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
@@ -519,19 +518,21 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
-    #searchbox-input-container .pill,
-    #compose-direct-recipient.pill-container .pill {
-        color: inherit;
-        border: 1px solid hsl(0deg 0% 0% / 50%);
-        background-color: hsl(0deg 0% 0% / 25%);
-        font-weight: 600;
-    }
+    #searchbox {
+        /* Light theme shows hover mostly through box-shadow,
+          and dark theme shows it mostly through changing color
+          of the search button. */
+        .navbar-search:not(.expanded)
+            #searchbox-input-container:hover
+            .search_icon {
+            opacity: 0.75;
+        }
 
-    #searchbox-input-container .pill:focus,
-    #compose-direct-recipient.pill-container .pill:focus {
-        color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(176deg 78% 28% / 60%);
-        background-color: hsl(176deg 49% 42% / 40%);
+        /* Colors are inherited in light theme */
+        .navbar-search .search_icon,
+        .navbar-search .search_close_button {
+            color: hsl(0deg 0% 78%);
+        }
     }
 
     .new-style .button.no-style {
@@ -670,6 +671,11 @@
         background-color: hsl(212deg 32% 14%);
     }
 
+    /* Undo default dropdown background color for dark mode. */
+    #searchbox_form .dropdown-menu ul {
+        background-color: unset;
+    }
+
     .dropdown-menu a {
         color: inherit;
     }
@@ -702,21 +708,8 @@
         }
     }
 
-    .nav .dropdown-menu::after,
-    .popover.bottom .arrow {
+    .nav .dropdown-menu::after {
         border-bottom-color: hsl(235deg 18% 7%);
-    }
-
-    .popover.left .arrow {
-        border-left-color: hsl(235deg 18% 7%);
-    }
-
-    .popover.top .arrow {
-        border-top-color: hsl(235deg 18% 7%);
-    }
-
-    .popover.right .arrow {
-        border-right-color: hsl(235deg 18% 7%);
     }
 
     .narrow_to_compose_recipients,
@@ -874,6 +867,7 @@
     .grey-box,
     .white-box,
     .stream-email,
+    #generate-integration-url-modal .integration-url,
     #settings_page .settings-header,
     #settings_page .sidebar li.active,
     #settings_page .sidebar-wrapper .tab-container,
@@ -893,8 +887,8 @@
     .subscriptions-container .right .display-type,
     .stream-row,
     .group-row,
-    .subscriptions-container .left .search-container,
-    .user-groups-container .left .search-container,
+    .subscriptions-container .left .list-toggler-container,
+    .user-groups-container .left .list-toggler-container,
     .subscriptions-container .left,
     .user-groups-container .left,
     .subscriber-list-box,

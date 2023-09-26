@@ -11,6 +11,7 @@ from urllib import parse
 import aioapns
 import orjson
 import responses
+import time_machine
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F, Q
@@ -60,7 +61,6 @@ from zerver.lib.remote_server import (
 from zerver.lib.response import json_response_from_error
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
@@ -427,6 +427,68 @@ class PushBouncerNotificationTest(BouncerTestCase):
             {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
             {},
             remote=server,
+        )
+
+    def test_old_timestamp_format(self) -> None:
+        hamlet = self.example_user("hamlet")
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64("aaaaaa"),
+            user_id=hamlet.id,
+            server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+        )
+
+        time_sent = now().replace(microsecond=0)
+        with time_machine.travel(time_sent):
+            message = Message(
+                sender=hamlet,
+                recipient=self.example_user("othello").recipient,
+                realm_id=hamlet.realm_id,
+                content="This is test content",
+                rendered_content="This is test content",
+                date_sent=now(),
+                sending_client=get_client("test"),
+            )
+            message.set_topic_name("Test topic")
+            message.save()
+            gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
+            apns_payload = get_message_payload_apns(
+                hamlet, message, NotificationTriggers.DIRECT_MESSAGE
+            )
+
+        # Reconfigure like old versions, which had integer-granularity
+        # timestamps, and only in the GCM payload.
+        self.assertIsNotNone(gcm_payload.get("time"))
+        gcm_payload["time"] = int(gcm_payload["time"])
+        self.assertEqual(gcm_payload["time"], int(time_sent.timestamp()))
+        self.assertIsNotNone(apns_payload["custom"]["zulip"].get("time"))
+        del apns_payload["custom"]["zulip"]["time"]
+
+        payload = {
+            "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
+            "gcm_payload": gcm_payload,
+            "apns_payload": apns_payload,
+            "gcm_options": gcm_options,
+        }
+        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        with time_machine.travel(time_recieved, tick=False), mock.patch(
+            "zilencer.views.send_android_push_notification"
+        ), mock.patch("zilencer.views.send_apple_push_notification"), self.assertLogs(
+            "zilencer.views", level="INFO"
+        ) as logger:
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+            )
+        self.assert_json_success(result)
+        self.assertEqual(
+            logger.output[0],
+            "INFO:zilencer.views:"
+            f"Remote queuing latency for 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}> "
+            "is 1 seconds",
         )
 
     def test_remote_push_unregister_all(self) -> None:
@@ -1088,21 +1150,24 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
 
-        message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
-        )
-        UserMessage.objects.create(
-            user_profile=self.user_profile,
-            message=message,
-        )
+        time_sent = now()
+        with time_machine.travel(time_sent, tick=False):
+            message = self.get_message(
+                Recipient.PERSONAL,
+                type_id=self.personal_recipient_user.id,
+                realm_id=self.personal_recipient_user.realm_id,
+            )
+            UserMessage.objects.create(
+                user_profile=self.user_profile,
+                message=message,
+            )
 
+        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
-        with mock.patch(
+        with time_machine.travel(time_recieved, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
         ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -1126,8 +1191,11 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
+                    f"Remote queuing latency for 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> "
+                    "is 1.234 seconds",
+                    "INFO:zilencer.views:"
                     f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
+                    f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
                 ],
             )
             for _, _, token in apns_devices:
@@ -1149,21 +1217,24 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
 
-        message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
-        )
-        UserMessage.objects.create(
-            user_profile=self.user_profile,
-            message=message,
-        )
+        time_sent = now()
+        with time_machine.travel(time_sent, tick=False):
+            message = self.get_message(
+                Recipient.PERSONAL,
+                type_id=self.personal_recipient_user.id,
+                realm_id=self.personal_recipient_user.realm_id,
+            )
+            UserMessage.objects.create(
+                user_profile=self.user_profile,
+                message=message,
+            )
 
+        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
-        with mock.patch(
+        with time_machine.travel(time_recieved, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
         ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -1186,8 +1257,11 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
+                    f"Remote queuing latency for 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> "
+                    "is 1.234 seconds",
+                    "INFO:zilencer.views:"
                     f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
+                    f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
                 ],
             )
             for _, _, token in apns_devices:
@@ -1982,6 +2056,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2024,6 +2099,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2055,6 +2131,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": self.sender.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2092,6 +2169,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2130,6 +2208,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "user_id": user_profile.id,
                     "mentioned_user_group_id": user_group.id,
                     "mentioned_user_group_name": user_group.name,
+                    "time": message.date_sent.timestamp(),
                 }
             },
         }
@@ -2165,6 +2244,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2225,6 +2305,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "time": message.date_sent.timestamp(),
                 },
             },
         }
@@ -2255,7 +2336,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "user_id": hamlet.id,
             "event": "message",
             "zulip_message_id": message.id,
-            "time": datetime_to_timestamp(message.date_sent),
+            "time": message.date_sent.timestamp(),
             "content": content,
             "content_truncated": truncate_content,
             "server": settings.EXTERNAL_HOST,
@@ -2313,7 +2394,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "user_id": hamlet.id,
                 "event": "message",
                 "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
+                "time": message.date_sent.timestamp(),
                 "content": message.content,
                 "content_truncated": False,
                 "server": settings.EXTERNAL_HOST,
@@ -2345,7 +2426,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "user_id": hamlet.id,
                 "event": "message",
                 "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
+                "time": message.date_sent.timestamp(),
                 "content": "*This organization has disabled including message content in mobile push notifications*",
                 "content_truncated": False,
                 "server": settings.EXTERNAL_HOST,

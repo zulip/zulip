@@ -71,7 +71,6 @@ import * as playground_links_popover from "./playground_links_popover";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
@@ -493,6 +492,7 @@ function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook((counts) =>
         notifications.update_unread_counts(counts),
     );
+    unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
@@ -640,7 +640,6 @@ export function initialize_everything() {
     message_list_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
-    popovers.initialize();
     popover_menus.initialize();
 
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);

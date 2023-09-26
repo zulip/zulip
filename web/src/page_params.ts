@@ -4,6 +4,11 @@ const t1 = performance.now();
 export const page_params: {
     apps_page_url: string;
     avatar_source: string;
+    bot_types: {
+        type_id: number;
+        name: string;
+        allowed: boolean;
+    }[];
     corporate_enabled: boolean;
     development_environment: boolean;
     language_list: {
@@ -15,6 +20,7 @@ export const page_params: {
     login_page: string;
     delivery_email: string;
     is_admin: boolean;
+    is_billing_admin: boolean;
     is_bot: boolean;
     is_guest: boolean;
     is_moderator: boolean;

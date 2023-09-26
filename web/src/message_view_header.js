@@ -6,7 +6,6 @@ import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";
-import * as popovers from "./popovers";
 import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
@@ -94,89 +93,21 @@ function append_and_display_title_area(message_view_header_data) {
     }
 }
 
-function bind_title_area_handlers() {
-    $(".search_closed").on("click", (e) => {
-        popovers.hide_all();
-        search.initiate_search();
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
-        popovers.hide_all();
-
-        if (document.getSelection().type === "Range") {
-            // Allow copy/paste to work normally without interference.
-            return;
-        }
-
-        // Let links behave normally, ie, do nothing if <a>
-        if ($(e.target).closest("a").length === 0) {
-            search.initiate_search();
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
-
-    // handler that makes sure that hover plays nicely
-    // with whether search is being opened or not.
-    $("#message_view_header .narrow_description > a")
-        .on("mouseenter", () => {
-            $("#message_view_header .search_closed").css("opacity", 0.5);
-        })
-        .on("mouseleave", () => {
-            $("#message_view_header .search_closed").css("opacity", "");
-        });
-}
-
 function build_message_view_header(filter) {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
-        open_search_bar_and_close_narrow_description();
+        search.open_search_bar_and_close_narrow_description();
+        $("#search_query").val(narrow_state.search_string());
     } else {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
-        bind_title_area_handlers();
-        close_search_bar_and_open_narrow_description();
+        search.close_search_bar_and_open_narrow_description();
     }
-}
-
-// we rely entirely on this function to ensure
-// the searchbar has the right text.
-export function reset_searchbox_text() {
-    let search_string = narrow_state.search_string();
-    if (search_string !== "") {
-        if (!narrow_state.filter().is_search()) {
-            // saves the user a keystroke for quick searches
-            search_string = search_string + " ";
-        }
-        $("#search_query").val(search_string);
-    }
-}
-
-export function exit_search() {
-    const filter = narrow_state.filter();
-    if (!filter || filter.is_common_narrow()) {
-        // for common narrows, we change the UI (and don't redirect)
-        close_search_bar_and_open_narrow_description();
-    } else {
-        // for "searching narrows", we redirect
-        window.location.href = filter.generate_redirect_url();
-    }
-    $(".app").trigger("focus");
 }
 
 export function initialize() {
     render_title_area();
-
-    // register searchbar click handler
-    $("#search_exit").on("click", (e) => {
-        popovers.hide_all();
-        exit_search();
-        e.preventDefault();
-        e.stopPropagation();
-    });
 }
 
 export function render_title_area() {
@@ -191,19 +122,5 @@ export function maybe_rerender_title_area_for_stream(modified_sub) {
     const filter = narrow_state.filter();
     if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
         render_title_area();
-    }
-}
-
-export function open_search_bar_and_close_narrow_description() {
-    reset_searchbox_text();
-    $(".navbar-search").addClass("expanded");
-    $("#message_view_header").addClass("hidden");
-}
-
-export function close_search_bar_and_open_narrow_description() {
-    const filter = narrow_state.filter();
-    if (!filter || filter.is_common_narrow()) {
-        $(".navbar-search").removeClass("expanded");
-        $("#message_view_header").removeClass("hidden");
     }
 }

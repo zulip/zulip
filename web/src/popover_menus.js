@@ -28,6 +28,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
+import {show_copied_confirmation} from "./copied_tooltip";
 import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as flatpickr from "./flatpickr";
@@ -38,6 +39,7 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
@@ -48,7 +50,6 @@ import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
 import * as timerender from "./timerender";
-import {show_copied_confirmation} from "./tippyjs";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
@@ -56,6 +57,17 @@ import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
 let selected_send_later_timestamp;
+
+// On mobile web, opening the keyboard can trigger a resize event
+// (which in turn can trigger a scroll event).  This will have the
+// side effect of closing popovers, which we don't want.  So we
+// suppress the first hide from scrolling after a resize using this
+// variable.
+let suppress_scroll_hide = false;
+
+export function set_suppress_scroll_hide() {
+    suppress_scroll_hide = true;
+}
 
 const popover_instances = {
     compose_control_buttons: null,
@@ -71,9 +83,52 @@ const popover_instances = {
     change_visibility_policy: null,
 };
 
+/* Keyboard UI functions */
+export function popover_items_handle_keyboard(key, $items) {
+    if (!$items) {
+        return;
+    }
+
+    let index = $items.index($items.filter(":focus"));
+
+    if (index === -1) {
+        index = 0;
+    } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
+        index += 1;
+    } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
+        index -= 1;
+    }
+    $items.eq(index).trigger("focus");
+}
+
+export function focus_first_popover_item($items, index = 0) {
+    if (!$items) {
+        return;
+    }
+
+    $items.eq(index).expectOne().trigger("focus");
+}
+
+function get_action_menu_menu_items() {
+    const $current_actions_popover_elem = $("[data-tippy-root] .actions_popover");
+    if (!$current_actions_popover_elem) {
+        blueslip.error("Trying to get menu items when action popover is closed.");
+        return undefined;
+    }
+
+    return $current_actions_popover_elem.find("li:not(.divider):visible a");
+}
+
+function focus_first_action_popover_item() {
+    // For now I recommend only calling this when the user opens the menu with a hotkey.
+    // Our popup menus act kind of funny when you mix keyboard and mouse.
+    const $items = get_action_menu_menu_items();
+    focus_first_popover_item($items);
+}
+
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
     const items = get_popover_items_for_instance(instance);
-    popovers.popover_items_handle_keyboard(key, items);
+    popover_items_handle_keyboard(key, items);
 }
 
 export function get_visible_instance() {
@@ -537,139 +592,155 @@ export function initialize() {
         },
     });
 
-    register_popover_menu("#stream_filters .topic-sidebar-menu-icon", {
-        ...left_sidebar_tippy_options,
-        onShow(instance) {
-            popover_instances.topics_menu = instance;
-            on_show_prep(instance);
-            const elt = $(instance.reference).closest(".topic-sidebar-menu-icon").expectOne()[0];
-            const $stream_li = $(elt).closest(".narrow-filter").expectOne();
-            const topic_name = $(elt).closest("li").expectOne().attr("data-topic-name");
-            const url = $(elt).closest("li").find(".topic-name").expectOne().prop("href");
-            const stream_id = stream_popover.elem_to_stream_id($stream_li);
+    register_popover_menu(
+        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
+        {
+            ...left_sidebar_tippy_options,
+            onShow(instance) {
+                popover_instances.topics_menu = instance;
+                on_show_prep(instance);
+                let stream_id;
+                let topic_name;
+                let url;
 
-            instance.context = popover_menus_data.get_topic_popover_content_context({
-                stream_id,
-                topic_name,
-                url,
-            });
-            instance.setContent(parse_html(render_topic_sidebar_actions(instance.context)));
-        },
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            const {stream_id, topic_name} = instance.context;
+                if (instance.reference.classList.contains("inbox-topic-menu")) {
+                    const $elt = $(instance.reference);
+                    stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+                    topic_name = $elt.attr("data-topic-name");
+                    url = new URL($elt.attr("data-topic-url"), page_params.realm_uri);
+                } else {
+                    const $elt = $(instance.reference)
+                        .closest(".topic-sidebar-menu-icon")
+                        .expectOne();
+                    const $stream_li = $elt.closest(".narrow-filter").expectOne();
+                    topic_name = $elt.closest("li").expectOne().attr("data-topic-name");
+                    url = $elt.closest("li").find(".topic-name").expectOne().prop("href");
+                    stream_id = stream_popover.elem_to_stream_id($stream_li);
+                }
 
-            if (!stream_id) {
-                instance.hide();
-                return;
-            }
-
-            $popper.on("click", ".tab-option", (e) => {
-                $(".tab-option").removeClass("selected-tab");
-                $(e.currentTarget).addClass("selected-tab");
-
-                const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
-                user_topics.set_user_topic_visibility_policy(
+                instance.context = popover_menus_data.get_topic_popover_content_context({
                     stream_id,
                     topic_name,
-                    visibility_policy,
-                );
-            });
-
-            $popper.one("click", ".sidebar-popover-unmute-topic", () => {
-                user_topics.set_user_topic_visibility_policy(
-                    stream_id,
-                    topic_name,
-                    user_topics.all_visibility_policies.UNMUTED,
-                );
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-remove-unmute", () => {
-                user_topics.set_user_topic_visibility_policy(
-                    stream_id,
-                    topic_name,
-                    user_topics.all_visibility_policies.INHERIT,
-                );
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-mute-topic", () => {
-                user_topics.set_user_topic_visibility_policy(
-                    stream_id,
-                    topic_name,
-                    user_topics.all_visibility_policies.MUTED,
-                );
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-remove-mute", () => {
-                user_topics.set_user_topic_visibility_policy(
-                    stream_id,
-                    topic_name,
-                    user_topics.all_visibility_policies.INHERIT,
-                );
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
-                starred_messages_ui.confirm_unstar_all_messages_in_topic(
-                    Number.parseInt(stream_id, 10),
-                    topic_name,
-                );
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-mark-topic-read", () => {
-                unread_ops.mark_topic_as_read(stream_id, topic_name);
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
-                const html_body = render_delete_topic_modal({topic_name});
-
-                confirm_dialog.launch({
-                    html_heading: $t_html({defaultMessage: "Delete topic"}),
-                    help_link: "/help/delete-a-topic",
-                    html_body,
-                    on_click() {
-                        message_edit.delete_topic(stream_id, topic_name);
-                    },
+                    url,
                 });
+                instance.setContent(parse_html(render_topic_sidebar_actions(instance.context)));
+            },
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                const {stream_id, topic_name} = instance.context;
 
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
-                message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-                    message_edit.toggle_resolve_topic(message_id, topic_name, true);
-                });
-
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
-                stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
-                instance.hide();
-            });
-
-            $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
-                stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
-                instance.hide();
-            });
-
-            new ClipboardJS($popper.find(".sidebar-popover-copy-link-to-topic")[0]).on(
-                "success",
-                () => {
+                if (!stream_id) {
                     instance.hide();
-                },
-            );
+                    return;
+                }
+
+                $popper.on("click", ".tab-option", (e) => {
+                    $(".tab-option").removeClass("selected-tab");
+                    $(e.currentTarget).addClass("selected-tab");
+
+                    const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
+                    user_topics.set_user_topic_visibility_policy(
+                        stream_id,
+                        topic_name,
+                        visibility_policy,
+                    );
+                });
+
+                $popper.one("click", ".sidebar-popover-unmute-topic", () => {
+                    user_topics.set_user_topic_visibility_policy(
+                        stream_id,
+                        topic_name,
+                        user_topics.all_visibility_policies.UNMUTED,
+                    );
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-remove-unmute", () => {
+                    user_topics.set_user_topic_visibility_policy(
+                        stream_id,
+                        topic_name,
+                        user_topics.all_visibility_policies.INHERIT,
+                    );
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-mute-topic", () => {
+                    user_topics.set_user_topic_visibility_policy(
+                        stream_id,
+                        topic_name,
+                        user_topics.all_visibility_policies.MUTED,
+                    );
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-remove-mute", () => {
+                    user_topics.set_user_topic_visibility_policy(
+                        stream_id,
+                        topic_name,
+                        user_topics.all_visibility_policies.INHERIT,
+                    );
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
+                    starred_messages_ui.confirm_unstar_all_messages_in_topic(
+                        Number.parseInt(stream_id, 10),
+                        topic_name,
+                    );
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-mark-topic-read", () => {
+                    unread_ops.mark_topic_as_read(stream_id, topic_name);
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
+                    const html_body = render_delete_topic_modal({topic_name});
+
+                    confirm_dialog.launch({
+                        html_heading: $t_html({defaultMessage: "Delete topic"}),
+                        help_link: "/help/delete-a-topic",
+                        html_body,
+                        on_click() {
+                            message_edit.delete_topic(stream_id, topic_name);
+                        },
+                    });
+
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
+                    message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
+                        message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                    });
+
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
+                    stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
+                    stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
+                    instance.hide();
+                });
+
+                new ClipboardJS($popper.find(".sidebar-popover-copy-link-to-topic")[0]).on(
+                    "success",
+                    () => {
+                        instance.hide();
+                    },
+                );
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_instances.topics_menu = undefined;
+            },
         },
-        onHidden(instance) {
-            instance.destroy();
-            popover_instances.topics_menu = undefined;
-        },
-    });
+    );
 
     register_popover_menu(".open_enter_sends_dialog", {
         placement: "top",
@@ -801,7 +872,7 @@ export function initialize() {
         },
         onMount(instance) {
             if (message_actions_popover_keyboard_toggle) {
-                popovers.focus_first_action_popover_item();
+                focus_first_action_popover_item();
                 message_actions_popover_keyboard_toggle = false;
             }
             popover_instances.message_actions = instance;
@@ -1051,5 +1122,30 @@ export function initialize() {
             instance.destroy();
             popover_instances.send_later = undefined;
         },
+    });
+
+    /* Configure popovers to hide when toggling overlays. */
+    overlays.register_pre_open_hook(popovers.hide_all);
+    overlays.register_pre_close_hook(popovers.hide_all);
+
+    let last_scroll = 0;
+
+    $(document).on("scroll", () => {
+        if (suppress_scroll_hide) {
+            suppress_scroll_hide = false;
+            return;
+        }
+
+        const date = Date.now();
+
+        // only run `popovers.hide_all()` if the last scroll was more
+        // than 250ms ago.
+        if (date - last_scroll > 250) {
+            popovers.hide_all();
+        }
+
+        // update the scroll time on every event to make sure it doesn't
+        // retrigger `hide_all` while still scrolling.
+        last_scroll = date;
     });
 }

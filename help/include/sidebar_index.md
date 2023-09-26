@@ -99,6 +99,7 @@
 * [Message actions](/help/message-actions)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
+* [Configure unread message counters](/help/configure-unread-message-counters)
 * [Emoji reactions](/help/emoji-reactions)
 * [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)
@@ -127,7 +128,7 @@
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
-* [Start a new topic](/help/start-a-new-topic)
+* [Start a new topic](/help/starting-a-new-topic)
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
@@ -227,6 +228,7 @@
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Request an integration](/help/request-an-integration)
 * [Restrict bot creation](/help/restrict-bot-creation)
+* [View your bots](/help/view-your-bots)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Support

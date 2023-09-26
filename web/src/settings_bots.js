@@ -5,28 +5,27 @@ import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
 import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
-import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
-import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
-import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
+import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 
 import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
-import {show_copied_confirmation} from "./tippyjs";
+import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
 import * as user_profile from "./user_profile";
 
+const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
-export let bot_owner_dropdown_widget;
 
 const focus_tab = {
     active_bots_tab() {
@@ -57,10 +56,6 @@ function is_local_part(value) {
     return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
 }
 
-export function type_id_to_string(type_id) {
-    return page_params.bot_types.find((bot_type) => bot_type.type_id === type_id).name;
-}
-
 export function render_bots() {
     $("#active_bots_list").empty();
     $("#inactive_bots_list").empty();
@@ -73,10 +68,11 @@ export function render_bots() {
             name: elem.full_name,
             email: elem.email,
             user_id: elem.user_id,
-            type: type_id_to_string(elem.bot_type),
+            type: settings_data.type_id_to_string(elem.bot_type),
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
             is_active: elem.is_active,
+            is_incoming_webhook_bot: elem.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
             zuliprc: "zuliprc", // Most browsers do not allow filename starting with `.`
         });
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
@@ -338,173 +334,146 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
     });
 }
 
-export function show_edit_bot_info_modal(user_id, $container) {
-    const bot = people.maybe_get_user_by_id(user_id);
-    const owner_id = bot_data.get(user_id).owner_id;
-    const owner_full_name = people.get_full_name(owner_id);
-
-    if (!bot || !bot_data.get(user_id)) {
-        return;
-    }
-
-    const html_body = render_edit_bot_form({
-        user_id,
-        email: bot.email,
-        full_name: bot.full_name,
-        user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
-        bot_avatar_url: bot.avatar_url,
-        owner_full_name,
-        current_bot_owner: bot.bot_owner_id,
+export function show_generate_integration_url_modal(api_key) {
+    const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
+    const streams = stream_data.subscribed_subs();
+    const direct_messages_option = {
+        name: $t_html({defaultMessage: "Direct message to me"}),
+        unique_id: "",
+        is_direct_message: true,
+    };
+    const html_body = render_generate_integration_url_modal({
+        default_url_message,
+        max_topic_length: page_params.max_topic_length,
     });
-    $container.append(html_body);
-    let avatar_widget;
 
-    const bot_type = bot.bot_type.toString();
-    const service = bot_data.get_services(bot.user_id)[0];
-    edit_bot_post_render();
-    $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
-        const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
-        const $full_name = $("#bot-edit-form").find("input[name='full_name']");
-        const url = "/json/bots/" + encodeURIComponent(bot.user_id);
+    function generate_integration_url_post_render() {
+        let selected_integration = "";
+        let stream_input_dropdown_widget;
 
-        const formData = new FormData();
-        formData.append("csrfmiddlewaretoken", csrf_token);
-        formData.append("full_name", $full_name.val());
-        formData.append("role", JSON.stringify(role));
-        const new_bot_owner_id = bot_owner_dropdown_widget.value();
-        if (new_bot_owner_id) {
-            formData.append("bot_owner_id", new_bot_owner_id);
-        }
+        const $integration_input = $("#integration-input");
+        const $override_topic = $("#integration-url-override-topic");
+        const $topic_input = $("#integration-url-topic-input");
+        const $integration_url = $("#generate-integration-url-modal .integration-url");
+        const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
 
-        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-            const service_payload_url = $("#edit_service_base_url").val();
-            const service_interface = $("#edit_service_interface").val();
-            formData.append("service_payload_url", JSON.stringify(service_payload_url));
-            formData.append("service_interface", service_interface);
-        } else if (bot_type === EMBEDDED_BOT_TYPE && service !== undefined) {
-            const config_data = {};
-            $("#config_edit_inputbox input").each(function () {
-                config_data[$(this).attr("name")] = $(this).val();
-            });
-            formData.append("config_data", JSON.stringify(config_data));
-        }
+        $dialog_submit_button.prop("disabled", true);
 
-        const $file_input = $("#bot-edit-form").find(".edit_bot_avatar_file_input");
-        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
-            formData.append("file-" + i, file);
-        }
-
-        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        settings_users.show_button_spinner($submit_btn);
-        $cancel_btn.prop("disabled", true);
-
-        channel.patch({
-            url,
-            data: formData,
-            processData: false,
-            contentType: false,
-            success() {
-                avatar_widget.clear();
-                user_profile.hide_user_profile();
+        new ClipboardJS("#generate-integration-url-modal .dialog_submit_button", {
+            text() {
+                return $integration_url.text();
             },
-            error(xhr) {
-                ui_report.error(
-                    $t_html({defaultMessage: "Failed"}),
-                    xhr,
-                    $("#bot-edit-form-error"),
-                );
-                // Scrolling modal to top, to make error visible to user.
-                $("#bot-edit-form")
-                    .closest(".simplebar-content-wrapper")
-                    .animate({scrollTop: 0}, "fast");
-                settings_users.hide_button_spinner($submit_btn);
-                $cancel_btn.prop("disabled", false);
-            },
+        }).on("success", (e) => {
+            show_copied_confirmation(e.trigger);
         });
-    });
 
-    function edit_bot_post_render() {
-        $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
+        $integration_input
+            .typeahead({
+                items: 5,
+                fixed: true,
+                source: () =>
+                    page_params.realm_incoming_webhook_bots.map((bot) => bot.display_name),
+                updater(item) {
+                    selected_integration = page_params.realm_incoming_webhook_bots.find(
+                        (bot) => bot.display_name === item,
+                    ).name;
+                    return item;
+                },
+            })
+            .on("input", function () {
+                const current_value = $(this).val();
+                if (current_value === "") {
+                    selected_integration = "";
+                }
+            });
 
-        function get_options() {
-            const user_ids = people.get_realm_active_human_user_ids();
-            return user_ids.map((user_id) => ({
-                name: people.get_full_name(user_id),
-                unique_id: user_id,
-            }));
+        $override_topic.on("change", function () {
+            const checked = $(this).prop("checked");
+            $topic_input.parent().toggleClass("hide", !checked);
+        });
+
+        $("#generate-integration-url-modal .integration-url-parameter").on("change input", () => {
+            update_url();
+        });
+
+        function update_url() {
+            if (selected_integration === "") {
+                $integration_url.text(default_url_message);
+                $dialog_submit_button.prop("disabled", true);
+                return;
+            }
+
+            const stream_name = stream_input_dropdown_widget.value();
+            const topic_name = $topic_input.val();
+
+            const params = new URLSearchParams({api_key});
+            if (stream_name !== "") {
+                params.set("stream", stream_name);
+                if (topic_name !== "") {
+                    params.set("topic", topic_name);
+                }
+            }
+
+            const realm_url = page_params.realm_uri;
+            const base_url = `${realm_url}/api/v1/external/`;
+            $integration_url.text(`${base_url}${selected_integration}?${params}`);
+            $dialog_submit_button.prop("disabled", false);
         }
 
-        function item_click_callback(event, dropdown) {
-            bot_owner_dropdown_widget.render();
-            // Let dialog_widget know that there was a change in value.
-            $(bot_owner_dropdown_widget.widget_id).trigger("input");
-            dropdown.hide();
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        bot_owner_dropdown_widget = new dropdown_widget.DropdownWidget({
-            widget_name: "edit_bot_owner",
-            get_options,
+        stream_input_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: "integration-url-stream",
+            get_options: get_options_for_stream_dropdown_widget,
             item_click_callback,
-            $events_container: $("#bot-edit-form"),
+            $events_container: $("#generate-integration-url-modal"),
             tippy_props: {
                 placement: "bottom-start",
             },
-            default_id: owner_id,
-            unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+            default_id: direct_messages_option.unique_id,
+            unique_id_type: dropdown_widget.DATA_TYPES.STRING,
         });
-        bot_owner_dropdown_widget.setup();
+        stream_input_dropdown_widget.setup();
 
-        $("#bot-role-select").val(bot.role);
-        if (!page_params.is_owner) {
-            $("#bot-role-select")
-                .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
-                .hide();
+        function get_options_for_stream_dropdown_widget() {
+            const options = [
+                direct_messages_option,
+                ...streams.map((stream) => ({
+                    name: stream.name,
+                    unique_id: stream.name,
+                    stream,
+                })),
+            ];
+            return options;
         }
 
-        avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
-
-        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-            $("#service_data").append(
-                render_settings_edit_outgoing_webhook_service({
-                    service,
-                }),
-            );
-            $("#edit_service_interface").val(service.interface);
-        }
-        if (bot_type === EMBEDDED_BOT_TYPE) {
-            $("#service_data").append(
-                render_settings_edit_embedded_bot_service({
-                    service,
-                }),
-            );
-        }
-
-        // Hide the avatar if the user has uploaded an image
-        $("#bot-edit-form").on("input", ".edit_bot_avatar_file_input", () => {
-            $("#current_bot_avatar_image").hide();
-        });
-
-        // Show the avatar if the user has cleared the image
-        $("#bot-edit-form").on("click", ".edit_bot_avatar_clear_button", () => {
-            $("#current_bot_avatar_image").show();
-            $(".edit_bot_avatar_file_input").trigger("input");
-        });
-
-        $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const bot_id = $("#bot-edit-form").data("user-id");
-            function handle_confirm() {
-                const url = "/json/bots/" + encodeURIComponent(bot_id);
-                dialog_widget.submit_api_request(channel.del, url);
+        function item_click_callback(event, dropdown) {
+            stream_input_dropdown_widget.render();
+            $(".integration-url-stream-wrapper").trigger("input");
+            const user_selected_option = stream_input_dropdown_widget.value();
+            if (user_selected_option === direct_messages_option.unique_id) {
+                $override_topic.prop("checked", false).prop("disabled", true);
+                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $topic_input.val("");
+            } else {
+                $override_topic.prop("disabled", false);
+                $override_topic.closest(".input-group").removeClass("control-label-disabled");
             }
-            confirm_bot_deactivation(bot_id, handle_confirm, true);
-        });
+            $override_topic.trigger("change");
+
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+        }
     }
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Generate URL for an integration"}),
+        html_body,
+        id: "generate-integration-url-modal",
+        html_submit_button: $t_html({defaultMessage: "Copy URL"}),
+        html_exit_button: $t_html({defaultMessage: "Close"}),
+        on_click() {},
+        post_render: generate_integration_url_post_render,
+    });
 }
 
 export function set_up() {
@@ -608,6 +577,13 @@ export function set_up() {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const bot = people.get_by_user_id(bot_id);
         user_profile.show_user_profile(bot, "user-profile-streams-tab");
+    });
+
+    $("#active_bots_list").on("click", "button.open-generate-integration-url-modal", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const api_key = $(e.currentTarget).attr("data-api-key");
+        show_generate_integration_url_modal(api_key);
     });
 
     const clipboard = new ClipboardJS("#copy_zuliprc", {

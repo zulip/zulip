@@ -5,7 +5,6 @@ import render_confirm_deactivate_own_user from "../templates/confirm_dialog/conf
 import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
-import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar";
@@ -14,18 +13,17 @@ import * as channel from "./channel";
 import * as common from "./common";
 import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
+import {$t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as pill_typeahead from "./pill_typeahead";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
-import * as typeahead_helper from "./typeahead_helper";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as user_pill from "./user_pill";
@@ -214,181 +212,13 @@ function update_user_custom_profile_fields(fields, method) {
     }
 }
 
-export function append_custom_profile_fields(element_id, user_id) {
-    const person = people.get_by_user_id(user_id);
-    if (person.is_bot) {
-        return;
+function update_user_type_field(field, pills) {
+    const user_ids = user_pill.get_user_ids(pills);
+    if (user_ids.length < 1) {
+        update_user_custom_profile_fields([field.id], channel.del);
+    } else {
+        update_user_custom_profile_fields([{id: field.id, value: user_ids}], channel.patch);
     }
-    const all_custom_fields = page_params.custom_profile_fields;
-    const all_field_types = page_params.custom_profile_field_types;
-
-    const all_field_template_types = new Map([
-        [all_field_types.LONG_TEXT.id, "text"],
-        [all_field_types.SHORT_TEXT.id, "text"],
-        [all_field_types.SELECT.id, "select"],
-        [all_field_types.USER.id, "user"],
-        [all_field_types.DATE.id, "date"],
-        [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
-        [all_field_types.URL.id, "url"],
-        [all_field_types.PRONOUNS.id, "text"],
-    ]);
-
-    for (const field of all_custom_fields) {
-        let field_value = people.get_custom_profile_data(user_id, field.id);
-        const is_select_field = field.type === all_field_types.SELECT.id;
-        const field_choices = [];
-
-        if (field_value === undefined || field_value === null) {
-            field_value = {value: "", rendered_value: ""};
-        }
-        if (is_select_field) {
-            const field_choice_dict = JSON.parse(field.field_data);
-            for (const choice in field_choice_dict) {
-                if (choice) {
-                    field_choices[field_choice_dict[choice].order] = {
-                        value: choice,
-                        text: field_choice_dict[choice].text,
-                        selected: choice === field_value.value,
-                    };
-                }
-            }
-        }
-
-        const html = render_settings_custom_user_profile_field({
-            field,
-            field_type: all_field_template_types.get(field.type),
-            field_value,
-            is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
-            is_user_field: field.type === all_field_types.USER.id,
-            is_date_field: field.type === all_field_types.DATE.id,
-            is_url_field: field.type === all_field_types.URL.id,
-            is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
-            is_select_field,
-            field_choices,
-            for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
-        });
-        $(element_id).append(html);
-    }
-}
-
-export function initialize_custom_date_type_fields(element_id) {
-    $(element_id).find(".custom_user_field .datepicker").flatpickr({
-        altInput: true,
-        altFormat: "F j, Y",
-        allowInput: true,
-        static: true,
-    });
-
-    $(element_id)
-        .find(".custom_user_field .datepicker")
-        .on("mouseenter", function () {
-            if ($(this).val().length <= 0) {
-                $(this).parent().find(".remove_date").hide();
-            } else {
-                $(this).parent().find(".remove_date").show();
-            }
-        });
-
-    $(element_id)
-        .find(".custom_user_field .remove_date")
-        .on("click", function () {
-            $(this).parent().find(".custom_user_field_value").val("");
-        });
-}
-
-export function initialize_custom_user_type_fields(
-    element_id,
-    user_id,
-    is_editable,
-    set_handler_on_update,
-) {
-    const field_types = page_params.custom_profile_field_types;
-    const user_pills = new Map();
-
-    const person = people.get_by_user_id(user_id);
-    if (person.is_bot) {
-        return user_pills;
-    }
-
-    for (const field of page_params.custom_profile_fields) {
-        let field_value_raw = people.get_custom_profile_data(user_id, field.id);
-
-        if (field_value_raw) {
-            field_value_raw = field_value_raw.value;
-        }
-
-        // If field is not editable and field value is null, we don't expect
-        // pill container for that field and proceed further
-        if (field.type === field_types.USER.id && (field_value_raw || is_editable)) {
-            const $pill_container = $(element_id)
-                .find(`.custom_user_field[data-field-id="${CSS.escape(field.id)}"] .pill-container`)
-                .expectOne();
-            const pills = user_pill.create_pills($pill_container);
-
-            function update_custom_user_field() {
-                const fields = [];
-                const user_ids = user_pill.get_user_ids(pills);
-                if (user_ids.length < 1) {
-                    fields.push(field.id);
-                    update_user_custom_profile_fields(fields, channel.del);
-                } else {
-                    fields.push({id: field.id, value: user_ids});
-                    update_user_custom_profile_fields(fields, channel.patch);
-                }
-            }
-
-            if (field_value_raw) {
-                const field_value = JSON.parse(field_value_raw);
-                if (field_value) {
-                    for (const pill_user_id of field_value) {
-                        const user = people.get_by_user_id(pill_user_id);
-                        user_pill.append_user(user, pills);
-                    }
-                }
-            }
-
-            if (is_editable) {
-                const $input = $pill_container.children(".input");
-                if (set_handler_on_update) {
-                    const opts = {
-                        update_func: update_custom_user_field,
-                        user: true,
-                        exclude_bots: true,
-                    };
-                    pill_typeahead.set_up($input, pills, opts);
-                    pills.onPillRemove(() => {
-                        update_custom_user_field();
-                    });
-                } else {
-                    pill_typeahead.set_up($input, pills, {user: true, exclude_bots: true});
-                }
-            }
-            user_pills.set(field.id, pills);
-        }
-    }
-
-    return user_pills;
-}
-
-export function initialize_custom_pronouns_type_fields(element_id) {
-    const commonly_used_pronouns = [
-        $t({defaultMessage: "he/him"}),
-        $t({defaultMessage: "she/her"}),
-        $t({defaultMessage: "they/them"}),
-    ];
-    $(element_id)
-        .find(".pronouns_type_field")
-        .typeahead({
-            items: 3,
-            fixed: true,
-            helpOnEmptyStrings: true,
-            source() {
-                return commonly_used_pronouns;
-            },
-            highlighter(item) {
-                return typeahead_helper.render_typeahead_item({primary: item});
-            },
-        });
 }
 
 export function add_custom_profile_fields_to_settings() {
@@ -399,10 +229,17 @@ export function add_custom_profile_fields_to_settings() {
     const element_id = "#profile-settings .custom-profile-fields-form";
     $(element_id).empty();
 
-    append_custom_profile_fields(element_id, people.my_current_user_id());
-    initialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
-    initialize_custom_date_type_fields(element_id);
-    initialize_custom_pronouns_type_fields(element_id);
+    const pill_update_handler = (field, pills) => update_user_type_field(field, pills);
+
+    custom_profile_fields_ui.append_custom_profile_fields(element_id, people.my_current_user_id());
+    custom_profile_fields_ui.initialize_custom_user_type_fields(
+        element_id,
+        people.my_current_user_id(),
+        true,
+        pill_update_handler,
+    );
+    custom_profile_fields_ui.initialize_custom_date_type_fields(element_id);
+    custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }
 
 export function hide_confirm_email_banner() {

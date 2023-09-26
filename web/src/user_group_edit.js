@@ -13,11 +13,9 @@ import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
-import * as settings_ui from "./settings_ui";
 import * as ui_report from "./ui_report";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_ui_updates from "./user_group_ui_updates";
@@ -50,21 +48,6 @@ function get_user_group_for_target(target) {
         return undefined;
     }
     return group;
-}
-
-export function can_edit(group_id) {
-    if (!settings_data.user_can_edit_user_groups()) {
-        return false;
-    }
-
-    // Admins and moderators are allowed to edit user groups even if they
-    // are not a member of that user group. Members can edit user groups
-    // only if they belong to that group.
-    if (page_params.is_admin || page_params.is_moderator) {
-        return true;
-    }
-
-    return user_groups.is_direct_member_of(people.my_current_user_id(), group_id);
 }
 
 export function get_edit_container(group) {
@@ -110,9 +93,11 @@ export function handle_member_edit_event(group_id, user_ids) {
     }
     const group = user_groups.get_user_group_from_id(group_id);
 
-    // update members list.
+    // update members list if currently rendered.
     const members = [...group.members];
-    user_group_edit_members.update_member_list_widget(group_id, members);
+    if (is_editing_group(group_id)) {
+        user_group_edit_members.update_member_list_widget(group_id, members);
+    }
 
     // update display of group-rows on left panel.
     // We need this update only if your-groups tab is active
@@ -140,7 +125,7 @@ export function handle_member_edit_event(group_id, user_ids) {
     }
 
     // update_settings buttons.
-    if (can_edit(group_id)) {
+    if (settings_data.can_edit_user_group(group_id)) {
         enable_group_edit_settings(group);
     } else {
         disable_group_edit_settings(group);
@@ -156,7 +141,7 @@ export function update_settings_pane(group) {
 export function show_settings_for(group) {
     const html = render_user_group_settings({
         group,
-        can_edit: can_edit(group.id),
+        can_edit: settings_data.can_edit_user_group(group.id),
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
@@ -271,12 +256,14 @@ export function initialize() {
             ),
             html_body: change_user_group_info_modal,
             id: "change_group_info_modal",
+            loading_spinner: true,
             on_click: save_group_info,
             post_render() {
                 $("#change_group_info_modal .dialog_submit_button")
                     .addClass("save-button")
                     .attr("data-group-id", user_group_id);
             },
+            update_submit_disabled_state_on_change: true,
         });
     });
 
@@ -285,7 +272,7 @@ export function initialize() {
         const group_id = active_group_data.id;
         const user_group = user_groups.get_user_group_from_id(group_id);
 
-        if (!user_group || !can_edit(group_id)) {
+        if (!user_group || !settings_data.can_edit_user_group(group_id)) {
             return;
         }
         function delete_user_group() {
@@ -328,9 +315,6 @@ export function initialize() {
         const new_name = $("#change_user_group_name").val().trim();
         const new_description = $("#change_user_group_description").val().trim();
 
-        if (new_name === group.name && new_description === group.description) {
-            return;
-        }
         if (new_name !== group.name) {
             data.name = new_name;
         }
@@ -338,8 +322,6 @@ export function initialize() {
             data.description = new_description;
         }
 
-        const $status_element = $(".group_change_property_info");
-        dialog_widget.close_modal();
-        settings_ui.do_settings_change(channel.patch, url, data, $status_element);
+        dialog_widget.submit_api_request(channel.patch, url, data);
     }
 }

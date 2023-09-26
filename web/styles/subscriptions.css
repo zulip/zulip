@@ -244,14 +244,16 @@ h4.user_group_setting_subsection_title {
     margin-bottom: 0;
 }
 
-.add_subscribers_container {
+.add_subscribers_container,
+.add_members_container {
     display: inline-flex;
     width: 100%;
     align-items: center;
+}
 
-    .add_subscriber_btn_wrapper {
-        padding-left: 5px;
-    }
+.add_subscribers_container .add_subscriber_btn_wrapper,
+.add_members_container .add_member_btn_wrapper {
+    padding-left: 5px;
 }
 
 .remove-subscriber-form {
@@ -300,7 +302,7 @@ h4.user_group_setting_subsection_title {
     max-width: 1200px;
     max-height: var(--modal-container-max-height);
 
-    .search-container .tab-switcher .ind-tab {
+    .list-toggler-container .tab-switcher .ind-tab {
         width: auto;
     }
 
@@ -370,7 +372,7 @@ h4.user_group_setting_subsection_title {
     .left {
         border-right: 1px solid hsl(0deg 0% 87%);
 
-        .search-container {
+        .list-toggler-container {
             padding: 6px 8px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
             display: flex;
@@ -665,15 +667,17 @@ h4.user_group_setting_subsection_title {
     color: hsl(0deg 0% 67%);
 }
 
-.subscriber_list_settings {
-    .add_subscribers_disabled {
+.subscriber_list_settings .add_subscribers_disabled,
+.member_list_settings .add_members_disabled {
+    cursor: not-allowed;
+
+    .pill-container {
         cursor: not-allowed;
-
-        .pill-container {
-            cursor: not-allowed;
-        }
     }
+}
 
+.subscriber_list_settings,
+.member_list_settings {
     & button[disabled] {
         pointer-events: none;
     }
@@ -687,7 +691,8 @@ h4.user_group_setting_subsection_title {
         outline: none;
         -webkit-overflow-scrolling: touch;
 
-        .stream-creation-simplebar-container {
+        .stream-creation-simplebar-container,
+        .user-group-creation-simplebar-container {
             height: calc(
                 var(--modal-container-height) -
                     var(--modal-container-subscriptions-header-height) -
@@ -1079,11 +1084,11 @@ div.settings-radio-input-parent {
 }
 
 @media (width < $lg_min) {
-    .subscriptions-container .left .search-container {
+    .subscriptions-container .left .list-toggler-container {
         flex-wrap: wrap;
     }
 
-    .search-container {
+    .list-toggler-container {
         text-align: center;
     }
 
@@ -1104,7 +1109,7 @@ div.settings-radio-input-parent {
         position: relative;
         overflow: hidden;
 
-        .search-container {
+        .list-toggler-container {
             text-align: left;
         }
 

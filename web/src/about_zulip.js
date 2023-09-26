@@ -4,9 +4,9 @@ import $ from "jquery";
 import render_about_zulip from "../templates/about_zulip.hbs";
 
 import * as browser_history from "./browser_history";
+import {show_copied_confirmation} from "./copied_tooltip";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import {show_copied_confirmation} from "./tippyjs";
 
 export function launch() {
     overlays.open_overlay({

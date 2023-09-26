@@ -4,7 +4,6 @@ import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import * as compose_fade from "./compose_fade";
 import * as compose_recipient from "./compose_recipient";
-import * as inbox_ui from "./inbox_ui";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
@@ -56,7 +55,6 @@ export function update_property(stream_id, property, value, other_values) {
             stream_muting.update_is_muted(sub, value);
             stream_list.refresh_muted_or_unmuted_stream(sub);
             recent_view_ui.complete_rerender();
-            inbox_ui.update();
             break;
         case "desktop_notifications":
         case "audible_notifications":

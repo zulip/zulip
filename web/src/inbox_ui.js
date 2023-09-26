@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
 import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
 import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
+import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
@@ -13,22 +14,16 @@ import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
-import * as message_view_header from "./message_view_header";
-import * as narrow from "./narrow";
-import * as narrow_state from "./narrow_state";
-import * as navigate from "./navigate";
 import * as people from "./people";
-import * as pm_list from "./pm_list";
-import * as search from "./search";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
+import * as views_util from "./views_util";
 
 let dms_dict = {};
 let topics_dict = {};
@@ -39,6 +34,7 @@ const COLUMNS = {
     COLLAPSE_BUTTON: 0,
     RECIPIENT: 1,
     UNREAD_COUNT: 2,
+    ACTION_MENU: 3,
 };
 let col_focus = COLUMNS.COLLAPSE_BUTTON;
 let row_focus = 0;
@@ -72,59 +68,21 @@ function should_include_muted() {
 }
 
 export function show() {
-    // hashchange library is expected to hide other views.
-    if (narrow.has_shown_message_list_view) {
-        narrow.save_pre_narrow_offset_for_reload();
-    }
-
-    if (is_visible()) {
-        return;
-    }
-
-    left_sidebar_navigation_area.highlight_inbox_view();
-    stream_list.handle_narrow_deactivated();
-
-    $("#message_feed_container").hide();
-    $("#inbox-view").show();
-    set_visible(true);
-
-    unread_ui.hide_unread_banner();
-    narrow_state.reset_current_filter();
-    message_view_header.render_title_area();
-    narrow.handle_middle_pane_transition();
-
-    narrow_state.reset_current_filter();
-    narrow.update_narrow_title(narrow_state.filter());
-    message_view_header.render_title_area();
-    pm_list.handle_narrow_deactivated();
-    search.clear_search_form();
-    complete_rerender();
-    compose_closed_ui.set_standard_text_for_reply_button();
+    views_util.show({
+        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_inbox_view,
+        $view: $("#inbox-view"),
+        update_compose: compose_closed_ui.set_standard_text_for_reply_button,
+        is_visible,
+        set_visible,
+        complete_rerender,
+    });
 }
 
 export function hide() {
-    const $focused_element = $(document.activeElement);
-
-    if ($("#inbox-view").has($focused_element)) {
-        $focused_element.trigger("blur");
-    }
-
-    $("#message_feed_container").show();
-    $("#inbox-view").hide();
-    set_visible(false);
-
-    // This solves a bug with message_view_header
-    // being broken sometimes when we narrow
-    // to a filter and back to recent topics
-    // before it completely re-rerenders.
-    message_view_header.render_title_area();
-
-    // Fire our custom event
-    $("#message_feed_container").trigger("message_feed_shown");
-
-    // This makes sure user lands on the selected message
-    // and not always at the top of the narrow.
-    navigate.plan_scroll_to_selected();
+    views_util.hide({
+        $view: $("#inbox-view"),
+        set_visible,
+    });
 }
 
 function get_topic_key(stream_id, topic) {
@@ -192,20 +150,30 @@ function format_dm(user_ids_string, unread_count) {
     }
 
     const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-    const recipients_info = [];
+    const rendered_dm_with = recipient_ids
+        .map((recipient_id) =>
+            render_user_with_status_icon({
+                name: people.get_display_full_name(recipient_id),
+                status_emoji_info: user_status.get_status_emoji(recipient_id),
+            }),
+        )
+        .sort()
+        .join(", ");
 
-    for (const user_id of recipient_ids) {
-        const recipient_user_obj = people.get_by_user_id(user_id);
-        if (!recipient_user_obj.is_bot) {
-            const user_circle_class = buddy_data.get_user_circle_class(user_id);
-            recipient_user_obj.user_circle_class = user_circle_class;
-        }
-        recipients_info.push(recipient_user_obj);
+    let user_circle_class;
+    let is_bot = false;
+    if (recipient_ids.length === 1) {
+        is_bot = people.get_by_user_id(recipient_ids[0]).is_bot;
+        user_circle_class = is_bot ? false : buddy_data.get_user_circle_class(recipient_ids[0]);
     }
+
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        recipients_info,
+        rendered_dm_with,
+        is_group: recipient_ids.length > 1,
+        user_circle_class,
+        is_bot,
         dm_url: hash_util.pm_with_url(reply_to),
         user_ids_string,
         unread_count,
@@ -232,12 +200,10 @@ function rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data) {
     }
 }
 
-function format_stream(stream_id, unread_count_info) {
+function format_stream(stream_id) {
+    // NOTE: Unread count is not included in this function as it is more
+    // efficient for the callers to calculate it based on filters.
     const stream_info = sub_store.get(stream_id);
-    let unread_count = unread_count_info.unmuted_count;
-    if (should_include_muted()) {
-        unread_count += unread_count_info.muted_count;
-    }
 
     return {
         is_stream: true,
@@ -245,15 +211,35 @@ function format_stream(stream_id, unread_count_info) {
         is_web_public: stream_info.is_web_public,
         stream_name: stream_info.name,
         pin_to_top: stream_info.pin_to_top,
+        is_muted: stream_info.is_muted,
         stream_color: stream_color.get_stream_privacy_icon_color(stream_info.color),
         stream_header_color: stream_color.get_recipient_bar_color(stream_info.color),
-        unread_count,
         stream_url: hash_util.by_stream_url(stream_id),
         stream_id,
         // Will be displayed if any topic is visible.
         is_hidden: true,
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
+        mention_in_unread: unread.stream_has_any_unread_mentions(stream_id),
     };
+}
+
+function update_stream_data(stream_id, stream_key, topic_dict) {
+    topics_dict[stream_key] = {};
+    const stream_data = format_stream(stream_id);
+    let stream_post_filter_unread_count = 0;
+    for (const [topic, topic_unread_count] of topic_dict) {
+        const topic_key = get_topic_key(stream_id, topic);
+        if (topic_unread_count) {
+            const topic_data = format_topic(stream_id, topic, topic_unread_count);
+            topics_dict[stream_key][topic_key] = topic_data;
+            if (!topic_data.is_hidden) {
+                stream_post_filter_unread_count += topic_data.unread_count;
+            }
+        }
+    }
+    stream_data.is_hidden = stream_post_filter_unread_count === 0;
+    stream_data.unread_count = stream_post_filter_unread_count;
+    streams_dict[stream_key] = stream_data;
 }
 
 function rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data) {
@@ -276,28 +262,15 @@ function format_topic(stream_id, topic, topic_unread_count) {
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
         is_hidden: filter_should_hide_row({stream_id, topic}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
+        mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
     };
 
     return context;
 }
 
-function insert_stream(stream_id, topic_dict, stream_unread) {
-    const stream_data = format_stream(stream_id, stream_unread);
+function insert_stream(stream_id, topic_dict) {
     const stream_key = get_stream_key(stream_id);
-    topics_dict[stream_key] = {};
-    for (const [topic, topic_unread_count] of topic_dict) {
-        const topic_key = get_topic_key(stream_id, topic);
-        if (topic_unread_count) {
-            const topic_data = format_topic(stream_id, topic, topic_unread_count);
-            topics_dict[stream_key][topic_key] = topic_data;
-            if (!topic_data.is_hidden) {
-                stream_data.is_hidden = false;
-            }
-        }
-    }
-
-    streams_dict[stream_key] = stream_data;
-
+    update_stream_data(stream_id, stream_key, topic_dict);
     const sorted_stream_keys = get_sorted_stream_keys();
     const stream_index = sorted_stream_keys.indexOf(stream_key);
     const rendered_stream = render_inbox_stream_container({
@@ -313,7 +286,7 @@ function insert_stream(stream_id, topic_dict, stream_unread) {
         const previous_stream_key = sorted_stream_keys[stream_index - 1];
         $(rendered_stream).insertAfter(get_stream_container(previous_stream_key));
     }
-    return get_stream_container(stream_key);
+    return !topics_dict[stream_key].is_hidden;
 }
 
 function rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data) {
@@ -346,6 +319,16 @@ function get_sorted_stream_keys() {
 
         if (stream_b.pin_to_top && !stream_a.pin_to_top) {
             return 1;
+        }
+
+        // The muted stream is sorted lower.
+        // (Both stream are either pinned or not pinned right now)
+        if (stream_a.is_muted && !stream_b.is_muted) {
+            return 1;
+        }
+
+        if (stream_b.is_muted && !stream_a.is_muted) {
+            return -1;
         }
 
         const stream_name_a = stream_a ? stream_a.stream_name : "";
@@ -399,20 +382,10 @@ function reset_data() {
             const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
             const stream_key = get_stream_key(stream_id);
             if (stream_unread_count > 0) {
-                topics_dict[stream_key] = {};
-                const stream_data = format_stream(stream_id, stream_unread);
-                for (const [topic, topic_unread_count] of topic_dict) {
-                    if (topic_unread_count) {
-                        const topic_key = get_topic_key(stream_id, topic);
-                        const topic_data = format_topic(stream_id, topic, topic_unread_count);
-                        topics_dict[stream_key][topic_key] = topic_data;
-                        if (!topic_data.is_hidden) {
-                            stream_data.is_hidden = false;
-                            has_topics_post_filter = true;
-                        }
-                    }
+                update_stream_data(stream_id, stream_key, topic_dict);
+                if (!streams_dict[stream_key].is_hidden) {
+                    has_topics_post_filter = true;
                 }
-                streams_dict[stream_key] = stream_data;
             } else {
                 delete topics_dict[stream_key];
             }
@@ -467,7 +440,10 @@ export function complete_rerender() {
     );
     update_filters();
     show_empty_inbox_text(has_visible_unreads);
-
+    // If the focus is not on the inbox rows, the inbox view scrolls
+    // down when moving from other views to the inbox view. To avoid
+    // this, we scroll to top before restoring focus via revive_current_focus.
+    $("html").scrollTop(0);
     setTimeout(() => {
         // We don't want to focus on simplebar ever.
         $("#inbox-list .simplebar-content-wrapper").attr("tabindex", "-1");
@@ -606,20 +582,22 @@ function set_list_focus(input_key) {
     }
 
     const $row_to_focus = $($all_rows.get(row_focus));
+    const $cols_to_focus = $row_to_focus.find("[tabindex=0]");
+    const total_cols = $cols_to_focus.length;
     current_focus_id = $row_to_focus.attr("id");
     const not_a_header_row = !is_row_a_header($row_to_focus);
 
-    if (col_focus > COLUMNS.UNREAD_COUNT) {
-        col_focus = COLUMNS.COLLAPSE_BUTTON;
-    } else if (col_focus < COLUMNS.COLLAPSE_BUTTON) {
-        col_focus = COLUMNS.UNREAD_COUNT;
+    // Loop through columns.
+    if (col_focus > total_cols) {
+        col_focus = 0;
+    } else if (col_focus < 0) {
+        col_focus = total_cols;
     }
 
     // Since header rows always have a collapse button, other rows have one less element to focus.
     if (col_focus === COLUMNS.COLLAPSE_BUTTON) {
         if (not_a_header_row && ["left_arrow", "shift_tab"].includes(input_key)) {
-            // Focus on unread count.
-            col_focus = COLUMNS.UNREAD_COUNT;
+            col_focus = total_cols - 1;
         } else {
             $row_to_focus.trigger("focus");
             return;
@@ -638,7 +616,6 @@ function set_list_focus(input_key) {
         }
     }
 
-    const $cols_to_focus = $row_to_focus.find("[tabindex=0]");
     $($cols_to_focus.get(col_focus - 1)).trigger("focus");
 }
 
@@ -678,6 +655,9 @@ export function change_focused_element(input_key) {
                 focus_muted_filter();
                 return true;
             case "escape":
+                if (get_all_rows().length === 0) {
+                    return false;
+                }
                 set_list_focus();
                 return true;
             case "shift_tab":
@@ -702,6 +682,7 @@ export function change_focused_element(input_key) {
             case "down_arrow":
                 row_focus += 1;
                 set_list_focus();
+                center_focus_if_offscreen();
                 return true;
             case "vim_up":
             case "up_arrow":
@@ -711,6 +692,7 @@ export function change_focused_element(input_key) {
                 }
                 row_focus -= 1;
                 set_list_focus();
+                center_focus_if_offscreen();
                 return true;
             case "vim_right":
             case "right_arrow":
@@ -774,14 +756,15 @@ export function update() {
         const stream_unread = unread.num_unread_for_stream(stream_id);
         const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
         const stream_key = get_stream_key(stream_id);
+        let stream_post_filter_unread_count = 0;
         if (stream_unread_count > 0) {
             // Stream isn't rendered.
             if (topics_dict[stream_key] === undefined) {
-                insert_stream(stream_id, topic_dict, stream_unread);
+                has_topics_post_filter = insert_stream(stream_id, topic_dict);
                 continue;
             }
 
-            const new_stream_data = format_stream(stream_id, stream_unread);
+            const new_stream_data = format_stream(stream_id);
             for (const [topic, topic_unread_count] of topic_dict) {
                 const topic_key = get_topic_key(stream_id, topic);
                 if (topic_unread_count) {
@@ -790,14 +773,19 @@ export function update() {
                     topics_dict[stream_key][topic_key] = new_topic_data;
                     rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data);
                     if (!new_topic_data.is_hidden) {
-                        new_stream_data.is_hidden = false;
                         has_topics_post_filter = true;
+                        stream_post_filter_unread_count += new_topic_data.unread_count;
                     }
                 } else {
+                    // Remove old topic data since it can act as false data for renamed / a new
+                    // topic having the same name as old topic.
+                    delete topics_dict[stream_key][topic_key];
                     get_row_from_conversation_key(topic_key).remove();
                 }
             }
             const old_stream_data = streams_dict[stream_key];
+            new_stream_data.is_hidden = stream_post_filter_unread_count === 0;
+            new_stream_data.unread_count = stream_post_filter_unread_count;
             streams_dict[stream_key] = new_stream_data;
             rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data);
         } else {
@@ -828,6 +816,9 @@ function get_focus_class_for_header() {
             focus_class = ".unread_count";
             break;
         }
+        case COLUMNS.ACTION_MENU: {
+            focus_class = ".inbox-stream-menu";
+        }
     }
 
     return focus_class;
@@ -837,11 +828,14 @@ function get_focus_class_for_row() {
     let focus_class = ".inbox-left-part";
     if (col_focus === COLUMNS.UNREAD_COUNT) {
         focus_class = ".unread_count";
+    } else if (col_focus === COLUMNS.ACTION_MENU) {
+        focus_class = ".inbox-topic-menu";
     }
     return focus_class;
 }
 
-function center_focus_if_offscreen($elt) {
+function center_focus_if_offscreen() {
+    const $elt = $(".inbox-row:focus, .inbox-header:focus");
     if ($elt.length === 0) {
         return;
     }
@@ -899,7 +893,7 @@ export function initialize() {
         }
     });
 
-    $("body").on("click", "#inbox-list .inbox-row, #inbox-list .inbox-header", (e) => {
+    $("body").on("click", "#inbox-list .inbox-left-part-wrapper", (e) => {
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.RECIPIENT;
         focus_clicked_element($elt);
@@ -954,10 +948,5 @@ export function initialize() {
         } else {
             unread_ops.mark_stream_as_read(stream_id);
         }
-    });
-
-    $("body").on("focus", ".inbox-row, .inbox-header", (e) => {
-        const $elt = $(e.currentTarget);
-        center_focus_if_offscreen($elt);
     });
 }

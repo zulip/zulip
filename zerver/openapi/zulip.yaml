@@ -2726,7 +2726,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to a user when [message flags][message-flags] are added
-                                to a message.
+                                to messages.
 
                                 [message-flags]: /api/update-message-flags#available-flags
                               properties:
@@ -2744,17 +2744,17 @@ paths:
                                 operation:
                                   deprecated: true
                                   description: |
-                                    Old name for `op` for this event type.
+                                    Old name for the `op` field in this event type.
 
-                                    **Deprecated**: This is deprecated; please use `op` instead
-                                    starting with Zulip 4.0 (feature level 32).
+                                    **Deprecated** in Zulip 4.0 (feature level 32), and
+                                    replaced by the `op` field.
                                   type: string
                                   enum:
                                     - add
                                 flag:
                                   type: string
                                   description: |
-                                    The flag that was added.
+                                    The [flag][message-flags] that was added.
                                 messages:
                                   type: array
                                   description: |
@@ -2765,9 +2765,12 @@ paths:
                                 all:
                                   type: boolean
                                   description: |
-                                    Whether the flag was added to all messages (E.g. all messages
-                                    were marked as read).
-                                    If this is true, then the `messages` array will be empty.
+                                    Whether the specified flag was added to all messages.
+                                    This field is only relevant for the `"read"` flag, and
+                                    will be `false` for all other flags.
+
+                                    When `true` for the `"read"` flag, then the `messages`
+                                    array will be empty.
                               example:
                                 {
                                   "type": "update_message_flags",
@@ -2782,19 +2785,9 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to a user when [message flags][message-flags] are
-                                removed from a message.
+                                removed from messages.
 
                                 [message-flags]: /api/update-message-flags#available-flags
-                              required:
-                                [
-                                  "id",
-                                  "type",
-                                  "op",
-                                  "operation",
-                                  "flag",
-                                  "messages",
-                                  "all",
-                                ]
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2811,19 +2804,16 @@ paths:
                                   deprecated: true
                                   type: string
                                   description: |
-                                    Old name for `op` for this event type.
+                                    Old name for the `op` field in this event type.
 
-                                    **Deprecated**: This is deprecated; please use `op` instead
-                                    starting with Zulip 4.0 (feature level 32).
+                                    **Deprecated** in Zulip 4.0 (feature level 32), and
+                                    replaced by the `op` field.
                                   enum:
                                     - remove
                                 flag:
                                   type: string
                                   description: |
-                                    The flag to be removed.
-                                  enum:
-                                    - starred
-                                    - read
+                                    The [flag][message-flags] to be removed.
                                 messages:
                                   type: array
                                   description: |
@@ -2832,18 +2822,19 @@ paths:
                                   items:
                                     type: integer
                                 all:
+                                  deprecated: true
                                   type: boolean
                                   description: |
-                                    Whether the flag was removed from all messages.
-                                    If this is true then the `messages` array will be empty.
+                                    Will be `false` for all specified flags.
+
+                                    **Deprecated** and will be removed in a future release.
                                 message_details:
                                   description: |
-                                    Present if `message` and `update_message_flags` are both present in
-                                    `event_types` and the `flag` is `read` and the `op` is `remove`.
+                                    Only present if the specified `flag` is `"read"`.
 
                                     A set of data structures describing the messages that
                                     are being marked as unread with additional details to
-                                    allow a client to update the `unread_msgs` data
+                                    allow clients to update the `unread_msgs` data
                                     structure for these messages (which may not be
                                     otherwise known to the client).
 
@@ -2898,8 +2889,7 @@ paths:
                                         type: boolean
                                         deprecated: true
                                         description: |
-                                          **Deprecated**
-                                          Internal implementation detail. Clients should
+                                          **Deprecated** internal implementation detail. Clients should
                                           ignore this field as it will be removed in the future.
                               example:
                                 {
@@ -4365,6 +4355,19 @@ paths:
 
                                         **Changes**: None added as an option in Zulip 3.0 (feature level 1)
                                         to disable video call UI.
+                                    jitsi_server_url:
+                                      type: string
+                                      nullable: true
+                                      description: |
+                                        The URL of the custom Jitsi Meet server configured in this organization's
+                                        settings.
+
+                                        `null`, the default, means that the organization is using the should use the
+                                        server-level configuration, `server_jitsi_server_url`.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                                        available as a server-level configuration, and required a server restart to
+                                        change.
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -5023,14 +5026,15 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "UNAUTHORIZED",
                         "result": "error",
                         "msg": "Not logged in: API authentication or user session required",
                       }
                     description: |
-                      A typical failed JSON response for when the user is not logged in
+                      A typical failed JSON response for when the user is not logged in:
   /drafts:
     get:
       operationId: get-drafts
@@ -5205,10 +5209,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no draft exists with the provided ID.
-                    example: {"result": "error", "msg": "Draft does not exist"}
+                      A typical failed JSON response for when no draft exists with
+                      the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Draft does not exist",
+                      }
     delete:
       operationId: delete-draft
       tags: ["drafts"]
@@ -5234,10 +5244,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no draft exists with the provided ID.
-                    example: {"result": "error", "msg": "Draft does not exist"}
+                      A typical failed JSON response for when no draft exists with
+                      the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Draft does not exist",
+                      }
   /scheduled_messages:
     get:
       operationId: get-scheduled-messages
@@ -5541,16 +5557,22 @@ paths:
                         description: |
                           A typical failed JSON response for when a direct message is scheduled
                           to be sent to a user that does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - description: |
-                          Example response for when no scheduled message exists with the provided ID.
-                        example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "result": "error",
-                            "msg": "Scheduled message does not exist",
-                          }
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no scheduled message exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Scheduled message does not exist",
+                      }
     delete:
       operationId: delete-scheduled-message
       tags: ["scheduled_messages"]
@@ -5581,9 +5603,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      Example response for when no scheduled message exists with the provided ID.
+                      A typical failed JSON response for when no scheduled message exists
+                      with the provided ID:
                     example:
                       {
                         "code": "BAD_REQUEST",
@@ -5620,14 +5643,8 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid stream ID",
-                            "result": "error",
-                          }
-                        description: |
+                      - $ref: "#/components/schemas/InvalidStreamError"
+                      - description: |
                           A typical failed JSON response for when an invalid stream ID is passed:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
@@ -5668,15 +5685,9 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/CodedError"
+                  - $ref: "#/components/schemas/InvalidStreamError"
                   - description: |
                       A typical failed JSON response for when an invalid stream ID is passed:
-                    example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
   /messages:
     get:
       operationId: get-messages
@@ -6887,14 +6898,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example: {"msg": "Invalid message(s)", "result": "error"}
-                    description: |
-                      A typical JSON response when attempting to
-                      access read receipts for a message ID that
-                      either does not exist or is not accessible to
-                      the current user.
-
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      A typical JSON response when attempting to access read receipts for
+                      a message ID that either does not exist or is not accessible to the
+                      current user:
   /messages/matches_narrow:
     get:
       operationId: check-messages-match-narrow
@@ -7756,9 +7764,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "BAD_REQUEST",
                         "msg": "Email 'newbie@zulip.com' already in use",
                         "result": "error",
                       }
@@ -8079,9 +8088,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "BAD_REQUEST",
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
@@ -8465,14 +8475,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the user is attempting to fetch the topics
                       of a non-existing stream (or also a private stream they don't have access to):
   /users/me/subscriptions:
@@ -8725,8 +8729,46 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/AddSubscriptionsResponse"
-                  - example:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      subscribed:
+                        type: object
+                        description: |
+                          A dictionary where the key is the Zulip API email address of the user/bot
+                          and the value is a list of the names of the streams that were subscribed
+                          to as a result of the query.
+                        additionalProperties:
+                          description: |
+                            `{email_address}`: List of the names of the streams that were subscribed
+                            to as a result of the query.
+                          type: array
+                          items:
+                            type: string
+                      already_subscribed:
+                        type: object
+                        description: |
+                          A dictionary where the key is the Zulip API email address of the user/bot
+                          and the value is a list of the names of the streams that the user/bot is
+                          already subscribed to.
+                        additionalProperties:
+                          description: |
+                            `{email_address}`: List of the names of the streams that the user is
+                            already subscribed to.
+                          type: array
+                          items:
+                            type: string
+                      unauthorized:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          A list of names of streams that the requesting user/bot was not
+                          authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
+                    example:
                       {
                         "already_subscribed":
                           {"iago@zulip.com": ["new stream"]},
@@ -9159,19 +9201,34 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "Cannot mute self", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Cannot mute self",
+                            "result": "error",
+                          }
                         description: |
-                          An example JSON response for when the user is yourself:
+                          An example JSON response for when the user ID is the current
+                          user's ID:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "No such user", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such user",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is nonexistent or inaccessible:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
+                      - $ref: "#/components/schemas/CodedError"
                       - example:
-                          {"msg": "User already muted", "result": "error"}
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "User already muted",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is already muted:
     delete:
@@ -9195,13 +9252,23 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "No such user", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such user",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is nonexistent or inaccessible:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "User is not muted", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "User is not muted",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is not previously muted:
 
@@ -9317,15 +9384,15 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no emoji exists with the provided name.
+                      An example JSON response for when no emoji exists with the provided name:
                     example:
                       {
+                        "code": "BAD_REQUEST",
                         "result": "error",
                         "msg": "Emoji 'green_tick' does not exist",
                       }
-
   /realm/emoji:
     get:
       operationId: get-custom-emoji
@@ -10606,9 +10673,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "BAD_REQUEST",
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
@@ -13488,6 +13556,21 @@ paths:
 
                           **Changes**: None added as an option in Zulip 3.0 (feature level 1)
                           to disable video call UI.
+                      realm_jitsi_server_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          The URL of the custom Jitsi Meet server configured in this organization's
+                          settings.
+
+                          `null`, the default, means that the organization is using the should use the
+                          server-level configuration, `server_jitsi_server_url`. A correct client
+                          supporting only the modern API should use `realm_jitsi_server_url ||
+                          server_jitsi_server_url` to create calls.
+
+                          **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                          available as a server-level configuration, which was available via the
+                          `jitsi_server_url` field.
                       realm_giphy_rating:
                         type: integer
                         description: |
@@ -13944,10 +14027,21 @@ paths:
                                 on the external site.
                       jitsi_server_url:
                         type: string
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The base URL the organization uses to create Jitsi video calls.
+                          The base URL to be used to create Jitsi video calls. Equals
+                          `realm_jitsi_server_url || server_jitsi_server_url`.
+
+                          **Changes**: Deprecated in Zulip 8.0 (feature level 212) and will
+                          eventually be removed. Previously, the Jitsi server to use was not
+                          configurable on a per-realm basis, and this field contained the server's
+                          configured Jitsi server. (Which is now provided as
+                          `server_jitsi_server_url`). Clients supporting older versions should fall
+                          back to this field when creating calls: using `realm_jitsi_server_url ||
+                          server_jitsi_server_url` with newer servers and using `jitsi_server_url`
+                          with servers below feature level 212.
                       development_environment:
                         type: boolean
                         description: |
@@ -14099,6 +14193,16 @@ paths:
                           since the last request.
 
                           **Changes**: New in Zulip 6.0 (feature level 140).
+                      server_jitsi_server_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          The URL of the Jitsi server that the Zulip server is configured to use by
+                          default; the organization-level setting `realm_jitsi_server_url` takes
+                          precedence over this setting when both are set.
+
+                          **Changes**: New in Zulip 8.0 (feature level 212). Previously, this value
+                          was available as the now-deprecated `jitsi_server_url`.
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |
@@ -15779,14 +15883,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the requested stream does not exist,
                       or where the user does not have permission to access the target stream:
   /streams:
@@ -16050,15 +16148,9 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON response for when the stream ID is not valid.
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
+                      An example JSON response for when the stream ID is not valid:
     delete:
       operationId: archive-stream
       summary: Archive a stream
@@ -16077,14 +16169,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the supplied stream does not exist:
     patch:
       operationId: update-stream
@@ -16231,17 +16317,11 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid stream ID",
-                            "result": "error",
-                          }
-                        description: |
+                      - $ref: "#/components/schemas/InvalidStreamError"
+                      - description: |
                           An example JSON response for when the supplied stream does not exist:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
+                      - $ref: "#/components/schemas/CodedError"
                       - example:
                           {
                             "code": "BAD_REQUEST",
@@ -16250,7 +16330,7 @@ paths:
                           }
                         description: |
                           An example JSON response for when invalid combination of stream permission
-                          parameters are passed.
+                          parameters are passed:
   /streams/{stream_id}/delete_topic:
     post:
       operationId: delete-topic
@@ -16327,7 +16407,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "result": "error",
@@ -16476,7 +16556,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -16485,7 +16565,6 @@ paths:
                       }
                     description: |
                       An example JSON error response for when user sends to multiple streams:
-
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -16550,7 +16629,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "result": "error",
@@ -16690,7 +16769,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -16717,7 +16796,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -18954,6 +19033,7 @@ components:
             result: {}
             msg: {}
             ignored_parameters_unsupported: {}
+          example: {"msg": "", "result": "success"}
     JsonSuccessBase:
       description: |
         **Changes**: As of Zulip 7.0 (feature level 167), if any
@@ -18977,7 +19057,6 @@ components:
               type: string
             ignored_parameters_unsupported:
               $ref: "#/components/schemas/IgnoredParametersUnsupported"
-          example: {"msg": "", "result": "success"}
     IgnoredParametersSuccess:
       allOf:
         - $ref: "#/components/schemas/IgnoredParametersBase"
@@ -19002,6 +19081,13 @@ components:
         A typical successful JSON response with ignored parameters may look like:
 
         [ignored_params]: /api/rest-error-handling#ignored-parameters
+      example:
+        {
+          "ignored_parameters_unsupported":
+            ["invalid_param_1", "invalid_param_2"],
+          "msg": "",
+          "result": "success",
+        }
     IgnoredParametersBase:
       allOf:
         - $ref: "#/components/schemas/JsonResponseBase"
@@ -19016,49 +19102,6 @@ components:
               type: string
             ignored_parameters_unsupported:
               $ref: "#/components/schemas/IgnoredParametersUnsupported"
-          example:
-            {
-              "ignored_parameters_unsupported":
-                ["invalid_param_1", "invalid_param_2"],
-              "msg": "",
-              "result": "success",
-            }
-    JsonError:
-      allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
-        - additionalProperties: false
-          properties:
-            result: {}
-            msg: {}
-    JsonErrorBase:
-      allOf:
-        - $ref: "#/components/schemas/JsonResponseBase"
-        - required:
-            - result
-            - msg
-          properties:
-            result:
-              enum:
-                - error
-            msg:
-              type: string
-    PartiallyCompleted:
-      allOf:
-        - $ref: "#/components/schemas/JsonResponseBase"
-        - required:
-            - result
-            - code
-          additionalProperties: false
-          properties:
-            result:
-              enum:
-                - partially_completed
-            code:
-              type: string
-              description: |
-                A string that identifies the cause of the partial completion of the request.
-            msg:
-              type: string
     ApiKeyResponse:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -19102,10 +19145,17 @@ components:
             code: {}
     CodedErrorBase:
       allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
-        - properties:
-            result: {}
-            msg: {}
+        - $ref: "#/components/schemas/JsonResponseBase"
+        - required:
+            - result
+            - msg
+            - code
+          properties:
+            result:
+              enum:
+                - error
+            msg:
+              type: string
             code:
               type: string
               description: |
@@ -19131,14 +19181,29 @@ components:
             }
     InvalidMessageError:
       allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
+        - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           properties:
             result: {}
             msg: {}
+            code: {}
           example:
             {
               "msg": "Invalid message(s)",
+              "code": "BAD_REQUEST",
+              "result": "error",
+            }
+    InvalidStreamError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+          example:
+            {
+              "msg": "Invalid stream ID",
               "code": "BAD_REQUEST",
               "result": "error",
             }
@@ -19180,51 +19245,15 @@ components:
               "result": "error",
               "stream_id": 9,
             }
-    AddSubscriptionsResponse:
-      allOf:
-        - $ref: "#/components/schemas/JsonSuccessBase"
-        - additionalProperties: false
-          properties:
-            result: {}
-            msg: {}
-            ignored_parameters_unsupported: {}
-            subscribed:
-              type: object
-              description: |
-                A dictionary where the key is the Zulip API email address of the user/bot
-                and the value is a list of the names of the streams that were subscribed
-                to as a result of the query.
-              additionalProperties:
-                description: |
-                  `{email_address}`: List of the names of the streams that were subscribed
-                  to as a result of the query.
-                type: array
-                items:
-                  type: string
-            already_subscribed:
-              type: object
-              description: |
-                A dictionary where the key is the Zulip API email address of the user/bot
-                and the value is a list of the names of the streams that the user/bot is
-                already subscribed to.
-              additionalProperties:
-                description: |
-                  `{email_address}`: List of the names of the streams that the user is
-                  already subscribed to.
-                type: array
-                items:
-                  type: string
-            unauthorized:
-              type: array
-              items:
-                type: string
-              description: |
-                A list of names of streams that the requesting user/bot was not
-                authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
     InvalidApiKeyError:
       allOf:
-        - $ref: "#/components/schemas/JsonError"
-        - example: {"msg": "Invalid API key", "result": "error"}
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INVALID_API_KEY",
+              "msg": "Invalid API key",
+              "result": "error",
+            }
           description: |
             ## Invalid API key
 
@@ -19285,14 +19314,8 @@ components:
             A typical failed json response for when user's account is deactivated:
     RateLimitedError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - example:
-            {
-              "code": "RATE_LIMIT_HIT",
-              "msg": "API usage exceeded rate limit",
-              "result": "error",
-              "retry-after": 28.706807374954224,
-            }
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
           description: |
             ## Rate limit exceeded
 
@@ -19308,6 +19331,22 @@ components:
             A typical failed JSON response for when a rate limit is exceeded:
 
             [rate-limit-headers]: /api/http-headers#rate-limiting-response-headers
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            retry-after:
+              type: integer
+              description: |
+                How many seconds the client must wait before making
+                additional requests.
+          example:
+            {
+              "code": "RATE_LIMIT_HIT",
+              "msg": "API usage exceeded rate limit",
+              "result": "error",
+              "retry-after": 28.706807374954224,
+            }
     RealmDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"

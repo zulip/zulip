@@ -263,7 +263,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", ""),
+        empty_narrow_html("translated: There are no messages here."),
     );
     page_params.is_spectator = false;
 

@@ -30,6 +30,7 @@ import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
+import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_display from "./settings_display";
@@ -495,7 +496,7 @@ export function initialize() {
         const sidebarHidden = !$(".app-main .column-right").hasClass("expanded");
         popovers.hide_all();
         if (sidebarHidden) {
-            popovers.show_userlist_sidebar();
+            right_sidebar_ui.show_userlist_sidebar();
         }
     });
 
@@ -668,7 +669,6 @@ export function initialize() {
         });
     }
 
-    popovers.register_click_handlers();
     user_profile.register_click_handlers();
     stream_popover.register_click_handlers();
 
@@ -954,6 +954,7 @@ export function initialize() {
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".typeahead").length &&
                 !$(e.target).closest(".enter_sends").length &&
+                !$(e.target).closest(".flatpickr-calendar").length &&
                 $(e.target).closest("body").length
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out

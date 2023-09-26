@@ -104,7 +104,32 @@
  *   append to, where before it could only be appended to `body`.
  *   Since it's in the right part of the DOM, we don't need to do
  *   the manual positioning in the show() function.
+ * 
+ * 11. Add `openInputFieldOnKeyUp` option:
+ *  
+ *   If the typeahead isn't shown yet, the `lookup` call in the keyup
+ *   handler will open it. Here we make a callback to the input field
+ *   before we open the lookahead in case it needs to make UI changes first
+ *   (e.g. widening the search bar).
+ *     
+ * 12. Add `closeInputFieldOnHide` option:
  *
+ *   Some input fields like search have visual changes that need to happen
+ *   when the typeahead hides. This callback function is called in `hide()`
+ *   and allows those extra UI changes to happen.
+ *
+ *  13. Allow option to remove custom logic for tab keypresses:
+ *
+ *   Sometimes tab is treated similarly to the escape or enter key, with
+ *   custom functionality, which also prevents propagation to default tab
+ *   functionality. The `tabIsEnter` option (default true) lets this be
+ *   turned off so that tab only does one thing while focus is in the
+ *   typeahead -- move focus to the next element.
+ *  
+ * 14. Don't act on blurs that change focus within the `parentElement`:
+ *  
+ *   This allows us to have things like a close button, and be able
+ *   to move focus there without the typeahead closing.
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -258,6 +283,9 @@ import {get_string_diff} from "../../src/util";
   , hide: function () {
       this.$container.hide()
       this.shown = false
+      if (this.options.closeInputFieldOnHide !== null) {
+        this.options.closeInputFieldOnHide();
+      }
       return this
     }
 
@@ -416,6 +444,7 @@ import {get_string_diff} from "../../src/util";
 
       switch(pseudo_keycode) {
         case 9: // tab
+          if (!this.options.tabIsEnter) return
         case 13: // enter
         case 27: // escape
           e.preventDefault()
@@ -472,6 +501,7 @@ import {get_string_diff} from "../../src/util";
           break
 
         case 9: // tab
+          if (!this.options.tabIsEnter) return
         case 13: // enter
           if (!this.shown) return
           this.select(e)
@@ -495,6 +525,13 @@ import {get_string_diff} from "../../src/util";
               hideOnEmpty = true;
             }
           }
+          if (this.options.openInputFieldOnKeyUp !== null && !this.shown) {
+            // If the typeahead isn't shown yet, the `lookup` call will open it.
+            // Here we make a callback to the input field before we open the
+            // lookahead in case it needs to make UI changes first (e.g. widening
+            // the search bar).
+            this.options.openInputFieldOnKeyUp();
+          }
           this.lookup(hideOnEmpty)
       }
 
@@ -507,6 +544,11 @@ import {get_string_diff} from "../../src/util";
   }
 
   , blur: function (e) {
+      // Blurs that move focus to elsewhere within the parent element shouldn't
+      // hide the typeahead.
+      if ($(e.relatedTarget).parents(this.options.parentElement).length > 0) {
+        return;
+      }
       var that = this
       setTimeout(function () {
         if (!that.$container.is(':hover')) {
@@ -584,6 +626,9 @@ import {get_string_diff} from "../../src/util";
   , stopAdvance: false
   , dropup: false
   , advanceKeyCodes: []
+  , openInputFieldOnKeyUp: null
+  , closeInputFieldOnHide: null
+  , tabIsEnter: true
   }
 
   $.fn.typeahead.Constructor = Typeahead
