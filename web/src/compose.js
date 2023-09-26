@@ -68,7 +68,7 @@ export function create_message_object() {
         content: compose_state.message_content(),
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
-        stream_id: "",
+        stream_id: undefined,
     };
     message.topic = "";
 

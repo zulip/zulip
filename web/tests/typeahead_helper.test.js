@@ -498,7 +498,7 @@ test("sort_recipients dup bots", () => {
     const recipients = th.sort_recipients({
         users: dup_objects,
         query: "b",
-        current_stream_id: "",
+        current_stream_id: undefined,
         current_topic: "",
     });
     const recipients_email = recipients.map((person) => person.email);
