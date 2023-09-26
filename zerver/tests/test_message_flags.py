@@ -1611,7 +1611,7 @@ class MarkUnreadTest(ZulipTestCase):
             stream_dict={},
             huddle_dict={},
             mentions=set(),
-            muted_stream_ids=[],
+            muted_stream_ids=set(),
             unmuted_stream_msgs=set(),
             old_unreads_missing=False,
         )
@@ -1633,7 +1633,7 @@ class MarkUnreadTest(ZulipTestCase):
             stream_dict={},
             huddle_dict={},
             mentions=set(),
-            muted_stream_ids=[],
+            muted_stream_ids=set(),
             unmuted_stream_msgs=set(),
             old_unreads_missing=False,
         )
