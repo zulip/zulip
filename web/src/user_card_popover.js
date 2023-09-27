@@ -28,10 +28,10 @@ import {hide_all, hide_all_except_sidebars} from "./popovers";
 import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
-import * as settings_users from "./settings_users";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
+import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
@@ -691,7 +691,7 @@ function register_click_handlers() {
                 },
             });
         }
-        settings_users.confirm_reactivation(user_id, handle_confirm, true);
+        user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
     $("body").on("click", ".user-card-popover-actions .view_full_user_profile", (e) => {

@@ -2,9 +2,12 @@ import $ from "jquery";
 
 import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
+import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
+import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
@@ -80,6 +83,34 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
         help_link: "/help/deactivate-or-reactivate-a-bot",
         html_body,
         html_submit_button: $t_html({defaultMessage: "Deactivate"}),
+        on_click: handle_confirm,
+        loading_spinner,
+    });
+}
+
+export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
+    const user = people.get_by_user_id(user_id);
+    const opts = {
+        username: user.full_name,
+    };
+
+    let html_body;
+    // check if bot or human
+    if (user.is_bot) {
+        opts.original_owner_deactivated =
+            user.is_bot && user.bot_owner_id && !people.is_person_active(user.bot_owner_id);
+        if (opts.original_owner_deactivated) {
+            opts.owner_name = people.get_by_user_id(user.bot_owner_id).full_name;
+        }
+        html_body = render_settings_reactivation_bot_modal(opts);
+    } else {
+        html_body = render_settings_reactivation_user_modal(opts);
+    }
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
+        help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
+        html_body,
         on_click: handle_confirm,
         loading_spinner,
     });
