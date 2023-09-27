@@ -122,6 +122,11 @@ export function clear_private_stream_alert() {
 }
 
 export function show_preview_area() {
+    // Disable unneeded compose_control_buttons as we don't
+    // need them in preview mode.
+    $("#compose").addClass("preview_mode");
+    $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
+
     const content = $("#compose-textarea").val();
     $("#compose-textarea").hide();
     $("#compose .markdown_preview").hide();
@@ -744,11 +749,6 @@ export function initialize() {
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        // Disable unneeded compose_control_buttons as we don't
-        // need them in preview mode.
-        $("#compose").addClass("preview_mode");
-        $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
         show_preview_area();
     });
