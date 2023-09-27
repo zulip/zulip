@@ -28,6 +28,9 @@ There are several parameters you can set while creating a stream. All but
 
 * **Who can access the stream?**: See [Stream permissions](/help/stream-permissions).
 
+* **Default stream for new users**: Whether new users will be [automatically
+  subscribed](/help/set-default-streams-for-new-users) to the new stream.
+
 * **Who can post to the stream?**: See [Stream permissions](/help/stream-permissions).
 
 * **Who can unsubscribe others from this stream?**: See
