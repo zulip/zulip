@@ -81,6 +81,8 @@ body {
     --navbar-fixed-height: calc(
         var(--header-height) + var(--navbar-alerts-wrapper-height)
     );
+    /* Keep content from colliding with the search box. */
+    --navbar-content-righthand-offset: 5px;
 
     /*
     We have a 10px gutter below the header,
@@ -2090,6 +2092,8 @@ div.focused-message-list {
         text-decoration: none;
         /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
         padding-right: calc(3px + 10px);
+        /* Don't yield any space needed for the stream name. */
+        flex-shrink: 0;
 
         .zulip-icon {
             font-size: 14px;
@@ -2164,10 +2168,6 @@ div.focused-message-list {
         white-space: nowrap;
         padding: 12px 0;
         padding-left: 10px;
-        /* We are adding right margin so the text can truncate
-        and it doesn't overflow through search section. We make it
-        5px more than the size of the search box. */
-        margin: 0 155px 0 0;
 
         @media (width < $sm_min) {
             padding: 7px 0;
@@ -2176,10 +2176,6 @@ div.focused-message-list {
 
         & > a {
             padding: 12px 0;
-        }
-
-        @media (width < $md_min) {
-            margin-right: 30px;
         }
     }
 
@@ -2190,6 +2186,12 @@ div.focused-message-list {
     .navbar_title,
     .narrow_description {
         flex-grow: 1;
+        margin: 0;
+        /* Calculate right margin so that text can truncate
+           and not collide with the search section. */
+        margin-right: calc(
+            var(--search-box-width) + var(--navbar-content-righthand-offset)
+        );
     }
 }
 
