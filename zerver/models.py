@@ -3175,7 +3175,9 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_recipient_upper_subject",
             ),
             models.Index(
-                # Only used by already_sent_mirrored_message_id
+                # Used by already_sent_mirrored_message_id, and when
+                # determining recent topics (we post-process to merge
+                # and show the most recent case)
                 "realm_id",
                 "recipient_id",
                 "subject",

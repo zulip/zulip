@@ -226,6 +226,9 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
 
 def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> List[Dict[str, Any]]:
     cursor = connection.cursor()
+    # Uses index: zerver_message_realm_recipient_subject
+    # Note that this is *case-sensitive*, so that we can display the
+    # most recently-used case (in generate_topic_history_from_db_rows)
     query = """
     SELECT
         "zerver_message"."subject" as topic,
@@ -254,6 +257,9 @@ def get_topic_history_for_stream(
         return get_topic_history_for_public_stream(user_profile.realm_id, recipient_id)
 
     cursor = connection.cursor()
+    # Uses index: zerver_message_realm_recipient_subject
+    # Note that this is *case-sensitive*, so that we can display the
+    # most recently-used case (in generate_topic_history_from_db_rows)
     query = """
     SELECT
         "zerver_message"."subject" as topic,
