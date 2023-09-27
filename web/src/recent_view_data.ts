@@ -7,7 +7,7 @@ export type TopicData = {
     participated: boolean;
     type: "private" | "stream";
 };
-export const topics = new Map<string | undefined, TopicData>();
+export const topics = new Map<string, TopicData>();
 // For stream messages, key is stream-id:topic.
 // For pms, key is the user IDs to whom the message is being sent.
 
