@@ -63,9 +63,14 @@ body {
     the height of its parent (i.e. the header height).
     */
     --search-box-height: 28px;
+    --search-box-width: 150px;
 
     @media (width < $sm_min) {
         --search-box-height: var(--header-height);
+    }
+
+    @media (width < $md_min) {
+        --search-box-width: 40px;
     }
 
     /*
