@@ -308,9 +308,6 @@ class NarrowBuilder:
         # methods to the same criterion.  See the class's block comment
         # for details.
 
-        # We have to be careful here because we're letting users call a method
-        # by name! The prefix 'by_' prevents it from colliding with builtin
-        # Python __magic__ stuff.
         operator = term["operator"]
         operand = term["operand"]
 
