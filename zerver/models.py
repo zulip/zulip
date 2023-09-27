@@ -2960,6 +2960,11 @@ class AbstractMessage(models.Model):
     # See the Recipient class for details.
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
 
+    # The realm containing the message. Usually this will be the same
+    # as the realm of the messages's sender; the exception to that is
+    # cross-realm bot users.
+    #
+    # Important for efficient indexes and sharding in multi-realm servers.
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
     # The message's topic.
@@ -2972,21 +2977,34 @@ class AbstractMessage(models.Model):
     # See also the `topic_name` method on `Message`.
     subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)
 
+    # The raw Markdown-format text (E.g., what the user typed into the compose box).
     content = models.TextField()
+
+    # The HTML rendered content resulting from rendering the content
+    # with the Markdown processor.
     rendered_content = models.TextField(null=True)
+    # A rarely-incremented version number, theoretically useful for
+    # tracking which messages have been already rerendered when making
+    # major changes to the markup rendering process.
     rendered_content_version = models.IntegerField(null=True)
 
     date_sent = models.DateTimeField("date sent", db_index=True)
+
+    # A Client object indicating what type of Zulip client sent this message.
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)
 
+    # The last time the message was modified by message editing or moving.
     last_edit_time = models.DateTimeField(null=True)
 
     # A JSON-encoded list of objects describing any past edits to this
     # message, oldest first.
     edit_history = models.TextField(null=True)
 
+    # Whether the message contains a (link to) an uploaded file.
     has_attachment = models.BooleanField(default=False, db_index=True)
+    # Whether the message contains a visible image element.
     has_image = models.BooleanField(default=False, db_index=True)
+    # Whether the message contains a link.
     has_link = models.BooleanField(default=False, db_index=True)
 
     class Meta:
