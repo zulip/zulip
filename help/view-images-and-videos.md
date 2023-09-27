@@ -39,6 +39,23 @@ attached to messages in your current view.
     <kbd>Z</kbd> and <kbd>Z</kbd> to zoom in and out of the image. Use
     <kbd>V</kbd> or <kbd>Esc</kbd> to **close** the image viewer.
 
+{tab|mobile}
+
+1. Tap an image preview or file name to open the **image viewer**.
+
+1. You can interact with the image.
+
+    * Zoom in and out of the image
+
+    * Pan the image if you are zoomed in
+
+    * Tap the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical-spread"></i>)
+      in the bottom right corner of the app to download the image, share it to
+      other apps, or share a link to the image
+
+1. Tap the **X** in the upper right corner of the app to close the image viewer
+   once you are done.
+
 {end_tabs}
 
 ## Use the video player
