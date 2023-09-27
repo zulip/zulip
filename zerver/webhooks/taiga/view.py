@@ -13,7 +13,7 @@ from typing_extensions import TypeAlias
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -28,7 +28,7 @@ def api_taiga_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    message: WebhookPayload[WildValue],
+    message: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     parsed_events = parse_message(message)
     content = "".join(sorted(generate_content(event) + "\n" for event in parsed_events))

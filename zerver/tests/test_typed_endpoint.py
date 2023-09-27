@@ -16,9 +16,9 @@ from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
     DocumentationStatus,
+    JsonBodyPayload,
     PathOnly,
     RequiredStringConstraint,
-    WebhookPayload,
     is_optional,
     typed_endpoint,
     typed_endpoint_without_parameters,
@@ -249,7 +249,7 @@ class TestEndpoint(ZulipTestCase):
         def webhook(
             request: HttpRequest,
             *,
-            body: WebhookPayload[WildValue],
+            body: JsonBodyPayload[WildValue],
             non_body: Json[int] = 0,
         ) -> Dict[str, object]:
             status = body["totame"]["status"].tame(check_bool)

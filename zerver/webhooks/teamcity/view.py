@@ -13,7 +13,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
@@ -56,7 +56,7 @@ def api_teamcity_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     if "build" not in payload:
         # Ignore third-party specific (e.g. Slack) payload formats

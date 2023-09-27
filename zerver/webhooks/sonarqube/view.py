@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -114,7 +114,7 @@ def api_sonarqube_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     project = payload["project"]["name"].tame(check_string)
     branch = None
