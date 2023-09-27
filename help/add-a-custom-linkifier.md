@@ -14,7 +14,7 @@ topic in the message recipient bar that links to the appropriate URL.
 If you have any trouble creating the linkifiers you want, please [contact Zulip
 support](/help/contact-support) with details on what you're trying to do.
 
-### Add a custom linkifier
+## Add a custom linkifier
 
 {start_tabs}
 
@@ -27,20 +27,19 @@ support](/help/contact-support) with details on what you're trying to do.
 
 {end_tabs}
 
-### Reorder linkifiers
+## Reorder linkifiers
 
 Linkifiers are processed in order, and will not apply to text that
-already is linkified. One can thus configure multiple linkifiers with
-overlapping syntax, and only the first one whose regular expression
-matches a given part of a message will take effect. See the
+is already linkified. You can therefore choose which linkifiers to prioritize
+when more than one linkifier applies. See the
 [overlapping patterns section](#overlapping-patterns) for examples.
 
 {start_tabs}
 
 {settings_tab|linkifier-settings}
 
-1. Under **Linkifiers**, click and drag existing linkifiers into
-   the desired order.
+1. Under **Linkifiers**, click and drag the vertical dots to reorder the list of
+   linkifiers.
 
 {end_tabs}
 
