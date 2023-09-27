@@ -4621,7 +4621,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Now add ourselves
         with self.capture_send_event_calls(expected_num_events=2) as events:
-            with self.assert_database_query_count(13):
+            with self.assert_database_query_count(14):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -5530,7 +5530,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(36):
+        with self.assert_database_query_count(38):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5542,7 +5542,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notifications_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(47):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],

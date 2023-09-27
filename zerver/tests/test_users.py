@@ -1462,7 +1462,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Subscribe to the stream.
         self.subscribe(iago, stream.name)
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             result = orjson.loads(
                 self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
             )

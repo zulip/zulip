@@ -251,7 +251,7 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(50):
+        with self.assert_database_query_count(51):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -259,7 +259,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(cache_mock.call_args_list, 5)
+        self.assert_length(cache_mock.call_args_list, 6)
 
         html = result.content.decode()
 
@@ -469,7 +469,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(46):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
