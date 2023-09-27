@@ -17,7 +17,6 @@ mock_esm("../src/resize", {
     resize_stream_filters_container: noop,
 });
 
-const popovers = mock_esm("../src/popovers");
 const stream_popover = mock_esm("../src/stream_popover");
 
 const stream_list = zrequire("stream_list");
@@ -178,9 +177,6 @@ run_test("expanding_sidebar", () => {
     $(".app-main .column-left").removeClass("expanded");
 
     const events = [];
-    popovers.hide_all = () => {
-        events.push("popovers.hide_all");
-    };
     stream_popover.show_streamlist_sidebar = () => {
         events.push("stream_popover.show_streamlist_sidebar");
     };
@@ -188,5 +184,5 @@ run_test("expanding_sidebar", () => {
 
     stream_list.initiate_search();
 
-    assert.deepEqual(events, ["popovers.hide_all", "stream_popover.show_streamlist_sidebar"]);
+    assert.deepEqual(events, ["stream_popover.show_streamlist_sidebar"]);
 });

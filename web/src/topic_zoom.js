@@ -1,7 +1,7 @@
 import $ from "jquery";
+import {hideAll} from "tippy.js";
 
 import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as stream_list from "./stream_list";
 import * as topic_list from "./topic_list";
 
@@ -15,7 +15,7 @@ export function is_zoomed_in() {
 function zoom_in() {
     const stream_id = topic_list.active_stream_id();
 
-    popovers.hide_all_except_sidebars();
+    hideAll();
     pm_list.close();
     topic_list.zoom_in();
     stream_list.zoom_in_topics({
@@ -35,7 +35,7 @@ export function zoom_out() {
     }
     const $stream_li = topic_list.get_stream_li();
 
-    popovers.hide_all_except_sidebars();
+    hideAll();
     topic_list.zoom_out();
     stream_list.zoom_out_topics();
 

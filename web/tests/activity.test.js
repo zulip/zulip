@@ -23,7 +23,6 @@ const compose_state = mock_esm("../src/compose_state");
 const narrow = mock_esm("../src/narrow");
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
-const popovers = mock_esm("../src/popovers");
 const resize = mock_esm("../src/resize");
 const right_sidebar_ui = mock_esm("../src/right_sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
@@ -279,8 +278,6 @@ test("handlers", ({override, mock_template}) => {
     });
     override(scroll_util, "scroll_element_into_container", () => {});
     override(padded_widget, "update_padding", () => {});
-    override(popovers, "hide_all", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
     override(right_sidebar_ui, "show_userlist_sidebar", () => {});
     override(resize, "resize_sidebars", () => {});
 

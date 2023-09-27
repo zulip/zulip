@@ -20,7 +20,6 @@ const info_overlay = mock_esm("../src/info_overlay");
 const message_viewport = mock_esm("../src/message_viewport");
 const narrow = mock_esm("../src/narrow");
 const overlays = mock_esm("../src/overlays");
-const popovers = mock_esm("../src/popovers");
 const recent_view_ui = mock_esm("../src/recent_view_ui");
 const settings = mock_esm("../src/settings");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
@@ -177,28 +176,21 @@ run_test("hash_interactions", ({override}) => {
     override(recent_view_ui, "show", () => {
         recent_view_ui_shown = true;
     });
-    let hide_all_called = false;
-    override(popovers, "hide_all", () => {
-        hide_all_called = true;
-    });
     window.location.hash = "#unknown_hash";
 
     browser_history.clear_for_testing();
     hashchange.initialize();
     // If it's an unknown hash it should show the default view.
     assert.equal(recent_view_ui_shown, true);
-    assert.equal(hide_all_called, true);
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
     ]);
 
     window.location.hash = "#all_messages";
-    hide_all_called = false;
 
     helper.clear_events();
     $window_stub.trigger("hashchange");
-    assert.equal(hide_all_called, true);
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],

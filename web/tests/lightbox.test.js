@@ -13,9 +13,6 @@ mock_esm("../src/overlays", {
     close_active() {},
     open_overlay() {},
 });
-mock_esm("../src/popovers", {
-    hide_all() {},
-});
 const rows = mock_esm("../src/rows");
 
 const message_store = mock_esm("../src/message_store");

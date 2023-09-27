@@ -1,5 +1,6 @@
 import {parseISO} from "date-fns";
 import $ from "jquery";
+import {hideAll} from "tippy.js";
 
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
@@ -26,7 +27,6 @@ import * as ListWidget from "./list_widget";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
@@ -298,8 +298,7 @@ function initialize_user_type_fields(user) {
 }
 
 export function show_user_profile(user, default_tab_key = "profile-tab") {
-    popovers.hide_all();
-
+    hideAll();
     const field_types = page_params.custom_profile_field_types;
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types))

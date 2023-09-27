@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import {hideAll} from "tippy.js";
 
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
@@ -14,7 +15,6 @@ import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
@@ -719,7 +719,6 @@ export function set_event_handlers({on_stream_click}) {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        popovers.hide_all();
         on_stream_click(stream_id, "sidebar");
 
         clear_and_hide_search();
@@ -847,7 +846,7 @@ export function initiate_search() {
         $("#streamlist-toggle").is(":visible") &&
         !$(".app-main .column-left").hasClass("expanded")
     ) {
-        popovers.hide_all();
+        hideAll();
         stream_popover.show_streamlist_sidebar();
     }
     $filter.trigger("focus");

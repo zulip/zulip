@@ -7,7 +7,6 @@ import * as blueslip from "./blueslip";
 import * as message_store from "./message_store";
 import * as overlays from "./overlays";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as rows from "./rows";
 
 let is_open = false;
@@ -326,7 +325,6 @@ export function build_open_image_function(on_close) {
             on_close,
         });
 
-        popovers.hide_all();
         is_open = true;
     };
 }

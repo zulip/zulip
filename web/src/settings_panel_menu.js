@@ -1,8 +1,8 @@
 import $ from "jquery";
+import {hideAll} from "tippy.js";
 
 import * as browser_history from "./browser_history";
 import * as keydown_util from "./keydown_util";
-import * as popovers from "./popovers";
 import * as scroll_util from "./scroll_util";
 import * as settings from "./settings";
 import * as settings_sections from "./settings_sections";
@@ -100,7 +100,7 @@ export class SettingsPanelMenu {
     }
 
     activate_section_or_default(section) {
-        popovers.hide_all();
+        hideAll();
         if (!section) {
             // No section is given so we display the default.
 

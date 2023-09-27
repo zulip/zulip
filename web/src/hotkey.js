@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {hideAll} from "tippy.js";
 
 import * as activity from "./activity";
 import * as browser_history from "./browser_history";
@@ -40,6 +41,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
+import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
@@ -271,7 +273,9 @@ export function process_escape_key(e) {
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
         }
-        popovers.hide_all();
+        right_sidebar_ui.hide_userlist_sidebar();
+        stream_popover.hide_streamlist_sidebar();
+        hideAll();
         return true;
     }
 

@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import $ from "jquery";
-import tippy from "tippy.js";
+import tippy, {hideAll} from "tippy.js";
 
 import render_user_card_popover_content from "../templates/user_card_popover_content.hbs";
 import render_user_card_popover_manage_menu from "../templates/user_card_popover_manage_menu.hbs";
@@ -24,7 +24,6 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import {hide_all, hide_all_except_sidebars} from "./popovers";
 import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
@@ -580,7 +579,7 @@ function toggle_sidebar_user_card_popover($target) {
 
     // Hide popovers, but we don't want to hide the sidebars on
     // smaller browser windows.
-    hide_all_except_sidebars();
+    hideAll();
 
     if (previous_user_sidebar_id === user_id) {
         // If the popover is already shown, clicking again should toggle it.
@@ -638,7 +637,6 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        hide_all();
         if (overlays.is_active()) {
             overlays.close_active();
         }
@@ -650,7 +648,6 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        hide_all();
         if (overlays.is_active()) {
             overlays.close_active();
         }
@@ -675,7 +672,6 @@ function register_click_handlers() {
 
     $("body").on("click", ".user-card-popover-actions .sidebar-popover-reactivate-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        hide_all();
         e.stopPropagation();
         e.preventDefault();
         function handle_confirm() {
@@ -741,22 +737,18 @@ function register_click_handlers() {
      * but we do want to close the modal when you click them. */
 
     $("body").on("click", ".invisible_mode_turn_on", (e) => {
-        hide_all();
         user_status.server_invisible_mode_on();
         e.stopPropagation();
         e.preventDefault();
     });
 
     $("body").on("click", ".invisible_mode_turn_off", (e) => {
-        hide_all();
         user_status.server_invisible_mode_off();
         e.stopPropagation();
         e.preventDefault();
     });
 
     function open_user_status_modal(e) {
-        hide_all();
-
         user_status_ui.open_user_status_modal();
 
         e.stopPropagation();
@@ -802,7 +794,6 @@ function register_click_handlers() {
             trigger: "popover send private",
             private_message_recipient: email,
         });
-        hide_all();
         if (overlays.is_active()) {
             overlays.close_active();
         }
@@ -811,13 +802,11 @@ function register_click_handlers() {
     });
 
     $("body").on("click", ".copy_mention_syntax", (e) => {
-        hide_all();
         e.stopPropagation();
         e.preventDefault();
     });
 
     $("body").on("click", ".sidebar-popover-manage-user", (e) => {
-        hide_all();
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
         user_profile.show_user_profile(user, "manage-profile-tab");

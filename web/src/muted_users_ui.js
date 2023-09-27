@@ -1,3 +1,5 @@
+import {hideAll} from "tippy.js";
+
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 
 import * as activity from "./activity";
@@ -9,7 +11,6 @@ import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_muted_users from "./settings_muted_users";
 
@@ -65,7 +66,7 @@ export function rerender_for_muted_user() {
 }
 
 export function handle_user_updates(muted_user_ids) {
-    popovers.hide_all();
+    hideAll();
     muted_users.set_muted_users(muted_user_ids);
     rerender_for_muted_user();
 }

@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import {hideAll} from "tippy.js";
 
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
@@ -898,7 +899,7 @@ export function complete_rerender() {
         is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
             // Hide popovers on scroll in recent conversations.
-            popovers.hide_all();
+            hideAll();
 
             // Update the focused element for keyboard navigation if needed.
             recenter_focus_if_off_screen();

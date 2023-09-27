@@ -4,7 +4,7 @@
 
 import ClipboardJS from "clipboard";
 import $ from "jquery";
-import tippy, {delegate} from "tippy.js";
+import tippy, {delegate, hideAll} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
@@ -41,7 +41,6 @@ import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popover_menus_data from "./popover_menus_data";
-import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
@@ -242,7 +241,6 @@ function on_show_prep(instance) {
         e.stopPropagation();
         instance.hide();
     });
-    popovers.hide_all_except_sidebars();
 }
 
 function get_props_for_popover_centering(popover_props) {
@@ -584,7 +582,6 @@ export function initialize() {
                 ),
             );
             popover_instances.compose_control_buttons = instance;
-            popovers.hide_all_except_sidebars();
         },
         onHidden(instance) {
             instance.destroy();
@@ -1025,7 +1022,6 @@ export function initialize() {
             });
         },
         onShow(instance) {
-            popovers.hide_all_except_sidebars();
             const show_unstar_all_button = starred_messages.get_count() > 0;
 
             instance.setContent(
@@ -1057,8 +1053,6 @@ export function initialize() {
             });
         },
         onShow(instance) {
-            popovers.hide_all_except_sidebars();
-
             instance.setContent(parse_html(render_drafts_sidebar_actions({})));
         },
         onHidden(instance) {
@@ -1081,7 +1075,6 @@ export function initialize() {
             });
         },
         onShow(instance) {
-            popovers.hide_all_except_sidebars();
             instance.setContent(parse_html(render_all_messages_sidebar_actions()));
         },
         onHidden(instance) {
@@ -1098,7 +1091,6 @@ export function initialize() {
             $("#compose-textarea").trigger("focus");
         },
         onShow(instance) {
-            popovers.hide_all_except_sidebars(instance);
             const formatted_send_later_time = get_formatted_selected_send_later_time();
             instance.setContent(
                 parse_html(
@@ -1124,10 +1116,6 @@ export function initialize() {
         },
     });
 
-    /* Configure popovers to hide when toggling overlays. */
-    overlays.register_pre_open_hook(popovers.hide_all);
-    overlays.register_pre_close_hook(popovers.hide_all);
-
     let last_scroll = 0;
 
     $(document).on("scroll", () => {
@@ -1138,14 +1126,14 @@ export function initialize() {
 
         const date = Date.now();
 
-        // only run `popovers.hide_all()` if the last scroll was more
+        // only run `hideAll()` if the last scroll was more
         // than 250ms ago.
         if (date - last_scroll > 250) {
-            popovers.hide_all();
+            hideAll();
         }
 
         // update the scroll time on every event to make sure it doesn't
-        // retrigger `hide_all` while still scrolling.
+        // retrigger `hideAll()` while still scrolling.
         last_scroll = date;
     });
 }

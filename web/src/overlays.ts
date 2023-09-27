@@ -1,5 +1,6 @@
 import $ from "jquery";
 import Micromodal from "micromodal";
+import {hideAll} from "tippy.js";
 
 import * as blueslip from "./blueslip";
 
@@ -148,6 +149,7 @@ export function open_overlay(opts: OverlayOptions): void {
         },
     };
 
+    hideAll();
     disable_scrolling();
     opts.$overlay.addClass("show");
     opts.$overlay.attr("aria-hidden", "false");
@@ -208,6 +210,7 @@ export function open_modal(
     }
 
     blueslip.debug("open modal: " + modal_id);
+    hideAll();
 
     // Micromodal gets elements using the getElementById DOM function
     // which doesn't require the hash. We add it manually here.

@@ -27,7 +27,6 @@ import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as right_sidebar_ui from "./right_sidebar_ui";
@@ -206,7 +205,6 @@ export function initialize() {
         }
         compose_actions.respond_to_message({trigger: "message click"});
         e.stopPropagation();
-        popovers.hide_all();
     };
 
     // if on normal non-mobile experience, a `click` event should run the message
@@ -233,7 +231,6 @@ export function initialize() {
 
     $("#main_div").on("click", ".star_container", function (e) {
         e.stopPropagation();
-        popovers.hide_all();
 
         if (page_params.is_spectator) {
             spectators.login_to_access();
@@ -293,7 +290,6 @@ export function initialize() {
         message_lists.current.select_id(rows.id($row));
         message_edit.start($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".move_message_button", function (e) {
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
@@ -307,43 +303,36 @@ export function initialize() {
             message,
         );
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.start_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.save_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.end_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.save_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_close", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {
@@ -498,7 +487,6 @@ export function initialize() {
 
             e.preventDefault();
             e.stopPropagation();
-            popovers.hide_all();
             $(".tooltip").remove();
         });
 
@@ -713,9 +701,6 @@ export function initialize() {
             e.preventDefault();
             return;
         }
-
-        // Still hide the popovers, however
-        popovers.hide_all();
     }
 
     $("body").on("click", "#compose-content", handle_compose_click);
@@ -882,21 +867,6 @@ export function initialize() {
             // the child nodes, so the #compose stopPropagation doesn't get a
             // chance to capture right clicks.
             return;
-        }
-
-        // Dismiss popovers if the user has clicked outside them
-        if (
-            $(
-                '.popover-inner, #user-profile-modal, .emoji-picker-popover, .app-main [class^="column-"].expanded',
-            ).has(e.target).length === 0
-        ) {
-            // Since tippy instance can handle outside clicks on their own,
-            // we don't need to trigger them from here.
-            // This fixes the bug of `hideAll` being called
-            // after a tippy popover has been triggered which hides
-            // the popover without being displayed.
-            const not_hide_tippy_instances = true;
-            popovers.hide_all(not_hide_tippy_instances);
         }
 
         if (compose_state.composing() && !$(e.target).parents("#compose").length) {

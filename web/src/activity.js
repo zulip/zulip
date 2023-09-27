@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import {hideAll} from "tippy.js";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
@@ -11,7 +12,6 @@ import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as ui_util from "./ui_util";
 import {UserSearch} from "./user_search";
@@ -127,7 +127,7 @@ export function build_user_sidebar() {
 function do_update_users_for_search() {
     // Hide all the popovers but not userlist sidebar
     // when the user is searching.
-    popovers.hide_all_except_sidebars();
+    hideAll();
     build_user_sidebar();
     user_cursor.reset();
 }
@@ -289,7 +289,7 @@ function keydown_enter_key() {
     }
 
     narrow_for_user_id({user_id});
-    popovers.hide_all();
+    hideAll();
 }
 
 export function set_cursor_and_filter() {

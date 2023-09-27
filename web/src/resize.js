@@ -1,5 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
+import {hideAll} from "tippy.js";
 
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
@@ -10,7 +11,6 @@ import * as message_viewport from "./message_viewport";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
 import * as util from "./util";
 
 function get_bottom_whitespace_height() {
@@ -167,7 +167,7 @@ export function handler() {
     // popping up when the user opened that very popover.
     const mobile = util.is_mobile();
     if (!mobile || new_width !== _old_width) {
-        popovers.hide_all();
+        hideAll();
     }
 
     if (new_width !== _old_width) {

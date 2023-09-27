@@ -1,6 +1,6 @@
 import $ from "jquery";
+import {hideAll} from "tippy.js";
 
-import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as stream_popover from "./stream_popover";
@@ -70,7 +70,7 @@ export class UserSearch {
     show_widget() {
         // Hide all the popovers but not userlist sidebar
         // when the user wants to search.
-        popovers.hide_all_except_sidebars();
+        hideAll();
         this.$widget.removeClass("notdisplayed");
         resize.resize_sidebars();
     }
@@ -96,7 +96,7 @@ export class UserSearch {
     expand_column() {
         const $column = this.$input.closest(".app-main [class^='column-']");
         if (!$column.hasClass("expanded")) {
-            popovers.hide_all();
+            hideAll();
             if ($column.hasClass("column-left")) {
                 stream_popover.show_streamlist_sidebar();
             } else if ($column.hasClass("column-right")) {

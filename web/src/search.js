@@ -1,11 +1,11 @@
 import $ from "jquery";
+import {hideAll} from "tippy.js";
 
 import render_search_list_item from "../templates/search_list_item.hbs";
 
 import {Filter} from "./filter";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
-import * as popovers from "./popovers";
 import * as search_suggestion from "./search_suggestion";
 
 // Exported for unit testing
@@ -149,7 +149,6 @@ export function initialize({on_narrow_search}) {
 
     // register searchbar click handler
     $("#search_exit").on("click", (e) => {
-        popovers.hide_all();
         exit_search();
         e.preventDefault();
         e.stopPropagation();
@@ -166,7 +165,7 @@ export function initialize({on_narrow_search}) {
     // This prevents a bug where tab shows a visual change before the blur handler kicks in
     $("#search_exit").on("keydown", (e) => {
         if (e.key === "tab") {
-            popovers.hide_all();
+            hideAll();
             exit_search();
             e.preventDefault();
             e.stopPropagation();

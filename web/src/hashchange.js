@@ -18,7 +18,6 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as popovers from "./popovers";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
@@ -473,7 +472,6 @@ function hashchanged(from_reload, e) {
 
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
-    popovers.hide_all();
     browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);
     browser_history.state.changing_hash = false;

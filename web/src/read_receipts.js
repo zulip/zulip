@@ -10,7 +10,6 @@ import * as loading from "./loading";
 import * as message_store from "./message_store";
 import * as overlays from "./overlays";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as ui_report from "./ui_report";
 
 export function show_user_list(message_id) {
@@ -78,10 +77,6 @@ export function show_user_list(message_id) {
                     },
                 });
             }
-        },
-        on_hide() {
-            // Ensure any user info popovers are closed
-            popovers.hide_all();
         },
     });
 }
