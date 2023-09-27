@@ -69,7 +69,7 @@
         }
 
         #searchbox-input-container {
-            width: 150px;
+            width: var(--search-box-width);
         }
 
         .search-input {
@@ -95,12 +95,6 @@
         }
 
         @media (width < $md_min) {
-            #searchbox-input-container {
-                /* On small screens, the input container/button becomes just
-                   an icon. Width is to match the width of nearby buttons. */
-                width: 40px;
-            }
-
             .search-input {
                 opacity: 0;
             }
