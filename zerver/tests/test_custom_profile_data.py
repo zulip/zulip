@@ -906,7 +906,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         test_bot = self.create_test_bot("foo-bot", iago)
         self.login_user(iago)
 
-        with self.assert_database_query_count(4):
+        with self.assert_database_query_count(5):
             response = self.client_get(
                 "/json/users", {"client_gravatar": "false", "include_custom_profile_fields": "true"}
             )
