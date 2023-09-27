@@ -113,6 +113,10 @@ const keydown_cmd_or_ctrl_mappings = {
     190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
 };
 
+const keydown_cmd_or_ctrl_with_shift_mappings = {
+    80: {name: "toggle_compose_preview", message_view_only: true}, // 'P'
+};
+
 const keydown_either_mappings = {
     // these can be triggered by key or Shift + key
     // Note that codes for letters are still case sensitive!
@@ -199,6 +203,10 @@ export function get_keydown_hotkey(e) {
         }
         return undefined;
     } else if (e.metaKey || e.ctrlKey) {
+        hotkey = keydown_cmd_or_ctrl_with_shift_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
         return undefined;
     }
 
@@ -786,6 +794,16 @@ export function process_hotkey(e, hotkey) {
     if (event_name === "narrow_to_compose_target") {
         narrow.to_compose_target();
         return true;
+    }
+
+    if (event_name === "toggle_compose_preview" && compose_state.composing()) {
+        e.preventDefault();
+
+        if ($("#compose .markdown_preview").is(":visible")) {
+            compose.show_preview_area();
+        } else {
+            compose.clear_preview_area();
+        }
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button

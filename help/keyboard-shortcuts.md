@@ -135,6 +135,9 @@ in the Zulip app to add more to your repertoire as needed.
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
   <kbd>[</kbd> — Close the compose box and save the unsent message as a draft.
 
+* **Toggle Preview**: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> — Toggle
+  between a preview of the message and the compose box.
+
 ## Message actions
 
 * **Edit last message**: <kbd class="arrow-key">←</kbd> — Open the last
