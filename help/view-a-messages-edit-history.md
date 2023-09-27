@@ -1,29 +1,22 @@
 # View a message's edit history
 
-Users can view the edit history of any edited or moved message.
+Users can view the edit history of any edited or moved message. Organization
+administrators can [disable message edit
+history](/help/disable-message-edit-history).
 
-Messages with any content edits are labeled **EDITED**, while messages
-that have only been [moved to a new
-stream](/help/move-content-to-another-stream) or
-[topic](/help/move-content-to-another-topic) are labeled **MOVED**.
-
-Organization administrators can
-[disable message edit history](/help/disable-message-edit-history).
+Messages with any content edits are labeled **EDITED**, while messages that have
+only been [moved to a new stream](/help/move-content-to-another-stream) or
+[topic](/help/move-content-to-another-topic) are labeled **MOVED**. In
+organizations where message edit history is
+[disabled](/help/disable-message-edit-history), moved messages are simply marked
+as **EDITED**.
 
 ## View a message's edit history
-
-### Via the main message feed
 
 {start_tabs}
 
 1. Click on the message's **EDITED** or **MOVED** label shown next to
    a user's name or to the left of each message in the message feed.
-
-!!! tip ""
-
-    In organizations where message edit history is disabled, you will
-    never see a **MOVED** label; messages that have been moved will be
-    marked as **EDITED** just like those whose content has been edited.
 
 !!! keyboard_tip ""
 
