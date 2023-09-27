@@ -328,6 +328,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         user_avatar: people.medium_avatar_url_for_person(user),
         is_me: people.is_current_user(user.email),
         is_bot: user.is_bot,
+        profile_is_deactivated: !people.is_person_active(user.user_id),
         date_joined: timerender.get_localized_date_or_time_for_format(
             parseISO(user.date_joined),
             "dayofyear_year",
