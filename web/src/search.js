@@ -183,13 +183,7 @@ export function initiate_search() {
     // Open the typeahead after opening the search bar, so that we don't
     // get a weird visual jump where the typeahead results are narrow
     // before the search bar expands and then wider it expands.
-    if (!$("#searchbox .dropdown-menu").is(":visible")) {
-        $("#search_query").typeahead("lookup");
-    }
-
-    if (!search_bar_already_open) {
-        $("#search_query").typeahead("lookup").trigger("select");
-    }
+    $("#search_query").typeahead("lookup").trigger("select");
 }
 
 export function clear_search_form() {
