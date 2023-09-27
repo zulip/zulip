@@ -1580,6 +1580,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         ON
             m.sender_id = sender_profile.id
         WHERE
+            m.realm_id=%(realm_id)s AND
             m.recipient_id=%(my_recipient_id)s
         ORDER BY message_id DESC
         LIMIT %(conversation_limit)s)
@@ -1595,6 +1596,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
                 "user_profile_id": user_profile.id,
                 "conversation_limit": RECENT_CONVERSATIONS_LIMIT,
                 "my_recipient_id": my_recipient_id,
+                "realm_id": user_profile.realm_id,
             },
         )
         rows = cursor.fetchall()
