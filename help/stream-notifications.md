@@ -3,7 +3,7 @@
 You can configure desktop, mobile, and email notifications on a stream by
 stream basis.
 
-## Set notifications for a single stream
+## Configure notifications for a single stream
 
 These settings will override any default stream notification settings.
 
@@ -32,7 +32,7 @@ These settings will override any default stream notification settings.
 
 {end_tabs}
 
-## Set default notifications for all streams
+## Configure default notifications for all streams
 
 These settings only apply to streams where you have not
 explicitly set a notification preference.

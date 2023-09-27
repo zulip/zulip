@@ -25,7 +25,7 @@ preference settings, including the following:
     * [What types of messages trigger notifications][default-notifications]
     * [Configurations for email notifications](/help/email-notifications)
 
-[default-notifications]: /help/stream-notifications#set-default-notifications-for-all-streams
+[default-notifications]: /help/stream-notifications#configure-default-notifications-for-all-streams
 
 ## How to configure default settings for new users
 
