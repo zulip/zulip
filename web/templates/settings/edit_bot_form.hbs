@@ -50,8 +50,16 @@
     </div>
     {{/if}}
     <div class="input-group new-style">
+        {{#if is_active}}
         <button class="button rounded btn-danger deactivate_bot_button">
             {{t 'Deactivate bot' }}
         </button>
+        {{else}}
+        <span>
+            <button class="button rounded reactivate_user_button">
+                {{t 'Reactivate bot' }}
+            </button>
+        </span>
+        {{/if}}
     </div>
 </div>
