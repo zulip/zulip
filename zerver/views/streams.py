@@ -894,7 +894,7 @@ def get_topics_backend(
         realm = get_valid_realm_from_request(request)
         stream = access_web_public_stream(stream_id, realm)
         result = get_topic_history_for_public_stream(
-            recipient_id=assert_is_not_none(stream.recipient_id)
+            realm_id=realm.id, recipient_id=assert_is_not_none(stream.recipient_id)
         )
 
     else:
