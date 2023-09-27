@@ -1,15 +1,12 @@
 import $ from "jquery";
 
-import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
-import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
@@ -489,34 +486,6 @@ function handle_bot_deactivation($tbody) {
     });
 }
 
-export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
-    const user = people.get_by_user_id(user_id);
-    const opts = {
-        username: user.full_name,
-    };
-
-    let html_body;
-    // check if bot or human
-    if (user.is_bot) {
-        opts.original_owner_deactivated =
-            user.is_bot && user.bot_owner_id && !people.is_person_active(user.bot_owner_id);
-        if (opts.original_owner_deactivated) {
-            opts.owner_name = people.get_by_user_id(user.bot_owner_id).full_name;
-        }
-        html_body = render_settings_reactivation_bot_modal(opts);
-    } else {
-        html_body = render_settings_reactivation_user_modal(opts);
-    }
-
-    confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
-        help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
-        html_body,
-        on_click: handle_confirm,
-        loading_spinner,
-    });
-}
-
 function handle_reactivation($tbody) {
     $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
@@ -539,7 +508,7 @@ function handle_reactivation($tbody) {
             dialog_widget.submit_api_request(channel.post, url, {}, opts);
         }
 
-        confirm_reactivation(user_id, handle_confirm, true);
+        user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 }
 

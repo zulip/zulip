@@ -16,7 +16,6 @@ import * as integration_url_modal from "./integration_url_modal";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
-import * as settings_users from "./settings_users";
 import * as ui_report from "./ui_report";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
@@ -377,7 +376,7 @@ export function set_up() {
             });
         }
 
-        settings_users.confirm_reactivation(user_id, handle_confirm, true);
+        user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", (e) => {
