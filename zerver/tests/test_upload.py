@@ -713,7 +713,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Owner user should be able to view file
         self.login_user(hamlet)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -721,7 +721,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -774,7 +774,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Owner user should be able to view file
         self.login_user(user)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -782,7 +782,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -790,7 +790,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Subscribed user who did not receive the message should also be able to view file
         self.login_user(late_subscribed_user)
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(10):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -800,7 +800,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         def assert_cannot_access_file(user: UserProfile) -> None:
             self.login_user(user)
             # It takes a few extra queries to verify lack of access with shared history.
-            with self.assert_database_query_count(8):
+            with self.assert_database_query_count(9):
                 response = self.client_get(url)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
@@ -841,7 +841,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         user = self.example_user("aaron")
         self.login_user(user)
-        with self.assert_database_query_count(8):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
@@ -850,7 +850,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.subscribe(user, "test-subscribe 2")
 
         # If we were accidentally one query per message, this would be 20+
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(10):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")

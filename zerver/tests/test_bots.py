@@ -148,7 +148,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(num_bots)
 
-        with self.assert_database_query_count(3):
+        with self.assert_database_query_count(4):
             users_result = self.client_get("/json/users")
 
         self.assert_json_success(users_result)

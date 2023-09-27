@@ -53,7 +53,7 @@ from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Client, Message, RealmUserDefault, Subscription, UserMessage, UserProfile
-from zerver.models.clients import get_client
+from zerver.models.clients import clear_client_cache, get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
@@ -181,6 +181,7 @@ def queries_captured(
         cache = get_cache_backend(None)
         cache.clear()
         flush_per_request_caches()
+        clear_client_cache()
     with mock.patch.multiple(
         TimeTrackingCursor, execute=cursor_execute, executemany=cursor_executemany
     ):
