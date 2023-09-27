@@ -7,7 +7,7 @@ from returns.curry import partial
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, check_url
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
@@ -107,7 +107,7 @@ def api_groove_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     event = validate_extract_webhook_http_header(request, "X-Groove-Event", "Groove")
     assert event is not None

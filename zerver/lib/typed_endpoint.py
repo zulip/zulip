@@ -99,7 +99,7 @@ class ApiParamConfig:
 
 # Commonly used for webhook views, where the payload has a content type of
 # application/json. It reads the data from request body and parse it from JSON.
-WebhookPayload: TypeAlias = Annotated[Json[T], ApiParamConfig(argument_type_is_body=True)]
+JsonBodyPayload: TypeAlias = Annotated[Json[T], ApiParamConfig(argument_type_is_body=True)]
 # A shorthand to declare path only variables that should not be parsed from the
 # request by the @typed_endpoint decorator.
 PathOnly: TypeAlias = Annotated[T, ApiParamConfig(path_only=True)]
