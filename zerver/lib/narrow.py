@@ -577,20 +577,24 @@ class NarrowBuilder:
             # complex query to get messages between these two users
             # with either of them as the sender.
             self_recipient_id = self.user_profile.recipient_id
-            cond = or_(
-                and_(
-                    column("sender_id", Integer) == other_participant.id,
-                    column("recipient_id", Integer) == self_recipient_id,
-                ),
-                and_(
-                    column("sender_id", Integer) == self.user_profile.id,
-                    column("recipient_id", Integer) == recipient.id,
+            cond = and_(
+                column("realm_id", Integer) == self.realm.id,
+                or_(
+                    and_(
+                        column("sender_id", Integer) == other_participant.id,
+                        column("recipient_id", Integer) == self_recipient_id,
+                    ),
+                    and_(
+                        column("sender_id", Integer) == self.user_profile.id,
+                        column("recipient_id", Integer) == recipient.id,
+                    ),
                 ),
             )
             return query.where(maybe_negate(cond))
 
         # Direct message with self
         cond = and_(
+            column("realm_id", Integer) == self.realm.id,
             column("sender_id", Integer) == self.user_profile.id,
             column("recipient_id", Integer) == recipient.id,
         )
@@ -644,16 +648,21 @@ class NarrowBuilder:
         self_recipient_id = self.user_profile.recipient_id
         # See note above in `by_dm` about needing bidirectional messages
         # for direct messages with another person.
-        cond = or_(
-            and_(
-                column("sender_id", Integer) == narrow_user_profile.id,
-                column("recipient_id", Integer) == self_recipient_id,
+        cond = and_(
+            column("realm_id", Integer) == self.realm.id,
+            or_(
+                and_(
+                    column("sender_id", Integer) == narrow_user_profile.id,
+                    column("recipient_id", Integer) == self_recipient_id,
+                ),
+                and_(
+                    column("sender_id", Integer) == self.user_profile.id,
+                    column("recipient_id", Integer) == narrow_user_profile.recipient_id,
+                ),
+                and_(
+                    column("recipient_id", Integer).in_(huddle_recipient_ids),
+                ),
             ),
-            and_(
-                column("sender_id", Integer) == self.user_profile.id,
-                column("recipient_id", Integer) == narrow_user_profile.recipient_id,
-            ),
-            column("recipient_id", Integer).in_(huddle_recipient_ids),
         )
         return query.where(maybe_negate(cond))
 
@@ -673,7 +682,10 @@ class NarrowBuilder:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
         recipient_ids = self._get_huddle_recipients(narrow_profile)
-        cond = column("recipient_id", Integer).in_(recipient_ids)
+        cond = and_(
+            column("realm_id", Integer) == self.realm.id,
+            column("recipient_id", Integer).in_(recipient_ids),
+        )
         return query.where(maybe_negate(cond))
 
     def by_search(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:

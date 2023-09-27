@@ -300,7 +300,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm", operand=self.othello_email)
         self._do_add_term_test(
             term,
-            "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s",
+            "WHERE realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
@@ -309,13 +309,14 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
+            "WHERE NOT (realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
         term = dict(operator="dm", operand=self.hamlet_email)
         self._do_add_term_test(
-            term, "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s"
+            term,
+            "WHERE realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -323,7 +324,8 @@ class NarrowBuilderTest(ZulipTestCase):
     ) -> None:  # NEGATED
         term = dict(operator="dm", operand=self.hamlet_email, negated=True)
         self._do_add_term_test(
-            term, "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)"
+            term,
+            "WHERE NOT (realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
         )
 
     def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
@@ -333,7 +335,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm", operand=myself_and_other)
         self._do_add_term_test(
             term,
-            "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s",
+            "WHERE realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
@@ -350,7 +352,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm", operand=myself_and_other, negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
+            "WHERE NOT (realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
@@ -379,7 +381,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
             term,
-            "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])",
+            "WHERE realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
         )
 
         # Test with at least one such group direct messages existing
@@ -390,7 +392,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
             term,
-            "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])",
+            "WHERE realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
         )
 
     def test_add_term_using_dm_including_operator_with_different_user_email_and_negated(
@@ -399,7 +401,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm-including", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
+            "WHERE NOT (realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
     def test_add_term_using_id_operator_integer(self) -> None:
@@ -533,14 +535,16 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_pm_with_operator(self) -> None:
         term = dict(operator="pm-with", operand=self.hamlet_email)
         self._do_add_term_test(
-            term, "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s"
+            term,
+            "WHERE realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     # Test that the underscore version of "pm-with" works.
     def test_add_term_using_underscore_version_of_pm_with_operator(self) -> None:
         term = dict(operator="pm_with", operand=self.hamlet_email)
         self._do_add_term_test(
-            term, "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s"
+            term,
+            "WHERE realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     # Test that deprecated "group-pm-with" (replaced by "dm-including" ) works.
@@ -550,13 +554,19 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
         term = dict(operator="group-pm-with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+        self._do_add_term_test(
+            term,
+            "WHERE realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
         term = dict(operator="group-pm-with", operand=self.othello_email, negated=True)
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
+        self._do_add_term_test(
+            term,
+            "WHERE NOT (realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
         term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
@@ -565,7 +575,10 @@ class NarrowBuilderTest(ZulipTestCase):
     # Test that the underscore version of "group-pm-with" works.
     def test_add_term_using_underscore_version_of_group_pm_with_operator(self) -> None:
         term = dict(operator="group_pm_with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+        self._do_add_term_test(
+            term,
+            "WHERE realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
 
     def _do_add_term_test(
         self, term: Dict[str, Any], where_clause: str, params: Optional[Dict[str, Any]] = None
@@ -1679,6 +1692,7 @@ class GetOldMessagesTest(ZulipTestCase):
         assert scotland_stream.recipient_id is not None
         assert hamlet_user.recipient_id is not None
         assert othello_user.recipient_id is not None
+        query_ids["realm_id"] = hamlet_user.realm_id
         query_ids["scotland_recipient"] = scotland_stream.recipient_id
         query_ids["hamlet_id"] = hamlet_user.id
         query_ids["othello_id"] = othello_user.id
@@ -3945,7 +3959,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         hamlet_email = self.example_user("hamlet").email
         othello_email = self.example_user("othello").email
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3957,7 +3971,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3969,7 +3983,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4043,7 +4057,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         )
 
         # Narrow to direct messages with yourself
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND realm_id = {realm_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
