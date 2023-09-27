@@ -284,14 +284,22 @@ body {
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
-    --color-markdown-code-background: hsl(0deg 0% 100%);
-    --color-markdown-code-border: hsl(240deg 13% 90%);
-    --color-markdown-pre-text: hsl(0deg 0% 20%);
-    --color-markdown-pre-background: hsl(0deg 0% 100%);
-    --color-markdown-pre-border: hsl(0deg 0% 0% / 15%);
+    --color-markdown-code-background: hsl(208deg 5% 95% / 85%);
+    --color-markdown-code-border: hsl(208deg 10% 70% / 30%);
+    --color-markdown-code-background-mentions: hsl(0deg 0% 100%);
+    --color-markdown-code-border-mentions: hsl(208deg 10% 70% / 50%);
+    --color-markdown-pre-text: var(--color-markdown-code-text);
+    --color-markdown-pre-background: hsl(208deg 5% 97% / 85%);
+    --color-markdown-pre-border: var(--color-markdown-code-border);
+    --color-markdown-pre-background-mentions: var(
+        --color-markdown-code-background-mentions
+    );
+    --color-markdown-pre-border-mentions: var(
+        --color-markdown-code-border-mentions
+    );
     --color-markdown-link: hsl(200deg 100% 40%);
-    --color-markdown-link-hover: hsl(200deg 100% 25%);
     --color-markdown-code-link: var(--color-markdown-link);
+    --color-markdown-link-hover: hsl(200deg 100% 25%);
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
 
     /* Icon colors */
@@ -559,12 +567,20 @@ body {
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
        to light theme, and so are not redeclared here. */
-    --color-markdown-code-text: var(--color-text-message-default);
-    --color-markdown-code-background: hsl(212deg 25% 15%);
-    --color-markdown-code-border: hsl(0deg 0% 0% / 50%);
-    --color-markdown-pre-text: hsl(212deg 98% 82%);
-    --color-markdown-pre-background: hsl(212deg 0% 11%);
-    --color-markdown-pre-border: hsl(0deg 0% 0% / 50%);
+    --color-markdown-code-text: hsl(0deg 0% 100% / 80%);
+    --color-markdown-code-background: hsl(0deg 0% 100% / 4%);
+    --color-markdown-code-border: hsl(0deg 0% 100% / 15%);
+    --color-markdown-code-background-mentions: var(
+        --color-markdown-code-background
+    );
+    --color-markdown-code-border-mentions: var(--color-markdown-code-border);
+    --color-markdown-pre-text: var(--color-markdown-code-text);
+    --color-markdown-pre-background: var(--color-markdown-code-background);
+    --color-markdown-pre-border: var(--color-markdown-code-border);
+    --color-markdown-pre-background-mentions: var(
+        --color-markdown-code-background
+    );
+    --color-markdown-pre-border-mentions: var(--color-markdown-code-border);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);

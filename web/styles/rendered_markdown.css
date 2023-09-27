@@ -690,6 +690,8 @@
         padding: 0;
         white-space: inherit;
         overflow-x: scroll;
+        /* Unset to avoid compounding alpha values */
+        background-color: unset;
         color: inherit;
         border: 0;
     }
@@ -702,7 +704,7 @@
         unicode-bidi: embed;
         direction: ltr;
         white-space: pre-wrap;
-        padding: 0 4px;
+        padding: 0 3px;
         color: var(--color-markdown-code-text);
         background-color: var(--color-markdown-code-background);
         border: 1px solid var(--color-markdown-code-border);
@@ -737,6 +739,24 @@
         &:hover {
             color: hsl(200deg 100% 40%);
         }
+    }
+}
+
+.group_mention,
+.direct_mention {
+    & .rendered_markdown pre {
+        background-color: var(--color-markdown-pre-background-mentions);
+        border-color: var(--color-markdown-pre-border-mentions);
+    }
+
+    & .rendered_markdown code {
+        background-color: var(--color-markdown-code-background-mentions);
+        border-color: var(--color-markdown-code-border-mentions);
+    }
+
+    & .rendered_markdown pre code {
+        background-color: unset;
+        border-color: unset;
     }
 }
 
@@ -802,13 +822,9 @@
     border: none !important;
     background: none !important;
 
-    & code,
     & pre {
         color: var(--color-markdown-pre-text);
         background-color: var(--color-markdown-pre-background);
-    }
-
-    & pre {
         border: 1px solid var(--color-markdown-pre-border);
     }
 }
