@@ -27,25 +27,6 @@ const section = {
     bots: {},
 };
 
-export function show_button_spinner($button) {
-    const $spinner = $button.find(".modal__spinner");
-    const dialog_submit_button_span_width = $button.find("span").width();
-    const dialog_submit_button_span_height = $button.find("span").height();
-    $button.prop("disabled", true);
-    $button.find("span").hide();
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
-}
-
-export function hide_button_spinner($button) {
-    const $spinner = $button.find(".modal__spinner");
-    $button.prop("disabled", false);
-    $button.find("span").show();
-    loading.destroy_indicator($spinner);
-}
-
 function compare_a_b(a, b) {
     if (a > b) {
         return 1;

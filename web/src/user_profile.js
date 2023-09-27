@@ -23,6 +23,7 @@ import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
 import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -30,7 +31,6 @@ import * as popovers from "./popovers";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
-import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
@@ -50,6 +50,25 @@ let bot_owner_dropdown_widget;
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
+
+export function show_button_spinner($button) {
+    const $spinner = $button.find(".modal__spinner");
+    const dialog_submit_button_span_width = $button.find("span").width();
+    const dialog_submit_button_span_height = $button.find("span").height();
+    $button.prop("disabled", true);
+    $button.find("span").hide();
+    loading.make_indicator($spinner, {
+        width: dialog_submit_button_span_width,
+        height: dialog_submit_button_span_height,
+    });
+}
+
+export function hide_button_spinner($button) {
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", false);
+    $button.find("span").show();
+    loading.destroy_indicator($spinner);
+}
 
 function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
@@ -498,7 +517,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
 
         const $submit_btn = $("#user-profile-modal .dialog_submit_button");
         const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        settings_users.show_button_spinner($submit_btn);
+        show_button_spinner($submit_btn);
         $cancel_btn.prop("disabled", true);
 
         channel.patch({
@@ -520,7 +539,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
                 $("#bot-edit-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-                settings_users.hide_button_spinner($submit_btn);
+                hide_button_spinner($submit_btn);
                 $cancel_btn.prop("disabled", false);
             },
         });
@@ -744,7 +763,7 @@ export function show_edit_user_info_modal(user_id, $container) {
 
         const $submit_btn = $("#user-profile-modal .dialog_submit_button");
         const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        settings_users.show_button_spinner($submit_btn);
+        show_button_spinner($submit_btn);
         $cancel_btn.prop("disabled", true);
 
         channel.patch({
@@ -763,7 +782,7 @@ export function show_edit_user_info_modal(user_id, $container) {
                 $("#edit-user-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-                settings_users.hide_button_spinner($submit_btn);
+                hide_button_spinner($submit_btn);
                 $cancel_btn.prop("disabled", false);
             },
         });
