@@ -277,7 +277,7 @@ async function expect_all_direct_messages(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
         "New stream message",
     );
-    assert.strictEqual(await page.title(), "Direct messages - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "All direct messages - Zulip Dev - Zulip");
 }
 
 async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {
