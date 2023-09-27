@@ -578,6 +578,7 @@ class NarrowBuilder:
             # with either of them as the sender.
             self_recipient_id = self.user_profile.recipient_id
             cond = and_(
+                column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
                 column("realm_id", Integer) == self.realm.id,
                 or_(
                     and_(
@@ -594,6 +595,7 @@ class NarrowBuilder:
 
         # Direct message with self
         cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
             column("realm_id", Integer) == self.realm.id,
             column("sender_id", Integer) == self.user_profile.id,
             column("recipient_id", Integer) == recipient.id,
@@ -649,6 +651,7 @@ class NarrowBuilder:
         # See note above in `by_dm` about needing bidirectional messages
         # for direct messages with another person.
         cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
             column("realm_id", Integer) == self.realm.id,
             or_(
                 and_(
@@ -683,6 +686,7 @@ class NarrowBuilder:
 
         recipient_ids = self._get_huddle_recipients(narrow_profile)
         cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
             column("realm_id", Integer) == self.realm.id,
             column("recipient_id", Integer).in_(recipient_ids),
         )
