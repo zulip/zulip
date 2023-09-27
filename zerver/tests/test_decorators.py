@@ -53,7 +53,6 @@ from zerver.lib.users import get_api_key
 from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.middleware import LogRequests, parse_client
 from zerver.models import Client, Realm, UserProfile
-from zerver.models.clients import clear_client_cache
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -1664,7 +1663,7 @@ class ClientTestCase(ZulipTestCase):
             return notes.client, notes.client_name
 
         self.assertEqual(Client.objects.filter(name="ZulipThingy").count(), 0)
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent("ZulipThingy/1.0.0")
         self.assertEqual(client.name, "ZulipThingy")
         self.assertEqual(client_name, "ZulipThingy")
@@ -1672,7 +1671,7 @@ class ClientTestCase(ZulipTestCase):
         self.assert_length(queries, 2)
 
         # Ensure our in-memory cache prevents another database hit
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent(
                 "ZulipThingy/1.0.0",
             )
@@ -1681,7 +1680,7 @@ class ClientTestCase(ZulipTestCase):
         self.assert_length(queries, 0)
 
         # This operates on the extracted value, so different ZulipThingy versions don't cause another DB query
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent(
                 "ZulipThingy/2.0.0",
             )
@@ -1691,8 +1690,7 @@ class ClientTestCase(ZulipTestCase):
 
         # If we clear the memory cache we see a database query but get
         # the same client-id back.
-        clear_client_cache()
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=False) as queries:
             fresh_client, client_name = request_user_agent(
                 "ZulipThingy/2.0.0",
             )
@@ -1701,7 +1699,7 @@ class ClientTestCase(ZulipTestCase):
         self.assert_length(queries, 1)
 
         # Ensure that long parsed user-agents (longer than 30 characters) work
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent(
                 "very-long-name-goes-here-and-somewhere-else (client@example.com)"
             )
@@ -1711,7 +1709,7 @@ class ClientTestCase(ZulipTestCase):
         self.assert_length(queries, 2)
 
         # Longer than that uses the same in-memory cache key, so no database queries
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent(
                 "very-long-name-goes-here-and-still-works (client@example.com)"
             )
