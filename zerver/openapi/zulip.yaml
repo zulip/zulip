@@ -11901,7 +11901,7 @@ paths:
                             description: |
                               An array of dictionaries where each dictionary contains details of all
                               unread messages of a single subscribed stream. This includes muted streams
-                              and muted topics, even though those messages are excluded from count.
+                              and muted topics, even though those messages are excluded from `count`.
 
                               **Changes**: Prior to Zulip 5.0 (feature level 90), these objects
                               included a `sender_ids` property, which listed the set of IDs of
