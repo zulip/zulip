@@ -5,6 +5,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as unread from "./unread";
 import * as user_status from "./user_status";
+import * as util from "./util";
 
 // Maximum number of conversation threads to show in default view.
 const max_conversations_to_show = 8;
@@ -80,10 +81,17 @@ export function get_conversations() {
 }
 
 // Designed to closely match topic_list_data.get_list_info().
-export function get_list_info(zoomed) {
-    const conversations = get_conversations();
+export function get_list_info(zoomed, search_term) {
+    let conversations = get_conversations();
 
     if (zoomed || conversations.length <= max_conversations_to_show) {
+        if (zoomed) {
+            conversations = util.filter_by_word_prefix_match(
+                conversations,
+                search_term,
+                (item) => item.recipients,
+            );
+        }
         return {
             conversations_to_be_shown: conversations,
             more_conversations_unread_count: 0,
