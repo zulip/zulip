@@ -250,7 +250,7 @@ html {
 .help .markdown {
     background-color: hsl(0deg 0% 100%);
     width: calc(100vw - 300px);
-    height: calc(100vh - 59px);
+    height: calc(100% - 59px);
     margin-left: 300px;
 
     & :target {
