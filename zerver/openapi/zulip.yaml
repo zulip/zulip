@@ -11713,7 +11713,7 @@ paths:
                         description: |
                           Present if `realm_incoming_webhook_bots` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary describes an type of incoming webhook
+                          An array of dictionaries where each dictionary describes a type of incoming webhook
                           integration that is available to be configured on this Zulip server.
 
                           Clients only need these data if they contain UI for creating or administering bots.
