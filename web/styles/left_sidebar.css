@@ -26,7 +26,7 @@ $before_unread_count_padding: 3px;
     }
 }
 
-.stream-privacy {
+#streams_list .stream-privacy {
     height: 16px;
     font-weight: 700;
     text-align: center;
