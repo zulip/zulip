@@ -315,3 +315,15 @@ run_test("get_string_diff", () => {
     assert.deepEqual(util.get_string_diff("same-end", "two same-end"), [0, 0, 4]);
     assert.deepEqual(util.get_string_diff("space", "sp ace"), [2, 2, 3]);
 });
+
+run_test("is_valid_url", () => {
+    assert.equal(util.is_valid_url("http://"), false);
+    assert.equal(util.is_valid_url("random_string"), true);
+    assert.equal(util.is_valid_url("http://google.com/something?q=query#hash"), true);
+    assert.equal(util.is_valid_url("/abc/"), true);
+
+    assert.equal(util.is_valid_url("http://", true), false);
+    assert.equal(util.is_valid_url("random_string", true), false);
+    assert.equal(util.is_valid_url("http://google.com/something?q=query#hash", true), true);
+    assert.equal(util.is_valid_url("/abc/", true), false);
+});
