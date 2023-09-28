@@ -127,7 +127,7 @@ export function build_user_sidebar() {
 function do_update_users_for_search() {
     // Hide all the popovers but not userlist sidebar
     // when the user is searching.
-    popovers.hide_all_except_sidebars();
+    popovers.hide_all();
     build_user_sidebar();
     user_cursor.reset();
 }

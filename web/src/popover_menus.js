@@ -242,7 +242,7 @@ function on_show_prep(instance) {
         e.stopPropagation();
         instance.hide();
     });
-    popovers.hide_all_except_sidebars();
+    popovers.hide_all();
 }
 
 function get_props_for_popover_centering(popover_props) {
@@ -584,7 +584,7 @@ export function initialize() {
                 ),
             );
             popover_instances.compose_control_buttons = instance;
-            popovers.hide_all_except_sidebars();
+            popovers.hide_all();
         },
         onHidden(instance) {
             instance.destroy();
@@ -1025,7 +1025,7 @@ export function initialize() {
             });
         },
         onShow(instance) {
-            popovers.hide_all_except_sidebars();
+            popovers.hide_all();
             const show_unstar_all_button = starred_messages.get_count() > 0;
 
             instance.setContent(
@@ -1057,7 +1057,7 @@ export function initialize() {
             });
         },
         onShow(instance) {
-            popovers.hide_all_except_sidebars();
+            popovers.hide_all();
 
             instance.setContent(parse_html(render_drafts_sidebar_actions({})));
         },
@@ -1081,7 +1081,7 @@ export function initialize() {
             });
         },
         onShow(instance) {
-            popovers.hide_all_except_sidebars();
+            popovers.hide_all();
             instance.setContent(parse_html(render_all_messages_sidebar_actions()));
         },
         onHidden(instance) {
@@ -1098,7 +1098,6 @@ export function initialize() {
             $("#compose-textarea").trigger("focus");
         },
         onShow(instance) {
-            popovers.hide_all_except_sidebars(instance);
             const formatted_send_later_time = get_formatted_selected_send_later_time();
             instance.setContent(
                 parse_html(

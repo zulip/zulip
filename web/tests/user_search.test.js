@@ -84,7 +84,7 @@ function set_input_val(val) {
 test("clear_search", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
-    override(popovers, "hide_all_except_sidebars", () => {});
+    override(popovers, "hide_all", () => {});
     override(resize, "resize_sidebars", () => {});
 
     // Empty because no users match this search string.
@@ -108,7 +108,7 @@ test("escape_search", ({override}) => {
     page_params.realm_presence_disabled = true;
 
     override(resize, "resize_sidebars", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
+    override(popovers, "hide_all", () => {});
 
     set_input_val("somevalue");
     activity.escape_search();
@@ -123,7 +123,6 @@ test("escape_search", ({override}) => {
 test("blur search right", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
     override(resize, "resize_sidebars", () => {});
 
     $(".user-list-filter").closest = (selector) => {
@@ -140,7 +139,6 @@ test("blur search right", ({override}) => {
 test("blur search left", ({override}) => {
     override(sidebar_ui, "show_streamlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
     override(resize, "resize_sidebars", () => {});
 
     $(".user-list-filter").closest = (selector) => {
@@ -212,7 +210,6 @@ test("click on user header to toggle display", ({override}) => {
     const $user_filter = $(".user-list-filter");
 
     override(popovers, "hide_all", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
     override(sidebar_ui, "show_userlist_sidebar", () => {});
     override(resize, "resize_sidebars", () => {});
 
