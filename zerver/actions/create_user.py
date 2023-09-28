@@ -13,7 +13,10 @@ from confirmation import settings as confirmation_settings
 from zerver.actions.invites import notify_invites_changed
 from zerver.actions.message_send import internal_send_private_message, internal_send_stream_message
 from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
-from zerver.actions.user_groups import do_send_user_group_members_update_event
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_groups,
+    do_send_user_group_members_update_event,
+)
 from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
@@ -123,7 +126,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
         send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
 
-def set_up_streams_for_new_human_user(
+def set_up_streams_and_groups_for_new_human_user(
     *,
     user_profile: UserProfile,
     prereg_user: Optional[PreregistrationUser] = None,
@@ -133,6 +136,7 @@ def set_up_streams_for_new_human_user(
 
     if prereg_user is not None:
         streams: List[Stream] = list(prereg_user.streams.all())
+        user_groups: List[UserGroup] = list(prereg_user.user_groups.all())
         acting_user: Optional[UserProfile] = prereg_user.referred_by
 
         # A PregistrationUser should not be used for another UserProfile
@@ -140,6 +144,7 @@ def set_up_streams_for_new_human_user(
     else:
         streams = []
         acting_user = None
+        user_groups = []
 
     user_was_invited = prereg_user is not None and (
         prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
@@ -164,6 +169,12 @@ def set_up_streams_for_new_human_user(
         streams,
         [user_profile],
         from_user_creation=True,
+        acting_user=acting_user,
+    )
+
+    bulk_add_members_to_user_groups(
+        user_groups,
+        [user_profile.id],
         acting_user=acting_user,
     )
 
@@ -235,7 +246,7 @@ def process_new_human_user(
 ) -> None:
     # subscribe to default/invitation streams and
     # fill in some recent historical messages
-    set_up_streams_for_new_human_user(
+    set_up_streams_and_groups_for_new_human_user(
         user_profile=user_profile,
         prereg_user=prereg_user,
         default_stream_groups=default_stream_groups,

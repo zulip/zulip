@@ -1,3 +1,4 @@
+import * as input_pill from "./input_pill";
 import type {InputPillContainer, InputPillItem} from "./input_pill";
 import * as settings_data from "./settings_data";
 import type {UserGroup} from "./user_groups";
@@ -9,7 +10,7 @@ type UserGroupPill = {
     group_size: number;
 };
 
-type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
+export type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
 
 export function create_item_from_group_name(
     group_name: string,
@@ -96,4 +97,19 @@ export function typeahead_source(
         groups = groups.filter((group) => settings_data.can_edit_user_group(group.id));
     }
     return filter_taken_groups(groups, pill_widget);
+}
+
+export function create_pills(
+    $pill_container: JQuery,
+    pill_config?: {
+        show_user_group_size?: boolean;
+    },
+): UserGroupPillWidget | undefined {
+    const pills = input_pill.create({
+        $container: $pill_container,
+        pill_config,
+        create_item_from_text: create_item_from_group_name,
+        get_text_from_item: get_group_name_from_item,
+    });
+    return pills;
 }

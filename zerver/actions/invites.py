@@ -24,7 +24,15 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_email
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UnspecifiedValue
-from zerver.models import Message, MultiuseInvite, PreregistrationUser, Realm, Stream, UserProfile
+from zerver.models import (
+    Message,
+    MultiuseInvite,
+    PreregistrationUser,
+    Realm,
+    Stream,
+    UserGroup,
+    UserProfile,
+)
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.tornado.django_api import send_event
 
@@ -206,6 +214,7 @@ def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
     streams: Collection[Stream],
+    user_groups: Collection[UserGroup] = [],
     *,
     invite_expires_in_minutes: Optional[int],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
@@ -304,6 +313,8 @@ def do_invite_users(
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
+        user_groups_ids = [user_group.id for user_group in user_groups]
+        prereg_user.user_groups.set(user_groups_ids)
 
         event = {
             "prereg_id": prereg_user.id,
@@ -439,11 +450,14 @@ def do_create_multiuse_invite_link(
     invited_as: int,
     invite_expires_in_minutes: Optional[int],
     streams: Sequence[Stream] = [],
+    user_groups: Sequence[UserGroup] = [],
 ) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
     if streams:
         invite.streams.set(streams)
+    if user_groups:
+        invite.user_groups.set(user_groups)
     invite.invited_as = invited_as
     invite.save()
     notify_invites_changed(referred_by.realm, changed_invite_referrer=referred_by)

@@ -17,13 +17,19 @@ import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
+import * as modals from "./modals";
 import {page_params} from "./page_params";
+import * as pill_typeahead from "./pill_typeahead";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
+import * as user_group_pill from "./user_group_pill";
+import type {UserGroupPillWidget} from "./user_group_pill";
+import * as user_group_popover from "./user_group_popover";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 let custom_expiration_time_input = 10;
@@ -37,11 +43,12 @@ function reset_error_messages(): void {
     }
 }
 
-function get_common_invitation_data(): {
+function get_common_invitation_data(pills: UserGroupPillWidget): {
     csrfmiddlewaretoken: string;
     invite_as: number;
     stream_ids: string;
     invite_expires_in_minutes: string;
+    user_group_ids: string;
     invitee_emails?: string;
 } {
     const invite_as = Number.parseInt(
@@ -72,11 +79,14 @@ function get_common_invitation_data(): {
         });
     }
 
+    const user_group_ids: number[] = user_group_pill.get_group_ids(pills);
+
     assert(csrf_token !== undefined);
     const data = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
+        user_group_ids: JSON.stringify(user_group_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
     };
     return data;
@@ -94,13 +104,13 @@ function beforeSend(): void {
     $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 }
 
-function submit_invitation_form(): void {
+function submit_invitation_form(pills: UserGroupPillWidget): void {
     const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
         "select:not([multiple])#expires_in",
     );
     const $invite_status = $("#dialog_error");
     const $invitee_emails = $<HTMLTextAreaElement>("textarea#invitee_emails");
-    const data = get_common_invitation_data();
+    const data = get_common_invitation_data(pills);
     data.invitee_emails = $invitee_emails.val()!;
 
     void channel.post({
@@ -120,6 +130,7 @@ function submit_invitation_form(): void {
                 $invite_status,
             );
             $invitee_emails.val("");
+            pills.clear();
 
             if (page_params.development_environment) {
                 const rendered_email_msg = render_settings_dev_env_email_access();
@@ -184,9 +195,9 @@ function submit_invitation_form(): void {
     });
 }
 
-function generate_multiuse_invite(): void {
+function generate_multiuse_invite(pills: UserGroupPillWidget): void {
     const $invite_status = $("#dialog_error");
-    const data = get_common_invitation_data();
+    const data = get_common_invitation_data(pills);
     void channel.post({
         url: "/json/invites/multiuse",
         data,
@@ -195,6 +206,7 @@ function generate_multiuse_invite(): void {
             const copy_link_html = copy_invite_link(data);
             ui_report.success(copy_link_html, $invite_status);
             const clipboard = new ClipboardJS("#copy_generated_invite_link");
+            pills.clear();
 
             clipboard.on("success", () => {
                 const tippy_timeout_in_ms = 800;
@@ -308,6 +320,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.stopPropagation();
     e.preventDefault();
 
+    let pills: UserGroupPillWidget;
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({
         is_admin: page_params.is_admin,
@@ -322,7 +335,30 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         user_has_email_set: !settings_data.user_email_not_configured(),
     });
 
+    function hide_invite_user_modal(): void {
+        modals.close_if_open("invite-user-modal");
+    }
+
     function invite_user_modal_post_render(): void {
+        const pill_config = {
+            show_user_group_size: false,
+        };
+        const $pill_container = $(`#invite-user-form .pill-container`).expectOne();
+        pills = user_group_pill.create_pills($pill_container, pill_config)!;
+        const $input = $pill_container.children(".input");
+        pill_typeahead.set_up($input, pills, {
+            user_group: true,
+            help_on_empty_strings: true,
+            only_show_user_groups_editable_by_user: true,
+        });
+
+        let groups = user_groups.get_realm_user_groups();
+        groups = groups.filter((group) => settings_data.can_edit_user_group(group.id));
+
+        if (!groups.length) {
+            $(`#invite-user-form #user_group_invite_section`).hide();
+        }
+
         const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
             "select:not([multiple])#expires_in",
         );
@@ -450,14 +486,25 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         };
 
         $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
+
+        $("#invite-user-modal").on("click", ".pill", function (e) {
+            e.stopPropagation();
+            user_group_popover.toggle_user_group_info_popover(this, 4);
+        });
+
+        $("body").on("click", ".popover-inner a", hide_invite_user_modal);
+    }
+
+    function invite_user_modal_post_hide(): void {
+        $("body").off("click", ".popover-inner a", hide_invite_user_modal);
     }
 
     function invite_users(): void {
         const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
         if (is_generate_invite_link) {
-            generate_multiuse_invite();
+            generate_multiuse_invite(pills);
         } else {
-            submit_invitation_form();
+            submit_invitation_form(pills);
         }
     }
 
@@ -469,6 +516,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         loading_spinner: true,
         on_click: invite_users,
         post_render: invite_user_modal_post_render,
+        on_hidden: invite_user_modal_post_hide,
     });
 }
 
