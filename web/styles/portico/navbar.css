@@ -271,12 +271,6 @@ details summary::-webkit-details-marker {
     }
 }
 
-@media (width <= 1170px) {
-    .top-menu-tab .top-menu-tab-user-label {
-        max-width: 84px;
-    }
-}
-
 @media (width <= 1024px) {
     .top-menu-tab .top-menu-tab-user-label {
         max-width: 40px;
