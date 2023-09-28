@@ -463,3 +463,8 @@ export function try_parse_as_truthy<T>(val: (T | undefined)[]): T[] | undefined 
     }
     return result;
 }
+
+export function is_valid_url(url: string): boolean {
+    const url_pattern = /^(https?:\/\/)/;
+    return url_pattern.test(url);
+}

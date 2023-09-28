@@ -30,6 +30,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
+import * as util from "./util";
 
 const meta = {
     loaded: false,
@@ -1281,11 +1282,6 @@ function check_maximum_valid_value($custom_input_elem, property_name) {
     return setting_value <= MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE;
 }
 
-function is_valid_url(jitsi_url) {
-    const url_pattern = /^(https?:\/\/)/;
-    return url_pattern.test(jitsi_url);
-}
-
 function should_disable_save_button_for_jitsi_server_url_setting() {
     if (!is_video_chat_provider_jitsi_meet()) {
         return false;
@@ -1294,7 +1290,7 @@ function should_disable_save_button_for_jitsi_server_url_setting() {
     const $dropdown_elem = $("#id_realm_jitsi_server_url");
     const $custom_input_elem = $("#id_realm_jitsi_server_url_custom_input");
 
-    return $dropdown_elem.val() === "custom" && !is_valid_url($custom_input_elem.val());
+    return $dropdown_elem.val() === "custom" && !util.is_valid_url($custom_input_elem.val());
 }
 
 function should_disable_save_button_for_time_limit_settings(time_limit_settings) {
