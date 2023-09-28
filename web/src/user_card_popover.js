@@ -26,7 +26,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import {hide_all, hide_all_except_sidebars} from "./popovers";
+import {hide_all} from "./popovers";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as sidebar_ui from "./sidebar_ui";
@@ -597,9 +597,8 @@ function toggle_sidebar_user_card_popover($target) {
     // Hiding popovers may mutate current_user_sidebar_user_id.
     const previous_user_sidebar_id = current_user_sidebar_user_id;
 
-    // Hide popovers, but we don't want to hide the sidebars on
-    // smaller browser windows.
-    hide_all_except_sidebars();
+    // Hide popovers
+    hide_all();
 
     if (previous_user_sidebar_id === user_id) {
         // If the popover is already shown, clicking again should toggle it.

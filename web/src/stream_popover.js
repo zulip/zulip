@@ -104,7 +104,7 @@ function build_stream_popover(opts) {
         return;
     }
 
-    popovers.hide_all_except_sidebars();
+    popovers.hide_all();
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
     });

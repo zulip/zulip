@@ -8,7 +8,6 @@ import * as compose_ui from "./compose_ui";
 import {media_breakpoints_num} from "./css_variables";
 import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 
@@ -195,7 +194,6 @@ function toggle_giphy_popover(target) {
                 giphy_popover_instance = instance;
                 const $popper = $(giphy_popover_instance.popper).trigger("focus");
                 gifs_grid = await renderGIPHYGrid($popper.find(".giphy-content")[0]);
-                popovers.hide_all(true);
 
                 const $click_target = $(instance.reference);
                 if ($click_target.parents(".message_edit_form").length === 1) {

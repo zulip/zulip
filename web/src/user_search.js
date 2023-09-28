@@ -73,9 +73,8 @@ export class UserSearch {
     }
 
     show_widget() {
-        // Hide all the popovers but not userlist sidebar
-        // when the user wants to search.
-        popovers.hide_all_except_sidebars();
+        // Hide all the popovers.
+        popovers.hide_all();
         this.$widget.removeClass("notdisplayed");
         resize.resize_sidebars();
     }

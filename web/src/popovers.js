@@ -1,4 +1,4 @@
-import {hideAll} from "tippy.js";
+import * as tippy from "tippy.js";
 
 import * as emoji_picker from "./emoji_picker";
 import * as playground_links_popover from "./playground_links_popover";
@@ -22,25 +22,7 @@ export function any_active() {
     );
 }
 
-// This function will hide all true popovers (the streamlist and
-// userlist sidebars use the popover infrastructure, but doesn't work
-// like a popover structurally).
-export function hide_all_except_sidebars(opts) {
-    if (!opts || !opts.not_hide_tippy_instances) {
-        // hideAll hides all tippy instances (tooltips and popovers).
-        hideAll();
-    }
-    emoji_picker.hide_emoji_popover();
-    stream_popover.hide_stream_popover();
-    user_group_popover.hide();
-    user_card_popover.hide_all_user_card_popovers();
-    playground_links_popover.hide();
-}
-
-// This function will hide all the popovers, including the mobile web
-// or narrow window sidebars.
-export function hide_all(not_hide_tippy_instances) {
-    hide_all_except_sidebars({
-        not_hide_tippy_instances,
-    });
+export function hide_all() {
+    // Hides all tippy instances (tooltips and popovers).
+    tippy.hideAll();
 }
