@@ -27,6 +27,7 @@ import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_view_data";
 import {get_key_from_message, get_topic_key, is_visible, set_visible} from "./recent_view_util";
 import * as scroll_util from "./scroll_util";
+import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
@@ -103,6 +104,7 @@ export function is_in_focus() {
         is_visible() &&
         !compose_state.composing() &&
         !popovers.any_active() &&
+        !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.is_overlay_or_modal_open() &&
         !$(".home-page-input").is(":focus")
     );

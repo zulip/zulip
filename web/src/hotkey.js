@@ -43,6 +43,7 @@ import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
+import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_data from "./stream_data";
@@ -265,7 +266,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (popovers.any_active()) {
+    if (popovers.any_active() || sidebar_ui.any_sidebar_expanded_as_overlay()) {
         if (user_card_popover.manage_menu.is_open()) {
             user_card_popover.manage_menu.hide();
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");

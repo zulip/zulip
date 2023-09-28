@@ -1,4 +1,3 @@
-import $ from "jquery";
 import {hideAll} from "tippy.js";
 
 import * as emoji_picker from "./emoji_picker";
@@ -20,8 +19,7 @@ export function any_active() {
         user_card_popover.message_user_card.is_open() ||
         user_card_popover.user_card.is_open() ||
         emoji_picker.is_open() ||
-        playground_links_popover.is_open() ||
-        $("[class^='column-'].expanded").length
+        playground_links_popover.is_open()
     );
 }
 

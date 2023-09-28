@@ -29,6 +29,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
+import * as sidebar_ui from "./sidebar_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -1047,7 +1048,7 @@ export class MessageListView {
         }
 
         // do not scroll if there are any active popovers.
-        if (popovers.any_active()) {
+        if (popovers.any_active() || sidebar_ui.any_sidebar_expanded_as_overlay()) {
             // If a popover is active, then we are pretty sure the
             // incoming message is not from the user themselves, so
             // we don't need to tell users to scroll down.
