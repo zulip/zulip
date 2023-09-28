@@ -507,7 +507,7 @@ export function initialize() {
         const sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
         popovers.hide_all();
         if (sidebarHidden) {
-            stream_popover.show_streamlist_sidebar();
+            sidebar_ui.show_streamlist_sidebar();
         }
     });
 

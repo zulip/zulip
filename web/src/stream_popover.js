@@ -17,7 +17,6 @@ import * as message_edit from "./message_edit";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
 import * as popovers from "./popovers";
-import * as resize from "./resize";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
@@ -83,15 +82,6 @@ export function hide_stream_popover() {
         stream_popover_instance.destroy();
         stream_popover_instance = null;
     }
-}
-
-export function show_streamlist_sidebar() {
-    $(".app-main .column-left").addClass("expanded");
-    resize.resize_stream_filters_container();
-}
-
-export function hide_streamlist_sidebar() {
-    $(".app-main .column-left").removeClass("expanded");
 }
 
 function stream_popover_sub(e) {

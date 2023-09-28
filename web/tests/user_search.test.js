@@ -123,7 +123,7 @@ test("blur search right", ({override}) => {
 });
 
 test("blur search left", ({override}) => {
-    override(stream_popover, "show_streamlist_sidebar", () => {});
+    override(sidebar_ui, "show_streamlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
     override(resize, "resize_sidebars", () => {});

@@ -45,7 +45,7 @@ export function hide_all_except_sidebars(opts) {
 // or narrow window sidebars.
 export function hide_all(not_hide_tippy_instances) {
     sidebar_ui.hide_userlist_sidebar();
-    stream_popover.hide_streamlist_sidebar();
+    sidebar_ui.hide_streamlist_sidebar();
     hide_all_except_sidebars({
         not_hide_tippy_instances,
     });

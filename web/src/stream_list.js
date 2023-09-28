@@ -18,9 +18,9 @@ import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
+import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";
-import * as stream_popover from "./stream_popover";
 import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
@@ -848,7 +848,7 @@ export function initiate_search() {
         !$(".app-main .column-left").hasClass("expanded")
     ) {
         popovers.hide_all();
-        stream_popover.show_streamlist_sidebar();
+        sidebar_ui.show_streamlist_sidebar();
     }
     $filter.trigger("focus");
 
