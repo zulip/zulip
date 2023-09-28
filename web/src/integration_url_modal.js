@@ -80,6 +80,10 @@ export function show_generate_integration_url_modal(api_key) {
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params}`);
             $dialog_submit_button.prop("disabled", false);
+
+            if ($override_topic.prop("checked") && topic_name === "") {
+                $dialog_submit_button.prop("disabled", true);
+            }
         }
 
         integration_input_dropdown_widget = new dropdown_widget.DropdownWidget({
