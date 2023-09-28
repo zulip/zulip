@@ -1,7 +1,4 @@
-import assert from "minimalistic-assert";
-
 import type {Message} from "./message_store";
-import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {Recipient} from "./util";
 import * as util from "./util";
@@ -18,26 +15,6 @@ export function clear_focused_recipient(): void {
 
 export function set_focused_recipient(recipient?: Recipient): void {
     focused_recipient = recipient;
-}
-
-export function would_receive_message(user_id: number): boolean {
-    assert(focused_recipient !== undefined);
-    if (focused_recipient.type === "stream") {
-        const sub = sub_store.get(focused_recipient.stream_id);
-        if (!sub) {
-            // If the stream isn't valid, there is no risk of a mix
-            // yet, so we sort of "lie" and say they would receive a
-            // message.
-            return true;
-        }
-
-        return stream_data.is_user_subscribed(focused_recipient.stream_id, user_id);
-    }
-
-    // Direct message, so check if the given email is in the recipients list.
-    assert(focused_recipient.to_user_ids !== undefined);
-    const recipients = focused_recipient.to_user_ids.split(",");
-    return recipients.includes(user_id.toString());
 }
 
 export function want_normal_display(): boolean {

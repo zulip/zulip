@@ -18,7 +18,6 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
-const sub_store = zrequire("sub_store");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
 
@@ -156,119 +155,6 @@ test("user_circle, level", () => {
     set_presence(fred.user_id, undefined);
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_empty");
     assert.equal(buddy_data.level(fred.user_id), 3);
-});
-
-test("compose fade interactions (streams)", () => {
-    const sub = {
-        stream_id: 101,
-        name: "Devel",
-        subscribed: true,
-    };
-    stream_data.add_sub(sub);
-    stream_data.subscribe_myself(sub);
-
-    people.add_active_user(fred);
-
-    set_presence(fred.user_id, "active");
-
-    function faded() {
-        return buddy_data.get_item(fred.user_id).faded;
-    }
-
-    // If we are not narrowed, then we don't fade fred in the buddy list.
-    assert.equal(faded(), false);
-
-    // If we narrow to a stream that fred has not subscribed
-    // to, we will fade him.
-    compose_fade_helper.set_focused_recipient({
-        type: "stream",
-        stream_id: sub.stream_id,
-        topic: "whatever",
-    });
-    assert.equal(faded(), true);
-
-    // If we subscribe, we don't fade.
-    peer_data.add_subscriber(sub.stream_id, fred.user_id);
-    assert.equal(faded(), false);
-
-    // Test our punting logic.
-    const bogus_stream_id = 99999;
-    assert.equal(sub_store.get(bogus_stream_id), undefined);
-
-    compose_fade_helper.set_focused_recipient({
-        type: "stream",
-        stream_id: bogus_stream_id,
-    });
-
-    assert.equal(faded(), false);
-});
-
-test("compose fade interactions (missing topic)", () => {
-    const sub = {
-        stream_id: 102,
-        name: "Social",
-        subscribed: true,
-    };
-    stream_data.add_sub(sub);
-    stream_data.subscribe_myself(sub);
-
-    people.add_active_user(fred);
-
-    set_presence(fred.user_id, "active");
-
-    function faded() {
-        return buddy_data.get_item(fred.user_id).faded;
-    }
-
-    // If we are not narrowed, then we don't fade fred in the buddy list.
-    assert.equal(faded(), false);
-
-    // If we narrow to a stream that fred has not subscribed
-    // to, we will fade him.
-    compose_fade_helper.set_focused_recipient({
-        type: "stream",
-        stream_id: sub.stream_id,
-        topic: "whatever",
-    });
-    assert.equal(faded(), true);
-
-    // If the user clears the topic, we won't fade fred.
-    compose_fade_helper.set_focused_recipient({
-        type: "stream",
-        stream_id: sub.stream_id,
-        topic: "",
-    });
-    assert.equal(faded(), false);
-});
-
-test("compose fade interactions (direct messages)", () => {
-    people.add_active_user(fred);
-
-    set_presence(fred.user_id, "active");
-
-    function faded() {
-        return buddy_data.get_item(fred.user_id).faded;
-    }
-
-    // Don't fade if we're not in a narrow.
-    assert.equal(faded(), false);
-
-    // Fade fred if we are narrowed to a direct message narrow
-    // that does not include him.
-    compose_fade_helper.set_focused_recipient({
-        type: "private",
-        to_user_ids: "9999999",
-    });
-    assert.equal(faded(), true);
-
-    // Now include fred in a narrow with jill, and we will
-    // stop fading him.
-    compose_fade_helper.set_focused_recipient({
-        type: "private",
-        to_user_ids: [fred.user_id, jill.user_id].join(","),
-    });
-
-    assert.equal(faded(), false);
 });
 
 test("title_data", () => {
@@ -576,7 +462,6 @@ test("get_items_for_users", () => {
 
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
         {
-            faded: false,
             href: "#narrow/dm/1001-Human-Myself",
             is_current_user: true,
             name: "Human Myself",
@@ -589,7 +474,6 @@ test("get_items_for_users", () => {
             should_add_guest_user_indicator: false,
         },
         {
-            faded: false,
             href: "#narrow/dm/1002-Alice-Smith",
             is_current_user: false,
             name: "Alice Smith",
@@ -602,7 +486,6 @@ test("get_items_for_users", () => {
             should_add_guest_user_indicator: false,
         },
         {
-            faded: false,
             href: "#narrow/dm/1003-Fred-Flintstone",
             is_current_user: false,
             name: "Fred Flintstone",

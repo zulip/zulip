@@ -499,7 +499,6 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     override(padded_widget, "update_padding", noop);
     mock_template("presence_row.hbs", true, (data, html) => {
         assert.deepEqual(data, {
-            faded: false,
             href: "#narrow/dm/1-Alice-Smith",
             name: "Alice Smith",
             user_id: 1,
