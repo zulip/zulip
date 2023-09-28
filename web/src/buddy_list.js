@@ -412,18 +412,6 @@ export class BuddyList extends BuddyListConf {
         this.update_padding();
     }
 
-    get_items() {
-        const $user_matching_view_obj = this.$users_matching_view_container.find(
-            `${this.item_selector}`,
-        );
-        const $users_matching_view_elems = $user_matching_view_obj.map((_i, elem) => $(elem));
-
-        const $other_user_obj = this.$other_users_container.find(`${this.item_selector}`);
-        const $other_user_elems = $other_user_obj.map((_i, elem) => $(elem));
-
-        return [...$users_matching_view_elems, ...$other_user_elems];
-    }
-
     should_hide_headers(current_sub, pm_ids_set) {
         // If we have only "other users" and aren't in a stream/DM view
         // then we don't show section headers and only show one untitled
