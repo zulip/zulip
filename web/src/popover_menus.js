@@ -134,6 +134,7 @@ export function sidebar_menu_instance_handle_keyboard(instance, key) {
 export function get_visible_instance() {
     return Object.values(popover_instances).find(Boolean);
 }
+
 export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
 }
@@ -224,10 +225,6 @@ export const left_sidebar_tippy_options = {
         ],
     },
 };
-
-export function any_active() {
-    return Boolean(get_visible_instance());
-}
 
 function on_show_prep(instance) {
     $(instance.popper).on("click", (e) => {
