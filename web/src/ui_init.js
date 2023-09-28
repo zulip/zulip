@@ -93,6 +93,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import * as sidebar_ui from "./sidebar_ui";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -604,6 +605,7 @@ export function initialize_everything() {
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();
+    sidebar_ui.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();

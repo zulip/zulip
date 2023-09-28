@@ -35,7 +35,6 @@ import * as server_events from "./server_events";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
-import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
@@ -482,35 +481,6 @@ export function initialize() {
     });
 
     // SIDEBARS
-
-    $("body").on("click", ".login_button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.location.href = hash_util.build_login_link();
-    });
-
-    $("#userlist-toggle-button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const sidebarHidden = !$(".app-main .column-right").hasClass("expanded");
-        popovers.hide_all();
-        if (sidebarHidden) {
-            sidebar_ui.show_userlist_sidebar();
-        }
-    });
-
-    $("#streamlist-toggle-button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
-        popovers.hide_all();
-        if (sidebarHidden) {
-            sidebar_ui.show_streamlist_sidebar();
-        }
-    });
-
     $("#user_presences")
         .expectOne()
         .on("click", ".selectable_sidebar_block", (e) => {
