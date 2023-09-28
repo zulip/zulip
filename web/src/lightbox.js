@@ -9,6 +9,7 @@ import * as overlays from "./overlays";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
+import * as util from "./util";
 
 let is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
@@ -184,7 +185,8 @@ export function render_lightbox_media_list(preview_source) {
         const $media_list = $("#lightbox_overlay .image-list").empty();
 
         for (const media of media_list) {
-            const src = media.getAttribute("src");
+            const unverified_src = media.getAttribute("src");
+            const src = util.is_valid_url(unverified_src) ? unverified_src : "";
             const className = preview_source === src ? "image selected" : "image";
             const is_video = media.tagName === "VIDEO";
 
@@ -490,9 +492,9 @@ export function parse_media_data(media) {
         user: sender_full_name,
         title: $parent.attr("aria-label") || $parent.attr("href"),
         type,
-        preview: preview_src,
-        source,
-        url,
+        preview: util.is_valid_url(preview_src) ? preview_src : "",
+        source: util.is_valid_url(source) ? source : "",
+        url: util.is_valid_url(url) ? url : "",
     };
 
     asset_map.set(preview_src, payload);
