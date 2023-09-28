@@ -423,3 +423,10 @@ input[name="licenses"] {
         width: 100%;
     }
 }
+
+#confirm-licenses-modal .dialog_submit_button:active {
+    /* This is needed to avoid button background changing
+    when clicking on it due to "button:active" CSS in
+    landing_page.css. */
+    background-color: hsl(240deg 96% 68%);
+}

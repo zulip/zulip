@@ -18,6 +18,7 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 const location = set_global("location", {});
 
+const portico_modals = mock_esm("../src/portico/portico_modals", {});
 const helpers = mock_esm("../src/billing/helpers", {
     set_tab() {},
     set_sponsorship_form() {},
@@ -109,18 +110,12 @@ run_test("licensechange", ({override}) => {
 
     $.get_initialize_function()();
 
-    const confirm_license_update_click_handler = $("#confirm-license-update-button").get_on_handler(
-        "click",
-    );
-    confirm_license_update_click_handler({preventDefault() {}});
-    assert.ok(create_ajax_request_called);
-
     let confirm_license_modal_shown = false;
     override(helpers, "is_valid_input", () => true);
-    $("#confirm-licenses-modal").modal = (action) => {
-        assert.equal(action, "show");
+    override(portico_modals, "open_modal", (modal_id) => {
+        assert.equal(modal_id, "confirm-licenses-modal");
         confirm_license_modal_shown = true;
-    };
+    });
     $("#licensechange-input-section").data = (key) => {
         assert.equal(key, "licenses");
         return 20;
@@ -138,6 +133,17 @@ run_test("licensechange", ({override}) => {
     update_licenses_button_click_handler({preventDefault() {}});
     assert.ok(!create_ajax_request_called);
     assert.ok(confirm_license_modal_shown);
+
+    override(portico_modals, "close_modal", (modal_id) => {
+        assert.equal(modal_id, "confirm-licenses-modal");
+        confirm_license_modal_shown = false;
+    });
+
+    const confirm_license_update_click_handler = $(
+        "#confirm-licenses-modal .dialog_submit_button",
+    ).get_on_handler("click");
+    confirm_license_update_click_handler({preventDefault() {}});
+    assert.ok(create_ajax_request_called);
 
     override(helpers, "is_valid_input", () => false);
     const event = {
