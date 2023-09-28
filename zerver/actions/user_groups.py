@@ -151,13 +151,13 @@ def update_users_in_full_members_system_group(
     new_full_member_ids = [user["id"] for user in new_full_members]
 
     if len(old_full_members) > 0:
-        remove_members_from_user_group(
-            full_members_system_group, old_full_member_ids, acting_user=acting_user
+        bulk_remove_members_from_user_groups(
+            [full_members_system_group], old_full_member_ids, acting_user=acting_user
         )
 
     if len(new_full_members) > 0:
-        bulk_add_members_to_user_group(
-            full_members_system_group, new_full_member_ids, acting_user=acting_user
+        bulk_add_members_to_user_groups(
+            [full_members_system_group], new_full_member_ids, acting_user=acting_user
         )
 
 
@@ -269,12 +269,21 @@ def do_send_user_group_members_update_event(
 
 
 @transaction.atomic(savepoint=False)
-def bulk_add_members_to_user_group(
-    user_group: UserGroup, user_profile_ids: List[int], *, acting_user: Optional[UserProfile]
+def bulk_add_members_to_user_groups(
+    user_groups: List[UserGroup],
+    user_profile_ids: List[int],
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
+    # All intended callers of this function involve a single user
+    # being added to one or more groups, or many users being added to
+    # a single group; but it's easy enough for the implementation to
+    # support both.
+
     memberships = [
         UserGroupMembership(user_group_id=user_group.id, user_profile_id=user_id)
         for user_id in user_profile_ids
+        for user_group in user_groups
     ]
     UserGroupMembership.objects.bulk_create(memberships)
     now = timezone_now()
@@ -288,17 +297,27 @@ def bulk_add_members_to_user_group(
             acting_user=acting_user,
         )
         for user_id in user_profile_ids
+        for user_group in user_groups
     )
 
-    do_send_user_group_members_update_event("add_members", user_group, user_profile_ids)
+    for user_group in user_groups:
+        do_send_user_group_members_update_event("add_members", user_group, user_profile_ids)
 
 
 @transaction.atomic(savepoint=False)
-def remove_members_from_user_group(
-    user_group: UserGroup, user_profile_ids: List[int], *, acting_user: Optional[UserProfile]
+def bulk_remove_members_from_user_groups(
+    user_groups: List[UserGroup],
+    user_profile_ids: List[int],
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
+    # All intended callers of this function involve a single user
+    # being added to one or more groups, or many users being added to
+    # a single group; but it's easy enough for the implementation to
+    # support both.
+
     UserGroupMembership.objects.filter(
-        user_group_id=user_group.id, user_profile_id__in=user_profile_ids
+        user_group__in=user_groups, user_profile_id__in=user_profile_ids
     ).delete()
     now = timezone_now()
     RealmAuditLog.objects.bulk_create(
@@ -311,9 +330,11 @@ def remove_members_from_user_group(
             acting_user=acting_user,
         )
         for user_id in user_profile_ids
+        for user_group in user_groups
     )
 
-    do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
+    for user_group in user_groups:
+        do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
 
 
 def do_send_subgroups_update_event(
