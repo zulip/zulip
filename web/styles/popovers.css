@@ -542,7 +542,11 @@ ul {
 
     #user-profile-streams-tab {
         .stream_list_info {
-            margin-bottom: 8px;
+            margin: 0;
+            padding: 2px;
+            text-align: center;
+            justify-content: space-between;
+            height: fit-content;
         }
 
         .stream-privacy {
