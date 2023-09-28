@@ -99,7 +99,7 @@ export function show_generate_integration_url_modal(api_key) {
         stream_input_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "integration-url-stream",
             get_options: get_options_for_stream_dropdown_widget,
-            item_click_callback,
+            item_click_callback: stream_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
             tippy_props: {
                 placement: "bottom-start",
@@ -121,7 +121,7 @@ export function show_generate_integration_url_modal(api_key) {
             return options;
         }
 
-        function item_click_callback(event, dropdown) {
+        function stream_item_click_callback(event, dropdown) {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
             const user_selected_option = stream_input_dropdown_widget.value();
