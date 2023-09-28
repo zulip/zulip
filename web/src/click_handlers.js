@@ -30,12 +30,12 @@ import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
-import * as right_sidebar_ui from "./right_sidebar_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
@@ -496,7 +496,7 @@ export function initialize() {
         const sidebarHidden = !$(".app-main .column-right").hasClass("expanded");
         popovers.hide_all();
         if (sidebarHidden) {
-            right_sidebar_ui.show_userlist_sidebar();
+            sidebar_ui.show_userlist_sidebar();
         }
     });
 

@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as popovers from "./popovers";
 import * as resize from "./resize";
-import * as right_sidebar_ui from "./right_sidebar_ui";
+import * as sidebar_ui from "./sidebar_ui";
 import * as stream_popover from "./stream_popover";
 
 export class UserSearch {
@@ -100,7 +100,7 @@ export class UserSearch {
             if ($column.hasClass("column-left")) {
                 stream_popover.show_streamlist_sidebar();
             } else if ($column.hasClass("column-right")) {
-                right_sidebar_ui.show_userlist_sidebar();
+                sidebar_ui.show_userlist_sidebar();
             }
         }
     }
