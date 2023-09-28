@@ -19,7 +19,7 @@ organization](/help/deactivate-your-organization) instead).
 
 {start_tabs}
 
-{tab|via-user-card}
+{tab|via-user-profile}
 
 {!manage-this-user.md!}
 
@@ -27,13 +27,11 @@ organization](/help/deactivate-your-organization) instead).
 
 1. Click **Save changes**. The new permissions will take effect immediately.
 
-{tab|via-user-profile}
+!!! tip ""
 
-{!manage-this-user-via-user-profile.md!}
-
-1. Under **User role**, select a [role](/help/roles-and-permissions).
-
-1. Click **Save changes**. The new permissions will take effect immediately.
+    You can also access the **Manage user** tab by clicking the **pencil and
+    paper** (<i class="fa fa-edit"></i>) icon at the top of the [user
+    profile](/help/view-someones-profile).
 
 {tab|via-organization-settings}
 
