@@ -51,6 +51,15 @@
         "./src/portico/landing-page",
         "./styles/portico/landing_page.css"
     ],
+    "landing-page-hello": [
+        "./src/bundles/hello",
+        "./src/portico/landing-page",
+        "./src/portico/header",
+        "./styles/portico/svg_icons.css",
+        "./styles/portico/hello.css",
+        "./styles/portico/navbar.css",
+        "./styles/portico/footer.css"
+    ],
     "integrations": [
         "./src/bundles/portico",
         "./src/portico/integrations",

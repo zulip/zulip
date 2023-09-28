@@ -83,6 +83,9 @@ zulip.kdev4
 # Core dump files
 core
 
+# Static generated files for landing page.
+/static/images/landing-page/hello/generated
+
 ## Miscellaneous
 # (Ideally this section is empty.)
 .transifexrc
