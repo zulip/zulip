@@ -9,7 +9,6 @@ const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
 const color_data = mock_esm("../src/color_data");
-const compose_fade = mock_esm("../src/compose_fade");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
@@ -454,9 +453,6 @@ test("process_subscriber_update", ({override}) => {
     const subsStub = make_stub();
     stream_settings_ui.update_subscribers_ui = subsStub.f;
 
-    const fadedUsersStub = make_stub();
-    override(compose_fade, "update_faded_users", fadedUsersStub.f);
-
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
     // Sample user IDs
     const userIds = [104, 2, 3];
@@ -468,7 +464,4 @@ test("process_subscriber_update", ({override}) => {
 
     // Assert that update_subscribers_ui is called for each stream ID
     assert.equal(subsStub.num_calls, streamIds.length);
-
-    // Assert that update_faded_users is called once
-    assert.equal(fadedUsersStub.num_calls, 1);
 });
