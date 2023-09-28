@@ -2,6 +2,8 @@ import $ from "jquery";
 
 import * as channel from "../channel";
 
+import * as portico_modals from "./portico_modals";
+
 $(() => {
     // This code will be executed when the user visits /emails in
     // development mode and email_log.html is rendered.
@@ -29,7 +31,7 @@ $(() => {
             $("#forward_address_sections").hide();
         }
     });
-    $("#save_smptp_details").on("click", () => {
+    $("#forward_email_modal .dialog_submit_button").on("click", () => {
         const address =
             $("input[name=forward]:checked").val() === "enabled" ? $("#address").val() : "";
         const csrf_token = $('input[name="csrfmiddlewaretoken"]').attr("value");
@@ -45,5 +47,9 @@ $(() => {
                 }, 3000);
             },
         });
+    });
+    $(".open-forward-email-modal").on("click", (e) => {
+        e.preventDefault();
+        portico_modals.open_modal("forward_email_modal");
     });
 });
