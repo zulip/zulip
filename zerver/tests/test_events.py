@@ -102,13 +102,13 @@ from zerver.actions.submessage import do_add_submessage
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
-    bulk_add_members_to_user_group,
+    bulk_add_members_to_user_groups,
+    bulk_remove_members_from_user_groups,
     check_add_user_group,
     check_delete_user_group,
     do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
-    remove_members_from_user_group,
     remove_subgroups_from_user_group,
 )
 from zerver.actions.user_settings import (
@@ -1461,14 +1461,14 @@ class NormalActionsTest(BaseAction):
         # Test add members
         hamlet = self.example_user("hamlet")
         events = self.verify_action(
-            lambda: bulk_add_members_to_user_group(backend, [hamlet.id], acting_user=None)
+            lambda: bulk_add_members_to_user_groups([backend], [hamlet.id], acting_user=None)
         )
         check_user_group_add_members("events[0]", events[0])
 
         # Test remove members
         hamlet = self.example_user("hamlet")
         events = self.verify_action(
-            lambda: remove_members_from_user_group(backend, [hamlet.id], acting_user=None)
+            lambda: bulk_remove_members_from_user_groups([backend], [hamlet.id], acting_user=None)
         )
 
         check_user_group_remove_members("events[0]", events[0])
