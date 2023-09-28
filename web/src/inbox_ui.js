@@ -834,19 +834,28 @@ function get_focus_class_for_row() {
     return focus_class;
 }
 
-function center_focus_if_offscreen() {
-    const $elt = $(".inbox-row:focus, .inbox-header:focus");
-    if ($elt.length === 0) {
-        return;
-    }
-
+function is_element_visible(element_position) {
     const element_above = document.querySelector("#inbox-filters");
     const element_down = document.querySelector("#compose");
     const visible_top = element_above.getBoundingClientRect().bottom;
     const visible_bottom = element_down.getBoundingClientRect().top;
 
+    if (element_position.top >= visible_top && element_position.bottom <= visible_bottom) {
+        return true;
+    }
+    return false;
+}
+
+function center_focus_if_offscreen() {
+    // Move focused to row to visible area so to avoid
+    // it being under compose box or inbox filters.
+    const $elt = $(".inbox-row:focus, .inbox-header:focus");
+    if ($elt.length === 0) {
+        return;
+    }
+
     const elt_pos = $elt[0].getBoundingClientRect();
-    if (elt_pos.top >= visible_top && elt_pos.bottom <= visible_bottom) {
+    if (is_element_visible(elt_pos)) {
         // Element is visible.
         return;
     }
