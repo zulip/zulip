@@ -17,6 +17,11 @@ details summary::-webkit-details-marker {
     color: hsl(0deg 0% 100%);
     z-index: 10;
     overflow: hidden;
+    transition: background-color 0.3s ease-out;
+
+    &:hover {
+        background: hsla(240deg 100% 10% / 85%);
+    }
 }
 
 .top-menu-container {
@@ -263,12 +268,6 @@ details summary::-webkit-details-marker {
     .top-menu-submenu.singup-column {
         justify-content: flex-end;
         right: 55px;
-    }
-}
-
-@media (width <= 1170px) {
-    .top-menu-tab .top-menu-tab-user-label {
-        max-width: 84px;
     }
 }
 

@@ -868,7 +868,7 @@ export function initialize() {
             message_lists.current.select_id(message_id);
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
             instance.setContent(parse_html(render_actions_popover_content(args)));
-            $row.addClass("has_popover has_actions_popover");
+            $row.addClass("has_actions_popover");
         },
         onMount(instance) {
             if (message_actions_popover_keyboard_toggle) {
@@ -994,7 +994,7 @@ export function initialize() {
         },
         onHidden(instance) {
             const $row = $(instance.reference).closest(".message_row");
-            $row.removeClass("has_popover has_actions_popover");
+            $row.removeClass("has_actions_popover");
             instance.destroy();
             popover_instances.message_actions = undefined;
             message_actions_popover_keyboard_toggle = false;

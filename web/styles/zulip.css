@@ -387,10 +387,6 @@ pre {
     user-select: none;
 }
 
-.auto-select {
-    user-select: auto;
-}
-
 .text-select {
     user-select: text;
 }
@@ -875,7 +871,6 @@ button:focus,
 .new-style label.checkbox input[type="checkbox"]:focus ~ span,
 i.fa:focus,
 i.zulip-icon:focus-visible,
-.auto-select:focus,
 [role="button"]:focus {
     outline: 2px solid var(--color-outline-focus);
     /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */

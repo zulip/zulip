@@ -696,8 +696,6 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        $(e.target).toggleClass("has_popover");
-
         let $target_textarea;
         let edit_message_id;
         const compose_click_target = compose_ui.get_compose_click_target(e);
@@ -708,7 +706,7 @@ export function initialize() {
             $target_textarea = $(compose_click_target).closest("form").find("textarea");
         }
 
-        if ($(e.target).hasClass("has_popover")) {
+        if (!flatpickr.is_open()) {
             const on_timestamp_selection = (val) => {
                 const timestr = `<time:${val}> `;
                 compose_ui.insert_syntax_and_focus(timestr, $target_textarea);
@@ -721,8 +719,13 @@ export function initialize() {
                 {
                     // place the time picker wherever there is space and center it horizontally
                     position: "auto center",
+                    // Since we want to handle close of flatpickr manually, we don't want
+                    // flatpickr to hide automatically on clicking its trigger element.
+                    ignoredFocusElements: [e.currentTarget],
                 },
             );
+        } else {
+            flatpickr.flatpickr_instace?.close();
         }
     });
 

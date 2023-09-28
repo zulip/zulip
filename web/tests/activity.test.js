@@ -25,7 +25,7 @@ const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
 const popovers = mock_esm("../src/popovers");
 const resize = mock_esm("../src/resize");
-const right_sidebar_ui = mock_esm("../src/right_sidebar_ui");
+const sidebar_ui = mock_esm("../src/sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
 const watchdog = mock_esm("../src/watchdog");
 
@@ -281,7 +281,7 @@ test("handlers", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
-    override(right_sidebar_ui, "show_userlist_sidebar", () => {});
+    override(sidebar_ui, "show_userlist_sidebar", () => {});
     override(resize, "resize_sidebars", () => {});
 
     // This is kind of weak coverage; we are mostly making sure that

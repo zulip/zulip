@@ -7,6 +7,12 @@ import assert from "minimalistic-assert";
 import {$t} from "./i18n";
 import {user_settings} from "./user_settings";
 
+export let flatpickr_instace: flatpickr.Instance;
+
+export function is_open(): boolean {
+    return Boolean(flatpickr_instace?.isOpen);
+}
+
 function is_numeric_key(key: string): boolean {
     return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
 }
@@ -19,7 +25,7 @@ export function show_flatpickr(
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
-    const instance = flatpickr($flatpickr_input[0], {
+    flatpickr_instace = flatpickr($flatpickr_input[0], {
         mode: "single",
         enableTime: true,
         clickOpens: false,
@@ -77,7 +83,7 @@ export function show_flatpickr(
         ...options,
     });
 
-    const $container = $(instance.calendarContainer);
+    const $container = $(flatpickr_instace.calendarContainer);
 
     $container.on("keydown", (e) => {
         // Main keyboard UI implementation.
@@ -97,14 +103,12 @@ export function show_flatpickr(
                 // use flatpickr's built-in behavior to choose the selected day.
                 return true;
             }
-            $(element).toggleClass("has_popover");
             $container.find(".flatpickr-confirm").trigger("click");
         }
 
         if (e.key === "Escape") {
-            $(element).toggleClass("has_popover");
-            instance.close();
-            instance.destroy();
+            flatpickr_instace.close();
+            flatpickr_instace.destroy();
         }
 
         if (e.key === "Tab") {
@@ -127,14 +131,14 @@ export function show_flatpickr(
         const time = $flatpickr_input.val();
         assert(typeof time === "string");
         callback(time);
-        instance.close();
-        instance.destroy();
+        flatpickr_instace.close();
+        flatpickr_instace.destroy();
     });
-    instance.open();
-    assert(instance.selectedDateElem !== undefined);
-    instance.selectedDateElem.focus();
+    flatpickr_instace.open();
+    assert(flatpickr_instace.selectedDateElem !== undefined);
+    flatpickr_instace.selectedDateElem.focus();
 
-    return instance;
+    return flatpickr_instace;
 }
 
 export function close_all(): void {
