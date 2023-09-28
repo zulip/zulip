@@ -301,7 +301,8 @@
         flex-wrap: wrap;
     }
 
-    & p {
+    & .banner_content,
+    & > p {
         margin: 0; /* override bootstrap */
         /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
         padding: 8px 5px 8px 15px;
