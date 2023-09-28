@@ -137,7 +137,7 @@
     }
 }
 
-#invitee_emails_container .pill-container {
+#invite-user-form .pill-container {
     width: 100%;
     box-sizing: border-box;
     background-color: var(--color-background-invitee-emails-pill-container);

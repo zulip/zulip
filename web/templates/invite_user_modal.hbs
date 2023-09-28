@@ -61,6 +61,14 @@
             {{/if}}
         </select>
     </div>
+    {{#if can_add_members_to_groups}}
+    <div class="input-group" id="invitee_groups_container">
+        <label>{{t "Groups they should join"}}</label>
+        <div class="pill-container">
+            <div class="input" contenteditable="true"></div>
+        </div>
+    </div>
+    {{/if}}
     {{#if can_subscribe_other_users}}
     <div>
         <label>{{t "Channels they should join" }}</label>

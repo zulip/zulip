@@ -20,7 +20,9 @@ import * as dialog_widget from "./dialog_widget";
 import * as email_pill from "./email_pill";
 import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
+import type {InputPillContainer} from "./input_pill";
 import {page_params} from "./page_params";
+import * as pill_typeahead from "./pill_typeahead";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -28,11 +30,16 @@ import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
+import * as user_group_pill from "./user_group_pill";
+import type {UserGroupPill} from "./user_group_pill";
+import * as user_group_popover from "./user_group_popover";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let email_pills: email_pill.EmailPillWidget;
+let group_pills: InputPillContainer<UserGroupPill>;
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -49,6 +56,7 @@ function get_common_invitation_data(): {
     invite_expires_in_minutes: string;
     invitee_emails: string;
     include_realm_default_subscriptions: string;
+    user_group_ids: string;
 } {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
@@ -79,11 +87,17 @@ function get_common_invitation_data(): {
         });
     }
 
+    let user_group_ids: number[] = [];
+    if (group_pills !== undefined) {
+        user_group_ids = user_group_pill.get_group_ids(group_pills);
+    }
+
     assert(csrf_token !== undefined);
     const data = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
+        user_group_ids: JSON.stringify(user_group_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
         invitee_emails: email_pills
             .items()
@@ -335,6 +349,15 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.preventDefault();
 
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
+
+    let can_add_members_to_groups = settings_data.user_can_edit_user_groups();
+    if (can_add_members_to_groups) {
+        const editable_groups = user_groups
+            .get_realm_user_groups()
+            .filter((group) => settings_data.can_edit_user_group(group.id));
+        can_add_members_to_groups = editable_groups.length !== 0;
+    }
+
     const html_body = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
@@ -347,9 +370,24 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
         can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
+        can_add_members_to_groups,
     });
 
     function invite_user_modal_post_render(): void {
+        if (can_add_members_to_groups) {
+            const pill_config = {
+                show_user_group_size: false,
+            };
+            const $group_pill_container = $(
+                "#invitee_groups_container .pill-container",
+            ).expectOne();
+            group_pills = user_group_pill.create_pills($group_pill_container, pill_config)!;
+            const $group_pill_input = $("#invitee_groups_container .pill-container .input");
+            pill_typeahead.set_up_user_groups($group_pill_input, group_pills, {
+                only_show_user_groups_editable_by_user: true,
+            });
+        }
+
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
         const $email_pill_container = $("#invitee_emails_container .pill-container");
         email_pills = input_pill.create({
@@ -490,6 +528,21 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         setTimeout(() => {
             $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
         }, 0);
+
+        $("#invitee_groups_container").on("click", ".pill", function (this: HTMLElement, e) {
+            e.stopPropagation();
+            user_group_popover.toggle_user_group_info_popover(this, undefined);
+        });
+
+        function invite_user_modal_post_hide(): void {
+            $("body").off("click", ".group-info-popover a", hide_invite_user_modal);
+        }
+
+        function hide_invite_user_modal(): void {
+            dialog_widget.close(invite_user_modal_post_hide);
+        }
+
+        $("body").on("click", ".group-info-popover a", hide_invite_user_modal);
     }
 
     function invite_users(): void {

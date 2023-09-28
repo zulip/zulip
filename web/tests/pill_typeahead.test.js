@@ -96,6 +96,15 @@ const testers = {
 };
 const testers_item = user_group_item(testers);
 
+mock_esm("../src/settings_data", {
+    can_edit_user_group(group_id) {
+        if (group_id === admins.id) {
+            return true;
+        }
+        return false;
+    },
+});
+
 const groups = [admins, testers];
 for (const group of groups) {
     user_groups.add(group);
@@ -221,6 +230,120 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
     });
 
     pill_typeahead.set_up_user($fake_input, $pill_widget, {update_func});
+    assert.ok(input_pill_typeahead_called);
+});
+
+run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
+    override_rewire(typeahead_helper, "render_user_group", () => $fake_rendered_group);
+    override_rewire(typeahead_helper, "sort_recipients", ({groups}) => {
+        sort_recipients_called = true;
+        return groups;
+    });
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        assert.equal(typeof data.has_image, "boolean");
+        return html;
+    });
+    let input_pill_typeahead_called = false;
+    const $fake_input = $.create(".input");
+    $fake_input.before = noop;
+    $fake_input[0] = {};
+
+    const $container = $.create(".pill-container");
+    $container.find = () => $fake_input;
+
+    const $pill_widget = input_pill.create({
+        $container,
+        create_item_from_text: noop,
+        get_text_from_item: noop,
+    });
+
+    let update_func_called = false;
+    function update_func() {
+        update_func_called = true;
+    }
+
+    let only_show_user_groups_editable_by_user = false;
+    override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
+        assert.equal(input_element.$element, $fake_input);
+        assert.equal(config.items, 5);
+        assert.ok(config.dropup);
+        assert.ok(config.stopAdvance);
+
+        assert.equal(typeof config.source, "function");
+        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.matcher, "function");
+        assert.equal(typeof config.sorter, "function");
+        assert.equal(typeof config.updater, "function");
+
+        // test queries
+        const group_query = "test";
+
+        (function test_highlighter() {
+            assert.equal(config.highlighter_html(testers_item, group_query), $fake_rendered_group);
+        })();
+
+        (function test_matcher() {
+            let result;
+            result = config.matcher(testers_item, group_query);
+            assert.ok(result);
+            result = config.matcher(admins_item, group_query);
+            assert.ok(!result);
+        })();
+
+        (function test_sorter() {
+            sort_recipients_called = false;
+            config.sorter([testers_item], group_query);
+            assert.ok(sort_recipients_called);
+        })();
+
+        (function test_source() {
+            let expected_result = [];
+            let actual_result = [];
+            const result = config.source(group_query);
+            actual_result = result.map((item) => item.id);
+            if (only_show_user_groups_editable_by_user) {
+                expected_result = [...expected_result, admins_item];
+            } else {
+                expected_result = [...expected_result, ...group_items];
+            }
+            expected_result = expected_result.map((item) => item.id);
+            assert.deepEqual(actual_result, expected_result);
+        })();
+
+        (function test_updater() {
+            function number_of_pills() {
+                const pills = $pill_widget.items();
+                return pills.length;
+            }
+            assert.equal(number_of_pills(), 0);
+            config.updater(testers_item, group_query);
+            assert.equal(number_of_pills(), 1);
+
+            assert.ok(update_func_called);
+        })();
+
+        // input_pill_typeahead_called is set true if
+        // no exception occurs in pill_typeahead.set_up_user.
+        input_pill_typeahead_called = true;
+    });
+
+    pill_typeahead.set_up_user_groups($fake_input, $pill_widget, {update_func});
+    assert.ok(input_pill_typeahead_called);
+
+    input_pill_typeahead_called = false;
+    only_show_user_groups_editable_by_user = true;
+
+    const pills = $pill_widget._get_pills_for_testing();
+    for (const pill of pills) {
+        pill.$element.remove = noop;
+    }
+    $pill_widget.clear();
+
+    pill_typeahead.set_up_user_groups($fake_input, $pill_widget, {
+        update_func,
+        only_show_user_groups_editable_by_user: true,
+    });
     assert.ok(input_pill_typeahead_called);
 });
 
@@ -441,6 +564,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         // user and custom user source.
         {user: true, user_source: () => [fred_item, mark_item]},
         {stream: true},
+        {user_group: true},
         {user_group: true},
         {user_group: true, stream: true},
         {user_group: true, user: true},

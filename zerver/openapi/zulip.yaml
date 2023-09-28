@@ -12481,6 +12481,18 @@ paths:
                   type: boolean
                   default: false
                   example: false
+                user_group_ids:
+                  description: |
+                    A list containing the [IDs of the user groups](/api/get-user-groups) that
+                    the newly created user will be automatically added to if the invitation
+                    is accepted. If the list is empty, then the new user will not be
+                    added to any user groups.
+
+                    **Changes**: New in Zulip 9.0 (feature level 266).
+                  type: array
+                  items:
+                    type: integer
+                  example: []
               required:
                 - invitee_emails
                 - stream_ids
@@ -12488,6 +12500,8 @@ paths:
               invite_expires_in_minutes:
                 contentType: application/json
               stream_ids:
+                contentType: application/json
+              user_group_ids:
                 contentType: application/json
       responses:
         "200":
@@ -12647,10 +12661,25 @@ paths:
                   type: boolean
                   default: false
                   example: false
+                user_group_ids:
+                  description: |
+                    A list containing the [IDs of the user groups](/api/get-user-groups) that
+                    the newly created user will be automatically added to if the invitation
+                    is accepted. If the list is empty, then the new user will not be
+                    added to any user groups.
+
+                    **Changes**: New in Zulip 9.0 (feature level 266).
+                  type: array
+                  items:
+                    type: integer
+                  default: []
+                  example: []
             encoding:
               invite_expires_in_minutes:
                 contentType: application/json
               stream_ids:
+                contentType: application/json
+              user_group_ids:
                 contentType: application/json
       responses:
         "200":

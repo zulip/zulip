@@ -10,7 +10,7 @@ import type {StreamPillData} from "./stream_pill";
 import * as typeahead_helper from "./typeahead_helper";
 import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
-import type {UserGroupPillData} from "./user_group_pill";
+import type {UserGroupPillData, UserGroupPillWidget} from "./user_group_pill";
 import * as user_pill from "./user_pill";
 import type {UserPillData, UserPillWidget} from "./user_pill";
 
@@ -69,6 +69,60 @@ export function set_up_user(
             opts.update_func?.();
         },
         stopAdvance: true,
+    });
+}
+
+export function set_up_user_groups(
+    $input: JQuery,
+    pills: UserGroupPillWidget,
+    opts: {
+        update_func?: () => void;
+        only_show_user_groups_editable_by_user: boolean;
+    },
+): void {
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    new Typeahead(bootstrap_typeahead_input, {
+        items: 5,
+        dropup: true,
+        source(_query: string): UserGroupPillData[] {
+            return user_group_pill.typeahead_source(
+                pills,
+                opts.only_show_user_groups_editable_by_user,
+            );
+        },
+        highlighter_html(item: UserGroupPillData, _query: string): string {
+            return typeahead_helper.render_user_group(item);
+        },
+        matcher(item: UserGroupPillData, query: string): boolean {
+            query = query.toLowerCase();
+            query = query.replaceAll("\u00A0", " ");
+            return group_matcher(query, item);
+        },
+        sorter(matches: UserGroupPillData[], query: string): UserGroupPillData[] {
+            const groups = matches;
+            return typeahead_helper
+                .sort_recipients({
+                    users: [],
+                    query,
+                    current_stream_id: undefined,
+                    current_topic: undefined,
+                    groups,
+                })
+                .map((item) => {
+                    assert(item.type === "user_group");
+                    return item;
+                });
+        },
+        updater(item: UserGroupPillData, _query: string): undefined {
+            user_group_pill.append_user_group(item, pills);
+            $input.trigger("focus");
+            opts.update_func?.();
+        },
+        stopAdvance: true,
+        helpOnEmptyStrings: true,
     });
 }
 
