@@ -864,7 +864,53 @@ function center_focus_if_offscreen() {
     $elt[0].scrollIntoView({block: "center"});
 }
 
+function move_focus_to_visible_area() {
+    // Focus on the row below inbox filters if the focused
+    // row is not visible.
+    if (!is_list_focused()) {
+        return;
+    }
+
+    const $all_rows = get_all_rows();
+    if ($all_rows.length <= 3) {
+        // No need to process anything if there are only a few rows.
+        return;
+    }
+
+    if (row_focus >= $all_rows.length) {
+        row_focus = $all_rows.length - 1;
+        revive_current_focus();
+    }
+
+    const elt_pos = $all_rows[row_focus].getBoundingClientRect();
+    if (is_element_visible(elt_pos)) {
+        return;
+    }
+
+    const INBOX_ROW_HEIGHT = 30;
+    const position = $("#inbox-filters")[0].getBoundingClientRect();
+    const inbox_center_x = (position.left + position.right) / 2;
+    // We are aiming to get the first row if it is completely visible or the second row.
+    const inbox_row_below_filters = position.bottom + INBOX_ROW_HEIGHT;
+    const $element_in_row = $(document.elementFromPoint(inbox_center_x, inbox_row_below_filters));
+
+    let $inbox_row = $element_in_row.closest(".inbox-row");
+    if (!$inbox_row.length) {
+        $inbox_row = $element_in_row.closest(".inbox-header");
+    }
+
+    row_focus = $all_rows.index($inbox_row);
+    revive_current_focus();
+}
+
 export function initialize() {
+    $(document).on(
+        "scroll",
+        _.throttle(() => {
+            move_focus_to_visible_area();
+        }, 50),
+    );
+
     $("body").on(
         "keyup",
         "#inbox-search",
