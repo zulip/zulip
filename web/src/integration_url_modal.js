@@ -9,10 +9,15 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
+import * as util from "./util";
 
 export function show_generate_integration_url_modal(api_key) {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
+    const default_integration_option = {
+        name: $t_html({defaultMessage: "Select an integration"}),
+        unique_id: "",
+    };
     const direct_messages_option = {
         name: $t_html({defaultMessage: "Direct message to me"}),
         unique_id: "",
@@ -26,8 +31,8 @@ export function show_generate_integration_url_modal(api_key) {
     function generate_integration_url_post_render() {
         let selected_integration = "";
         let stream_input_dropdown_widget;
+        let integration_input_dropdown_widget;
 
-        const $integration_input = $("#integration-input");
         const $override_topic = $("#integration-url-override-topic");
         const $topic_input = $("#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
@@ -43,26 +48,6 @@ export function show_generate_integration_url_modal(api_key) {
             show_copied_confirmation(e.trigger);
         });
 
-        $integration_input
-            .typeahead({
-                items: 5,
-                fixed: true,
-                source: () =>
-                    page_params.realm_incoming_webhook_bots.map((bot) => bot.display_name),
-                updater(item) {
-                    selected_integration = page_params.realm_incoming_webhook_bots.find(
-                        (bot) => bot.display_name === item,
-                    ).name;
-                    return item;
-                },
-            })
-            .on("input", function () {
-                const current_value = $(this).val();
-                if (current_value === "") {
-                    selected_integration = "";
-                }
-            });
-
         $override_topic.on("change", function () {
             const checked = $(this).prop("checked");
             $topic_input.parent().toggleClass("hide", !checked);
@@ -73,7 +58,8 @@ export function show_generate_integration_url_modal(api_key) {
         });
 
         function update_url() {
-            if (selected_integration === "") {
+            selected_integration = integration_input_dropdown_widget.value();
+            if (selected_integration === default_integration_option.unique_id) {
                 $integration_url.text(default_url_message);
                 $dialog_submit_button.prop("disabled", true);
                 return;
@@ -94,6 +80,41 @@ export function show_generate_integration_url_modal(api_key) {
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params}`);
             $dialog_submit_button.prop("disabled", false);
+        }
+
+        integration_input_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: "integration-name",
+            get_options: get_options_for_integration_input_dropdown_widget,
+            item_click_callback: integration_item_click_callback,
+            $events_container: $("#generate-integration-url-modal"),
+            tippy_props: {
+                placement: "bottom-start",
+            },
+            default_id: default_integration_option.unique_id,
+            unique_id_type: dropdown_widget.DATA_TYPES.STRING,
+        });
+        integration_input_dropdown_widget.setup();
+
+        function get_options_for_integration_input_dropdown_widget() {
+            const options = [
+                default_integration_option,
+                ...page_params.realm_incoming_webhook_bots
+                    .sort((a, b) => util.strcmp(a.display_name, b.display_name))
+                    .map((bot) => ({
+                        name: bot.display_name,
+                        unique_id: bot.name,
+                    })),
+            ];
+            return options;
+        }
+
+        function integration_item_click_callback(event, dropdown) {
+            integration_input_dropdown_widget.render();
+            $(".integration-url-name-wrapper").trigger("input");
+
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
         }
 
         stream_input_dropdown_widget = new dropdown_widget.DropdownWidget({
