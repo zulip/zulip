@@ -62,7 +62,7 @@ cairosvg
 python-debian
 
 # Pattern-based lint tool
-semgrep<1.38.0  # https://github.com/returntocorp/semgrep/issues/8669
+semgrep
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check

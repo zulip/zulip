@@ -180,17 +180,18 @@ def run() -> None:
 
     semgrep_command = [
         "semgrep",
-        "--config=./tools/semgrep.yml",
+        "scan",
+        "--scan-unknown-extensions",
         "--error",
         "--disable-version-check",
         "--quiet",
     ]
     linter_config.external_linter(
         "semgrep-py",
-        [*semgrep_command, "--lang=python"],
+        [*semgrep_command, "--config=./tools/semgrep-py.yml"],
         ["py"],
         fix_arg="--autofix",
-        description="Syntactic grep (semgrep) code search tool (config: ./tools/semgrep.yml)",
+        description="Syntactic grep (semgrep) code search tool (config: ./tools/semgrep-py.yml)",
     )
 
     linter_config.external_linter(
