@@ -725,7 +725,7 @@ export function initialize() {
                 },
             );
         } else {
-            flatpickr.flatpickr_instace?.close();
+            flatpickr.flatpickr_instance?.close();
         }
     });
 

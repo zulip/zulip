@@ -7,10 +7,10 @@ import assert from "minimalistic-assert";
 import {$t} from "./i18n";
 import {user_settings} from "./user_settings";
 
-export let flatpickr_instace: flatpickr.Instance;
+export let flatpickr_instance: flatpickr.Instance;
 
 export function is_open(): boolean {
-    return Boolean(flatpickr_instace?.isOpen);
+    return Boolean(flatpickr_instance?.isOpen);
 }
 
 function is_numeric_key(key: string): boolean {
@@ -25,7 +25,7 @@ export function show_flatpickr(
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
-    flatpickr_instace = flatpickr($flatpickr_input[0], {
+    flatpickr_instance = flatpickr($flatpickr_input[0], {
         mode: "single",
         enableTime: true,
         clickOpens: false,
@@ -83,7 +83,7 @@ export function show_flatpickr(
         ...options,
     });
 
-    const $container = $(flatpickr_instace.calendarContainer);
+    const $container = $(flatpickr_instance.calendarContainer);
 
     $container.on("keydown", (e) => {
         // Main keyboard UI implementation.
@@ -107,8 +107,8 @@ export function show_flatpickr(
         }
 
         if (e.key === "Escape") {
-            flatpickr_instace.close();
-            flatpickr_instace.destroy();
+            flatpickr_instance.close();
+            flatpickr_instance.destroy();
         }
 
         if (e.key === "Tab") {
@@ -131,14 +131,14 @@ export function show_flatpickr(
         const time = $flatpickr_input.val();
         assert(typeof time === "string");
         callback(time);
-        flatpickr_instace.close();
-        flatpickr_instace.destroy();
+        flatpickr_instance.close();
+        flatpickr_instance.destroy();
     });
-    flatpickr_instace.open();
-    assert(flatpickr_instace.selectedDateElem !== undefined);
-    flatpickr_instace.selectedDateElem.focus();
+    flatpickr_instance.open();
+    assert(flatpickr_instance.selectedDateElem !== undefined);
+    flatpickr_instance.selectedDateElem.focus();
 
-    return flatpickr_instace;
+    return flatpickr_instance;
 }
 
 export function close_all(): void {
