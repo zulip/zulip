@@ -789,7 +789,7 @@ export function show_edit_user_info_modal(user_id, $container) {
     });
 }
 
-export function register_click_handlers() {
+export function initialize() {
     $("body").on("click", "#user-profile-modal .add-subscription-button", (e) => {
         e.preventDefault();
         const stream_id = Number.parseInt(user_profile_subscribe_widget.value(), 10);

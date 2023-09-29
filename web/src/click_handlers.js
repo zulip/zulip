@@ -42,7 +42,6 @@ import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
-import * as user_profile from "./user_profile";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
@@ -638,8 +637,6 @@ export function initialize() {
             this.blur();
         });
     }
-
-    user_profile.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");

@@ -122,6 +122,7 @@ import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_popover from "./user_group_popover";
 import * as user_groups from "./user_groups";
 import * as user_group_settings_ui from "./user_groups_settings_ui";
+import * as user_profile from "./user_profile";
 import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
@@ -607,6 +608,7 @@ export function initialize_everything() {
     spoilers.initialize();
     lightbox.initialize();
     sidebar_ui.initialize();
+    user_profile.initialize();
     stream_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
