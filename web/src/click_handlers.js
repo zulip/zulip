@@ -640,7 +640,6 @@ export function initialize() {
     }
 
     user_profile.register_click_handlers();
-    stream_popover.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");

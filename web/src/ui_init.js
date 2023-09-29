@@ -102,6 +102,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
 import * as stream_list_sort from "./stream_list_sort";
+import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
@@ -606,6 +607,7 @@ export function initialize_everything() {
     spoilers.initialize();
     lightbox.initialize();
     sidebar_ui.initialize();
+    stream_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();

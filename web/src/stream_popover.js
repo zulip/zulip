@@ -479,7 +479,7 @@ export function build_move_topic_to_stream_popover(
     });
 }
 
-export function register_click_handlers() {
+export function initialize() {
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
         const elt = e.currentTarget;
         const $stream_li = $(elt).parents("li");
