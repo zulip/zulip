@@ -6256,14 +6256,47 @@ class GetSubscribersTest(ZulipTestCase):
         sub_data = gather_subscriptions_helper(non_admin_user)
         self.verify_sub_fields(sub_data)
         unsubscribed_streams = sub_data.unsubscribed
-        self.assert_length(unsubscribed_streams, 1)
-        self.assertEqual(unsubscribed_streams[0]["subscribers"], [])
+        self.assert_length(unsubscribed_streams, 0)
 
         sub_data = gather_subscriptions_helper(guest_user)
         self.verify_sub_fields(sub_data)
         unsubscribed_streams = sub_data.unsubscribed
+        self.assert_length(unsubscribed_streams, 0)
+
+    def test_previously_subscribed_public_streams(self) -> None:
+        public_stream_name = "public_stream"
+        web_public_stream_name = "web_public_stream"
+        guest_user = self.example_user("polonius")
+        member_user = self.example_user("hamlet")
+
+        self.make_stream(public_stream_name, realm=get_realm("zulip"))
+        self.make_stream(web_public_stream_name, realm=get_realm("zulip"), is_web_public=True)
+
+        for stream_name in [public_stream_name, web_public_stream_name]:
+            self.subscribe(guest_user, stream_name)
+            self.subscribe(member_user, stream_name)
+            self.subscribe(self.example_user("othello"), stream_name)
+
+        for stream_name in [public_stream_name, web_public_stream_name]:
+            self.unsubscribe(guest_user, stream_name)
+            self.unsubscribe(member_user, stream_name)
+
+        # Test member user gets previously subscribed public stream and its subscribers.
+        sub_data = gather_subscriptions_helper(member_user)
+        self.verify_sub_fields(sub_data)
+        unsubscribed_streams = sub_data.unsubscribed
+        self.assert_length(unsubscribed_streams, 2)
+        self.assert_length(unsubscribed_streams[0]["subscribers"], 1)
+        self.assert_length(unsubscribed_streams[1]["subscribers"], 1)
+
+        # Test guest users cannot get previously subscribed public stream but can get
+        # web-public stream and its subscribers.
+        sub_data = gather_subscriptions_helper(guest_user)
+        self.verify_sub_fields(sub_data)
+        unsubscribed_streams = sub_data.unsubscribed
         self.assert_length(unsubscribed_streams, 1)
-        self.assertEqual(unsubscribed_streams[0]["subscribers"], [])
+        self.assertEqual(unsubscribed_streams[0]["is_web_public"], True)
+        self.assert_length(unsubscribed_streams[0]["subscribers"], 1)
 
     def test_gather_subscriptions_mit(self) -> None:
         """

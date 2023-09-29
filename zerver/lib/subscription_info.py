@@ -16,8 +16,9 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import get_web_public_streams_queryset, subscribed_to_stream
-from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import (
+    APIStreamDict,
     NeverSubscribedStreamDict,
     RawStreamDict,
     RawSubscriptionDict,
@@ -100,6 +101,35 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         unsubscribed=[],
         never_subscribed=[],
     )
+
+
+def build_unsubscribed_sub_from_stream_dict(
+    user: UserProfile, sub_dict: RawSubscriptionDict, stream_dict: APIStreamDict
+) -> SubscriptionStreamDict:
+    # This function is only called from `apply_event` code.
+    raw_stream_dict = RawStreamDict(
+        can_remove_subscribers_group_id=stream_dict["can_remove_subscribers_group"],
+        date_created=timestamp_to_datetime(stream_dict["date_created"]),
+        description=stream_dict["description"],
+        first_message_id=stream_dict["first_message_id"],
+        history_public_to_subscribers=stream_dict["history_public_to_subscribers"],
+        invite_only=stream_dict["invite_only"],
+        is_web_public=stream_dict["is_web_public"],
+        message_retention_days=stream_dict["message_retention_days"],
+        name=stream_dict["name"],
+        rendered_description=stream_dict["rendered_description"],
+        id=stream_dict["stream_id"],
+        stream_post_policy=stream_dict["stream_post_policy"],
+    )
+
+    # We pass recent_traffic as None and avoid extra database query since we
+    # already have the traffic data from stream_dict sent with creation event.
+    subscription_stream_dict = build_stream_dict_for_sub(
+        user, sub_dict, raw_stream_dict, recent_traffic=None
+    )
+    subscription_stream_dict["stream_weekly_traffic"] = stream_dict["stream_weekly_traffic"]
+
+    return subscription_stream_dict
 
 
 def build_stream_dict_for_sub(
@@ -388,6 +418,21 @@ def get_subscribers_query(
     return get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=False)
 
 
+def has_metadata_access_to_previously_subscribed_stream(
+    user_profile: UserProfile, stream_dict: SubscriptionStreamDict
+) -> bool:
+    if stream_dict["is_web_public"]:
+        return True
+
+    if not user_profile.can_access_public_streams():
+        return False
+
+    if stream_dict["invite_only"]:
+        return user_profile.is_realm_admin
+
+    return True
+
+
 # In general, it's better to avoid using .values() because it makes
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
@@ -454,7 +499,15 @@ def gather_subscriptions_helper(
         if is_active:
             subscribed.append(stream_dict)
         else:
-            unsubscribed.append(stream_dict)
+            if has_metadata_access_to_previously_subscribed_stream(user_profile, stream_dict):
+                """
+                User who are no longer subscribed to a stream that they don't have
+                metadata access to will not receive metadata related to this stream
+                and their clients will see it as an unkown stream if referenced
+                somewhere (e.g. a markdown stream link), just like they would see
+                a reference to a private stream they had never been subscribed to.
+                """
+                unsubscribed.append(stream_dict)
 
     if user_profile.can_access_public_streams():
         never_subscribed_stream_ids = set(all_streams_map) - sub_unsub_stream_ids
