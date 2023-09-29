@@ -26,6 +26,9 @@ format used by the Zulip server that they are interacting with.
   [`GET /users/me/subscriptions`](/api/get-subscriptions): Removed
   `email_address` field from subscription objects.
 
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Added new endpoint to get email address of a stream.
+
 **Feature level 225**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
