@@ -600,7 +600,7 @@ function set_list_focus(input_key) {
     // Since header rows always have a collapse button, other rows have one less element to focus.
     if (col_focus === COLUMNS.COLLAPSE_BUTTON) {
         if (not_a_header_row && LEFT_NAVIGATION_KEYS.includes(input_key)) {
-            col_focus = total_cols - 1;
+            col_focus = total_cols;
         } else {
             $row_to_focus.trigger("focus");
             return;
