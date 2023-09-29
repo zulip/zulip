@@ -38,6 +38,7 @@ from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
@@ -803,7 +804,7 @@ def get_message_payload(
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data["sender_id"] = message.sender.id
     data["sender_email"] = message.sender.email
-    data["time"] = message.date_sent.timestamp()
+    data["time"] = datetime_to_timestamp(message.date_sent)
     if mentioned_user_group_id is not None:
         assert mentioned_user_group_name is not None
         data["mentioned_user_group_id"] = mentioned_user_group_id
