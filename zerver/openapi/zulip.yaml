@@ -15687,6 +15687,55 @@ paths:
                         description: |
                           An example JSON response for when invalid combination of stream permission
                           parameters are passed.
+  /streams/{stream_id}/email_address:
+    get:
+      operationId: get-stream-email-address
+      summary: Get the email address of a stream
+      tags: ["streams"]
+      description: |
+        Get email address of a stream.
+
+        **Changes**: New in Zulip 7.5 (feature level 186).
+      parameters:
+        - $ref: "#/components/parameters/StreamIdInPath"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      email:
+                        type: string
+                        description: |
+                          Email address of the stream.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "email": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream ID",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the supplied stream does not exist:
   /streams/{stream_id}/delete_topic:
     post:
       operationId: delete-topic

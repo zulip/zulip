@@ -943,8 +943,15 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .copy_email_button {
-        padding: 10px 15px;
+    .stream-email-box {
+        .stream_email_address_error {
+            vertical-align: top;
+            margin-left: 15px;
+        }
+
+        .copy_email_button {
+            padding: 10px 15px;
+        }
     }
 
     .loading_indicator_text {

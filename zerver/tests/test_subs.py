@@ -31,12 +31,14 @@ from zerver.actions.streams import (
     bulk_remove_subscriptions,
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
+    do_change_stream_permission,
     do_change_stream_post_policy,
     do_deactivate_stream,
     do_unarchive_stream,
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.lib.email_mirror_helpers import encode_email_address_helper
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
@@ -5610,6 +5612,54 @@ class GetStreamsTest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assertEqual(json["stream"]["name"], "private_stream")
         self.assertEqual(json["stream"]["stream_id"], private_stream.id)
+
+    def test_get_stream_email_address(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        polonius = self.example_user("polonius")
+        realm = get_realm("zulip")
+        denmark_stream = get_stream("Denmark", realm)
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        json = self.assert_json_success(result)
+        denmark_email = encode_email_address_helper(
+            denmark_stream.name, denmark_stream.email_token, show_sender=True
+        )
+        self.assertEqual(json["email"], denmark_email)
+
+        self.login("polonius")
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        self.assert_json_error(result, "Invalid stream ID")
+
+        self.subscribe(polonius, "Denmark")
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        json = self.assert_json_success(result)
+        self.assertEqual(json["email"], denmark_email)
+
+        do_change_stream_permission(
+            denmark_stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=iago,
+        )
+        self.login("hamlet")
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        json = self.assert_json_success(result)
+        self.assertEqual(json["email"], denmark_email)
+
+        self.unsubscribe(hamlet, "Denmark")
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        self.assert_json_error(result, "Invalid stream ID")
+
+        self.login("iago")
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        json = self.assert_json_success(result)
+        self.assertEqual(json["email"], denmark_email)
+
+        self.unsubscribe(iago, "Denmark")
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        self.assert_json_error(result, "Invalid stream ID")
 
 
 class StreamIdTest(ZulipTestCase):

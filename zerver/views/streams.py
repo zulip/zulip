@@ -47,6 +47,7 @@ from zerver.decorator import (
     require_post,
     require_realm_admin,
 )
+from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -1073,3 +1074,18 @@ def update_subscription_properties_backend(
         )
 
     return json_success(request)
+
+
+@has_request_variables
+def get_stream_email_address(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int = REQ("stream", converter=to_non_negative_int, path_only=True),
+) -> HttpResponse:
+    (stream, sub) = access_stream_by_id(
+        user_profile,
+        stream_id,
+    )
+    stream_email = encode_email_address(stream, show_sender=True)
+
+    return json_success(request, data={"email": stream_email})

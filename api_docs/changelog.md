@@ -31,6 +31,10 @@ format used by the Zulip server that they are interacting with.
   `email_address` field from subscription objects. This change was backported
   from Zulip 8.0, where it was introduced in feature level 226.
 
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Added new endpoint to get email address of a stream. This change was
+  backported from Zulip 8.0, where it was introduced in feature level 226.
+
 ## Changes in Zulip 7.0
 
 **Feature level 185**

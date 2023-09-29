@@ -64,11 +64,14 @@
                   can_remove_subscribers_setting_widget_name="can_remove_subscribers_group_id" }}
             </div>
             {{/with}}
-            <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
-                <h3 class="stream_setting_subsection_title">
-                    {{t "Email address" }}
-                    {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
-                </h3>
+            <div class="stream-email-box" {{#unless can_access_stream_email}}style="display: none;"{{/unless}}>
+                <div class="stream-email-box-header">
+                    <h3 class="stream_setting_subsection_title">
+                        {{t "Email address" }}
+                        {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
+                    </h3>
+                    <div class="stream_email_address_error alert-notification"></div>
+                </div>
                 <p>
                     {{t "You can use email to send messages to Zulip streams."}}
                 </p>
