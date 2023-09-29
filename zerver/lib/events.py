@@ -45,7 +45,11 @@ from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.streams import do_get_streams, get_web_public_streams
-from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_public_subs
+from zerver.lib.subscription_info import (
+    build_unsubscribed_sub_from_stream_dict,
+    gather_subscriptions_helper,
+    get_web_public_subs,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
@@ -61,7 +65,9 @@ from zerver.models import (
     Message,
     Realm,
     RealmUserDefault,
+    Recipient,
     Stream,
+    Subscription,
     UserMessage,
     UserProfile,
     UserStatus,
@@ -1001,17 +1007,45 @@ def apply_event(
                 if include_subscribers:
                     stream_data["subscribers"] = []
 
-                # We know the stream has no traffic, and this
-                # field is not present in the event.
-                #
-                # TODO: Probably this should just be added to the event.
-                stream_data["stream_weekly_traffic"] = None
+                # Here we need to query the database to check whether the
+                # user was previously subscribed. If they were, we need to
+                # include the stream in the unsubscribed list after adding
+                # personal subscription metadata (such as configured stream
+                # color; most of the other personal setting have no effect
+                # when not subscribed).
+                unsubscribed_stream_sub = Subscription.objects.filter(
+                    user_profile=user_profile,
+                    recipient__type_id=stream["stream_id"],
+                    recipient__type=Recipient.STREAM,
+                ).values(
+                    *Subscription.API_FIELDS,
+                    "recipient_id",
+                    "active",
+                )
 
-                # Add stream to never_subscribed (if not invite_only)
-                state["never_subscribed"].append(stream_data)
+                if len(unsubscribed_stream_sub) == 1:
+                    unsubscribed_stream_dict = build_unsubscribed_sub_from_stream_dict(
+                        user_profile, unsubscribed_stream_sub[0], stream_data
+                    )
+                    if include_subscribers:
+                        unsubscribed_stream_dict["subscribers"] = []
+
+                    # The stream might have traffic, but we do not have the
+                    # data to compute it in the event, so we just set to
+                    # "None" here like we would do for newly created streams.
+                    #
+                    # TODO: Probably this should just be added to the event.
+                    unsubscribed_stream_dict["stream_weekly_traffic"] = None
+                    state["unsubscribed"].append(unsubscribed_stream_dict)
+                else:
+                    assert len(unsubscribed_stream_sub) == 0
+                    stream_data["stream_weekly_traffic"] = None
+                    state["never_subscribed"].append(stream_data)
+
                 if "streams" in state:
                     state["streams"].append(stream)
 
+            state["unsubscribed"].sort(key=lambda elt: elt["name"])
             state["never_subscribed"].sort(key=lambda elt: elt["name"])
             if "streams" in state:
                 state["streams"].sort(key=lambda elt: elt["name"])

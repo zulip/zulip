@@ -1028,21 +1028,14 @@ def do_change_stream_permission(
     if old_invite_only_value and not stream.invite_only:
         # We need to send stream creation event to users who can access the
         # stream now but were not able to do so previously. So, we can exclude
-        # subscribers, users who were previously subscribed to the stream and
-        # realm admins from the non-guest user list.
-        assert stream.recipient_id is not None
-        previously_subscribed_user_ids = Subscription.objects.filter(
-            recipient_id=stream.recipient_id, active=False, is_user_active=True
-        ).values_list("user_profile_id", flat=True)
+        # subscribers and realm admins from the non-guest user list.
         stream_subscriber_user_ids = get_active_subscriptions_for_stream_id(
             stream.id, include_deactivated_users=False
         ).values_list("user_profile_id", flat=True)
 
-        old_can_access_stream_user_ids = (
-            set(stream_subscriber_user_ids)
-            | set(previously_subscribed_user_ids)
-            | {user.id for user in stream.realm.get_admin_users_and_bots()}
-        )
+        old_can_access_stream_user_ids = set(stream_subscriber_user_ids) | {
+            user.id for user in stream.realm.get_admin_users_and_bots()
+        }
         non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
         notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_user_ids
         send_stream_creation_event(stream, list(notify_stream_creation_ids))
