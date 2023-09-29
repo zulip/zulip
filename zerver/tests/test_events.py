@@ -3784,6 +3784,15 @@ class SubscribeActionTest(BaseAction):
         )
         self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
+        # Add this user to make sure the stream is not deleted on unsubscribing hamlet.
+        self.subscribe(self.example_user("iago"), stream.name)
+
+        # Unsubscribe from invite-only stream.
+        action = lambda: bulk_remove_subscriptions(realm, [hamlet], [stream], acting_user=None)
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+
         stream.invite_only = False
         stream.save()
 
@@ -3840,6 +3849,14 @@ class SubscribeActionTest(BaseAction):
         )
         check_subscription_peer_remove("events[0]", events[0])
 
+        # Unsubscribe guest from public stream.
+        action = lambda: bulk_remove_subscriptions(
+            realm, [self.user_profile], [stream], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+
         stream = self.make_stream("web-public-stream", self.user_profile.realm, is_web_public=True)
         # Guest user receives peer_add/peer_remove events for unsubscribed
         # web-public streams.
@@ -3868,6 +3885,14 @@ class SubscribeActionTest(BaseAction):
         )
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
         check_subscription_add("events[0]", events[0])
+
+        # Unsubscribe as a guest to web-public stream. Guest does not receive stream deletion
+        # event for web-public stream.
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.user_profile], [stream], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
+        check_subscription_remove("events[0]", events[0])
 
 
 class DraftActionTest(BaseAction):
