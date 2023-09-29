@@ -54,6 +54,9 @@ export let current_focus_id = INBOX_SEARCH_ID;
 const STREAM_HEADER_PREFIX = "inbox-stream-header-";
 const CONVERSATION_ID_PREFIX = "inbox-row-conversation-";
 
+const LEFT_NAVIGATION_KEYS = ["left_arrow", "shift_tab", "vim_left"];
+const RIGHT_NAVIGATION_KEYS = ["right_arrow", "tab", "vim_right"];
+
 function get_row_from_conversation_key(key) {
     return $(`#${CONVERSATION_ID_PREFIX}` + CSS.escape(`${key}`));
 }
@@ -596,17 +599,17 @@ function set_list_focus(input_key) {
 
     // Since header rows always have a collapse button, other rows have one less element to focus.
     if (col_focus === COLUMNS.COLLAPSE_BUTTON) {
-        if (not_a_header_row && ["left_arrow", "shift_tab"].includes(input_key)) {
+        if (not_a_header_row && LEFT_NAVIGATION_KEYS.includes(input_key)) {
             col_focus = total_cols - 1;
         } else {
             $row_to_focus.trigger("focus");
             return;
         }
     } else if (not_a_header_row && col_focus === COLUMNS.RECIPIENT) {
-        if (["right_arrow", "tab"].includes(input_key)) {
+        if (RIGHT_NAVIGATION_KEYS.includes(input_key)) {
             // Focus on unread count.
             col_focus = COLUMNS.UNREAD_COUNT;
-        } else if (["left_arrow", "shift_tab"].includes(input_key)) {
+        } else if (LEFT_NAVIGATION_KEYS.includes(input_key)) {
             col_focus = COLUMNS.COLLAPSE_BUTTON;
             $row_to_focus.trigger("focus");
             return;
@@ -694,15 +697,15 @@ export function change_focused_element(input_key) {
                 set_list_focus();
                 center_focus_if_offscreen();
                 return true;
-            case "vim_right":
-            case "right_arrow":
-            case "tab":
+            case RIGHT_NAVIGATION_KEYS[0]:
+            case RIGHT_NAVIGATION_KEYS[1]:
+            case RIGHT_NAVIGATION_KEYS[2]:
                 col_focus += 1;
                 set_list_focus(input_key);
                 return true;
-            case "vim_left":
-            case "left_arrow":
-            case "shift_tab":
+            case LEFT_NAVIGATION_KEYS[0]:
+            case LEFT_NAVIGATION_KEYS[1]:
+            case LEFT_NAVIGATION_KEYS[2]:
                 col_focus -= 1;
                 set_list_focus(input_key);
                 return true;
