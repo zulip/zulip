@@ -542,7 +542,7 @@ function focus_current_id() {
     $(`#${current_focus_id}`).trigger("focus");
 }
 
-function set_default_focus() {
+function focus_inbox_search() {
     current_focus_id = INBOX_SEARCH_ID;
     focus_current_id();
 }
@@ -590,7 +590,7 @@ function set_list_focus(input_key) {
     const $all_rows = get_all_rows();
     const max_row_focus = $all_rows.length - 1;
     if (max_row_focus < 0) {
-        set_default_focus();
+        focus_inbox_search();
         return;
     }
 
@@ -698,7 +698,7 @@ export function change_focused_element(input_key) {
                 return true;
             case "left_arrow":
             case "shift_tab":
-                set_default_focus();
+                focus_inbox_search();
                 return true;
         }
     } else {
@@ -712,7 +712,7 @@ export function change_focused_element(input_key) {
             case "vim_up":
             case "up_arrow":
                 if (row_focus === 0) {
-                    set_default_focus();
+                    focus_inbox_search();
                     return true;
                 }
                 row_focus -= 1;
@@ -1005,7 +1005,7 @@ export function initialize() {
         const unread_dms_msg_ids = unread.get_msg_ids_for_private();
         const unread_dms_messages = unread_dms_msg_ids.map((msg_id) => message_store.get(msg_id));
         unread_ops.notify_server_messages_read(unread_dms_messages);
-        set_default_focus();
+        focus_inbox_search();
         update_triggered_by_user = true;
     });
 
