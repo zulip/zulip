@@ -49,7 +49,7 @@ let collapsed_containers = new Set();
 let search_keyword = "";
 const INBOX_SEARCH_ID = "inbox-search";
 const MUTED_FILTER_ID = "include_muted";
-export let current_focus_id = INBOX_SEARCH_ID;
+export let current_focus_id;
 
 const STREAM_HEADER_PREFIX = "inbox-stream-header-";
 const CONVERSATION_ID_PREFIX = "inbox-row-conversation-";
