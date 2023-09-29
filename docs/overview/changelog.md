@@ -1301,7 +1301,7 @@ _Released 2021-05-13_
 - "Recent topics" is no longer beta, no longer an overlay, supports
   composing messages, and is now the default view. The previous
   default view, "All messages", is still available, and the default
-  view can now be configured via "Display settings".
+  view can now be configured via "Preferences".
 - Completed API documentation for Zulip's real-time events system. It
   is now possible to write a decent Zulip client with minimal
   interaction with the Zulip server development team.
@@ -3265,7 +3265,7 @@ _Released 2016-08-25_
   Zulip.
 - Added support for using Ubuntu 16.04 in production.
 - Added a powerful and complete realm import/export tool.
-- Added nice UI for selecting a default language to display settings.
+- Added nice UI for selecting a default language to preferences.
 - Added UI for searching streams in left sidebar with hotkeys.
 - Added Semaphore, Bitbucket, and HelloWorld (example) integrations.
 - Added new webhook-based integration for Trello.
