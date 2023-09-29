@@ -1,0 +1,20 @@
+<br>
+    {{#if realm_allow_edit_history}}
+        {{#tr}}
+            The following uploaded files are now only accessible via this message's <a>edit history</a>. Would you like to delete them?
+        {{/tr}}
+    {{else}}
+        {{#tr}}
+            The following uploaded files are now only accessible via this message's <a>edit history</a>, which is currently disabled in this organization. Would you like to delete them?
+        {{/tr}}
+    {{/if}}
+    </br>
+    <a class="uploaded_files_settings_link" href="/#settings/uploaded-files">{{t "Manage uploaded files" }}</a>
+</p>
+<ul>
+    {{#each attachments_list}}
+    <li>
+        <a href="/user_uploads/{{this.path_id}}" rel="noopener noreferrer" target="_blank">{{this.name}}</a>
+    </li>
+    {{/each}}
+</ul>

@@ -34,6 +34,7 @@ export const page_params: {
     page_load_time: number;
     promote_sponsoring_zulip: boolean;
     realm_add_custom_emoji_policy: number;
+    realm_allow_edit_history: boolean;
     realm_avatar_changes_disabled: boolean;
     realm_create_multiuse_invite_group: number;
     realm_create_private_stream_policy: number;

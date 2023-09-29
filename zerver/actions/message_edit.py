@@ -365,7 +365,7 @@ def do_update_message(
     rendering_result: Optional[MessageRenderingResult],
     prior_mention_user_ids: Set[int],
     mention_data: Optional[MentionData] = None,
-) -> int:
+) -> Tuple[int, List[Dict[str, Any]]]:
     """
     The main function for message editing.  A message edit event can
     modify:
@@ -407,7 +407,7 @@ def do_update_message(
         event["stream_id"] = stream_being_edited.id
 
     ums = UserMessage.objects.filter(message=target_message.id)
-
+    detached_files: List[Dict[str, Any]] = []
     if content is not None:
         assert rendering_result is not None
 
@@ -446,7 +446,7 @@ def do_update_message(
 
         # target_message.has_image and target_message.has_link will have been
         # already updated by Markdown rendering in the caller.
-        target_message.has_attachment = check_attachment_reference_change(
+        target_message.has_attachment, detached_files = check_attachment_reference_change(
             target_message, rendering_result
         )
 
@@ -1075,7 +1075,7 @@ def do_update_message(
             changed_messages_count,
         )
 
-    return len(changed_messages)
+    return len(changed_messages), detached_files
 
 
 def check_time_limit_for_change_all_propagate_mode(
@@ -1181,7 +1181,7 @@ def check_update_message(
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
     content: Optional[str] = None,
-) -> int:
+) -> Tuple[int, List[Dict[str, Any]]]:
     """This will update a message given the message id and user profile.
     It checks whether the user profile has the permission to edit the message
     and raises a JsonableError if otherwise.
@@ -1310,7 +1310,7 @@ def check_update_message(
     ):
         check_time_limit_for_change_all_propagate_mode(message, user_profile, topic_name, stream_id)
 
-    number_changed = do_update_message(
+    number_changed, detached_files = do_update_message(
         user_profile,
         message,
         new_stream,
@@ -1336,4 +1336,4 @@ def check_update_message(
         }
         queue_json_publish("embed_links", event_data)
 
-    return number_changed
+    return number_changed, detached_files
