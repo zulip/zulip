@@ -3996,6 +3996,9 @@ class UserSignUpTest(ZulipTestCase):
         req.META["HTTP_ACCEPT_LANGUAGE"] = ""
         self.assertEqual(get_default_language_for_new_user(realm, request=req), "hi")
 
+        # Test code path for users created via the API or LDAP
+        self.assertEqual(get_default_language_for_new_user(realm, request=None), "hi")
+
 
 class DeactivateUserTest(ZulipTestCase):
     def test_deactivate_user(self) -> None:

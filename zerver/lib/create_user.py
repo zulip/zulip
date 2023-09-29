@@ -7,6 +7,7 @@ from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.hotspots import copy_hotspots
+from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
 from zerver.models import (
@@ -92,7 +93,7 @@ def create_user_profile(
     is_mirror_dummy: bool,
     tos_version: Optional[str],
     timezone: str,
-    default_language: str = "en",
+    default_language: str,
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
     force_id: Optional[int] = None,
     force_date_joined: Optional[datetime] = None,
@@ -152,7 +153,7 @@ def create_user(
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
     is_mirror_dummy: bool = False,
-    default_language: str = "en",
+    default_language: Optional[str] = None,
     default_sending_stream: Optional[Stream] = None,
     default_events_register_stream: Optional[Stream] = None,
     default_all_public_streams: Optional[bool] = None,
@@ -173,6 +174,12 @@ def create_user(
         # There is no privacy motivation for limiting access to bot email addresses,
         # so we hardcode them to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
         user_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+
+    # Users created via the API or LDAP/SAML syncing code paths will
+    # usually not have a default_language value, and should fall back
+    # to the realm default.
+    if default_language is None:
+        default_language = get_default_language_for_new_user(realm, request=None)
 
     user_profile = create_user_profile(
         realm,
