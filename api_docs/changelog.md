@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 226**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions): Removed
+  `email_address` field from subscription objects.
+
 **Feature level 225**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

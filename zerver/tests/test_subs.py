@@ -1569,8 +1569,8 @@ class StreamAdminTest(ZulipTestCase):
         self.assertIn(cordelia.id, notified_user_ids)
         self.assertNotIn(prospero.id, notified_user_ids)
 
-        # Three events should be sent: a name event, an email address event and a notification event
-        with self.capture_send_event_calls(expected_num_events=3) as events:
+        # Two events should be sent: a name event and a notification event
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             stream_id = get_stream("private_stream", user_profile.realm).id
             result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "whatever"})
         self.assert_json_success(result)
@@ -1606,12 +1606,12 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "sTREAm_name1"})
         self.assert_json_success(result)
 
-        # Three events should be sent: stream_email update, stream_name update and notification message.
-        with self.capture_send_event_calls(expected_num_events=3) as events:
+        # Two events should be sent: stream_name update and notification message.
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             stream_id = get_stream("stream_name1", user_profile.realm).id
             result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name2"})
         self.assert_json_success(result)
-        event = events[1]["event"]
+        event = events[0]["event"]
         self.assertEqual(
             event,
             dict(
@@ -1623,7 +1623,7 @@ class StreamAdminTest(ZulipTestCase):
                 name="sTREAm_name1",
             ),
         )
-        notified_user_ids = set(events[1]["users"])
+        notified_user_ids = set(events[0]["users"])
 
         self.assertRaises(Stream.DoesNotExist, get_stream, "stream_name1", realm)
 
@@ -1637,7 +1637,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # Test case to handle Unicode stream name change
         # *NOTE: Here encoding is needed when Unicode string is passed as an argument*
-        with self.capture_send_event_calls(expected_num_events=3) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             stream_id = stream_name2_exists.id
             result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "नया नाम"})
         self.assert_json_success(result)
@@ -1648,7 +1648,7 @@ class StreamAdminTest(ZulipTestCase):
         # Test case to handle changing of Unicode stream name to newer name
         # NOTE: Unicode string being part of URL is handled cleanly
         # by client_patch call, encoding of URL is not needed.
-        with self.capture_send_event_calls(expected_num_events=3) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             stream_id = stream_name_uni_exists.id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
@@ -1662,7 +1662,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream_name_new_uni_exists)
 
         # Test case to change name from one language to other.
-        with self.capture_send_event_calls(expected_num_events=3) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             stream_id = stream_name_new_uni_exists.id
             result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "français"})
         self.assert_json_success(result)
@@ -1670,7 +1670,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream_name_fr_exists)
 
         # Test case to change name to mixed language name.
-        with self.capture_send_event_calls(expected_num_events=3) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             stream_id = stream_name_fr_exists.id
             result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "français name"})
         self.assert_json_success(result)
@@ -1682,14 +1682,14 @@ class StreamAdminTest(ZulipTestCase):
             "stream_private_name1", realm=user_profile.realm, invite_only=True
         )
         self.subscribe(self.example_user("cordelia"), "stream_private_name1")
-        with self.capture_send_event_calls(expected_num_events=3) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             stream_id = get_stream("stream_private_name1", realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
                 {"new_name": "stream_private_name2"},
             )
         self.assert_json_success(result)
-        notified_user_ids = set(events[1]["users"])
+        notified_user_ids = set(events[0]["users"])
         self.assertEqual(notified_user_ids, can_access_stream_user_ids(stream_private))
         self.assertIn(self.example_user("cordelia").id, notified_user_ids)
         # An important corner case is that all organization admins are notified.
@@ -5844,7 +5844,6 @@ class GetSubscribersTest(ZulipTestCase):
 
     def verify_sub_fields(self, sub_data: SubscriptionInfo) -> None:
         other_fields = {
-            "email_address",
             "is_announcement_only",
             "in_home_view",
             "stream_id",
