@@ -3271,6 +3271,40 @@ class SubscribeActionTest(BaseAction):
             10,
         )
 
+        # Add this user to make sure the stream is not deleted on unsubscribing hamlet.
+        self.subscribe(self.example_user("iago"), stream.name)
+
+        # Unsubscribe from invite-only stream.
+        action = lambda: bulk_remove_subscriptions(realm, [hamlet], [stream], acting_user=None)
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+
+        stream.invite_only = False
+        stream.save()
+
+        # Test events for guest user.
+        self.user_profile = self.example_user("polonius")
+
+        self.subscribe(self.user_profile, stream.name)
+        # Unsubscribe guest from public stream.
+        action = lambda: bulk_remove_subscriptions(
+            realm, [self.user_profile], [stream], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+
+        stream = self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(self.user_profile, stream.name)
+        # Unsubscribe as a guest to web-public stream. Guest does not receive stream deletion
+        # event for web-public stream.
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.user_profile], [stream], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
+        check_subscription_remove("events[0]", events[0])
+
 
 class DraftActionTest(BaseAction):
     def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:
