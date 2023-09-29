@@ -71,6 +71,14 @@ function should_include_muted() {
 }
 
 export function show() {
+    // Avoid setting col_focus to recipient when moving to inbox from other narrows.
+    // We prefer to focus entire row instead of stream name for inbox-header.
+    // Since inbox-row doesn't has a collapse button, focus on COLUMNS.COLLAPSE_BUTTON
+    // is same as focus on COLUMNS.RECIPIENT. See `set_list_focus` for details.
+    if (col_focus === COLUMNS.RECIPIENT) {
+        col_focus = COLUMNS.COLLAPSE_BUTTON;
+    }
+
     views_util.show({
         highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_inbox_view,
         $view: $("#inbox-view"),
