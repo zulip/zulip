@@ -4912,10 +4912,11 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user2, "private_stream")
         self.subscribe(user3, "private_stream")
 
-        # Sends 3 peer-remove events and 2 unsubscribe events.
+        # Sends 3 peer-remove events, 2 unsubscribe events
+        # and 2 stream delete events for private streams.
         with self.assert_database_query_count(16):
             with self.assert_memcached_count(3):
-                with self.capture_send_event_calls(expected_num_events=5) as events:
+                with self.capture_send_event_calls(expected_num_events=7) as events:
                     bulk_remove_subscriptions(
                         realm,
                         [user1, user2],
@@ -4924,6 +4925,11 @@ class SubscriptionAPITest(ZulipTestCase):
                     )
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
+        stream_delete_events = [
+            e
+            for e in events
+            if e["event"].get("type") == "stream" and e["event"].get("op") == "delete"
+        ]
 
         # We only care about a subset of users when we inspect
         # peer_remove events.
@@ -4954,6 +4960,14 @@ class SubscriptionAPITest(ZulipTestCase):
                 ("stream2,stream3", {user2.id}, {user1.id, user3.id, user4.id, user5.id}),
             ],
         )
+
+        self.assert_length(stream_delete_events, 2)
+        self.assertEqual(stream_delete_events[0]["users"], [user1.id])
+        self.assertEqual(stream_delete_events[1]["users"], [user2.id])
+        for event in stream_delete_events:
+            event_streams = event["event"]["streams"]
+            self.assert_length(event_streams, 1)
+            self.assertEqual(event_streams[0]["name"], "private_stream")
 
     def test_bulk_subscribe_MIT(self) -> None:
         mit_user = self.mit_user("starnine")
@@ -4986,7 +5000,7 @@ class SubscriptionAPITest(ZulipTestCase):
             # Followed by one subscription event:
             self.assertEqual(events[num_streams]["event"]["type"], "subscription")
 
-        with self.capture_send_event_calls(expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=2):
             bulk_remove_subscriptions(
                 realm,
                 users=[mit_user],

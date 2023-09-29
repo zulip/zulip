@@ -38,6 +38,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_user_ids,
+    check_basic_stream_access,
     get_occupied_streams,
     get_stream_permission_policy_name,
     render_stream_description,
@@ -792,6 +793,20 @@ def send_subscription_remove_events(
             ],
         }
         queue_event_on_commit("deferred_work", event)
+
+        if not user_profile.is_realm_admin:
+            inaccessible_streams = [
+                stream
+                for stream in streams_by_user[user_profile.id]
+                if not check_basic_stream_access(
+                    user_profile, stream, sub=None, allow_realm_admin=True
+                )
+            ]
+
+            if inaccessible_streams:
+                payload = [stream_to_dict(stream) for stream in inaccessible_streams]
+                event = dict(type="stream", op="delete", streams=payload)
+                send_event_on_commit(realm, event, [user_profile.id])
 
     send_peer_remove_events(
         realm=realm,
