@@ -26,7 +26,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             uploader = self.example_user("hamlet")
         self.login_user(uploader)
 
-        with time_machine.travel(when):
+        with time_machine.travel(when, tick=False):
             file_obj = StringIO("zulip!")
             file_obj.name = filename
             response = self.assert_json_success(
