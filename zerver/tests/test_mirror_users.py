@@ -173,6 +173,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
             kwargs["bot_owner"] = None
             kwargs["tos_version"] = None
             kwargs["timezone"] = timezone_now()
+            kwargs["default_language"] = "en"
             kwargs["email_address_visibility"] = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
             create_user_profile(**kwargs).save()
             raise IntegrityError
