@@ -571,6 +571,14 @@ function is_row_a_header($row) {
 }
 
 function set_list_focus(input_key) {
+    // This function is used for both revive_current_focus and
+    // setting focus after modify col_focus and row_focus as per
+    // hotkey pressed by user.
+    //
+    // When to focus on entire row?
+    // For `inbox-header`, when focus on COLUMNS.COLLAPSE_BUTTON
+    // For `inbox-row`, when focus on COLUMNS.COLLAPSE_BUTTON (fake) or COLUMNS.RECIPIENT
+
     const $all_rows = get_all_rows();
     const max_row_focus = $all_rows.length - 1;
     if (max_row_focus < 0) {
@@ -585,41 +593,47 @@ function set_list_focus(input_key) {
     }
 
     const $row_to_focus = $($all_rows.get(row_focus));
-    const $cols_to_focus = $row_to_focus.find("[tabindex=0]");
+    // This includes a fake collapse button for `inbox-row`.
+    const $cols_to_focus = [$row_to_focus, ...$row_to_focus.find("[tabindex=0]")];
     const total_cols = $cols_to_focus.length;
     current_focus_id = $row_to_focus.attr("id");
     const not_a_header_row = !is_row_a_header($row_to_focus);
 
     // Loop through columns.
-    if (col_focus > total_cols) {
+    if (col_focus > total_cols - 1) {
         col_focus = 0;
     } else if (col_focus < 0) {
-        col_focus = total_cols;
+        col_focus = total_cols - 1;
     }
 
     // Since header rows always have a collapse button, other rows have one less element to focus.
     if (col_focus === COLUMNS.COLLAPSE_BUTTON) {
         if (not_a_header_row && LEFT_NAVIGATION_KEYS.includes(input_key)) {
-            col_focus = total_cols;
-        } else {
-            $row_to_focus.trigger("focus");
-            return;
+            // In `inbox-row` user pressed left on COLUMNS.RECIPIENT, so
+            // go to the last column.
+            col_focus = total_cols - 1;
         }
     } else if (not_a_header_row && col_focus === COLUMNS.RECIPIENT) {
         if (RIGHT_NAVIGATION_KEYS.includes(input_key)) {
-            // Focus on unread count.
+            // In `inbox-row` user pressed right on COLUMNS.COLLAPSE_BUTTON.
+            // Since `inbox-row` has no collapse button, user wants to go
+            // to the unread count button.
             col_focus = COLUMNS.UNREAD_COUNT;
         } else if (LEFT_NAVIGATION_KEYS.includes(input_key)) {
+            // In `inbox-row` user pressed left on COLUMNS.UNREAD_COUNT,
+            // we move focus to COLUMNS.COLLAPSE_BUTTON so that moving
+            // up or down to `inbox-header` keeps the entire row focused for the
+            // `inbox-header` too.
             col_focus = COLUMNS.COLLAPSE_BUTTON;
-            $row_to_focus.trigger("focus");
-            return;
         } else {
+            // up / down arrow
+            // For `inbox-row`, we focus entier row for COLUMNS.RECIPIENT.
             $row_to_focus.trigger("focus");
             return;
         }
     }
 
-    $($cols_to_focus.get(col_focus - 1)).trigger("focus");
+    $($cols_to_focus[col_focus]).trigger("focus");
 }
 
 function focus_muted_filter() {
