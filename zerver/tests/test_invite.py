@@ -335,7 +335,7 @@ class InviteUserTest(InviteUserBase):
 
         # We've sent 40 invites "today".  Fast-forward 48 hours
         # and ensure that we can invite more people
-        with time_machine.travel(timezone_now() + datetime.timedelta(hours=48)):
+        with time_machine.travel(timezone_now() + datetime.timedelta(hours=48), tick=False):
             result = try_invite(5, default_realm_max=30, new_realm_max=20, realm_max=10)
             self.assert_json_success(result)
             self.check_sent_emails([f"zulip-{i:02}@zulip.com" for i in range(5)], clear=True)
