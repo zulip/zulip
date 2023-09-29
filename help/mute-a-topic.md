@@ -14,8 +14,9 @@
 
 !!! tip ""
 
-    You can also click the **mute** (<i class="zulip-icon zulip-icon-mute"></i>) icon
-    in the message recipient bar or in **Recent conversations**.
+    You can also click the **mute** (<i class="zulip-icon zulip-icon-mute-new"></i>)
+    icon in the message recipient bar, in the **Inbox view**, or in
+    **Recent conversations**.
 
 {tab|mobile}
 
@@ -39,8 +40,9 @@
 
 !!! tip ""
 
-    You can also click the **unmute** (<i class="zulip-icon zulip-icon-unmute"></i>) icon
-    in the message recipient bar or in **Recent conversations**.
+    You can also click the **unmute** (<i class="zulip-icon zulip-icon-unmute-new"></i>)
+    icon in the message recipient bar, in the **Inbox view**, or in
+    **Recent conversations**.
 
 {tab|mobile}
 
