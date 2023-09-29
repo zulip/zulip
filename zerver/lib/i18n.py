@@ -85,7 +85,13 @@ def get_browser_language_code(request: HttpRequest) -> Optional[str]:
     return None
 
 
-def get_default_language_for_new_user(realm: Realm, *, request: HttpRequest) -> str:
+def get_default_language_for_new_user(realm: Realm, *, request: Optional[HttpRequest]) -> str:
+    if request is None:
+        # Users created via the API or LDAP will not have a
+        # browser/request associated with them, and should just use
+        # the realm's default language.
+        return realm.default_language
+
     browser_language_code = get_browser_language_code(request)
     if browser_language_code is not None:
         return browser_language_code
