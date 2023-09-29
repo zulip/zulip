@@ -13,7 +13,7 @@ from zerver.models import ArchivedAttachment, Attachment, get_old_unclaimed_atta
 class Command(BaseCommand):
     help = """Remove unclaimed attachments from storage older than a supplied
               numerical value indicating the limit of how old the attachment can be.
-              One week is taken as the default value."""
+              The default is five weeks."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
@@ -22,7 +22,7 @@ class Command(BaseCommand):
             dest="delta_weeks",
             default=5,
             type=int,
-            help="Limiting value of how old the file can be.",
+            help="How long unattached attachments are preserved; defaults to 5 weeks.",
         )
 
         parser.add_argument(
