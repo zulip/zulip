@@ -502,6 +502,13 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     );
 }
 
+export function can_access_stream_email(sub: StreamSubscription): boolean {
+    return (
+        (sub.subscribed || sub.is_web_public || (!page_params.is_guest && !sub.invite_only)) &&
+        !page_params.is_spectator
+    );
+}
+
 export function can_access_topic_history(sub: StreamSubscription): boolean {
     // Anyone can access topic history for web-public streams and
     // subscriptions; additionally, members can access history for

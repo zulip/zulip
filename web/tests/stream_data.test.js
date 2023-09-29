@@ -1150,3 +1150,44 @@ test("options for dropdown widget", () => {
         },
     ]);
 });
+
+test("can_access_stream_email", () => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: true,
+        history_public_to_subscribers: false,
+    };
+    page_params.is_admin = false;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    page_params.is_admin = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    social.subscribed = false;
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    social.invite_only = false;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    page_params.is_admin = false;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    page_params.is_guest = true;
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    social.subscribed = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    social.is_web_public = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    social.subscribed = false;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.can_access_stream_email(social), false);
+});
