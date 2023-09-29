@@ -938,6 +938,7 @@ class AdminCreateUserTest(ZulipTestCase):
         realm = admin.realm
         self.login_user(admin)
         do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        do_set_realm_property(realm, "default_language", "ja", acting_user=None)
         valid_params = dict(
             email="romeo@zulip.net",
             password="xxxx",
@@ -1026,6 +1027,8 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.full_name, "Romeo Montague")
         self.assertEqual(new_user.id, result["user_id"])
         self.assertEqual(new_user.tos_version, UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
+        # Make sure the new user got the realm's default language
+        self.assertEqual(new_user.default_language, "ja")
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(

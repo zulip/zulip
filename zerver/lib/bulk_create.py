@@ -58,6 +58,7 @@ def bulk_create_users(
             False,
             tos_version,
             timezone,
+            default_language=realm.default_language,
             tutorial_status=UserProfile.TUTORIAL_FINISHED,
             email_address_visibility=email_address_visibility,
         )
