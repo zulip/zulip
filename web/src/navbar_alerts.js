@@ -203,11 +203,6 @@ export function initialize() {
         $(window).trigger("resize");
     });
 
-    $(".hide-demo-organization-notice").on("click", function () {
-        $(this).closest(".alert").hide();
-        $(window).trigger("resize");
-    });
-
     $(".accept-bankruptcy").on("click", function (e) {
         e.preventDefault();
         const $process = $(this).closest("[data-process]");
