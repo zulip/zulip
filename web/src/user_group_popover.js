@@ -134,7 +134,7 @@ function fetch_group_members(member_ids) {
 }
 
 function sort_group_members(members) {
-    return members.sort((a, b) => util.strcmp(a.full_name, b.fullname));
+    return members.sort((a, b) => util.strcmp(a.full_name, b.full_name));
 }
 
 // exporting these functions for testing purposes
