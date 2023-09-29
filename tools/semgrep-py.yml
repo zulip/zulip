@@ -17,6 +17,15 @@ rules:
       include:
         - zerver/views/
 
+  - id: time-machine-travel-specify-tick
+    patterns:
+      - pattern: time_machine.travel(...)
+      - pattern-not: time_machine.travel(..., tick=..., ...)
+    message: |
+      Specify tick kwarg value for time_machine.travel(). Most cases will want to use False.
+    languages: [python]
+    severity: ERROR
+
   - id: limit-message-filter
     patterns:
       - pattern: Message.objects.filter(...)
