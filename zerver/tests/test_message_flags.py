@@ -749,9 +749,10 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         self.assert_length(all_message_ids, 12)  # sanity check on test setup
 
+        muted_stream = get_stream("test here", realm)
         self.mute_stream(
             user_profile=hamlet,
-            stream=get_stream("test here", realm),
+            stream=muted_stream,
         )
 
         self.set_topic_visibility_policy(
@@ -770,6 +771,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
         self.assertEqual(
             set(stream_dict.keys()),
             all_message_ids,
+        )
+
+        self.assertEqual(
+            raw_unread_data["muted_stream_ids"],
+            {muted_stream.id},
         )
 
         self.assertEqual(
