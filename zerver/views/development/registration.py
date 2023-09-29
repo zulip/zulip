@@ -92,7 +92,7 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     name = "Your name"
     email = ""
     realm_name = generate_demo_realm_name()
-    realm_type = Realm.ORG_TYPES["business"]["id"]
+    realm_type = Realm.ORG_TYPES["unspecified"]["id"]
     realm_subdomain = realm_name
     email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
     prereg_realm = create_preregistration_realm(email, realm_name, realm_subdomain, realm_type)
