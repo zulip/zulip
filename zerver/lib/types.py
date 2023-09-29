@@ -136,7 +136,6 @@ class RawStreamDict(TypedDict):
     can_remove_subscribers_group_id: int
     date_created: datetime.datetime
     description: str
-    email_token: str
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
     id: int
@@ -178,7 +177,6 @@ class SubscriptionStreamDict(TypedDict):
     date_created: int
     description: str
     desktop_notifications: Optional[bool]
-    email_address: str
     email_notifications: Optional[bool]
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
@@ -254,7 +252,6 @@ class APISubscriptionDict(APIStreamDict):
     push_notifications: Optional[bool]
     wildcard_mentions_notify: Optional[bool]
     # Computed fields not specified in `Subscription.API_FIELDS`
-    email_address: str
     in_home_view: bool
     stream_weekly_traffic: Optional[int]
     subscribers: List[int]

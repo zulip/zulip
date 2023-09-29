@@ -25,7 +25,6 @@ from zerver.lib.cache import (
     get_stream_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_last_message_id
@@ -317,7 +316,6 @@ def get_subscriber_ids(
 
 @dataclass
 class StreamInfo:
-    email_address: str
     stream_weekly_traffic: Optional[int]
     subscribers: List[int]
 
@@ -340,7 +338,6 @@ def send_subscription_add_events(
     for sub_info in sub_info_list:
         stream = sub_info.stream
         if stream.id not in stream_info_dict:
-            email_address = encode_email_address(stream, show_sender=True)
             stream_weekly_traffic = get_average_weekly_stream_traffic(
                 stream.id, stream.date_created, recent_traffic
             )
@@ -349,7 +346,6 @@ def send_subscription_add_events(
             else:
                 subscribers = list(subscriber_dict[stream.id])
             stream_info_dict[stream.id] = StreamInfo(
-                email_address=email_address,
                 stream_weekly_traffic=stream_weekly_traffic,
                 subscribers=subscribers,
             )
@@ -375,7 +371,6 @@ def send_subscription_add_events(
                 push_notifications=subscription.push_notifications,
                 wildcard_mentions_notify=subscription.wildcard_mentions_notify,
                 # Computed fields not present in Subscription.API_FIELDS
-                email_address=stream_info.email_address,
                 in_home_view=not subscription.is_muted,
                 stream_weekly_traffic=stream_info.stream_weekly_traffic,
                 subscribers=stream_info.subscribers,
@@ -1177,7 +1172,7 @@ def do_change_stream_post_policy(
     )
 
 
-def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -> Dict[str, str]:
+def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -> None:
     old_name = stream.name
     stream.name = new_name
     stream.save(update_fields=["name"])
@@ -1213,30 +1208,18 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     # clearer than trying to set them. display_recipient is the out of
     # date field in all cases.
     cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
-    new_email = encode_email_address(stream, show_sender=True)
 
-    # We will tell our users to essentially
-    # update stream.name = new_name where name = old_name
-    # and update stream.email = new_email where name = old_name.
-    # We could optimize this by trying to send one message, but the
-    # client code really wants one property update at a time, and
-    # updating stream names is a pretty infrequent operation.
-    # More importantly, we want to key these updates by id, not name,
-    # since id is the immutable primary key, and obviously name is not.
-    data_updates = [
-        ["email_address", new_email],
-        ["name", new_name],
-    ]
-    for property, value in data_updates:
-        event = dict(
-            op="update",
-            type="stream",
-            property=property,
-            value=value,
-            stream_id=stream.id,
-            name=old_name,
-        )
-        send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    # We want to key these updates by id, not name, since id is
+    # the immutable primary key, and obviously name is not.
+    event = dict(
+        op="update",
+        type="stream",
+        property="name",
+        value=new_name,
+        stream_id=stream.id,
+        name=old_name,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
         internal_send_stream_message(
@@ -1249,9 +1232,6 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
                 new_stream_name=f"**{new_name}**",
             ),
         )
-    # Even though the token doesn't change, the web client needs to update the
-    # email forwarding address to display the correctly-escaped new name.
-    return {"email_address": new_email}
 
 
 def send_change_stream_description_notification(

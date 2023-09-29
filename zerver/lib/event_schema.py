@@ -70,7 +70,6 @@ subscription_fields: Sequence[Tuple[str, object]] = [
     ("audible_notifications", OptionalType(bool)),
     ("color", str),
     ("desktop_notifications", OptionalType(bool)),
-    ("email_address", str),
     ("email_notifications", OptionalType(bool)),
     ("in_home_view", bool),
     ("is_muted", bool),
@@ -1267,9 +1266,6 @@ def check_stream_update(
 
     if prop == "description":
         assert extra_keys == {"rendered_description"}
-        assert isinstance(value, str)
-    elif prop == "email_address":
-        assert extra_keys == set()
         assert isinstance(value, str)
     elif prop == "invite_only":
         assert extra_keys == {"history_public_to_subscribers", "is_web_public"}

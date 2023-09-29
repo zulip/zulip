@@ -686,7 +686,6 @@ exports.fixtures = {
                 audible_notifications: true,
                 color: "blue",
                 desktop_notifications: false,
-                email_address: "whatever",
                 email_notifications: false,
                 in_home_view: false,
                 is_muted: true,

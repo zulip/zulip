@@ -26,6 +26,11 @@ format used by the Zulip server that they are interacting with.
   now included web-public streams as well. This change was backported from
   Zulip 8.0, where it was introduced in feature level 205.
 
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions): Removed
+  `email_address` field from subscription objects. This change was backported
+  from Zulip 8.0, where it was introduced in feature level 226.
+
 ## Changes in Zulip 7.0
 
 **Feature level 185**
