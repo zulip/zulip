@@ -1110,6 +1110,7 @@ def extract_unread_data_from_um_rows(
         return raw_unread_messages
 
     muted_stream_ids = get_muted_stream_ids(user_profile)
+    raw_unread_messages["muted_stream_ids"] = muted_stream_ids
 
     get_topic_visibility_policy = build_get_topic_visibility_policy(user_profile)
 
