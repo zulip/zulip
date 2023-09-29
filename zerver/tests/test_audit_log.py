@@ -47,12 +47,12 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
-    bulk_add_members_to_user_group,
+    bulk_add_members_to_user_groups,
+    bulk_remove_members_from_user_groups,
     check_add_user_group,
     do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
-    remove_members_from_user_group,
     remove_subgroups_from_user_group,
 )
 from zerver.actions.user_settings import (
@@ -1202,7 +1202,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user_group = check_add_user_group(hamlet.realm, "foo", [], acting_user=None)
 
-        bulk_add_members_to_user_group(user_group, [hamlet.id, cordelia.id], acting_user=hamlet)
+        bulk_add_members_to_user_groups([user_group], [hamlet.id, cordelia.id], acting_user=hamlet)
         audit_log_entries = RealmAuditLog.objects.filter(
             acting_user=hamlet,
             realm=hamlet.realm,
@@ -1214,7 +1214,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
 
-        remove_members_from_user_group(user_group, [hamlet.id], acting_user=hamlet)
+        bulk_remove_members_from_user_groups([user_group], [hamlet.id], acting_user=hamlet)
         audit_log_entries = RealmAuditLog.objects.filter(
             acting_user=hamlet,
             realm=hamlet.realm,
