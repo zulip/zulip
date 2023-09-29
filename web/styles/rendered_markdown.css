@@ -397,6 +397,64 @@
         margin-right: 5px;
     }
 
+    /* In browsers that support `:has()`, we pull
+       `.rendered_markdown` out of the baseline group
+       formed with EDITED/MOVED markers and the
+       timestamp when the first child of the rendered
+       markdown is a media element. */
+    &:has(> .message_inline_image:first-child) {
+        align-self: center;
+    }
+
+    /* But for browsers that don't support :has(),
+       we provide a small layout hack using an
+       inline grid. */
+    @supports not selector(:has(*)) {
+        .message_inline_image {
+            /* We'll display this bit of media as
+               an inline grid. That will allow us
+               to put beneath the image a piece of
+               invisible ::before content that we'll
+               generate to participate in the
+               messagebox-content grid's baseline
+               group. */
+            display: inline-grid;
+            /* We create a grid area called
+               "media", so that both the inner
+               <a> element and the ::before content
+               can sit there. `auto` will take on
+               the height and width otherwise assigned
+               to the .message_inline_image. Setting
+               the min value to 0 on minmax() ensures
+               that media larger than those dimensions
+               don't cause a grid blowout. */
+            grid-template: "media" minmax(0, auto) / minmax(0, auto);
+        }
+
+        .message_inline_image a,
+        .message_inline_image video {
+            /* We explicitly place the containing
+               media element in the thumbnail area. */
+            grid-area: media;
+        }
+
+        .message_inline_image::before {
+            /* We generate a single . here to create
+               text content enough for a baseline.
+               Generated content is not generally
+               read aloud to screen readers. */
+            content: ".";
+            /* We color the generated . transparently,
+               so it won't be visible when the media
+               doesn't cover the entire area. */
+            color: transparent;
+            /* And we explicitly place the . in the thumbnail
+               area, too. Otherwise, grid would generate a new
+               column track for it to sit in. */
+            grid-area: media;
+        }
+    }
+
     .twitter-tweet {
         border: 1px solid hsl(0deg 0% 87%);
         padding: 0.5em 0.75em;
