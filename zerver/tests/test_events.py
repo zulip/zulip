@@ -2827,15 +2827,12 @@ class NormalActionsTest(BaseAction):
             stream = self.make_stream(old_name)
             self.subscribe(self.user_profile, stream.name)
             action = partial(do_rename_stream, stream, new_name, self.user_profile)
-            events = self.verify_action(action, num_events=3, include_streams=include_streams)
+            events = self.verify_action(action, num_events=2, include_streams=include_streams)
 
             check_stream_update("events[0]", events[0])
             self.assertEqual(events[0]["name"], old_name)
 
-            check_stream_update("events[1]", events[1])
-            self.assertEqual(events[1]["name"], old_name)
-
-            check_message("events[2]", events[2])
+            check_message("events[1]", events[1])
 
             fields = dict(
                 sender_email="notification-bot@zulip.com",
@@ -2848,7 +2845,7 @@ class NormalActionsTest(BaseAction):
 
             fields[TOPIC_NAME] = "stream events"
 
-            msg = events[2]["message"]
+            msg = events[1]["message"]
             for k, v in fields.items():
                 self.assertEqual(msg[k], v)
 

@@ -650,6 +650,9 @@ paths:
                                     A list of dictionaries where each dictionary contains
                                     information about one of the subscribed streams.
 
+                                    **Changes**: Removed `email_address` field from the dictionary
+                                    in Zulip 8.0 (feature level 226).
+
                                     **Changes**: Removed `role` field from the dictionary
                                     in Zulip 6.0 (feature level 133).
                                   items:
@@ -682,7 +685,6 @@ paths:
                                         "push_notifications": null,
                                         "wildcard_mentions_notify": null,
                                         "in_home_view": true,
-                                        "email_address": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
                                         "stream_weekly_traffic": null,
                                         "can_remove_subscribers_group": 2,
                                         "subscribers": [10],
@@ -8785,6 +8787,9 @@ paths:
                           A list of dictionaries where each dictionary contains
                           information about one of the subscribed streams.
 
+                          **Changes**: Removed `email_address` field from the dictionary
+                          in Zulip 8.0 (feature level 226).
+
                           **Changes**: Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                         items:
@@ -8800,7 +8805,6 @@ paths:
                               "color": "#e79ab5",
                               "description": "A Scandinavian country",
                               "desktop_notifications": true,
-                              "email_address": "Denmark+187b4125ed36d6af8b5d03ef4f65c0cf@zulipdev.com:9981",
                               "is_muted": false,
                               "invite_only": false,
                               "name": "Denmark",
@@ -8814,7 +8818,6 @@ paths:
                               "color": "#e79ab5",
                               "description": "Located in the United Kingdom",
                               "desktop_notifications": true,
-                              "email_address": "Scotland+f5786390183e60a1ccb18374f9d05649@zulipdev.com:9981",
                               "is_muted": false,
                               "invite_only": false,
                               "name": "Scotland",
@@ -12109,6 +12112,9 @@ paths:
                           of a stream the user is subscribed to (as well as that user's
                           personal per-stream settings).
 
+                          **Changes**: Removed `email_address` field from the dictionary
+                          in Zulip 8.0 (feature level 226).
+
                           **Changes**: Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                       unsubscribed:
@@ -12124,6 +12130,9 @@ paths:
 
                           Unlike `never_subscribed`, the user might have messages in their personal
                           message history that were sent to these streams.
+
+                          **Changes**: Removed `email_address` field from the dictionary
+                          in Zulip 8.0 (feature level 226).
 
                           **Changes**: Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
@@ -18630,11 +18639,6 @@ components:
           description: |
             A boolean specifying whether the given stream has been pinned
             to the top.
-        email_address:
-          type: string
-          description: |
-            Email address of the given stream, used for
-            [sending emails to the stream](/help/message-a-stream-by-email).
         is_muted:
           type: boolean
           description: |

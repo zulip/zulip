@@ -8,7 +8,6 @@ from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 
-from zerver.lib.email_mirror_helpers import encode_email_address_helper
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.stream_subscription import (
@@ -59,7 +58,6 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         audible_notifications = True
         color = get_next_color()
         desktop_notifications = True
-        email_address = ""
         email_notifications = True
         in_home_view = True
         is_muted = False
@@ -77,7 +75,6 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             date_created=date_created,
             description=description,
             desktop_notifications=desktop_notifications,
-            email_address=email_address,
             email_notifications=email_notifications,
             first_message_id=first_message_id,
             history_public_to_subscribers=history_public_to_subscribers,
@@ -152,10 +149,6 @@ def build_stream_dict_for_sub(
     else:
         stream_weekly_traffic = None
 
-    email_address = encode_email_address_helper(
-        raw_stream_dict["name"], raw_stream_dict["email_token"], show_sender=True
-    )
-
     # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
         audible_notifications=audible_notifications,
@@ -164,7 +157,6 @@ def build_stream_dict_for_sub(
         date_created=date_created,
         description=description,
         desktop_notifications=desktop_notifications,
-        email_address=email_address,
         email_notifications=email_notifications,
         first_message_id=first_message_id,
         history_public_to_subscribers=history_public_to_subscribers,
@@ -410,9 +402,6 @@ def gather_subscriptions_helper(
         # The realm_id and recipient_id are generally not needed in the API.
         "realm_id",
         "recipient_id",
-        # email_token isn't public to some users with access to
-        # the stream, so doesn't belong in API_FIELDS.
-        "email_token",
     )
     recip_id_to_stream_id: Dict[int, int] = {
         stream["recipient_id"]: stream["id"] for stream in all_streams
