@@ -48,7 +48,7 @@ in the Zulip app to add more to your repertoire as needed.
   <kbd>Esc</kbd>, [if enabled][disable-escape])
   until you are in the [default view](/help/configure-default-view).
 
-[disable-escape]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
+[disable-escape]: /help/configure-default-view#configure-whether-esc-navigates-to-the-default-view
 ## Navigation
 
 * **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>

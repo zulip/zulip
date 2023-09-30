@@ -109,6 +109,11 @@ direct_instructions = """
    keyboard shortcut.
 """
 
+inbox_instructions = """
+1. Click on <i class="zulip-icon zulip-icon-inbox"></i> **Inbox** in the left
+   sidebar.
+"""
+
 message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
@@ -116,6 +121,7 @@ message_info = {
     "all": ["All messages", "/#all_messages", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
     "direct": ["All direct messages", "/#narrow/is/dm", direct_instructions],
+    "inbox": ["Inbox", "/#inbox", inbox_instructions],
 }
 
 

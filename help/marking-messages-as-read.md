@@ -71,6 +71,16 @@ stream or topic as read**.
     jumping to the bottom with the **Scroll to bottom**
     (<i class="fa fa-chevron-down"></i>) button or the <kbd>End</kbd> shortcut.
 
+{tab|via-inbox-view}
+
+{relative|message|inbox}
+
+1. Hover over a stream or topic in the left sidebar.
+
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
+
+1. Click **Mark all messages as read**.
+
 {tab|via-recent-conversations}
 
 {relative|message|recent}
