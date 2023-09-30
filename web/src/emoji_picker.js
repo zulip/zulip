@@ -9,7 +9,6 @@ import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hb
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
-import {media_breakpoints_num} from "./css_variables";
 import * as emoji from "./emoji";
 import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
@@ -686,21 +685,15 @@ export function toggle_emoji_popover(target, id, additional_popover_options) {
         current_message_id = id;
     }
 
-    let show_as_overlay = false;
-
-    // If the window is mobile-sized, we will render the
-    // emoji popover centered on the screen with the overlay.
-    if (window.innerWidth <= media_breakpoints_num.md) {
-        show_as_overlay = true;
-    }
-
     popover_menus.toggle_popover_menu(
         target,
         {
             ...get_default_emoji_popover_options(),
             ...additional_popover_options,
         },
-        {show_as_overlay},
+        {
+            show_as_overlay_on_mobile: true,
+        },
     );
 }
 function register_click_handlers() {

@@ -4,7 +4,6 @@ import render_user_group_info_popover from "../templates/popovers/user_group_inf
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
-import {media_breakpoints_num} from "./css_variables";
 import * as message_lists from "./message_lists";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
@@ -57,14 +56,6 @@ export function toggle_user_group_info_popover(element, message_id) {
     const user_group_id = Number.parseInt($elt.attr("data-user-group-id"), 10);
     const group = user_groups.get_user_group_from_id(user_group_id);
 
-    let show_as_overlay = false;
-
-    // If the window is mobile-sized, we will render the
-    // user group popover centered on the screen with the overlay.
-    if (window.innerWidth <= media_breakpoints_num.md) {
-        show_as_overlay = true;
-    }
-
     popover_menus.toggle_popover_menu(
         element,
         {
@@ -98,7 +89,9 @@ export function toggle_user_group_info_popover(element, message_id) {
                 hide();
             },
         },
-        {show_as_overlay},
+        {
+            show_as_overlay_on_mobile: true,
+        },
     );
 }
 
