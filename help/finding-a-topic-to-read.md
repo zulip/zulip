@@ -2,6 +2,10 @@
 
 Like your email inbox, Zulip works best if you read it topic-by-topic.
 
+## From the Inbox view
+
+{!inbox.md!}
+
 ## From Recent conversations
 
 {!recent-conversations.md!}

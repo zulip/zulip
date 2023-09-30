@@ -73,6 +73,7 @@ TAB_SECTION_LABELS = {
     "stream": "From a stream view",
     "not-stream": "From other views",
     "via-recent-conversations": "Via recent conversations",
+    "via-inbox-view": "Via inbox view",
     "via-left-sidebar": "Via left sidebar",
     "instructions-for-all-platforms": "Instructions for all platforms",
     "public-streams": "Public streams",
