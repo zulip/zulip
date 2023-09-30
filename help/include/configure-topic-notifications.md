@@ -9,7 +9,8 @@
 !!! tip ""
 
     You can also configure notifications by clicking the topic notifications status
-    icon in the message recipient bar or in **Recent conversations**.
+    icon in the message recipient bar, in the **Inbox view**, or in
+    **Recent conversations**.
 
 {tab|mobile}
 

@@ -5,7 +5,8 @@ to the Zulip web app. You can also navigate to the default view via
 keyboard shortcuts.
 
 The default views available in Zulip are
-[Recent conversations](/help/recent-conversations) and
+[**Inbox**](/help/inbox),
+[Recent conversations](/help/recent-conversations), and
 [All messages](/help/all-messages). See
 [Reading strategies](/help/reading-strategies) for recommendations
 on how to use these views.
@@ -17,12 +18,15 @@ shortcut.
 
 ## Change default view
 
-Organization administrators can [set the default view for their
+Organization administrators can [configure the default view for their
 organization](/help/configure-default-new-user-settings) to
-[**Recent conversations**](/help/recent-conversations) or
+[**Inbox**](/help/inbox),
+[**Recent conversations**](/help/recent-conversations), or
 [**All messages**](/help/all-messages).
-**Recent conversations** is especially recommended for high-traffic
-organizations, and is configured by default.
+The **Inbox** view works best if you regularly clear all unread messages
+in most streams you follow. Otherwise, **Recent conversations**
+works well in high-traffic organizations. **All messages** is convenient for
+low-traffic organizations, or for skimming messages as they come in.
 
 You can customize your personal default view regardless of
 organization settings:
@@ -38,11 +42,9 @@ organization settings:
    shortcut twice to exit the settings and navigate to your default view
    (<kbd>Ctrl</kbd> + <kbd>[</kbd> or <kbd>Esc</kbd> if enabled).
 
-[configure-esc]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
-
 {end_tabs}
 
-## Set whether <kbd>Esc</kbd> navigates to the default view
+## Configure whether <kbd>Esc</kbd> navigates to the default view
 
 Zulip has a number of [keyboard shortcuts](/help/keyboard-shortcuts)
 designed to enhance the user experience in the app.
