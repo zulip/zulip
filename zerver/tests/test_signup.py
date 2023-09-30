@@ -336,7 +336,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(
                 repr(user_message),
-                f"<UserMessage: recip / {user_profile.email} ([])>",
+                f"<UserMessage: recip / {user_profile.email} (['read'])>",
             )
 
 
