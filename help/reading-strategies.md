@@ -15,6 +15,10 @@ topic-by-topic.
 
 ### Finding a topic to read
 
+#### From the Inbox view
+
+{!inbox.md!}
+
 #### From Recent conversations
 
 {!recent-conversations.md!}
