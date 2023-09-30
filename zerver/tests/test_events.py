@@ -577,7 +577,8 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_stream_update_message_events(self) -> None:
-        self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
+        iago = self.example_user("iago")
+        self.send_stream_message(iago, "Verona", "hello")
 
         # Verify stream message editing - content only
         message = Message.objects.order_by("-id")[0]
@@ -666,7 +667,7 @@ class NormalActionsTest(BaseAction):
         # Verify move topic to different stream.
         self.subscribe(self.user_profile, "Verona")
         self.subscribe(self.user_profile, "Denmark")
-        self.send_stream_message(self.user_profile, "Verona")
+        self.send_stream_message(iago, "Verona")
         message_id = self.send_stream_message(self.user_profile, "Verona")
         message = Message.objects.get(id=message_id)
         stream = get_stream("Denmark", self.user_profile.realm)
@@ -788,7 +789,7 @@ class NormalActionsTest(BaseAction):
             check_update_message_flags_remove("events[0]", events[0])
 
             personal_message = self.send_personal_message(
-                from_user=user_profile, to_user=self.example_user("cordelia"), content=content
+                from_user=self.example_user("cordelia"), to_user=user_profile, content=content
             )
             self.verify_action(
                 partial(do_update_message_flags, user_profile, "add", "read", [personal_message]),

@@ -182,6 +182,7 @@ class UnreadCountTests(ZulipTestCase):
             mock_push_notifications_enabled.assert_called()
 
     # Sending a new message results in unread UserMessages being created
+    # for users other than sender.
     def test_new_message(self) -> None:
         self.login("hamlet")
         content = "Test message for unset read bit"
@@ -190,8 +191,10 @@ class UnreadCountTests(ZulipTestCase):
         self.assertGreater(len(user_messages), 0)
         for um in user_messages:
             self.assertEqual(um.message.content, content)
-            if um.user_profile.email != self.example_email("hamlet"):
+            if um.user_profile.delivery_email != self.example_email("hamlet"):
                 self.assertFalse(um.flags.read)
+            else:
+                self.assertTrue(um.flags.read)
 
     def test_update_flags(self) -> None:
         self.login("hamlet")
@@ -315,14 +318,16 @@ class UnreadCountTests(ZulipTestCase):
 
     def test_mark_all_in_stream_read(self) -> None:
         self.login("hamlet")
-        user_profile = self.example_user("hamlet")
-        stream = self.subscribe(user_profile, "test_stream")
-        self.subscribe(self.example_user("cordelia"), "test_stream")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        for user in [hamlet, cordelia, iago]:
+            self.subscribe(user, "test_stream")
+            self.subscribe(user, "Denmark")
+        stream = get_stream("test_stream", hamlet.realm)
 
-        message_id = self.send_stream_message(self.example_user("hamlet"), "test_stream", "hello")
-        unrelated_message_id = self.send_stream_message(
-            self.example_user("hamlet"), "Denmark", "hello"
-        )
+        message_id = self.send_stream_message(cordelia, "test_stream", "hello")
+        unrelated_message_id = self.send_stream_message(cordelia, "Denmark", "hello")
 
         with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
@@ -346,17 +351,18 @@ class UnreadCountTests(ZulipTestCase):
         differences = [key for key in expected if expected[key] != event[key]]
         self.assert_length(differences, 0)
 
-        hamlet = self.example_user("hamlet")
+        # cordelia sent the message and hamlet marked it as read.
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
-            if msg.user_profile.email == hamlet.email:
+            if msg.user_profile.email in [hamlet.email, cordelia.email]:
                 self.assertTrue(msg.flags.read)
             else:
                 self.assertFalse(msg.flags.read)
 
+        # cordelia sent the message, so marked as read only for him.
         unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
         for msg in unrelated_messages:
-            if msg.user_profile.email == hamlet.email:
+            if msg.user_profile.email in [hamlet.email, iago.email]:
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_stream_read(self) -> None:
@@ -384,20 +390,19 @@ class UnreadCountTests(ZulipTestCase):
 
     def test_mark_all_in_stream_topic_read(self) -> None:
         self.login("hamlet")
-        user_profile = self.example_user("hamlet")
-        self.subscribe(user_profile, "test_stream")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        for user in [hamlet, cordelia]:
+            self.subscribe(user, "test_stream")
+            self.subscribe(user, "Denmark")
 
-        message_id = self.send_stream_message(
-            self.example_user("hamlet"), "test_stream", "hello", "test_topic"
-        )
-        unrelated_message_id = self.send_stream_message(
-            self.example_user("hamlet"), "Denmark", "hello", "Denmark2"
-        )
+        message_id = self.send_stream_message(cordelia, "test_stream", "hello", "test_topic")
+        unrelated_message_id = self.send_stream_message(cordelia, "Denmark", "hello", "Denmark2")
         with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/mark_topic_as_read",
                 {
-                    "stream_id": get_stream("test_stream", user_profile.realm).id,
+                    "stream_id": get_stream("test_stream", hamlet.realm).id,
                     "topic_name": "test_topic",
                 },
             )
@@ -418,12 +423,12 @@ class UnreadCountTests(ZulipTestCase):
 
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
-            if msg.user_profile_id == user_profile.id:
+            if msg.user_profile_id == hamlet.id:
                 self.assertTrue(msg.flags.read)
 
         unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
         for msg in unrelated_messages:
-            if msg.user_profile_id == user_profile.id:
+            if msg.user_profile_id == hamlet.id:
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_topic_read(self) -> None:
@@ -1221,7 +1226,7 @@ class MessageAccessTests(ZulipTestCase):
 
         for msg in self.get_messages():
             if msg["id"] in message_ids:
-                check_flags(msg["flags"], {"starred"})
+                check_flags(msg["flags"], {"read", "starred"})
             else:
                 check_flags(msg["flags"], {"read"})
 
@@ -1231,7 +1236,7 @@ class MessageAccessTests(ZulipTestCase):
 
         for msg in self.get_messages():
             if msg["id"] in message_ids:
-                check_flags(msg["flags"], set())
+                check_flags(msg["flags"], {"read"})
 
     def test_change_collapsed_public_stream_historical(self) -> None:
         hamlet = self.example_user("hamlet")

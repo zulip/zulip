@@ -3111,20 +3111,26 @@ class Message(AbstractMessage):
         sending_client = self.sending_client.name.lower()
 
         return (
-            sending_client
-            in (
-                "zulipandroid",
-                "zulipios",
-                "zulipdesktop",
-                "zulipmobile",
-                "zulipelectron",
-                "zulipterminal",
-                "snipe",
-                "website",
-                "ios",
-                "android",
+            (
+                sending_client
+                in (
+                    "zulipandroid",
+                    "zulipios",
+                    "zulipdesktop",
+                    "zulipmobile",
+                    "zulipelectron",
+                    "zulipterminal",
+                    "snipe",
+                    "website",
+                    "ios",
+                    "android",
+                )
             )
-        ) or ("desktop app" in sending_client)
+            or ("desktop app" in sending_client)
+            # Since the vast majority of messages are sent by humans
+            # in Zulip, treat test suite messages as such.
+            or (sending_client == "test suite" and settings.TEST_SUITE)
+        )
 
     @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
