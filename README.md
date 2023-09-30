@@ -12,6 +12,29 @@ world, with 74+ people who have each contributed 100+ commits. With
 over 1000 contributors merging over 500 commits a month, Zulip is the
 largest and fastest growing open source team chat project.
 
+# Why use Zulip
+
+Zulip is designed for both real-time and asynchronous communication, making it a perfect choice for remote teams and distributed organizations. With its threaded model, Zulip keeps conversations organized and helps you focus on the topics that matter.
+
+# Key Features
+
+- **Streams and Topics:** Organize conversations into streams and topics to keep discussions focused and easily accessible.
+- **Real-Time Messaging:** Communicate in real-time with your team members.
+- **Private Messaging:** Have private discussions with individuals or small groups.
+- **File Sharing:** Easily share files with your team right within the chat.
+- **Robust Search:** Quickly find information and messages using Zulip's powerful search capabilities.
+- **Integrations:** Connect Zulip with your favorite tools using a wide range of integrations.
+
+# Software Needed 
+Python (3.6+).
+
+# Installation
+
+1. Clone repository
+2. Set up virtual environment
+3. Install dependicies
+4. Start the development server
+
 Come find us on the [development community chat](https://zulip.com/development-community/)!
 
 [![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
