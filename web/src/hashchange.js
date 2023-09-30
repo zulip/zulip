@@ -26,6 +26,7 @@ import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui"
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
@@ -474,6 +475,7 @@ function hashchanged(from_reload, e) {
 
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
+    sidebar_ui.hide_all();
     popovers.hide_all();
     browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);

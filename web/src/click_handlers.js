@@ -35,6 +35,7 @@ import * as server_events from "./server_events";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
@@ -489,6 +490,7 @@ export function initialize() {
 
             e.preventDefault();
             e.stopPropagation();
+            sidebar_ui.hide_userlist_sidebar();
             popovers.hide_all();
             $(".tooltip").remove();
         });
