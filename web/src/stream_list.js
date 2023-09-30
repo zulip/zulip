@@ -843,9 +843,9 @@ export function initiate_search() {
     const $filter = $(".stream-list-filter").expectOne();
 
     if (
-        // Check if left column is a popover and is not visible.
+        // Check if left column is a overlay and is not visible.
         $("#streamlist-toggle").is(":visible") &&
-        !$(".app-main .column-left").hasClass("expanded")
+        !sidebar_ui.left_sidebar_expanded_as_overlay
     ) {
         popovers.hide_all();
         sidebar_ui.show_streamlist_sidebar();
