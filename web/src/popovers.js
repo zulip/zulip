@@ -3,7 +3,6 @@ import {hideAll} from "tippy.js";
 import * as emoji_picker from "./emoji_picker";
 import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
-import * as sidebar_ui from "./sidebar_ui";
 import * as stream_popover from "./stream_popover";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
@@ -41,8 +40,6 @@ export function hide_all_except_sidebars(opts) {
 // This function will hide all the popovers, including the mobile web
 // or narrow window sidebars.
 export function hide_all(not_hide_tippy_instances) {
-    sidebar_ui.hide_userlist_sidebar();
-    sidebar_ui.hide_streamlist_sidebar();
     hide_all_except_sidebars({
         not_hide_tippy_instances,
     });

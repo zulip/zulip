@@ -271,6 +271,7 @@ export function process_escape_key(e) {
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
         }
+        sidebar_ui.hide_all();
         popovers.hide_all();
         return true;
     }

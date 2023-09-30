@@ -11,6 +11,7 @@ import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
+import * as sidebar_ui from "./sidebar_ui";
 import * as util from "./util";
 
 function get_bottom_whitespace_height() {
@@ -167,6 +168,7 @@ export function handler() {
     // popping up when the user opened that very popover.
     const mobile = util.is_mobile();
     if (!mobile || new_width !== _old_width) {
+        sidebar_ui.hide_all();
         popovers.hide_all();
     }
 
