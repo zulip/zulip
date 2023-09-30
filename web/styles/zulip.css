@@ -1720,9 +1720,16 @@ td.pointer {
 }
 
 .sender_name {
-    display: inline-block;
+    display: inline-flex;
     font-weight: 700;
     color: var(--color-text-sender-name);
+    column-gap: 3px;
+
+    .sender_name_text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 
 .sender_name_hovered {
@@ -2655,19 +2662,6 @@ select.invite-as {
       would be from a name. */
     margin-left: 3px;
     margin-right: 0;
-}
-
-.inline-status-emoji {
-    /* Treat as an inline flex container, with an anonymous block around
-      the username text node, for positioning status emoji */
-    display: inline-flex;
-
-    .status-emoji {
-        /* Preserve the distance between the emoji
-           and username that was previously due to
-           whitespace. */
-        margin-left: 6px;
-    }
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */

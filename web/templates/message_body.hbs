@@ -4,12 +4,12 @@
 <span class="message_sender">
     {{#if include_sender}}
         <span class="sender_info_hover sender_name" role="button" tabindex="0">
-            <span class="view_user_card_tooltip inline-status-emoji" data-tooltip-template-id="view-user-card-tooltip-template">
+            <span class="view_user_card_tooltip sender_name_text" data-tooltip-template-id="view-user-card-tooltip-template">
                 {{msg/sender_full_name}}
-                {{#unless status_message}}
-                {{> status_emoji msg/status_emoji_info}}
-                {{/unless}}
             </span>
+            {{#unless status_message}}
+            {{> status_emoji msg/status_emoji_info}}
+            {{/unless}}
         </span>
         {{#if sender_is_bot}}
         <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
