@@ -91,3 +91,52 @@ run_test("set_focused_recipient", ({override_rewire}) => {
     assert.ok(!compose_fade_helper.should_fade_message(good_msg));
     assert.ok(compose_fade_helper.should_fade_message(bad_msg));
 });
+
+run_test("want_normal_display", () => {
+    const stream_id = 110;
+    const sub = {
+        stream_id,
+        name: "display testing",
+        subscribed: true,
+    };
+
+    stream_data.clear_subscriptions();
+
+    // No focused recipient.
+    compose_fade_helper.set_focused_recipient(undefined);
+    assert.ok(compose_fade_helper.want_normal_display());
+
+    // Focused recipient is a sub that doesn't exist.
+    compose_fade_helper.set_focused_recipient({
+        type: "stream",
+        stream_id,
+        topic: "",
+    });
+    assert.ok(compose_fade_helper.want_normal_display());
+
+    // Focused recipient is a valid stream with no topic set
+    stream_data.add_sub(sub);
+    assert.ok(compose_fade_helper.want_normal_display());
+
+    // If we're focused to a topic, then we do want to fade.
+    compose_fade_helper.set_focused_recipient({
+        type: "stream",
+        stream_id,
+        topic: "lunch",
+    });
+    assert.ok(!compose_fade_helper.want_normal_display());
+
+    // Private message with no recipient.
+    compose_fade_helper.set_focused_recipient({
+        type: "private",
+        reply_to: "",
+    });
+    assert.ok(compose_fade_helper.want_normal_display());
+
+    // Private message with a recipient.
+    compose_fade_helper.set_focused_recipient({
+        type: "private",
+        reply_to: "hello@zulip.com",
+    });
+    assert.ok(!compose_fade_helper.want_normal_display());
+});
