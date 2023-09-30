@@ -6,6 +6,7 @@ import $ from "jquery";
 import tippy from "tippy.js";
 
 import * as blueslip from "./blueslip";
+import {media_breakpoints_num} from "./css_variables";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 
@@ -211,7 +212,9 @@ export function toggle_popover_menu(target, popover_props, options) {
     const instance = target._tippy;
     let mobile_popover_props = {};
 
-    if (options?.show_as_overlay) {
+    // If the window is mobile-sized, we will render the
+    // popover centered on the screen as an overlay.
+    if (options?.show_as_overlay_on_mobile && window.innerWidth <= media_breakpoints_num.md) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
         };

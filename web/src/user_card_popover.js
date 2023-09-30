@@ -311,7 +311,6 @@ function show_user_card_popover(
     private_msg_class,
     template_class,
     popover_placement,
-    show_as_overlay,
     on_mount,
 ) {
     const args = get_user_card_popover_data(
@@ -377,7 +376,9 @@ function show_user_card_popover(
                 }
             },
         },
-        {show_as_overlay},
+        {
+            show_as_overlay_on_mobile: true,
+        },
     );
 }
 
