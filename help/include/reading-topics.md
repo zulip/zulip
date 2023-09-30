@@ -1,5 +1,23 @@
 {start_tabs}
 
+{tab|via-inbox-view}
+
+{relative|message|inbox}
+
+1. Click on the name of a topic.
+
+1. Read the topic, scrolling down with the mouse or by pressing
+   <kbd>PgDn</kbd>.
+
+1. If the topic is not of interest, you can
+   [mark all messages as read](/help/marking-messages-as-read) by
+   jumping to the bottom with the **Scroll to bottom**
+   (<i class="fa fa-chevron-down"></i>) button or the <kbd>End</kbd> shortcut.
+
+1. You can then click on another topic in the left sidebar, use the
+   <kbd>N</kbd> key to go to the next unread topic, or go back to the
+   **Inbox** view.
+
 {tab|via-recent-conversations}
 
 {relative|message|recent}

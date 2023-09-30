@@ -1,32 +1,47 @@
 # Inbox
 
-The **Inbox** is the default view in the Zulip mobile app. It's a great way to
-get an overview of all the unmuted [conversations](/help/recent-conversations)
-where you have unread messages, excluding [inactive
-streams](/help/manage-inactive-streams).
+{!conversation-definition.md!}
 
-The **Inbox** view shows your unread direct message conversations, followed by
-all topics with unread messages, grouped by stream. The list of streams is
-sorted alphabetically, with [pinned streams](/help/pin-a-stream) at the top.
+{!inbox-intro.md!}
+
+Inbox is a convenient [default view](/help/configure-default-view) if you
+regularly clear all unread messages in your subscribed streams.
+
+{!inbox-instructions.md!}
+
+!!! keyboard_tip ""
+
+    The arrow keys and vim navigation keys (<kbd>J</kbd>, <kbd>K</kbd>,
+    <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
+
+## Include muted conversations
+
+In the web app, you can control whether **Inbox** includes muted
+conversations.
 
 {start_tabs}
 
-{tab|mobile}
+{tab|desktop-web}
 
-1. Tap the **Inbox**
-   (<img src="/static/images/help/mobile-inbox-icon.svg" alt="inbox" class="mobile-icon"/>)
-   tab in the bottom left corner of the app.
+{relative|message|inbox}
+
+1. Toggle **Include muted** next to the filter box at the top.
 
 {end_tabs}
 
-!!! tip ""
+## Filter conversations
 
-    You can collapse or expand the list of topics in a stream by tapping the
-    **collapse**
-    (<img src="/static/images/help/mobile-expand-less-icon.svg" alt="inbox" class="mobile-icon"/>)
-    or **expand**
-    (<img src="/static/images/help/mobile-expand-more-icon.svg" alt="inbox" class="mobile-icon"/>)
-    icon to the left of a stream name.
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|message|inbox}
+
+1. Use the **Filter** box at the top to find a conversation.
+   You can filter by stream, topic, or direct message participants.
+
+{end_tabs}
+
 
 ## Related articles
 
