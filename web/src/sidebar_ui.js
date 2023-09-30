@@ -1,35 +1,37 @@
 import $ from "jquery";
 
-import {media_breakpoints_num} from "./css_variables";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 
+export let left_sidebar_expanded_as_overlay = false;
+export let right_sidebar_expanded_as_overlay = false;
+
 export function hide_userlist_sidebar() {
     $(".app-main .column-right").removeClass("expanded");
+    right_sidebar_expanded_as_overlay = false;
 }
 
 export function show_userlist_sidebar() {
     $(".app-main .column-right").addClass("expanded");
     resize.resize_page_components();
+    right_sidebar_expanded_as_overlay = true;
 }
 
 export function show_streamlist_sidebar() {
     $(".app-main .column-left").addClass("expanded");
     resize.resize_stream_filters_container();
+    left_sidebar_expanded_as_overlay = true;
 }
 
 export function hide_streamlist_sidebar() {
     $(".app-main .column-left").removeClass("expanded");
+    left_sidebar_expanded_as_overlay = false;
 }
 
 export function any_sidebar_expanded_as_overlay() {
-    if (window.innerWidth > media_breakpoints_num.xl) {
-        // Sidebars are always visible beyond xl breakpoint.
-        return false;
-    }
-    return Boolean($("[class^='column-'].expanded").length);
+    return left_sidebar_expanded_as_overlay || right_sidebar_expanded_as_overlay;
 }
 
 export function update_invite_user_option() {
@@ -54,9 +56,8 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        const sidebarHidden = !$(".app-main .column-right").hasClass("expanded");
         popovers.hide_all();
-        if (sidebarHidden) {
+        if (!right_sidebar_expanded_as_overlay) {
             show_userlist_sidebar();
         }
     });
@@ -65,9 +66,8 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        const sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
         popovers.hide_all();
-        if (sidebarHidden) {
+        if (!left_sidebar_expanded_as_overlay) {
             show_streamlist_sidebar();
         }
     });
