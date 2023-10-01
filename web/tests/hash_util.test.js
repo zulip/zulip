@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
+const hash_parser = zrequire("hash_parser");
 const hash_util = zrequire("hash_util");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
@@ -52,26 +53,26 @@ run_test("hash_util", () => {
 });
 
 run_test("test_get_hash_category", () => {
-    assert.deepEqual(hash_util.get_hash_category("streams/subscribed"), "streams");
-    assert.deepEqual(hash_util.get_hash_category("#settings/preferences"), "settings");
-    assert.deepEqual(hash_util.get_hash_category("#drafts"), "drafts");
-    assert.deepEqual(hash_util.get_hash_category("invites"), "invites");
+    assert.deepEqual(hash_parser.get_hash_category("streams/subscribed"), "streams");
+    assert.deepEqual(hash_parser.get_hash_category("#settings/preferences"), "settings");
+    assert.deepEqual(hash_parser.get_hash_category("#drafts"), "drafts");
+    assert.deepEqual(hash_parser.get_hash_category("invites"), "invites");
 
     window.location.hash = "#settings/profile";
-    assert.deepEqual(hash_util.get_current_hash_category(), "settings");
+    assert.deepEqual(hash_parser.get_current_hash_category(), "settings");
 });
 
 run_test("test_get_hash_section", () => {
-    assert.equal(hash_util.get_hash_section("streams/subscribed"), "subscribed");
-    assert.equal(hash_util.get_hash_section("#settings/profile"), "profile");
+    assert.equal(hash_parser.get_hash_section("streams/subscribed"), "subscribed");
+    assert.equal(hash_parser.get_hash_section("#settings/profile"), "profile");
 
-    assert.equal(hash_util.get_hash_section("settings/10/general/"), "10");
+    assert.equal(hash_parser.get_hash_section("settings/10/general/"), "10");
 
-    assert.equal(hash_util.get_hash_section("#drafts"), "");
-    assert.equal(hash_util.get_hash_section(""), "");
+    assert.equal(hash_parser.get_hash_section("#drafts"), "");
+    assert.equal(hash_parser.get_hash_section(""), "");
 
     window.location.hash = "#settings/profile";
-    assert.deepEqual(hash_util.get_current_hash_section(), "profile");
+    assert.deepEqual(hash_parser.get_current_hash_section(), "profile");
 });
 
 run_test("build_reload_url", () => {
@@ -90,26 +91,26 @@ run_test("build_reload_url", () => {
 
 run_test("test is_editing_stream", () => {
     window.location.hash = "#streams/1/announce";
-    assert.equal(hash_util.is_editing_stream(1), true);
-    assert.equal(hash_util.is_editing_stream(2), false);
+    assert.equal(hash_parser.is_editing_stream(1), true);
+    assert.equal(hash_parser.is_editing_stream(2), false);
 
     // url is missing name at end
     window.location.hash = "#streams/1";
-    assert.equal(hash_util.is_editing_stream(1), false);
+    assert.equal(hash_parser.is_editing_stream(1), false);
 
     window.location.hash = "#streams/bogus/bogus";
-    assert.equal(hash_util.is_editing_stream(1), false);
+    assert.equal(hash_parser.is_editing_stream(1), false);
 
     window.location.hash = "#test/narrow";
-    assert.equal(hash_util.is_editing_stream(1), false);
+    assert.equal(hash_parser.is_editing_stream(1), false);
 });
 
 run_test("test_is_create_new_stream_narrow", () => {
     window.location.hash = "#streams/new";
-    assert.equal(hash_util.is_create_new_stream_narrow(), true);
+    assert.equal(hash_parser.is_create_new_stream_narrow(), true);
 
     window.location.hash = "#some/random/hash";
-    assert.equal(hash_util.is_create_new_stream_narrow(), false);
+    assert.equal(hash_parser.is_create_new_stream_narrow(), false);
 });
 
 run_test("test_parse_narrow", () => {

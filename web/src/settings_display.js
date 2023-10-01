@@ -6,7 +6,7 @@ import render_dialog_default_language from "../templates/default_language_modal.
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import * as emojisets from "./emojisets";
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -121,7 +121,7 @@ function user_default_language_modal_post_render() {
 function default_language_modal_post_render() {
     if (page_params.is_spectator) {
         spectator_default_language_modal_post_render();
-    } else if (hash_util.get_current_hash_category() === "organization") {
+    } else if (hash_parser.get_current_hash_category() === "organization") {
         org_notification_default_language_modal_post_render();
     } else {
         user_default_language_modal_post_render();
@@ -131,7 +131,7 @@ function default_language_modal_post_render() {
 export function launch_default_language_setting_modal() {
     let selected_language = user_settings.default_language;
 
-    if (hash_util.get_current_hash_category() === "organization") {
+    if (hash_parser.get_current_hash_category() === "organization") {
         selected_language = page_params.realm_default_language;
     }
 

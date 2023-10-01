@@ -9,7 +9,7 @@ import render_stream_subscription_request_result from "../templates/stream_setti
 import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as blueslip from "./blueslip";
 import * as confirm_dialog from "./confirm_dialog";
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
@@ -291,7 +291,7 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
 export function update_subscribers_list(sub) {
     // This is for the "Subscribers" tab of the right panel.
     // Render subscriptions only if stream settings is open
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         blueslip.info("ignoring subscription for stream that is no longer being edited");
         return;
     }
@@ -324,7 +324,7 @@ function update_subscribers_list_widget(subscriber_ids) {
 }
 
 export function rerender_subscribers_list(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         blueslip.info("ignoring subscription for stream that is no longer being edited");
         return;
     }

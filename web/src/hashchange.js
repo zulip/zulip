@@ -5,6 +5,7 @@ import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as drafts from "./drafts";
+import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
@@ -286,9 +287,9 @@ function do_hashchange_overlay(old_hash) {
         // show the user's default view behind it.
         show_default_view();
     }
-    const base = hash_util.get_current_hash_category();
-    const old_base = hash_util.get_hash_category(old_hash);
-    let section = hash_util.get_current_hash_section();
+    const base = hash_parser.get_current_hash_category();
+    const old_base = hash_parser.get_hash_category(old_hash);
+    let section = hash_parser.get_current_hash_section();
 
     if (base === "groups" && (!page_params.development_environment || page_params.is_guest)) {
         // The #groups settings page is unfinished, and disabled in production.
@@ -296,7 +297,7 @@ function do_hashchange_overlay(old_hash) {
         return;
     }
 
-    const coming_from_overlay = hash_util.is_overlay_hash(old_hash);
+    const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
     if (section === "display-settings") {
         // Since display-settings was deprecated and replaced with preferences
         // #settings/display-settings is being redirected to #settings/preferences.
@@ -464,7 +465,7 @@ function hashchanged(from_reload, e) {
         return undefined;
     }
 
-    if (hash_util.is_overlay_hash(current_hash)) {
+    if (hash_parser.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
         do_hashchange_overlay(old_hash);
         browser_history.state.changing_hash = false;

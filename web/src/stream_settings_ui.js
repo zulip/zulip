@@ -17,6 +17,7 @@ import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dropdown_widget from "./dropdown_widget";
+import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -318,7 +319,7 @@ export function remove_stream(stream_id) {
     const $row = row_for_stream_id(stream_id);
     $row.remove();
     update_empty_left_panel_message();
-    if (hash_util.is_editing_stream(stream_id)) {
+    if (hash_parser.is_editing_stream(stream_id)) {
         stream_edit.open_edit_panel_empty();
     }
 }
@@ -353,7 +354,7 @@ export function update_settings_for_subscribed(slim_sub) {
 }
 
 export function show_active_stream_in_left_panel() {
-    const selected_row = hash_util.get_current_hash_section();
+    const selected_row = hash_parser.get_current_hash_section();
 
     if (Number.parseFloat(selected_row)) {
         const $sub_row = row_for_stream_id(selected_row);
@@ -877,7 +878,7 @@ export function launch(section) {
 export function switch_rows(event) {
     const active_data = get_active_data();
     let $switch_row;
-    if (hash_util.is_create_new_stream_narrow()) {
+    if (hash_parser.is_create_new_stream_narrow()) {
         // Prevent switching stream rows when creating a new stream
         return false;
     } else if (!active_data.id || active_data.$row.hasClass("notdisplayed")) {

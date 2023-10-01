@@ -13,7 +13,7 @@ import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import {Filter} from "./filter";
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
@@ -210,7 +210,8 @@ export function activate(raw_operators, opts) {
         page_params.is_spectator &&
         raw_operators.length &&
         raw_operators.some(
-            (raw_operator) => !hash_util.allowed_web_public_narrows.includes(raw_operator.operator),
+            (raw_operator) =>
+                !hash_parser.allowed_web_public_narrows.includes(raw_operator.operator),
         )
     ) {
         spectators.login_to_access();
