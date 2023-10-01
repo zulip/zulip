@@ -1,6 +1,5 @@
 import * as internal_url from "../shared/src/internal_url";
 
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -298,16 +297,4 @@ export function is_spectator_compatible(hash: string): boolean {
     }
 
     return web_public_allowed_hashes.includes(main_hash);
-}
-
-export function current_hash_as_next(): string {
-    return `next=/${encodeURIComponent(window.location.hash)}`;
-}
-
-export function build_login_link(): string {
-    let login_link = "/login/?" + current_hash_as_next();
-    if (page_params.development_environment) {
-        login_link = "/devlogin/?" + current_hash_as_next();
-    }
-    return login_link;
 }
