@@ -85,7 +85,7 @@ def get_browser_language_code(request: HttpRequest) -> Optional[str]:
     return None
 
 
-def get_default_language_for_new_user(request: HttpRequest, realm: Realm) -> str:
+def get_default_language_for_new_user(realm: Realm, *, request: HttpRequest) -> str:
     browser_language_code = get_browser_language_code(request)
     if browser_language_code is not None:
         return browser_language_code
