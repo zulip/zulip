@@ -1,8 +1,6 @@
 import $ from "jquery";
 
-import {Filter} from "./filter";
 import * as inbox_util from "./inbox_util";
-import * as message_list from "./message_list";
 import * as recent_view_util from "./recent_view_util";
 import * as ui_util from "./ui_util";
 
@@ -11,6 +9,10 @@ export let current;
 
 export function set_current(msg_list) {
     current = msg_list;
+}
+
+export function set_home(msg_list) {
+    home = msg_list;
 }
 
 export function all_rendered_message_lists() {
@@ -33,13 +35,6 @@ export function update_recipient_bar_background_color() {
 }
 
 export function initialize() {
-    home = new message_list.MessageList({
-        table_name: "zhome",
-        filter: new Filter([{operator: "in", operand: "home"}]),
-        excludes_muted_topics: true,
-    });
-    current = home;
-
     // For users with automatic color scheme, we need to detect change
     // in `prefers-color-scheme`as it changes based on time.
     ui_util.listener_for_preferred_color_scheme_change(update_recipient_bar_background_color);

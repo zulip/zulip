@@ -3,9 +3,11 @@ import $ from "jquery";
 
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
+import {Filter} from "./filter";
 import {MessageListData} from "./message_list_data";
 import * as message_list_tooltips from "./message_list_tooltips";
 import {MessageListView} from "./message_list_view";
+import * as message_lists from "./message_lists";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -527,4 +529,15 @@ export class MessageList {
     get_last_message_sent_by_me() {
         return this.data.get_last_message_sent_by_me();
     }
+}
+
+export function initialize() {
+    /* Create home_msg_list and register it. */
+    const home_msg_list = new MessageList({
+        table_name: "zhome",
+        filter: new Filter([{operator: "in", operand: "home"}]),
+        excludes_muted_topics: true,
+    });
+    message_lists.set_home(home_msg_list);
+    message_lists.set_current(home_msg_list);
 }
