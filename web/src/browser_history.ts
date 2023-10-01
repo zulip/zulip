@@ -1,7 +1,7 @@
 // TODO: Rewrite this module to use history.pushState.
 
 import * as blueslip from "./blueslip";
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -20,7 +20,7 @@ export const state: {
     // so that we can take user back to the allowed hash.
     // TODO: Store #narrow old hashes. Currently they are not stored here since, the #narrow
     // hashes are changed without calling `hashchanged` in many ways.
-    spectator_old_hash: hash_util.is_spectator_compatible(window.location.hash)
+    spectator_old_hash: hash_parser.is_spectator_compatible(window.location.hash)
         ? window.location.hash
         : null,
 };
@@ -41,7 +41,7 @@ export function set_hash_before_overlay(hash: string): void {
 
 export function update_web_public_hash(hash: string): boolean {
     // Returns true if hash is web-public compatible.
-    if (hash_util.is_spectator_compatible(hash)) {
+    if (hash_parser.is_spectator_compatible(hash)) {
         state.spectator_old_hash = hash;
         return true;
     }
@@ -80,7 +80,7 @@ export function update(new_hash: string): void {
 }
 
 export function exit_overlay(): void {
-    if (hash_util.is_overlay_hash(window.location.hash) && !state.changing_hash) {
+    if (hash_parser.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
         const new_hash = state.hash_before_overlay || `#${user_settings.default_view}`;
         update(new_hash);

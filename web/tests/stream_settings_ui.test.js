@@ -14,9 +14,11 @@ const scroll_util = mock_esm("../src/scroll_util", {
 
 mock_esm("../src/hash_util", {
     by_stream_url() {},
-    get_current_hash_section: () => denmark_stream_id,
 });
 
+mock_esm("../src/hash_parser", {
+    get_current_hash_section: () => denmark_stream_id,
+});
 set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");

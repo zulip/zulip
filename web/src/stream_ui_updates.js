@@ -5,7 +5,7 @@ import render_announce_stream_checkbox from "../templates/stream_settings/announ
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
@@ -33,7 +33,7 @@ export function initialize_cant_subscribe_popover() {
 }
 
 export function update_toggler_for_sub(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
     if (sub.subscribed) {
@@ -54,7 +54,7 @@ export function update_toggler_for_sub(sub) {
 }
 
 export function enable_or_disable_subscribers_tab(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
@@ -70,7 +70,7 @@ export function enable_or_disable_subscribers_tab(sub) {
 }
 
 export function update_settings_button_for_sub(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
@@ -100,7 +100,7 @@ export function update_settings_button_for_sub(sub) {
 
 export function update_regular_sub_settings(sub) {
     // These are in the right panel.
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
@@ -141,7 +141,7 @@ export function update_default_stream_and_stream_privacy_state($container) {
 }
 
 export function enable_or_disable_permission_settings_in_edit_panel(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
@@ -173,7 +173,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
 }
 
 export function update_announce_stream_option() {
-    if (!hash_util.is_create_new_stream_narrow()) {
+    if (!hash_parser.is_create_new_stream_narrow()) {
         return;
     }
     if (stream_data.get_notifications_stream() === "") {
@@ -191,7 +191,7 @@ export function update_announce_stream_option() {
 }
 
 export function update_stream_privacy_icon_in_settings(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
@@ -244,7 +244,7 @@ export function update_stream_row_in_settings_tab(sub) {
 }
 
 export function update_add_subscriptions_elements(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
@@ -280,7 +280,7 @@ export function update_add_subscriptions_elements(sub) {
 }
 
 export function update_setting_element(sub, setting_name) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
