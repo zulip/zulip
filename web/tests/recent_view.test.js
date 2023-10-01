@@ -520,9 +520,9 @@ test("test_filter_all", ({mock_template}) => {
         {last_msg_id: 1, participated: true, type: "stream"},
     ];
 
+    // topic is muted
     row_data = [...row_data, ...generate_topic_data([[1, "topic-7", 1, true]])];
     i = row_data.length;
-    // topic is muted (=== hidden)
     stub_out_filter_buttons();
     rt.process_messages([messages[9]]);
 
