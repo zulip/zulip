@@ -10,14 +10,25 @@ import $ from "jquery";
 import render_login_to_access_modal from "../templates/login_to_access.hbs";
 
 import * as browser_history from "./browser_history";
-import * as hash_util from "./hash_util";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+
+export function current_hash_as_next(): string {
+    return `next=/${encodeURIComponent(window.location.hash)}`;
+}
+
+export function build_login_link(): string {
+    let login_link = "/login/?" + current_hash_as_next();
+    if (page_params.development_environment) {
+        login_link = "/devlogin/?" + current_hash_as_next();
+    }
+    return login_link;
+}
 
 export function login_to_access(empty_narrow?: boolean): void {
     // Hide all overlays, popover and go back to the previous hash if the
     // hash has changed.
-    const login_link = hash_util.build_login_link();
+    const login_link = build_login_link();
     const realm_name = page_params.realm_name;
 
     $("body").append(

@@ -1,9 +1,9 @@
 import $ from "jquery";
 
 import {media_breakpoints_num} from "./css_variables";
-import * as hash_util from "./hash_util";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
+import * as spectators from "./spectators";
 
 export function hide_userlist_sidebar() {
     $(".app-main .column-right").removeClass("expanded");
@@ -35,7 +35,7 @@ export function initialize() {
     $("body").on("click", ".login_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        window.location.href = hash_util.build_login_link();
+        window.location.href = spectators.build_login_link();
     });
 
     $("#userlist-toggle-button").on("click", (e) => {
