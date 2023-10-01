@@ -50,6 +50,7 @@ import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
+import * as message_list from "./message_list";
 import * as message_list_hover from "./message_list_hover";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
@@ -565,6 +566,7 @@ export function initialize_everything() {
 
     realm_logo.initialize();
     message_lists.initialize();
+    message_list.initialize();
     recent_view_ui.initialize();
     inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
