@@ -449,9 +449,7 @@ test("test_recent_view_show", ({mock_template, override}) => {
     assert.equal(rt.inplace_rerender("stream_unknown:topic_unknown"), false);
 });
 
-test("test_filter_all", ({mock_template}) => {
-    // Just tests inplace rerender of a message
-    // in All topics filter.
+test("test_filter_is_spectator", ({mock_template}) => {
     page_params.is_spectator = true;
     const expected = {
         filter_participated: false,
@@ -460,6 +458,40 @@ test("test_filter_all", ({mock_template}) => {
         filter_pm: false,
         search_val: "",
         is_spectator: true,
+    };
+    let row_data;
+    let i;
+
+    mock_template("recent_view_table.hbs", false, (data) => {
+        assert.deepEqual(data, expected);
+    });
+
+    mock_template("recent_view_row.hbs", false, (data) => {
+        i -= 1;
+        assert.deepEqual(data, row_data[i]);
+        return "<recent_view row stub>";
+    });
+
+    row_data = generate_topic_data([[1, "topic-1", 0, false]]);
+    i = row_data.length;
+    rt.clear_for_tests();
+    stub_out_filter_buttons();
+    recent_view_util.set_visible(true);
+    rt.set_filter("all");
+    rt.process_messages([messages[0]]);
+});
+
+test("test_filter_all", ({mock_template}) => {
+    // Just tests inplace rerender of a message
+    // in All topics filter.
+    page_params.is_spectator = false;
+    const expected = {
+        filter_participated: false,
+        filter_unread: false,
+        filter_muted: false,
+        filter_pm: false,
+        search_val: "",
+        is_spectator: false,
     };
     let row_data;
     let i;
