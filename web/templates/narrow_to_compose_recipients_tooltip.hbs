@@ -1,7 +1,7 @@
 <div>
-    <span>{{t 'Go to conversation' }}</span>
+    <div>{{t "Go to conversation"}}</div>
     {{#if display_current_view}}
-    <p class="narrow_to_compose_recipient_current_view_help tooltip-inner-content italic">{{display_current_view}}</p>
+        <div class="tooltip-inner-content italic">{{display_current_view}}</div>
     {{/if}}
 </div>
 {{tooltip_hotkey_hints "Ctrl" "."}}

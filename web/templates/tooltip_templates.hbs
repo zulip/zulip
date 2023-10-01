@@ -55,8 +55,8 @@
 </template>
 <template id="add-global-time-tooltip">
     <div>
-        <span>{{t "Add global time" }}</span><br/>
-        <span class="tooltip-inner-content italic">{{t "Everyone sees global times in their own time zone." }}</span>
+        <div>{{t "Add global time" }}</div>
+        <div class="tooltip-inner-content italic">{{t "Everyone sees global times in their own time zone." }}</div>
     </div>
 </template>
 <template id="delete-draft-tooltip-template">
@@ -124,11 +124,11 @@
     {{tooltip_hotkey_hints "I"}}
 </template>
 <template id="star-message-tooltip-template">
-    <span class="starred-status">{{t "Star this message" }}</span>
+    <div class="starred-status">{{t "Star this message" }}</div>
     {{tooltip_hotkey_hints "Ctrl" "S"}}
 </template>
 <template id="unstar-message-tooltip-template">
-    <span class="starred-status">{{t "Unstar this message" }}</span>
+    <div class="starred-status">{{t "Unstar this message" }}</div>
     {{tooltip_hotkey_hints "Ctrl" "S"}}
 </template>
 <template id="search-query-tooltip-template">
