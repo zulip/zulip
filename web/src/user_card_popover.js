@@ -3,6 +3,7 @@ import {parseISO} from "date-fns";
 import $ from "jquery";
 import tippy from "tippy.js";
 
+import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover_content from "../templates/user_card_popover_content.hbs";
 import render_user_card_popover_manage_menu from "../templates/user_card_popover_manage_menu.hbs";
 import render_user_card_popover_title from "../templates/user_card_popover_title.hbs";
@@ -13,13 +14,13 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
-import * as muted_users_ui from "./muted_users_ui";
 import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -39,6 +40,23 @@ import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 
 let current_user_sidebar_user_id;
+
+export function confirm_mute_user(user_id) {
+    function on_click() {
+        muted_users.mute_user(user_id);
+    }
+
+    const html_body = render_confirm_mute_user({
+        user_name: people.get_full_name(user_id),
+    });
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Mute user"}),
+        help_link: "/help/mute-a-user",
+        html_body,
+        on_click,
+    });
+}
 
 class PopoverMenu {
     constructor() {
@@ -785,13 +803,13 @@ function register_click_handlers() {
         hide_all_user_card_popovers();
         e.stopPropagation();
         e.preventDefault();
-        muted_users_ui.confirm_mute_user(user_id);
+        confirm_mute_user(user_id);
     });
 
     $("body").on("click", ".sidebar-popover-unmute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_all_user_card_popovers();
-        muted_users_ui.unmute_user(user_id);
+        muted_users.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
     });
