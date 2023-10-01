@@ -309,6 +309,12 @@ TUTORIAL_ENABLED = True
 # them easily through /emails page
 DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 
+# The push bouncer expects to get its requests on the root subdomain,
+# but that makes it more of a hassle to test bouncer endpoints in
+# the development environment - so this setting allows us to disable
+# that check.
+DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
+
 
 # These settings are not documented in prod_settings_template.py.
 # They should either be documented here, or documented there.
