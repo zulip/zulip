@@ -8,10 +8,10 @@ const $ = require("./lib/zjquery");
 
 const noop = () => {};
 
+const channel = mock_esm("../src/channel");
 const list_widget = mock_esm("../src/list_widget", {
     generic_sort_functions: noop,
 });
-const muted_users_ui = mock_esm("../src/muted_users_ui");
 
 const settings_muted_users = zrequire("settings_muted_users");
 const muted_users = zrequire("muted_users");
@@ -61,12 +61,22 @@ run_test("settings", ({override}) => {
     };
 
     let unmute_user_called = false;
-    muted_users_ui.unmute_user = (user_id) => {
-        assert.equal(user_id, 5);
+    channel.del = (payload) => {
+        assert.equal(payload.url, "/json/users/me/muted_users/5");
         unmute_user_called = true;
+        return {abort() {}};
     };
 
     unmute_click_handler.call($unmute_button, event);
     assert.ok(unmute_user_called);
     assert.ok(row_attribute_fetched);
+
+    let mute_user_called = false;
+    channel.post = (payload) => {
+        assert.equal(payload.url, "/json/users/me/muted_users/5");
+        mute_user_called = true;
+        return {abort() {}};
+    };
+    muted_users.mute_user(5);
+    assert.ok(mute_user_called);
 });
