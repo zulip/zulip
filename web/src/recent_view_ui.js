@@ -561,11 +561,14 @@ export function filters_should_hide_topic(topic_data) {
     }
 
     if (!filters.has("include_muted") && topic_data.type === "stream") {
-        // We want to show the unmuted topics within muted streams in Recent Conversations.
-        const topic_unmuted = Boolean(user_topics.is_topic_unmuted(msg.stream_id, msg.topic));
+        // We want to show the unmuted or followed topics within muted
+        // streams in Recent Conversations.
+        const topic_unmuted_or_followed = Boolean(
+            user_topics.is_topic_unmuted_or_followed(msg.stream_id, msg.topic),
+        );
         const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
         const stream_muted = stream_data.is_muted(msg.stream_id);
-        if (topic_muted || (stream_muted && !topic_unmuted)) {
+        if (topic_muted || (stream_muted && !topic_unmuted_or_followed)) {
             return true;
         }
     }
