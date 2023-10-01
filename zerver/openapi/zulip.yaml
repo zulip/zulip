@@ -16654,7 +16654,10 @@ paths:
           description: |
             Type of the message being composed.
 
-            **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added
+            **Changes**: In Zulip 8.0 (feature level 215), stopped supporting
+            `"private"` as a valid value for this parameter.
+
+            In Zulip 7.0 (feature level 174), `"direct"` was added
             as the preferred way to indicate a direct message is being composed,
             becoming the default value for this parameter and deprecating the
             original `"private"`.
@@ -16666,7 +16669,6 @@ paths:
             enum:
               - direct
               - stream
-              - private
             default: direct
           example: direct
         - name: op

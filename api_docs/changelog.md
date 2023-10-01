@@ -26,6 +26,9 @@ format used by the Zulip server that they are interacting with.
   with `direct` in the `message_type` field for the `typing` events
   sent when a user starts or stops typing a message.
 
+* [`POST /typing`](/api/set-typing-status): Stopped supporting `private`
+  as a valid value for the `type` parameter.
+
 **Feature level 214**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
