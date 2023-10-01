@@ -756,7 +756,7 @@ exports.fixtures = {
     typing__start: {
         type: "typing",
         op: "start",
-        message_type: "private",
+        message_type: "direct",
         sender: typing_person1,
         recipients: [typing_person2],
     },
@@ -764,7 +764,7 @@ exports.fixtures = {
     typing__stop: {
         type: "typing",
         op: "stop",
-        message_type: "private",
+        message_type: "direct",
         sender: typing_person1,
         recipients: [typing_person2],
     },

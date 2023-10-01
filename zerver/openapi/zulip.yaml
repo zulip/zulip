@@ -2523,12 +2523,15 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be `"stream"` or `"private"`.
+                                    Type of message being composed. Must be `"stream"` or `"direct"`.
 
-                                    **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly direct messages.
+                                    **Changes**: In Zulip 8.0 (feature level 215), replaced the
+                                    value `"private"` with `"direct"`.
+
+                                    New in Zulip 4.0 (feature level 58). Previously, all typing
+                                    notifications were implicitly direct messages.
                                   enum:
-                                    - private
+                                    - direct
                                     - stream
                                 sender:
                                   additionalProperties: false
@@ -2547,7 +2550,7 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `"private"`.
+                                    Only present if `message_type` is `"direct"`.
 
                                     Array of dictionaries describing the set of users who would be
                                     recipients of the message being typed. Each dictionary contains
@@ -2589,7 +2592,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "start",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -2641,12 +2644,15 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be `"stream"` or `"private"`.
+                                    Type of message being composed. Must be `"stream"` or `"direct"`.
 
-                                    **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly direct messages.
+                                    **Changes**: In Zulip 8.0 (feature level 215), replaced the
+                                    value `"private"` with `"direct"`.
+
+                                    New in Zulip 4.0 (feature level 58). Previously all typing
+                                    notifications were implicitly direct messages.
                                   enum:
-                                    - private
+                                    - direct
                                     - stream
                                 sender:
                                   additionalProperties: false
@@ -2665,7 +2671,7 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `"private"`.
+                                    Only present if `message_type` is `"direct"`.
 
                                     Array of dictionaries describing the set of users who would be
                                     recipients of the message that was previously being typed. Each
@@ -2707,7 +2713,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "stop",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "sender":
                                     {
                                       "user_id": 10,

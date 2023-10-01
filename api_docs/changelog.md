@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 215**
+
+* [`GET /events`](/api/get-events): Replaced the value `private`
+  with `direct` in the `message_type` field for the `typing` events
+  sent when a user starts or stops typing a message.
+
 **Feature level 214**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
