@@ -32,7 +32,6 @@ def send_notification_backend(
 
     recipient_type_name = req_type
     if recipient_type_name == "private":
-        # TODO: Use "direct" in typing notification events.
         recipient_type_name = "direct"
 
     if recipient_type_name == "stream":
