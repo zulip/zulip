@@ -19,6 +19,7 @@ import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
@@ -712,6 +713,12 @@ export function initialize() {
     $(".streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
+    });
+
+    $("body").on("click", "#left-sidebar-navigation-area #views-label-container", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        left_sidebar_navigation_area.toggle_top_left_navigation_area();
     });
 
     $("body").on(

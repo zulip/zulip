@@ -1,10 +1,12 @@
 import $ from "jquery";
 
+import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
 import * as ui_util from "./ui_util";
 
 let last_mention_count = 0;
+let left_sidebar_navigation_area_expanded = true;
 
 export function update_starred_count(count) {
     const $starred_li = $(".top_left_starred_messages");
@@ -50,6 +52,31 @@ export function deselect_top_left_corner_items() {
     remove($(".top_left_mentions"));
     remove($(".top_left_recent_view"));
     remove($(".top_left_inbox"));
+}
+
+function expand() {
+    $("#toggle-top-left-navigation-area-icon").addClass("fa-caret-down");
+    $("#toggle-top-left-navigation-area-icon").removeClass("fa-caret-right");
+
+    $(".left-sidebar-navigation-area").removeClass("collapsed");
+}
+
+function close() {
+    $("#toggle-top-left-navigation-area-icon").removeClass("fa-caret-down");
+    $("#toggle-top-left-navigation-area-icon").addClass("fa-caret-right");
+
+    $(".left-sidebar-navigation-area").addClass("collapsed");
+}
+
+export function toggle_top_left_navigation_area() {
+    if (left_sidebar_navigation_area_expanded) {
+        close();
+        left_sidebar_navigation_area_expanded = false;
+    } else {
+        expand();
+        left_sidebar_navigation_area_expanded = true;
+    }
+    pm_list.update_private_messages();
 }
 
 export function handle_narrow_activated(filter) {

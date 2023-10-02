@@ -219,6 +219,76 @@ li.show-more-topics {
     }
 }
 
+#left-sidebar-navigation-area.collapsed {
+    display: flex;
+    align-items: center;
+    /* 2px space between views and direct messages sections when views section is collapsed. */
+    margin-bottom: 2px;
+
+    .hide-view-in-collapsed-state {
+        display: none;
+    }
+
+    & .left-sidebar-navigation-list {
+        width: 100%;
+        display: flex;
+        /* 25px margin-right of .subscription_block + 12px margin-right of #stream_filters. */
+        margin-right: 37px;
+        margin-bottom: 0;
+
+        & .top_left_row {
+            padding: 0;
+            flex-grow: 1;
+
+            .left-sidebar-navigation-label-container {
+                padding-right: 0;
+                justify-content: center;
+
+                .filter-icon {
+                    padding-top: 4px;
+
+                    & .fa {
+                        font-size: 16px;
+                    }
+
+                    & .zulip-icon-star-filled {
+                        top: 1px;
+                    }
+                }
+
+                .left-sidebar-navigation-label {
+                    display: none;
+                }
+            }
+
+            .sidebar-menu-icon {
+                display: none;
+            }
+
+            /* Don't show counts that are not unread counts in collapsed state. */
+            &.top_left_starred_messages {
+                .unread_count {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    /* CSS to align unread counters in the top right corner. */
+    .unread_count {
+        position: absolute;
+        z-index: 3;
+
+        /* The 'left' and 'bottom' values set to 100% position the unread counter just outside the top right corner of the parent container (.top_left_row li). */
+        left: 100%;
+        bottom: 100%;
+
+        /* The 'transform' property with 'translate' adjustments brings half of the unread counter back in from the right and top,
+           positioning the center point of the unread counter precisely on the top-right corner of .top_left_row li. */
+        transform: translate(-50%, 50%);
+    }
+}
+
 #left_sidebar_scroll_container {
     outline: none;
     overflow-x: hidden;
