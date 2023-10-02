@@ -134,7 +134,9 @@ class Command(makemessages.Command):
             template.endblock_re.pattern + "|" + r"""^-?\s*endtrans\s*-?$"""
         )
         template.block_re = re.compile(
-            template.block_re.pattern + "|" + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
+            template.block_re.pattern
+            + "|"
+            + r"""^-?\s*trans(?:\s+(?:no)?trimmed)?(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
         )
         template.plural_re = re.compile(
             template.plural_re.pattern + "|" + r"""^-?\s*pluralize(?:\s+.+|-?$)"""
