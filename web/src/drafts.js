@@ -31,6 +31,7 @@ import * as util from "./util";
 function set_count(count) {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
+    $(".compose_draft_button .drafts-count").text(get_count_for_compose_box());
 }
 
 export const draft_model = (function () {
@@ -128,6 +129,21 @@ export function fix_drafts_with_undefined_topics() {
         }
     }
     fixed_buggy_drafts = true;
+}
+
+export function get_count() {
+    return Object.keys(draft_model.get()).length;
+}
+
+export function get_count_for_compose_box() {
+    const count = Object.keys(draft_model.get()).length;
+
+    if (count === 0) {
+        return "";
+    } else if (count >= 100) {
+        return "99+";
+    }
+    return count;
 }
 
 export function sync_count() {

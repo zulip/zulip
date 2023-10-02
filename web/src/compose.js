@@ -775,9 +775,11 @@ function schedule_message_to_custom_date() {
     const success = function (data) {
         drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
         clear_compose_box();
+        const scheduled_messages_count = scheduled_messages.get_count() + 1;
         const new_row = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
             deliver_at,
+            scheduled_messages_count,
         });
         compose_banner.clear_message_sent_banners();
         compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);

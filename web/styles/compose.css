@@ -796,6 +796,15 @@ input.recipient_box {
         padding: 0 5px;
         position: relative;
         top: 0.7px;
+
+        .drafts-count {
+            margin-left: 3px;
+
+            /* Don't show count on smaller widths due to space restrictions. */
+            @media (width < calc( $lg_min)) {
+                display: none;
+            }
+        }
     }
 
     .compose_help_button {
