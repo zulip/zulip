@@ -189,6 +189,8 @@ body {
     --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
+    --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -285,6 +287,8 @@ body {
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
+    --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
+    --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
