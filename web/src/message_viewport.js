@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
+import * as message_scroll_state from "./message_scroll_state";
 import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
 import * as util from "./util";
@@ -156,7 +156,7 @@ export function set_message_position(message_top, message_height, viewport_info,
 
     const new_scroll_top = message_top - message_offset;
 
-    message_scroll.suppress_selection_update_on_next_scroll();
+    message_scroll_state.set_update_selection_on_next_scroll(false);
     scrollTop(new_scroll_top);
 }
 
@@ -334,7 +334,7 @@ export function stop_auto_scrolling() {
 }
 
 export function system_initiated_animate_scroll(scroll_amount) {
-    message_scroll.suppress_selection_update_on_next_scroll();
+    message_scroll_state.set_update_selection_on_next_scroll(false);
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
     $scroll_container.animate({
@@ -346,7 +346,7 @@ export function system_initiated_animate_scroll(scroll_amount) {
 }
 
 export function user_initiated_animate_scroll(scroll_amount) {
-    message_scroll.suppress_selection_update_on_next_scroll();
+    message_scroll_state.set_update_selection_on_next_scroll(false);
     in_stoppable_autoscroll = false; // defensive
 
     const viewport_offset = scrollTop();
