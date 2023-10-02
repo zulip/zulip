@@ -12,7 +12,7 @@ import * as ui_report from "./ui_report";
 
 export let loaded = false;
 
-export function rerender_alert_words_ui() {
+export function rerender_alert_words_ui(): void {
     if (!loaded) {
         return;
     }
@@ -35,7 +35,7 @@ export function rerender_alert_words_ui() {
     });
 }
 
-function update_alert_word_status(status_text, is_error) {
+function update_alert_word_status(status_text: string, is_error: boolean): void {
     const $alert_word_status = $("#alert_word_status");
     if (is_error) {
         $alert_word_status.removeClass("alert-success").addClass("alert-danger");
@@ -46,8 +46,8 @@ function update_alert_word_status(status_text, is_error) {
     $alert_word_status.show();
 }
 
-function add_alert_word() {
-    const alert_word = $("#add-alert-word-name").val().trim();
+function add_alert_word(): void {
+    const alert_word = $<HTMLInputElement>("input#add-alert-word-name").val()!.trim();
 
     if (alert_words.has_alert_word(alert_word)) {
         ui_report.client_error(
@@ -64,9 +64,9 @@ function add_alert_word() {
     dialog_widget.submit_api_request(channel.post, "/json/users/me/alert_words", data);
 }
 
-function remove_alert_word(alert_word) {
+function remove_alert_word(alert_word: string): void {
     const words_to_be_removed = [alert_word];
-    channel.del({
+    void channel.del({
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
         success() {
@@ -84,18 +84,18 @@ function remove_alert_word(alert_word) {
     });
 }
 
-export function show_add_alert_word_modal() {
+export function show_add_alert_word_modal(): void {
     const html_body = render_add_alert_word();
 
-    function add_alert_word_post_render() {
-        const $add_user_group_input_element = $("#add-alert-word-name");
+    function add_alert_word_post_render(): void {
+        const $add_user_group_input_element = $<HTMLInputElement>("input#add-alert-word-name");
         const $add_user_group_submit_button = $("#add-alert-word .dialog_submit_button");
         $add_user_group_submit_button.prop("disabled", true);
 
         $add_user_group_input_element.on("input", () => {
             $add_user_group_submit_button.prop(
                 "disabled",
-                $add_user_group_input_element.val().trim() === "",
+                $add_user_group_input_element.val()!.trim() === "",
             );
         });
     }
@@ -114,7 +114,7 @@ export function show_add_alert_word_modal() {
     });
 }
 
-export function set_up_alert_words() {
+export function set_up_alert_words(): void {
     // The settings page must be rendered before this function gets called.
     loaded = true;
     rerender_alert_words_ui();
@@ -135,6 +135,6 @@ export function set_up_alert_words() {
     });
 }
 
-export function reset() {
+export function reset(): void {
     loaded = false;
 }
