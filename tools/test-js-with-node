@@ -74,7 +74,7 @@ EXEMPT_FILES = make_set(
         "web/src/composebox_typeahead.js",
         "web/src/condense.js",
         "web/src/confirm_dialog.ts",
-        "web/src/copied_tooltip.js",
+        "web/src/copied_tooltip.ts",
         "web/src/copy_and_paste.js",
         "web/src/csrf.ts",
         "web/src/css_variables.js",
