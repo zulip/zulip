@@ -23,6 +23,11 @@ import * as util from "./util";
 
 export const max_size_before_shrinking = 600;
 
+let is_searching_users = false;
+export function set_is_searching_users(val) {
+    is_searching_users = val;
+}
+
 const fade_config = {
     get_user_id(item) {
         return item.user_id;
@@ -49,8 +54,8 @@ export function get_user_circle_class(user_id) {
 }
 
 export function level(user_id) {
-    if (people.is_my_user_id(user_id)) {
-        // Always put current user at the top.
+    // Put current user at the top, unless we're in a user search view.
+    if (people.is_my_user_id(user_id) && !is_searching_users) {
         return 0;
     }
 
@@ -280,8 +285,6 @@ function filter_user_ids(user_filter_text, user_ids) {
     }
 
     // If a query is present in "Search people", we return matches.
-    user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
-
     let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
     search_terms = search_terms.map((s) => s.trim());
 

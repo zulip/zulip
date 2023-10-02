@@ -2084,6 +2084,11 @@ $option_title_width: 180px;
         word-break: break-all;
     }
 
+    .integration-url-name-wrapper .dropdown-widget-button {
+        width: 50%;
+    }
+
+    .integration-url-name-wrapper .dropdown_widget_value,
     .integration-url-stream-wrapper .dropdown_widget_value {
         white-space: nowrap;
         overflow: hidden;

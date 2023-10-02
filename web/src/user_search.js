@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as buddy_data from "./buddy_data";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as sidebar_ui from "./sidebar_ui";
@@ -20,7 +21,10 @@ export class UserSearch {
         $("#clear_search_people_button").on("click", () => this.clear_search());
         $("#userlist-header").on("click", () => this.toggle_filter_displayed());
 
-        this.$input.on("input", opts.update_list);
+        this.$input.on("input", () => {
+            buddy_data.set_is_searching_users(this.$input.val() !== "");
+            opts.update_list();
+        });
         this.$input.on("focus", (e) => this.on_focus(e));
     }
 
@@ -41,6 +45,8 @@ export class UserSearch {
     }
 
     clear_search() {
+        buddy_data.set_is_searching_users(false);
+
         if (this.empty()) {
             this.close_widget();
             return;

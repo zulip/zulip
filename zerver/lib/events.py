@@ -512,8 +512,10 @@ def fetch_initial_state_data(
             for bot in EMBEDDED_BOTS
         ]
 
-    # This does not have an apply_events counterpart either since
-    # this data is mostly static.
+    # This does not have an apply_events counterpart either since this
+    # data is mostly static. This excludes the legacy webhook
+    # integrations as those do not follow the same URL construction
+    # patterns as other integrations.
     if want("realm_incoming_webhook_bots"):
         state["realm_incoming_webhook_bots"] = [
             {
@@ -523,6 +525,7 @@ def fetch_initial_state_data(
                 "config": {c[1]: c[0] for c in integration.config_options},
             }
             for integration in WEBHOOK_INTEGRATIONS
+            if integration.legacy is False
         ]
 
     if want("recent_private_conversations"):
