@@ -54,14 +54,8 @@ $before_unread_count_padding: 3px;
     cursor: pointer;
 }
 
-#global_filters .filter-icon i {
-    padding-right: 3px;
-    color: var(--color-global-filter-icon);
-}
-
-#stream_filters,
-#global_filters {
-    margin-right: 12px;
+.left-sidebar-navigation-list .filter-icon i {
+    color: var(--color-left-sidebar-navigation-icon);
 }
 
 li.show-more-topics {
@@ -203,11 +197,12 @@ li.show-more-topics {
     }
 }
 
-.narrows_panel {
-    & li a {
-        margin-top: 1px;
+.left-sidebar-navigation-area {
+    & li.top_left_row {
+        position: relative;
+        padding: 2px 10px 1px $far_left_gutter_size;
 
-        &:hover {
+        & a:hover {
             text-decoration: none;
         }
     }
@@ -485,17 +480,19 @@ li.active-sub-filter {
     }
 }
 
-#global_filters {
+.left-sidebar-navigation-list {
     margin-bottom: $sections_vertical_gutter;
+    margin-right: 12px;
 
-    .global-filter-container {
+    .left-sidebar-navigation-label-container {
         display: flex;
         padding-right: 20px;
 
-        .global-filter-name {
+        .left-sidebar-navigation-label {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            padding-left: 3px;
 
             flex-grow: 1;
         }
@@ -527,27 +524,6 @@ li.active-sub-filter {
         top: 2px;
         position: relative;
     }
-}
-
-li.top_left_all_messages,
-li.top_left_mentions,
-li.top_left_starred_messages,
-li.top_left_drafts,
-li.top_left_inbox,
-li.top_left_recent_view,
-li.top_left_scheduled_messages {
-    position: relative;
-    padding-top: 1px;
-    padding-bottom: 1px;
-
-    & a {
-        display: block;
-    }
-}
-
-.top_left_row {
-    padding-left: $far_left_gutter_size;
-    padding-right: 10px;
 }
 
 .conversation-partners {
