@@ -154,6 +154,10 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 
 - We especially recommend browsing recently opened issues, as there are more
   likely to be easy ones for you to find.
+- Take a look at issues with the ["good first issue"
+  label](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22),
+  as they are especially accessible to new contributors. However, you will
+  likely find issues without this label that are accessible as well.
 - All issues are partitioned into areas like
   admin, compose, emoji, hotkeys, i18n, onboarding, search, etc. Look
   through our [list of labels](https://github.com/zulip/zulip/labels), and
