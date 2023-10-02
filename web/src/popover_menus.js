@@ -556,7 +556,7 @@ export function initialize() {
             // Destroy instance so that event handlers
             // are destroyed too.
             instance.destroy();
-            popover_instances.compose_control_button = undefined;
+            popover_instances.compose_mobile_button = undefined;
         },
     });
 
