@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
+import {$t} from "./i18n";
 import * as sub_store from "./sub_store";
 
 let message_type = false; // 'stream', 'private', or false-y
@@ -99,6 +100,10 @@ export function set_compose_recipient_id(recipient_id) {
 
 // TODO: Break out setter and getter into their own functions.
 export const topic = get_or_set("stream_message_recipient_topic");
+
+export function empty_topic_placeholder() {
+    return $t({defaultMessage: "(no topic)"});
+}
 
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.

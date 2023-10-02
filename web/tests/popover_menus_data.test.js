@@ -11,7 +11,7 @@ const {MessageList} = zrequire("message_list");
 const message_lists = zrequire("message_lists");
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
-const compose = zrequire("compose");
+const compose_state = zrequire("compose_state");
 
 const noop = function () {};
 
@@ -242,7 +242,7 @@ test("not_my_message_view_source_and_move", () => {
             type: "stream",
             unread: false,
             collapsed: false,
-            topic: compose.empty_topic_placeholder(),
+            topic: compose_state.empty_topic_placeholder(),
             edit_history: [
                 {
                     prev_content: "Previous content",
