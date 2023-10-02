@@ -1,17 +1,6 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div class="narrows_panel">
         <ul id="global_filters" class="filters">
-            <li class="top_left_all_messages top_left_row">
-                <a href="#all_messages" class="home-link tippy-left-sidebar-tooltip global-filter-container" data-tooltip-template-id="all-message-tooltip-template">
-                    <span class="filter-icon">
-                        <i class="fa fa-align-left" aria-hidden="true"></i>
-                    </span>
-                    {{~!-- squash whitespace --~}}
-                    <span class="global-filter-name">{{t 'All messages' }}</span>
-                    <span class="unread_count"></span>
-                </a>
-                <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
-            </li>
             <li class="top_left_inbox top_left_row hidden-for-spectators">
                 <a href="#inbox" class="tippy-left-sidebar-tooltip global-filter-container" data-tooltip-template-id="inbox-tooltip-template">
                     <span class="filter-icon">
@@ -29,6 +18,17 @@
                     {{~!-- squash whitespace --~}}
                     <span class="global-filter-name">{{t 'Recent conversations' }}</span>
                 </a>
+            </li>
+            <li class="top_left_all_messages top_left_row">
+                <a href="#all_messages" class="home-link tippy-left-sidebar-tooltip global-filter-container" data-tooltip-template-id="all-message-tooltip-template">
+                    <span class="filter-icon">
+                        <i class="fa fa-align-left" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span class="global-filter-name">{{t 'All messages' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+                <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_mentions top_left_row hidden-for-spectators">
                 <a class="global-filter-container" href="#narrow/is/mentioned">
