@@ -623,7 +623,7 @@ div.overlay {
     font-size: 12px;
     font-weight: normal;
     border-radius: 4px;
-    background-color: hsl(105deg 2% 50%);
+    background-color: var(--color-background-unread-counter);
     color: hsl(0deg 0% 100%);
 }
 
