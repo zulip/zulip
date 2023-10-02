@@ -1,0 +1,21 @@
+{{! Extra views in `VIEWS` section in collapsed state in 3-dot Menu. }}
+<ul class="nav nav-list extra-views-menu">
+    <li class="extra-views-menu-drafts">
+        <a tabindex="0" href="#drafts" class="tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template">
+            <span class="filter-icon">
+                <i class="fa fa-pencil" aria-hidden="true"></i>
+            </span>
+            <span>{{t 'Drafts' }}</span>
+            <span class="unread_count"></span>
+        </a>
+    </li>
+    <li class="extra-views-menu-scheduled-messages">
+        <a tabindex="0" href="#scheduled">
+            <span class="filter-icon">
+                <i class="fa fa-calendar" aria-hidden="true"></i>
+            </span>
+            <span>{{t 'Scheduled messages' }}</span>
+            <span class="unread_count"></span>
+        </a>
+    </li>
+</ul>

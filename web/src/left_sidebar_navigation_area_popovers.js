@@ -2,15 +2,18 @@ import $ from "jquery";
 
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
+import render_left_sidebar_extra_views_menu from "../templates/left_sidebar_extra_views_menu.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 
 import * as channel from "./channel";
 import * as drafts from "./drafts";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
+import * as scheduled_messages from "./scheduled_messages";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import {parse_html} from "./ui_util";
+import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
@@ -101,6 +104,25 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.all_messages = undefined;
+        },
+    });
+
+    popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onShow(instance) {
+            popovers.hide_all();
+            instance.setContent(parse_html(render_left_sidebar_extra_views_menu()));
+        },
+        onMount() {
+            ui_util.update_unread_count_in_dom($(".extra-views-menu-drafts"), drafts.get_count());
+            ui_util.update_unread_count_in_dom(
+                $(".extra-views-menu-scheduled-messages"),
+                scheduled_messages.get_count(),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.top_left_sidebar = undefined;
         },
     });
 }

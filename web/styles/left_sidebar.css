@@ -217,6 +217,12 @@ li.show-more-topics {
             text-decoration: none;
         }
     }
+
+    & .left-sidebar-navigation-menu-icon {
+        top: auto;
+        /* 12px margin-right of #stream_filters to align with other vertical 3-dots in left sidebar. */
+        margin-right: 12px;
+    }
 }
 
 #left-sidebar-navigation-area.collapsed {
@@ -287,6 +293,13 @@ li.show-more-topics {
            positioning the center point of the unread counter precisely on the top-right corner of .top_left_row li. */
         transform: translate(-50%, 50%);
     }
+}
+
+.extra-views-menu .unread_count {
+    /* margin-top of `.top_left_row .unread_count`. */
+    margin-top: 2px;
+    margin-left: 15px;
+    background-color: var(--color-background-unread-counter-popover-menu);
 }
 
 #left_sidebar_scroll_container {
@@ -759,7 +772,8 @@ li.active-sub-filter {
     positioning.  We should fix that.
 */
 .top_left_row .sidebar-menu-icon,
-.bottom_left_row .sidebar-menu-icon {
+.bottom_left_row .sidebar-menu-icon,
+.left-sidebar-navigation-menu-icon {
     position: absolute;
     display: none;
     top: 1px;
@@ -800,6 +814,14 @@ li.active-sub-filter {
     }
 }
 
+/* Don't show 3-dot menu icon in expanded state on touch devices. */
+@media (hover: none) {
+    .left-sidebar-navigation-area:not(.collapsed)
+        .left-sidebar-navigation-menu-icon {
+        display: none;
+    }
+}
+
 /*
     When you hover over list items, we hover
     the vdots in light gray.
@@ -810,7 +832,9 @@ li.active-sub-filter {
 */
 #stream_filters li:hover .stream-sidebar-menu-icon,
 .top_left_row:hover .sidebar-menu-icon,
-.bottom_left_row:hover .sidebar-menu-icon {
+.bottom_left_row:hover .sidebar-menu-icon,
+#left-sidebar-navigation-area.collapsed:hover
+    .left-sidebar-navigation-menu-icon {
     display: inline;
     cursor: pointer;
     color: var(--color-vdots-visible);
