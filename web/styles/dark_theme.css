@@ -512,13 +512,6 @@
         color: hsl(236deg 33% 90%);
     }
 
-    .unread_count,
-    /* The actions_popover unread_count object has its own variable CSS,
-       and thus needs to be repeated here with all three classes for precedence) */
-    .actions_popover .mark_as_unread .unread_count {
-        background-color: hsl(105deg 2% 50% / 50%);
-    }
-
     .pill-container {
         border-style: solid;
         border-width: 1px;
