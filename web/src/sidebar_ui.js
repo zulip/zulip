@@ -3,6 +3,7 @@ import $ from "jquery";
 import {media_breakpoints_num} from "./css_variables";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
+import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 
 export function hide_userlist_sidebar() {
@@ -29,6 +30,17 @@ export function any_sidebar_expanded_as_overlay() {
         return false;
     }
     return Boolean($("[class^='column-'].expanded").length);
+}
+
+export function update_invite_user_option() {
+    if (
+        !settings_data.user_can_invite_users_by_email() &&
+        !settings_data.user_can_create_multiuse_invite()
+    ) {
+        $("#right-sidebar .invite-user-link").hide();
+    } else {
+        $("#right-sidebar .invite-user-link").show();
+    }
 }
 
 export function initialize() {

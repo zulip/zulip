@@ -62,6 +62,7 @@ const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
 const settings_user_groups_legacy = mock_esm("../src/settings_user_groups_legacy");
 const settings_users = mock_esm("../src/settings_users");
+const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
 const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
@@ -77,7 +78,6 @@ mock_esm("../src/left_sidebar_navigation_area", {
     update_scheduled_messages_row() {},
 });
 const typing_events = mock_esm("../src/typing_events");
-const ui_init = mock_esm("../src/ui_init");
 const unread_ops = mock_esm("../src/unread_ops");
 const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
@@ -418,7 +418,7 @@ run_test("realm settings", ({override}) => {
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(settings_invites, "update_invite_user_panel", noop);
-    override(ui_init, "update_invite_user_option", noop);
+    override(sidebar_ui, "update_invite_user_option", noop);
     override(gear_menu, "initialize", noop);
     override(notifications, "redraw_title", noop);
 
