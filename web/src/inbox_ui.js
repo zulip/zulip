@@ -8,13 +8,17 @@ import render_user_with_status_icon from "../templates/user_with_status_icon.hbs
 
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
 import {is_visible, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
+import * as overlays from "./overlays";
 import * as people from "./people";
+import * as popovers from "./popovers";
+import * as sidebar_ui from "./sidebar_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -926,6 +930,19 @@ function move_focus_to_visible_area() {
 
     row_focus = $all_rows.index($inbox_row);
     revive_current_focus();
+}
+
+export function is_in_focus() {
+    // Check if user is focused on
+    // inbox
+    return (
+        is_visible() &&
+        !compose_state.composing() &&
+        !popovers.any_active() &&
+        !sidebar_ui.any_sidebar_expanded_as_overlay() &&
+        !overlays.is_overlay_or_modal_open() &&
+        !$(".home-page-input").is(":focus")
+    );
 }
 
 export function initialize() {
