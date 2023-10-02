@@ -44,7 +44,7 @@ let edit_message_id = null;
 let current_message_id = null;
 
 const EMOJI_CATEGORIES = [
-    {name: "Popular", icon: "fa-star-o"},
+    {name: "Popular", zulip_icon: "zulip-icon-star"},
     {name: "Smileys & Emotion", icon: "fa-smile-o"},
     {name: "People & Body", icon: "fa-thumbs-o-up"},
     {name: "Animals & Nature", icon: "fa-leaf"},
@@ -156,7 +156,7 @@ export function rebuild_catalog() {
     const categories = EMOJI_CATEGORIES.filter((category) => catalog.has(category.name));
     complete_emoji_catalog = categories.map((category) => ({
         name: category.name,
-        icon: category.icon,
+        [category.icon ? "icon" : "zulip_icon"]: category.icon || category.zulip_icon,
         emojis: catalog.get(category.name),
     }));
 }

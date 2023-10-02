@@ -669,7 +669,7 @@ export class Filter {
                 context.icon = "envelope";
                 break;
             case "is-starred":
-                context.icon = "star";
+                context.zulip_icon = "star-filled";
                 break;
             case "is-mentioned":
                 context.icon = "at";

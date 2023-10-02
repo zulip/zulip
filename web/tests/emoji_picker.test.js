@@ -28,7 +28,7 @@ run_test("initialize", () => {
     let total_emoji_in_categories = 0;
 
     function assert_emoji_category(ele, icon, num) {
-        assert.equal(ele.icon, icon);
+        assert.equal(ele.icon || ele.zulip_icon, icon);
         assert.equal(ele.emojis.length, num);
         function check_emojis(val) {
             for (const this_emoji of ele.emojis) {
@@ -47,7 +47,7 @@ run_test("initialize", () => {
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 195);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 221);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 162);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
+    assert_emoji_category(complete_emoji_catalog.pop(), "zulip-icon-star", popular_emoji_count);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 361);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 257);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 131);

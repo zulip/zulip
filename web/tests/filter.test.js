@@ -1574,7 +1574,7 @@ test("navbar_helpers", () => {
         {
             operator: is_starred,
             is_common_narrow: true,
-            icon: "star",
+            zulip_icon: "star-filled",
             title: "translated: Starred messages",
             redirect_url_with_search: "/#narrow/is/starred",
         },
