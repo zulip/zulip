@@ -293,6 +293,14 @@ li.show-more-topics {
            positioning the center point of the unread counter precisely on the top-right corner of .top_left_row li. */
         transform: translate(-50%, 50%);
     }
+
+    /* Show unread counters as dots when not hovered on view icon(.top_left_row). */
+    & .top_left_row:not(:hover) .unread_count {
+        width: 8px;
+        height: 8px;
+        padding: 0;
+        font-size: 0;
+    }
 }
 
 .extra-views-menu .unread_count {
