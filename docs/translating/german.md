@@ -129,7 +129,7 @@ speakers in the community. It's all about making Zulip friendly and usable.
 
 _"Nachricht" (Facebook, WhatsApp, Transifex)_
 
-- Private Message (PM) - **Private Nachricht (PN)**
+- Direct Message (DM) - **Private Nachricht (PN)**
 
 Since we try to avoid concatenating words whenever possible, don't use
 "Privatnachricht" . PN is the officially used abbreviation for
