@@ -180,6 +180,7 @@ $time_column_min_width: 42px; /* + padding */
         .message_time {
             justify-self: end;
             padding-right: 5px;
+            width: 8ch;
             /* Maintain first-line baseline regardless of
                what happens in the message-content area (e.g., a
                collapsed message, or source/edit view). This
