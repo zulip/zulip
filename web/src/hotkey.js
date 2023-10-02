@@ -22,7 +22,6 @@ import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as inbox_ui from "./inbox_ui";
-import * as inbox_util from "./inbox_util";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
@@ -257,7 +256,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (inbox_util.is_in_focus() && inbox_ui.change_focused_element("escape")) {
+    if (inbox_ui.is_in_focus() && inbox_ui.change_focused_element("escape")) {
         return true;
     }
 
@@ -663,7 +662,7 @@ export function process_hotkey(e, hotkey) {
         case "vim_down":
         case "vim_left":
         case "vim_right":
-            if (inbox_util.is_in_focus()) {
+            if (inbox_ui.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
             }
     }
