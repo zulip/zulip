@@ -151,7 +151,7 @@ export function update(
         like `attrs` for attributes.
 
         For examples of creating vdom objects, look at
-        `pm_list_dom.js`.
+        `pm_list_dom.ts`.
     */
     function do_full_update(): void {
         const rendered_dom = render_tag(new_dom);
