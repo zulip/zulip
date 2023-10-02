@@ -2,13 +2,10 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 
-type Equal<T> = (...args: T[]) => boolean;
-
-type Node = {
-    key: number;
+export type Node = {
+    key: unknown;
     render: () => string;
-    name: string;
-    eq: Equal<number | Node>;
+    eq(other: Node): boolean;
 };
 
 type Options = {
@@ -16,12 +13,16 @@ type Options = {
     keyed_nodes: Node[];
 };
 
-type Tag = {
+export type Tag = {
     tag_name: string;
     opts: Options;
 };
 
-export function eq_array<T>(a: T[] | undefined, b: T[] | undefined, eq: Equal<T>): boolean {
+export function eq_array<T>(
+    a: T[] | undefined,
+    b: T[] | undefined,
+    eq: (a_item: T, b_item: T) => boolean,
+): boolean {
     if (a === b) {
         // either both are undefined, or they
         // are referentially equal
