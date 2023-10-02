@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
 import render_admin_export_list from "../templates/settings/admin_export_list.hbs";
@@ -14,15 +15,26 @@ import * as scroll_util from "./scroll_util";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 
+const realm_export_schema = z.object({
+    id: z.number(),
+    export_time: z.number(),
+    acting_user_id: z.number(),
+    export_url: z.string().nullable(),
+    deleted_timestamp: z.number().nullable(),
+    failed_timestamp: z.number().nullable(),
+    pending: z.boolean(),
+});
+type RealmExport = z.output<typeof realm_export_schema>;
+
 const meta = {
     loaded: false,
 };
 
-export function reset() {
+export function reset(): void {
     meta.loaded = false;
 }
 
-function sort_user(a, b) {
+function sort_user(a: RealmExport, b: RealmExport): number {
     const a_name = people.get_full_name(a.acting_user_id).toLowerCase();
     const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
     if (a_name > b_name) {
@@ -33,7 +45,7 @@ function sort_user(a, b) {
     return -1;
 }
 
-export function populate_exports_table(exports) {
+export function populate_exports_table(exports: RealmExport[]): void {
     if (!meta.loaded) {
         return;
     }
@@ -43,18 +55,18 @@ export function populate_exports_table(exports) {
         name: "admin_exports_list",
         get_item: ListWidget.default_get_item,
         modifier_html(data) {
-            let failed_timestamp = data.failed_timestamp;
-            let deleted_timestamp = data.deleted_timestamp;
+            let failed_timestamp = null;
+            let deleted_timestamp = null;
 
-            if (failed_timestamp !== null) {
+            if (data.failed_timestamp !== null) {
                 failed_timestamp = timerender.relative_time_string_from_date({
-                    date: new Date(failed_timestamp * 1000),
+                    date: new Date(data.failed_timestamp * 1000),
                 });
             }
 
-            if (deleted_timestamp !== null) {
+            if (data.deleted_timestamp !== null) {
                 deleted_timestamp = timerender.relative_time_string_from_date({
-                    date: new Date(deleted_timestamp * 1000),
+                    date: new Date(data.deleted_timestamp * 1000),
                 });
             }
 
@@ -74,7 +86,9 @@ export function populate_exports_table(exports) {
             });
         },
         filter: {
-            $element: $exports_table.closest(".settings-section").find(".search"),
+            $element: $exports_table
+                .closest(".settings-section")
+                .find<HTMLInputElement>("input.search"),
             predicate(item, value) {
                 return people.get_full_name(item.acting_user_id).toLowerCase().includes(value);
             },
@@ -99,7 +113,7 @@ export function populate_exports_table(exports) {
     }
 }
 
-export function set_up() {
+export function set_up(): void {
     meta.loaded = true;
 
     $("#export-data").on("click", (e) => {
@@ -107,7 +121,7 @@ export function set_up() {
         e.stopPropagation();
         const $export_status = $("#export_status");
 
-        channel.post({
+        void channel.post({
             url: "/json/export/realm",
             success() {
                 ui_report.success(
@@ -123,9 +137,10 @@ export function set_up() {
     });
 
     // Do an initial population of the table
-    channel.get({
+    void channel.get({
         url: "/json/export/realm",
-        success(data) {
+        success(raw_data) {
+            const data = z.object({exports: z.array(realm_export_schema)}).parse(raw_data);
             populate_exports_table(data.exports);
         },
     });
@@ -134,7 +149,7 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         const $btn = $(this);
-        const url = "/json/export/realm/" + encodeURIComponent($btn.attr("data-export-id"));
+        const url = "/json/export/realm/" + encodeURIComponent($btn.attr("data-export-id")!);
         const html_body = render_confirm_delete_data_export();
 
         confirm_dialog.launch({
