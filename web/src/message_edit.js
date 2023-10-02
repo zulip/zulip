@@ -13,6 +13,7 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as composebox_typeahead from "./composebox_typeahead";
@@ -756,7 +757,7 @@ export function start_inline_topic_edit($recipient_row) {
     const msg_id = rows.id_for_recipient_row($recipient_row);
     const message = message_lists.current.get(msg_id);
     let topic = message.topic;
-    if (topic === compose.empty_topic_placeholder()) {
+    if (topic === compose_state.empty_topic_placeholder()) {
         topic = "";
     }
     const $inline_topic_edit_input = $form.find(".inline_topic_edit");

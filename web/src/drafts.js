@@ -9,7 +9,6 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
@@ -347,7 +346,7 @@ export function format_draft(draft) {
             invite_only = sub.invite_only;
             is_web_public = sub.is_web_public;
         }
-        const draft_topic = draft.topic || compose.empty_topic_placeholder();
+        const draft_topic = draft.topic || compose_state.empty_topic_placeholder();
         const draft_stream_color = stream_data.get_color(draft.stream_id);
 
         formatted = {

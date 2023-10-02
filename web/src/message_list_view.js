@@ -11,8 +11,8 @@ import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
-import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
+import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -176,7 +176,7 @@ function set_topic_edit_properties(group, message) {
 
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.
-    if (message.topic === compose.empty_topic_placeholder()) {
+    if (message.topic === compose_state.empty_topic_placeholder()) {
         group.always_visible_topic_edit = true;
     } else {
         group.on_hover_topic_edit = true;
