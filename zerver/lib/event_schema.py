@@ -468,7 +468,7 @@ reaction_add_event = event_dict_type(
         ("message_id", int),
         ("emoji_name", str),
         ("emoji_code", str),
-        ("reaction_type", str),
+        ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
         ("user_id", int),
         ("user", reaction_legacy_user_type),
     ]
@@ -483,7 +483,7 @@ reaction_remove_event = event_dict_type(
         ("message_id", int),
         ("emoji_name", str),
         ("emoji_code", str),
-        ("reaction_type", str),
+        ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
         ("user_id", int),
         ("user", reaction_legacy_user_type),
     ]
@@ -1767,7 +1767,7 @@ user_status_event = event_dict_type(
         ("status_text", str),
         ("emoji_name", str),
         ("emoji_code", str),
-        ("reaction_type", str),
+        ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
     ],
 )
 _check_user_status = make_checker(user_status_event)

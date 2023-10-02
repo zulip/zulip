@@ -1695,6 +1695,10 @@ paths:
                                     **Changes**: New in Zulip 5.0 (feature level 86).
                                 reaction_type:
                                   type: string
+                                  enum:
+                                    - unicode_emoji
+                                    - realm_emoji
+                                    - zulip_extra_emoji
                                   description: |
                                     The [emoji type](/api/update-status#parameter-reaction_type) for
                                     the emoji the user selected for their new status.
@@ -12102,6 +12106,10 @@ paths:
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             reaction_type:
                               type: string
+                              enum:
+                                - unicode_emoji
+                                - realm_emoji
+                                - zulip_extra_emoji
                               description: |
                                 If present, a string indicating the type of emoji. Each emoji
                                 `reaction_type` has an independent namespace for values of `emoji_code`.
@@ -18305,6 +18313,10 @@ components:
             within the namespace of the `reaction_type`.
         reaction_type:
           type: string
+          enum:
+            - unicode_emoji
+            - realm_emoji
+            - zulip_extra_emoji
           description: |
             A string indicating the type of emoji. Each emoji `reaction_type`
             has an independent namespace for values of `emoji_code`.
