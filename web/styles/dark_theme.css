@@ -777,7 +777,7 @@
 
     #topics_header {
         .show-all-streams {
-            color: hsl(236deg 33% 90%);
+            color: hsl(0deg 0% 100% / 75%);
             opacity: 0.75;
         }
     }
