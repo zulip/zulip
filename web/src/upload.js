@@ -418,14 +418,25 @@ export function setup_upload(config) {
 
 export function initialize() {
     // Allow the main panel to receive drag/drop events.
-    $(".app-main").on("dragover", (event) => event.preventDefault());
+    $(".app-main").on("dragover", (event) => {
+        event.preventDefault();
+        $(".upload-blur-overlay").show();
+    });
 
     // TODO: Do something visual to hint that drag/drop will work.
-    $(".app-main").on("dragenter", (event) => event.preventDefault());
+    $(".app-main").on("dragenter", (event) => {
+        event.preventDefault();
+        $(".upload-blur-overlay").show();
+    });
+
+    $(".app-main").on("dragleave", (event) => {
+        event.preventDefault();
+        $(".upload-blur-overlay").hide();
+    });
 
     $(".app-main").on("drop", (event) => {
         event.preventDefault();
-
+        $(".upload-blur-overlay").hide();
         const $drag_drop_edit_containers = $(".message_edit_form form");
         const files = event.originalEvent.dataTransfer.files;
         const compose_upload_object = compose.get_compose_upload_object();

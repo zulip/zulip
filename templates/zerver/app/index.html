@@ -114,6 +114,19 @@
 {% endblock %}
 
 {% block content %}
+<div class="upload-blur-overlay">
+    <div class="upload-svg-container">
+        <svg class="upload-blur-border" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 100% 100%">
+            <rect width="99%" height="99%" x="2" y="2" stroke="#fff" stroke-dasharray="8 16" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".9" stroke-width="3" rx="12">
+            </rect>
+        </svg>
+    </div>
+    <div class="blur-overlay-content">
+        <span>Drop files anywhere to attach to new message</span>
+        <p>Files size no more than 25MB</p>
+    </div>
+</div>
+
 <div id="feedback_container" class="new-style">
 </div>
 

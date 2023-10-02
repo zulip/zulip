@@ -700,6 +700,63 @@ p.n-margin {
     margin-top: var(--navbar-fixed-height);
 }
 
+.upload-blur-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: hsl(238deg 35% 15% / 65%);
+    backdrop-filter: blur(8px);
+    display: none;
+    z-index: 150;
+}
+
+.upload-svg-container {
+    background: url("../../web//images//drag-drop/drag-drop.svg");
+    background-repeat: no-repeat;
+    background-position: center 40%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-blur-border {
+    width: 95%;
+    height: 92%;
+}
+
+.blur-overlay-content {
+    position: fixed;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: hsl(0deg 100% 100%);
+    z-index: 151;
+}
+
+.blur-overlay-content span {
+    font-size: 27px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 32px;
+}
+
+.blur-overlay-content p {
+    opacity: 0.5;
+    font-size: 21px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%;
+    letter-spacing: 0.21px;
+}
+
 .app {
     width: 100%;
     height: 100%;
