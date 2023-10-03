@@ -10,12 +10,12 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
-import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
 
 export let compose_upload_object;
+export const upload_objects_by_message_edit_row = new Map();
 
 // Show the upload button only if the browser supports it.
 export function feature_check($upload_button) {
@@ -454,7 +454,7 @@ export function initialize() {
             if (!$drag_drop_container.closest("html").length) {
                 return;
             }
-            const edit_upload_object = message_edit.get_upload_object_from_row(row_id);
+            const edit_upload_object = upload_objects_by_message_edit_row.get(row_id);
 
             upload_files(edit_upload_object, {mode: "edit", row: row_id}, files);
         } else if (message_lists.current.selected_message()) {
