@@ -6,6 +6,7 @@ const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 const scheduled_messages = zrequire("scheduled_messages");
+const scheduled_messages_popover = zrequire("scheduled_messages_popover");
 
 const per_day_stamps = {
     "2023-04-30": {
@@ -164,7 +165,7 @@ run_test("should_update_send_later_options", () => {
     // We should rerender at midnight
     const start_of_the_day = new Date();
     start_of_the_day.setHours(0, 0);
-    assert.ok(scheduled_messages.should_update_send_later_options(start_of_the_day));
+    assert.ok(scheduled_messages_popover.should_update_send_later_options(start_of_the_day));
 
     function get_minutes_to_hour(minutes) {
         const date = new Date();
@@ -179,10 +180,10 @@ run_test("should_update_send_later_options", () => {
         const current_time = get_minutes_to_hour(minute);
         if (minute === 55) {
             // Should rerender
-            assert.ok(scheduled_messages.should_update_send_later_options(current_time));
+            assert.ok(scheduled_messages_popover.should_update_send_later_options(current_time));
         } else {
             // Should not rerender
-            assert.ok(!scheduled_messages.should_update_send_later_options(current_time));
+            assert.ok(!scheduled_messages_popover.should_update_send_later_options(current_time));
         }
     }
 });

@@ -2,6 +2,7 @@ import $ from "jquery";
 import {delegate} from "tippy.js";
 
 import render_send_later_modal from "../templates/send_later_modal.hbs";
+import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 import render_send_later_popover from "../templates/send_later_popover.hbs";
 
 import * as compose from "./compose";
@@ -12,6 +13,8 @@ import * as popover_menus from "./popover_menus";
 import * as scheduled_messages from "./scheduled_messages";
 import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
+
+export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 
 let selected_send_later_timestamp;
 
@@ -63,8 +66,8 @@ export function open_send_later_menu() {
         autoremove: true,
         on_show() {
             interval = setInterval(
-                scheduled_messages.update_send_later_options,
-                scheduled_messages.SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
+                update_send_later_options,
+                SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
             );
 
             const $send_later_modal = $("#send_later_modal");
@@ -171,4 +174,28 @@ export function initialize() {
             popover_menus.popover_instances.send_later = undefined;
         },
     });
+}
+
+// This function is exported for unit testing purposes.
+export function should_update_send_later_options(date) {
+    const current_minute = date.getMinutes();
+    const current_hour = date.getHours();
+
+    if (current_hour === 0 && current_minute === 0) {
+        // We need to rerender the available options at midnight,
+        // since Monday could become in range.
+        return true;
+    }
+
+    // Rerender at MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS before the
+    // hour, so we don't offer a 4:00PM send time at 3:59 PM.
+    return current_minute === 60 - scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60;
+}
+
+export function update_send_later_options() {
+    const now = new Date();
+    if (should_update_send_later_options(now)) {
+        const filtered_send_opts = scheduled_messages.get_filtered_send_opts(now);
+        $("#send_later_options").replaceWith(render_send_later_modal_options(filtered_send_opts));
+    }
 }

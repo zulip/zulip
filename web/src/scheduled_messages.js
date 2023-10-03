@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
-import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
 import * as channel from "./channel";
 import * as compose from "./compose";
@@ -16,7 +15,6 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
-export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 
 // scheduled_messages_data is a dictionary where key=scheduled_message_id and value=scheduled_messages
 export const scheduled_messages_data = {};
@@ -296,28 +294,4 @@ export function initialize(scheduled_messages_params) {
         e.preventDefault();
         e.stopPropagation();
     });
-}
-
-// This function is exported for unit testing purposes.
-export function should_update_send_later_options(date) {
-    const current_minute = date.getMinutes();
-    const current_hour = date.getHours();
-
-    if (current_hour === 0 && current_minute === 0) {
-        // We need to rerender the available options at midnight,
-        // since Monday could become in range.
-        return true;
-    }
-
-    // Rerender at MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS before the
-    // hour, so we don't offer a 4:00PM send time at 3:59 PM.
-    return current_minute === 60 - MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60;
-}
-
-export function update_send_later_options() {
-    const now = new Date();
-    if (should_update_send_later_options(now)) {
-        const filtered_send_opts = get_filtered_send_opts(now);
-        $("#send_later_options").replaceWith(render_send_later_modal_options(filtered_send_opts));
-    }
 }
