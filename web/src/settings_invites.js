@@ -138,11 +138,11 @@ function do_revoke_invite({$row, invite_id, is_multiuse}) {
     });
 }
 
-function do_resend_invite() {
+function do_resend_invite({$row, invite_id}) {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
-    const $resend_button = meta.$current_resend_invite_user_modal_row.find("button.resend");
+    const $resend_button = $row.find("button.resend");
 
-    if (modal_invite_id !== meta.invite_id) {
+    if (modal_invite_id !== invite_id) {
         blueslip.error("Invite resending canceled due to non-matching fields.");
         ui_report.client_error(
             $t_html({
@@ -154,7 +154,7 @@ function do_resend_invite() {
 
     $resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     channel.post({
-        url: "/json/invites/" + meta.invite_id + "/resend",
+        url: "/json/invites/" + invite_id + "/resend",
         error(xhr) {
             ui_report.generic_row_button_error(xhr, $resend_button);
         },
@@ -162,7 +162,7 @@ function do_resend_invite() {
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
             data.timestamp = timerender.absolute_time(data.timestamp * 1000);
-            meta.$current_resend_invite_user_modal_row.find(".invited_at").text(data.timestamp);
+            $row.find(".invited_at").text(data.timestamp);
         },
     });
 }
@@ -229,17 +229,18 @@ export function on_load_success(invites_data, initialize_event_handlers) {
 
         const $row = $(e.target).closest(".invite_row");
         const email = $row.find(".email").text();
-        meta.$current_resend_invite_user_modal_row = $row;
-        meta.invite_id = $(e.currentTarget).attr("data-invite-id");
+        const invite_id = $(e.currentTarget).attr("data-invite-id");
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Resend invitation"}),
             html_body,
-            on_click: do_resend_invite,
+            on_click() {
+                do_resend_invite({$row, invite_id});
+            },
         });
 
-        $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
+        $(".dialog_submit_button").attr("data-invite-id", invite_id);
     });
 }
 
