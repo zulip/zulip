@@ -11,7 +11,6 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
@@ -391,7 +390,6 @@ function handle_deactivation($tbody) {
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
-        popovers.hide_all();
 
         const $row = $(e.target).closest(".user_row");
         const user_id = $row.data("user-id");
@@ -416,7 +414,6 @@ function handle_bot_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        popovers.hide_all();
 
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
@@ -435,7 +432,6 @@ function handle_reactivation($tbody) {
     $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        popovers.hide_all();
 
         // Go up the tree until we find the user row, then grab the email element
         const $button_elem = $(e.target);
@@ -461,7 +457,6 @@ function handle_edit_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        popovers.hide_all();
 
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         if (people.is_my_user_id(user_id)) {
