@@ -24,9 +24,6 @@ server at the same time.
 When you want to create a new organization, you need to do a few
 things:
 
-- If you're using Zulip older than 1.7, you'll need to set
-  `REALMS_HAVE_SUBDOMAINS=True` in your `/etc/zulip/settings.py`
-  file. That setting is the default in 1.7 and later.
 - Make sure you have SSL certificates for all of the subdomains you're
   going to use. If you're using
   [our Let's Encrypt instructions](ssl-certificates.md), it's easy to
