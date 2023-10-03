@@ -113,42 +113,6 @@ THE SOFTWARE.
   color: #fff;
   background-color: #333;
 }
-.btn-success {
-  color: #fff;
-  background-color: #5cb85c;
-  border-color: #4cae4c;
-}
-.btn-success:hover,
-.btn-success:focus,
-.btn-success:active,
-.btn-success.active,
-.open .dropdown-toggle.btn-success {
-  color: #fff;
-  background-color: #47a447;
-  border-color: #398439;
-}
-.btn-success:active,
-.btn-success.active,
-.open .dropdown-toggle.btn-success {
-  background-image: none;
-}
-.btn-success.disabled,
-.btn-success[disabled],
-.btn-success.disabled:hover,
-.btn-success[disabled]:hover,
-.btn-success.disabled:focus,
-.btn-success[disabled]:focus,
-.btn-success.disabled:active,
-.btn-success[disabled]:active,
-.btn-success.disabled.active,
-.btn-success[disabled].active {
-  background-color: #5cb85c;
-  border-color: #4cae4c;
-}
-.btn-success .badge {
-  color: #5cb85c;
-  background-color: #fff;
-}
 .btn-info {
   color: #fff;
   background-color: #5bc0de;
