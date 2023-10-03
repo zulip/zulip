@@ -152,7 +152,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     stream_data.add_sub(denmark);
 
     compose_defaults = {
-        trigger: "new topic button",
+        trigger: "clear topic button",
     };
 
     opts = {};
