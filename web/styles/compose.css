@@ -617,7 +617,7 @@ textarea.new_message_textarea {
 }
 
 textarea.new_message_textarea,
-.compose_table .recipient_box {
+#compose_recipient_box {
     border: 1px solid hsl(0deg 0% 0% / 20%);
     box-shadow: none;
     transition: border 0.2s ease;
@@ -630,11 +630,64 @@ textarea.new_message_textarea,
     }
 }
 
-input.recipient_box {
-    margin: 0;
-    padding: 0 6px;
-    height: auto;
+#compose_recipient_box {
+    display: flex;
+    flex: 1 1 0;
     border-radius: 3px;
+    background: hsl(0deg 0% 100%);
+
+    /* Give the recipient box, a `<div>`, the
+       correct styles when focus is in the
+       #stream_message_recipient_topic `<input>` */
+    &:focus-within {
+        outline: 0;
+        border: 1px solid hsl(0deg 0% 67%);
+        box-shadow: none;
+    }
+
+    #stream_message_recipient_topic,
+    #recipient_box_clear_topic_button {
+        background: none;
+        border: none;
+    }
+
+    /* Styles for input in the recipient_box */
+    #stream_message_recipient_topic {
+        /* Override inherited widths; flexbox will ensure
+           that it grows to fit. */
+        width: 0;
+        flex: 1 1 0;
+
+        /* Override flexbox's effective `max-content` min-width */
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        box-shadow: none;
+        outline: none;
+
+        padding: 4px 6px;
+    }
+
+    /* Styles for new conversation button in the recipient_box */
+    #recipient_box_clear_topic_button {
+        /* Set the border radius smaller, relative to the parent */
+        border-radius: 2px;
+        padding: 6px;
+        margin: 1px;
+
+        .zulip-icon {
+            display: block;
+        }
+
+        &:hover {
+            background-color: hsl(231deg 100% 90% / 20%);
+        }
+    }
+
+    /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
+    & input {
+        margin-bottom: 0;
+    }
 }
 
 #compose_select_recipient_widget {
@@ -645,14 +698,6 @@ input.recipient_box {
     &.dropdown-widget-button {
         padding: 0 6px;
     }
-}
-
-#stream_message_recipient_topic.recipient_box {
-    width: 100%;
-    /* This width roughly corresponds to how long of a topic can appear in
-       the left sidebar with a single digit unread count without being
-       cut off. */
-    max-width: 175px;
 }
 
 #private_message_recipient.recipient_box {
@@ -748,7 +793,7 @@ input.recipient_box {
 
 #compose-recipient {
     display: flex;
-    width: 100%;
+    flex: 1 1 0;
     /* Use this containing flex element to
       establish the minimum height of all its
       children; the default `align-items: stretch`

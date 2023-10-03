@@ -48,7 +48,7 @@ function hide_box() {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
-    $("#stream_message_recipient_topic").hide();
+    $("#compose_recipient_box").hide();
     $("#compose-direct-recipient").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();

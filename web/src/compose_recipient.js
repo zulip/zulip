@@ -165,14 +165,14 @@ function update_recipient_label(stream_id) {
 export function update_compose_for_message_type(message_type, opts) {
     if (message_type === "stream") {
         $("#compose-direct-recipient").hide();
-        $("#stream_message_recipient_topic").show();
+        $("#compose_recipient_box").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
         $("#compose-direct-recipient").show();
-        $("#stream_message_recipient_topic").hide();
+        $("#compose_recipient_box").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");

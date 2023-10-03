@@ -362,6 +362,25 @@ export function initialize() {
         compose_recipient.update_placeholder_text();
     });
 
+    $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
+        const $input = $("#stream_message_recipient_topic");
+        const $button = $("#recipient_box_clear_topic_button");
+
+        $input.val("");
+        $input.trigger("focus");
+        $button.hide();
+    });
+
+    $("#compose_recipient_box").on("input", "#stream_message_recipient_topic", (e) => {
+        const $button = $("#recipient_box_clear_topic_button");
+        const value = $(e.target).val();
+        if (value.length === 0) {
+            $button.hide();
+        } else {
+            $button.show();
+        }
+    });
+
     $("#stream_message_recipient_topic").on("focus", () => {
         compose_recipient.update_placeholder_text();
     });
