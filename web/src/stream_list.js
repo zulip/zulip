@@ -719,7 +719,6 @@ export function set_event_handlers({on_stream_click}) {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        popovers.hide_all();
         on_stream_click(stream_id, "sidebar");
 
         clear_and_hide_search();
