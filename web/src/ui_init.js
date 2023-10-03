@@ -23,6 +23,7 @@ import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
@@ -530,6 +531,7 @@ export function initialize_everything() {
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
     popover_menus.initialize();
+    compose_popovers.initialize();
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
