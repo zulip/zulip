@@ -434,7 +434,16 @@ function activity_score(sub) {
     if (!sub.subscribed) {
         stream_score = -1;
     } else {
-        if (sub.pin_to_top) {
+        if(sub.is_addressed){
+            stream_score += 16;
+        }
+        if (sub.pin_to_top && !sub.is_muted) {
+            stream_score += 8;
+        }
+        if (sub.subscribed && !sub.is_muted) {
+            stream_score += 4;
+        }
+        if (sub.is_muted) {
             stream_score += 2;
         }
         // Note: A pinned stream may accumulate a 3rd point if it has recent activity.

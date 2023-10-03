@@ -124,6 +124,7 @@ function test(label, f) {
 }
 
 test("sort_streams", ({override}) => {
+
     let test_streams = [
         {
             stream_id: 101,
@@ -131,6 +132,8 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: true,
+            is_addressed: true,
         },
         {
             stream_id: 102,
@@ -138,6 +141,8 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 100,
             subscribed: true,
+            is_muted: false,
+            is_addressed: false,
         },
         {
             stream_id: 103,
@@ -145,6 +150,8 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: false,
+            is_addressed: false,
         },
         {
             stream_id: 104,
@@ -152,16 +159,38 @@ test("sort_streams", ({override}) => {
             pin_to_top: true,
             stream_weekly_traffic: 100,
             subscribed: true,
+            is_muted: false,
+            is_addressed: false,
         },
         {
             stream_id: 105,
-            name: "dead",
+            name: "dead", 
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: false,
+            is_addressed: false,
+        },
+        {
+            stream_id: 106,
+            name: "Denver",
+            pin_to_top: true,
+            stream_weekly_traffic: 50,
+            subscribed: true,
+            is_muted: false,
+            is_addressed: false,
+        },
+        {
+            stream_id: 107,
+            name: "Desk", 
+            pin_to_top: false,
+            stream_weekly_traffic: 0,
+            subscribed: true,
+            is_muted: false,
+            is_addressed: true,
         },
     ];
-
+    
     override(
         user_settings,
         "demote_inactive_streams",
@@ -176,11 +205,14 @@ test("sort_streams", ({override}) => {
     );
 
     test_streams = th.sort_streams(test_streams, "d");
-    assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
-    assert.deepEqual(test_streams[1].name, "Docs"); // Active streams next
-    assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
-    assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
-    assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
+    assert.deepEqual(test_streams[0].name, "Desk");
+    assert.deepEqual(test_streams[1].name, "Dev");
+    assert.deepEqual(test_streams[2].name, "Denmark"); 
+    assert.deepEqual(test_streams[3].name, "Denver");
+    assert.deepEqual(test_streams[4].name, "Docs");
+    assert.deepEqual(test_streams[5].name, "Derp");
+    assert.deepEqual(test_streams[6].name, "dead"); 
+     
 
     // Test sort streams with description
     test_streams = [
