@@ -1248,6 +1248,10 @@
         }
     }
 
+    #user-panel-admin > .list-toggler-container {
+        border-color: hsl(0deg 0% 0% / 20%);
+    }
+
     /* Popover: */
     .hotspot.overlay .hotspot-popover {
         border-color: hsl(0deg 0% 0% / 20%) !important;

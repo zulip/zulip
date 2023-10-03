@@ -10,7 +10,9 @@ async function navigate_to_user_list(page: Page): Promise<void> {
     await page.click(menu_selector);
     await page.click('.dropdown-menu a[href="#organization"]');
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
-    await page.click("li[data-section='user-list-admin']");
+    await page.click("li[data-section='user-panel-admin']");
+    await page.waitForSelector("#user-panel-admin.show", {visible: true});
+    await page.click(".ind-tab[data-tab-key='user-list-admin']");
 }
 
 async function user_row(page: Page, name: string): Promise<string> {
@@ -75,8 +77,10 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
 
     // "Deactivated users" section doesn't render just deactivated users until reloaded.
     await page.reload();
-    const deactivated_users_section = "li[data-section='deactivated-users-admin']";
-    await page.waitForSelector(deactivated_users_section, {visible: true});
+    const deactivated_users_section = ".ind-tab[data-tab-key='deactivated-users-admin']";
+    await page.waitForSelector("li[data-section='user-panel-admin']", {visible: true});
+    await page.click("li[data-section='user-panel-admin']");
+    await page.waitForSelector("#user-panel-admin.show", {visible: true});
     await page.click(deactivated_users_section);
 
     // Instead of waiting for reactivate button using the `waitForSelector` function,

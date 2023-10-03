@@ -106,21 +106,9 @@
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
-                    <li tabindex="0" data-section="user-list-admin">
+                    <li tabindex="0" data-section="user-panel-admin">
                         <i class="icon fa fa-user" aria-hidden="true"></i>
                         <div class="text">{{t "Users" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
-                    </li>
-                    {{/unless}}
-                    {{#unless is_guest}}
-                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="deactivated-users-admin">
-                        <i class="icon fa fa-user-times" aria-hidden="true"></i>
-                        <div class="text">{{t "Deactivated users" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
@@ -130,12 +118,6 @@
                         {{#unless can_create_new_bots}}
                         <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
                         {{/unless}}
-                    </li>
-                    {{/unless}}
-                    {{#unless is_guest}}
-                    <li tabindex="0" data-section="invites-list-admin">
-                        <i class="icon fa fa-user-plus" aria-hidden="true"></i>
-                        <div class="text">{{t "Invitations" }}</div>
                     </li>
                     {{/unless}}
                     {{#if is_admin}}

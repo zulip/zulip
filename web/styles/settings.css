@@ -266,6 +266,15 @@ td .button {
     }
 }
 
+.toggle-user-panel > .ind-tab {
+    width: 130px !important;
+}
+
+#user-panel-admin > .list-toggler-container {
+    padding: 10px;
+    border-bottom: 1px solid hsl(0deg 0% 87%);
+}
+
 .settings-section {
     display: none;
     width: calc(100% - 40px);

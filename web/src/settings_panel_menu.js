@@ -132,7 +132,11 @@ export class SettingsPanelMenu {
         // It could be that the hash has already been set.
         browser_history.update_hash_internally_if_required(settings_section_hash);
 
-        $(".settings-section").removeClass("show");
+        $(".settings-section")
+            .not("#admin-user-list")
+            .not("#admin-deactivated-users-list")
+            .not("#admin-invites-list")
+            .removeClass("show");
 
         settings_sections.load_settings_section(section);
 

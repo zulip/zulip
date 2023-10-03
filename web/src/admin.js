@@ -74,6 +74,7 @@ function insert_tip_box() {
         .not("#organization-auth-settings")
         .not("#admin-bot-list")
         .not("#admin-invites-list")
+        .not("#user-panel-admin")
         .prepend(tip_box);
 }
 
