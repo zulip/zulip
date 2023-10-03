@@ -8,19 +8,31 @@ sent by Zapier directly in Zulip.
 
 1. Create an account on [Zapier](https://zapier.com).
 
-1. [Click here](https://zapier.com/developer/public-invite/8304/bb0e9784d171eb44762c1bef4fcba2df/)
-   and then click **Accept Invite & Build a Zap**.
+1. Go to [Zulip Integrations](https://zapier.com/apps/zulip/integrations).
 
-1. Click **Create Zap** in the upper left.
+1. Scroll down to click on the app you want to connect to Zulip, or find it via
+   the search box.
 
-1. Follow the instructions to select a Trigger App and Event (**When this happens ...** (Step 1)).
-   This could be an app like Asana, Trello, Gmail, Calendar, or anything else.
+1. Under **Choose a Trigger**, select an event in the app you are connecting to Zulip.
 
-1. **Do this ...** (Step 2): Search for Zulip, and click on the Zulip icon. Follow the instructions.
+1. Under **Choose an Action**, select **Send a Private Message** or **Send a
+   Stream Message**.
 
-1. At some point, Zapier will ask you to sign in with your Zulip
-   credentials. Use the email address and API key of the bot you created above.
+1. Follow the instructions in the right sidebar to set up the trigger event.
 
-1. Fill out the topic/recipient/message content fields as desired.
+1. Click on the Zulip action you selected in the center panel.
+
+1. Under **Account** in the right sidebar, click **Sign in** to connect your bot
+   to Zapier.
+
+1. On the **Allow Zapier to access your Zulip Account?** screen, enter the URL for
+   your Zulip organization, and the email address and API key of the bot you
+   created above.
+
+1. Under **Action** in the right sidebar, configure **Recipients** for a direct
+   message, or **Stream name** and **Topic**, as well as **Message content**.
+
+1. When everything has been configured as desired, click **Publish** to enable
+   your Zap.
 
 **Congratulations! You're done!**
