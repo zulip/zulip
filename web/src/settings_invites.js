@@ -106,12 +106,12 @@ function populate_invites(invites_data) {
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
 }
 
-function do_revoke_invite() {
+function do_revoke_invite({$row, invite_id, is_multiuse}) {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const modal_is_multiuse = $(".dialog_submit_button").attr("data-is-multiuse");
-    const $revoke_button = meta.$current_revoke_invite_user_modal_row.find("button.revoke");
+    const $revoke_button = $row.find("button.revoke");
 
-    if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
+    if (modal_invite_id !== invite_id || modal_is_multiuse !== is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
         ui_report.client_error(
             $t_html({
@@ -122,10 +122,10 @@ function do_revoke_invite() {
     }
 
     $revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
-    let url = "/json/invites/" + meta.invite_id;
+    let url = "/json/invites/" + invite_id;
 
     if (modal_is_multiuse === "true") {
-        url = "/json/invites/multiuse/" + meta.invite_id;
+        url = "/json/invites/multiuse/" + invite_id;
     }
     channel.del({
         url,
@@ -133,7 +133,7 @@ function do_revoke_invite() {
             ui_report.generic_row_button_error(xhr, $revoke_button);
         },
         success() {
-            meta.$current_revoke_invite_user_modal_row.remove();
+            $row.remove();
         },
     });
 }
@@ -198,11 +198,10 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         const $row = $(e.target).closest(".invite_row");
         const email = $row.find(".email").text();
         const referred_by = $row.find(".referred_by").text();
-        meta.$current_revoke_invite_user_modal_row = $row;
-        meta.invite_id = $(e.currentTarget).attr("data-invite-id");
-        meta.is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
+        const invite_id = $(e.currentTarget).attr("data-invite-id");
+        const is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
         const ctx = {
-            is_multiuse: meta.is_multiuse === "true",
+            is_multiuse: is_multiuse === "true",
             email,
             referred_by,
         };
@@ -213,11 +212,13 @@ export function on_load_success(invites_data, initialize_event_handlers) {
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
-            on_click: do_revoke_invite,
+            on_click() {
+                do_revoke_invite({$row, invite_id, is_multiuse});
+            },
         });
 
-        $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
-        $(".dialog_submit_button").attr("data-is-multiuse", meta.is_multiuse);
+        $(".dialog_submit_button").attr("data-invite-id", invite_id);
+        $(".dialog_submit_button").attr("data-is-multiuse", is_multiuse);
     });
 
     $(".admin_invites_table").on("click", ".resend", (e) => {
