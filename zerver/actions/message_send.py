@@ -47,7 +47,7 @@ from zerver.lib.exceptions import (
     TopicWildcardMentionNotAllowedError,
     ZephyrMessageAlreadySentError,
 )
-from zerver.lib.markdown import MessageRenderingResult
+from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
@@ -55,7 +55,6 @@ from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
     normalize_body,
-    render_markdown,
     set_visibility_policy_possible,
     stream_wildcard_mention_allowed,
     topic_wildcard_mention_allowed,
@@ -160,7 +159,7 @@ def render_incoming_message(
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
-        rendering_result = render_markdown(
+        rendering_result = render_message_markdown(
             message=message,
             content=content,
             realm=realm,
@@ -732,7 +731,7 @@ def create_user_messages(
     topic_participant_user_ids: Set[int],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
-    # render_markdown by code in the Markdown inline patterns
+    # render_message_markdown by code in the Markdown inline patterns
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
     is_stream_message = message.is_stream_message()
 

@@ -15,7 +15,7 @@ from zerver.actions.message_send import (
     extract_stream_indicator,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import render_markdown
+from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.topic import REQ_topic
@@ -272,5 +272,5 @@ def render_message_backend(
     assert client is not None
     message.sending_client = client
 
-    rendering_result = render_markdown(message, content, realm=user_profile.realm)
+    rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
     return json_success(request, data={"rendered": rendering_result.rendered_content})
