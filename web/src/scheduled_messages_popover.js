@@ -11,40 +11,9 @@ import * as flatpickr from "./flatpickr";
 import * as overlays from "./overlays";
 import * as popover_menus from "./popover_menus";
 import * as scheduled_messages from "./scheduled_messages";
-import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
-
-let selected_send_later_timestamp;
-
-export function get_selected_send_later_timestamp() {
-    if (!selected_send_later_timestamp) {
-        return undefined;
-    }
-    return selected_send_later_timestamp;
-}
-
-export function get_formatted_selected_send_later_time() {
-    const current_time = Date.now() / 1000; // seconds, like selected_send_later_timestamp
-    if (
-        scheduled_messages.is_send_later_timestamp_missing_or_expired(
-            selected_send_later_timestamp,
-            current_time,
-        )
-    ) {
-        return undefined;
-    }
-    return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
-}
-
-export function set_selected_schedule_timestamp(timestamp) {
-    selected_send_later_timestamp = timestamp;
-}
-
-export function reset_selected_schedule_timestamp() {
-    selected_send_later_timestamp = undefined;
-}
 
 function set_compose_box_schedule(element) {
     const selected_send_at_time = element.dataset.sendStamp / 1000;
@@ -137,7 +106,7 @@ export function do_schedule_message(send_at_time) {
         // Convert to timestamp if this is not a timestamp.
         send_at_time = Math.floor(Date.parse(send_at_time) / 1000);
     }
-    selected_send_later_timestamp = send_at_time;
+    scheduled_messages.set_selected_schedule_timestamp(send_at_time);
     compose.finish(true);
 }
 
@@ -150,7 +119,8 @@ export function initialize() {
             $("#compose-textarea").trigger("focus");
         },
         onShow(instance) {
-            const formatted_send_later_time = get_formatted_selected_send_later_time();
+            const formatted_send_later_time =
+                scheduled_messages.get_formatted_selected_send_later_time();
             instance.setContent(
                 parse_html(
                     render_send_later_popover({
@@ -164,7 +134,7 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             $popper.one("click", ".send_later_selected_send_later_time", () => {
-                const send_at_timestamp = get_selected_send_later_timestamp();
+                const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);
             });
             $popper.one("click", ".open_send_later_modal", open_send_later_menu);
