@@ -38,6 +38,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
+import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
@@ -151,7 +152,7 @@ function should_list_all_streams() {
 }
 
 export function toggle_pin_to_top_stream(sub) {
-    stream_edit.set_stream_property(sub, "pin_to_top", !sub.pin_to_top);
+    stream_settings_api.set_stream_property(sub, "pin_to_top", !sub.pin_to_top);
 }
 
 let subscribed_only = true;
@@ -255,7 +256,7 @@ export function update_is_default_stream() {
 
 export function set_color(stream_id, color) {
     const sub = sub_store.get(stream_id);
-    stream_edit.set_stream_property(sub, "color", color);
+    stream_settings_api.set_stream_property(sub, "color", color);
 }
 
 export function update_subscribers_ui(sub) {
