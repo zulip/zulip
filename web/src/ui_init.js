@@ -649,6 +649,7 @@ export function initialize_everything() {
         on_enter_send: compose.finish,
     });
     compose_textarea.initialize();
+    upload.initialize();
     search.initialize({
         on_narrow_search: narrow.activate,
     });
@@ -694,7 +695,6 @@ export function initialize_everything() {
     hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();
-    upload.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();

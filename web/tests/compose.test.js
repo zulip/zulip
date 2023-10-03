@@ -122,7 +122,6 @@ function test_ui(label, f) {
 function initialize_handlers({override}) {
     override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
     override(page_params, "realm_video_chat_provider", 0);
-    override(upload, "setup_upload", () => undefined);
     override(upload, "feature_check", () => {});
     override(resize, "watch_manual_resize", () => {});
     compose.initialize();
@@ -439,23 +438,17 @@ test_ui("initialize", ({override}) => {
 
     page_params.max_file_upload_size_mib = 512;
 
-    let setup_upload_called = false;
     let uppy_cancel_all_called = false;
-    override(upload, "setup_upload", (config) => {
-        assert.equal(config.mode, "compose");
-        setup_upload_called = true;
-        return {
-            cancelAll() {
-                uppy_cancel_all_called = true;
-            },
-        };
+    override(upload, "compose_upload_object", {
+        cancelAll() {
+            uppy_cancel_all_called = true;
+        },
     });
     override(upload, "feature_check", () => {});
 
     compose.initialize();
 
     assert.ok(resize_watch_manual_resize_checked);
-    assert.ok(setup_upload_called);
 
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;

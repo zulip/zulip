@@ -69,7 +69,6 @@ function test(label, f) {
 test("videos", ({override}) => {
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
 
-    override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
     stub_out_video_calls();
@@ -247,7 +246,6 @@ test("videos", ({override}) => {
 });
 
 test("test_video_chat_button_toggle disabled", ({override}) => {
-    override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
@@ -256,7 +254,6 @@ test("test_video_chat_button_toggle disabled", ({override}) => {
 });
 
 test("test_video_chat_button_toggle no url", ({override}) => {
-    override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
@@ -266,7 +263,6 @@ test("test_video_chat_button_toggle no url", ({override}) => {
 });
 
 test("test_video_chat_button_toggle enabled", ({override}) => {
-    override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;

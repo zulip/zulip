@@ -4,7 +4,6 @@ import $ from "jquery";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_state from "./compose_state";
@@ -15,6 +14,9 @@ import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
+
+export let compose_upload_object;
+
 // Show the upload button only if the browser supports it.
 export function feature_check($upload_button) {
     if (window.XMLHttpRequest && new window.XMLHttpRequest().upload) {
@@ -417,6 +419,10 @@ export function setup_upload(config) {
 }
 
 export function initialize() {
+    compose_upload_object = setup_upload({
+        mode: "compose",
+    });
+
     // Allow the main panel to receive drag/drop events.
     $(".app-main").on("dragover", (event) => event.preventDefault());
 
@@ -428,7 +434,6 @@ export function initialize() {
 
         const $drag_drop_edit_containers = $(".message_edit_form form");
         const files = event.originalEvent.dataTransfer.files;
-        const compose_upload_object = compose.get_compose_upload_object();
         const $last_drag_drop_edit_container = $drag_drop_edit_containers.last();
 
         // Handlers registered on individual inputs will ensure that

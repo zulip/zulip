@@ -46,12 +46,6 @@ import * as zcommand from "./zcommand";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
-let uppy;
-
-export function get_compose_upload_object() {
-    return uppy;
-}
-
 function get_jitsi_server_url() {
     return page_params.realm_jitsi_server_url ?? page_params.server_jitsi_server_url;
 }
@@ -130,7 +124,7 @@ export function clear_preview_area() {
 
 export function abort_xhr() {
     $("#compose-send-button").prop("disabled", false);
-    uppy.cancelAll();
+    upload.compose_upload_object.cancelAll();
 }
 
 export const zoom_token_callbacks = new Map();
@@ -765,10 +759,6 @@ export function initialize() {
         e.stopPropagation();
 
         compose_ui.make_compose_box_original_size();
-    });
-
-    uppy = upload.setup_upload({
-        mode: "compose",
     });
 
     $("#compose-textarea").on("focus", () => {
