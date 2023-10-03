@@ -137,6 +137,9 @@ from zerver.lib.event_schema import (
     check_default_stream_groups,
     check_default_streams,
     check_delete_message,
+    check_draft_add,
+    check_draft_remove,
+    check_draft_update,
     check_has_zoom_token,
     check_heartbeat,
     check_hotspots,
@@ -3583,7 +3586,8 @@ class DraftActionTest(BaseAction):
             timestamp=1596820995,
         )
         action = lambda: do_create_drafts([dummy_draft], self.user_profile)
-        self.verify_action(action)
+        events = self.verify_action(action)
+        check_draft_add("events[0]", events[0])
 
     def test_draft_edit_event(self) -> None:
         self.do_enable_drafts_synchronization(self.user_profile)
@@ -3597,7 +3601,8 @@ class DraftActionTest(BaseAction):
         draft_id = do_create_drafts([dummy_draft], self.user_profile)[0].id
         dummy_draft.content = "Some more sample draft content"
         action = lambda: do_edit_draft(draft_id, dummy_draft, self.user_profile)
-        self.verify_action(action)
+        events = self.verify_action(action)
+        check_draft_update("events[0]", events[0])
 
     def test_draft_delete_event(self) -> None:
         self.do_enable_drafts_synchronization(self.user_profile)
@@ -3610,7 +3615,8 @@ class DraftActionTest(BaseAction):
         )
         draft_id = do_create_drafts([dummy_draft], self.user_profile)[0].id
         action = lambda: do_delete_draft(draft_id, self.user_profile)
-        self.verify_action(action)
+        events = self.verify_action(action)
+        check_draft_remove("events[0]", events[0])
 
 
 class ScheduledMessagesEventsTest(BaseAction):

@@ -259,6 +259,47 @@ def check_delete_message(
     assert set(event.keys()) == keys
 
 
+draft_fields = DictType(
+    required_keys=[
+        ("id", int),
+        ("type", EnumType(["", "stream", "private"])),
+        ("to", ListType(int)),
+        ("topic", str),
+        ("content", str),
+    ],
+    optional_keys=[
+        ("timestamp", int),
+    ],
+)
+
+drafts_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("drafts")),
+        ("op", Equals("add")),
+        ("drafts", ListType(draft_fields)),
+    ]
+)
+check_draft_add = make_checker(drafts_add_event)
+
+drafts_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("drafts")),
+        ("op", Equals("update")),
+        ("draft", draft_fields),
+    ]
+)
+check_draft_update = make_checker(drafts_update_event)
+
+drafts_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("drafts")),
+        ("op", Equals("remove")),
+        ("draft_id", int),
+    ]
+)
+check_draft_remove = make_checker(drafts_remove_event)
+
+
 has_zoom_token_event = event_dict_type(
     required_keys=[
         ("type", Equals("has_zoom_token")),

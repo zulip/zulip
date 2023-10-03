@@ -5085,7 +5085,7 @@ paths:
                               "to": [3],
                               "topic": "sync drafts",
                               "content": "Let's add backend support for syncing drafts.",
-                              "timestamp": 1595479019.43915,
+                              "timestamp": 1595479019,
                             },
                             {
                               "id": 2,
@@ -5093,7 +5093,7 @@ paths:
                               "to": [4],
                               "topic": "",
                               "content": "What if we made it possible to sync drafts in Zulip?",
-                              "timestamp": 1595479020.43916,
+                              "timestamp": 1595479019,
                             },
                             {
                               "id": 3,
@@ -5101,7 +5101,7 @@ paths:
                               "to": [4, 10],
                               "topic": "",
                               "content": "What if we made it possible to sync drafts in Zulip?",
-                              "timestamp": 1595479021.43916,
+                              "timestamp": 1595479019,
                             },
                           ],
                       }
@@ -18785,7 +18785,7 @@ components:
           description: |
             The body of the draft. Should not contain null bytes.
         timestamp:
-          type: number
+          type: integer
           description: |
             A Unix timestamp (seconds only) representing when the draft was
             last edited. When creating a draft, this key need not be present
