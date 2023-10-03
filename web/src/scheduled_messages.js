@@ -10,7 +10,6 @@ import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
@@ -18,6 +17,8 @@ export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
 
 // scheduled_messages_data is a dictionary where key=scheduled_message_id and value=scheduled_messages
 export const scheduled_messages_data = {};
+
+let selected_send_later_timestamp;
 
 function compute_send_times(now = new Date()) {
     const send_times = {};
@@ -132,9 +133,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
     compose_banner.clear_message_sent_banners(false);
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
-    scheduled_messages_popover.set_selected_schedule_timestamp(
-        scheduled_msg.scheduled_delivery_timestamp,
-    );
+    set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
 }
 
 function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
@@ -277,6 +276,29 @@ export function get_filtered_send_opts(date) {
         possible_send_later_monday,
         send_later_custom,
     };
+}
+
+export function get_selected_send_later_timestamp() {
+    if (!selected_send_later_timestamp) {
+        return undefined;
+    }
+    return selected_send_later_timestamp;
+}
+
+export function get_formatted_selected_send_later_time() {
+    const current_time = Date.now() / 1000; // seconds, like selected_send_later_timestamp
+    if (is_send_later_timestamp_missing_or_expired(selected_send_later_timestamp, current_time)) {
+        return undefined;
+    }
+    return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
+}
+
+export function set_selected_schedule_timestamp(timestamp) {
+    selected_send_later_timestamp = timestamp;
+}
+
+export function reset_selected_schedule_timestamp() {
+    selected_send_later_timestamp = undefined;
 }
 
 export function initialize(scheduled_messages_params) {
