@@ -20,12 +20,12 @@ from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
     MessageDict,
     get_first_visible_message_id,
     maybe_update_first_visible_message_id,
-    render_markdown,
     update_first_visible_message_id,
 )
 from zerver.lib.narrow import (
@@ -4299,7 +4299,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
     def update_message(self, msg: Message, content: str) -> None:
         hamlet = self.example_user("hamlet")
         realm_id = hamlet.realm.id
-        rendering_result = render_markdown(msg, content)
+        rendering_result = render_message_markdown(msg, content)
         mention_backend = MentionBackend(realm_id)
         mention_data = MentionData(mention_backend, content, msg.sender)
         do_update_message(
