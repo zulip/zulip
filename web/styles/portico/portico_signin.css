@@ -1340,9 +1340,18 @@ button#register_auth_button_gitlab {
         min-height: calc(100vh - 505px);
     }
 
+    #create-account,
     #new-realm-creation {
         margin: 0 -30px;
         transform: scale(0.9);
+    }
+
+    #create-account {
+        margin: -70px;
+
+        #registration {
+            padding: 0;
+        }
     }
 }
 
@@ -1351,16 +1360,26 @@ button#register_auth_button_gitlab {
         min-height: calc(100vh - 560px);
     }
 
+    #create-account,
     #new-realm-creation {
         margin: -10px -40px;
         transform: scale(0.8);
     }
+
+    #create-account {
+        margin: -100px;
+    }
 }
 
 @media (width <= 340px) {
+    #create-account,
     #new-realm-creation {
         margin: -40px -60px;
         transform: scale(0.7);
+    }
+
+    #create-account {
+        margin: -150px;
     }
 }
 
