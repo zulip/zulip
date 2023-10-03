@@ -13,12 +13,13 @@ import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
+import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import * as user_group_edit_members from "./user_group_edit_members";
-import * as user_group_ui_updates from "./user_group_ui_updates";
 import * as user_groups from "./user_groups";
 import * as user_group_settings_ui from "./user_groups_settings_ui";
 
@@ -56,9 +57,46 @@ export function get_edit_container(group) {
     );
 }
 
+function update_add_members_elements(group) {
+    if (!is_editing_group(group.id)) {
+        return;
+    }
+
+    // We are only concerned with the Members tab for editing groups.
+    const $add_members_container = $(".edit_members_for_user_group .add_members_container");
+
+    if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
+        // For guest users, we just hide the add_members feature.
+        $add_members_container.hide();
+        return;
+    }
+
+    // Otherwise, we adjust whether the widgets are disabled based on
+    // whether this user is authorized to add members.
+    const $input_element = $add_members_container.find(".input").expectOne();
+    const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
+
+    if (settings_data.can_edit_user_group(group.id)) {
+        $input_element.prop("disabled", false);
+        $button_element.prop("disabled", false);
+        $button_element.css("pointer-events", "");
+        $add_members_container[0]._tippy?.destroy();
+        $add_members_container.removeClass("add_members_disabled");
+    } else {
+        $input_element.prop("disabled", true);
+        $button_element.prop("disabled", true);
+        $add_members_container.addClass("add_members_disabled");
+
+        stream_ui_updates.initialize_disable_btn_hint_popover(
+            $add_members_container,
+            $t({defaultMessage: "Only group members can add users to a group."}),
+        );
+    }
+}
+
 function show_membership_settings(group) {
     const $edit_container = get_edit_container(group);
-    user_group_ui_updates.update_add_members_elements(group);
+    update_add_members_elements(group);
 
     const $member_container = $edit_container.find(".edit_members_for_user_group");
     user_group_edit_members.enable_member_management({
@@ -74,7 +112,7 @@ function enable_group_edit_settings(group) {
     const $edit_container = get_edit_container(group);
     $edit_container.find(".group-header .button-group").show();
     $edit_container.find(".member-list .actions").show();
-    user_group_ui_updates.update_add_members_elements(group);
+    update_add_members_elements(group);
 }
 
 function disable_group_edit_settings(group) {
@@ -84,7 +122,7 @@ function disable_group_edit_settings(group) {
     const $edit_container = get_edit_container(group);
     $edit_container.find(".group-header .button-group").hide();
     $edit_container.find(".member-list .actions").hide();
-    user_group_ui_updates.update_add_members_elements(group);
+    update_add_members_elements(group);
 }
 
 export function handle_member_edit_event(group_id, user_ids) {
@@ -138,6 +176,10 @@ export function update_settings_pane(group) {
     $edit_container.find(".group-description").text(group.description);
 }
 
+function update_toggler_for_group_setting() {
+    toggler.goto(select_tab);
+}
+
 export function show_settings_for(group) {
     const html = render_user_group_settings({
         group,
@@ -145,7 +187,7 @@ export function show_settings_for(group) {
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
-    user_group_ui_updates.update_toggler_for_group_setting(group);
+    update_toggler_for_group_setting(group);
 
     $("#user_group_settings .tab-container").prepend(toggler.get());
     const $edit_container = get_edit_container(group);
