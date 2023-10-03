@@ -719,7 +719,7 @@ export function initialize() {
         "click",
         ".private_messages_container.zoom-out #private_messages_section_header",
         (e) => {
-            if (e.target.classList.value === "fa fa-align-right") {
+            if ($(e.target).closest("#show_all_private_messages").length === 1) {
                 // Let the browser handle the "all direct messages" widget.
                 return;
             }
