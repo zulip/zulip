@@ -17,7 +17,6 @@ from typing import (
     Union,
 )
 
-import ahocorasick
 import orjson
 from django.conf import settings
 from django.db import connection
@@ -39,7 +38,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.display_recipient import bulk_fetch_display_recipients, get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
-from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
+from zerver.lib.markdown import MessageRenderingResult, render_message_markdown, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
 from zerver.lib.query_helpers import query_for_ids
@@ -59,7 +58,6 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
-from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
@@ -344,7 +342,7 @@ def message_to_dict_json(message: Message, realm_id: Optional[int] = None) -> by
 
 
 def save_message_rendered_content(message: Message, content: str) -> str:
-    rendering_result = render_markdown(message, content, realm=message.get_realm())
+    rendering_result = render_message_markdown(message, content, realm=message.get_realm())
     rendered_content = None
     if rendering_result is not None:
         rendered_content = rendering_result.rendered_content
@@ -1044,41 +1042,6 @@ def get_messages_with_usermessage_rows_for_user(
         user_profile_id=user_profile_id,
         message_id__in=message_ids,
     ).values_list("message_id", flat=True)
-
-
-def render_markdown(
-    message: Message,
-    content: str,
-    realm: Optional[Realm] = None,
-    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
-    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
-    mention_data: Optional[MentionData] = None,
-    email_gateway: bool = False,
-) -> MessageRenderingResult:
-    """
-    This is basically just a wrapper for do_render_markdown.
-    """
-
-    if realm is None:
-        realm = message.get_realm()
-
-    sender = message.sender
-    sent_by_bot = sender.is_bot
-    translate_emoticons = sender.translate_emoticons
-
-    rendering_result = markdown_convert(
-        content,
-        realm_alert_words_automaton=realm_alert_words_automaton,
-        message=message,
-        message_realm=realm,
-        sent_by_bot=sent_by_bot,
-        translate_emoticons=translate_emoticons,
-        url_embed_data=url_embed_data,
-        mention_data=mention_data,
-        email_gateway=email_gateway,
-    )
-
-    return rendering_result
 
 
 def huddle_users(recipient_id: int) -> str:

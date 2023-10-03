@@ -207,7 +207,7 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, markdown_version)
 
-    @mock.patch("zerver.lib.message.markdown_convert")
+    @mock.patch("zerver.lib.message.render_message_markdown")
     def test_applying_markdown_invalid_format(self, convert_mock: Any) -> None:
         # pretend the converter returned an invalid message without raising an exception
         convert_mock.return_value = None

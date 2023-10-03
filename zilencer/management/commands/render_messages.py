@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import QuerySet
 from typing_extensions import override
 
-from zerver.lib.message import render_markdown
+from zerver.lib.markdown import render_message_markdown
 from zerver.models import Message
 
 
@@ -60,7 +60,7 @@ class Command(BaseCommand):
                     orjson.dumps(
                         {
                             "id": message.id,
-                            "content": render_markdown(message, content),
+                            "content": render_message_markdown(message, content),
                         },
                         option=orjson.OPT_APPEND_NEWLINE,
                     )
