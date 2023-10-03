@@ -113,6 +113,7 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
+import * as topic_popover from "./topic_popover";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
 import * as typeahead_helper from "./typeahead_helper";
@@ -527,6 +528,7 @@ export function initialize_everything() {
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
     popover_menus.initialize();
+    topic_popover.initialize();
     message_actions_popover.initialize();
     scheduled_messages_popover.initialize();
 

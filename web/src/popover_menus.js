@@ -2,7 +2,6 @@
    TippyJS/Popper popover library from the legacy Bootstrap
    popovers system in popovers.js. */
 
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
@@ -10,30 +9,23 @@ import render_all_messages_sidebar_actions from "../templates/all_messages_sideb
 import render_change_visibility_policy_popover from "../templates/change_visibility_policy_popover.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
-import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
-import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose_actions from "./compose_actions";
-import * as confirm_dialog from "./confirm_dialog";
 import * as drafts from "./drafts";
 import * as giphy from "./giphy";
-import {$t_html} from "./i18n";
-import * as message_edit from "./message_edit";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
-import * as stream_popover from "./stream_popover";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
@@ -359,156 +351,6 @@ export function initialize() {
             popover_instances.compose_control_buttons = undefined;
         },
     });
-
-    register_popover_menu(
-        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
-        {
-            ...left_sidebar_tippy_options,
-            onShow(instance) {
-                popover_instances.topics_menu = instance;
-                on_show_prep(instance);
-                let stream_id;
-                let topic_name;
-                let url;
-
-                if (instance.reference.classList.contains("inbox-topic-menu")) {
-                    const $elt = $(instance.reference);
-                    stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
-                    topic_name = $elt.attr("data-topic-name");
-                    url = new URL($elt.attr("data-topic-url"), page_params.realm_uri);
-                } else {
-                    const $elt = $(instance.reference)
-                        .closest(".topic-sidebar-menu-icon")
-                        .expectOne();
-                    const $stream_li = $elt.closest(".narrow-filter").expectOne();
-                    topic_name = $elt.closest("li").expectOne().attr("data-topic-name");
-                    url = $elt.closest("li").find(".topic-name").expectOne().prop("href");
-                    stream_id = stream_popover.elem_to_stream_id($stream_li);
-                }
-
-                instance.context = popover_menus_data.get_topic_popover_content_context({
-                    stream_id,
-                    topic_name,
-                    url,
-                });
-                instance.setContent(parse_html(render_topic_sidebar_actions(instance.context)));
-            },
-            onMount(instance) {
-                const $popper = $(instance.popper);
-                const {stream_id, topic_name} = instance.context;
-
-                if (!stream_id) {
-                    instance.hide();
-                    return;
-                }
-
-                $popper.on("click", ".tab-option", (e) => {
-                    $(".tab-option").removeClass("selected-tab");
-                    $(e.currentTarget).addClass("selected-tab");
-
-                    const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        visibility_policy,
-                    );
-                });
-
-                $popper.one("click", ".sidebar-popover-unmute-topic", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.UNMUTED,
-                    );
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-remove-unmute", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.INHERIT,
-                    );
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-mute-topic", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.MUTED,
-                    );
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-remove-mute", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.INHERIT,
-                    );
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
-                    starred_messages_ui.confirm_unstar_all_messages_in_topic(
-                        Number.parseInt(stream_id, 10),
-                        topic_name,
-                    );
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-mark-topic-read", () => {
-                    unread_ops.mark_topic_as_read(stream_id, topic_name);
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
-                    const html_body = render_delete_topic_modal({topic_name});
-
-                    confirm_dialog.launch({
-                        html_heading: $t_html({defaultMessage: "Delete topic"}),
-                        help_link: "/help/delete-a-topic",
-                        html_body,
-                        on_click() {
-                            message_edit.delete_topic(stream_id, topic_name);
-                        },
-                    });
-
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
-                    message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-                        message_edit.toggle_resolve_topic(message_id, topic_name, true);
-                    });
-
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
-                    stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
-                    instance.hide();
-                });
-
-                $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
-                    stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
-                    instance.hide();
-                });
-
-                new ClipboardJS($popper.find(".sidebar-popover-copy-link-to-topic")[0]).on(
-                    "success",
-                    () => {
-                        instance.hide();
-                    },
-                );
-            },
-            onHidden(instance) {
-                instance.destroy();
-                popover_instances.topics_menu = undefined;
-            },
-        },
-    );
 
     register_popover_menu(".open_enter_sends_dialog", {
         placement: "top",
