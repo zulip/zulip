@@ -4,7 +4,7 @@ import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
-import * as row from "./rows";
+import * as rows from "./rows";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 
@@ -30,7 +30,7 @@ function update_stream_privacy_color(id, color) {
 function update_message_recipient_color(stream_name, color) {
     const recipient_color = stream_color.get_recipient_bar_color(color);
     for (const msg_list of message_lists.all_rendered_message_lists()) {
-        const $table = row.get_table(msg_list.table_name);
+        const $table = rows.get_table(msg_list.table_name);
         update_table_message_recipient_stream_color($table, stream_name, recipient_color);
     }
 
