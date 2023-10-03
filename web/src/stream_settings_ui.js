@@ -38,7 +38,6 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
-import * as stream_muting from "./stream_muting";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
@@ -149,11 +148,6 @@ function selectText(element) {
 
 function should_list_all_streams() {
     return !page_params.realm_is_zephyr_mirror_realm;
-}
-
-export function set_muted(sub, is_muted, status_element) {
-    stream_muting.update_is_muted(sub, is_muted);
-    stream_edit.set_stream_property(sub, "is_muted", sub.is_muted, status_element);
 }
 
 export function toggle_pin_to_top_stream(sub) {

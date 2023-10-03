@@ -310,8 +310,9 @@ function stream_is_muted_changed(e) {
         return;
     }
 
-    stream_settings_ui.set_muted(
+    set_stream_property(
         sub,
+        "is_muted",
         e.target.checked,
         `#stream_change_property_status${CSS.escape(sub.stream_id)}`,
     );
