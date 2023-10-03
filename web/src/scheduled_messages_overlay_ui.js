@@ -8,6 +8,7 @@ import * as messages_overlay_ui from "./messages_overlay_ui";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
+import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -27,7 +28,7 @@ export const keyboard_handling_context = {
             messages_overlay_ui.get_focused_element_id(this),
             10,
         );
-        scheduled_messages.edit_scheduled_message(focused_element_id);
+        scheduled_messages_ui.edit_scheduled_message(focused_element_id);
         overlays.close_overlay("scheduled");
     },
     on_delete() {
@@ -132,7 +133,7 @@ export function initialize() {
             .closest(".scheduled-message-row")
             .attr("data-scheduled-message-id");
         scheduled_msg_id = Number.parseInt(scheduled_msg_id, 10);
-        scheduled_messages.edit_scheduled_message(scheduled_msg_id);
+        scheduled_messages_ui.edit_scheduled_message(scheduled_msg_id);
         overlays.close_overlay("scheduled");
         e.stopPropagation();
         e.preventDefault();

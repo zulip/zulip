@@ -87,6 +87,7 @@ import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scheduled_messages_popover from "./scheduled_messages_popover";
+import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
@@ -530,6 +531,7 @@ export function initialize_everything() {
     message_list_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
+    scheduled_messages_ui.initialize();
     popover_menus.initialize();
     compose_popovers.initialize();
     left_sidebar_navigation_area_popovers.initialize();

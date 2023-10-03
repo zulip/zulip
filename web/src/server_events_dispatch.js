@@ -41,6 +41,7 @@ import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as reload from "./reload";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
+import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
@@ -496,6 +497,9 @@ export function dispatch_normal_event(event) {
                 }
                 case "remove": {
                     scheduled_messages.remove_scheduled_message(event.scheduled_message_id);
+                    scheduled_messages_ui.hide_scheduled_message_success_compose_banner(
+                        event.scheduled_message_id,
+                    );
                     scheduled_messages_overlay_ui.remove_scheduled_message_id(
                         event.scheduled_message_id,
                     );
