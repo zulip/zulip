@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 from unittest import mock
 
 from zerver.actions.submessage import do_add_submessage
-from zerver.lib.message import MessageDict
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, SubMessage
 

@@ -11,7 +11,6 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDetailsDict,
-    MessageDict,
     RawUnreadDirectMessageDict,
     RawUnreadMessagesResult,
     UnreadMessagesResult,
@@ -23,6 +22,7 @@ from zerver.lib.message import (
     format_unread_message_details,
     get_raw_unread_data,
 )
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, timeout_mock
 from zerver.lib.timeout import TimeoutExpiredError

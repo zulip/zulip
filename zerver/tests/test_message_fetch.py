@@ -23,11 +23,11 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
-    MessageDict,
     get_first_visible_message_id,
     maybe_update_first_visible_message_id,
     update_first_visible_message_id,
 )
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperatorError,

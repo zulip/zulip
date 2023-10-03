@@ -8,9 +8,9 @@ from zerver.lib.message import (
     access_message,
     set_visibility_policy_possible,
     should_change_visibility_policy,
-    update_to_dict_cache,
     visibility_policy_for_participation,
 )
+from zerver.lib.message_cache import update_to_dict_cache
 from zerver.lib.stream_subscription import subscriber_ids_with_stream_history_access
 from zerver.lib.streams import access_stream_by_id
 from zerver.models import Message, Reaction, Recipient, Stream, UserMessage, UserProfile

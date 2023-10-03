@@ -39,8 +39,8 @@ from zerver.lib.message import (
     stream_wildcard_mention_allowed,
     topic_wildcard_mention_allowed,
     truncate_topic,
-    update_to_dict_cache,
 )
+from zerver.lib.message_cache import update_to_dict_cache
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget

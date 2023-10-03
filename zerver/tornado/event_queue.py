@@ -39,7 +39,7 @@ from typing_extensions import override
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import MessageDict
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow import build_narrow_predicate
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.notification_data import UserMessageNotificationsData

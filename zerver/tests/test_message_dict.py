@@ -6,7 +6,8 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
+from zerver.lib.message import messages_for_ids
+from zerver.lib.message_cache import MessageDict, sew_messages_and_reactions
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client
@@ -207,7 +208,7 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, markdown_version)
 
-    @mock.patch("zerver.lib.message.render_message_markdown")
+    @mock.patch("zerver.lib.message_cache.render_message_markdown")
     def test_applying_markdown_invalid_format(self, convert_mock: Any) -> None:
         # pretend the converter returned an invalid message without raising an exception
         convert_mock.return_value = None
