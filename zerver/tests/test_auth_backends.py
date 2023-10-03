@@ -6312,7 +6312,9 @@ class TestLDAP(ZulipLDAPTestCase):
         }
     )
     def test_login_success_when_user_does_not_exist_with_valid_subdomain(self) -> None:
-        RealmDomain.objects.create(realm=self.backend._realm, domain="acme.com")
+        realm = self.backend._realm
+        do_set_realm_property(realm, "default_language", "ja", acting_user=None)
+        RealmDomain.objects.create(realm=realm, domain="acme.com")
         with self.settings(LDAP_APPEND_DOMAIN="acme.com"):
             user_profile = self.backend.authenticate(
                 request=mock.MagicMock(),
@@ -6324,6 +6326,8 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertEqual(user_profile.delivery_email, "newuser@acme.com")
             self.assertEqual(user_profile.full_name, "New LDAP fullname")
             self.assertEqual(user_profile.realm.string_id, "zulip")
+            # Verify the user got the realm's default language.
+            self.assertEqual(user_profile.default_language, "ja")
 
             # Verify avatar gets created
             self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)

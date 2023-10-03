@@ -4,6 +4,7 @@ import cgi
 import datetime
 import html
 import logging
+import mimetypes
 import re
 import time
 import urllib
@@ -533,6 +534,40 @@ class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
                 # Don't rewrite images on our own site (e.g. emoji, user uploads).
                 continue
             img.set("src", get_camo_url(url))
+
+
+class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
+    """
+    Rewrite inline video tags to serve external content via Camo.
+
+    This rewrites all video, except ones that are served from the current
+    realm or global STATIC_URL. This is to ensure that each realm only loads
+    videos that are hosted on that realm or by the global installation,
+    avoiding information leakage to external domains or between realms. We need
+    to disable proxying of videos hosted on the same realm, because otherwise
+    we will break videos in /user_uploads/, which require authorization to
+    view.
+    """
+
+    def __init__(self, zmd: "ZulipMarkdown") -> None:
+        super().__init__(zmd)
+        self.zmd = zmd
+
+    def run(self, root: Element) -> None:
+        # Get all URLs from the blob
+        found_videos = walk_tree(root, lambda e: e if e.tag == "video" else None)
+        for video in found_videos:
+            url = video.get("src")
+            assert url is not None
+            if is_static_or_current_realm_url(url, self.zmd.zulip_realm):
+                # Don't rewrite videos on our own site (e.g. user uploads).
+                continue
+            # Pass down both camo generated URL and the original video URL to the client.
+            # Camo URL is only used to generate preview of the video. When user plays the
+            # video, we switch to the source url to fetch the video. This allows playing
+            # the video with no load on our servers.
+            video.set("src", get_camo_url(url))
+            video.set("data-video-original-url", url)
 
 
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
@@ -1155,6 +1190,50 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if uncle_link.attrib["href"] not in parent_links:
                 return insertion_index
 
+    def is_video(self, url: str) -> bool:
+        url_type = mimetypes.guess_type(url)[0]
+        # Support only video formats (containers) that are supported cross-browser and cross-device. As per
+        # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
+        # MP4 and WebM are the only formats that are widely supported.
+        supported_mimetypes = ["video/mp4", "video/webm"]
+        return url_type in supported_mimetypes
+
+    def add_video(
+        self,
+        root: Element,
+        url: str,
+        title: Optional[str],
+        class_attr: str = "message_inline_image message_inline_video",
+        insertion_index: Optional[int] = None,
+    ) -> None:
+        if insertion_index is not None:
+            div = Element("div")
+            root.insert(insertion_index, div)
+        else:
+            div = SubElement(root, "div")
+
+        div.set("class", class_attr)
+        # Add `a` tag so that the syntax of video matches with
+        # other media types and clients don't get confused.
+        a = SubElement(div, "a")
+        a.set("href", url)
+        if title:
+            a.set("title", title)
+        video = SubElement(a, "video")
+        video.set("src", url)
+        video.set("preload", "metadata")
+
+    def handle_video_inlining(
+        self, root: Element, found_url: ResultWithFamily[Tuple[str, Optional[str]]]
+    ) -> None:
+        info = self.get_inlining_information(root, found_url)
+        url = found_url.result[0]
+
+        self.add_video(info["parent"], url, info["title"], insertion_index=info["index"])
+
+        if info["remove"] is not None:
+            info["parent"].remove(info["remove"])
+
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
@@ -1205,6 +1284,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if url in unique_previewable_urls and url not in processed_urls:
                 processed_urls.add(url)
             else:
+                continue
+
+            if self.is_video(url):
+                self.handle_video_inlining(root, found_url)
                 continue
 
             dropbox_image = self.dropbox_image(url)
@@ -2229,6 +2312,7 @@ class ZulipMarkdown(markdown.Markdown):
         )
         if settings.CAMO_URI:
             treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
+            treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry:

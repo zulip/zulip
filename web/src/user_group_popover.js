@@ -82,7 +82,7 @@ export function toggle_user_group_info_popover(element, message_id) {
                 ],
             },
             onCreate(instance) {
-                popovers.hide_all_except_sidebars();
+                popovers.hide_all();
                 if (message_id) {
                     message_lists.current.select_id(message_id);
                 }

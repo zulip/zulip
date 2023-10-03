@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
@@ -18,15 +19,43 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
+const invite_schema = z.intersection(
+    z.object({
+        invited_by_user_id: z.number(),
+        invited: z.number(),
+        expiry_date: z.number().nullable(),
+        id: z.number(),
+        invited_as: z.number(),
+    }),
+    z.union([
+        z.object({
+            is_multiuse: z.literal(false),
+            email: z.string(),
+        }),
+        z.object({
+            is_multiuse: z.literal(true),
+            link_url: z.string(),
+        }),
+    ]),
+);
+type Invite = z.output<typeof invite_schema> & {
+    invited_as_text?: string;
+    invited_absolute_time?: string;
+    expiry_date_absolute_time?: string;
+    is_admin?: boolean;
+    disable_buttons?: boolean;
+    referrer_name?: string;
+};
+
 const meta = {
     loaded: false,
 };
 
-export function reset() {
+export function reset(): void {
     meta.loaded = false;
 }
 
-function failed_listing_invites(xhr) {
+function failed_listing_invites(xhr: JQuery.jqXHR): void {
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
     ui_report.error(
         $t_html({defaultMessage: "Error listing invites"}),
@@ -35,23 +64,23 @@ function failed_listing_invites(xhr) {
     );
 }
 
-function add_invited_as_text(invites) {
+function add_invited_as_text(invites: Invite[]): void {
     for (const data of invites) {
         data.invited_as_text = settings_config.user_role_map.get(data.invited_as);
     }
 }
 
-function sort_invitee(a, b) {
+function sort_invitee(a: Invite, b: Invite): number {
     // multi-invite links don't have an email field,
     // so we set them to empty strings to let them
     // sort to the top
-    const str1 = (a.email || "").toUpperCase();
-    const str2 = (b.email || "").toUpperCase();
+    const str1 = a.is_multiuse ? "" : a.email.toUpperCase();
+    const str2 = b.is_multiuse ? "" : b.email.toUpperCase();
 
     return util.strcmp(str1, str2);
 }
 
-function populate_invites(invites_data) {
+function populate_invites(invites_data: {invites: Invite[]}): void {
     if (!meta.loaded) {
         return;
     }
@@ -75,7 +104,9 @@ function populate_invites(invites_data) {
             return render_admin_invites_list({invite: item});
         },
         filter: {
-            $element: $invites_table.closest(".settings-section").find(".search"),
+            $element: $invites_table
+                .closest(".settings-section")
+                .find<HTMLInputElement>("input.search"),
             predicate(item, value) {
                 const referrer = people.get_by_user_id(item.invited_by_user_id);
                 const referrer_email = referrer.email;
@@ -106,12 +137,20 @@ function populate_invites(invites_data) {
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
 }
 
-function do_revoke_invite() {
+function do_revoke_invite({
+    $row,
+    invite_id,
+    is_multiuse,
+}: {
+    $row: JQuery;
+    invite_id: string;
+    is_multiuse: string;
+}): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const modal_is_multiuse = $(".dialog_submit_button").attr("data-is-multiuse");
-    const $revoke_button = meta.$current_revoke_invite_user_modal_row.find("button.revoke");
+    const $revoke_button = $row.find("button.revoke");
 
-    if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
+    if (modal_invite_id !== invite_id || modal_is_multiuse !== is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
         ui_report.client_error(
             $t_html({
@@ -122,27 +161,27 @@ function do_revoke_invite() {
     }
 
     $revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
-    let url = "/json/invites/" + meta.invite_id;
+    let url = "/json/invites/" + invite_id;
 
     if (modal_is_multiuse === "true") {
-        url = "/json/invites/multiuse/" + meta.invite_id;
+        url = "/json/invites/multiuse/" + invite_id;
     }
-    channel.del({
+    void channel.del({
         url,
         error(xhr) {
             ui_report.generic_row_button_error(xhr, $revoke_button);
         },
         success() {
-            meta.$current_revoke_invite_user_modal_row.remove();
+            $row.remove();
         },
     });
 }
 
-function do_resend_invite() {
+function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
-    const $resend_button = meta.$current_resend_invite_user_modal_row.find("button.resend");
+    const $resend_button = $row.find("button.resend");
 
-    if (modal_invite_id !== meta.invite_id) {
+    if (modal_invite_id !== invite_id) {
         blueslip.error("Invite resending canceled due to non-matching fields.");
         ui_report.client_error(
             $t_html({
@@ -153,38 +192,43 @@ function do_resend_invite() {
     }
 
     $resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
-    channel.post({
-        url: "/json/invites/" + meta.invite_id + "/resend",
+    void channel.post({
+        url: "/json/invites/" + invite_id + "/resend",
         error(xhr) {
             ui_report.generic_row_button_error(xhr, $resend_button);
         },
-        success(data) {
+        success(raw_data) {
+            const data = z.object({timestamp: z.number()}).parse(raw_data);
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
-            data.timestamp = timerender.absolute_time(data.timestamp * 1000);
-            meta.$current_resend_invite_user_modal_row.find(".invited_at").text(data.timestamp);
+            const timestamp = timerender.absolute_time(data.timestamp * 1000);
+            $row.find(".invited_at").text(timestamp);
         },
     });
 }
 
-export function set_up(initialize_event_handlers = true) {
+export function set_up(initialize_event_handlers = true): void {
     meta.loaded = true;
 
     // create loading indicators
     loading.make_indicator($("#admin_page_invites_loading_indicator"));
 
     // Populate invites table
-    channel.get({
+    void channel.get({
         url: "/json/invites",
         timeout: 10 * 1000,
-        success(data) {
+        success(raw_data) {
+            const data = z.object({invites: z.array(invite_schema)}).parse(raw_data);
             on_load_success(data, initialize_event_handlers);
         },
         error: failed_listing_invites,
     });
 }
 
-export function on_load_success(invites_data, initialize_event_handlers) {
+export function on_load_success(
+    invites_data: {invites: Invite[]},
+    initialize_event_handlers: boolean,
+): void {
     meta.loaded = true;
     populate_invites(invites_data);
     if (!initialize_event_handlers) {
@@ -198,11 +242,10 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         const $row = $(e.target).closest(".invite_row");
         const email = $row.find(".email").text();
         const referred_by = $row.find(".referred_by").text();
-        meta.$current_revoke_invite_user_modal_row = $row;
-        meta.invite_id = $(e.currentTarget).attr("data-invite-id");
-        meta.is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
+        const invite_id = $(e.currentTarget).attr("data-invite-id")!;
+        const is_multiuse = $(e.currentTarget).attr("data-is-multiuse")!;
         const ctx = {
-            is_multiuse: meta.is_multiuse === "true",
+            is_multiuse: is_multiuse === "true",
             email,
             referred_by,
         };
@@ -213,11 +256,13 @@ export function on_load_success(invites_data, initialize_event_handlers) {
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
-            on_click: do_revoke_invite,
+            on_click() {
+                do_revoke_invite({$row, invite_id, is_multiuse});
+            },
         });
 
-        $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
-        $(".dialog_submit_button").attr("data-is-multiuse", meta.is_multiuse);
+        $(".dialog_submit_button").attr("data-invite-id", invite_id);
+        $(".dialog_submit_button").attr("data-is-multiuse", is_multiuse);
     });
 
     $(".admin_invites_table").on("click", ".resend", (e) => {
@@ -228,21 +273,22 @@ export function on_load_success(invites_data, initialize_event_handlers) {
 
         const $row = $(e.target).closest(".invite_row");
         const email = $row.find(".email").text();
-        meta.$current_resend_invite_user_modal_row = $row;
-        meta.invite_id = $(e.currentTarget).attr("data-invite-id");
+        const invite_id = $(e.currentTarget).attr("data-invite-id")!;
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Resend invitation"}),
             html_body,
-            on_click: do_resend_invite,
+            on_click() {
+                do_resend_invite({$row, invite_id});
+            },
         });
 
-        $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
+        $(".dialog_submit_button").attr("data-invite-id", invite_id);
     });
 }
 
-export function update_invite_users_setting_tip() {
+export function update_invite_users_setting_tip(): void {
     if (settings_data.user_can_invite_users_by_email() && !page_params.is_admin) {
         $(".invite-user-settings-tip").hide();
         return;
@@ -294,7 +340,7 @@ export function update_invite_users_setting_tip() {
     $(".invite-user-settings-tip").text(tip_text);
 }
 
-export function update_invite_user_panel() {
+export function update_invite_user_panel(): void {
     update_invite_users_setting_tip();
     if (
         !settings_data.user_can_invite_users_by_email() &&

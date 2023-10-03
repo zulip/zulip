@@ -220,6 +220,13 @@ export function is_mobile(): boolean {
     );
 }
 
+export function is_client_safari(): boolean {
+    // Since GestureEvent is only supported on Safari, we can use it
+    // to detect if the browser is Safari including Safari on iOS.
+    // https://developer.mozilla.org/en-US/docs/Web/API/GestureEvent
+    return "GestureEvent" in window;
+}
+
 export function sorted_ids(ids: number[]): number[] {
     // This makes sure we don't mutate the list.
     const id_list = [...new Set(ids)];

@@ -938,6 +938,7 @@ class AdminCreateUserTest(ZulipTestCase):
         realm = admin.realm
         self.login_user(admin)
         do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        do_set_realm_property(realm, "default_language", "ja", acting_user=None)
         valid_params = dict(
             email="romeo@zulip.net",
             password="xxxx",
@@ -1026,6 +1027,8 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.full_name, "Romeo Montague")
         self.assertEqual(new_user.id, result["user_id"])
         self.assertEqual(new_user.tos_version, UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
+        # Make sure the new user got the realm's default language
+        self.assertEqual(new_user.default_language, "ja")
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(
@@ -1566,6 +1569,20 @@ class ActivateTest(ZulipTestCase):
         invalid_user_id = 1000
         result = self.client_post(f"/json/users/{invalid_user_id}/reactivate")
         self.assert_json_error(result, "No such user")
+
+    def test_api_with_mirrordummy_user(self) -> None:
+        self.login("iago")
+        desdemona = self.example_user("desdemona")
+        change_user_is_active(desdemona, False)
+
+        desdemona.is_mirror_dummy = True
+        desdemona.save(update_fields=["is_mirror_dummy"])
+
+        # Cannot deactivate a user which is marked as "mirror dummy" from importing
+        result = self.client_post(f"/json/users/{desdemona.id}/reactivate")
+        self.assert_json_error(
+            result, "Cannot activate a placeholder account; ask the user to sign up, instead."
+        )
 
     def test_api_with_insufficient_permissions(self) -> None:
         non_admin = self.example_user("othello")

@@ -9,12 +9,8 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
-import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import {localstorage} from "./localstorage";
@@ -284,7 +280,7 @@ export function restore_draft(draft_id) {
         return;
     }
 
-    const compose_args = restore_message(draft);
+    const compose_args = {...restore_message(draft), draft_id};
 
     if (compose_args.type === "stream") {
         if (draft.stream_id !== "" && draft.topic !== "") {
@@ -305,12 +301,7 @@ export function restore_draft(draft_id) {
     }
 
     overlays.close_overlay("drafts");
-    compose_fade.clear_compose();
-    compose.clear_preview_area();
     compose_actions.start(compose_args.type, compose_args);
-    compose_ui.autosize_textarea($("#compose-textarea"));
-    $("#compose-textarea").data("draft-id", draft_id);
-    compose_validate.check_overflow_text();
 }
 
 const DRAFT_LIFETIME = 30;
@@ -355,7 +346,7 @@ export function format_draft(draft) {
             invite_only = sub.invite_only;
             is_web_public = sub.is_web_public;
         }
-        const draft_topic = draft.topic || compose.empty_topic_placeholder();
+        const draft_topic = draft.topic || compose_state.empty_topic_placeholder();
         const draft_stream_color = stream_data.get_color(draft.stream_id);
 
         formatted = {

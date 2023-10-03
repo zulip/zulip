@@ -152,15 +152,11 @@ export function abort_video_callbacks(edit_message_id = "") {
     }
 }
 
-export function empty_topic_placeholder() {
-    return $t({defaultMessage: "(no topic)"});
-}
-
 export function create_message_object() {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
     if (topic === "") {
-        topic = empty_topic_placeholder();
+        topic = compose_state.empty_topic_placeholder();
     }
 
     // Changes here must also be kept in sync with echo.try_deliver_locally
@@ -787,6 +783,10 @@ export function initialize() {
     });
 
     $("#stream_message_recipient_topic").on("focus", () => {
+        compose_recipient.update_placeholder_text();
+    });
+
+    $("#stream_message_recipient_topic").on("input", () => {
         compose_recipient.update_placeholder_text();
     });
 

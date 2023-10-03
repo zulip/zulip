@@ -1,3 +1,4 @@
+import * as channel from "./channel";
 import * as timerender from "./timerender";
 import {get_time_from_date_muted} from "./util";
 
@@ -66,6 +67,18 @@ export function set_muted_users(list: RawMutedUser[]): void {
     for (const user of list) {
         add_muted_user(user.id, user.timestamp);
     }
+}
+
+export function mute_user(user_id: number): void {
+    void channel.post({
+        url: "/json/users/me/muted_users/" + user_id,
+    });
+}
+
+export function unmute_user(user_id: number): void {
+    void channel.del({
+        url: "/json/users/me/muted_users/" + user_id,
+    });
 }
 
 export function initialize(params: {muted_users: RawMutedUser[]}): void {

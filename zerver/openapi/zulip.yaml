@@ -1695,6 +1695,10 @@ paths:
                                     **Changes**: New in Zulip 5.0 (feature level 86).
                                 reaction_type:
                                   type: string
+                                  enum:
+                                    - unicode_emoji
+                                    - realm_emoji
+                                    - zulip_extra_emoji
                                   description: |
                                     The [emoji type](/api/update-status#parameter-reaction_type) for
                                     the emoji the user selected for their new status.
@@ -11713,7 +11717,7 @@ paths:
                         description: |
                           Present if `realm_incoming_webhook_bots` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary describes an type of incoming webhook
+                          An array of dictionaries where each dictionary describes a type of incoming webhook
                           integration that is available to be configured on this Zulip server.
 
                           Clients only need these data if they contain UI for creating or administering bots.
@@ -12102,6 +12106,10 @@ paths:
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             reaction_type:
                               type: string
+                              enum:
+                                - unicode_emoji
+                                - realm_emoji
+                                - zulip_extra_emoji
                               description: |
                                 If present, a string indicating the type of emoji. Each emoji
                                 `reaction_type` has an independent namespace for values of `emoji_code`.
@@ -18305,6 +18313,10 @@ components:
             within the namespace of the `reaction_type`.
         reaction_type:
           type: string
+          enum:
+            - unicode_emoji
+            - realm_emoji
+            - zulip_extra_emoji
           description: |
             A string indicating the type of emoji. Each emoji `reaction_type`
             has an independent namespace for values of `emoji_code`.

@@ -53,8 +53,11 @@ test("pan_and_zoom", ({override}) => {
         return "message-stub";
     };
 
-    $.create(".focused-message-list .message_inline_image img", {children: []});
-    const open_image = lightbox.build_open_image_function();
+    $.create(
+        ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
+        {children: []},
+    );
+    const open_image = lightbox.build_open_media_function();
     open_image($img);
 
     assert.equal(fetched_zid, 1234);
@@ -86,9 +89,12 @@ test("youtube", ({override}) => {
     $link.closest = () => $msg;
     $link.attr("href", href);
 
-    $.create(".focused-message-list .message_inline_image img", {children: []});
+    $.create(
+        ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
+        {children: []},
+    );
 
-    const open_image = lightbox.build_open_image_function();
+    const open_image = lightbox.build_open_media_function();
     open_image($img);
-    assert.equal($(".image-actions .open").attr("href"), href);
+    assert.equal($(".media-actions .open").attr("href"), href);
 });

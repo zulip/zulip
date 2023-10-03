@@ -16,10 +16,10 @@ import marked from "../third/marked/lib/marked";
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
 const preview_regexes = [
-    // Inline image previews, check for contiguous chars ending in image suffix
+    // Inline image and video previews, check for contiguous chars ending in image and video suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?(\s+|$)/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm)\)?(\s+|$)/m,
 
     // Twitter and youtube links are given previews
 

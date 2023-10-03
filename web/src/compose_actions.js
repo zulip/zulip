@@ -222,8 +222,9 @@ export function start(msg_type, opts) {
         opts.stream_id = subbed_streams[0].stream_id;
     }
 
-    if (compose_state.composing() && !same_recipient_as_before(msg_type, opts)) {
-        // Clear the compose box if the existing message is to a different recipient
+    if (compose_state.composing() && !same_recipient_as_before(msg_type, opts) && !opts.draft_id) {
+        // Clear the compose box if the existing message is to a different recipient or the new
+        // content is a draft.
         clear_box();
     }
 
@@ -253,14 +254,21 @@ export function start(msg_type, opts) {
         compose_state.message_content(opts.content);
     }
 
-    if (opts.draft_id) {
-        $("#compose-textarea").data("draft-id", opts.draft_id);
-    }
-
     compose_state.set_message_type(msg_type);
 
     // Show either stream/topic fields or "You and" field.
     show_compose_box(msg_type, opts);
+
+    if (opts.draft_id) {
+        $("#compose-textarea").data("draft-id", opts.draft_id);
+    }
+
+    if (opts.content !== undefined) {
+        // If we were provided with message content, we might need to
+        // resize the compose box, or display that it's too long.
+        compose_ui.autosize_textarea($("#compose-textarea"));
+        compose_validate.check_overflow_text();
+    }
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);

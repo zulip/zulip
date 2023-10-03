@@ -678,6 +678,44 @@ integration](../production/scim.md).
          importing, only the certificate will be displayed (not the private
          key).
 
+### Using Authentik as a SAML IdP
+
+1. Make sure you reviewed [this article](https://goauthentik.io/integrations/services/zulip/), which
+   details how to integrate Zulip with Authentik.
+1. Verify that `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['entity_id']` and
+   `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['url']` are correct in your Zulip
+   configuration. Specifically, if `entity_id` is
+   `https://authentik.example.com/`, then `url`
+   should be
+   `https://authentik.company/application/saml/<application slug>/sso/binding/redirect/` where `<application slug>`
+   is the application slug you've assigned to this application in Authentik settings (e.g `zulip`).
+1. Update the attribute mapping in your new entry in `SOCIAL_AUTH_SAML_ENABLED_IDPS` to match how
+   Authentik specifies attributes in its`SAMLResponse`:
+
+   ```
+   "attr_user_permanent_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   "attr_first_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+   "attr_last_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+   "attr_username": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   ```
+
+1. Your Authentik public certificate must be saved on the Zulip server
+   as `/etc/zulip/saml/idps/{idp_name}.crt`. You can obtain the
+   certificate from the Authentik UI in the `Certificates` section or directly
+   from the provider's page.
+
+   (Alternatively, open the settings page of the provider you created and copy the certificate embedded in the
+   SAML Metadata's `<ds:X509Certificate>` field.).
+
+   Save the certificate in a new `{idp_name}.crt` file constructed as follows:
+
+   ```
+   -----BEGIN CERTIFICATE-----
+   {Paste the content here}
+   -----END CERTIFICATE-----
+   ```
+
 ### SAML Single Logout
 
 Zulip supports both IdP-initiated and SP-initiated SAML Single

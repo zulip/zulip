@@ -3,7 +3,7 @@ import _ from "lodash";
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_search_description from "../templates/search_description.hbs";
 
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
@@ -1125,7 +1125,7 @@ export class Filter {
             if (op.operand === undefined) {
                 return false;
             }
-            if (!hash_util.allowed_web_public_narrows.includes(op.operator)) {
+            if (!hash_parser.allowed_web_public_narrows.includes(op.operator)) {
                 return false;
             }
         }

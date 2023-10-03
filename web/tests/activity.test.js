@@ -280,7 +280,7 @@ test("handlers", ({override, mock_template}) => {
     override(scroll_util, "scroll_element_into_container", () => {});
     override(padded_widget, "update_padding", () => {});
     override(popovers, "hide_all", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
+    override(sidebar_ui, "hide_all", () => {});
     override(sidebar_ui, "show_userlist_sidebar", () => {});
     override(resize, "resize_sidebars", () => {});
 

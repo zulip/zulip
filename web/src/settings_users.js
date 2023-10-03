@@ -20,6 +20,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
+import * as user_sort from "./user_sort";
 
 const section = {
     active: {},
@@ -27,45 +28,12 @@ const section = {
     bots: {},
 };
 
-function compare_a_b(a, b) {
-    if (a > b) {
-        return 1;
-    } else if (a === b) {
-        return 0;
-    }
-    return -1;
-}
-
-export function sort_email(a, b) {
-    const email_a = a.delivery_email;
-    const email_b = b.delivery_email;
-
-    if (email_a === null && email_b === null) {
-        // If both the emails are hidden, we sort the list by name.
-        return compare_a_b(a.full_name.toLowerCase(), b.full_name.toLowerCase());
-    }
-
-    if (email_a === null) {
-        // User with hidden should be at last.
-        return 1;
-    }
-    if (email_b === null) {
-        // User with hidden should be at last.
-        return -1;
-    }
-    return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
-}
-
 function sort_bot_email(a, b) {
     function email(bot) {
         return (bot.display_email || "").toLowerCase();
     }
 
-    return compare_a_b(email(a), email(b));
-}
-
-function sort_role(a, b) {
-    return compare_a_b(a.role, b.role);
+    return user_sort.compare_a_b(email(a), email(b));
 }
 
 function sort_bot_owner(a, b) {
@@ -73,18 +41,14 @@ function sort_bot_owner(a, b) {
         return (bot.bot_owner_full_name || "").toLowerCase();
     }
 
-    return compare_a_b(owner_name(a), owner_name(b));
+    return user_sort.compare_a_b(owner_name(a), owner_name(b));
 }
 
 function sort_last_active(a, b) {
-    return compare_a_b(
+    return user_sort.compare_a_b(
         presence.last_active_date(a.user_id) || 0,
         presence.last_active_date(b.user_id) || 0,
     );
-}
-
-export function sort_user_id(a, b) {
-    return compare_a_b(a.user_id, b.user_id);
 }
 
 function get_user_info_row(user_id) {
@@ -301,7 +265,7 @@ section.bots.create_table = () => {
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
-            role: sort_role,
+            role: user_sort.sort_role,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
         },
         $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
@@ -328,10 +292,10 @@ section.active.create_table = (active_users) => {
         $parent_container: $("#admin-user-list").expectOne(),
         init_sort: "full_name_alphabetic",
         sort_fields: {
-            email: sort_email,
+            email: user_sort.sort_email,
             last_active: sort_last_active,
-            role: sort_role,
-            id: sort_user_id,
+            role: user_sort.sort_role,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
@@ -358,9 +322,9 @@ section.deactivated.create_table = (deactivated_users) => {
         $parent_container: $("#admin-deactivated-users-list").expectOne(),
         init_sort: "full_name_alphabetic",
         sort_fields: {
-            email: sort_email,
-            role: sort_role,
-            id: sort_user_id,
+            email: user_sort.sort_email,
+            role: user_sort.sort_role,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),

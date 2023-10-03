@@ -22,13 +22,12 @@ import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as inbox_ui from "./inbox_ui";
-import * as inbox_util from "./inbox_util";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
+import * as message_scroll_state from "./message_scroll_state";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -257,7 +256,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (inbox_util.is_in_focus() && inbox_ui.change_focused_element("escape")) {
+    if (inbox_ui.is_in_focus() && inbox_ui.change_focused_element("escape")) {
         return true;
     }
 
@@ -272,6 +271,7 @@ export function process_escape_key(e) {
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
         }
+        sidebar_ui.hide_all();
         popovers.hide_all();
         return true;
     }
@@ -663,7 +663,7 @@ export function process_hotkey(e, hotkey) {
         case "vim_down":
         case "vim_left":
         case "vim_right":
-            if (inbox_util.is_in_focus()) {
+            if (inbox_ui.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
             }
     }
@@ -959,33 +959,33 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "down_arrow":
         case "vim_down":
-            message_scroll.mark_keyboard_triggered_current_scroll();
+            message_scroll_state.set_keyboard_triggered_current_scroll(true);
             navigate.down(true); // with_centering
             return true;
         case "up_arrow":
         case "vim_up":
-            message_scroll.mark_keyboard_triggered_current_scroll();
+            message_scroll_state.set_keyboard_triggered_current_scroll(true);
             navigate.up();
             return true;
         case "home":
-            message_scroll.mark_keyboard_triggered_current_scroll();
+            message_scroll_state.set_keyboard_triggered_current_scroll(true);
             navigate.to_home();
             return true;
         case "end":
         case "G_end":
-            message_scroll.mark_keyboard_triggered_current_scroll();
+            message_scroll_state.set_keyboard_triggered_current_scroll(true);
             navigate.to_end();
             return true;
         case "page_up":
         case "vim_page_up":
         case "shift_spacebar":
-            message_scroll.mark_keyboard_triggered_current_scroll();
+            message_scroll_state.set_keyboard_triggered_current_scroll(true);
             navigate.page_up();
             return true;
         case "page_down":
         case "vim_page_down":
         case "spacebar":
-            message_scroll.mark_keyboard_triggered_current_scroll();
+            message_scroll_state.set_keyboard_triggered_current_scroll(true);
             navigate.page_down();
             return true;
         case "copy_with_c":

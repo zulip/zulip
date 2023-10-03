@@ -8,7 +8,6 @@ import * as ui_report from "./ui_report";
 import * as user_group_create_members from "./user_group_create_members";
 import * as user_group_create_members_data from "./user_group_create_members_data";
 import * as user_groups from "./user_groups";
-import * as user_group_settings_ui from "./user_groups_settings_ui";
 
 let created_group_name;
 
@@ -85,16 +84,6 @@ class UserGroupNameError {
     }
 }
 const user_group_name_error = new UserGroupNameError();
-
-export function create_user_group_clicked() {
-    // this changes the tab switcher (settings/preview) which isn't necessary
-    // to a add new stream title.
-    user_group_settings_ui.show_user_group_settings_pane.create_user_group();
-    $(".group-row.active").removeClass("active");
-
-    show_new_user_group_modal();
-    $("#create_user_group_name").trigger("focus");
-}
 
 function clear_error_display() {
     user_group_name_error.clear_errors();

@@ -1,7 +1,10 @@
 <div class="new-style">
     <div class="input-group">
-        <label for="integration-input">{{t "Integration"}}</label>
-        <input type="text" id="integration-input" class="modal_text_input integration-url-parameter" autocomplete="off"/>
+        <div class="integration-url-name-wrapper integration-url-parameter">
+            {{> ../dropdown_widget_with_label
+              widget_name="integration-name"
+              label=(t "Integration")}}
+        </div>
     </div>
     <div class="input-group">
         <div class="integration-url-stream-wrapper integration-url-parameter">

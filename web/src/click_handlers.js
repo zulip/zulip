@@ -35,6 +35,7 @@ import * as server_events from "./server_events";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
@@ -117,8 +118,13 @@ export function initialize() {
             return true;
         }
 
-        // Inline image and twitter previews.
-        if ($target.is("img.message_inline_image") || $target.is("img.twitter-avatar")) {
+        // Inline image, video and twitter previews.
+        if (
+            $target.is("img.message_inline_image") ||
+            $target.is("video") ||
+            $target.is(".message_inline_video") ||
+            $target.is("img.twitter-avatar")
+        ) {
             return true;
         }
 
@@ -489,6 +495,7 @@ export function initialize() {
 
             e.preventDefault();
             e.stopPropagation();
+            sidebar_ui.hide_userlist_sidebar();
             popovers.hide_all();
             $(".tooltip").remove();
         });
@@ -869,21 +876,6 @@ export function initialize() {
             // the child nodes, so the #compose stopPropagation doesn't get a
             // chance to capture right clicks.
             return;
-        }
-
-        // Dismiss popovers if the user has clicked outside them
-        if (
-            $(
-                '.popover-inner, #user-profile-modal, .emoji-picker-popover, .app-main [class^="column-"].expanded',
-            ).has(e.target).length === 0
-        ) {
-            // Since tippy instance can handle outside clicks on their own,
-            // we don't need to trigger them from here.
-            // This fixes the bug of `hideAll` being called
-            // after a tippy popover has been triggered which hides
-            // the popover without being displayed.
-            const not_hide_tippy_instances = true;
-            popovers.hide_all(not_hide_tippy_instances);
         }
 
         if (compose_state.composing() && !$(e.target).parents("#compose").length) {

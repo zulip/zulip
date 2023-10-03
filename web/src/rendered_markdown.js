@@ -17,6 +17,7 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 /*
     rendered_markdown
@@ -76,6 +77,15 @@ export const update_elements = ($content) => {
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction($content.text()) === "rtl") {
         $content.addClass("rtl");
+    }
+
+    if (util.is_client_safari()) {
+        // Without this video thumbnail doesn't load on Safari.
+        $content.find(".message_inline_video video").each(function () {
+            // On Safari, one needs to manually load video elements.
+            // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/load
+            this.load();
+        });
     }
 
     $content.find(".user-mention").each(function () {

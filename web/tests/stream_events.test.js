@@ -12,7 +12,7 @@ const noop = () => {};
 
 const color_data = mock_esm("../src/color_data");
 const compose_fade = mock_esm("../src/compose_fade");
-const stream_color = mock_esm("../src/stream_color");
+const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
@@ -112,7 +112,7 @@ test("update_property", ({override, override_rewire}) => {
     // Test update color
     {
         const stub = make_stub();
-        override(stream_color, "update_stream_color", stub.f);
+        override(stream_color_events, "update_stream_color", stub.f);
         stream_events.update_property(stream_id, "color", "blue");
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");
@@ -285,7 +285,7 @@ test("marked_subscribed (error)", () => {
 test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
-    override(stream_color, "update_stream_color", noop);
+    override(stream_color_events, "update_stream_color", noop);
 
     narrow_to_frontend();
 
@@ -357,7 +357,7 @@ test("marked_subscribed (color)", ({override}) => {
 test("marked_subscribed (emails)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
-    override(stream_color, "update_stream_color", noop);
+    override(stream_color_events, "update_stream_color", noop);
 
     // Test assigning subscriber emails
     // narrow state is undefined

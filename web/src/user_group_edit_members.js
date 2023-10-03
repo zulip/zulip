@@ -15,8 +15,8 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
-import * as settings_users from "./settings_users";
 import * as user_groups from "./user_groups";
+import * as user_sort from "./user_sort";
 
 export let pill_widget;
 let current_group_id;
@@ -67,8 +67,8 @@ function make_list_widget({$parent_container, name, user_ids}) {
         get_item: ListWidget.default_get_item,
         $parent_container,
         sort_fields: {
-            email: settings_users.sort_email,
-            id: settings_users.sort_user_id,
+            email: user_sort.sort_email,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         modifier_html(item) {

@@ -355,6 +355,10 @@ td .button {
         min-width: 325px;
         max-width: 100%;
     }
+
+    .account-settings-heading {
+        margin-right: 10px;
+    }
 }
 
 /* list_select is similar to settings_select, but without the height styling. */
@@ -541,13 +545,20 @@ input[type="checkbox"] {
     vertical-align: top;
     height: auto !important;
     width: auto !important;
+    white-space: break-spaces !important;
 
+    overflow-wrap: anywhere;
     background-color: transparent;
     border-radius: 4px;
     margin-top: 14px;
     margin-left: 10px;
     color: hsl(156deg 30% 50%);
     padding: 3px 10px;
+
+    &.account-alert-notification {
+        margin: 0 0 10px;
+        vertical-align: middle;
+    }
 
     &:not(:empty) {
         border: 1px solid hsl(156deg 30% 50%);
@@ -2073,6 +2084,11 @@ $option_title_width: 180px;
         word-break: break-all;
     }
 
+    .integration-url-name-wrapper .dropdown-widget-button {
+        width: 50%;
+    }
+
+    .integration-url-name-wrapper .dropdown_widget_value,
     .integration-url-stream-wrapper .dropdown_widget_value {
         white-space: nowrap;
         overflow: hidden;

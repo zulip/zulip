@@ -13,6 +13,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
+import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
@@ -50,6 +51,7 @@ import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
+import * as message_list from "./message_list";
 import * as message_list_hover from "./message_list_hover";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
@@ -70,6 +72,7 @@ import * as playground_links_popover from "./playground_links_popover";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
+import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
@@ -149,24 +152,13 @@ function initialize_left_sidebar() {
     $("#left-sidebar-container").html(rendered_sidebar);
 }
 
-export function update_invite_user_option() {
-    if (
-        !settings_data.user_can_invite_users_by_email() &&
-        !settings_data.user_can_create_multiuse_invite()
-    ) {
-        $("#right-sidebar .invite-user-link").hide();
-    } else {
-        $("#right-sidebar .invite-user-link").show();
-    }
-}
-
 function initialize_right_sidebar() {
     const rendered_sidebar = render_right_sidebar({
         realm_rendered_description: page_params.realm_rendered_description,
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);
-    update_invite_user_option();
+    sidebar_ui.update_invite_user_option();
     if (page_params.is_spectator) {
         rendered_markdown.update_elements(
             $(".right-sidebar .realm-description .rendered_markdown"),
@@ -576,6 +568,7 @@ export function initialize_everything() {
 
     realm_logo.initialize();
     message_lists.initialize();
+    message_list.initialize();
     recent_view_ui.initialize();
     inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
@@ -600,6 +593,8 @@ export function initialize_everything() {
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
+            sidebar_ui.hide_all();
+            popovers.hide_all();
             narrow.by("stream", sub.name, {trigger});
         },
     });
@@ -610,6 +605,7 @@ export function initialize_everything() {
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();
+    add_stream_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();

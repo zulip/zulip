@@ -1164,7 +1164,7 @@ export function init_dropdown_widgets() {
         const disabled_option = {
             is_setting_disabled: true,
             unique_id: DISABLED_STATE_ID,
-            name: $t({defaultMessage: "Disabled"}),
+            name: $t({defaultMessage: "Cannot view stream"}),
         };
 
         options.unshift(disabled_option);

@@ -1032,7 +1032,7 @@ class RealmTest(ZulipTestCase):
             UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
             UserGroup.NOBODY_GROUP_NAME,
         ]
-        self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
+        self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
 
     def test_changing_waiting_period_updates_system_groups(self) -> None:
         realm = get_realm("zulip")

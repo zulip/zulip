@@ -59,6 +59,7 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups_legacy";
 import * as settings_users from "./settings_users";
+import * as sidebar_ui from "./sidebar_ui";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_data from "./stream_data";
@@ -71,7 +72,6 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
-import * as ui_init from "./ui_init";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
@@ -252,7 +252,7 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "invite_to_realm_policy") {
                             settings_invites.update_invite_user_panel();
-                            ui_init.update_invite_user_option();
+                            sidebar_ui.update_invite_user_option();
                             gear_menu.initialize();
                         }
 
@@ -283,7 +283,7 @@ export function dispatch_normal_event(event) {
 
                                 if (key === "create_multiuse_invite_group") {
                                     settings_invites.update_invite_user_panel();
-                                    ui_init.update_invite_user_option();
+                                    sidebar_ui.update_invite_user_option();
                                     gear_menu.initialize();
                                 }
 
