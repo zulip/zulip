@@ -179,10 +179,6 @@ export function start(msg_type, opts) {
         return;
     }
 
-    // We may be able to clear it to change the recipient, so save any
-    // existing content as a draft.
-    drafts.update_draft();
-
     autosize_message_content();
 
     if (reload_state.is_in_progress()) {
@@ -214,9 +210,13 @@ export function start(msg_type, opts) {
         opts.stream_id = subbed_streams[0].stream_id;
     }
 
-    if (compose_state.composing() && !same_recipient_as_before(msg_type, opts) && !opts.draft_id) {
-        // Clear the compose box if the existing message is to a different recipient or the new
-        // content is a draft.
+    // If we go to a different narrow or there is new message content to populate the compose box
+    // with (like from a draft), save any existing content as a draft, and clear the compose box.
+    if (
+        compose_state.composing() &&
+        (!same_recipient_as_before(msg_type, opts) || opts.content !== undefined)
+    ) {
+        drafts.update_draft();
         clear_box();
     }
 
