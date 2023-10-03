@@ -7,7 +7,8 @@
                         <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
-                    <span>{{t 'Inbox' }}</span>
+                    <span class="global-filter-name">{{t 'Inbox' }}</span>
+                    <span class="unread_count"></span>
                 </a>
             </li>
             <li class="top_left_recent_view top_left_row">
@@ -26,7 +27,6 @@
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="global-filter-name">{{t 'All messages' }}</span>
-                    <span class="unread_count"></span>
                 </a>
                 <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
