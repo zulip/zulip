@@ -165,6 +165,9 @@ from zerver.lib.event_schema import (
     check_realm_user_add,
     check_realm_user_remove,
     check_realm_user_update,
+    check_scheduled_message_add,
+    check_scheduled_message_remove,
+    check_scheduled_message_update,
     check_stream_create,
     check_stream_delete,
     check_stream_update,
@@ -3623,7 +3626,8 @@ class ScheduledMessagesEventsTest(BaseAction):
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )
-        self.verify_action(action)
+        events = self.verify_action(action)
+        check_scheduled_message_add("events[0]", events[0])
 
     def test_create_event_with_existing_scheduled_messages(self) -> None:
         # Create stream scheduled message
@@ -3649,7 +3653,8 @@ class ScheduledMessagesEventsTest(BaseAction):
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )
-        self.verify_action(action)
+        events = self.verify_action(action)
+        check_scheduled_message_add("events[0]", events[0])
 
     def test_private_scheduled_message_create_event(self) -> None:
         # Create direct scheduled message
@@ -3663,7 +3668,8 @@ class ScheduledMessagesEventsTest(BaseAction):
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )
-        self.verify_action(action)
+        events = self.verify_action(action)
+        check_scheduled_message_add("events[0]", events[0])
 
     def test_scheduled_message_edit_event(self) -> None:
         scheduled_message_id = check_schedule_message(
@@ -3687,7 +3693,8 @@ class ScheduledMessagesEventsTest(BaseAction):
             convert_to_UTC(dateparser("2023-04-20 18:24:56")),
             self.user_profile.realm,
         )
-        self.verify_action(action)
+        events = self.verify_action(action)
+        check_scheduled_message_update("events[0]", events[0])
 
     def test_scheduled_message_delete_event(self) -> None:
         scheduled_message_id = check_schedule_message(
@@ -3701,4 +3708,5 @@ class ScheduledMessagesEventsTest(BaseAction):
             self.user_profile.realm,
         )
         action = lambda: delete_scheduled_message(self.user_profile, scheduled_message_id)
-        self.verify_action(action)
+        events = self.verify_action(action)
+        check_scheduled_message_remove("events[0]", events[0])

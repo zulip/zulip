@@ -1188,6 +1188,48 @@ restart_event = event_dict_type(
 )
 check_restart_event = make_checker(restart_event)
 
+scheduled_message_fields = DictType(
+    required_keys=[
+        ("scheduled_message_id", int),
+        ("type", EnumType(["stream", "private"])),
+        ("to", UnionType([ListType(int), int])),
+        ("content", str),
+        ("rendered_content", str),
+        ("scheduled_delivery_timestamp", int),
+        ("failed", bool),
+    ],
+    optional_keys=[
+        ("topic", str),
+    ],
+)
+
+scheduled_messages_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("scheduled_messages")),
+        ("op", Equals("add")),
+        ("scheduled_messages", ListType(scheduled_message_fields)),
+    ]
+)
+check_scheduled_message_add = make_checker(scheduled_messages_add_event)
+
+scheduled_messages_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("scheduled_messages")),
+        ("op", Equals("update")),
+        ("scheduled_message", scheduled_message_fields),
+    ]
+)
+check_scheduled_message_update = make_checker(scheduled_messages_update_event)
+
+scheduled_messages_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("scheduled_messages")),
+        ("op", Equals("remove")),
+        ("scheduled_message_id", int),
+    ]
+)
+check_scheduled_message_remove = make_checker(scheduled_messages_remove_event)
+
 stream_create_event = event_dict_type(
     required_keys=[
         ("type", Equals("stream")),
