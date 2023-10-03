@@ -134,7 +134,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     let opts = {};
     start("stream", opts);
 
-    assert_visible("#stream_message_recipient_topic");
+    assert_visible("#compose_recipient_box");
     assert_hidden("#compose-direct-recipient");
 
     assert.equal(compose_state.stream_name(), "");
