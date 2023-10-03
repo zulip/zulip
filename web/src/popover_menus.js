@@ -89,6 +89,11 @@ export function popover_items_handle_keyboard(key, $items) {
 
     let index = $items.index($items.filter(":focus"));
 
+    if (key === "enter" && index >= 0 && index < $items.length) {
+        $items.eq(index).trigger("click");
+        return;
+    }
+
     if (index === -1) {
         index = 0;
     } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
