@@ -2744,3 +2744,38 @@ def markdown_convert(
     )
     markdown_stats_finish()
     return ret
+
+
+def render_message_markdown(
+    message: Message,
+    content: str,
+    realm: Optional[Realm] = None,
+    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
+    mention_data: Optional[MentionData] = None,
+    email_gateway: bool = False,
+) -> MessageRenderingResult:
+    """
+    This is basically just a wrapper for do_render_markdown.
+    """
+
+    if realm is None:
+        realm = message.get_realm()
+
+    sender = message.sender
+    sent_by_bot = sender.is_bot
+    translate_emoticons = sender.translate_emoticons
+
+    rendering_result = markdown_convert(
+        content,
+        realm_alert_words_automaton=realm_alert_words_automaton,
+        message=message,
+        message_realm=realm,
+        sent_by_bot=sent_by_bot,
+        translate_emoticons=translate_emoticons,
+        url_embed_data=url_embed_data,
+        mention_data=mention_data,
+        email_gateway=email_gateway,
+    )
+
+    return rendering_result
