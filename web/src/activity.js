@@ -13,6 +13,7 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
+import * as sidebar_ui from "./sidebar_ui";
 import * as ui_util from "./ui_util";
 import {UserSearch} from "./user_search";
 import * as util from "./util";
@@ -289,6 +290,7 @@ function keydown_enter_key() {
     }
 
     narrow_for_user_id({user_id});
+    sidebar_ui.hide_all();
     popovers.hide_all();
 }
 
