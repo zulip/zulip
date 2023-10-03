@@ -71,11 +71,21 @@ export const show_user_group_settings_pane = {
     },
 };
 
+function create_user_group_clicked() {
+    // this changes the tab switcher (settings/preview) which isn't necessary
+    // to a add new stream title.
+    show_user_group_settings_pane.create_user_group();
+    $(".group-row.active").removeClass("active");
+
+    user_group_create.show_new_user_group_modal();
+    $("#create_user_group_name").trigger("focus");
+}
+
 export function do_open_create_user_group() {
     // Only call this directly for hash changes.
     // Prefer open_create_user_group().
     show_right_section();
-    user_group_create.create_user_group_clicked();
+    create_user_group_clicked();
 }
 
 export function open_create_user_group() {
