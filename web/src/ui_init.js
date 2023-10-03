@@ -71,6 +71,7 @@ import * as playground_links_popover from "./playground_links_popover";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
+import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
@@ -591,6 +592,8 @@ export function initialize_everything() {
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
+            sidebar_ui.hide_all();
+            popovers.hide_all();
             narrow.by("stream", sub.name, {trigger});
         },
     });
