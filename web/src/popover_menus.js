@@ -6,7 +6,6 @@ import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
-import render_change_visibility_policy_popover from "../templates/change_visibility_policy_popover.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
@@ -21,7 +20,6 @@ import * as drafts from "./drafts";
 import * as giphy from "./giphy";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
-import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as starred_messages from "./starred_messages";
@@ -29,7 +27,6 @@ import * as starred_messages_ui from "./starred_messages_ui";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
-import * as user_topics from "./user_topics";
 
 // On mobile web, opening the keyboard can trigger a resize event
 // (which in turn can trigger a scroll event).  This will have the
@@ -392,65 +389,6 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.compose_enter_sends = undefined;
-        },
-    });
-
-    register_popover_menu(".change_visibility_policy", {
-        placement: "bottom",
-        popperOptions: {
-            modifiers: [
-                {
-                    // The placement is set to bottom, but if that placement does not fit,
-                    // the opposite top placement will be used.
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: ["top", "left"],
-                    },
-                },
-            ],
-        },
-        onShow(instance) {
-            popover_instances.change_visibility_policy = instance;
-            on_show_prep(instance);
-            const elt = $(instance.reference).closest(".change_visibility_policy").expectOne()[0];
-            const stream_id = $(elt).attr("data-stream-id");
-            const topic_name = $(elt).attr("data-topic-name");
-
-            instance.context =
-                popover_menus_data.get_change_visibility_policy_popover_content_context(
-                    Number.parseInt(stream_id, 10),
-                    topic_name,
-                );
-            instance.setContent(
-                parse_html(render_change_visibility_policy_popover(instance.context)),
-            );
-        },
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            const {stream_id, topic_name} = instance.context;
-
-            if (!stream_id) {
-                instance.hide();
-                return;
-            }
-
-            // TODO: Figure out a good way to offer feedback if this request fails.
-            $popper.on("click", ".visibility_policy_option", (e) => {
-                $(".visibility_policy_option").removeClass("selected_visibility_policy");
-                $(e.currentTarget).addClass("selected_visibility_policy");
-
-                const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
-                user_topics.set_user_topic_visibility_policy(
-                    stream_id,
-                    topic_name,
-                    visibility_policy,
-                );
-                instance.hide();
-            });
-        },
-        onHidden(instance) {
-            instance.destroy();
-            popover_instances.change_visibility_policy = undefined;
         },
     });
 

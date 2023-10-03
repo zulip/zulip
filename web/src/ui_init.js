@@ -132,6 +132,7 @@ import * as user_profile from "./user_profile";
 import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
+import * as user_topic_popover from "./user_topic_popover";
 import * as user_topics from "./user_topics";
 
 // This is where most of our initialization takes place.
@@ -528,6 +529,7 @@ export function initialize_everything() {
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
     popover_menus.initialize();
+    user_topic_popover.initialize();
     topic_popover.initialize();
     message_actions_popover.initialize();
     scheduled_messages_popover.initialize();

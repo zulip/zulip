@@ -249,6 +249,7 @@ EXEMPT_FILES = make_set(
         "web/src/user_sort.js",
         "web/src/user_status.js",
         "web/src/user_status_ui.js",
+        "web/src/user_topic_popover.js",
         "web/src/user_topics.ts",
         "web/src/user_topics_ui.js",
         "web/src/views_util.js",
