@@ -1522,13 +1522,13 @@
 
         .selected-tab {
             background-color: hsl(0deg 0% 17% / 50%);
-            border: 1px solid hsl(0deg 0% 100% / 12%);
+            outline: 1px solid hsl(0deg 0% 100% / 12%);
         }
 
         .tab-option {
             &:hover:not(.selected-tab) {
                 background-color: hsl(0deg 0% 17% / 50%);
-                border: 1px solid hsl(0deg 0% 100% / 12%);
+                outline: 1px solid hsl(0deg 0% 100% / 12%);
             }
         }
     }
