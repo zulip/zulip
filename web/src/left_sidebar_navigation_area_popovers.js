@@ -86,7 +86,6 @@ export function initialize() {
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
-            $popper.addClass("all-messages-popover");
             popover_menus.popover_instances.all_messages = instance;
 
             $popper.one("click", "#mark_all_messages_as_read", () => {
