@@ -12,7 +12,7 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_notifications from "./settings_notifications";
-import * as stream_color from "./stream_color";
+import * as stream_color_events from "./stream_color_events";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
@@ -45,7 +45,7 @@ export function update_property(stream_id, property, value, other_values) {
 
     switch (property) {
         case "color":
-            stream_color.update_stream_color(sub, value);
+            stream_color_events.update_stream_color(sub, value);
             break;
         case "in_home_view":
             // Legacy in_home_view events are only sent as duplicates of
@@ -123,7 +123,7 @@ export function mark_subscribed(sub, subscribers, color) {
     // If the backend sent us a color, use that
     if (color !== undefined && sub.color !== color) {
         sub.color = color;
-        stream_color.update_stream_color(sub, color);
+        stream_color_events.update_stream_color(sub, color);
     } else if (sub.color === undefined) {
         // If the backend didn't, and we have a color already, send
         // the backend that color.  It's not clear this code path is
