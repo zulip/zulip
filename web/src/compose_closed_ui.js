@@ -169,7 +169,7 @@ export function initialize() {
 
     // Click handlers for buttons in the compose box.
     $("body").on("click", ".compose_stream_button", () => {
-        compose_actions.start("stream", {trigger: "new topic button"});
+        compose_actions.start("stream", {trigger: "clear topic button"});
     });
 
     $("body").on("click", ".compose_private_button", () => {

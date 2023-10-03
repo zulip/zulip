@@ -43,7 +43,7 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             $popper.one("click", ".compose_mobile_stream_button", (e) => {
-                compose_actions.start("stream", {trigger: "new topic button"});
+                compose_actions.start("stream", {trigger: "clear topic button"});
                 e.stopPropagation();
                 instance.hide();
             });
