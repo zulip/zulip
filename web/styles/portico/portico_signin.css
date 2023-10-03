@@ -1339,11 +1339,28 @@ button#register_auth_button_gitlab {
         /* the header becomes smaller, so comp for that. */
         min-height: calc(100vh - 505px);
     }
+
+    #new-realm-creation {
+        margin: 0 -30px;
+        transform: scale(0.9);
+    }
 }
 
 @media (width <= 400px) {
     .flex {
         min-height: calc(100vh - 560px);
+    }
+
+    #new-realm-creation {
+        margin: -10px -40px;
+        transform: scale(0.8);
+    }
+}
+
+@media (width <= 340px) {
+    #new-realm-creation {
+        margin: -40px -60px;
+        transform: scale(0.7);
     }
 }
 
