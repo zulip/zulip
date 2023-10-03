@@ -20,6 +20,7 @@ import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as stream_edit from "./stream_edit";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -152,7 +153,7 @@ function build_stream_popover(opts) {
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
-                stream_settings_ui.set_muted(sub, !sub.is_muted);
+                stream_edit.set_stream_property(sub, "is_muted", !sub.is_muted);
                 e.stopPropagation();
             });
 
