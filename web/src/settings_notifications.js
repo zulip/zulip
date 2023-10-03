@@ -13,6 +13,7 @@ import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as set_stream_property from "./stream_settings_api";
 import * as stream_settings_data from "./stream_settings_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
@@ -341,7 +342,7 @@ export function initialize() {
         const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
 
-        stream_edit.set_stream_property(
+        set_stream_property.set_stream_property(
             sub,
             "is_muted",
             !sub.is_muted,

@@ -24,10 +24,10 @@ import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
-import * as settings_ui from "./settings_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
+import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -310,7 +310,7 @@ function stream_is_muted_changed(e) {
         return;
     }
 
-    set_stream_property(
+    stream_settings_api.set_stream_property(
         sub,
         "is_muted",
         e.target.checked,
@@ -336,27 +336,7 @@ export function stream_setting_changed(e, from_notification_settings) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
-    set_stream_property(sub, setting, e.target.checked, status_element);
-}
-
-export function bulk_set_stream_property(sub_data, status_element) {
-    const url = "/json/users/me/subscriptions/properties";
-    const data = {subscription_data: JSON.stringify(sub_data)};
-    if (!status_element) {
-        return channel.post({
-            url,
-            data,
-            timeout: 10 * 1000,
-        });
-    }
-
-    settings_ui.do_settings_change(channel.post, url, data, status_element);
-    return undefined;
-}
-
-export function set_stream_property(sub, property, value, status_element) {
-    const sub_data = {stream_id: sub.stream_id, property, value};
-    bulk_set_stream_property([sub_data], status_element);
+    stream_settings_api.set_stream_property(sub, setting, e.target.checked, status_element);
 }
 
 export function get_request_data_for_stream_privacy(selected_val) {
