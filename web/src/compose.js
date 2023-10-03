@@ -46,14 +46,6 @@ import * as zcommand from "./zcommand";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
-/* Track the state of the @all warning. The user must acknowledge that they are spamming the entire
-   stream before the warning will go away. If they try to send before explicitly dismissing the
-   warning, they will get an error message too.
-
-   undefined: no @all/@everyone in message;
-   false: user typed @all/@everyone;
-   true: user clicked YES */
-
 let uppy;
 
 export function get_compose_upload_object() {
