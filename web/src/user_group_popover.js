@@ -8,7 +8,6 @@ import {media_breakpoints_num} from "./css_variables";
 import * as message_lists from "./message_lists";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 import * as user_groups from "./user_groups";
@@ -82,7 +81,6 @@ export function toggle_user_group_info_popover(element, message_id) {
                 ],
             },
             onCreate(instance) {
-                popovers.hide_all();
                 if (message_id) {
                     message_lists.current.select_id(message_id);
                 }
