@@ -5,27 +5,20 @@
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
-import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
-import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
-import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose_actions from "./compose_actions";
-import * as drafts from "./drafts";
 import * as giphy from "./giphy";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
-import * as starred_messages from "./starred_messages";
-import * as starred_messages_ui from "./starred_messages_ui";
 import {parse_html} from "./ui_util";
-import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
 // On mobile web, opening the keyboard can trigger a resize event
@@ -389,95 +382,6 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.compose_enter_sends = undefined;
-        },
-    });
-
-    // Starred messages popover
-    register_popover_menu(".starred-messages-sidebar-menu-icon", {
-        ...left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            popover_instances.starred_messages = instance;
-
-            $popper.one("click", "#unstar_all_messages", () => {
-                starred_messages_ui.confirm_unstar_all_messages();
-                instance.hide();
-            });
-            $popper.one("click", "#toggle_display_starred_msg_count", () => {
-                const data = {};
-                const starred_msg_counts = user_settings.starred_message_counts;
-                data.starred_message_counts = JSON.stringify(!starred_msg_counts);
-
-                channel.patch({
-                    url: "/json/settings",
-                    data,
-                });
-                instance.hide();
-            });
-        },
-        onShow(instance) {
-            popovers.hide_all();
-            const show_unstar_all_button = starred_messages.get_count() > 0;
-
-            instance.setContent(
-                parse_html(
-                    render_starred_messages_sidebar_actions({
-                        show_unstar_all_button,
-                        starred_message_counts: user_settings.starred_message_counts,
-                    }),
-                ),
-            );
-        },
-        onHidden(instance) {
-            instance.destroy();
-            popover_instances.starred_messages = undefined;
-        },
-    });
-
-    // Drafts popover
-    register_popover_menu(".drafts-sidebar-menu-icon", {
-        ...left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            $popper.addClass("drafts-popover");
-            popover_instances.drafts = instance;
-
-            $popper.one("click", "#delete_all_drafts_sidebar", () => {
-                drafts.confirm_delete_all_drafts();
-                instance.hide();
-            });
-        },
-        onShow(instance) {
-            popovers.hide_all();
-
-            instance.setContent(parse_html(render_drafts_sidebar_actions({})));
-        },
-        onHidden(instance) {
-            instance.destroy();
-            popover_instances.drafts = undefined;
-        },
-    });
-
-    // All messages popover
-    register_popover_menu(".all-messages-sidebar-menu-icon", {
-        ...left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            $popper.addClass("all-messages-popover");
-            popover_instances.all_messages = instance;
-
-            $popper.one("click", "#mark_all_messages_as_read", () => {
-                unread_ops.confirm_mark_all_as_read();
-                instance.hide();
-            });
-        },
-        onShow(instance) {
-            popovers.hide_all();
-            instance.setContent(parse_html(render_all_messages_sidebar_actions()));
-        },
-        onHidden(instance) {
-            instance.destroy();
-            popover_instances.all_messages = undefined;
         },
     });
 

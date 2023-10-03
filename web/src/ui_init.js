@@ -44,6 +44,7 @@ import * as i18n from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as invite from "./invite";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
+import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
 import {localstorage} from "./localstorage";
@@ -529,6 +530,7 @@ export function initialize_everything() {
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
     popover_menus.initialize();
+    left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
     message_actions_popover.initialize();
