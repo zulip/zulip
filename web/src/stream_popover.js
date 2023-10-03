@@ -16,7 +16,6 @@ import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
-import * as popovers from "./popovers";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
@@ -104,7 +103,6 @@ function build_stream_popover(opts) {
         return;
     }
 
-    popovers.hide_all();
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
     });
