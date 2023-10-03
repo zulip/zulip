@@ -13,6 +13,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
+import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
@@ -604,6 +605,7 @@ export function initialize_everything() {
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();
+    add_stream_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();
