@@ -21,7 +21,7 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_groups from "./user_groups";
-import * as user_group_settings_ui from "./user_groups_settings_ui";
+import * as user_groups_settings_ui from "./user_groups_settings_ui";
 
 export let toggler;
 export let select_tab = "group_general_settings";
@@ -142,15 +142,15 @@ export function handle_member_edit_event(group_id, user_ids) {
     // and current user is among the affect users as in that
     // case the group widget list need to be updated and show
     // or remove the group-row on the left panel accordingly.
-    const tab_key = user_group_settings_ui.get_active_data().$tabs.first().attr("data-tab-key");
+    const tab_key = user_groups_settings_ui.get_active_data().$tabs.first().attr("data-tab-key");
     if (tab_key === "your-groups" && user_ids.includes(people.my_current_user_id())) {
-        user_group_settings_ui.redraw_user_group_list();
+        user_groups_settings_ui.redraw_user_group_list();
     }
 
     // update display of check-mark.
-    if (user_group_settings_ui.is_group_already_present(group)) {
+    if (user_groups_settings_ui.is_group_already_present(group)) {
         const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
-        const $sub_unsub_button = user_group_settings_ui
+        const $sub_unsub_button = user_groups_settings_ui
             .row_for_group_id(group_id)
             .find(".sub_unsub_button");
         if (is_member) {
@@ -219,7 +219,7 @@ export function setup_group_list_tab_hash(tab_key_value) {
         We do not update the hash based on tab switches if
         a group is currently being edited.
     */
-    if (user_group_settings_ui.get_active_data().id !== undefined) {
+    if (user_groups_settings_ui.get_active_data().id !== undefined) {
         return;
     }
 
@@ -234,7 +234,7 @@ export function setup_group_list_tab_hash(tab_key_value) {
 
 function open_right_panel_empty() {
     $(".group-row.active").removeClass("active");
-    user_group_settings_ui.show_user_group_settings_pane.nothing_selected();
+    user_groups_settings_ui.show_user_group_settings_pane.nothing_selected();
     const tab_key = $(".user-groups-container")
         .find("div.ind-tab.selected")
         .first()
@@ -246,7 +246,7 @@ export function is_editing_group(desired_group_id) {
     if (!overlays.groups_open()) {
         return false;
     }
-    return user_group_settings_ui.get_active_data().id === desired_group_id;
+    return user_groups_settings_ui.get_active_data().id === desired_group_id;
 }
 
 export function handle_deleted_group(group_id) {
@@ -257,13 +257,13 @@ export function handle_deleted_group(group_id) {
     if (is_editing_group(group_id)) {
         open_right_panel_empty();
     }
-    user_group_settings_ui.redraw_user_group_list();
+    user_groups_settings_ui.redraw_user_group_list();
 }
 
 export function show_group_settings(group) {
     $(".group-row.active").removeClass("active");
-    user_group_settings_ui.show_user_group_settings_pane.settings(group);
-    user_group_settings_ui.row_for_group_id(group.id).addClass("active");
+    user_groups_settings_ui.show_user_group_settings_pane.settings(group);
+    user_groups_settings_ui.row_for_group_id(group.id).addClass("active");
     setup_group_edit_hash(group);
     setup_group_settings(group);
 }
@@ -288,7 +288,7 @@ export function initialize() {
         const template_data = {
             group_name: user_group.name,
             group_description: user_group.description,
-            max_user_group_name_length: user_group_settings_ui.max_user_group_name_length,
+            max_user_group_name_length: user_groups_settings_ui.max_user_group_name_length,
         };
         const change_user_group_info_modal = render_change_user_group_info_modal(template_data);
         dialog_widget.launch({
@@ -310,7 +310,7 @@ export function initialize() {
     });
 
     $("#groups_overlay_container").on("click", ".group_settings_header .btn-danger", () => {
-        const active_group_data = user_group_settings_ui.get_active_data();
+        const active_group_data = user_groups_settings_ui.get_active_data();
         const group_id = active_group_data.id;
         const user_group = user_groups.get_user_group_from_id(group_id);
 
