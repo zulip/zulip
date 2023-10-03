@@ -51,7 +51,7 @@ function get_focus_area(msg_type, opts) {
         (msg_type === "stream" && opts.stream_id) ||
         (msg_type === "private" && opts.private_message_recipient)
     ) {
-        if (opts.trigger === "new topic button") {
+        if (opts.trigger === "clear topic button") {
             return "#stream_message_recipient_topic";
         }
         return "#compose-textarea";

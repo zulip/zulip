@@ -886,7 +886,7 @@ run_test("get_focus_area", () => {
         get_focus_area("stream", {
             stream_id: 4,
             topic: "more",
-            trigger: "new topic button",
+            trigger: "clear topic button",
         }),
         "#stream_message_recipient_topic",
     );
