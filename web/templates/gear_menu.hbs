@@ -161,7 +161,6 @@
                     <i class="fa fa-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
                 </a>
             </li>
-            <li class="divider" role="presentation"></li>
             {{/if}}
             {{#if show_webathena}}
             <li title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu" role="presentation">
@@ -173,11 +172,6 @@
             <li role="presentation" class="only-visible-for-spectators">
                 <a href="{{login_link}}" role="menuitem">
                     <i class="fa fa-sign-in" aria-hidden="true"></i> {{t 'Log in' }}
-                </a>
-            </li>
-            <li role="presentation">
-                <a class="logout_button hidden-for-spectators" role="menuitem">
-                    <i class="fa fa-power-off" aria-hidden="true"></i> {{t 'Log out' }}
                 </a>
             </li>
         </ul>
