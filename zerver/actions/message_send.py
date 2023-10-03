@@ -51,7 +51,6 @@ from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
-    MessageDict,
     SendMessageRequest,
     check_user_group_mention_allowed,
     normalize_body,
@@ -61,6 +60,7 @@ from zerver.lib.message import (
     truncate_topic,
     visibility_policy_for_send_message,
 )
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.muted_users import get_muting_users
 from zerver.lib.notification_data import (
     UserMessageNotificationsData,
