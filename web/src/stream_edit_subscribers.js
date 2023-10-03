@@ -16,11 +16,11 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
-import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
+import * as user_sort from "./user_sort";
 
 export let pill_widget;
 let current_stream_id;
@@ -127,8 +127,8 @@ function make_list_widget({$parent_container, name, user_ids, user_can_remove_su
         },
         $parent_container: $("#stream_members_list").expectOne(),
         sort_fields: {
-            email: settings_users.sort_email,
-            id: settings_users.sort_user_id,
+            email: user_sort.sort_email,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container,

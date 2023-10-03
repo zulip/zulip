@@ -7,8 +7,8 @@ import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_users from "./settings_users";
 import * as user_group_create_members_data from "./user_group_create_members_data";
+import * as user_sort from "./user_sort";
 
 let pill_widget;
 let all_users_list_widget;
@@ -95,8 +95,8 @@ export function build_widgets() {
         $parent_container: $add_people_container,
         get_item: people.get_by_user_id,
         sort_fields: {
-            email: settings_users.sort_email,
-            id: settings_users.sort_user_id,
+            email: user_sort.sort_email,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         modifier_html(user) {
