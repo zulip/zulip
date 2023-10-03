@@ -625,6 +625,7 @@ exports.fixtures = {
                 content: "Hello there!",
                 rendered_content: "<p>Hello there!</p>",
                 scheduled_delivery_timestamp: 1681662420,
+                failed: false,
             },
         ],
     },
@@ -645,6 +646,7 @@ exports.fixtures = {
             content: "Hello there!",
             rendered_content: "<p>Hello there!</p>",
             scheduled_delivery_timestamp: 1681662420,
+            failed: false,
         },
     },
 
