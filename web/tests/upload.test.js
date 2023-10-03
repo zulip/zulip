@@ -644,7 +644,6 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
             removeFile() {},
         };
     };
-    upload.setup_upload({mode: "compose"});
     upload.initialize();
 
     let prevent_default_counter = 0;
