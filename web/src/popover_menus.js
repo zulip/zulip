@@ -6,7 +6,6 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
-import render_actions_popover_content from "../templates/actions_popover_content.hbs";
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_change_visibility_policy_popover from "../templates/change_visibility_policy_popover.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
@@ -21,22 +20,16 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose_actions from "./compose_actions";
-import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
-import {show_copied_confirmation} from "./copied_tooltip";
 import * as drafts from "./drafts";
-import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as message_lists from "./message_lists";
-import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
-import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -45,8 +38,6 @@ import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
-
-let message_actions_popover_keyboard_toggle = false;
 
 // On mobile web, opening the keyboard can trigger a resize event
 // (which in turn can trigger a scroll event).  This will have the
@@ -102,23 +93,6 @@ export function focus_first_popover_item($items, index = 0) {
     }
 
     $items.eq(index).expectOne().trigger("focus");
-}
-
-function get_action_menu_menu_items() {
-    const $current_actions_popover_elem = $("[data-tippy-root] .actions_popover");
-    if (!$current_actions_popover_elem) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
-        return undefined;
-    }
-
-    return $current_actions_popover_elem.find("li:not(.divider):visible a");
-}
-
-function focus_first_action_popover_item() {
-    // For now I recommend only calling this when the user opens the menu with a hotkey.
-    // Our popup menus act kind of funny when you mix keyboard and mouse.
-    const $items = get_action_menu_menu_items();
-    focus_first_popover_item($items);
 }
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -307,24 +281,6 @@ export function register_popover_menu(target, popover_props) {
 
         toggle_popover_menu(e.currentTarget, popover_props);
     });
-}
-
-export function toggle_message_actions_menu(message) {
-    if (message.locally_echoed || message_edit.is_editing(message.id)) {
-        // Don't open the popup for locally echoed messages for now.
-        // It creates bugs with things like keyboard handlers when
-        // we get the server response.
-        // We also suppress the popup for messages in an editing state,
-        // including previews, when a user tries to reach them from the
-        // keyboard.
-        return true;
-    }
-
-    message_viewport.maybe_scroll_to_show_message_top();
-    const $popover_reference = $(".selected_message .actions_hover .message-actions-menu-button");
-    message_actions_popover_keyboard_toggle = true;
-    $popover_reference.trigger("click");
-    return true;
 }
 
 export function initialize() {
@@ -653,163 +609,6 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.change_visibility_policy = undefined;
-        },
-    });
-
-    register_popover_menu(".actions_hover .message-actions-menu-button", {
-        // 320px is our minimum supported width for mobile. We will allow the value to flex
-        // to a max of 350px but we shouldn't make the popover wider than this.
-        maxWidth: "min(max(320px, 100vw), 350px)",
-        placement: "bottom",
-        popperOptions: {
-            modifiers: [
-                {
-                    // The placement is set to bottom, but if that placement does not fit,
-                    // the opposite top placement will be used.
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: ["top", "left"],
-                    },
-                },
-            ],
-        },
-        onShow(instance) {
-            on_show_prep(instance);
-            const $row = $(instance.reference).closest(".message_row");
-            const message_id = rows.id($row);
-            message_lists.current.select_id(message_id);
-            const args = popover_menus_data.get_actions_popover_content_context(message_id);
-            instance.setContent(parse_html(render_actions_popover_content(args)));
-            $row.addClass("has_actions_popover");
-        },
-        onMount(instance) {
-            if (message_actions_popover_keyboard_toggle) {
-                focus_first_action_popover_item();
-                message_actions_popover_keyboard_toggle = false;
-            }
-            popover_instances.message_actions = instance;
-
-            // We want click events to propagate to `instance` so that
-            // instance.hide gets called.
-            const $popper = $(instance.popper);
-            $popper.one("click", ".respond_button", (e) => {
-                // Arguably, we should fetch the message ID to respond to from
-                // e.target, but that should always be the current selected
-                // message in the current message list (and
-                // compose_actions.respond_to_message doesn't take a message
-                // argument).
-                compose_actions.quote_and_reply({trigger: "popover respond"});
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".popover_edit_message, .popover_view_source", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                const $row = message_lists.current.get_row(message_id);
-                message_edit.start($row);
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".popover_move_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                const message = message_lists.current.get(message_id);
-                stream_popover.build_move_topic_to_stream_popover(
-                    message.stream_id,
-                    message.topic,
-                    false,
-                    message,
-                );
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".mark_as_unread", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                unread_ops.mark_as_unread_from_here(message_id);
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".popover_toggle_collapse", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                const $row = message_lists.current.get_row(message_id);
-                const message = message_lists.current.get(rows.id($row));
-                if ($row) {
-                    if (message.collapsed) {
-                        condense.uncollapse($row);
-                    } else {
-                        condense.collapse($row);
-                    }
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".rehide_muted_user_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                const $row = message_lists.current.get_row(message_id);
-                const message = message_lists.current.get(rows.id($row));
-                const message_container = message_lists.current.view.message_containers.get(
-                    message.id,
-                );
-                if ($row && !message_container.is_hidden) {
-                    message_lists.current.view.hide_revealed_message(message_id);
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".view_read_receipts", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                read_receipts.show_user_list(message_id);
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".delete_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                message_edit.delete_message(message_id);
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".reaction_button", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                // Don't propagate the click event since `toggle_emoji_popover` opens a
-                // emoji_picker which we don't want to hide after actions popover is hidden.
-                e.stopPropagation();
-                e.preventDefault();
-                emoji_picker.toggle_emoji_popover(instance.reference.parentElement, message_id, {
-                    placement: "bottom",
-                });
-                instance.hide();
-            });
-
-            new ClipboardJS($popper.find(".copy_link")[0]).on("success", () => {
-                show_copied_confirmation($(instance.reference).closest(".message_controls")[0]);
-                setTimeout(() => {
-                    // The Clipboard library works by focusing to a hidden textarea.
-                    // We unfocus this so keyboard shortcuts, etc., will work again.
-                    $(":focus").trigger("blur");
-                }, 0);
-                instance.hide();
-            });
-        },
-        onHidden(instance) {
-            const $row = $(instance.reference).closest(".message_row");
-            $row.removeClass("has_actions_popover");
-            instance.destroy();
-            popover_instances.message_actions = undefined;
-            message_actions_popover_keyboard_toggle = false;
         },
     });
 

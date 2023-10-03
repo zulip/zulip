@@ -24,6 +24,7 @@ import * as hotspots from "./hotspots";
 import * as inbox_ui from "./inbox_ui";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
+import * as message_actions_popover from "./message_actions_popover";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
@@ -1007,7 +1008,7 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that operate on a message
     switch (event_name) {
         case "message_actions":
-            return popover_menus.toggle_message_actions_menu(msg);
+            return message_actions_popover.toggle_message_actions_menu(msg);
         case "star_message":
             starred_messages_ui.toggle_starred_and_update_server(msg);
             return true;
