@@ -19,7 +19,8 @@ from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_s
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_change_user_role
-from zerver.lib.message import MessageDict, has_message_access, messages_for_ids, truncate_topic
+from zerver.lib.message import has_message_access, messages_for_ids, truncate_topic
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
