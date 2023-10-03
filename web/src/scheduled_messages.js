@@ -11,7 +11,7 @@ import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
-import * as popover_menus from "./popover_menus";
+import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
@@ -134,7 +134,9 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
     compose_banner.clear_message_sent_banners(false);
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
-    popover_menus.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
+    scheduled_messages_popover.set_selected_schedule_timestamp(
+        scheduled_msg.scheduled_delivery_timestamp,
+    );
 }
 
 function show_message_unscheduled_banner(scheduled_delivery_timestamp) {

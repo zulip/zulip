@@ -25,10 +25,10 @@ import * as message_events from "./message_events";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popover_menus from "./popover_menus";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as stream_data from "./stream_data";
@@ -212,7 +212,7 @@ export function clear_compose_box() {
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
-    popover_menus.reset_selected_schedule_timestamp();
+    scheduled_messages_popover.reset_selected_schedule_timestamp();
 }
 
 export function send_message_success(local_id, message_id, locally_echoed) {
@@ -524,7 +524,7 @@ export function initialize() {
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
-                popover_menus.open_send_later_menu();
+                scheduled_messages_popover.open_send_later_menu();
 
                 // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
                 // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
@@ -601,8 +601,9 @@ export function initialize() {
         )} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            const send_at_timestamp = popover_menus.get_selected_send_later_timestamp();
-            popover_menus.do_schedule_message(send_at_timestamp);
+            const send_at_timestamp =
+                scheduled_messages_popover.get_selected_send_later_timestamp();
+            scheduled_messages_popover.do_schedule_message(send_at_timestamp);
         },
     );
 
@@ -812,8 +813,9 @@ export function initialize() {
 function schedule_message_to_custom_date() {
     const compose_message_object = create_message_object();
 
-    const deliver_at = popover_menus.get_formatted_selected_send_later_time();
-    const scheduled_delivery_timestamp = popover_menus.get_selected_send_later_timestamp();
+    const deliver_at = scheduled_messages_popover.get_formatted_selected_send_later_time();
+    const scheduled_delivery_timestamp =
+        scheduled_messages_popover.get_selected_send_later_timestamp();
 
     const message_type = compose_message_object.type;
     let req_type;
