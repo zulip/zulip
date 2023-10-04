@@ -26,9 +26,6 @@ const settings = mock_esm("../src/settings");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const ui_util = mock_esm("../src/ui_util");
 const ui_report = mock_esm("../src/ui_report");
-mock_esm("../src/left_sidebar_navigation_area", {
-    handle_narrow_deactivated() {},
-});
 set_global("favicon", {});
 
 const browser_history = zrequire("browser_history");
