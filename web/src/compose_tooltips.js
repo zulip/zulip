@@ -20,7 +20,7 @@ export function initialize() {
             "#compose_buttons > .reply_button_container",
             "#left_bar_compose_mobile_button_big",
             "#new_conversation_button",
-            "#left_bar_compose_private_button_big",
+            "#new_direct_message_button",
         ],
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
