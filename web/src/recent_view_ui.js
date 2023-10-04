@@ -118,6 +118,80 @@ export function set_default_focus() {
     compose_closed_ui.set_standard_text_for_reply_button();
 }
 
+// When there are no messages loaded, we don't show a banner yet.
+const NO_MESSAGES_LOADED = 0;
+// When some messages are loaded, but we're still loading newer messages,
+// we show a simple loading banner.
+const SOME_MESSAGES_LOADED = 1;
+// Once we've found the newest message, we allow the user to load
+// more messages further back in time.
+const SOME_MESSAGES_LOADED_INCLUDING_NEWEST = 2;
+// Once all messages are loaded, we hide the banner.
+const ALL_MESSAGES_LOADED = 3;
+
+let loading_state = NO_MESSAGES_LOADED;
+let oldest_message_timestamp;
+
+export function set_oldest_message_date(timestamp, has_found_oldest, has_found_newest) {
+    if (has_found_oldest) {
+        loading_state = ALL_MESSAGES_LOADED;
+    } else if (has_found_newest) {
+        loading_state = SOME_MESSAGES_LOADED_INCLUDING_NEWEST;
+    } else {
+        loading_state = SOME_MESSAGES_LOADED;
+    }
+    oldest_message_timestamp = timestamp;
+
+    // We might be loading messages in another narrow before the recent view
+    // is shown, so we keep the state updated and update the banner only
+    // once it's actually rendered.
+    if ($("#recent_view_table table tbody").length) {
+        update_load_more_banner();
+    }
+}
+
+function update_load_more_banner() {
+    if (loading_state === NO_MESSAGES_LOADED) {
+        return;
+    }
+
+    if (loading_state === ALL_MESSAGES_LOADED) {
+        $(".recent-view-load-more-container").toggleClass("notvisible", true);
+        return;
+    }
+
+    // There are some messages loaded, but not all messages yet. The banner was
+    // hidden on page load, and we make sure to show it now that there are messages
+    // we can display.
+    $(".recent-view-load-more-container").toggleClass("notvisible", false);
+
+    // Until we've found the newest message, we only show the banner with a messages
+    // explaining we're still fetching messages. We don't allow the user to fetch
+    // more messages.
+    if (loading_state === SOME_MESSAGES_LOADED) {
+        return;
+    }
+
+    const $button = $(".recent-view-load-more-container .fetch-messages-button");
+    const $button_label = $(".recent-view-load-more-container .button-label");
+    const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
+
+    $button.toggleClass("notvisible", false);
+
+    const time_obj = new Date(oldest_message_timestamp * 1000);
+    const time_string = timerender.get_localized_date_or_time_for_format(
+        time_obj,
+        "full_weekday_dayofyear_year_time",
+    );
+    $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
+
+    $button_label.toggleClass("invisible", false);
+    $button.prop("disabled", false);
+    loading.destroy_indicator(
+        $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
+    );
+}
+
 function get_min_load_count(already_rendered_count, load_count) {
     const extra_rows_for_viewing_pleasure = 15;
     if (row_focus > already_rendered_count + load_count) {
@@ -874,6 +948,9 @@ export function complete_rerender() {
     // was not the first view loaded in the app.
     show_selected_filters();
 
+    // Update the banner now that it's rendered.
+    update_load_more_banner();
+
     const $container = $("#recent_view_table table tbody");
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
@@ -1244,7 +1321,12 @@ export function change_focused_element($elt, input_key) {
     return false;
 }
 
-export function initialize({on_click_participant, on_mark_pm_as_read, on_mark_topic_as_read}) {
+export function initialize({
+    on_click_participant,
+    on_mark_pm_as_read,
+    on_mark_topic_as_read,
+    maybe_load_older_messages,
+}) {
     // load filters from local storage.
     if (!page_params.is_spectator) {
         // A user may have a stored filter and can log out
@@ -1387,5 +1469,15 @@ export function initialize({on_click_participant, on_mark_pm_as_read, on_mark_to
         e.stopPropagation();
         $("#recent_view_search").val("");
         update_filters_view();
+    });
+
+    $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
+        maybe_load_older_messages();
+        $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
+        $(".recent-view-load-more-container .fetch-messages-button").prop("disabled", true);
+        loading.make_indicator(
+            $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
+            {width: 20},
+        );
     });
 }

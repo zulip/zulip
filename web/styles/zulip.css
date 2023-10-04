@@ -255,6 +255,7 @@ body {
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
     --color-zulip-logo-loading: hsl(0deg 0% 27%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 27%);
     --color-zulip-logo-z: hsl(0deg 0% 100%);
 
     /* Message collapsing/condensing button colors */
@@ -383,6 +384,7 @@ body {
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
     --color-zulip-logo-loading: hsl(0deg 0% 100%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 100% / 60%);
     --color-zulip-logo-z: hsl(214deg 27% 18%);
 
     /* Message collapsing/condensing button colors */

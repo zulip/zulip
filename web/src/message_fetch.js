@@ -29,6 +29,7 @@ const consts = {
     recent_view_initial_fetch_size: 400,
     narrowed_view_backward_batch_size: 100,
     narrowed_view_forward_batch_size: 100,
+    recent_view_fetch_more_batch_size: 1000,
     catch_up_batch_size: 1000,
 };
 
@@ -36,6 +37,8 @@ function process_result(data, opts) {
     let messages = data.messages;
 
     messages = messages.map((message) => message_helper.process_new_message(message));
+    const has_found_oldest = opts.msg_list?.data.fetch_status.has_found_oldest() ?? false;
+    const has_found_newest = opts.msg_list?.data.fetch_status.has_found_newest() ?? false;
 
     // In some rare situations, we expect to discover new unread
     // messages not tracked in unread.js during this fetching process.
@@ -58,6 +61,17 @@ function process_result(data, opts) {
         }
     }
 
+    if (messages.length > 0 && opts.msg_list === message_lists.home) {
+        // We keep track of how far back we've fetched messages for, for messaging in
+        // the recent view. This assumes `data.messages` is already sorted.
+        const oldest_timestamp = all_messages_data.first().timestamp;
+        recent_view_ui.set_oldest_message_date(
+            oldest_timestamp,
+            has_found_oldest,
+            has_found_newest,
+        );
+    }
+
     huddle_data.process_loaded_messages(messages);
     recent_view_ui.process_messages(messages);
     stream_list.update_streams_sidebar();
@@ -74,8 +88,6 @@ function process_result(data, opts) {
         // the messages we requested, and all of them are in muted
         // topics, but there are older messages for this stream that
         // we need to ask the server for.
-        const has_found_oldest = opts.msg_list.data.fetch_status.has_found_oldest();
-        const has_found_newest = opts.msg_list.data.fetch_status.has_found_newest();
         if (has_found_oldest && has_found_newest) {
             // Even after loading more messages, we have
             // no messages to display in this narrow.
@@ -407,7 +419,9 @@ export function maybe_load_older_messages(opts) {
 
     do_backfill({
         msg_list,
-        num_before: consts.narrowed_view_backward_batch_size,
+        num_before: opts.recent_view
+            ? consts.recent_view_fetch_more_batch_size
+            : consts.narrowed_view_backward_batch_size,
     });
 }
 
