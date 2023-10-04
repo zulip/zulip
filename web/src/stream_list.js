@@ -666,7 +666,7 @@ export function handle_narrow_activated(filter) {
     }
 }
 
-export function handle_narrow_deactivated() {
+export function handle_message_view_deactivated() {
     deselect_stream_items();
     topic_zoom.clear_topics();
 }

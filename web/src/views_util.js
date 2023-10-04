@@ -23,7 +23,7 @@ export function show(opts) {
 
     // Hide selected elements in the left sidebar.
     opts.highlight_view_in_left_sidebar();
-    stream_list.handle_narrow_deactivated();
+    stream_list.handle_message_view_deactivated();
 
     // Hide "middle-column" which has html for rendering
     // a messages narrow. We hide it and show the view.
