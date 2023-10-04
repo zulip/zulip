@@ -128,6 +128,12 @@
         }
     }
 
+    #operators-instructions {
+        & .help-table tr:last-child td {
+            padding: 20px 0;
+        }
+    }
+
     .hotkeys-table {
         & th {
             text-align: center;
