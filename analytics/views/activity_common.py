@@ -95,7 +95,7 @@ def remote_installation_stats_link(server_id: int, hostname: str) -> Markup:
     from analytics.views.stats import stats_for_remote_installation
 
     url = reverse(stats_for_remote_installation, kwargs=dict(remote_server_id=server_id))
-    return Markup('<a href="{url}"><i class="fa fa-pie-chart"></i>{hostname}</a>').format(
+    return Markup('<a href="{url}"><i class="fa fa-pie-chart"></i></a> {hostname}').format(
         url=url, hostname=hostname
     )
 
