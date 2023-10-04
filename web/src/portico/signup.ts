@@ -1,10 +1,11 @@
 import $ from "jquery";
-import Micromodal from "micromodal";
 
 import * as common from "../common";
 import {$t} from "../i18n";
 import {password_quality, password_warning} from "../password_quality";
 import * as settings_config from "../settings_config";
+
+import * as portico_modals from "./portico_modals";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
@@ -233,10 +234,7 @@ $(() => {
     });
 
     $("#new-user-email-address-visibility .change_email_address_visibility").on("click", () => {
-        Micromodal.show("change-email-address-visibility-modal", {
-            disableFocus: true,
-            openClass: "modal--opening",
-        });
+        portico_modals.open_modal("change-email-address-visibility-modal");
     });
 
     $("#change-email-address-visibility-modal .dialog_submit_button").on("click", () => {
@@ -245,7 +243,7 @@ $(() => {
             10,
         );
         $("#email_address_visibility").val(selected_val);
-        Micromodal.close("change-email-address-visibility-modal");
+        portico_modals.close_modal("change-email-address-visibility-modal");
 
         let selected_option_text;
 
