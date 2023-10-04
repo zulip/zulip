@@ -776,8 +776,8 @@ test_ui("narrow_button_titles", ({override}) => {
     override(narrow_state, "is_message_feed_visible", () => true);
     compose_closed_ui.update_buttons_for_private();
     assert.equal(
-        $("#left_bar_compose_stream_button_big").text(),
-        $t({defaultMessage: "New stream message"}),
+        $("#new_conversation_button").text(),
+        $t({defaultMessage: "Start new conversation"}),
     );
     assert.equal(
         $("#left_bar_compose_private_button_big").text(),
@@ -786,8 +786,8 @@ test_ui("narrow_button_titles", ({override}) => {
 
     compose_closed_ui.update_buttons_for_stream();
     assert.equal(
-        $("#left_bar_compose_stream_button_big").text(),
-        $t({defaultMessage: "New topic"}),
+        $("#new_conversation_button").text(),
+        $t({defaultMessage: "Start new conversation"}),
     );
     assert.equal(
         $("#left_bar_compose_private_button_big").text(),

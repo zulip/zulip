@@ -42,7 +42,7 @@
         }
     }
 
-    .stream_button_container,
+    .new_conversation_button_container,
     .private_button_container {
         @media (width < $sm_min) {
             display: none;
