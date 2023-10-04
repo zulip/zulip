@@ -195,8 +195,8 @@ run_test("basics", ({override}) => {
         [message_view_header, "render_title_area"],
         [notifications, "redraw_title"],
         [left_sidebar_navigation_area, "handle_narrow_activated"],
-        [compose_actions, "on_narrow"],
         [stream_list, "handle_narrow_activated"],
+        [compose_actions, "on_narrow"],
         [compose_recipient, "update_narrow_to_recipient_visibility"],
     ]);
 

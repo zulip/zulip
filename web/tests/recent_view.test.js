@@ -166,7 +166,7 @@ mock_esm("../src/stream_data", {
     get_stream_name_from_id: () => "stream_name",
 });
 mock_esm("../src/stream_list", {
-    handle_narrow_deactivated: noop,
+    handle_message_view_deactivated: noop,
 });
 mock_esm("../src/timerender", {
     relative_time_string_from_date: () => "Just now",

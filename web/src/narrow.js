@@ -562,7 +562,6 @@ export function activate(raw_operators, opts) {
         const current_filter = narrow_state.filter();
 
         pm_list.handle_narrow_activated(current_filter);
-        stream_list.handle_narrow_activated(current_filter);
         unread_ui.update_unread_banner();
 
         // It is important to call this after other important updates
@@ -1021,6 +1020,7 @@ function handle_post_view_change(msg_list) {
     message_view_header.render_title_area();
     update_narrow_title(filter);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
+    stream_list.handle_narrow_activated(filter);
 }
 
 function handle_post_narrow_deactivate_processes(msg_list) {
@@ -1029,7 +1029,6 @@ function handle_post_narrow_deactivate_processes(msg_list) {
     compose_fade.update_message_list();
 
     pm_list.handle_narrow_deactivated();
-    stream_list.handle_narrow_deactivated();
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     message_feed_top_notices.update_top_of_narrow_notices(msg_list);
