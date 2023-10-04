@@ -1,25 +1,13 @@
-import $ from "jquery";
-
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
-import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
-
 import * as channel from "./channel";
-import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
-import * as compose_banner from "./compose_banner";
-import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
-import * as narrow from "./narrow";
-import * as people from "./people";
-import * as popover_menus from "./popover_menus";
-import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
-export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 
 // scheduled_messages_data is a dictionary where key=scheduled_message_id and value=scheduled_messages
 export const scheduled_messages_data = {};
+
+let selected_send_later_timestamp;
 
 function compute_send_times(now = new Date()) {
     const send_times = {};
@@ -60,12 +48,6 @@ export function is_send_later_timestamp_missing_or_expired(
     return false;
 }
 
-function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
-    $(
-        `.message_scheduled_success_compose_banner[data-scheduled-message-id=${scheduled_message_id}]`,
-    ).hide();
-}
-
 export function add_scheduled_messages(scheduled_messages) {
     for (const scheduled_message of scheduled_messages) {
         scheduled_messages_data[scheduled_message.scheduled_message_id] = scheduled_message;
@@ -75,7 +57,6 @@ export function add_scheduled_messages(scheduled_messages) {
 export function remove_scheduled_message(scheduled_message_id) {
     if (scheduled_messages_data[scheduled_message_id] !== undefined) {
         delete scheduled_messages_data[scheduled_message_id];
-        hide_scheduled_message_success_compose_banner(scheduled_message_id);
     }
 }
 
@@ -85,80 +66,6 @@ export function update_scheduled_message(scheduled_message) {
     }
 
     scheduled_messages_data[scheduled_message.scheduled_message_id] = scheduled_message;
-}
-
-function narrow_via_edit_scheduled_message(compose_args) {
-    if (compose_args.type === "stream") {
-        narrow.activate(
-            [
-                {operator: "stream", operand: compose_args.stream},
-                {operator: "topic", operand: compose_args.topic},
-            ],
-            {trigger: "edit scheduled message"},
-        );
-    } else {
-        narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
-            trigger: "edit scheduled message",
-        });
-    }
-}
-
-export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient) {
-    let compose_args;
-    if (scheduled_msg.type === "stream") {
-        compose_args = {
-            type: "stream",
-            stream: sub_store.maybe_get_stream_name(scheduled_msg.to),
-            topic: scheduled_msg.topic,
-            content: scheduled_msg.content,
-        };
-    } else {
-        const recipient_emails = [];
-        if (scheduled_msg.to) {
-            for (const recipient_id of scheduled_msg.to) {
-                recipient_emails.push(people.get_by_user_id(recipient_id).email);
-            }
-        }
-        compose_args = {
-            type: scheduled_msg.type,
-            private_message_recipient: recipient_emails.join(","),
-            content: scheduled_msg.content,
-        };
-    }
-
-    if (should_narrow_to_recipient) {
-        narrow_via_edit_scheduled_message(compose_args);
-    }
-
-    compose.clear_compose_box();
-    compose_banner.clear_message_sent_banners(false);
-    compose_actions.start(compose_args.type, compose_args);
-    compose_ui.autosize_textarea($("#compose-textarea"));
-    popover_menus.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
-}
-
-function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
-    const deliver_at = timerender.get_full_datetime(
-        new Date(scheduled_delivery_timestamp * 1000),
-        "time",
-    );
-    const unscheduled_banner = render_compose_banner({
-        banner_type: compose_banner.WARNING,
-        banner_text: $t({
-            defaultMessage: "This message is no longer scheduled to be sent.",
-        }),
-        button_text: $t({defaultMessage: "Schedule for {deliver_at}"}, {deliver_at}),
-        classname: compose_banner.CLASSNAMES.unscheduled_message,
-    });
-    compose_banner.append_compose_banner_to_banner_list(unscheduled_banner, $("#compose_banners"));
-}
-
-export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {
-    const scheduled_msg = scheduled_messages_data[scheduled_message_id];
-    delete_scheduled_message(scheduled_message_id, () => {
-        open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
-        show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);
-    });
 }
 
 export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
@@ -279,43 +186,29 @@ export function get_filtered_send_opts(date) {
     };
 }
 
+export function get_selected_send_later_timestamp() {
+    if (!selected_send_later_timestamp) {
+        return undefined;
+    }
+    return selected_send_later_timestamp;
+}
+
+export function get_formatted_selected_send_later_time() {
+    const current_time = Date.now() / 1000; // seconds, like selected_send_later_timestamp
+    if (is_send_later_timestamp_missing_or_expired(selected_send_later_timestamp, current_time)) {
+        return undefined;
+    }
+    return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
+}
+
+export function set_selected_schedule_timestamp(timestamp) {
+    selected_send_later_timestamp = timestamp;
+}
+
+export function reset_selected_schedule_timestamp() {
+    selected_send_later_timestamp = undefined;
+}
+
 export function initialize(scheduled_messages_params) {
     add_scheduled_messages(scheduled_messages_params.scheduled_messages);
-
-    $("body").on("click", ".undo_scheduled_message", (e) => {
-        const scheduled_message_id = Number.parseInt(
-            $(e.target)
-                .parents(".message_scheduled_success_compose_banner")
-                .attr("data-scheduled-message-id"),
-            10,
-        );
-        const should_narrow_to_recipient = false;
-        edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient);
-        e.preventDefault();
-        e.stopPropagation();
-    });
-}
-
-// This function is exported for unit testing purposes.
-export function should_update_send_later_options(date) {
-    const current_minute = date.getMinutes();
-    const current_hour = date.getHours();
-
-    if (current_hour === 0 && current_minute === 0) {
-        // We need to rerender the available options at midnight,
-        // since Monday could become in range.
-        return true;
-    }
-
-    // Rerender at MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS before the
-    // hour, so we don't offer a 4:00PM send time at 3:59 PM.
-    return current_minute === 60 - MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60;
-}
-
-export function update_send_later_options() {
-    const now = new Date();
-    if (should_update_send_later_options(now)) {
-        const filtered_send_opts = get_filtered_send_opts(now);
-        $("#send_later_options").replaceWith(render_send_later_modal_options(filtered_send_opts));
-    }
 }

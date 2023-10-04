@@ -153,7 +153,6 @@ export function initialize({on_narrow_search}) {
 
     // register searchbar click handler
     $("#search_exit").on("click", (e) => {
-        popovers.hide_all();
         exit_search({keep_search_narrow_open: false});
         e.preventDefault();
         e.stopPropagation();

@@ -10,9 +10,9 @@ import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_call from "./compose_call";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -45,8 +45,6 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
-const upload_objects_by_row = new Map();
-
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
 // move several topics in a row with the same settings.
@@ -461,10 +459,10 @@ function edit_message($row, raw_content) {
 
     $form
         .find(".message-edit-feature-group .video_link")
-        .toggle(compose.compute_show_video_chat_button());
+        .toggle(compose_call.compute_show_video_chat_button());
     $form
         .find(".message-edit-feature-group .audio_link")
-        .toggle(compose.compute_show_audio_chat_button());
+        .toggle(compose_call.compute_show_audio_chat_button());
     upload.feature_check($(`#edit_form_${CSS.escape(rows.id($row))} .compose_upload_file`));
 
     const $message_edit_content = $row.find("textarea.message_edit_content");
@@ -568,7 +566,7 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
         mode: "edit",
         row: row_id,
     });
-    upload_objects_by_row.set(row_id, upload_object);
+    upload.upload_objects_by_message_edit_row.set(row_id, upload_object);
 }
 
 export function start($row, edit_box_open_callback) {
@@ -778,18 +776,14 @@ export function end_inline_topic_edit($row) {
     message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
-export function get_upload_object_from_row(row_id) {
-    return upload_objects_by_row.get(row_id);
-}
-
 function remove_uploads_from_row(row_id) {
-    const uploads_for_row = upload_objects_by_row.get(row_id);
+    const uploads_for_row = upload.upload_objects_by_message_edit_row.get(row_id);
     // We need to cancel all uploads, reset their progress,
     // and clear the files upon ending the edit.
     uploads_for_row?.cancelAll();
     // Since we removed all the uploads from the row, we should
     // now remove the corresponding upload object from the store.
-    upload_objects_by_row.delete(row_id);
+    upload.upload_objects_by_message_edit_row.delete(row_id);
 }
 
 export function end_message_row_edit($row) {
@@ -816,7 +810,7 @@ export function end_message_row_edit($row) {
         message_lists.current.hide_edit_message($row);
         message_viewport.scrollTop(original_scrollTop - scroll_by);
 
-        compose.abort_video_callbacks(message.id);
+        compose_call.abort_video_callbacks(message.id);
     }
     if ($row.find(".condensed").length !== 0) {
         condense.show_message_expander($row);

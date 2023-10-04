@@ -592,8 +592,9 @@ export function activate(raw_operators, opts) {
             post_span.finish();
             span.finish();
         }, 0);
-    } catch {
+    } catch (error) {
         span.setStatus("unknown_error");
+        throw error;
     } finally {
         if (do_close_span) {
             span.finish();

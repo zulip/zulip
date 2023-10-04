@@ -10,7 +10,6 @@ import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as spectators from "./spectators";
@@ -178,7 +177,6 @@ export function initialize() {
     $("body").on("click", ".message_edit_notice", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        popovers.hide_all();
 
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         const $row = message_lists.current.get_row(message_id);

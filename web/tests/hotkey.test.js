@@ -45,6 +45,7 @@ const gear_menu = mock_esm("../src/gear_menu", {
 });
 const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
+const message_actions_popover = mock_esm("../src/message_actions_popover");
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
@@ -78,9 +79,6 @@ const popovers = mock_esm("../src/user_card_popover", {
     user_card: {
         is_open: () => false,
     },
-});
-const popover_menus = mock_esm("../src/popover_menus", {
-    get_visible_instance: () => undefined,
 });
 const reactions = mock_esm("../src/reactions");
 const search = mock_esm("../src/search");
@@ -385,7 +383,7 @@ run_test("misc", ({override}) => {
     assert_mapping("k", navigate, "up");
     assert_mapping("K", navigate, "page_up");
     assert_mapping("u", popovers, "toggle_sender_info");
-    assert_mapping("i", popover_menus, "toggle_message_actions_menu");
+    assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");
     assert_mapping("e", message_edit, "start");

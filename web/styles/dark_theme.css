@@ -13,6 +13,19 @@
         @extend .placeholder;
     }
 
+    .demo-organization-warning {
+        background-color: hsl(0deg 60% 19%);
+        border-color: hsl(3deg 73% 74% / 40%);
+        color: hsl(3deg 73% 80%);
+
+        .convert-demo-organization-button {
+            &:focus {
+                color: hsl(200deg 79% 66%);
+                outline-color: hsl(200deg 79% 66%);
+            }
+        }
+    }
+
     & a:hover {
         color: hsl(200deg 79% 66%);
 
@@ -1522,13 +1535,13 @@
 
         .selected-tab {
             background-color: hsl(0deg 0% 17% / 50%);
-            border: 1px solid hsl(0deg 0% 100% / 12%);
+            outline: 1px solid hsl(0deg 0% 100% / 12%);
         }
 
         .tab-option {
             &:hover:not(.selected-tab) {
                 background-color: hsl(0deg 0% 17% / 50%);
-                border: 1px solid hsl(0deg 0% 100% / 12%);
+                outline: 1px solid hsl(0deg 0% 100% / 12%);
             }
         }
     }

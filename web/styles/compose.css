@@ -83,13 +83,6 @@
     opacity: 1;
 }
 
-.narrow_to_compose_recipient_current_view_help {
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .compose_table {
     height: 100%;
     display: flex;

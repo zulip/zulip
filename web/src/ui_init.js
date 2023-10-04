@@ -23,6 +23,7 @@ import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
@@ -44,11 +45,13 @@ import * as i18n from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as invite from "./invite";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
+import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
+import * as message_actions_popover from "./message_actions_popover";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
 import * as message_list from "./message_list";
@@ -83,6 +86,8 @@ import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
+import * as scheduled_messages_popover from "./scheduled_messages_popover";
+import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
@@ -111,6 +116,7 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
+import * as topic_popover from "./topic_popover";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
 import * as typeahead_helper from "./typeahead_helper";
@@ -124,11 +130,12 @@ import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_popover from "./user_group_popover";
 import * as user_groups from "./user_groups";
-import * as user_group_settings_ui from "./user_groups_settings_ui";
+import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import * as user_profile from "./user_profile";
 import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
+import * as user_topic_popover from "./user_topic_popover";
 import * as user_topics from "./user_topics";
 
 // This is where most of our initialization takes place.
@@ -524,7 +531,14 @@ export function initialize_everything() {
     message_list_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
+    scheduled_messages_ui.initialize();
     popover_menus.initialize();
+    compose_popovers.initialize();
+    left_sidebar_navigation_area_popovers.initialize();
+    user_topic_popover.initialize();
+    topic_popover.initialize();
+    message_actions_popover.initialize();
+    scheduled_messages_popover.initialize();
 
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
     people.initialize(page_params.user_id, people_params);
@@ -588,7 +602,7 @@ export function initialize_everything() {
     user_topics.initialize(user_topics_params);
     muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
-    user_group_settings_ui.initialize();
+    user_groups_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
@@ -637,6 +651,7 @@ export function initialize_everything() {
         on_enter_send: compose.finish,
     });
     compose_textarea.initialize();
+    upload.initialize();
     search.initialize({
         on_narrow_search: narrow.activate,
     });
@@ -682,7 +697,6 @@ export function initialize_everything() {
     hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();
-    upload.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();

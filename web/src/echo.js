@@ -15,7 +15,6 @@ import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as recent_view_data from "./recent_view_data";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
@@ -479,7 +478,6 @@ export function initialize({on_send_message_success}) {
     function on_failed_action(selector, callback) {
         $("#main_div").on("click", selector, function (e) {
             e.stopPropagation();
-            popovers.hide_all();
             const $row = $(this).closest(".message_row");
             const local_id = rows.local_echo_id($row);
             // Message should be waiting for ack and only have a local id,

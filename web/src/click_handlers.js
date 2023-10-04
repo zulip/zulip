@@ -27,7 +27,6 @@ import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as rows from "./rows";
@@ -210,7 +209,6 @@ export function initialize() {
         }
         compose_actions.respond_to_message({trigger: "message click"});
         e.stopPropagation();
-        popovers.hide_all();
     };
 
     // if on normal non-mobile experience, a `click` event should run the message
@@ -237,7 +235,6 @@ export function initialize() {
 
     $("#main_div").on("click", ".star_container", function (e) {
         e.stopPropagation();
-        popovers.hide_all();
 
         if (page_params.is_spectator) {
             spectators.login_to_access();
@@ -297,7 +294,6 @@ export function initialize() {
         message_lists.current.select_id(rows.id($row));
         message_edit.start($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".move_message_button", function (e) {
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
@@ -311,43 +307,36 @@ export function initialize() {
             message,
         );
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.start_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.save_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.end_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.save_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_close", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {
@@ -496,7 +485,6 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
             sidebar_ui.hide_userlist_sidebar();
-            popovers.hide_all();
             $(".tooltip").remove();
         });
 
@@ -707,9 +695,6 @@ export function initialize() {
             e.preventDefault();
             return;
         }
-
-        // Still hide the popovers, however
-        popovers.hide_all();
     }
 
     $("body").on("click", "#compose-content", handle_compose_click);

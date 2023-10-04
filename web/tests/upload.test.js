@@ -388,7 +388,7 @@ test("uppy_config", () => {
 test("file_input", ({override_rewire}) => {
     upload.setup_upload({mode: "compose"});
 
-    const change_handler = $("body").get_on_handler("change", "#compose .file_input");
+    const change_handler = $("#compose .file_input").get_on_handler("change");
     const files = ["file1", "file2"];
     const event = {
         target: {
@@ -644,7 +644,6 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
             removeFile() {},
         };
     };
-    upload.setup_upload({mode: "compose"});
     upload.initialize();
 
     let prevent_default_counter = 0;

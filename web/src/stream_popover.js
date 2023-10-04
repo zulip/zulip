@@ -16,11 +16,11 @@ import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
-import * as popovers from "./popovers";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as stream_edit from "./stream_edit";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -104,7 +104,6 @@ function build_stream_popover(opts) {
         return;
     }
 
-    popovers.hide_all();
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
     });
@@ -154,7 +153,7 @@ function build_stream_popover(opts) {
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
-                stream_settings_ui.set_muted(sub, !sub.is_muted);
+                stream_edit.set_stream_property(sub, "is_muted", !sub.is_muted);
                 e.stopPropagation();
             });
 

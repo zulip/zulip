@@ -628,6 +628,12 @@ input[type="checkbox"] {
     }
 }
 
+#convert-demo-organization-form {
+    .domain_label {
+        display: inline-block;
+    }
+}
+
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
     .full-name-change-container label,
@@ -2041,6 +2047,15 @@ $option_title_width: 180px;
     .disabled_label {
         cursor: default;
         opacity: 0.7;
+    }
+}
+
+#admin_users_table .deactivated_user,
+#admin_deactivated_users_table .reactivated_user {
+    color: hsl(0deg 0% 64%);
+
+    & a {
+        color: inherit;
     }
 }
 
