@@ -548,6 +548,7 @@ html_rules: List["Rule"] = [
         },
         "exclude": {
             "templates/analytics/support.html",
+            "templates/analytics/remote_server_support.html",
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
             "web/templates/settings/playground_settings_admin.hbs",

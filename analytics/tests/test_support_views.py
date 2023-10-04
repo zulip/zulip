@@ -25,6 +25,54 @@ from zerver.models import (
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
+import uuid
+
+from zilencer.models import RemoteZulipServer
+
+
+class TestRemoteServerSupportEndpoint(ZulipTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
+    # Set up some initial example data.
+    for i in range(20):
+        hostname = f"zulip-{i}.example.com"
+        RemoteZulipServer.objects.create(
+            hostname=hostname, contact_email=f"admin@{hostname}", plan_type=1, uuid=uuid.uuid4()
+        )
+
+    def test_search(self) -> None:
+        self.login("cordelia")
+
+        result = self.client_get("/activity/remote/support")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        # Iago is the user with the appropriate permissions to access this page.
+        self.login("iago")
+        assert self.example_user("iago").is_staff
+
+        result = self.client_get("/activity/remote/support")
+        self.assert_in_success_response(
+            [
+                'input type="text" name="q" class="input-xxlarge search-query" placeholder="hostname or contact email"'
+            ],
+            result,
+        )
+
+        result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
+        self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+        self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+
+        result = self.client_get("/activity/remote/support", {"q": "example.com"})
+        for i in range(20):
+            self.assert_in_success_response([f"<h3>zulip-{i}.example.com</h3>"], result)
+
+        result = self.client_get("/activity/remote/support", {"q": "admin@zulip-2.example.com"})
+        self.assert_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+        self.assert_in_success_response(["<b>Contact email</b>: admin@zulip-2.example.com"], result)
+        self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+
 
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
