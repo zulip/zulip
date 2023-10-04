@@ -206,6 +206,12 @@ function do_new_messages_animation($li) {
 
 export function initialize() {
     update_scheduled_messages_row();
+
+    $("body").on(
+        "keydown",
+        "#left-sidebar-navigation-area #views-label-container",
+        ui_util.convert_enter_to_click,
+    );
 }
 
 export function highlight_inbox_view() {

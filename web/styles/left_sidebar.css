@@ -206,6 +206,7 @@ li.show-more-topics {
     /* Space between #views-label-container and .left-sidebar-navigation-list in collapsed state. */
     margin-right: 10px;
     margin-top: 3px;
+    outline: none;
 }
 
 .left-sidebar-navigation-area {
