@@ -85,14 +85,14 @@ function update_new_conversation_button(btn_text) {
     $("#new_conversation_button").text(btn_text);
 }
 
-function update_conversation_button(btn_text) {
-    $("#left_bar_compose_private_button_big").text(btn_text);
+function update_new_direct_message_button(btn_text) {
+    $("#new_direct_message_button").text(btn_text);
 }
 
 function update_buttons(text_stream, disable_reply) {
     const text_conversation = $t({defaultMessage: "New direct message"});
     update_new_conversation_button(text_stream);
-    update_conversation_button(text_conversation);
+    update_new_direct_message_button(text_conversation);
     update_reply_button_state(disable_reply);
 }
 
@@ -172,7 +172,7 @@ export function initialize() {
         compose_actions.start("stream", {trigger: "clear topic button"});
     });
 
-    $("body").on("click", ".compose_private_button", () => {
+    $("body").on("click", ".compose_new_direct_message_button", () => {
         compose_actions.start("private", {trigger: "new direct message"});
     });
 }

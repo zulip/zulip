@@ -43,7 +43,7 @@
     }
 
     .new_conversation_button_container,
-    .private_button_container {
+    .new_direct_message_button_container {
         @media (width < $sm_min) {
             display: none;
         }
@@ -1001,7 +1001,7 @@ textarea.new_message_textarea,
 }
 
 .compose_mobile_stream_button i,
-.compose_mobile_private_button i {
+.compose_mobile_direct_message_button i {
     margin-right: 4px;
 }
 
