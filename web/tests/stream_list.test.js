@@ -458,7 +458,7 @@ test_ui("narrowing", ({mock_template}) => {
         topics_closed = true;
     };
 
-    stream_list.handle_narrow_deactivated();
+    stream_list.handle_message_view_deactivated();
     assert.equal(removed_classes, "active-filter stream-expanded");
     assert.ok(topics_closed);
 });
