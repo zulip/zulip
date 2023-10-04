@@ -1019,7 +1019,7 @@ export function to_compose_target() {
     }
 }
 
-function handle_post_narrow_deactivate_processes() {
+function handle_post_narrow_deactivate_processes(msg_list) {
     compose_fade.update_message_list();
 
     left_sidebar_navigation_area.handle_narrow_deactivated();
@@ -1030,8 +1030,8 @@ function handle_post_narrow_deactivate_processes() {
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
     message_view_header.render_title_area();
-    update_narrow_title(narrow_state.filter());
-    message_feed_top_notices.update_top_of_narrow_notices(message_lists.home);
+    update_narrow_title(msg_list.data.filter);
+    message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 }
 
 export function deactivate(coming_from_all_messages = true, is_actively_scrolling = false) {
@@ -1132,7 +1132,7 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
             message_lists.current.select_id(message_id_to_select, select_opts);
         }
 
-        handle_post_narrow_deactivate_processes();
+        handle_post_narrow_deactivate_processes(message_lists.home);
 
         const post_span = span.startChild({
             op: "function",
