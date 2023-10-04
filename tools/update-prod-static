@@ -42,6 +42,9 @@ run(["./tools/setup/build_pygments_data"])
 # Build time zone data
 run(["./tools/setup/build_timezone_values"])
 
+# Generate landing page images of various sizes and formats.
+run(["tools/setup/generate_landing_page_images.py"])
+
 # Create webpack bundle
 run(["./tools/webpack", "--quiet"])
 
