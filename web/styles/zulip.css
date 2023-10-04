@@ -300,6 +300,14 @@ body {
     --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
     --color-icons-inbox: hsl(0deg 0% 0%);
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
+
+    /* Information overlay colors */
+    --color-title: hsl(0deg 0% 0%);
+    --color-text: hsl(0deg 0% 20%);
+    --color-sub-text: hsl(0deg 0% 45%);
+    --color-keyboard: hsl(227deg 78% 59%);
+    --color-text-link: hsl(217deg 100% 50%);
+    --color-table-border: hsl(0deg 0% 93%);
 }
 
 %dark-theme {
@@ -432,6 +440,14 @@ body {
     --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
     --color-icons-inbox: hsl(0deg 0% 100%);
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
+
+    /* Information overlay colors  */
+    --color-title: hsl(0deg 0% 100%);
+    --color-text: hsl(0deg 0% 100% / 75%);
+    --color-sub-text: hsl(0deg 0% 100% / 60%);
+    --color-keyboard: hsl(225deg 100% 84%);
+    --color-text-link: hsl(217deg 100% 65% / 100%);
+    --color-table-border: hsl(0deg 0% 0% / 40%);
 }
 
 @media screen {

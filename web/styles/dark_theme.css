@@ -658,6 +658,7 @@
     .dropdown-menu.typeahead,
     #settings_page,
     .informational-overlays .overlay-content {
+        background-color: hsl(0deg 0% 14% / 100%);
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
     }
 
