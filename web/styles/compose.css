@@ -165,43 +165,19 @@
 #send_message_form {
     margin: 0;
     height: 100%;
-
-    .messagebox-wrapper {
-        flex: 1;
-    }
-
-    .messagebox {
-        /* normally 5px 14px; pull in the right and bottom a bit */
-        cursor: default;
-        padding: 0;
-        background: none;
-        box-shadow: none;
-        border: none;
-        height: 100%;
-        display: flex;
-        flex-flow: column;
-    }
-
-    .message_content {
-        margin-right: 0;
-    }
 }
 
-#below-compose-content {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+.compose_bottom_top_container {
     margin-top: 6px;
+    display: flex;
+    /* Preserve sensible tab order despite layout shift. */
+    flex-flow: row-reverse;
+}
+
+.compose_bottom_bottom_container {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: -2px;
-
-    .compose_bottom_top_container {
-        display: flex;
-    }
-
-    .compose_bottom_bottom_container {
-        display: flex;
-        justify-content: space-between;
-    }
 }
 
 #compose_limit_indicator {
@@ -232,8 +208,8 @@
 
 #compose_top {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    /* Preserve sensible tab order despite layout shift. */
+    flex-flow: row-reverse;
     padding-bottom: 5px;
 }
 
