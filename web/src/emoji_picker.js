@@ -3,7 +3,6 @@ import $ from "jquery";
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as typeahead from "../shared/src/typeahead";
 import render_emoji_popover from "../templates/emoji_popover.hbs";
-import render_emoji_popover_content from "../templates/emoji_popover_content.hbs";
 import render_emoji_popover_emoji_map from "../templates/emoji_popover_emoji_map.hbs";
 import render_emoji_popover_search_results from "../templates/emoji_popover_search_results.hbs";
 import render_emoji_showcase from "../templates/emoji_showcase.hbs";
@@ -171,7 +170,7 @@ const generate_emoji_picker_content = function (id) {
         emoji_dict.has_reacted = emoji_dict.aliases.some((alias) => emojis_used.includes(alias));
     }
 
-    return render_emoji_popover_content({
+    return render_emoji_popover({
         message_id: id,
         emoji_categories: complete_emoji_catalog,
         is_status_emoji_popover: user_status_ui.user_status_picker_open(),
@@ -647,10 +646,9 @@ function get_default_emoji_popover_options() {
             emoji_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
-            instance.setContent(ui_util.parse_html(render_emoji_popover()));
-            $popover
-                .find(".popover-content")
-                .append(generate_emoji_picker_content(current_message_id));
+            instance.setContent(ui_util.parse_html(
+                generate_emoji_picker_content(current_message_id),
+            ));
             emoji_catalog_last_coordinates = {
                 section: 0,
                 index: 0,

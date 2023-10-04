@@ -1,4 +1,22 @@
 <div class="emoji-picker-popover">
-    <div class="popover-content"></div>
+    <div class="popover-content">
+        <div class="emoji-popover">
+            <div class="emoji-popover-top">
+                <input class="emoji-popover-filter filter_text_input" type="text" autofocus placeholder="{{t 'Search' }}" />
+                <i class="fa fa-search" aria-hidden="true"></i>
+            </div>
+            <div class="emoji-popover-category-tabs">
+                {{#each emoji_categories}}
+                    <span class="emoji-popover-tab-item {{#if @first}} active {{/if}}" data-tab-name='{{name}}' title='{{name}}'><i class="fa {{icon}}"></i></span>
+                {{/each}}
+            </div>
+            <div class="emoji-popover-emoji-map" data-simplebar data-simplebar-auto-hide="false" data-message-id="{{message_id}}">
+            </div>
+            <div class="emoji-search-results-container" data-simplebar data-simplebar-auto-hide="false" data-message-id="{{message_id}}">
+                <div class="emoji-popover-results-heading">{{t "Search results" }}</div>
+                <div class="emoji-search-results"></div>
+            </div>
+        </div>
+    </div>
     <div class="emoji-showcase-container"></div>
 </div>
