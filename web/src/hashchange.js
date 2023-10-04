@@ -11,7 +11,6 @@ import {$t_html} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
-import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
@@ -124,7 +123,6 @@ function show_all_message_view() {
     const coming_from_inbox = maybe_hide_inbox();
     const is_actively_scrolling = message_scroll.is_actively_scrolling();
     narrow.deactivate(!(coming_from_recent_view || coming_from_inbox), is_actively_scrolling);
-    left_sidebar_navigation_area.handle_narrow_deactivated();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
     setTimeout(navigate.maybe_scroll_to_selected, 0);
