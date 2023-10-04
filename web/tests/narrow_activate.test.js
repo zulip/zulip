@@ -93,7 +93,7 @@ function test_helper({override}) {
     stub(typing_events, "render_notifications_for_narrow");
     stub(compose_recipient, "update_narrow_to_recipient_visibility");
     stub(unread_ops, "process_visible");
-    stub(compose_closed_ui, "update_buttons_for_stream");
+    stub(compose_closed_ui, "update_buttons_for_stream_views");
     stub(compose_closed_ui, "update_buttons_for_private");
     // We don't test the css calls; we just skip over them.
     $("#mark_read_on_scroll_state_banner").toggleClass = () => {};
@@ -190,7 +190,7 @@ run_test("basics", ({override}) => {
         [narrow_history, "save_narrow_state_and_flush"],
         [hashchange, "save_narrow"],
         [typing_events, "render_notifications_for_narrow"],
-        [compose_closed_ui, "update_buttons_for_stream"],
+        [compose_closed_ui, "update_buttons_for_stream_views"],
         [compose_closed_ui, "update_reply_recipient_label"],
         [message_view_header, "render_title_area"],
         [narrow_title, "update_narrow_title"],

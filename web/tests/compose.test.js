@@ -784,7 +784,7 @@ test_ui("narrow_button_titles", ({override}) => {
         $t({defaultMessage: "New direct message"}),
     );
 
-    compose_closed_ui.update_buttons_for_stream();
+    compose_closed_ui.update_buttons_for_stream_views();
     assert.equal(
         $("#new_conversation_button").text(),
         $t({defaultMessage: "Start new conversation"}),
