@@ -845,7 +845,26 @@ input[type="checkbox"] {
         text-overflow: ellipsis;
         white-space: pre;
     }
+.bot_copy {
+    position: relative;
+    margin-left: 5px;
+    color: hsl(0deg 0% 67%);
+    transition: all 0.3s ease;
 
+    &:hover {
+        color: hsl(0deg 0% 27%);
+    }
+}
+.api_copy {
+    position: relative;
+    margin-left: 5px;
+    color: hsl(0deg 0% 67%);
+    transition: all 0.3s ease;
+
+    &:hover {
+        color: hsl(0deg 0% 27%);
+    }
+}
     .regenerate_bot_api_key {
         position: relative;
         margin-left: 5px;
