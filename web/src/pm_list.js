@@ -170,7 +170,7 @@ export function handle_narrow_activated(filter) {
     }
 }
 
-export function handle_narrow_deactivated() {
+export function handle_message_view_deactivated() {
     // Since one can renarrow via the keyboard shortcut or similar, we
     // avoid disturbing the zoomed state here.
     unhighlight_all_private_messages_view();

@@ -149,7 +149,7 @@ const narrow = mock_esm("../src/narrow", {
 });
 mock_esm("../src/pm_list", {
     update_private_messages: noop,
-    handle_narrow_deactivated: noop,
+    handle_message_view_deactivated: noop,
 });
 mock_esm("../src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
