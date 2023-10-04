@@ -194,8 +194,8 @@ run_test("basics", ({override}) => {
         [compose_closed_ui, "update_reply_recipient_label"],
         [message_view_header, "render_title_area"],
         [notifications, "redraw_title"],
-        [compose_actions, "on_narrow"],
         [left_sidebar_navigation_area, "handle_narrow_activated"],
+        [compose_actions, "on_narrow"],
         [stream_list, "handle_narrow_activated"],
         [compose_recipient, "update_narrow_to_recipient_visibility"],
     ]);
