@@ -18,7 +18,7 @@ from analytics.views.stats import (
     stats_for_remote_installation,
     stats_for_remote_realm,
 )
-from analytics.views.support import support
+from analytics.views.support import remote_servers_support, support
 from analytics.views.user_activity import get_user_activity
 from zerver.lib.rest import rest_path
 
@@ -26,6 +26,7 @@ i18n_urlpatterns: List[Union[URLPattern, URLResolver]] = [
     # Server admin (user_profile.is_staff) visible stats pages
     path("activity", get_installation_activity),
     path("activity/support", support, name="support"),
+    path("activity/remote/support", remote_servers_support, name="remote_servers_support"),
     path("realm_activity/<realm_str>/", get_realm_activity),
     path("user_activity/<user_profile_id>/", get_user_activity),
     path("stats/realm/<realm_str>/", stats_for_realm),
