@@ -41,8 +41,8 @@ async function expect_verona_stream_test_topic(page: Page): Promise<void> {
         ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
     ]);
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
-        "New topic",
+        await common.get_text_from_selector(page, "#new_conversation_button"),
+        "Start new conversation",
     );
 }
 
@@ -274,8 +274,8 @@ async function expect_all_direct_messages(page: Page): Promise<void> {
         ["You and Cordelia, Lear's daughter", ["direct message e"]],
     ]);
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
-        "New stream message",
+        await common.get_text_from_selector(page, "#new_conversation_button"),
+        "Start new conversation",
     );
     assert.strictEqual(await page.title(), "All direct messages - Zulip Dev - Zulip");
 }

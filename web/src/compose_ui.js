@@ -44,7 +44,8 @@ export function insert_and_scroll_into_view(content, $textarea) {
 }
 
 function get_focus_area(msg_type, opts) {
-    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
+    // Set focus to "Topic" when narrowed to a stream+topic
+    // and "Start new conversation" button clicked.
     if (msg_type === "stream" && opts.stream_id && !opts.topic) {
         return "#stream_message_recipient_topic";
     } else if (
