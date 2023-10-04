@@ -61,7 +61,7 @@ export function show_flatpickr(
                     instance.selectedDateElem,
                     instance.hourElement,
                     instance.minuteElement,
-                    instance.amPM,
+                    ...(user_settings.twenty_four_hour_time ? [] : [instance.amPM]),
                     $(".flatpickr-confirm")[0],
                 ];
                 const i = elems.indexOf(event.target);
