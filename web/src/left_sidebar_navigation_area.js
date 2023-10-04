@@ -81,13 +81,6 @@ export function handle_narrow_activated(filter) {
     }
 }
 
-export function handle_narrow_deactivated() {
-    deselect_top_left_corner_items();
-
-    const $filter_li = $(".top_left_all_messages");
-    $filter_li.addClass("active-filter");
-}
-
 export function highlight_recent_view() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));

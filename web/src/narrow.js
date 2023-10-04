@@ -561,7 +561,6 @@ export function activate(raw_operators, opts) {
 
         const current_filter = narrow_state.filter();
 
-        left_sidebar_navigation_area.handle_narrow_activated(current_filter);
         pm_list.handle_narrow_activated(current_filter);
         stream_list.handle_narrow_activated(current_filter);
         unread_ui.update_unread_banner();
@@ -1021,6 +1020,7 @@ function handle_post_view_change(msg_list) {
 
     message_view_header.render_title_area();
     update_narrow_title(filter);
+    left_sidebar_navigation_area.handle_narrow_activated(filter);
 }
 
 function handle_post_narrow_deactivate_processes(msg_list) {
@@ -1028,7 +1028,6 @@ function handle_post_narrow_deactivate_processes(msg_list) {
 
     compose_fade.update_message_list();
 
-    left_sidebar_navigation_area.handle_narrow_deactivated();
     pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
     message_edit.handle_narrow_deactivated();
