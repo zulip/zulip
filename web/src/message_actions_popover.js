@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
-import render_actions_popover_content from "../templates/actions_popover_content.hbs";
+import render_actions_popover from "../templates/actions_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_actions from "./compose_actions";
@@ -80,7 +80,7 @@ export function initialize() {
             const message_id = rows.id($row);
             message_lists.current.select_id(message_id);
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
-            instance.setContent(parse_html(render_actions_popover_content(args)));
+            instance.setContent(parse_html(render_actions_popover(args)));
             $row.addClass("has_actions_popover");
         },
         onMount(instance) {
