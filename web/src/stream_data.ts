@@ -1,18 +1,17 @@
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
-import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as sub_store from "./sub_store";
-import {StreamPostPolicy} from "./sub_store";
 import type {
     ApiStreamSubscription,
     NeverSubscribedStream,
     Stream,
+    StreamPostPolicy,
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store";
@@ -128,64 +127,6 @@ let stream_info: BinaryDict<StreamSubscription>;
 const stream_ids_by_name = new FoldDict<number>();
 const stream_ids_by_old_names = new FoldDict<number>();
 const default_stream_ids = new Set<number>();
-
-export const stream_privacy_policy_values = {
-    web_public: {
-        code: "web-public",
-        name: $t({defaultMessage: "Web-public"}),
-        description: $t({
-            defaultMessage:
-                "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
-        }),
-    },
-    public: {
-        code: "public",
-        name: $t({defaultMessage: "Public"}),
-        description: $t({
-            defaultMessage:
-                "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining",
-        }),
-    },
-    private_with_public_history: {
-        code: "invite-only-public-history",
-        name: $t({defaultMessage: "Private, shared history"}),
-        description: $t({
-            defaultMessage:
-                "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users",
-        }),
-    },
-    private: {
-        code: "invite-only",
-        name: $t({defaultMessage: "Private, protected history"}),
-        description: $t({
-            defaultMessage:
-                "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users",
-        }),
-    },
-};
-
-export const stream_post_policy_values = {
-    // These strings should match the strings in the
-    // Stream.POST_POLICIES object in zerver/models.py.
-    everyone: {
-        code: StreamPostPolicy.EVERYONE,
-        description: $t({defaultMessage: "Everyone"}),
-    },
-    non_new_members: {
-        code: StreamPostPolicy.RESTRICT_NEW_MEMBERS,
-        description: $t({defaultMessage: "Admins, moderators and full members"}),
-    },
-    moderators: {
-        code: StreamPostPolicy.MODERATORS,
-        description: $t({
-            defaultMessage: "Admins and moderators",
-        }),
-    },
-    admins: {
-        code: StreamPostPolicy.ADMINS,
-        description: $t({defaultMessage: "Admins only"}),
-    },
-} as const;
 
 export function clear_subscriptions(): void {
     // This function is only used once at page load, and then
@@ -630,7 +571,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return true;
     }
 
-    if (stream.stream_post_policy === stream_post_policy_values.admins.code) {
+    if (stream.stream_post_policy === settings_config.stream_post_policy_values.admins.code) {
         return false;
     }
 
@@ -638,13 +579,13 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return true;
     }
 
-    if (stream.stream_post_policy === stream_post_policy_values.moderators.code) {
+    if (stream.stream_post_policy === settings_config.stream_post_policy_values.moderators.code) {
         return false;
     }
 
     if (
         page_params.is_guest &&
-        stream.stream_post_policy !== stream_post_policy_values.everyone.code
+        stream.stream_post_policy !== settings_config.stream_post_policy_values.everyone.code
     ) {
         return false;
     }
@@ -654,7 +595,8 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
     const person_date_joined = new Date(person.date_joined).getTime();
     const days = (current_datetime - person_date_joined) / 1000 / 86400;
     if (
-        stream.stream_post_policy === stream_post_policy_values.non_new_members.code &&
+        stream.stream_post_policy ===
+            settings_config.stream_post_policy_values.non_new_members.code &&
         days < page_params.realm_waiting_period_threshold
     ) {
         return false;
@@ -676,15 +618,15 @@ export function get_stream_privacy_policy(stream_id: number): string {
     const sub = sub_store.get(stream_id)!;
 
     if (sub.is_web_public) {
-        return stream_privacy_policy_values.web_public.code;
+        return settings_config.stream_privacy_policy_values.web_public.code;
     }
     if (!sub.invite_only) {
-        return stream_privacy_policy_values.public.code;
+        return settings_config.stream_privacy_policy_values.public.code;
     }
     if (sub.invite_only && !sub.history_public_to_subscribers) {
-        return stream_privacy_policy_values.private.code;
+        return settings_config.stream_privacy_policy_values.private.code;
     }
-    return stream_privacy_policy_values.private_with_public_history.code;
+    return settings_config.stream_privacy_policy_values.private_with_public_history.code;
 }
 
 export function is_web_public(stream_id: number): boolean {
