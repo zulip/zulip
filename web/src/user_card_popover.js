@@ -4,9 +4,9 @@ import $ from "jquery";
 import tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
+import render_user_card_popover_avatar from "../templates/user_card_popover_avatar.hbs";
 import render_user_card_popover_content from "../templates/user_card_popover_content.hbs";
 import render_user_card_popover_manage_menu from "../templates/user_card_popover_manage_menu.hbs";
-import render_user_card_popover_title from "../templates/user_card_popover_title.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
@@ -335,7 +335,7 @@ function render_user_card_popover(
 
                 $popover.addClass(get_popover_classname(template_class));
                 $popover_title.append(
-                    render_user_card_popover_title({
+                    render_user_card_popover_avatar({
                         // See the load_medium_avatar comment for important background.
                         user_avatar: people.small_avatar_url_for_person(user),
                         user_is_guest: user.is_guest,
