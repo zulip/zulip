@@ -422,8 +422,6 @@ export function activate(raw_operators, opts) {
         // so hide them when activating a new one.
         $(".tooltip").hide();
 
-        update_narrow_title(filter);
-
         blueslip.debug("Narrowed", {
             operators: operators.map((e) => e.operator),
             trigger: opts ? opts.trigger : undefined,
@@ -557,12 +555,7 @@ export function activate(raw_operators, opts) {
             hashchange.save_narrow(operators);
         }
 
-        if (filter.contains_only_private_messages()) {
-            compose_closed_ui.update_buttons_for_private();
-        } else {
-            compose_closed_ui.update_buttons_for_stream();
-        }
-        compose_closed_ui.update_reply_recipient_label();
+        handle_post_view_change(msg_list);
 
         compose_actions.on_narrow(opts);
 
@@ -571,8 +564,6 @@ export function activate(raw_operators, opts) {
         left_sidebar_navigation_area.handle_narrow_activated(current_filter);
         pm_list.handle_narrow_activated(current_filter);
         stream_list.handle_narrow_activated(current_filter);
-        typing_events.render_notifications_for_narrow();
-        message_view_header.render_title_area();
         unread_ui.update_unread_banner();
 
         // It is important to call this after other important updates
@@ -1017,18 +1008,31 @@ export function to_compose_target() {
     }
 }
 
+function handle_post_view_change(msg_list) {
+    const filter = msg_list.data.filter;
+    typing_events.render_notifications_for_narrow();
+
+    if (filter.contains_only_private_messages()) {
+        compose_closed_ui.update_buttons_for_private();
+    } else {
+        compose_closed_ui.update_buttons_for_stream();
+    }
+    compose_closed_ui.update_reply_recipient_label();
+
+    message_view_header.render_title_area();
+    update_narrow_title(filter);
+}
+
 function handle_post_narrow_deactivate_processes(msg_list) {
+    handle_post_view_change(msg_list);
+
     compose_fade.update_message_list();
 
     left_sidebar_navigation_area.handle_narrow_deactivated();
     pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
-    compose_closed_ui.update_buttons_for_stream();
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
-    typing_events.render_notifications_for_narrow();
-    message_view_header.render_title_area();
-    update_narrow_title(msg_list.data.filter);
     message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 }
 
