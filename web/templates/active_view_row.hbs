@@ -1,0 +1,12 @@
+<li class="top_left_{{active_view_name}} top_left_row hidden-for-spectators hide-view-in-collapsed-state">
+    <a href="{{active_view_url}}" class="{{#if active_view_tooltip}}tippy-left-sidebar-tooltip{{/if}} left-sidebar-navigation-label-container" {{#if active_view_tooltip}}data-tooltip-template-id="{{active_view_tooltip}}"{{/if}}>
+        <span class="filter-icon">
+            <i class="{{active_view_icon}}" aria-hidden="true"></i>
+        </span>
+        <span class="left-sidebar-navigation-label">{{t "{active_view_label}" }}</span>
+        <span class="unread_count hide"></span>
+    </a>
+    {{#if active_view_sidebar_menu_icon}}
+        <span class="arrow sidebar-menu-icon {{active_view_sidebar_menu_icon}}"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+    {{/if}}
+</li>

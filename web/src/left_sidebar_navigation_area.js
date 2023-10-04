@@ -1,12 +1,53 @@
 import $ from "jquery";
 
+import render_active_view_row from "../templates/active_view_row.hbs";
+
 import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
+import * as starred_messages from "./starred_messages";
 import * as ui_util from "./ui_util";
+import * as unread from "./unread";
 
 let last_mention_count = 0;
 let left_sidebar_navigation_area_expanded = true;
+const views_data = {
+    all_messages: {
+        active_view_name: "all_messages",
+        active_view_url: "#all_messages",
+        active_view_tooltip: "all-message-tooltip-template",
+        active_view_icon: "fa fa-align-left",
+        active_view_label: "All messages",
+        active_view_sidebar_menu_icon: "all-messages-sidebar-menu-icon",
+    },
+    inbox: {
+        active_view_name: "inbox",
+        active_view_url: "#inbox",
+        active_view_tooltip: "inbox-tooltip-template",
+        active_view_icon: "zulip-icon zulip-icon-inbox",
+        active_view_label: "Inbox",
+    },
+    recent_view: {
+        active_view_name: "recent_view",
+        active_view_url: "#recent",
+        active_view_tooltip: "recent-conversations-tooltip-template",
+        active_view_icon: "fa fa-clock-o",
+        active_view_label: "Recent conversations",
+    },
+    mentions: {
+        active_view_name: "mentions",
+        active_view_url: "#narrow/is/mentioned",
+        active_view_icon: "fa fa-at",
+        active_view_label: "Mentions",
+    },
+    starred_messages: {
+        active_view_name: "starred_messages",
+        active_view_url: "#narrow/is/starred",
+        active_view_icon: "zulip-icon zulip-icon-star-filled",
+        active_view_label: "Starred messages",
+        active_view_sidebar_menu_icon: "starred-messages-sidebar-menu-icon",
+    },
+};
 
 export function update_starred_count(count) {
     const $starred_li = $(".top_left_starred_messages");
@@ -44,6 +85,7 @@ export function update_dom_with_unread_counts(counts, skip_animations) {
 
 function remove($elem) {
     $elem.removeClass("active-filter active-sub-filter");
+    $(".active-view-row").empty();
 }
 
 export function deselect_top_left_corner_items() {
@@ -79,6 +121,17 @@ export function toggle_top_left_navigation_area() {
     pm_list.update_private_messages();
 }
 
+function set_active_view_row(active_view_name) {
+    const active_view_data = views_data[active_view_name];
+    $(".active-view-row").html(render_active_view_row(active_view_data));
+
+    if (active_view_name === "all_messages" || active_view_name === "mentions") {
+        update_dom_with_unread_counts(unread.get_counts(), true);
+    } else if (active_view_name === "starred_messages") {
+        update_starred_count(starred_messages.get_count());
+    }
+}
+
 export function handle_narrow_activated(filter) {
     deselect_top_left_corner_items();
 
@@ -93,6 +146,7 @@ export function handle_narrow_activated(filter) {
         if (filter_name === "home") {
             $filter_li = $(".top_left_all_messages");
             $filter_li.addClass("active-filter");
+            set_active_view_row("all_messages");
         }
     }
     ops = filter.operands("is");
@@ -101,9 +155,11 @@ export function handle_narrow_activated(filter) {
         if (filter_name === "starred") {
             $filter_li = $(".top_left_starred_messages");
             $filter_li.addClass("active-filter");
+            set_active_view_row("starred_messages");
         } else if (filter_name === "mentioned") {
             $filter_li = $(".top_left_mentions");
             $filter_li.addClass("active-filter");
+            set_active_view_row("mentions");
         }
     }
 }
@@ -113,6 +169,7 @@ export function handle_narrow_deactivated() {
 
     const $filter_li = $(".top_left_all_messages");
     $filter_li.addClass("active-filter");
+    set_active_view_row("all_messages");
 }
 
 export function highlight_recent_view() {
@@ -121,6 +178,7 @@ export function highlight_recent_view() {
     remove($(".top_left_mentions"));
     remove($(".top_left_inbox"));
     $(".top_left_recent_view").addClass("active-filter");
+    set_active_view_row("recent_view");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
@@ -156,6 +214,7 @@ export function highlight_inbox_view() {
     remove($(".top_left_recent_view"));
     remove($(".top_left_mentions"));
     $(".top_left_inbox").addClass("active-filter");
+    set_active_view_row("inbox");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);

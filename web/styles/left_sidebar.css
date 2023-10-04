@@ -303,6 +303,20 @@ li.show-more-topics {
     }
 }
 
+.active-view-row-container {
+    display: none;
+
+    &.collapsed {
+        display: block;
+
+        .top_left_row,
+        .top_left_row:hover {
+            border-radius: 4px;
+            background-color: var(--color-background-active-view-row);
+        }
+    }
+}
+
 .extra-views-menu .unread_count {
     /* margin-top of `.top_left_row .unread_count`. */
     margin-top: 2px;

@@ -191,6 +191,7 @@ body {
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
+    --color-background-active-view-row: hsl(0deg 0% 100%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -283,6 +284,7 @@ body {
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
+    --color-background-active-view-row: hsl(0deg 0% 15%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);

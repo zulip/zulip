@@ -17,8 +17,13 @@ scheduled_messages.get_count = () => 555;
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
 
-run_test("narrowing", () => {
+run_test("narrowing", ({mock_template}) => {
     let filter = new Filter([{operator: "is", operand: "mentioned"}]);
+    mock_template("active_view_row.hbs", false, () => {});
+    const $unread_count = $.create("unread-count-stub");
+    $(".top_left_mentions").set_find_results(".unread_count", $unread_count);
+    $(".top_left_all_messages").set_find_results(".unread_count", $unread_count);
+    $(".top_left_starred_messages").set_find_results(".unread_count", $unread_count);
 
     // activating narrow
 
