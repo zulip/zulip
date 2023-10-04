@@ -319,7 +319,11 @@ def remote_server_notify_push(
 
     remote_queue_latency: Optional[str] = None
     sent_time: Optional[Union[float, int]] = gcm_payload.get(
-        "time", apns_payload["custom"]["zulip"].get("time")
+        # TODO/compatibility: This could be a lot simpler if not for pre-5.0 Zulip servers
+        # that had an older format. Future implementation:
+        #     "time", apns_payload["custom"]["zulip"].get("time")
+        "time",
+        apns_payload.get("custom", {}).get("zulip", {}).get("time"),
     )
     if sent_time is not None:
         if isinstance(sent_time, int):
