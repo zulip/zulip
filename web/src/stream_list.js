@@ -9,9 +9,9 @@ import render_subscribe_to_more_streams from "../templates/subscribe_to_more_str
 
 import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import { $t } from "./i18n";
 import * as keydown_util from "./keydown_util";
-import {ListCursor} from "./list_cursor";
+import { ListCursor } from "./list_cursor";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
@@ -208,8 +208,8 @@ export function build_stream_list(force_rerender) {
 
     const need_section_subheaders =
         (any_pinned_streams ? 1 : 0) +
-            (any_normal_streams ? 1 : 0) +
-            (any_dormant_streams ? 1 : 0) >=
+        (any_normal_streams ? 1 : 0) +
+        (any_dormant_streams ? 1 : 0) >=
         2;
 
     if (any_pinned_streams && need_section_subheaders) {
@@ -276,12 +276,12 @@ export function get_stream_li(stream_id) {
 
     const $li = row.get_li();
     if (!$li) {
-        blueslip.error("Cannot find li", {stream_id});
+        blueslip.error("Cannot find li", { stream_id });
         return undefined;
     }
 
     if ($li.length > 1) {
-        blueslip.error("stream_li has too many elements", {stream_id});
+        blueslip.error("stream_li has too many elements", { stream_id });
         return undefined;
     }
 
@@ -360,7 +360,7 @@ export function zoom_out_topics() {
 export function set_in_home_view(stream_id, in_home) {
     const $li = get_stream_li(stream_id);
     if (!$li) {
-        blueslip.error("passed in bad stream id", {stream_id});
+        blueslip.error("passed in bad stream id", { stream_id });
         return;
     }
 
@@ -441,7 +441,7 @@ function build_stream_sidebar_row(sub) {
 export function create_sidebar_row(sub) {
     if (stream_sidebar.has_row_for(sub.stream_id)) {
         // already exists
-        blueslip.warn("Dup try to build sidebar row for stream", {stream_id: sub.stream_id});
+        blueslip.warn("Dup try to build sidebar row for stream", { stream_id: sub.stream_id });
         return;
     }
     build_stream_sidebar_row(sub);
@@ -570,7 +570,7 @@ export function refresh_pinned_or_unpinned_stream(sub) {
     if (sub.pin_to_top) {
         const $stream_li = get_stream_li(sub.stream_id);
         if (!$stream_li) {
-            blueslip.error("passed in bad stream id", {stream_id: sub.stream_id});
+            blueslip.error("passed in bad stream id", { stream_id: sub.stream_id });
             return;
         }
         scroll_stream_into_view($stream_li);
@@ -614,6 +614,7 @@ export function get_sidebar_stream_topic_info(filter) {
 
 function deselect_stream_items() {
     $("ul#stream_filters li").removeClass("active-filter stream-expanded");
+    pm_list.update_private_messages();
 }
 
 export function update_stream_sidebar_for_narrow(filter) {
@@ -636,7 +637,7 @@ export function update_stream_sidebar_for_narrow(filter) {
         // corresponding to that stream in our sidebar.  This error
         // stopped appearing from March 2018 until at least
         // April 2020, so if it appears again, something regressed.
-        blueslip.error("No stream_li for subscribed stream", {stream_id});
+        blueslip.error("No stream_li for subscribed stream", { stream_id });
         topic_zoom.clear_topics();
         return undefined;
     }
@@ -702,7 +703,7 @@ export function initialize_stream_cursor() {
     });
 }
 
-export function initialize({on_stream_click}) {
+export function initialize({ on_stream_click }) {
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
@@ -710,10 +711,10 @@ export function initialize({on_stream_click}) {
     build_stream_list();
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
-    set_event_handlers({on_stream_click});
+    set_event_handlers({ on_stream_click });
 }
 
-export function set_event_handlers({on_stream_click}) {
+export function set_event_handlers({ on_stream_click }) {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
