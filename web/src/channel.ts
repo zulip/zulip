@@ -215,3 +215,22 @@ export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): 
 
     return message;
 }
+
+export async function async_request(
+    request_method: AjaxRequestHandler,
+    url: string,
+    data: Parameters<AjaxRequestHandler>[0]["data"] = {},
+): Promise<{data: unknown; textStatus: string; jqXHR: JQuery.jqXHR<unknown>}> {
+    return await new Promise((resolve, reject) => {
+        void request_method({
+            url,
+            data,
+            success(data, textStatus, jqXHR) {
+                resolve({data, textStatus, jqXHR});
+            },
+            error(xhr, error_type, xhn) {
+                reject({xhr, error_type, xhn});
+            },
+        });
+    });
+}

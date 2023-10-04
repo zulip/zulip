@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 214**
+
+* [`PATCH /messages/{message_id}`](/api/update-message),
+  [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):
+  These endpoints now return the detached_files within the response after editing the message.
+
 **Feature level 213**
 
 * [`POST /register`](/api/register-queue): Fixed incorrect handling of
