@@ -47,7 +47,7 @@ export function initialize() {
                 e.stopPropagation();
                 instance.hide();
             });
-            $popper.one("click", ".compose_mobile_private_button", (e) => {
+            $popper.one("click", ".compose_mobile_direct_message_button", (e) => {
                 compose_actions.start("private");
                 e.stopPropagation();
                 instance.hide();

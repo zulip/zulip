@@ -780,7 +780,7 @@ test_ui("narrow_button_titles", ({override}) => {
         $t({defaultMessage: "Start new conversation"}),
     );
     assert.equal(
-        $("#left_bar_compose_private_button_big").text(),
+        $("#new_direct_message_button").text(),
         $t({defaultMessage: "New direct message"}),
     );
 
@@ -790,7 +790,7 @@ test_ui("narrow_button_titles", ({override}) => {
         $t({defaultMessage: "Start new conversation"}),
     );
     assert.equal(
-        $("#left_bar_compose_private_button_big").text(),
+        $("#new_direct_message_button").text(),
         $t({defaultMessage: "New direct message"}),
     );
 });
