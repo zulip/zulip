@@ -81,32 +81,45 @@ function update_reply_button_state(disable = false) {
     }
 }
 
-function update_new_conversation_button(btn_text) {
-    $("#new_conversation_button").text(btn_text);
+function update_new_conversation_button(btn_text, is_direct_message_narrow) {
+    const $new_conversation_button = $("#new_conversation_button");
+    $new_conversation_button.text(btn_text);
+    // In a direct-message narrow, the new conversation button should act
+    // like a new direct message button
+    if (is_direct_message_narrow) {
+        $new_conversation_button.addClass("compose_new_direct_message_button");
+        $new_conversation_button.removeClass("compose_new_conversation_button");
+    } else {
+        // Restore the usual new conversation button class, if it was
+        // changed after a previous direct-message narrow visit
+        $new_conversation_button.addClass("compose_new_conversation_button");
+        $new_conversation_button.removeClass("compose_new_direct_message_button");
+    }
 }
 
 function update_new_direct_message_button(btn_text) {
     $("#new_direct_message_button").text(btn_text);
 }
 
-function update_buttons(text_stream, disable_reply) {
+function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
     const text_conversation = $t({defaultMessage: "New direct message"});
-    update_new_conversation_button(text_stream);
+    update_new_conversation_button(text_stream, is_direct_message_narrow);
     update_new_direct_message_button(text_conversation);
     update_reply_button_state(disable_reply);
 }
 
 export function update_buttons_for_private() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
+    const is_direct_message_narrow = true;
     if (
         !narrow_state.pm_ids_string() ||
         people.user_can_direct_message(narrow_state.pm_ids_string())
     ) {
         $("#new_conversation_button").attr(
             "data-tooltip-template-id",
-            "new_stream_message_button_tooltip_template",
+            "new_direct_message_button_tooltip_template",
         );
-        update_buttons(text_stream);
+        update_buttons(text_stream, is_direct_message_narrow);
         return;
     }
     // disable the [Message X] button when in a private narrow
@@ -116,7 +129,7 @@ export function update_buttons_for_private() {
         "data-tooltip-template-id",
         "disable_reply_compose_reply_button_tooltip_template",
     );
-    update_buttons(text_stream, disable_reply);
+    update_buttons(text_stream, is_direct_message_narrow, disable_reply);
 }
 
 export function update_buttons_for_stream_views() {
