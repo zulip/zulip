@@ -17,6 +17,7 @@ from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from analytics.views.activity_common import remote_installation_stats_link
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
 from zerver.actions.create_realm import do_change_realm_subdomain
@@ -47,6 +48,9 @@ from zerver.models import (
     get_user_profile_by_id,
 )
 from zerver.views.invite import get_invitee_emails_set
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import approve_sponsorship as do_approve_sponsorship
@@ -406,3 +410,44 @@ def support(
     )
 
     return render(request, "analytics/support.html", context=context)
+
+
+def get_remote_servers_for_support(
+    email_to_search: Optional[str], hostname_to_search: Optional[str]
+) -> List["RemoteZulipServer"]:
+    if not email_to_search and not hostname_to_search:
+        return []
+
+    remote_servers_query = RemoteZulipServer.objects.order_by("id")
+    if email_to_search:
+        remote_servers_query = remote_servers_query.filter(contact_email__iexact=email_to_search)
+    elif hostname_to_search:
+        remote_servers_query = remote_servers_query.filter(hostname__icontains=hostname_to_search)
+
+    return list(remote_servers_query)
+
+
+@require_server_admin
+@has_request_variables
+def remote_servers_support(
+    request: HttpRequest, query: Optional[str] = REQ("q", default=None)
+) -> HttpResponse:
+    email_to_search = None
+    hostname_to_search = None
+    if query:
+        if "@" in query:
+            email_to_search = query
+        else:
+            hostname_to_search = query
+
+    remote_servers = get_remote_servers_for_support(
+        email_to_search=email_to_search, hostname_to_search=hostname_to_search
+    )
+    return render(
+        request,
+        "analytics/remote_server_support.html",
+        context=dict(
+            remote_servers=remote_servers,
+            remote_installation_stats_link=remote_installation_stats_link,
+        ),
+    )
