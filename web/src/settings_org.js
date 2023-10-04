@@ -1369,7 +1369,7 @@ export function populate_data_for_request(subsection, for_realm_default_settings
                 if (property_name === "stream_privacy") {
                     data = {
                         ...data,
-                        ...stream_edit.get_request_data_for_stream_privacy(input_value),
+                        ...settings_data.get_request_data_for_stream_privacy(input_value),
                     };
                     continue;
                 }
