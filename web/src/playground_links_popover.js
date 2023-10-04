@@ -1,7 +1,7 @@
 import $ from "jquery";
 import url_template_lib from "url-template";
 
-import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
+import render_playground_links_popover from "../templates/playground_links_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as popover_menus from "./popover_menus";
@@ -33,7 +33,7 @@ function toggle_playground_links_popover(element, playground_info) {
         onCreate(instance) {
             playground_links_popover_instance = instance;
             instance.setContent(
-                ui_util.parse_html(render_playground_links_popover_content({playground_info})),
+                ui_util.parse_html(render_playground_links_popover({playground_info})),
             );
         },
         onShow(instance) {
