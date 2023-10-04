@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+############################## NOTE ################################
+# This script is used to provision a development environment ONLY.
+# Use update-prod-static to generate static assets for production.
+####################################################################
+
 import argparse
 import glob
 import os
