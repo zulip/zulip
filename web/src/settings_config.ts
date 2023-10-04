@@ -4,6 +4,7 @@ import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
+import {StreamPostPolicy} from "./sub_store";
 import type {
     FollowedTopicNotificationSettings,
     PmNotificationSettings,
@@ -949,3 +950,61 @@ export const automatically_follow_or_unmute_topics_policy_values = {
         description: $t({defaultMessage: "Never"}),
     },
 };
+
+export const stream_privacy_policy_values = {
+    web_public: {
+        code: "web-public",
+        name: $t({defaultMessage: "Web-public"}),
+        description: $t({
+            defaultMessage:
+                "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
+        }),
+    },
+    public: {
+        code: "public",
+        name: $t({defaultMessage: "Public"}),
+        description: $t({
+            defaultMessage:
+                "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining",
+        }),
+    },
+    private_with_public_history: {
+        code: "invite-only-public-history",
+        name: $t({defaultMessage: "Private, shared history"}),
+        description: $t({
+            defaultMessage:
+                "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users",
+        }),
+    },
+    private: {
+        code: "invite-only",
+        name: $t({defaultMessage: "Private, protected history"}),
+        description: $t({
+            defaultMessage:
+                "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users",
+        }),
+    },
+};
+
+export const stream_post_policy_values = {
+    // These strings should match the strings in the
+    // Stream.POST_POLICIES object in zerver/models.py.
+    everyone: {
+        code: StreamPostPolicy.EVERYONE,
+        description: $t({defaultMessage: "Everyone"}),
+    },
+    non_new_members: {
+        code: StreamPostPolicy.RESTRICT_NEW_MEMBERS,
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
+    },
+    moderators: {
+        code: StreamPostPolicy.MODERATORS,
+        description: $t({
+            defaultMessage: "Admins and moderators",
+        }),
+    },
+    admins: {
+        code: StreamPostPolicy.ADMINS,
+        description: $t({defaultMessage: "Admins only"}),
+    },
+} as const;

@@ -244,8 +244,8 @@ export function show_settings_for(node) {
         sub,
         notification_settings,
         other_settings,
-        stream_post_policy_values: stream_data.stream_post_policy_values,
-        stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
+        stream_post_policy_values: settings_config.stream_post_policy_values,
+        stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
@@ -341,21 +341,21 @@ export function stream_setting_changed(e, from_notification_settings) {
 
 export function get_request_data_for_stream_privacy(selected_val) {
     switch (selected_val) {
-        case stream_data.stream_privacy_policy_values.public.code: {
+        case settings_config.stream_privacy_policy_values.public.code: {
             return {
                 is_private: false,
                 history_public_to_subscribers: true,
                 is_web_public: false,
             };
         }
-        case stream_data.stream_privacy_policy_values.private.code: {
+        case settings_config.stream_privacy_policy_values.private.code: {
             return {
                 is_private: true,
                 history_public_to_subscribers: false,
                 is_web_public: false,
             };
         }
-        case stream_data.stream_privacy_policy_values.web_public.code: {
+        case settings_config.stream_privacy_policy_values.web_public.code: {
             return {
                 is_private: false,
                 history_public_to_subscribers: true,
