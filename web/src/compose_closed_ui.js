@@ -119,7 +119,7 @@ export function update_buttons_for_private() {
     update_buttons(text_stream, disable_reply);
 }
 
-export function update_buttons_for_stream() {
+export function update_buttons_for_stream_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
     $("#new_conversation_button").attr(
         "data-tooltip-template-id",
@@ -128,7 +128,7 @@ export function update_buttons_for_stream() {
     update_buttons(text_stream);
 }
 
-export function update_buttons_for_recent_view() {
+export function update_buttons_for_non_stream_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
     $("#new_conversation_button").attr(
         "data-tooltip-template-id",
