@@ -10,9 +10,9 @@ import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_call from "./compose_call";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -459,10 +459,10 @@ function edit_message($row, raw_content) {
 
     $form
         .find(".message-edit-feature-group .video_link")
-        .toggle(compose.compute_show_video_chat_button());
+        .toggle(compose_call.compute_show_video_chat_button());
     $form
         .find(".message-edit-feature-group .audio_link")
-        .toggle(compose.compute_show_audio_chat_button());
+        .toggle(compose_call.compute_show_audio_chat_button());
     upload.feature_check($(`#edit_form_${CSS.escape(rows.id($row))} .compose_upload_file`));
 
     const $message_edit_content = $row.find("textarea.message_edit_content");
@@ -810,7 +810,7 @@ export function end_message_row_edit($row) {
         message_lists.current.hide_edit_message($row);
         message_viewport.scrollTop(original_scrollTop - scroll_by);
 
-        compose.abort_video_callbacks(message.id);
+        compose_call.abort_video_callbacks(message.id);
     }
     if ($row.find(".condensed").length !== 0) {
         condense.show_message_expander($row);
