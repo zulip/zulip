@@ -101,11 +101,21 @@ function update_new_direct_message_button(btn_text) {
     $("#new_direct_message_button").text(btn_text);
 }
 
+function toggle_direct_message_button_visibility(is_direct_message_narrow) {
+    const $new_direct_message_button_container = $(".new_direct_message_button_container");
+    if (is_direct_message_narrow) {
+        $new_direct_message_button_container.hide();
+    } else {
+        $new_direct_message_button_container.show();
+    }
+}
+
 function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
     const text_conversation = $t({defaultMessage: "New direct message"});
     update_new_conversation_button(text_stream, is_direct_message_narrow);
     update_new_direct_message_button(text_conversation);
     update_reply_button_state(disable_reply);
+    toggle_direct_message_button_visibility(is_direct_message_narrow);
 }
 
 export function update_buttons_for_private() {
