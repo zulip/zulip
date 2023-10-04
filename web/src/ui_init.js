@@ -604,6 +604,12 @@ export function initialize_everything() {
         },
         on_mark_pm_as_read: unread_ops.mark_pm_as_read,
         on_mark_topic_as_read: unread_ops.mark_topic_as_read,
+        maybe_load_older_messages() {
+            message_fetch.maybe_load_older_messages({
+                msg_list: message_lists.home,
+                recent_view: true,
+            });
+        },
     });
     inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
