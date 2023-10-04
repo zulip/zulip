@@ -12,20 +12,21 @@
     }
 
     .overlay-tabs {
-        padding: 10px 0;
-        border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 0 5%;
+        height: 60px;
+        box-shadow: 0 3px 12px 1px hsl(207deg 100% 11% / 8%);
 
         .tab-switcher {
-            margin-left: 15px;
+            flex-grow: 1;
         }
 
         .exit {
-            float: right;
-            font-size: 1.5rem;
-            color: hsl(0deg 0% 67%);
-            font-weight: 600;
-            margin: 0 15px;
+            color: hsl(0deg 0% 60%);
             cursor: pointer;
+            order: 1;
         }
     }
 

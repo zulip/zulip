@@ -662,6 +662,11 @@
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
     }
 
+    .informational-overlays .overlay-tabs {
+        background: hsl(0deg 0% 14% / 100%);
+        box-shadow: 0 2px 8px hsl(0deg 0% 0% / 45%);
+    }
+
     #draft_overlay,
     #scheduled_messages_overlay_container {
         .flex.overlay-content > div {
