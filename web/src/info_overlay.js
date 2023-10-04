@@ -21,7 +21,10 @@ import * as util from "./util";
 export let toggler;
 
 function format_usage_html(...keys) {
-    const get_formatted_keys = () => keys.map((key) => `<kbd>${key}</kbd>`).join("+");
+    const get_formatted_keys = () =>
+        `<span class="concurrent-hotkeys">${keys
+            .map((key) => `<kbd>${key}</kbd>`)
+            .join("")}</span>`;
     return $t_html(
         {
             defaultMessage: "(or <key-html></key-html>)",
