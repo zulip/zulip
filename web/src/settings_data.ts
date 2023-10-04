@@ -263,3 +263,41 @@ export function bot_type_id_to_string(type_id: number): string | undefined {
 
     return bot_type.name;
 }
+
+/* istanbul ignore next */
+export function get_request_data_for_stream_privacy(selected_val: string): {
+    is_private: boolean;
+    history_public_to_subscribers: boolean;
+    is_web_public: boolean;
+} {
+    switch (selected_val) {
+        case settings_config.stream_privacy_policy_values.public.code: {
+            return {
+                is_private: false,
+                history_public_to_subscribers: true,
+                is_web_public: false,
+            };
+        }
+        case settings_config.stream_privacy_policy_values.private.code: {
+            return {
+                is_private: true,
+                history_public_to_subscribers: false,
+                is_web_public: false,
+            };
+        }
+        case settings_config.stream_privacy_policy_values.web_public.code: {
+            return {
+                is_private: false,
+                history_public_to_subscribers: true,
+                is_web_public: true,
+            };
+        }
+        default: {
+            return {
+                is_private: true,
+                history_public_to_subscribers: true,
+                is_web_public: false,
+            };
+        }
+    }
+}

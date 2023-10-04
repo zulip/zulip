@@ -339,39 +339,6 @@ export function stream_setting_changed(e, from_notification_settings) {
     stream_settings_api.set_stream_property(sub, setting, e.target.checked, status_element);
 }
 
-export function get_request_data_for_stream_privacy(selected_val) {
-    switch (selected_val) {
-        case settings_config.stream_privacy_policy_values.public.code: {
-            return {
-                is_private: false,
-                history_public_to_subscribers: true,
-                is_web_public: false,
-            };
-        }
-        case settings_config.stream_privacy_policy_values.private.code: {
-            return {
-                is_private: true,
-                history_public_to_subscribers: false,
-                is_web_public: false,
-            };
-        }
-        case settings_config.stream_privacy_policy_values.web_public.code: {
-            return {
-                is_private: false,
-                history_public_to_subscribers: true,
-                is_web_public: true,
-            };
-        }
-        default: {
-            return {
-                is_private: true,
-                history_public_to_subscribers: true,
-                is_web_public: false,
-            };
-        }
-    }
-}
-
 export function archive_stream(stream_id, $alert_element, $stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
