@@ -918,7 +918,7 @@ export function show() {
         // We want to show `new stream message` instead of
         // `new topic`, which we are already doing in this
         // function. So, we reuse it here.
-        update_compose: compose_closed_ui.update_buttons_for_recent_view,
+        update_compose: compose_closed_ui.update_buttons_for_non_stream_views,
         is_recent_view: true,
         is_visible,
         set_visible,
