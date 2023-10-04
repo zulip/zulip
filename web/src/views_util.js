@@ -24,6 +24,7 @@ export function show(opts) {
     // Hide selected elements in the left sidebar.
     opts.highlight_view_in_left_sidebar();
     stream_list.handle_message_view_deactivated();
+    pm_list.handle_message_view_deactivated();
 
     // Hide "middle-column" which has html for rendering
     // a messages narrow. We hide it and show the view.
@@ -37,7 +38,6 @@ export function show(opts) {
     narrow.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
-    pm_list.handle_narrow_deactivated();
     search.clear_search_form();
     opts.complete_rerender();
     resize.update_recent_view_filters_height();
