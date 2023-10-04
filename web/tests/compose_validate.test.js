@@ -447,7 +447,7 @@ test_ui(
             stream_id: 102,
             name: "stream102",
             subscribed: true,
-            stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+            stream_post_policy: settings_config.stream_post_policy_values.admins.code,
         };
 
         stream_data.add_sub(sub_stream_102);
@@ -496,7 +496,7 @@ test_ui(
             stream_id: 104,
             name: "stream104",
             subscribed: true,
-            stream_post_policy: stream_data.stream_post_policy_values.moderators.code,
+            stream_post_policy: settings_config.stream_post_policy_values.moderators.code,
         };
 
         stream_data.add_sub(sub);
@@ -535,7 +535,7 @@ test_ui(
             stream_id: 103,
             name: "stream103",
             subscribed: true,
-            stream_post_policy: stream_data.stream_post_policy_values.non_new_members.code,
+            stream_post_policy: settings_config.stream_post_policy_values.non_new_members.code,
         };
 
         stream_data.add_sub(sub);
