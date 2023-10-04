@@ -397,49 +397,47 @@ export function set_up() {
         });
     });
 
-    $("#active_bots_list").on("click","button.bot_copy", (e) => {
-    const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-    const bot = bot_data.get(bot_id);
-    const emailToCopy = bot.email;
+    $("#active_bots_list").on("click", "button.bot_copy", (e) => {
+        const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const bot = bot_data.get(bot_id);
+        const emailToCopy = bot.email;
 
-    // Create a temporary input element to copy the email
-    const tempInput = document.createElement("input");
-    tempInput.value = emailToCopy;
-    document.body.appendChild(tempInput);
+        // Create a temporary input element to copy the email
+        const tempInput = document.createElement("input");
+        tempInput.value = emailToCopy;
+        document.body.append(tempInput);
 
-    // Select and copy the email text
-    tempInput.select();
-    document.execCommand("copy");
+        // Select and copy the email text
+        tempInput.select();
+        document.execCommand("copy");
 
-    // Clean up by removing the temporary input element
-    document.body.removeChild(tempInput);
+        // Clean up by removing the temporary input element
+        tempInput.remove();
 
-    // Provide feedback to the user
-    alert("Email copied to clipboard: " + emailToCopy);
-});
+        // Provide feedback to the user
+        // alert("Email copied to clipboard: " + emailToCopy);
+    });
 
+    $("#active_bots_list").on("click", "button.api_copy", (e) => {
+        const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const bot = bot_data.get(bot_id);
+        const apiToCopy = bot.api_key;
 
-$("#active_bots_list").on("click","button.api_copy", (e) => {
-    const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-    const bot = bot_data.get(bot_id);
-    const apiToCopy = bot.api_key;
+        // Create a temporary input element to copy the email
+        const tempInput = document.createElement("input");
+        tempInput.value = apiToCopy;
+        document.body.append(tempInput);
 
-    // Create a temporary input element to copy the email
-    const tempInput = document.createElement("input");
-    tempInput.value = apiToCopy;
-    document.body.appendChild(tempInput);
+        // Select and copy the api text
+        tempInput.select();
+        document.execCommand("copy");
 
-    // Select and copy the api text
-    tempInput.select();
-    document.execCommand("copy");
+        // Clean up by removing the temporary input element
+        tempInput.remove();
 
-    // Clean up by removing the temporary input element
-    document.body.removeChild(tempInput);
-
-    // Provide feedback to the user
-    alert("API Key copied to clipboard: " + apiToCopy);
-});
-
+        // Provide feedback to the user
+        // alert("API Key copied to clipboard: " + apiToCopy);
+    });
 
     $("#active_bots_list").on("click", "button.open_edit_bot_form", (e) => {
         e.preventDefault();
