@@ -19,7 +19,6 @@ import * as settings_user_groups_legacy from "./settings_user_groups_legacy";
 import * as settings_user_panel from "./settings_user_panel";
 import * as settings_user_topics from "./settings_user_topics";
 import * as settings_users from "./settings_users";
-import * as settings_user_panel from "./settings_user_panel";
 
 const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();
@@ -76,7 +75,6 @@ export function initialize() {
     load_func_dict.set("invites-list-admin", settings_invites.set_up);
     load_func_dict.set("user-groups-admin", settings_user_groups_legacy.set_up);
     load_func_dict.set("user-panel-admin", settings_user_panel.set_up);
-    load_func_dict.set("user-groups-admin", settings_user_groups_legacy.set_up);
     load_func_dict.set("profile-field-settings", settings_profile_fields.set_up);
     load_func_dict.set("data-exports-admin", settings_exports.set_up);
     load_func_dict.set(
