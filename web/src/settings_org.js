@@ -26,7 +26,6 @@ import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
-import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
@@ -670,6 +669,7 @@ export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 export let create_multiuse_invite_group_widget = null;
+export let can_remove_subscribers_group_widget = null;
 
 export function get_widget_for_dropdown_list_settings(property_name) {
     switch (property_name) {
@@ -682,11 +682,15 @@ export function get_widget_for_dropdown_list_settings(property_name) {
         case "realm_create_multiuse_invite_group":
             return create_multiuse_invite_group_widget;
         case "can_remove_subscribers_group":
-            return stream_edit.can_remove_subscribers_group_widget;
+            return can_remove_subscribers_group_widget;
         default:
             blueslip.error("No dropdown list widget for property", {property_name});
             return null;
     }
+}
+
+export function set_can_remove_subscribers_group_widget(widget) {
+    can_remove_subscribers_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(property_name, value) {

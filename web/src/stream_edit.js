@@ -40,7 +40,6 @@ import * as util from "./util";
 
 export let toggler;
 export let select_tab = "personal_settings";
-export let can_remove_subscribers_group_widget = null;
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_url(sub);
@@ -194,7 +193,7 @@ export function stream_settings(sub) {
 }
 
 function setup_dropdown(sub, slim_sub) {
-    can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
+    const can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
         widget_name: "can_remove_subscribers_group",
         get_options: () =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(
@@ -221,6 +220,7 @@ function setup_dropdown(sub, slim_sub) {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
+    settings_org.set_can_remove_subscribers_group_widget(can_remove_subscribers_group_widget);
     can_remove_subscribers_group_widget.setup();
 }
 
