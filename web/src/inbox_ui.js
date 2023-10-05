@@ -29,9 +29,9 @@ import * as user_topics from "./user_topics";
 import * as util from "./util";
 import * as views_util from "./views_util";
 
-let dms_dict = {};
-let topics_dict = {};
-let streams_dict = {};
+let dms_dict = new Map();
+let topics_dict = new Map();
+let streams_dict = new Map();
 let update_triggered_by_user = false;
 
 const COLUMNS = {
@@ -239,14 +239,14 @@ function format_stream(stream_id) {
 }
 
 function update_stream_data(stream_id, stream_key, topic_dict) {
-    topics_dict[stream_key] = {};
+    topics_dict.set(stream_key, new Map());
     const stream_data = format_stream(stream_id);
     let stream_post_filter_unread_count = 0;
     for (const [topic, topic_unread_count] of topic_dict) {
         const topic_key = get_topic_key(stream_id, topic);
         if (topic_unread_count) {
             const topic_data = format_topic(stream_id, topic, topic_unread_count);
-            topics_dict[stream_key][topic_key] = topic_data;
+            topics_dict.get(stream_key).set(topic_key, topic_data);
             if (!topic_data.is_hidden) {
                 stream_post_filter_unread_count += topic_data.unread_count;
             }
@@ -254,7 +254,7 @@ function update_stream_data(stream_id, stream_key, topic_dict) {
     }
     stream_data.is_hidden = stream_post_filter_unread_count === 0;
     stream_data.unread_count = stream_post_filter_unread_count;
-    streams_dict[stream_key] = stream_data;
+    streams_dict.set(stream_key, stream_data);
 }
 
 function rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data) {
@@ -289,9 +289,7 @@ function insert_stream(stream_id, topic_dict) {
     const sorted_stream_keys = get_sorted_stream_keys();
     const stream_index = sorted_stream_keys.indexOf(stream_key);
     const rendered_stream = render_inbox_stream_container({
-        topics_dict: {
-            [stream_key]: topics_dict[stream_key],
-        },
+        topics_dict: new Map(stream_key, topics_dict.get(stream_key)),
         streams_dict,
     });
 
@@ -301,7 +299,7 @@ function insert_stream(stream_id, topic_dict) {
         const previous_stream_key = sorted_stream_keys[stream_index - 1];
         $(rendered_stream).insertAfter(get_stream_container(previous_stream_key));
     }
-    return !streams_dict[stream_key].is_hidden;
+    return !streams_dict.get(stream_key).is_hidden;
 }
 
 function rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data) {
@@ -324,8 +322,8 @@ function rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data) {
 
 function get_sorted_stream_keys() {
     function compare_function(a, b) {
-        const stream_a = streams_dict[a];
-        const stream_b = streams_dict[b];
+        const stream_a = streams_dict.get(a);
+        const stream_b = streams_dict.get(b);
 
         // If one of the streams is pinned, they are sorted higher.
         if (stream_a.pin_to_top && !stream_b.pin_to_top) {
@@ -351,23 +349,23 @@ function get_sorted_stream_keys() {
         return util.strcmp(stream_name_a, stream_name_b);
     }
 
-    return Object.keys(topics_dict).sort(compare_function);
+    return [...topics_dict.keys()].sort(compare_function);
 }
 
 function get_sorted_stream_topic_dict() {
     const sorted_stream_keys = get_sorted_stream_keys();
-    const sorted_topic_dict = {};
+    const sorted_topic_dict = new Map();
     for (const sorted_stream_key of sorted_stream_keys) {
-        sorted_topic_dict[sorted_stream_key] = topics_dict[sorted_stream_key];
+        sorted_topic_dict.set(sorted_stream_key, topics_dict.get(sorted_stream_key));
     }
 
     return sorted_topic_dict;
 }
 
 function reset_data() {
-    dms_dict = {};
-    topics_dict = {};
-    streams_dict = {};
+    dms_dict = new Map();
+    topics_dict = new Map();
+    streams_dict = new Map();
 
     const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
@@ -382,7 +380,7 @@ function reset_data() {
         for (const [key, value] of unread_dms_dict) {
             if (value) {
                 const dm_data = format_dm(key, value);
-                dms_dict[key] = dm_data;
+                dms_dict.set(key, dm_data);
                 if (!dm_data.is_hidden) {
                     has_dms_post_filter = true;
                 }
@@ -398,11 +396,11 @@ function reset_data() {
             const stream_key = get_stream_key(stream_id);
             if (stream_unread_count > 0) {
                 update_stream_data(stream_id, stream_key, topic_dict);
-                if (!streams_dict[stream_key].is_hidden) {
+                if (!streams_dict.get(stream_key).is_hidden) {
                     has_topics_post_filter = true;
                 }
             } else {
-                delete topics_dict[stream_key];
+                topics_dict.delete(stream_key);
             }
         }
     }
@@ -756,17 +754,17 @@ export function update() {
     let has_dms_post_filter = false;
     for (const [key, value] of unread_dms_dict) {
         if (value !== 0) {
-            const old_dm_data = dms_dict[key];
+            const old_dm_data = dms_dict.get(key);
             const new_dm_data = format_dm(key, value);
             rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data);
-            dms_dict[key] = new_dm_data;
+            dms_dict.set(key, new_dm_data);
             if (!new_dm_data.is_hidden) {
                 has_dms_post_filter = true;
             }
         } else {
             // If it is rendered.
-            if (dms_dict[key] !== undefined) {
-                delete dms_dict[key];
+            if (dms_dict.get(key) !== undefined) {
+                dms_dict.delete(key);
                 get_row_from_conversation_key(key).remove();
             }
         }
@@ -788,7 +786,7 @@ export function update() {
         let stream_post_filter_unread_count = 0;
         if (stream_unread_count > 0) {
             // Stream isn't rendered.
-            if (topics_dict[stream_key] === undefined) {
+            if (topics_dict.get(stream_key) === undefined) {
                 has_topics_post_filter = insert_stream(stream_id, topic_dict);
                 continue;
             }
@@ -797,9 +795,9 @@ export function update() {
             for (const [topic, topic_unread_count] of topic_dict) {
                 const topic_key = get_topic_key(stream_id, topic);
                 if (topic_unread_count) {
-                    const old_topic_data = topics_dict[stream_key][topic_key];
+                    const old_topic_data = topics_dict.get(stream_key).get(topic_key);
                     const new_topic_data = format_topic(stream_id, topic, topic_unread_count);
-                    topics_dict[stream_key][topic_key] = new_topic_data;
+                    topics_dict.get(stream_key).set(topic_key, new_topic_data);
                     rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data);
                     if (!new_topic_data.is_hidden) {
                         has_topics_post_filter = true;
@@ -808,18 +806,18 @@ export function update() {
                 } else {
                     // Remove old topic data since it can act as false data for renamed / a new
                     // topic having the same name as old topic.
-                    delete topics_dict[stream_key][topic_key];
+                    topics_dict.get(stream_key).delete(topic_key);
                     get_row_from_conversation_key(topic_key).remove();
                 }
             }
-            const old_stream_data = streams_dict[stream_key];
+            const old_stream_data = streams_dict.get(stream_key);
             new_stream_data.is_hidden = stream_post_filter_unread_count === 0;
             new_stream_data.unread_count = stream_post_filter_unread_count;
-            streams_dict[stream_key] = new_stream_data;
+            streams_dict.set(stream_key, new_stream_data)
             rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data);
         } else {
-            delete topics_dict[stream_key];
-            delete streams_dict[stream_key];
+            topic_dict.delete(stream_key);
+            streams_dict.delete(stream_key);
             get_stream_container(stream_key).remove();
         }
     }
