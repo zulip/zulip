@@ -2,7 +2,8 @@
 
 ############################## NOTE ################################
 # This script is used to provision a development environment ONLY.
-# Use update-prod-static to generate static assets for production.
+# For production, extend update-prod-static to generate new static
+# assets, and puppet to install other software.
 ####################################################################
 
 import argparse
