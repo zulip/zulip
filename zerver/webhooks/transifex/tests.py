@@ -6,8 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class TransifexHookTests(WebhookTestCase):
     STREAM_NAME = "transifex"
     URL_TEMPLATE = "/api/v1/external/transifex?stream={stream}&api_key={api_key}"
-    URL_REVIEWED_METHOD_TEMPLATE = "reviewed=100"
-    URL_TRANSLATED_METHOD_TEMPLATE = "translated=100"
     WEBHOOK_DIR_NAME = "transifex"
 
     PROJECT = "project-title"
@@ -18,7 +16,8 @@ class TransifexHookTests(WebhookTestCase):
         expected_topic = f"{self.PROJECT} in {self.LANGUAGE}"
         expected_message = f"Resource {self.RESOURCE} fully reviewed."
         self.url = self.build_webhook_url(
-            self.URL_REVIEWED_METHOD_TEMPLATE,
+            event="review_completed",
+            reviewed="100",
             project=self.PROJECT,
             language=self.LANGUAGE,
             resource=self.RESOURCE,
@@ -29,7 +28,8 @@ class TransifexHookTests(WebhookTestCase):
         expected_topic = f"{self.PROJECT} in {self.LANGUAGE}"
         expected_message = f"Resource {self.RESOURCE} fully translated."
         self.url = self.build_webhook_url(
-            self.URL_TRANSLATED_METHOD_TEMPLATE,
+            event="translation_completed",
+            translated="100",
             project=self.PROJECT,
             language=self.LANGUAGE,
             resource=self.RESOURCE,
