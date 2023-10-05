@@ -152,9 +152,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     assert.ok(subscription_error_rendered);
 });
 
-test_ui("validate", ({override_rewire, mock_template}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
-
+test_ui("validate", ({mock_template}) => {
     function initialize_pm_pill() {
         $.clear_all_elements();
 
@@ -384,7 +382,6 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     // we are separating it up in different test. Though their relative position
     // of execution should not be changed.
     mock_banners();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     page_params.user_id = me.user_id;
     page_params.realm_mandatory_topics = false;
 
@@ -433,129 +430,117 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     assert.ok(wildcards_not_allowed_rendered);
 });
 
-test_ui(
-    "test_validate_stream_message_post_policy_admin_only",
-    ({override_rewire, mock_template}) => {
-        // This test is in continuation with test_validate but it has been separated out
-        // for better readability. Their relative position of execution should not be changed.
-        // Although the position with respect to test_validate_stream_message does not matter
-        // as different stream is used for this test.
-        mock_banners();
-        override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
-        page_params.is_admin = false;
-        const sub_stream_102 = {
-            stream_id: 102,
-            name: "stream102",
-            subscribed: true,
-            stream_post_policy: settings_config.stream_post_policy_values.admins.code,
-        };
+test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template}) => {
+    // This test is in continuation with test_validate but it has been separated out
+    // for better readability. Their relative position of execution should not be changed.
+    // Although the position with respect to test_validate_stream_message does not matter
+    // as different stream is used for this test.
+    mock_banners();
+    page_params.is_admin = false;
+    const sub_stream_102 = {
+        stream_id: 102,
+        name: "stream102",
+        subscribed: true,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
+    };
 
-        stream_data.add_sub(sub_stream_102);
-        compose_state.topic("topic102");
-        compose_state.set_stream_id(sub_stream_102.stream_id);
+    stream_data.add_sub(sub_stream_102);
+    compose_state.topic("topic102");
+    compose_state.set_stream_id(sub_stream_102.stream_id);
 
-        let banner_rendered = false;
-        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-            assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
-            assert.equal(
-                data.banner_text,
-                $t({
-                    defaultMessage: "You do not have permission to post in this stream.",
-                }),
-            );
-            banner_rendered = true;
-        });
-        assert.ok(!compose_validate.validate());
-        assert.ok(banner_rendered);
+    let banner_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage: "You do not have permission to post in this stream.",
+            }),
+        );
+        banner_rendered = true;
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(banner_rendered);
 
-        // Reset error message.
-        compose_state.set_stream_id(social_sub.stream_id);
+    // Reset error message.
+    compose_state.set_stream_id(social_sub.stream_id);
 
-        page_params.is_admin = false;
-        page_params.is_guest = true;
+    page_params.is_admin = false;
+    page_params.is_guest = true;
 
-        compose_state.topic("topic102");
-        compose_state.set_stream_id(sub_stream_102.stream_id);
-        banner_rendered = false;
-        assert.ok(!compose_validate.validate());
-        assert.ok(banner_rendered);
-    },
-);
+    compose_state.topic("topic102");
+    compose_state.set_stream_id(sub_stream_102.stream_id);
+    banner_rendered = false;
+    assert.ok(!compose_validate.validate());
+    assert.ok(banner_rendered);
+});
 
-test_ui(
-    "test_validate_stream_message_post_policy_moderators_only",
-    ({override_rewire, mock_template}) => {
-        mock_banners();
-        override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
+test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_template}) => {
+    mock_banners();
 
-        page_params.is_admin = false;
-        page_params.is_moderator = false;
-        page_params.is_guest = false;
+    page_params.is_admin = false;
+    page_params.is_moderator = false;
+    page_params.is_guest = false;
 
-        const sub = {
-            stream_id: 104,
-            name: "stream104",
-            subscribed: true,
-            stream_post_policy: settings_config.stream_post_policy_values.moderators.code,
-        };
+    const sub = {
+        stream_id: 104,
+        name: "stream104",
+        subscribed: true,
+        stream_post_policy: settings_config.stream_post_policy_values.moderators.code,
+    };
 
-        stream_data.add_sub(sub);
-        compose_state.topic("topic104");
-        compose_state.set_stream_id(sub.stream_id);
-        let banner_rendered = false;
-        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-            assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
-            assert.equal(
-                data.banner_text,
-                $t({
-                    defaultMessage: "You do not have permission to post in this stream.",
-                }),
-            );
-            banner_rendered = true;
-        });
-        assert.ok(!compose_validate.validate());
-        assert.ok(banner_rendered);
-        // Reset error message.
-        compose_state.set_stream_id(social_sub.stream_id);
+    stream_data.add_sub(sub);
+    compose_state.topic("topic104");
+    compose_state.set_stream_id(sub.stream_id);
+    let banner_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage: "You do not have permission to post in this stream.",
+            }),
+        );
+        banner_rendered = true;
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(banner_rendered);
+    // Reset error message.
+    compose_state.set_stream_id(social_sub.stream_id);
 
-        page_params.is_guest = true;
-        assert.ok(!compose_validate.validate());
-        assert.ok(banner_rendered);
-    },
-);
+    page_params.is_guest = true;
+    assert.ok(!compose_validate.validate());
+    assert.ok(banner_rendered);
+});
 
-test_ui(
-    "test_validate_stream_message_post_policy_full_members_only",
-    ({override_rewire, mock_template}) => {
-        mock_banners();
-        override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
-        page_params.is_admin = false;
-        page_params.is_guest = true;
-        const sub = {
-            stream_id: 103,
-            name: "stream103",
-            subscribed: true,
-            stream_post_policy: settings_config.stream_post_policy_values.non_new_members.code,
-        };
+test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_template}) => {
+    mock_banners();
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+    const sub = {
+        stream_id: 103,
+        name: "stream103",
+        subscribed: true,
+        stream_post_policy: settings_config.stream_post_policy_values.non_new_members.code,
+    };
 
-        stream_data.add_sub(sub);
-        compose_state.topic("topic103");
-        compose_state.set_stream_id(sub.stream_id);
-        let banner_rendered = false;
-        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-            assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
-            assert.equal(
-                data.banner_text,
-                $t({
-                    defaultMessage: "You do not have permission to post in this stream.",
-                }),
-            );
-            banner_rendered = true;
-        });
-        assert.ok(!compose_validate.validate());
-        assert.ok(banner_rendered);
-    },
-);
+    stream_data.add_sub(sub);
+    compose_state.topic("topic103");
+    compose_state.set_stream_id(sub.stream_id);
+    let banner_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage: "You do not have permission to post in this stream.",
+            }),
+        );
+        banner_rendered = true;
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(banner_rendered);
+});
 
 test_ui("test_check_overflow_text", ({mock_template}) => {
     mock_banners();
@@ -639,9 +624,7 @@ test_ui("needs_subscribe_warning", () => {
     assert.equal(compose_validate.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-test_ui("warn_if_private_stream_is_linked", ({mock_template, override_rewire}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
-
+test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     const test_sub = {
@@ -686,7 +669,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template, override_rewire}) =
 
     // Not everyone is subscribed to secret_stream in denmark, so the
     // warning is rendered.
-    compose_recipient.set_selected_recipient_id(denmark.stream_id);
+    compose_state.set_selected_recipient_id(denmark.stream_id);
     const secret_stream = {
         invite_only: true,
         name: "Denmark",
@@ -698,8 +681,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template, override_rewire}) =
     assert.ok(banner_rendered);
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, mock_template}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
+test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     compose_state.set_stream_id("");
@@ -787,9 +769,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     assert.ok(!new_banner_rendered);
 });
 
-test_ui("test warn_if_topic_resolved", ({override, override_rewire, mock_template}) => {
+test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     $("#compose_banners .topic_resolved").length = 0;
     override(settings_data, "user_can_move_messages_to_another_topic", () => true);
 

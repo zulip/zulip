@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_recipient from "./compose_recipient";
 import {$t} from "./i18n";
 import * as sub_store from "./sub_store";
 
@@ -69,10 +68,19 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
     };
 }
 
-// NOTE: See `selected_recipient_id` in compose_recipient to for
-// documentation on the variable and how it is used.
+// selected_recipient_id is the current state for the stream picker widget:
+// "" -> stream message but no stream is selected
+// integer -> stream id of the selected stream.
+// "direct" -> Direct message is selected.
+export let selected_recipient_id = "";
+export const DIRECT_MESSAGE_ID = "direct";
+
+export function set_selected_recipient_id(recipient_id) {
+    selected_recipient_id = recipient_id;
+}
+
 export function stream_id() {
-    const stream_id = compose_recipient.selected_recipient_id;
+    const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return stream_id;
     }
@@ -80,7 +88,7 @@ export function stream_id() {
 }
 
 export function stream_name() {
-    const stream_id = compose_recipient.selected_recipient_id;
+    const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return sub_store.maybe_get_stream_name(stream_id) || "";
     }
@@ -88,14 +96,14 @@ export function stream_name() {
 }
 
 export function set_stream_id(stream_id) {
-    compose_recipient.set_selected_recipient_id(stream_id);
+    set_selected_recipient_id(stream_id);
 }
 
 export function set_compose_recipient_id(recipient_id) {
     if (typeof recipient_id !== "number") {
-        recipient_id = compose_recipient.DIRECT_MESSAGE_ID;
+        recipient_id = DIRECT_MESSAGE_ID;
     }
-    compose_recipient.set_selected_recipient_id(recipient_id);
+    set_selected_recipient_id(recipient_id);
 }
 
 // TODO: Break out setter and getter into their own functions.

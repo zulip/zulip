@@ -704,7 +704,6 @@ const sweden_topics_to_show = ["<&>", "even more ice", "furniture", "ice", "kron
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_stream_header_colorblock();
     mock_banners();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     let pill_items = [];
     let cleared = false;
@@ -1862,7 +1861,6 @@ test("direct message recipients sorted according to stream / topic being viewed"
     );
     mock_stream_header_colorblock();
     mock_banners();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_id("");

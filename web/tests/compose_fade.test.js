@@ -55,7 +55,6 @@ run_test("set_focused_recipient", ({override_rewire}) => {
     override_rewire(compose_recipient, "selected_stream_name", "social");
     override_rewire(compose_recipient, "is_direct_message_selected", false);
 
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     const sub = {
         stream_id: 101,
         name: "social",

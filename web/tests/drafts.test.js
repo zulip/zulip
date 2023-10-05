@@ -155,7 +155,6 @@ test("draft_model delete", ({override}) => {
 test("snapshot_message", ({override_rewire}) => {
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     mock_banners();
 
     $(".narrow_to_compose_recipients").toggleClass = noop;

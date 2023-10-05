@@ -12,6 +12,7 @@ import * as compose from "./compose";
 import * as compose_call from "./compose_call";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_state from "./compose_state";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
@@ -552,8 +553,9 @@ export function dispatch_normal_event(event) {
                         stream_settings_ui.remove_stream(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
-                            if (stream.stream_id === compose_recipient.selected_recipient_id) {
-                                compose_recipient.set_selected_recipient_id("");
+                            if (stream.stream_id === compose_state.selected_recipient_id) {
+                                compose_state.set_selected_recipient_id("");
+                                compose_recipient.on_compose_select_recipient_update();
                             }
                         }
                         settings_streams.update_default_streams_table();
