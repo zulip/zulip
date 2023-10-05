@@ -356,19 +356,25 @@ def webhook_view(
             try:
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
-                if isinstance(err, InvalidJSONError) and notify_bot_owner_on_invalid_json:
+                if not isinstance(err, JsonableError):
+                    # An unexpected exception of some form -- log it
+                    log_exception_to_webhook_logger(request, err)
+                elif isinstance(err, WebhookError):
+                    # Anything explicitly a webhook error deserves to
+                    # go to the webhook logs
+                    err.webhook_name = webhook_client_name
+                    log_exception_to_webhook_logger(request, err)
+                elif isinstance(err, InvalidJSONError) and notify_bot_owner_on_invalid_json:
+                    # Invalid JSON is not notable for the logs -- it's
+                    # the sender's fault, so tell the owner
+
                     # NOTE: importing this at the top of file leads to a
                     # cyclic import; correct fix is probably to move
                     # notify_bot_owner_about_invalid_json to a smaller file.
                     from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
 
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
-                elif isinstance(err, JsonableError) and not isinstance(err, WebhookError):
-                    pass
-                else:
-                    if isinstance(err, WebhookError):
-                        err.webhook_name = webhook_client_name
-                    log_exception_to_webhook_logger(request, err)
+
                 raise err
 
         # Store the event types registered for this webhook as an attribute, which can be access
@@ -770,14 +776,16 @@ def authenticated_rest_api_view(
             except Exception as err:
                 if not webhook_client_name:
                     raise err
-                if isinstance(err, JsonableError) and not isinstance(
-                    err, WebhookError
-                ):  # nocoverage
-                    raise err
 
-                if isinstance(err, WebhookError):
+                if not isinstance(err, JsonableError):
+                    # An unexpected exception of some form -- log it
+                    log_exception_to_webhook_logger(request, err)
+                elif isinstance(err, WebhookError):
+                    # Anything explicitly a webhook error deserves to
+                    # go to the webhook logs
                     err.webhook_name = webhook_client_name
-                log_exception_to_webhook_logger(request, err)
+                    log_exception_to_webhook_logger(request, err)
+
                 raise err
 
         return _wrapped_func_arguments
