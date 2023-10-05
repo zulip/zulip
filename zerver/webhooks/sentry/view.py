@@ -228,7 +228,7 @@ def handle_issue_payload(
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
 
     else:
-        raise UnsupportedWebhookEventTypeError("unknown-issue-action type")
+        raise UnsupportedWebhookEventTypeError(f"{action} action")
 
     return (topic, body)
 
