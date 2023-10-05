@@ -236,11 +236,15 @@ body {
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
-    --color-background-inbox: hsl(0deg 6.67% 97.06%);
-    --color-background-inbox-search: hsl(0deg 0% 0% / 5%);
-    --color-icon-search-inbox: hsl(0deg 0% 0% / 50%);
-    --color-background-inbox-search-focus: hsl(0deg 0% 100%);
-    --color-border-inbox-search-focus: hsl(0deg 0% 100% / 20%);
+    --color-background-inbox: hsl(0deg 0% 100%);
+    --color-icon-search-inbox: hsl(0deg 0% 0%);
+    --color-inbox-search-text: hsl(0deg 0% 0%);
+    --color-border-inbox-search: hsl(229.09deg 21.57% 10% / 30%);
+    --color-border-inbox-search-hover: hsl(229.09deg 21.57% 10% / 60%);
+    --color-background-inbox-search-hover: var(--color-background-inbox);
+    --color-background-inbox-search-focus: var(--color-background-inbox);
+    --color-border-inbox-search-focus: hsl(229.09deg 21.57% 10% / 80%);
+    --color-box-shadow-inbox-search-focus: hsl(228deg 9.8% 20% / 30%);
     --color-background-inbox-row: hsl(0deg 0% 100%);
     --color-background-inbox-row-hover: linear-gradient(
             0deg,
@@ -325,11 +329,15 @@ body {
     --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
 
     /* Inbox view */
-    --color-background-inbox: var(--color-background);
-    --color-background-inbox-search: hsl(0deg 0% 20%);
-    --color-icon-search-inbox: hsl(0deg 0% 100% / 50%);
-    --color-background-inbox-search-focus: hsl(0deg 0% 0%);
-    --color-border-inbox-search-focus: hsl(0deg 0% 0% / 20%);
+    --color-background-inbox: hsl(225deg 6% 10%);
+    --color-icon-search-inbox: hsl(0deg 0% 100%);
+    --color-inbox-search-text: hsl(0deg 0% 95%);
+    --color-border-inbox-search: hsl(0deg 0% 100% / 20%);
+    --color-border-inbox-search-hover: hsl(0deg 0% 100% / 40%);
+    --color-background-inbox-search-hover: hsl(225deg 6% 8%);
+    --color-background-inbox-search-focus: hsl(225deg 6% 7%);
+    --color-border-inbox-search-focus: hsl(0deg 0% 100% / 50%);
+    --color-box-shadow-inbox-search-focus: hsl(0deg 0% 100% / 40%);
     --color-background-inbox-row: hsl(0deg 0% 14%);
     --color-background-inbox-row-hover: linear-gradient(
             0deg,
