@@ -15,6 +15,7 @@ const compose_fade = mock_esm("../src/compose_fade");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
+const stream_settings_api = mock_esm("../src/stream_settings_api");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
     update_settings_for_subscribed: noop,
     update_empty_left_panel_message: noop,
@@ -344,7 +345,7 @@ test("marked_subscribed (color)", ({override}) => {
     // narrow state is undefined
     {
         const stub = make_stub();
-        override(stream_settings_ui, "set_color", stub.f);
+        override(stream_settings_api, "set_color", stub.f);
         blueslip.expect("warn", "Frontend needed to pick a color in mark_subscribed");
         stream_events.mark_subscribed(sub, [], undefined);
         assert.equal(stub.num_calls, 1);
