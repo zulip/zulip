@@ -106,12 +106,8 @@ export function initialize() {
             // instance.hide gets called.
             const $popper = $(instance.popper);
             $popper.one("click", ".respond_button", (e) => {
-                // Arguably, we should fetch the message ID to respond to from
-                // e.target, but that should always be the current selected
-                // message in the current message list (and
-                // compose_reply.respond_to_message doesn't take a message
-                // argument).
-                compose_reply.quote_and_reply({trigger: "popover respond"});
+                const message_id = $(e.currentTarget).data("message-id");
+                compose_reply.quote_and_reply({trigger: "popover respond", message_id});
                 e.preventDefault();
                 e.stopPropagation();
                 instance.hide();
