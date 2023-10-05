@@ -13,6 +13,7 @@ import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
 import * as dark_theme from "./dark_theme";
@@ -207,7 +208,7 @@ export function initialize() {
         if (page_params.is_spectator) {
             return;
         }
-        compose_actions.respond_to_message({trigger: "message click"});
+        compose_reply.respond_to_message({trigger: "message click"});
         e.stopPropagation();
     };
 
