@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
-import render_actions_popover from "../templates/actions_popover.hbs";
+import render_actions_popover from "../templates/popovers/actions_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_actions from "./compose_actions";

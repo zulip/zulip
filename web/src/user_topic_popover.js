@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_change_visibility_policy_popover from "../templates/change_visibility_policy_popover.hbs";
+import render_change_visibility_policy_popover from "../templates/popovers/change_visibility_policy_popover.hbs";
 
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
