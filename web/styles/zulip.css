@@ -190,6 +190,22 @@ body {
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
 
+    /* Compose box colors */
+    --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
+    --color-compose-collapsed-reply-button-area-background-interactive: var(
+        --color-compose-collapsed-reply-button-area-background
+    );
+    --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 80%);
+    --color-compose-collapsed-reply-button-area-border-interactive: hsl(
+        0deg 0% 60%
+    );
+    --color-compose-embedded-button-text-color: hsl(231deg 20% 55%);
+    --color-compose-embedded-button-text-color-hover: hsl(231deg 20% 30%);
+    --color-compose-embedded-button-background: transparent;
+    --color-compose-embedded-button-background-hover: hsl(
+        231deg 100% 90% / 50%
+    );
+
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-default: hsl(0deg 0% 15%);
@@ -285,6 +301,24 @@ body {
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
+
+    /* Compose box colors */
+    --color-compose-collapsed-reply-button-area-background: hsl(
+        0deg 0% 0% / 20%
+    );
+    --color-compose-collapsed-reply-button-area-background-interactive: hsl(
+        0deg 0% 0% / 15%
+    );
+    --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 0% / 60%);
+    --color-compose-collapsed-reply-button-area-border-interactive: var(
+        --color-compose-collapsed-reply-button-area-border
+    );
+    --color-compose-embedded-button-text-color: hsl(231deg 30% 65%);
+    --color-compose-embedded-button-text-color-hover: hsl(231deg 30% 70%);
+    --color-compose-embedded-button-background: transparent;
+    --color-compose-embedded-button-background-hover: hsl(
+        235deg 100% 70% / 11%
+    );
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
