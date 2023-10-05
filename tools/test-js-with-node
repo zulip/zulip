@@ -163,6 +163,7 @@ EXEMPT_FILES = make_set(
         "web/src/reload.js",
         "web/src/reminder.js",
         "web/src/resize.js",
+        "web/src/resize_handler.js",
         "web/src/rows.js",
         "web/src/scheduled_messages.js",
         "web/src/scheduled_messages_overlay_ui.js",

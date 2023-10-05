@@ -84,7 +84,7 @@ import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_view_ui from "./recent_view_ui";
 import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
-import * as resize from "./resize";
+import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scheduled_messages_popover from "./scheduled_messages_popover";
@@ -251,7 +251,7 @@ export function initialize_kitchen_sink_stuff() {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).on("resize", _.throttle(resize.handler, 50));
+    $(window).on("resize", _.throttle(resize_handler.handler, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
@@ -285,7 +285,7 @@ export function initialize_kitchen_sink_stuff() {
 
     // A little hackish, because it doesn't seem to totally get us the
     // exact right width for the compose box, but, close enough for now.
-    resize.handler();
+    resize_handler.handler();
 
     if (page_params.is_spectator) {
         $("body").addClass("spectator-view");
