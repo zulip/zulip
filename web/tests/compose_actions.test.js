@@ -372,8 +372,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     override_private_message_recipient({override});
 
     let selected_message;
-    override(message_lists.current, "get", (_id) => undefined);
-    override(message_lists.current, "selected_message", () => selected_message);
+    override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
 
     let expected_replacement;
     let replaced;
@@ -404,8 +403,6 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
         success_function = opts.success;
     });
 
-    override(message_lists.current, "selected_id", () => 100);
-
     override(compose_ui, "insert_syntax_and_focus", (syntax, _$textarea, mode) => {
         assert.equal(syntax, "translated: [Quoting…]");
         assert.equal(mode, "block");
@@ -413,6 +410,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     const opts = {
         reply_type: "personal",
+        message_id: 100,
     };
 
     $("textarea#compose-textarea").caret = noop;
@@ -441,6 +439,10 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     disallow(channel, "get");
     quote_and_reply(opts);
     assert.ok(replaced);
+
+    delete opts.message_id;
+    override(message_lists.current, "selected_id", () => 100);
+    override(message_lists.current, "selected_message", () => selected_message);
 
     selected_message = {
         type: "stream",
