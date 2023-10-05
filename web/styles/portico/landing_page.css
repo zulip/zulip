@@ -2650,10 +2650,6 @@ button {
         .feature-text {
             margin-bottom: 10px;
         }
-
-        .twitter-tweet {
-            margin: 30px auto !important;
-        }
     }
 
     @media (width >= 768px) {
@@ -2739,22 +2735,6 @@ button {
 
     .topics-image {
         border: solid 2px hsl(0deg 0% 60%);
-    }
-}
-
-.twitter-tweet {
-    margin: auto;
-}
-
-blockquote.twitter-tweet {
-    padding: 0 0 0 15px;
-    border-left: 5px solid hsl(0deg 0% 93%);
-
-    & p {
-        margin-bottom: 0;
-        font-size: 17.5px;
-        font-weight: 300;
-        line-height: 1.25;
     }
 }
 
