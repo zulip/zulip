@@ -436,10 +436,7 @@ def api_bitbucket3_webhook(
     if "eventKey" in payload:
         eventkey = payload["eventKey"].tame(check_string)
     else:
-        eventkey = validate_extract_webhook_http_header(
-            request, "X-Event-Key", "BitBucket", fatal=True
-        )
-        assert eventkey is not None
+        eventkey = validate_extract_webhook_http_header(request, "X-Event-Key", "BitBucket")
     handler = EVENT_HANDLER_MAP.get(eventkey)
     if handler is None:
         raise UnsupportedWebhookEventTypeError(eventkey)

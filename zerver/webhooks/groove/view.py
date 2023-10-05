@@ -110,7 +110,6 @@ def api_groove_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     event = validate_extract_webhook_http_header(request, "X-Groove-Event", "Groove")
-    assert event is not None
     handler = EVENTS_FUNCTION_MAPPER.get(event)
     if handler is None:
         raise UnsupportedWebhookEventTypeError(event)
