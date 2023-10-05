@@ -34,6 +34,7 @@ set_global("document", "document-stub");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_reply = mock_esm("../src/compose_reply");
 const condense = mock_esm("../src/condense");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const emoji_picker = mock_esm("../src/emoji_picker", {
@@ -370,14 +371,14 @@ run_test("misc", ({override}) => {
 
     // TODO: Similar check for being in the subs page
 
-    assert_mapping("@", compose_actions, "reply_with_mention");
+    assert_mapping("@", compose_reply, "reply_with_mention");
     assert_mapping("+", reactions, "toggle_emoji_reaction");
     // Without an existing emoji reaction, this next one will only
     // call get_message_reactions, so we verify just that.
     assert_mapping("=", reactions, "get_message_reactions");
     assert_mapping("-", condense, "toggle_collapse");
-    assert_mapping("r", compose_actions, "respond_to_message");
-    assert_mapping("R", compose_actions, "respond_to_message", true);
+    assert_mapping("r", compose_reply, "respond_to_message");
+    assert_mapping("R", compose_reply, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
     assert_mapping("J", navigate, "page_down");
     assert_mapping("k", navigate, "up");
@@ -385,7 +386,7 @@ run_test("misc", ({override}) => {
     assert_mapping("u", popovers, "toggle_sender_info");
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
-    assert_mapping(">", compose_actions, "quote_and_reply");
+    assert_mapping(">", compose_reply, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);

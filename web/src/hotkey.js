@@ -8,6 +8,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import * as compose_textarea from "./compose_textarea";
 import * as condense from "./condense";
@@ -544,7 +545,7 @@ export function process_enter_key(e) {
         return true;
     }
 
-    compose_actions.respond_to_message({trigger: "hotkey enter"});
+    compose_reply.respond_to_message({trigger: "hotkey enter"});
     return true;
 }
 
@@ -927,7 +928,7 @@ export function process_hotkey(e, hotkey) {
         case "reply_message": // 'r': respond to message
             // Note that you can "Enter" to respond to messages as well,
             // but that is handled in process_enter_key().
-            compose_actions.respond_to_message({trigger: "hotkey"});
+            compose_reply.respond_to_message({trigger: "hotkey"});
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {
@@ -1027,10 +1028,10 @@ export function process_hotkey(e, hotkey) {
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
             return true;
         case "respond_to_author": // 'R': respond to author
-            compose_actions.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
+            compose_reply.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
             return true;
         case "compose_reply_with_mention": // '@': respond to message with mention to author
-            compose_actions.reply_with_mention({trigger: "hotkey"});
+            compose_reply.reply_with_mention({trigger: "hotkey"});
             return true;
         case "show_lightbox":
             lightbox.show_from_selected_message();
@@ -1085,7 +1086,7 @@ export function process_hotkey(e, hotkey) {
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
         case "compose_quote_reply": // > : respond to selected message with quote
-            compose_actions.quote_and_reply({trigger: "hotkey"});
+            compose_reply.quote_and_reply({trigger: "hotkey"});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);

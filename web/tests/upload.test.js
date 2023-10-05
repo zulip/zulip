@@ -21,6 +21,7 @@ mock_esm("@uppy/core", {
 mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
 
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_reply = mock_esm("../src/compose_reply");
 const compose_state = mock_esm("../src/compose_state");
 mock_esm("../src/csrf", {csrf_token: "csrf_token"});
 const rows = mock_esm("../src/rows");
@@ -445,7 +446,7 @@ test("file_drop", ({override, override_rewire}) => {
         upload_files_called = true;
     });
     let compose_actions_start_called = false;
-    override(compose_actions, "respond_to_message", () => {
+    override(compose_reply, "respond_to_message", () => {
         compose_actions_start_called = true;
     });
     drop_handler(drop_event);
@@ -484,7 +485,7 @@ test("copy_paste", ({override, override_rewire}) => {
         upload_files_called = true;
     });
     let compose_actions_start_called = false;
-    override(compose_actions, "respond_to_message", () => {
+    override(compose_reply, "respond_to_message", () => {
         compose_actions_start_called = true;
     });
 
@@ -710,7 +711,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     compose_actions.start = () => {
         compose_actions_start_called = true;
     };
-    compose_actions.respond_to_message = () => {
+    compose_reply.respond_to_message = () => {
         compose_actions_respond_to_message_called = true;
     };
     drop_handler(drop_event);

@@ -26,6 +26,7 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_reply from "./compose_reply";
 import * as compose_setup from "./compose_setup";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
@@ -638,6 +639,7 @@ export function initialize_everything() {
         on_pill_create_or_remove: compose_recipient.update_placeholder_text,
     });
     compose_closed_ui.initialize();
+    compose_reply.initialize();
     reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
