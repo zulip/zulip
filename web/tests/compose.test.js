@@ -303,7 +303,6 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     $("#compose-textarea").toggleClass = noop;
     mock_stream_header_colorblock();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
@@ -725,7 +724,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 test_ui("create_message_object", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
     mock_banners();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     compose_state.set_stream_id(social.stream_id);
     $("#stream_message_recipient_topic").val("lunch");

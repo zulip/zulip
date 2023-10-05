@@ -17,7 +17,6 @@ const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 const narrow = zrequire("narrow");
 const settings_config = zrequire("settings_config");
-const compose_recipient = zrequire("compose_recipient");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/spectators", {
@@ -652,8 +651,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     );
 });
 
-run_test("narrow_to_compose_target errors", ({override_rewire, disallow_rewire}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
+run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
     disallow_rewire(narrow, "activate");
 
     // No-op when not composing.
@@ -667,7 +665,6 @@ run_test("narrow_to_compose_target errors", ({override_rewire, disallow_rewire})
 });
 
 run_test("narrow_to_compose_target streams", ({override_rewire}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     const args = {called: false};
     override_rewire(narrow, "activate", (operators, opts) => {
         args.operators = operators;

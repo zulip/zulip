@@ -10,7 +10,6 @@ const $ = require("./lib/zjquery");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 
 const compose_state = zrequire("compose_state");
-const compose_recipient = zrequire("compose_recipient");
 const stream_data = zrequire("stream_data");
 
 const noop = () => {};
@@ -27,11 +26,10 @@ run_test("private_message_recipient", ({override}) => {
     assert.equal(compose_state.private_message_recipient(), "fred@fred.org");
 });
 
-run_test("has_full_recipient", ({override, override_rewire}) => {
+run_test("has_full_recipient", ({override}) => {
     mock_stream_header_colorblock();
     $(`#compose_banners .topic_resolved`).remove = noop;
     $(".narrow_to_compose_recipients").toggleClass = noop;
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
 
     let emails;
     override(compose_pm_pill, "set_from_emails", (value) => {
