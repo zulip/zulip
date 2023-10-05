@@ -28,6 +28,7 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
+import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
@@ -224,7 +225,7 @@ export function dispatch_normal_event(event) {
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
                 move_messages_between_streams_policy: noop,
-                name: notifications.redraw_title,
+                name: narrow_title.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,

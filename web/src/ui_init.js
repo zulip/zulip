@@ -67,6 +67,7 @@ import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
+import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
@@ -383,7 +384,7 @@ function initialize_unread_ui() {
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
     unread_ui.register_update_unread_counts_hook((counts) =>
-        notifications.update_unread_counts(counts),
+        narrow_title.update_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
