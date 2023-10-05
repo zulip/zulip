@@ -151,13 +151,21 @@ class UnreadDirectMessageCounter {
         this.bucketer.delete(message_id);
     }
 
-    get_counts() {
-        const pm_dict = new Map(); // Hash by user_ids_string -> count
+    get_counts(include_latest_msg_id = false) {
+        const pm_dict = new Map(); // Hash by user_ids_string -> count Optional[, max_id]
         let total_count = 0;
         let right_sidebar_count = 0;
         for (const [user_ids_string, id_set] of this.bucketer) {
             const count = id_set.size;
-            pm_dict.set(user_ids_string, count);
+            if (include_latest_msg_id) {
+                const latest_msg_id = Math.max(...id_set);
+                pm_dict.set(user_ids_string, {
+                    count,
+                    latest_msg_id,
+                });
+            } else {
+                pm_dict.set(user_ids_string, count);
+            }
             const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
             const is_with_one_human =
                 user_ids.length === 1 && !people.get_by_user_id(user_ids[0]).is_bot;
@@ -261,7 +269,7 @@ class UnreadTopicCounter {
         this.bucketer.delete(msg_id);
     }
 
-    get_counts(include_per_topic_count = false) {
+    get_counts(include_per_topic_count = false, include_per_topic_latest_msg_id = false) {
         const res = {};
         res.stream_unread_messages = 0;
         res.stream_count = new Map(); // hash by stream_id -> count
@@ -280,7 +288,15 @@ class UnreadTopicCounter {
                 let stream_count = 0;
                 for (const [topic, msgs] of per_stream_bucketer) {
                     const topic_count = msgs.size;
-                    topic_unread.set(topic, topic_count);
+                    if (include_per_topic_latest_msg_id) {
+                        const latest_msg_id = Math.max(...msgs);
+                        topic_unread.set(topic, {
+                            topic_count,
+                            latest_msg_id,
+                        });
+                    } else {
+                        topic_unread.set(topic, topic_count);
+                    }
                     stream_count += topic_count;
                 }
 
@@ -770,14 +786,17 @@ export function declare_bankruptcy() {
     unread_mention_topics.clear();
 }
 
-export function get_unread_pm() {
-    const pm_res = unread_direct_message_counter.get_counts();
+export function get_unread_pm(include_per_bucket_latest_msg_id = false) {
+    const pm_res = unread_direct_message_counter.get_counts(include_per_bucket_latest_msg_id);
     return pm_res;
 }
 
-export function get_unread_topics() {
+export function get_unread_topics(include_per_topic_latest_msg_id = false) {
     const include_per_topic_count = true;
-    const topics_res = unread_topic_counter.get_counts(include_per_topic_count);
+    const topics_res = unread_topic_counter.get_counts(
+        include_per_topic_count,
+        include_per_topic_latest_msg_id,
+    );
     return topics_res;
 }
 
