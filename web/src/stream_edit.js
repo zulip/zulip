@@ -24,10 +24,10 @@ import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
-import * as settings_ui from "./settings_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
+import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -40,7 +40,6 @@ import * as util from "./util";
 
 export let toggler;
 export let select_tab = "personal_settings";
-export let can_remove_subscribers_group_widget = null;
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_url(sub);
@@ -194,7 +193,7 @@ export function stream_settings(sub) {
 }
 
 function setup_dropdown(sub, slim_sub) {
-    can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
+    const can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
         widget_name: "can_remove_subscribers_group",
         get_options: () =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(
@@ -221,6 +220,7 @@ function setup_dropdown(sub, slim_sub) {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
+    settings_org.set_can_remove_subscribers_group_widget(can_remove_subscribers_group_widget);
     can_remove_subscribers_group_widget.setup();
 }
 
@@ -244,8 +244,8 @@ export function show_settings_for(node) {
         sub,
         notification_settings,
         other_settings,
-        stream_post_policy_values: stream_data.stream_post_policy_values,
-        stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
+        stream_post_policy_values: settings_config.stream_post_policy_values,
+        stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
@@ -310,7 +310,7 @@ function stream_is_muted_changed(e) {
         return;
     }
 
-    set_stream_property(
+    stream_settings_api.set_stream_property(
         sub,
         "is_muted",
         e.target.checked,
@@ -324,7 +324,7 @@ export function stream_setting_changed(e, from_notification_settings) {
     }
 
     const sub = get_sub_for_target(e.target);
-    const status_element = from_notification_settings
+    const $status_element = from_notification_settings
         ? $(e.target).closest(".subsection-parent").find(".alert-notification")
         : $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`);
     const setting = e.target.name;
@@ -336,60 +336,7 @@ export function stream_setting_changed(e, from_notification_settings) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
-    set_stream_property(sub, setting, e.target.checked, status_element);
-}
-
-export function bulk_set_stream_property(sub_data, status_element) {
-    const url = "/json/users/me/subscriptions/properties";
-    const data = {subscription_data: JSON.stringify(sub_data)};
-    if (!status_element) {
-        return channel.post({
-            url,
-            data,
-            timeout: 10 * 1000,
-        });
-    }
-
-    settings_ui.do_settings_change(channel.post, url, data, status_element);
-    return undefined;
-}
-
-export function set_stream_property(sub, property, value, status_element) {
-    const sub_data = {stream_id: sub.stream_id, property, value};
-    bulk_set_stream_property([sub_data], status_element);
-}
-
-export function get_request_data_for_stream_privacy(selected_val) {
-    switch (selected_val) {
-        case stream_data.stream_privacy_policy_values.public.code: {
-            return {
-                is_private: false,
-                history_public_to_subscribers: true,
-                is_web_public: false,
-            };
-        }
-        case stream_data.stream_privacy_policy_values.private.code: {
-            return {
-                is_private: true,
-                history_public_to_subscribers: false,
-                is_web_public: false,
-            };
-        }
-        case stream_data.stream_privacy_policy_values.web_public.code: {
-            return {
-                is_private: false,
-                history_public_to_subscribers: true,
-                is_web_public: true,
-            };
-        }
-        default: {
-            return {
-                is_private: true,
-                history_public_to_subscribers: true,
-                is_web_public: false,
-            };
-        }
-    }
+    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
 }
 
 export function archive_stream(stream_id, $alert_element, $stream_row) {

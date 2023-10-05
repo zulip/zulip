@@ -563,12 +563,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
             URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/register"
             with responses.RequestsMock() as resp, self.assertLogs(level="ERROR") as error_log:
                 resp.add(responses.POST, URL, body=ConnectionError(), status=502)
-                result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
-                self.assert_json_error(
-                    result,
-                    "ConnectionError while trying to connect to push notification bouncer",
-                    502,
-                )
+                with self.assertRaisesRegex(
+                    PushNotificationBouncerRetryLaterError,
+                    r"^ConnectionError while trying to connect to push notification bouncer$",
+                ):
+                    self.client_post(endpoint, {"token": token}, subdomain="zulip")
                 self.assertIn(
                     f"ERROR:django.request:Bad Gateway: {endpoint}\nTraceback",
                     error_log.output[0],
@@ -576,8 +575,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
             with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as warn_log:
                 resp.add(responses.POST, URL, body=orjson.dumps({"msg": "error"}), status=500)
-                result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
-                self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
+                with self.assertRaisesRegex(
+                    PushNotificationBouncerRetryLaterError,
+                    r"Received 500 from push notification bouncer$",
+                ):
+                    self.client_post(endpoint, {"token": token}, subdomain="zulip")
                 self.assertEqual(
                     warn_log.output[0],
                     "WARNING:root:Received 500 from push notification bouncer",

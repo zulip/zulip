@@ -49,6 +49,35 @@
         </table>
     </div>
 
+    {{#if development}}
+        <div class="topic_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+
+            <div class="subsection-header inline-block">
+                <h3>{{t "Topic notifications" }}
+                    {{> ../help_link_widget link="/help/mute-a-topic" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="topic-notifications-settings" show_only_indicator=(not for_realm_settings) }}
+                <p>{{t "You will automatically follow topics that you have configured to both follow and unmute." }}</p>
+            </div>
+
+            <div class="input-group">
+                <label for="automatically_follow_topics_policy" class="dropdown-title">{{ settings_label.automatically_follow_topics_policy }}</label>
+                <select name="automatically_follow_topics_policy" class="setting_automatically_follow_topics_policy prop-element settings_select bootstrap-focus-style"
+                  id="{{prefix}}automatically_follow_topics_policy" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=automatically_follow_topics_policy_values}}
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="automatically_unmute_topics_in_muted_streams_policy" class="dropdown-title">{{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}</label>
+                <select name="automatically_unmute_topics_in_muted_streams_policy" class="setting_automatically_unmute_topics_in_muted_streams_policy prop-element settings_select bootstrap-focus-style"
+                  id="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
+                </select>
+            </div>
+        </div>
+    {{/if}}
+
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">

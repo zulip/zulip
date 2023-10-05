@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 214**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added two new user settings, `automatically_follow_topics_policy` and
+  `automatically_unmute_topics_in_muted_streams_policy`. The settings control the
+  user's preference on which topics the user will automatically 'follow' and
+  'unmute in muted streams' respectively.
+
 **Feature level 213**
 
 * [`POST /register`](/api/register-queue): Fixed incorrect handling of

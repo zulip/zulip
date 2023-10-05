@@ -13,6 +13,7 @@ import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_data from "./stream_settings_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
@@ -56,10 +57,10 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, value, status_element) {
+function change_notification_setting(setting, value, $status_element) {
     const data = {};
     data[setting] = value;
-    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element);
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_element);
 }
 
 function update_desktop_icon_count_display(settings_panel) {
@@ -157,6 +158,20 @@ export function set_up(settings_panel) {
     );
     $realm_name_in_email_notifications_policy_dropdown.val(
         settings_object.realm_name_in_email_notifications_policy,
+    );
+
+    const $automatically_follow_topics_policy_dropdown = $container.find(
+        ".setting_automatically_follow_topics_policy",
+    );
+    $automatically_follow_topics_policy_dropdown.val(
+        settings_object.automatically_follow_topics_policy,
+    );
+
+    const $automatically_unmute_topics_in_muted_streams_policy_dropdown = $container.find(
+        ".setting_automatically_unmute_topics_in_muted_streams_policy",
+    );
+    $automatically_unmute_topics_in_muted_streams_policy_dropdown.val(
+        settings_object.automatically_unmute_topics_in_muted_streams_policy,
     );
 
     set_enable_digest_emails_visibility(settings_panel);
@@ -276,7 +291,9 @@ export function update_page(settings_panel) {
                 break;
             }
             case "notification_sound":
-            case "realm_name_in_email_notifications_policy": {
+            case "realm_name_in_email_notifications_policy":
+            case "automatically_follow_topics_policy":
+            case "automatically_unmute_topics_in_muted_streams_policy": {
                 $container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
                 break;
             }
@@ -325,7 +342,7 @@ export function initialize() {
         const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
 
-        stream_edit.set_stream_property(
+        stream_settings_api.set_stream_property(
             sub,
             "is_muted",
             !sub.is_muted,

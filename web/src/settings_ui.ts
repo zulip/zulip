@@ -35,7 +35,7 @@ export function do_settings_change(
     request_method: AjaxRequestHandler,
     url: string,
     data: Parameters<AjaxRequestHandler>[0]["data"],
-    status_element: string,
+    $status_element: JQuery,
     {
         success_msg_html = strings.success_html,
         failure_msg_html = strings.failure_html,
@@ -45,7 +45,7 @@ export function do_settings_change(
         $error_msg_element,
     }: RequestOpts = {},
 ): void {
-    const $spinner = $(status_element).expectOne();
+    const $spinner = $status_element.expectOne();
     $spinner.fadeTo(0, 1);
     loading.make_indicator($spinner, {text: strings.saving});
     const remove_after = sticky ? undefined : 1000;

@@ -718,7 +718,7 @@ def apply_event(
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
-        if "raw_unread_msgs" in state:
+        if "raw_unread_msgs" in state and "read" not in event["flags"]:
             apply_unread_message_event(
                 user_profile,
                 state["raw_unread_msgs"],

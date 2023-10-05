@@ -120,7 +120,7 @@ def check_send_webhook_fixture_message(
     if response.status_code == 200:
         responses = [{"status_code": response.status_code, "message": response.content.decode()}]
         return json_success(request, data={"responses": responses})
-    else:
+    else:  # nocoverage
         return response
 
 

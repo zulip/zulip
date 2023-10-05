@@ -556,6 +556,14 @@ def update_realm_user_settings_defaults(
         json_validator=check_int_in(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
         default=None,
     ),
+    automatically_follow_topics_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
+        default=None,
+    ),
+    automatically_unmute_topics_in_muted_streams_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
+        default=None,
+    ),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_drafts_synchronization: Optional[bool] = REQ(json_validator=check_bool, default=None),

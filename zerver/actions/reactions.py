@@ -1,10 +1,18 @@
 from typing import Any, Dict, Optional
 
 from zerver.actions.create_user import create_historical_user_messages
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import ReactionExistsError
-from zerver.lib.message import access_message, update_to_dict_cache
+from zerver.lib.message import (
+    access_message,
+    set_visibility_policy_possible,
+    should_change_visibility_policy,
+    update_to_dict_cache,
+    visibility_policy_for_participation,
+)
 from zerver.lib.stream_subscription import subscriber_ids_with_stream_history_access
+from zerver.lib.streams import access_stream_by_id
 from zerver.models import Message, Reaction, Recipient, Stream, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -81,6 +89,32 @@ def do_add_reaction(
     )
 
     reaction.save()
+
+    # Determine and set the visibility_policy depending on 'automatically_follow_topics_policy'
+    # and 'automatically_unmute_topics_in_muted_streams_policy'.
+    if set_visibility_policy_possible(
+        user_profile, message
+    ) and UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION in [
+        user_profile.automatically_follow_topics_policy,
+        user_profile.automatically_unmute_topics_in_muted_streams_policy,
+    ]:
+        stream_id = message.recipient.type_id
+        (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        assert stream is not None
+        if sub:
+            new_visibility_policy = visibility_policy_for_participation(user_profile, sub.is_muted)
+            if new_visibility_policy and should_change_visibility_policy(
+                new_visibility_policy,
+                user_profile,
+                stream_id,
+                topic_name=message.topic_name(),
+            ):
+                do_set_user_topic_visibility_policy(
+                    user_profile=user_profile,
+                    stream=stream,
+                    topic=message.topic_name(),
+                    visibility_policy=new_visibility_policy,
+                )
 
     notify_reaction_update(user_profile, message, reaction, "add")
 

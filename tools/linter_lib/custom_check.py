@@ -230,6 +230,9 @@ python_rules = RuleList(
             "good_lines": ["topic_name"],
             "bad_lines": ['subject="foo"', " MAX_SUBJECT_LEN"],
             "exclude": FILES_WITH_LEGACY_SUBJECT,
+            "exclude_line": {
+                ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+            },
             "include_only": {
                 "zerver/data_import/",
                 "zerver/lib/",
@@ -545,6 +548,7 @@ html_rules: List["Rule"] = [
         },
         "exclude": {
             "templates/analytics/support.html",
+            "templates/analytics/remote_server_support.html",
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
             "web/templates/settings/playground_settings_admin.hbs",

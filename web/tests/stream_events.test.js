@@ -41,6 +41,7 @@ const {Filter} = zrequire("../src/filter");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
 const compose_recipient = zrequire("compose_recipient");
@@ -232,12 +233,12 @@ test("update_property", ({override, override_rewire}) => {
         stream_events.update_property(
             stream_id,
             "stream_post_policy",
-            stream_data.stream_post_policy_values.admins.code,
+            settings_config.stream_post_policy_values.admins.code,
         );
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");
         assert.equal(args.sub.stream_id, stream_id);
-        assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
+        assert.equal(args.val, settings_config.stream_post_policy_values.admins.code);
     }
 
     // Test stream message_retention_days change event

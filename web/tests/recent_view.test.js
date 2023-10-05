@@ -172,21 +172,6 @@ mock_esm("../src/timerender", {
     relative_time_string_from_date: () => "Just now",
     get_full_datetime_clarification: () => "date at time",
 });
-mock_esm("../src/sub_store", {
-    get(stream) {
-        if (stream === stream5) {
-            // No data is available for deactivated streams
-            return undefined;
-        }
-
-        return {
-            color: "",
-            invite_only: false,
-            is_web_public: true,
-            subscribed: true,
-        };
-    },
-});
 mock_esm("../src/left_sidebar_navigation_area", {
     highlight_recent_view: noop,
 });
@@ -212,6 +197,16 @@ const rt = zrequire("recent_view_ui");
 const recent_view_util = zrequire("recent_view_util");
 const rt_data = zrequire("recent_view_data");
 const muted_users = zrequire("muted_users");
+const sub_store = zrequire("sub_store");
+
+for (const stream_id of [stream1, stream2, stream3, stream4, stream6]) {
+    sub_store.add_hydrated_sub(stream_id, {
+        color: "",
+        invite_only: false,
+        is_web_public: true,
+        subscribed: true,
+    });
+}
 
 people.add_active_user({
     email: "alice@zulip.com",

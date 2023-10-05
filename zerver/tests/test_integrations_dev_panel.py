@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import orjson
+from django.core.exceptions import ValidationError
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Stream, get_realm, get_user
@@ -21,16 +22,14 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "custom_headers": "{}",
             "is_json": "true",
         }
-        with self.assertLogs(level="ERROR") as logs, self.settings(TEST_SUITE=False):
-            response = self.client_post(target_url, data)
-
-            self.assertEqual(response.status_code, 500)  # Since the response would be forwarded.
-            expected_response = {"result": "error", "msg": "Internal server error"}
-            self.assertEqual(orjson.loads(response.content), expected_response)
+        with self.assertLogs(level="ERROR") as logs, self.settings(
+            TEST_SUITE=False
+        ), self.assertRaises(ValidationError):
+            self.client_post(target_url, data)
 
         # Intention of this test looks like to trigger ValidationError
         # so just testing ValidationError is printed along with Traceback in logs
-        self.assert_length(logs.output, 1)
+        self.assert_length(logs.output, 2)
         self.assertTrue(
             logs.output[0].startswith(
                 "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake\n"
@@ -38,6 +37,13 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             )
         )
         self.assertTrue("ValidationError" in logs.output[0])
+        self.assertTrue(
+            logs.output[1].startswith(
+                "ERROR:django.request:Internal Server Error: /devtools/integrations/check_send_webhook_fixture_message\n"
+                "Traceback (most recent call last):\n"
+            )
+        )
+        self.assertTrue("ValidationError" in logs.output[1])
 
     def test_check_send_webhook_fixture_message_for_success_without_headers(self) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
