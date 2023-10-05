@@ -61,9 +61,49 @@
                 position: absolute;
                 top: 23px;
                 left: 6px;
-                color: var(--color-icon-inbox-search);
+                color: var(--color-icons-inbox);
                 opacity: 0.4;
             }
+
+            #inbox-clear-search {
+                border: 1px solid transparent;
+                background: transparent;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 2px;
+                cursor: pointer;
+                font-size: 16px;
+                color: var(--color-icons-inbox);
+                opacity: 0.4;
+                transition: all 140ms;
+                padding: 5px;
+                margin: 0;
+                /* = -Width of the button. */
+                margin-right: -28px;
+                position: relative;
+                top: 0;
+                right: 30px;
+
+                &:focus {
+                    outline: none;
+                }
+
+                &:hover,
+                &:focus-visible {
+                    opacity: 1;
+                    background-color: var(--color-background-icon-close-hover);
+                }
+
+                &:active {
+                    opacity: 1;
+                    transform: scale(0.9);
+                }
+            }
+        }
+
+        #inbox-search:placeholder-shown + #inbox-clear-search {
+            display: none;
         }
 
         #inbox-search {
@@ -72,7 +112,7 @@
             overflow: hidden;
             width: var(--width-inbox-search);
             height: var(--height-inbox-search);
-            padding-right: 20px;
+            padding-right: 28px;
             padding-left: 30px;
             font-size: 14px;
             font-style: normal;
@@ -83,7 +123,8 @@
             color: var(--color-inbox-search-text);
             border: 1px solid var(--color-border-inbox-search);
 
-            &:not(:placeholder-shown), &:hover {
+            &:not(:placeholder-shown),
+            &:hover {
                 background-color: var(--color-background-inbox-search-hover);
                 border: 1px solid var(--color-border-inbox-search-hover);
             }

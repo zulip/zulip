@@ -1046,4 +1046,10 @@ export function initialize() {
             unread_ops.mark_stream_as_read(stream_id);
         }
     });
+
+    $("body").on("click", "#inbox-clear-search", () => {
+        $("#inbox-search").val("");
+        search_and_update();
+        focus_inbox_search();
+    });
 }
