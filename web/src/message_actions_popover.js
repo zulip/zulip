@@ -90,7 +90,6 @@ export function initialize() {
             popover_menus.on_show_prep(instance);
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
-            message_lists.current.select_id(message_id);
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
             instance.setContent(parse_html(render_actions_popover(args)));
             $row.addClass("has_actions_popover");
