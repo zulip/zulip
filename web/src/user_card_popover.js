@@ -4,8 +4,8 @@ import $ from "jquery";
 import tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
+import render_user_card_popover from "../templates/user_card_popover.hbs";
 import render_user_card_popover_avatar from "../templates/user_card_popover_avatar.hbs";
-import render_user_card_popover_content from "../templates/user_card_popover_content.hbs";
 import render_user_card_popover_manage_menu from "../templates/user_card_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
@@ -327,8 +327,8 @@ function show_user_card_popover(
             placement: popover_placement,
             arrow: false,
             onCreate(instance) {
+                instance.setContent(ui_util.parse_html(render_user_card_popover(args)));
                 user_card_popovers[template_class].instance = instance;
-                instance.setContent(ui_util.parse_html(render_user_card_popover_content(args)));
 
                 const $popover = $(instance.popper);
                 const $popover_title = $popover.find(".popover-title");
