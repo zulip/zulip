@@ -209,7 +209,7 @@ function clipboard_enable(arg) {
 // Functions related to user card popover.
 
 export function toggle_user_card_popover(element, user) {
-    render_user_card_popover(
+    show_user_card_popover(
         user,
         $(element),
         false,
@@ -303,7 +303,7 @@ function get_user_card_popover_data(
     return args;
 }
 
-function render_user_card_popover(
+function show_user_card_popover(
     user,
     $popover_element,
     is_sender_popover,
@@ -519,7 +519,7 @@ function toggle_user_card_popover_for_message(element, user, message, on_mount) 
         }
 
         const is_sender_popover = message.sender_id === user.user_id;
-        render_user_card_popover(
+        show_user_card_popover(
             user,
             $elt,
             is_sender_popover,
@@ -605,7 +605,7 @@ function toggle_sidebar_user_card_popover($target) {
         return;
     }
 
-    render_user_card_popover(
+    show_user_card_popover(
         user,
         $target,
         false,
