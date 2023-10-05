@@ -146,7 +146,7 @@ def get_topic(user_specified_topic: Optional[str], event: str, payload: WildValu
         issue_id = payload["data"]["id"].tame(check_string)
         return issue_id
 
-    raise UnsupportedWebhookEventTypeError("unknown event type")
+    raise UnsupportedWebhookEventTypeError(event)
 
 
 def get_event_type(payload: WildValue) -> Optional[str]:
