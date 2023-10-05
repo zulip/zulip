@@ -34,6 +34,7 @@ import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as dark_theme from "./dark_theme";
 import * as drafts from "./drafts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui";
 import * as echo from "./echo";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
@@ -697,6 +698,7 @@ export function initialize_everything() {
     });
     topic_zoom.initialize();
     drafts.initialize();
+    drafts_overlay_ui.initialize();
     sent_messages.initialize();
     hotspots.initialize();
     typing.initialize();

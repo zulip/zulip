@@ -4,7 +4,7 @@ import * as about_zulip from "./about_zulip";
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as drafts from "./drafts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui";
 import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
@@ -400,7 +400,7 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "drafts") {
-        drafts.launch();
+        drafts_overlay_ui.launch();
         return;
     }
 

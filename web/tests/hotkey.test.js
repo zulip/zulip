@@ -35,7 +35,7 @@ set_global("document", "document-stub");
 const browser_history = mock_esm("../src/browser_history");
 const compose_actions = mock_esm("../src/compose_actions");
 const condense = mock_esm("../src/condense");
-const drafts = mock_esm("../src/drafts");
+const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
     toggle_emoji_popover() {},
@@ -539,8 +539,8 @@ run_test("motion_keys", () => {
 
     delete overlays.is_active;
     overlays.drafts_open = () => true;
-    assert_mapping("up_arrow", drafts, "handle_keyboard_events");
-    assert_mapping("down_arrow", drafts, "handle_keyboard_events");
+    assert_mapping("up_arrow", drafts_overlay_ui, "handle_keyboard_events");
+    assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
     delete overlays.is_active;
     delete overlays.drafts_open;
 });
