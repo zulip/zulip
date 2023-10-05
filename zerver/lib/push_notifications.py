@@ -2,6 +2,7 @@
 
 import asyncio
 import base64
+import copy
 import logging
 import re
 from dataclasses import dataclass
@@ -1190,3 +1191,63 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     user_identity = UserPushIdentityCompat(user_id=user_profile.id)
     send_apple_push_notification(user_identity, apple_devices, apns_payload)
     send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
+
+
+def send_test_push_notification_directly_to_devices(
+    user_identity: UserPushIdentityCompat,
+    devices: Sequence[DeviceToken],
+    base_payload: Dict[str, Any],
+    remote: Optional["RemoteZulipServer"] = None,
+) -> None:
+    payload = copy.deepcopy(base_payload)
+    payload["event"] = "test-by-device-token"
+
+    apple_devices = [device for device in devices if device.kind == PushDeviceToken.APNS]
+    android_devices = [device for device in devices if device.kind == PushDeviceToken.GCM]
+    # Let's make the payloads separate objects to make sure mutating to make e.g. Android
+    # adjustments doesn't affect the Apple payload and vice versa.
+    apple_payload = copy.deepcopy(payload)
+    android_payload = copy.deepcopy(payload)
+
+    realm_uri = base_payload["realm_uri"]
+    apns_data = {
+        "alert": {
+            "title": _("Test notification"),
+            "body": _("This is a test notification from {realm_uri}.").format(realm_uri=realm_uri),
+        },
+        "sound": "default",
+        "custom": {"zulip": apple_payload},
+    }
+    send_apple_push_notification(user_identity, apple_devices, apns_data, remote=remote)
+
+    android_payload["time"] = datetime_to_timestamp(timezone_now())
+    gcm_options = {"priority": "high"}
+    send_android_push_notification(
+        user_identity, android_devices, android_payload, gcm_options, remote=remote
+    )
+
+
+def send_test_push_notification(user_profile: UserProfile, devices: List[PushDeviceToken]) -> None:
+    base_payload = get_base_payload(user_profile)
+    if uses_notification_bouncer():
+        for device in devices:
+            post_data = {
+                "user_uuid": str(user_profile.uuid),
+                "user_id": user_profile.id,
+                "token": device.token,
+                "token_kind": device.kind,
+                "base_payload": base_payload,
+            }
+
+            logger.info("Sending test push notification to bouncer: %r", post_data)
+            send_json_to_push_bouncer("POST", "push/test_notification", post_data)
+
+        return
+
+    # This server doesn't need the bouncer, so we send directly to the device.
+    user_identity = UserPushIdentityCompat(
+        user_id=user_profile.id, user_uuid=str(user_profile.uuid)
+    )
+    send_test_push_notification_directly_to_devices(
+        user_identity, devices, base_payload, remote=None
+    )
