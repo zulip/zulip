@@ -4,6 +4,7 @@ import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
+import {StreamPostPolicy} from "./sub_store";
 import type {
     FollowedTopicNotificationSettings,
     PmNotificationSettings,
@@ -579,6 +580,12 @@ export const notification_settings_labels = {
     realm_name_in_email_notifications_policy: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
     }),
+    automatically_follow_topics_policy: $t({
+        defaultMessage: "Automatically follow topics",
+    }),
+    automatically_unmute_topics_in_muted_streams_policy: $t({
+        defaultMessage: "Automatically unmute topics in muted streams",
+    }),
 };
 
 export const realm_user_settings_defaults_labels = {
@@ -741,6 +748,8 @@ const other_notification_settings = [
     "email_notifications_batching_period_seconds",
     "realm_name_in_email_notifications_policy",
     "notification_sound",
+    "automatically_follow_topics_policy",
+    "automatically_unmute_topics_in_muted_streams_policy",
 ];
 
 export const all_notification_settings = [
@@ -922,3 +931,80 @@ export const user_topic_visibility_policy_values = {
         description: $t({defaultMessage: "Default for stream"}),
     },
 };
+
+export const automatically_follow_or_unmute_topics_policy_values = {
+    participation: {
+        code: 1,
+        description: $t({defaultMessage: "Topics I participate in"}),
+    },
+    send: {
+        code: 2,
+        description: $t({defaultMessage: "Topics I send a message to"}),
+    },
+    initiation: {
+        code: 3,
+        description: $t({defaultMessage: "Topics I start"}),
+    },
+    never: {
+        code: 4,
+        description: $t({defaultMessage: "Never"}),
+    },
+};
+
+export const stream_privacy_policy_values = {
+    web_public: {
+        code: "web-public",
+        name: $t({defaultMessage: "Web-public"}),
+        description: $t({
+            defaultMessage:
+                "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
+        }),
+    },
+    public: {
+        code: "public",
+        name: $t({defaultMessage: "Public"}),
+        description: $t({
+            defaultMessage:
+                "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining",
+        }),
+    },
+    private_with_public_history: {
+        code: "invite-only-public-history",
+        name: $t({defaultMessage: "Private, shared history"}),
+        description: $t({
+            defaultMessage:
+                "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users",
+        }),
+    },
+    private: {
+        code: "invite-only",
+        name: $t({defaultMessage: "Private, protected history"}),
+        description: $t({
+            defaultMessage:
+                "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users",
+        }),
+    },
+};
+
+export const stream_post_policy_values = {
+    // These strings should match the strings in the
+    // Stream.POST_POLICIES object in zerver/models.py.
+    everyone: {
+        code: StreamPostPolicy.EVERYONE,
+        description: $t({defaultMessage: "Everyone"}),
+    },
+    non_new_members: {
+        code: StreamPostPolicy.RESTRICT_NEW_MEMBERS,
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
+    },
+    moderators: {
+        code: StreamPostPolicy.MODERATORS,
+        description: $t({
+            defaultMessage: "Admins and moderators",
+        }),
+    },
+    admins: {
+        code: StreamPostPolicy.ADMINS,
+        description: $t({defaultMessage: "Admins only"}),
+    },
+} as const;

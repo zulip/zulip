@@ -1124,7 +1124,7 @@ class HomeTest(ZulipTestCase):
         self.send_test_message(message)
         self.login_user(long_term_idle_user)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
         query_count = len(queries)
         long_term_idle_user.refresh_from_db()
         self.assertFalse(long_term_idle_user.long_term_idle)
@@ -1134,7 +1134,7 @@ class HomeTest(ZulipTestCase):
         message = "Test message 2"
         self.send_test_message(message)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
         # Test here for query count to be at least 5 less than previous count.
         # This will assure add_missing_messages() isn't repeatedly called.
         self.assertGreaterEqual(query_count - len(queries), 5)
@@ -1156,7 +1156,7 @@ class HomeTest(ZulipTestCase):
         self.send_test_message(message)
         self.login_user(long_term_idle_user)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
         query_count = len(queries)
         long_term_idle_user.refresh_from_db()
         self.assertFalse(long_term_idle_user.long_term_idle)
@@ -1166,7 +1166,7 @@ class HomeTest(ZulipTestCase):
         message = "Test message 4"
         self.send_test_message(message)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 5)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
         self.assertGreaterEqual(query_count - len(queries), 5)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)

@@ -16,4 +16,5 @@ japanese
 polish
 russian
 spanish
+urdu
 ```

@@ -362,6 +362,8 @@ class ChangeSettingsTest(ZulipTestCase):
             desktop_icon_count_display=2,
             email_address_visibility=3,
             realm_name_in_email_notifications_policy=2,
+            automatically_follow_topics_policy=1,
+            automatically_unmute_topics_in_muted_streams_policy=1,
         )
 
         self.login("hamlet")

@@ -1,0 +1,22 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "activity" %}
+
+{# Template for installation activity pages #}
+
+{% block title %}
+<title>{{ title }} | Zulip analytics</title>
+{% endblock %}
+
+
+{% block content %}
+
+    {% if not is_home %}
+    <a class="show-all" href="/activity">Home</a>
+    <br />
+    {% endif %}
+
+    <div class="container">
+        {{ data|safe }}
+    </div>
+
+{% endblock %}

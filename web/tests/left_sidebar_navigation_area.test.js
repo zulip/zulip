@@ -78,7 +78,7 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_mentions"), "<mentioned-count>");
 
-    make_elem($(".top_left_all_messages"), "<home-count>");
+    make_elem($(".top_left_inbox"), "<home-count>");
 
     make_elem($(".top_left_starred_messages"), "<starred-count>");
 

@@ -30,6 +30,7 @@ from django.utils.translation import override as override_language
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.uploads import do_claim_attachments
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
@@ -50,7 +51,9 @@ from zerver.lib.message import (
     check_user_group_mention_allowed,
     normalize_body,
     render_markdown,
+    set_visibility_policy_possible,
     truncate_topic,
+    visibility_policy_for_send_message,
     wildcard_mention_allowed,
 )
 from zerver.lib.muted_users import get_muting_users
@@ -180,6 +183,7 @@ class RecipientInfoResult:
     service_bot_tuples: List[Tuple[int, int]]
     all_bot_user_ids: Set[int]
     topic_participant_user_ids: Set[int]
+    sender_muted_stream: Optional[bool]
 
 
 class ActiveUserDict(TypedDict):
@@ -212,6 +216,7 @@ def get_recipient_info(
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
     topic_participant_user_ids: Set[int] = set()
+    sender_muted_stream: Optional[bool] = None
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -275,7 +280,14 @@ def get_recipient_info(
             .order_by("user_profile_id")
         )
 
-        message_to_user_ids = [row["user_profile_id"] for row in subscription_rows]
+        message_to_user_ids = list()
+        for row in subscription_rows:
+            message_to_user_ids.append(row["user_profile_id"])
+            # We store the 'sender_muted_stream' information here to avoid db query at
+            # a later stage when we perform automatically unmute topic in muted stream operation.
+            if row["user_profile_id"] == sender_id:
+                sender_muted_stream = row["is_muted"]
+
         user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
         def notification_recipients(setting: str) -> Set[int]:
@@ -466,6 +478,7 @@ def get_recipient_info(
         service_bot_tuples=service_bot_tuples,
         all_bot_user_ids=all_bot_user_ids,
         topic_participant_user_ids=topic_participant_user_ids,
+        sender_muted_stream=sender_muted_stream,
     )
 
 
@@ -642,6 +655,7 @@ def build_message_send_dict(
 
     message_send_dict = SendMessageRequest(
         stream=stream,
+        sender_muted_stream=info.sender_muted_stream,
         local_id=local_id,
         sender_queue_id=sender_queue_id,
         realm=realm,
@@ -896,6 +910,8 @@ def do_send_messages(
 
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
+    # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
+    #   and 'automatically_unmute_topics_in_muted_streams_policy' user settings.
     # * Notifying clients via send_event
     # * Triggering outgoing webhooks via the service event queue.
     # * Updating the `first_message_id` field for streams without any message history.
@@ -910,6 +926,39 @@ def do_send_messages(
             # assert needed because stubs for django are missing
             assert send_request.stream is not None
             realm_id = send_request.stream.realm_id
+            sender = send_request.message.sender
+
+            # Determine and set the visibility_policy depending on 'automatically_follow_topics_policy'
+            # and 'automatically_unmute_topics_in_muted_streams_policy'.
+            if set_visibility_policy_possible(sender, send_request.message) and not (
+                sender.automatically_follow_topics_policy
+                == sender.automatically_unmute_topics_in_muted_streams_policy
+                == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+            ):
+                try:
+                    user_topic = UserTopic.objects.get(
+                        user_profile=sender,
+                        stream_id=send_request.stream.id,
+                        topic_name__iexact=send_request.message.topic_name(),
+                    )
+                    visibility_policy = user_topic.visibility_policy
+                except UserTopic.DoesNotExist:
+                    visibility_policy = UserTopic.VisibilityPolicy.INHERIT
+
+                new_visibility_policy = visibility_policy_for_send_message(
+                    sender,
+                    send_request.message,
+                    send_request.stream,
+                    send_request.sender_muted_stream,
+                    visibility_policy,
+                )
+                if new_visibility_policy:
+                    do_set_user_topic_visibility_policy(
+                        user_profile=sender,
+                        stream=send_request.stream,
+                        topic=send_request.message.topic_name(),
+                        visibility_policy=new_visibility_policy,
+                    )
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.

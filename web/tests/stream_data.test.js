@@ -14,6 +14,7 @@ page_params.development_environment = true;
 const color_data = zrequire("color_data");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const settings_config = zrequire("settings_config");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const stream_settings_data = zrequire("stream_settings_data");
@@ -80,7 +81,7 @@ test("basics", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
-        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const test = {
         subscribed: true,
@@ -218,7 +219,7 @@ test("get_streams_for_user", () => {
         is_muted: false,
         invite_only: false,
         history_public_to_subscribers: false,
-        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const test = {
         color: "yellow",
@@ -234,7 +235,7 @@ test("get_streams_for_user", () => {
         is_muted: false,
         invite_only: false,
         history_public_to_subscribers: false,
-        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const subs = [denmark, social, test, world];
     for (const sub of subs) {
@@ -374,7 +375,7 @@ test("stream_settings", () => {
         subscribed: true,
         invite_only: true,
         history_public_to_subscribers: true,
-        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
         message_retention_days: 10,
         can_remove_subscribers_group: admins_group.id,
     };
@@ -397,7 +398,7 @@ test("stream_settings", () => {
 
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
     assert.equal(
-        sub_rows[0].stream_post_policy === stream_data.stream_post_policy_values.admins.code,
+        sub_rows[0].stream_post_policy === settings_config.stream_post_policy_values.admins.code,
         true,
     );
     assert.equal(sub_rows[0].message_retention_days, 10);
@@ -412,7 +413,7 @@ test("stream_settings", () => {
     stream_data.update_can_remove_subscribers_group_id(sub, moderators_group.id);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
-    assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
+    assert.equal(sub.stream_post_policy, settings_config.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
 
@@ -696,7 +697,7 @@ test("muted_stream_ids", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
-        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const test = {
         subscribed: true,
@@ -909,7 +910,7 @@ test("can_post_messages_in_stream", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
-        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     page_params.is_admin = false;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
@@ -917,7 +918,7 @@ test("can_post_messages_in_stream", () => {
     page_params.is_admin = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    social.stream_post_policy = stream_data.stream_post_policy_values.moderators.code;
+    social.stream_post_policy = settings_config.stream_post_policy_values.moderators.code;
     page_params.is_moderator = false;
     page_params.is_admin = false;
 
@@ -926,7 +927,7 @@ test("can_post_messages_in_stream", () => {
     page_params.is_moderator = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    social.stream_post_policy = stream_data.stream_post_policy_values.non_new_members.code;
+    social.stream_post_policy = settings_config.stream_post_policy_values.non_new_members.code;
     page_params.is_moderator = false;
     me.date_joined = new Date(Date.now());
     page_params.realm_waiting_period_threshold = 10;
@@ -938,7 +939,7 @@ test("can_post_messages_in_stream", () => {
     page_params.is_guest = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    social.stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
+    social.stream_post_policy = settings_config.stream_post_policy_values.everyone.code;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     page_params.is_spectator = true;
@@ -1045,7 +1046,7 @@ test("options for dropdown widget", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
-        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const test = {
         subscribed: true,

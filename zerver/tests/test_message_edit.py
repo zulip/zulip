@@ -335,7 +335,7 @@ class EditMessageTest(EditMessageTestCase):
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["raw_content"], "Personal message")
         self.assertEqual(response_dict["message"]["id"], msg_id)
-        self.assertEqual(response_dict["message"]["flags"], [])
+        self.assertEqual(response_dict["message"]["flags"], ["read"])
 
         # Send message to web-public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access
@@ -2127,7 +2127,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["read", "wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2181,13 +2181,19 @@ class EditMessageTest(EditMessageTestCase):
         )
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
-        def notify(user_id: int) -> Dict[str, Any]:
-            return {
-                "id": user_id,
-                "flags": ["wildcard_mentioned"],
-            }
-
-        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read", "wildcard_mentioned"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": ["wildcard_mentioned"],
+                },
+            ],
+            key=itemgetter("id"),
+        )
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
@@ -2228,7 +2234,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["read", "wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2319,13 +2325,19 @@ class EditMessageTest(EditMessageTestCase):
         self.login_user(hamlet)
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
-        def notify(user_id: int) -> Dict[str, Any]:
-            return {
-                "id": user_id,
-                "flags": ["wildcard_mentioned"],
-            }
-
-        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read", "wildcard_mentioned"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": ["wildcard_mentioned"],
+                },
+            ],
+            key=itemgetter("id"),
+        )
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {

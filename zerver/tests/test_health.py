@@ -16,9 +16,10 @@ class HealthTest(ZulipTestCase):
         with mock.patch(
             "zerver.views.health.check_database",
             side_effect=ServerNotReadyError("Cannot query postgresql"),
-        ), self.assertLogs(level="ERROR") as logs:
-            result = self.client_get("/health")
-        self.assert_json_error(result, "Cannot query postgresql", status_code=500)
+        ), self.assertLogs(level="ERROR") as logs, self.assertRaisesRegex(
+            ServerNotReadyError, r"^Cannot query postgresql$"
+        ):
+            self.client_get("/health")
         self.assertIn(
             "zerver.lib.exceptions.ServerNotReadyError: Cannot query postgresql", logs.output[0]
         )

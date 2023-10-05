@@ -38,6 +38,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
+import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
@@ -151,7 +152,7 @@ function should_list_all_streams() {
 }
 
 export function toggle_pin_to_top_stream(sub) {
-    stream_edit.set_stream_property(sub, "pin_to_top", !sub.pin_to_top);
+    stream_settings_api.set_stream_property(sub, "pin_to_top", !sub.pin_to_top);
 }
 
 let subscribed_only = true;
@@ -255,7 +256,7 @@ export function update_is_default_stream() {
 
 export function set_color(stream_id, color) {
     const sub = sub_store.get(stream_id);
-    stream_edit.set_stream_property(sub, "color", color);
+    stream_settings_api.set_stream_property(sub, "color", color);
 }
 
 export function update_subscribers_ui(sub) {
@@ -694,7 +695,7 @@ export function setup_page(callback) {
 
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
-        const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
+        const stream_privacy_policy = settings_config.stream_privacy_policy_values.public.code;
         const notifications_stream = stream_data.get_notifications_stream();
         const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
 
@@ -709,9 +710,9 @@ export function setup_page(callback) {
             max_stream_name_length: page_params.max_stream_name_length,
             max_stream_description_length: page_params.max_stream_description_length,
             is_owner: page_params.is_owner,
-            stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
+            stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
-            stream_post_policy_values: stream_data.stream_post_policy_values,
+            stream_post_policy_values: settings_config.stream_post_policy_values,
             check_default_stream: false,
             zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
             org_level_message_retention_setting:
@@ -1105,7 +1106,9 @@ export function sub_or_unsub(sub, $stream_row) {
 
 export function update_web_public_stream_privacy_option_state($container) {
     const $web_public_stream_elem = $container.find(
-        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.web_public.code)}']`,
+        `input[value='${CSS.escape(
+            settings_config.stream_privacy_policy_values.web_public.code,
+        )}']`,
     );
 
     const for_stream_edit_panel = $container.attr("id") === "stream_permission_settings";
@@ -1155,7 +1158,7 @@ export function update_web_public_stream_privacy_option_state($container) {
 
 export function update_public_stream_privacy_option_state($container) {
     const $public_stream_elem = $container.find(
-        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.public.code)}']`,
+        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.public.code)}']`,
     );
     $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
 }
@@ -1163,11 +1166,11 @@ export function update_public_stream_privacy_option_state($container) {
 export function update_private_stream_privacy_option_state($container, is_default_stream = false) {
     // Disable both "Private, shared history" and "Private, protected history" options.
     const $private_stream_elem = $container.find(
-        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.private.code)}']`,
+        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
     );
     const $private_with_public_history_elem = $container.find(
         `input[value='${CSS.escape(
-            stream_data.stream_privacy_policy_values.private_with_public_history.code,
+            settings_config.stream_privacy_policy_values.private_with_public_history.code,
         )}']`,
     );
 

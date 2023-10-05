@@ -2,10 +2,8 @@ import $ from "jquery";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
-import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
@@ -62,10 +60,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         narrow_via_edit_scheduled_message(compose_args);
     }
 
-    compose.clear_compose_box();
-    compose_banner.clear_message_sent_banners(false);
     compose_actions.start(compose_args.type, compose_args);
-    compose_ui.autosize_textarea($("#compose-textarea"));
     scheduled_messages.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
 }
 

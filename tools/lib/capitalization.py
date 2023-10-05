@@ -58,6 +58,9 @@ IGNORED_PHRASES = [
     r"I understand",
     r"I'm",
     r"I've",
+    r"Topics I participate in",
+    r"Topics I send a message to",
+    r"Topics I start",
     # Specific short words
     r"beta",
     r"and",

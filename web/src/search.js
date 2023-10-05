@@ -140,7 +140,11 @@ export function initialize({on_narrow_search}) {
     // when an option is selected and we're closing search).
     // Instead we explicitly initiate search on click and on specific keyboard
     // shortcuts.
-    $search_query_box.on("click", initiate_search);
+    $search_query_box.on("click", (e) => {
+        if ($(e.target).parents(".navbar-search.expanded").length === 0) {
+            initiate_search();
+        }
+    });
 
     $(".search_icon").on("mousedown", (e) => {
         e.preventDefault();
@@ -178,10 +182,7 @@ export function initialize({on_narrow_search}) {
 }
 
 export function initiate_search() {
-    const search_bar_already_open = $(".navbar-search.expanded").length > 0;
-    if (!search_bar_already_open) {
-        open_search_bar_and_close_narrow_description();
-    }
+    open_search_bar_and_close_narrow_description();
 
     // Open the typeahead after opening the search bar, so that we don't
     // get a weird visual jump where the typeahead results are narrow
