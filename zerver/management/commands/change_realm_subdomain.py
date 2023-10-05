@@ -10,6 +10,7 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    """Change realm's subdomain."""
     help = """Change realm's subdomain."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:

@@ -15,6 +15,10 @@ from zerver.lib.import_realm import do_import_realm
 
 
 class Command(BaseCommand):
+    """Import extracted Zulip database dump directories into a fresh Zulip instance.
+
+    This command should be used only on a newly created, empty Zulip instance to
+    import a database dump from one or more JSON files."""
     help = """Import extracted Zulip database dump directories into a fresh Zulip instance.
 
 This command should be used only on a newly created, empty Zulip instance to
@@ -55,10 +59,37 @@ import a database dump from one or more JSON files."""
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def do_destroy_and_rebuild_database(self, db_name: str) -> None:
+        """
+        Function to destroy and rebuild a database.
+
+        This function takes in a database name as input and performs the following tasks:
+
+        1. Calls the 'flush' command to delete all data from the database.
+        2. Calls the 'flush-memcached' script to flush the memcached.
+
+        Args:
+            db_name (str): The name of the database to destroy and rebuild.
+
+        Returns:
+            None
+        """
         call_command("flush", verbosity=0, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command execution based on the provided options.
+
+        This function takes in a variable number of arguments and keyword arguments.
+        It performs several operations based on the values of the input options.
+
+        Args:
+            *args: Variable number of arguments.
+            **options: Keyword arguments.
+
+        Returns:
+            None
+        """
         num_processes = int(options["processes"])
         if num_processes < 1:
             raise CommandError("You must have at least one process.")

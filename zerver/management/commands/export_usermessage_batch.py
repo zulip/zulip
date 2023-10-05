@@ -10,6 +10,7 @@ from zerver.lib.export import export_usermessages_batch
 
 
 class Command(BaseCommand):
+    """UserMessage fetching helper for export.py"""
     help = """UserMessage fetching helper for export.py"""
 
     def add_arguments(self, parser: ArgumentParser) -> None:

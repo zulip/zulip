@@ -8,6 +8,7 @@ from zproject.backends import RateLimitedAuthenticationByUsername
 
 
 class Command(ZulipBaseCommand):
+    """Reset the rate limit for authentication attempts for username."""
     help = """Reset the rate limit for authentication attempts for username."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:

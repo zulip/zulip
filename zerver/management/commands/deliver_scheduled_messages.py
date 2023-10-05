@@ -16,6 +16,14 @@ log_to_file(logger, settings.DELIVER_SCHEDULED_MESSAGES_LOG_PATH)
 
 
 class Command(BaseCommand):
+    """
+    Deliver scheduled messages from the ScheduledMessage table.
+    Run this command under supervisor.
+
+    This management command is run via supervisor.
+
+    Usage: ./manage.py deliver_scheduled_messages
+    """
     help = """Deliver scheduled messages from the ScheduledMessage table.
 Run this command under supervisor.
 

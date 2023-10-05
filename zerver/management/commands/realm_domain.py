@@ -12,6 +12,7 @@ from zerver.models import RealmDomain, get_realm_domains
 
 
 class Command(ZulipBaseCommand):
+    """Manage domains for the specified realm"""
     help = """Manage domains for the specified realm"""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
@@ -25,6 +26,21 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Union[str, bool]) -> None:
+        """
+        Process the command line arguments and perform operations based on the provided
+        options.
+
+        This function retrieves the realm based on the options and performs various
+        operations such as showing, adding, or removing domain entries associated
+        with the realm.
+
+        Args:
+            args: Variable length argument list.
+            options: Variable length keyword argument list containing options.
+
+        Returns:
+            None
+        """
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":

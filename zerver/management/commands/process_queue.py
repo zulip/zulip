@@ -33,6 +33,7 @@ def log_and_exit_if_exception(
 
 
 class Command(BaseCommand):
+
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--queue_name", metavar="<queue name>", help="queue to process")
         parser.add_argument(
@@ -50,6 +51,17 @@ class Command(BaseCommand):
     help = "Runs a queue processing worker"
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command.
+
+        This function sets up logging and creates a logger. It defines a nested
+        function 'exit_with_three' that logs a warning message and exits the
+        process with status code 3.
+
+        Args:
+            *args: Variable length argument list.
+            **options: Arbitrary keyword arguments.
+        """
         logging.basicConfig()
         logger = logging.getLogger("process_queue")
 
@@ -111,6 +123,10 @@ class Command(BaseCommand):
 
 
 class ThreadedWorker(threading.Thread):
+    """
+    This class represents a threaded worker that can be used to execute tasks in
+    the background.
+    """
     def __init__(self, queue_name: str, logger: logging.Logger) -> None:
         threading.Thread.__init__(self)
         self.logger = logger

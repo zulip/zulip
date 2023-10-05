@@ -10,9 +10,16 @@ from zerver.data_import.gitter import do_convert_data
 
 
 class Command(BaseCommand):
+    """Convert the Gitter data into Zulip data format."""
     help = """Convert the Gitter data into Zulip data format."""
 
     def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add command line arguments to the parser.
+
+        Args:
+            parser (CommandParser): The argument parser.
+        """
         parser.add_argument(
             "gitter_data", nargs="+", metavar="<gitter data>", help="Gitter data in json format"
         )
@@ -30,6 +37,16 @@ class Command(BaseCommand):
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Convert the Gitter data into Zulip data format.
+
+        Args:
+            *args: Additional arguments.
+            **options: Additional options.
+
+        Returns:
+            None
+        """
         output_dir = options["output_dir"]
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="converted-gitter-data-")

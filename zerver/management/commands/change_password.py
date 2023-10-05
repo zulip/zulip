@@ -10,6 +10,7 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    """Change a user's password."""
     # This is our version of the original Django changepassword command adjusted
     # to be able to find UserProfiles by email+realm.
     # We change the arguments the command takes to fit our
@@ -32,6 +33,21 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Any) -> str:
+        """
+        Change the password for a user in a Django application.
+
+        This function handles the logic for changing a user's password. It prompts the
+        user for a new password, validates it, and updates the user's password in
+        the database. The function returns a string indicating the success or
+        failure of the password change.
+
+        Args:
+            *args: Variable arguments.
+            **options: Keyword arguments.
+
+        Returns:
+            str: A string indicating the success or failure of the password change.
+        """
         email = options["email"]
         realm = self.get_realm(options)
 

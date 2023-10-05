@@ -13,6 +13,10 @@ from zerver.models import UserProfile
 
 
 class Command(ZulipBaseCommand):
+    """Change role of an existing user in their (own) Realm.
+
+    ONLY perform this on customer request from an authorized person.
+    """
     help = """Change role of an existing user in their (own) Realm.
 
 ONLY perform this on customer request from an authorized person.
@@ -43,6 +47,19 @@ ONLY perform this on customer request from an authorized person.
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        This method handles various cases based on the values of the 'options' dictionary.
+
+        The method performs operations related to changing user roles and permissions
+        within a realm.
+
+        Args:
+            *args: A list of positional arguments.
+            **options: A dictionary of keyword arguments.
+
+        Returns:
+            None
+        """
         email = options["email"]
         realm = self.get_realm(options)
 

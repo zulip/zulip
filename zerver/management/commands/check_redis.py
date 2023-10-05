@@ -11,6 +11,12 @@ from zerver.models import get_user_profile_by_id
 
 
 class Command(BaseCommand):
+    """
+    Checks Redis to make sure our rate limiting system hasn't grown a bug
+    and left Redis with a bunch of data
+
+    Usage: ./manage.py [--trim] check_redis
+    """
     help = """Checks Redis to make sure our rate limiting system hasn't grown a bug
     and left Redis with a bunch of data
 
@@ -38,7 +44,7 @@ class Command(BaseCommand):
         if count > max_calls:
             logging.error(
                 "Redis health check found key with more elements \
-than max_api_calls! (trying to trim) %s %s",
+    than max_api_calls! (trying to trim) %s %s",
                 key,
                 count,
             )
@@ -47,6 +53,22 @@ than max_api_calls! (trying to trim) %s %s",
                 trim_func(key, max_calls)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the rate limiting functionality.
+
+        This function checks if rate limiting is enabled and performs various
+        operations related to rate limiting. It finds keys based on a wildcard
+        pattern, trims lists if specified, and performs checks on zsets. This
+        function throws a
+        CommandError if rate limiting is not enabled.
+
+        Args:
+            *args: Additional positional arguments.
+            **options: Additional keyword arguments.
+
+        Returns:
+            None
+        """
         if not settings.RATE_LIMITING:
             raise CommandError("This machine is not using Redis or rate limiting, aborting")
 

@@ -20,9 +20,16 @@ from zerver.data_import.mattermost import do_convert_data
 
 
 class Command(BaseCommand):
+    """Convert the mattermost data into Zulip data format."""
     help = """Convert the mattermost data into Zulip data format."""
 
     def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add command-line arguments to the command parser.
+
+        Args:
+            parser (CommandParser): The parser object to which the arguments should be added.
+        """
         dir_help = (
             "Directory containing exported JSON file and exported_emoji (optional) directory."
         )
@@ -44,6 +51,18 @@ class Command(BaseCommand):
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command.
+
+        Args:
+            *args: Variable length argument list.
+            **options: Arbitrary keyword arguments.
+
+        Raises:
+            CommandError: If the 'output_dir' parameter is not specified or is not a
+            directory, or if the 'output_dir' is not empty, or if the
+            'mattermost_data_dir' directory is not found.
+        """
         output_dir = options["output_dir"]
         if output_dir is None:
             raise CommandError("You need to specify --output <output directory>")

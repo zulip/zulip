@@ -9,9 +9,16 @@ from zerver.models import RealmAuditLog, Stream
 
 
 class Command(ZulipBaseCommand):
+    """Reactivate a stream that was deactivated."""
     help = """Reactivate a stream that was deactivated."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command-line arguments to the parser.
+
+        Args:
+            parser (ArgumentParser): The argument parser.
+        """
         specify_stream = parser.add_mutually_exclusive_group(required=True)
         specify_stream.add_argument(
             "-s",
@@ -31,6 +38,7 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Optional[str]) -> None:
+        """Handle the command."""
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

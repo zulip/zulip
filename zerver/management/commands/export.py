@@ -13,6 +13,66 @@ from zerver.models import Message, Reaction, UserProfile
 
 
 class Command(ZulipBaseCommand):
+    """
+    Exports all data from a Zulip realm
+
+    This command exports all significant data from a Zulip realm.  The
+    result can be imported using the `./manage.py import` command.
+
+    Things that are exported:
+    * All user-accessible data in the Zulip database (Messages,
+      Streams, UserMessages, RealmEmoji, etc.)
+    * Copies of all uploaded files and avatar images along with
+      metadata needed to restore them even in the ab
+
+    Things that are not exported:
+    * Confirmation and PreregistrationUser (transient tables)
+    * Sessions (everyone will need to log in again post-export)
+    * Users' passwords and API keys (users will need to use SSO or reset password)
+    * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
+    * ScheduledEmail (not relevant on a new server)
+    * RemoteZulipServer (unlikely to be migrated)
+    * third_party_api_results cache (this means rerendering all old
+      messages could be expensive)
+
+    Things that will break as a result of the export:
+    * Passwords will not be transferred.  They will all need to go
+      through the password reset flow to obtain a new password (unless they
+      intend to only use e.g. Google auth).
+    * Users will need to log out and re-log in to the Zulip desktop and
+      mobile apps.  The apps now all have an option on the login page where
+      you can specify which Zulip server to use; your users should enter
+      <domain name>.
+    * All bots will stop working since they will be pointing to the
+      wrong server URL, and all users' API keys have been rotated as part of
+      the migration.  So to re-enable your integrations, you will need to
+      direct your integrations at the new server.
+      Usually this means updating the URL and the bots' API keys.  You
+      can see a list of all the bots that have been configured for your realm
+      on the `/#organization` page, and use that list to make sure you migrate
+      them all.
+
+    The proper procedure for using this to export a realm is as follows:
+
+    * Use `./manage.py export --deactivate` to deactivate and export
+      the realm, producing a data tarball.
+
+    * Transfer the tarball to the new server and unpack it.
+
+    * Use `./manage.py import` to import the realm
+
+    * Inform the users about the things broken above.
+
+    We recommend testing by exporting without `--deactivate` first, to
+    make sure you have the procedure right and minimize downtime.
+
+    Performance: In one test, the tool exported a realm with hundreds
+    of users and ~1M messages of history with --threads=1 in about 3 hours of
+    serial runtime (goes down to ~50m with --threads=6 on a machine with 8
+    CPUs).  Importing that same data set took about 30 minutes.  But this will
+    vary a lot depending on the average number of recipients of messages in
+    the realm, hardware, etc.
+    """
     help = """Exports all data from a Zulip realm
 
     This command exports all significant data from a Zulip realm.  The
@@ -73,6 +133,30 @@ class Command(ZulipBaseCommand):
     of recipients of messages in the realm, hardware, etc."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command line arguments to the parser for configuring data export.
+
+        This function adds the following arguments to the 'parser' object:
+
+        --output: Specifies the directory to write exported data to.
+
+        --threads: Specifies the number of threads to use in exporting UserMessage
+        objects in parallel. The default value is taken from the 'settings' module.
+
+        --public-only: Specifies to export only public stream messages and associated
+        attachments.
+
+        --deactivate-realm: Specifies to deactivate the realm immediately before
+        exporting. The exported data will show the realm as active.
+
+        --consent-message-id: Specifies the ID of the message advertising users to
+        react with thumbs up.
+
+        --upload: Specifies whether to upload the resulting tarball to S3 or LOCAL_UPLOADS_DIR.
+
+        Args:
+            parser (ArgumentParser): The parser object to add the arguments to.
+        """
         parser.add_argument(
             "--output", dest="output_dir", help="Directory to write exported data to."
         )
@@ -107,6 +191,16 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the export process for a realm.
+
+        Args:
+            args: The arguments passed to the handle function.
+            options: The options passed to the handle function.
+
+        Raises:
+            CommandError: If certain conditions are not met.
+        """
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

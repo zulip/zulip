@@ -7,9 +7,16 @@ from zerver.lib.transfer import transfer_uploads_to_s3
 
 
 class Command(BaseCommand):
+    """Transfer uploads to S3 """
     help = """Transfer uploads to S3 """
 
     def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add command line arguments.
+
+        Args:
+            parser (CommandParser): The command argument parser.
+        """
         parser.add_argument(
             "--processes",
             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
@@ -17,6 +24,13 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command.
+
+        Args:
+            args (Any): The command arguments.
+            options (Any): The command options.
+        """
         num_processes = int(options["processes"])
         if num_processes < 1:
             raise CommandError("You must have at least one process.")

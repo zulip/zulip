@@ -9,6 +9,33 @@ from zerver.lib.users import get_active_bots_owned_by_user
 
 
 class Command(ZulipBaseCommand):
+    """
+    Delete a user or users, including all messages sent by them and
+    personal messages received by them, and audit records, like what streams
+    they had been subscribed to. Deactivating users is generally recommended
+    over this tool, but deletion can be useful if you specifically to
+    completely delete an account created for testing.
+    This will:
+
+    * Delete the user's account, including metadata like name, email
+      address, custom profile fields, historical subscriptions, etc.
+
+    * Delete any messages they've sent and any non-group direct messages
+      they've received.
+
+    * Group direct messages in which the user participated won't be
+      deleted (with the exceptions of those message the deleted user sent). An
+      inactive, inaccessible dummy user account named "Deleted
+      User <id>" is created to replace the deleted user as a recipient in
+      group direct message conversations, in order to somewhat preserve their
+      integrity.
+
+    * Delete other records of the user's activity, such as emoji reactions.
+
+    * Deactivate all bots owned by the user, without deleting them or
+      their data.  If you want to delete the bots and the message
+      sent/received by them, you can use the command on them individually.
+    """
     help = """
 
 Delete a user or users, including all messages sent by them and
@@ -39,6 +66,13 @@ This will:
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command line arguments to the ArgumentParser object.
+
+        Args:
+            parser (ArgumentParser): The ArgumentParser object to which the
+                arguments should be added.
+        """
         parser.add_argument(
             "-f",
             "--for-real",
@@ -49,6 +83,15 @@ This will:
         self.add_user_list_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command by retrieving the realm and user profiles, printing the
+        number of active bots owned by each user profile, and deleting the user
+        profiles if the 'for_real' option is set to True.
+
+        Args:
+            args: Additional positional arguments.
+            options: Additional keyword arguments.
+        """
         realm = self.get_realm(options)
         user_profiles = self.get_users(options, realm)
 

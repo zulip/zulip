@@ -11,9 +11,16 @@ from zerver.models import UserProfile
 
 
 class Command(ZulipBaseCommand):
+    """Send email to specified email address."""
     help = """Send email to specified email address."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command line arguments for sending email.
+
+        Args:
+            parser (ArgumentParser): The argument parser.
+        """
         parser.add_argument(
             "--entire-server", action="store_true", help="Send to every user on the server. "
         )
@@ -25,6 +32,13 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser)
 
     def handle(self, *args: Any, **options: str) -> None:
+        """
+        Handle the command to send the email.
+
+        Args:
+            args: The command line arguments.
+            options: The command line options.
+        """
         if options["entire_server"]:
             users: Iterable[UserProfile] = UserProfile.objects.filter(
                 is_active=True, is_bot=False, is_mirror_dummy=False

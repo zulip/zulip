@@ -26,6 +26,15 @@ from zerver.models import (
 
 
 def write_attachment(base_path: str, attachment: Attachment) -> None:
+    """
+    Write the contents of the attachment to a file in the specified base path.
+
+    This function creates the necessary directory structure if it does not already exist.
+
+    Args:
+        base_path (str): The base path where the attachment file should be written.
+        attachment (Attachment): The attachment object containing the file contents.
+    """
     dir_path_id = os.path.dirname(attachment.path_id)
     assert "../" not in dir_path_id
     os.makedirs(base_path + "/" + dir_path_id, exist_ok=True)
@@ -34,6 +43,12 @@ def write_attachment(base_path: str, attachment: Attachment) -> None:
 
 
 class Command(ZulipBaseCommand):
+    """
+    Exports the messages matching certain search terms, or from
+    senders/recipients.
+
+    This is most often used for legal compliance.
+    """
     help = """Exports the messages matching certain search terms, or from
 senders/recipients.
 
@@ -41,6 +56,28 @@ This is most often used for legal compliance.
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command line arguments to the parser.
+
+        This function adds the following arguments to the parser:
+        - --output: File to output JSON/CSV results to; it must not exist, unless
+        --force is given
+        - --write-attachments: If provided, export all referenced attachments into the
+        directory
+        - --force: Overwrite the output file if it exists already
+        - --file: Read search terms from the named file, one per line
+        - search_terms: Terms to search for in message body or topic
+        - --after: Limit to messages on or after this ISO datetime, treated as UTC
+        - --before: Limit to messages on or before this ISO datetime, treated as UTC
+        - --sender: Limit to messages sent by users with any of these emails (may be
+        specified more than once)
+        - --recipient: Limit to messages received by users with any of these emails
+        (may be specified more than once). This is a superset of --sender, since
+        senders receive every message they send.
+
+        Args:
+            parser (ArgumentParser): The parser object to add the arguments to.
+        """
         self.add_realm_args(parser, required=True)
         parser.add_argument(
             "--output",
@@ -95,6 +132,18 @@ This is most often used for legal compliance.
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command with the specified arguments and options.
+
+        Args:
+            *args: Any positional arguments.
+            **options: Any keyword arguments.
+
+        Raises:
+            CommandError: If one or more limits are required or if the file format is
+            unknown or if the output path already exists and the force option is
+            not provided.
+        """
         terms = set()
         if options["file"]:
             with open(options["file"]) as f:

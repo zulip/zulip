@@ -11,6 +11,13 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    """Exports message data from a Zulip user
+
+    This command exports the message history for a single Zulip user.
+
+    Note that this only exports the user's message history and
+    realm-public metadata needed to understand it; it does nothing with (for
+    example) any bots owned by the user."""
     help = """Exports message data from a Zulip user
 
     This command exports the message history for a single Zulip user.
@@ -20,6 +27,12 @@ class Command(ZulipBaseCommand):
     with (for example) any bots owned by the user."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command-line arguments to the command parser.
+
+        Args:
+            parser (ArgumentParser): The argument parser object.
+        """
         parser.add_argument("email", metavar="<email>", help="email of user to export")
         parser.add_argument(
             "--output", dest="output_dir", help="Directory to write exported data to."
@@ -27,6 +40,13 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the given command options.
+
+        Args:
+            *args: Variable length argument list.
+            **options: Arbitrary keyword arguments.
+        """
         realm = self.get_realm(options)
         user_profile = self.get_user(options["email"], realm)
 

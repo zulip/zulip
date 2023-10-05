@@ -6,6 +6,12 @@ from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 
 
 class Command(BaseCommand):
+    """
+    Create realm internal bots if absent, in all realms.
+
+    These are normally created when the realm is, so this should be a no-op
+    except when upgrading to a version that adds a new realm internal bot.
+    """
     help = """\
 Create realm internal bots if absent, in all realms.
 

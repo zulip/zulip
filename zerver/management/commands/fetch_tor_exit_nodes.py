@@ -11,7 +11,14 @@ from zerver.lib.outgoing_http import OutgoingSession
 
 
 class TorDataSession(OutgoingSession):
+
     def __init__(self, max_retries: int) -> None:
+        """
+        Initialize a new TorDataSession.
+
+        Args:
+            max_retries (int): The maximum number of retries for the HTTP requests.
+        """
         Retry.DEFAULT_BACKOFF_MAX = 64
         retry = Retry(
             total=max_retries,
@@ -27,6 +34,12 @@ class TorDataSession(OutgoingSession):
 
 
 class Command(ZulipBaseCommand):
+    """
+    Fetch the list of TOR exit nodes, and write the list of IP addresses
+    to a file for access from Django for rate-limiting purposes.
+
+    Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
+    """
     help = """Fetch the list of TOR exit nodes, and write the list of IP addresses
 to a file for access from Django for rate-limiting purposes.
 
@@ -34,6 +47,12 @@ Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command line arguments to the parser.
+
+        Args:
+            parser (argparse.ArgumentParser): The argument parser to add arguments to.
+        """
         parser.add_argument(
             "--max-retries",
             type=int,
@@ -42,6 +61,16 @@ Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command by sending a GET request to check the Tor exit addresses.
+
+        Args:
+            *args: Arbitrary positional arguments.
+            **options: Arbitrary keyword arguments.
+
+        Returns:
+            None
+        """
         if not settings.RATE_LIMIT_TOR_TOGETHER:
             return
 

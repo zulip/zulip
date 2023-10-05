@@ -23,6 +23,14 @@ log_to_file(logger, settings.EMAIL_DELIVERER_LOG_PATH)
 
 
 class Command(BaseCommand):
+    """
+    Send emails queued by various parts of Zulip
+    for later delivery.
+
+    Run this command under supervisor.
+
+    Usage: ./manage.py deliver_scheduled_emails
+    """
     help = """Send emails queued by various parts of Zulip
 for later delivery.
 
@@ -32,6 +40,9 @@ Usage: ./manage.py deliver_scheduled_emails
 """
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle method to deliver scheduled emails.
+        """
         try:
             while True:
                 with transaction.atomic():

@@ -18,6 +18,7 @@ else:
 
 
 class Command(ZulipBaseCommand):
+    """Register a remote Zulip server for push notifications."""
     help = """Register a remote Zulip server for push notifications."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
@@ -33,6 +34,21 @@ class Command(ZulipBaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle command line arguments passed to a command.
+
+        This method performs various checks and operations based on the provided options.
+
+        Args:
+            *args: Any additional positional arguments passed to the command.
+            **options: Any additional keyword arguments passed to the command.
+
+        Raises:
+            CommandError: If `settings.ZULIP_ORG_ID` or `settings.ZULIP_ORG_KEY` are
+            missing, or if `settings.PUSH_NOTIFICATION_BOUNCER_URL` is not set and
+            `settings.DEVELOPMENT` is False, or if the user does not agree to the terms of
+            service.
+        """
         if not settings.DEVELOPMENT:
             check_config()
 
@@ -107,6 +123,24 @@ class Command(ZulipBaseCommand):
             print("Mobile Push Notification Service registration successfully updated!")
 
     def _request_push_notification_bouncer_url(self, url: str, params: Dict[str, Any]) -> Response:
+        """
+        Send a POST request to the push notification bouncer URL.
+
+        This method sends a POST request to the push notification bouncer URL with the
+        specified
+        URL and parameters. It returns the response from the server.
+
+        Args:
+            url (str): The URL to send the request to.
+            params (Dict[str, Any]): The parameters to include in the request.
+
+        Returns:
+            Response: The response from the server.
+
+        Raises:
+            CommandError: If there is a network error connecting to the push notifications service.
+            CommandError: If there is an error reported by the push notifications service.
+        """
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + url
         session = PushBouncerSession()
@@ -131,6 +165,15 @@ class Command(ZulipBaseCommand):
         return response
 
     def _log_params(self, params: Dict[str, Any]) -> None:
+        """
+        Log the data that will be submitted to the push notification service.
+
+        This method logs the data that will be submitted to the push notification service. It
+        prints each parameter key and value to the console.
+
+        Args:
+            params (Dict[str, Any]): The parameters to log.
+        """
         print("The following data will be submitted to the push notification service:")
         for key in sorted(params.keys()):
             print(f"  {key}: {params[key]}")

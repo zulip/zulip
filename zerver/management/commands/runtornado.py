@@ -36,6 +36,7 @@ asyncio.set_event_loop_policy(NoAutoCreateEventLoopPolicy())
 
 
 class Command(BaseCommand):
+    """This class represents a command in Django's management system."""
     help = "Starts a Tornado Web server wrapping Django."
 
     def add_arguments(self, parser: CommandParser) -> None:
@@ -45,6 +46,22 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command to run the Tornado server.
+
+        This function sets up and runs a Tornado server. It performs various operations
+        related to setting up the server, such as checking if the provided
+        'addrport' is a valid port number, extracting the hostname and port number
+        from it, and setting the address to '127.0.0.1' if it is not specified. If
+        the 'DEBUG' setting is enabled, it configures logging. It also sets up
+        signal handlers for handling SIGINT and SIGTERM signals. After that, it
+        activates the translation for the specified language code. Then, it checks
+        the Django application for errors and prints a message with the port
+        number. If the 'USING_RABBITMQ' setting is enabled, it starts a
+        TornadoQueueClient and processes notifications received via RabbitMQ.
+        Finally, it creates a Tornado web application, starts the HTTP server, and
+        waits until a stop signal is received.
+        """
         interactive_debug_listen()
         addrport = options["addrport"]
         assert isinstance(addrport, str)

@@ -8,6 +8,7 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    """Change the names for many users."""
     help = """Change the names for many users."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:

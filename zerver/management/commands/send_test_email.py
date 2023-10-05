@@ -12,7 +12,29 @@ from zerver.lib.send_email import FromAddress, log_email_config_errors
 
 
 class Command(sendtestemail.Command):
+
     def handle(self, *args: Any, **kwargs: str) -> None:
+        """
+        Send test emails.
+
+        This method sends test emails to the specified email addresses. It checks if
+        outgoing email is configured and raises an error if not. It then logs
+        any email configuration errors. Next, it checks if an email address is
+        provided as an argument and raises an error if not. It prints a
+        message with instructions for troubleshooting if there are any issues.
+        It sends two test emails, one from the support email address and
+        another from the tokenized no-reply address. If there is any exception
+        while sending emails, it prints the error message and the full
+        SMTP log. Finally, it sends emails to the managers and admins if the
+        corresponding flags are set in the command arguments.
+
+        Args:
+            *args: Any number of positional arguments.
+            **kwargs: A dictionary of keyword arguments.
+                email (List[str]): The email addresses to send the test emails to.
+                managers (bool): Flag indicating whether to send the test email to managers.
+                admins (bool): Flag indicating whether to send the test email to admins.
+        """
         if settings.WARN_NO_EMAIL:
             raise CommandError(
                 "Outgoing email not yet configured, see\n  "

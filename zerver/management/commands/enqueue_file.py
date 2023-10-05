@@ -9,10 +9,24 @@ from zerver.lib.queue import queue_json_publish
 
 
 def error(*args: Any) -> None:
+    """
+    Raise an exception when attempting to enqueue data.
+
+    Raises:
+        Exception: Always raises an exception with the message 'We cannot enqueue
+        because settings.USING_RABBITMQ is False.'.
+    """
     raise Exception("We cannot enqueue because settings.USING_RABBITMQ is False.")
 
 
 def enqueue_file(queue_name: str, f: IO[str]) -> None:
+    """
+    Enqueue the data from the file into the specified queue.
+
+    Args:
+        queue_name (str): The name of the queue.
+        f (IO[str]): The file object containing the data.
+    """
     for line in f:
         line = line.strip()
         try:
@@ -31,6 +45,10 @@ def enqueue_file(queue_name: str, f: IO[str]) -> None:
 
 
 class Command(BaseCommand):
+    """
+    Command class representing a command-line command that enqueues JSON lines into
+    a worker queue.
+    """
     help = """Read JSON lines from a file and enqueue them to a worker queue.
 
 Each line in the file should either be a JSON payload or two tab-separated

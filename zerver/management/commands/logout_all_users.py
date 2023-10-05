@@ -14,6 +14,12 @@ from zerver.models import UserProfile
 
 
 class Command(ZulipBaseCommand):
+    """
+    Log out all users from active browser sessions.
+
+    Does not disable API keys, and thus will not log users out of the
+    mobile apps.
+    """
     help = """\
 Log out all users from active browser sessions.
 

@@ -8,6 +8,7 @@ from zerver.data_import.rocketchat import do_convert_data
 
 
 class Command(BaseCommand):
+    """Convert the Rocketchat data into Zulip data format."""
     help = """Convert the Rocketchat data into Zulip data format."""
 
     def add_arguments(self, parser: CommandParser) -> None:

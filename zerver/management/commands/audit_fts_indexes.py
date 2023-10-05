@@ -6,6 +6,10 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    """
+    Django management command to update the search_tsvector field of the
+    zerver_message table.
+    """
     def handle(self, *args: Any, **kwargs: str) -> None:
         with connection.cursor() as cursor:
             cursor.execute(

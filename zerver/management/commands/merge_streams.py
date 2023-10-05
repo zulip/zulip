@@ -7,6 +7,7 @@ from zerver.models import get_stream
 
 
 class Command(ZulipBaseCommand):
+    """Merge two streams."""
     help = """Merge two streams."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:

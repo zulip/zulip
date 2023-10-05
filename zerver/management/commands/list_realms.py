@@ -7,6 +7,13 @@ from zerver.models import Realm
 
 
 class Command(ZulipBaseCommand):
+    """List realms in the server and it's configuration settings(optional).
+
+    Usage examples:
+
+    ./manage.py list_realms
+    ./manage.py list_realms --all
+    """
     help = """List realms in the server and it's configuration settings(optional).
 
 Usage examples:
@@ -15,11 +22,24 @@ Usage examples:
 ./manage.py list_realms --all"""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add arguments to the command line parser.
+
+        Args:
+            parser (ArgumentParser): The argument parser object.
+        """
         parser.add_argument(
             "--all", action="store_true", help="Print all the configuration settings of the realms."
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command with the given arguments and options.
+
+        Args:
+            args: Variable length arguments.
+            options: Keyword arguments.
+        """
         realms = Realm.objects.all()
 
         outer_format = "{:<5} {:<20} {!s:<30} {:<50}"

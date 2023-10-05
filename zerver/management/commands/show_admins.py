@@ -7,12 +7,15 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    """Show the owners and administrators in an organization."""
     help = """Show the owners and administrators in an organization."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """Add arguments to the command."""
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """Handle the command."""
         realm = self.get_realm(options)
         assert realm is not None  # True because of required=True above
 

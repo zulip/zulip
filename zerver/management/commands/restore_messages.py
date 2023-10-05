@@ -12,6 +12,20 @@ from zerver.models import ArchiveTransaction
 
 
 class Command(ZulipBaseCommand):
+    """
+    Restore recently deleted messages from the archive, that
+    have not been vacuumed (because the time limit of
+    ARCHIVED_DATA_VACUUMING_DELAY_DAYS has not passed).
+
+    Intended primarily for use after against potential bugs in
+    Zulip's message retention and deletion features.
+
+    Examples:
+    To restore all recently deleted messages:
+      ./manage.py restore_messages --all --restore-deleted
+    To restore a specific ArchiveTransaction:
+      ./manage.py restore_messages --transaction-id=1
+    """
     help = """
 Restore recently deleted messages from the archive, that
 have not been vacuumed (because the time limit of
@@ -28,6 +42,12 @@ To restore a specific ArchiveTransaction:
 """
 
     def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add arguments to the command.
+
+        Args:
+            parser (ArgumentParser): The argument parser for the command.
+        """
         parser.add_argument(
             "--all",
             action="store_true",
@@ -50,6 +70,19 @@ To restore a specific ArchiveTransaction:
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command with the given arguments and options.
+
+        This function is responsible for handling the 'restore_messages' command.
+        It takes in a variable number of positional and keyword arguments.
+
+        Args:
+            *args: Any positional arguments passed to the function.
+            **options: Any keyword arguments passed to the function.
+
+        Returns:
+            None
+        """
         realm = self.get_realm(options)
         if realm:
             restore_data_from_archive_by_realm(realm)

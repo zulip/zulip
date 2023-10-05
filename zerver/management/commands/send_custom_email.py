@@ -21,6 +21,16 @@ class Command(ZulipBaseCommand):
     document used to generate the email, or on the command line."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command line arguments to the ArgumentParser object.
+
+        This method adds mutually exclusive groups of arguments with different help
+        messages. It also adds additional filters and required arguments such as
+        the path to a Markdown-format body for the email.
+
+        Args:
+            parser (ArgumentParser): The ArgumentParser object to which the arguments are added.
+        """
         targets = parser.add_mutually_exclusive_group(required=True)
         targets.add_argument(
             "--entire-server", action="store_true", help="Send to every user on the server."
@@ -84,6 +94,16 @@ class Command(ZulipBaseCommand):
         )
 
     def handle(self, *args: Any, **options: str) -> None:
+        """
+        Handle the command.
+
+        This function handles the command based on the provided options. It filters a
+        list of users based on the options and sends custom emails to them.
+
+        Args:
+            *args: Variable arguments.
+            **options: Keyword arguments.
+        """
         target_emails: List[str] = []
         users: QuerySet[UserProfile] = UserProfile.objects.none()
         add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None

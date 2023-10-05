@@ -6,6 +6,9 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    """
+    Script to reactivate a deactivated realm.
+    """
     help = """Script to reactivate a deactivated realm."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:

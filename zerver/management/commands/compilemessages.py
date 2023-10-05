@@ -17,6 +17,10 @@ from pyuca import Collator
 
 
 class Command(compilemessages.Command):
+    """
+    This class represents a custom command that extends the compilemessages.Command class.
+    It overrides the add_arguments and handle methods.
+    """
     def add_arguments(self, parser: CommandParser) -> None:
         super().add_arguments(parser)
 
@@ -82,6 +86,13 @@ class Command(compilemessages.Command):
         return locales
 
     def extract_language_options(self) -> None:
+        """
+        Extract language options from the locale directory and save them to a JSON file.
+
+        This method iterates over the locales, retrieves information about each locale,
+        and adds it to a data dictionary. Finally, the data dictionary is dumped into a
+        JSON file.
+        """
         locale_path = f"{settings.DEPLOY_ROOT}/locale"
         output_path = f"{locale_path}/language_options.json"
 
@@ -138,6 +149,19 @@ class Command(compilemessages.Command):
             writer.write("\n")
 
     def get_translation_percentage(self, locale_path: str, locale: str) -> int:
+        """
+        Calculate the translation percentage for a given locale.
+
+        This function calculates the translation percentage by combining backend,
+        frontend, and mobile stats. It returns the percentage as an integer.
+
+        Args:
+            locale_path (str): The path to the locale.
+            locale (str): The locale to calculate the translation percentage for.
+
+        Returns:
+            int: The translation percentage.
+        """
         # backend stats
         po = polib.pofile(self.get_po_filename(locale_path, locale))
         not_translated = len(po.untranslated_entries())

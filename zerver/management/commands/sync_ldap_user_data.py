@@ -21,6 +21,33 @@ log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 def sync_ldap_user_data(
     user_profiles: Collection[UserProfile], deactivation_protection: bool = True
 ) -> None:
+    """
+    Synchronize user data from LDAP.
+
+    This function takes a collection of UserProfile objects as input and synchronizes
+    the user data from the LDAP server. The function logs the start of the
+    update and then proceeds to iterate over the user_profiles collection. For
+    each user profile, it attempts to sync the user data from LDAP by calling
+    the sync_user_from_ldap function.
+    If an error occurs during the sync process, the error message is logged.
+    After syncing all user profiles, the function checks for deactivation protection
+    and raises an exception if all users or owners of realms would be deactivated.
+    Finally, the function logs the completion of the update.
+
+    Args:
+        user_profiles (Collection[UserProfile]): A collection of UserProfile
+            objects representing the users whose data needs to be synchronized
+            from LDAP.
+        deactivation_protection (bool, optional): Flag indicating whether
+            deactivation protection should be enabled. Defaults to True.
+
+    Raises:
+        Exception: If deactivation protection is enabled and all users or owners of realms
+            would be deactivated.
+
+    Returns:
+        None
+    """
     logger.info("Starting update.")
     try:
         realms = {u.realm.string_id for u in user_profiles}
@@ -62,7 +89,17 @@ def sync_ldap_user_data(
 
 
 class Command(ZulipBaseCommand):
+    """
+    A command for handling a specific task in the Zulip application.
+    """
+
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command line arguments to the parser object.
+
+        Args:
+            parser (ArgumentParser): The parser object.
+        """
         parser.add_argument(
             "-f",
             "--force",
@@ -74,6 +111,13 @@ class Command(ZulipBaseCommand):
         self.add_user_list_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Execute the logic for the command.
+
+        Args:
+            args: Any positional arguments.
+            options: Any keyword arguments.
+        """
         if options.get("realm_id") is not None:
             realm = self.get_realm(options)
             user_profiles = self.get_users(options, realm, is_bot=False, include_deactivated=True)

@@ -6,6 +6,7 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    """Script to deactivate a realm."""
     help = """Script to deactivate a realm."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
@@ -15,6 +16,7 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
+        """Deactivate a realm."""
         realm = self.get_realm(options)
 
         assert realm is not None  # Should be ensured by parser

@@ -12,6 +12,22 @@ from zerver.models import UserProfile
 
 
 class Command(ZulipBaseCommand):
+    """Create a new Zulip organization (realm) via the command line.
+
+    We recommend `./manage.py generate_realm_creation_link` for most
+    users, for several reasons:
+
+    * Has a more user-friendly web flow for account creation.
+    * Manages passwords in a more natural way.
+    * Automatically logs the user in during account creation.
+
+    This management command is available as an alternative for situations
+    where one wants to script the realm creation process.
+
+    Since every Zulip realm must have an owner, this command creates the
+    initial organization owner user for the new realm, using the same workflow
+    as `./manage.py create_user`.
+    """
     help = """\
 Create a new Zulip organization (realm) via the command line.
 
@@ -45,6 +61,29 @@ workflow as `./manage.py create_user`.
         self.add_create_user_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command with the specified arguments.
+
+        This function is responsible for handling the command with the provided
+        arguments. It retrieves the 'realm_name', 'string_id', and
+        'allow_reserved_subdomain' values from the 'options' dictionary and
+        performs the following operations:
+
+        1. Calls the 'check_subdomain_available' function with the 'string_id' and
+        'allow_reserved_subdomain' values to validate the subdomain availability.
+        2. Calls the 'get_create_user_params' function to retrieve the create user parameters.
+        3. Calls the 'do_create_realm' function with the 'string_id' and 'realm_name'
+        parameters to create a realm.
+        4. Calls the 'do_create_user' function with the create user parameters,
+        'realm', and additional arguments to create a user.
+
+        Args:
+            *args: Variable length arguments.
+            **options: Keyword arguments.
+
+        Returns:
+            None
+        """
         realm_name = options["realm_name"]
         string_id = options["string_id"]
         allow_reserved_subdomain = options["allow_reserved_subdomain"]

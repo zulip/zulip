@@ -6,6 +6,9 @@ from zerver.lib.onboarding import send_initial_direct_message
 
 
 class Command(ZulipBaseCommand):
+    """
+    Sends the initial welcome bot message.
+    """
     help = """Sends the initial welcome bot message."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:

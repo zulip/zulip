@@ -9,6 +9,7 @@ from zerver.models import UserProfile, get_user_profile_by_api_key
 
 
 class Command(ZulipBaseCommand):
+    """Manually block or unblock a user from accessing the API"""
     help = """Manually block or unblock a user from accessing the API"""
 
     def add_arguments(self, parser: ArgumentParser) -> None:

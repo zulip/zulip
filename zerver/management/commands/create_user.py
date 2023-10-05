@@ -10,6 +10,16 @@ from zerver.models import UserProfile
 
 
 class Command(ZulipBaseCommand):
+    """Create a new Zulip user via the command line.
+
+    Prompts the user for <email> and <full name> if not specified.
+
+    We recommend the Zulip API (https://zulip.com/api/create-user) instead
+    of this tool for most use cases.
+
+    If the server has Terms of Service configured, the user will be
+    prompted to accept the Terms of Service the first time they login.
+    """
     help = """Create a new Zulip user via the command line.
 
 Prompts the user for <email> and <full name> if not specified.
@@ -22,12 +32,28 @@ prompted to accept the Terms of Service the first time they login.
 """
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
+        """
+        Add command line arguments for creating a user and specifying the realm.
+
+        Args:
+            parser (argparse.ArgumentParser): The argument parser to add arguments to.
+        """
         self.add_create_user_args(parser)
         self.add_realm_args(
             parser, required=True, help="The name of the existing realm to which to add the user."
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle command line arguments and options.
+
+        Args:
+            *args: Positional arguments
+            **options: Keyword arguments
+
+        Raises:
+            CommandError: If the user already exists.
+        """
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

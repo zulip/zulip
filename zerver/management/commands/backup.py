@@ -17,6 +17,7 @@ from zerver.logging_handlers import try_git_describe
 
 
 class Command(ZulipBaseCommand):
+    """This is a class representing a command."""
     # Fix support for multi-line usage strings
     def create_parser(self, prog_name: str, subcommand: str, **kwargs: Any) -> CommandParser:
         parser = super().create_parser(prog_name, subcommand, **kwargs)
@@ -29,6 +30,24 @@ class Command(ZulipBaseCommand):
         parser.add_argument("--skip-uploads", action="store_true", help="Skip uploads backup")
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle function to create a backup of the Zulip application.
+
+        This function performs various operations to create a backup of the Zulip
+        application, including:
+        - Creating temporary directories
+        - Writing version information and database details to files
+        - Creating a backup of the database
+        - Creating a tarball of the backup files
+        The tarball path is printed as output.
+
+        Args:
+            *args: Any number of positional arguments.
+            **options: Any number of keyword arguments.
+
+        Returns:
+            None
+        """
         timestamp = timezone_now().strftime(TIMESTAMP_FORMAT)
         with tempfile.TemporaryDirectory(
             prefix=f"zulip-backup-{timestamp}-",

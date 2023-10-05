@@ -10,6 +10,7 @@ from zerver.data_import.slack import do_convert_data
 
 
 class Command(BaseCommand):
+    """Convert the Slack data into Zulip data format."""
     help = """Convert the Slack data into Zulip data format."""
 
     def add_arguments(self, parser: CommandParser) -> None:
@@ -43,6 +44,18 @@ class Command(BaseCommand):
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle function for converting Slack data.
+
+        Args:
+            *args: Additional arguments.
+            **options: Additional keyword arguments.
+
+        Raises:
+            CommandError: If the `output_dir` is not provided or the `token` is not
+            provided, or the `num_threads` is less than 1, or a `slack_data_path`
+            does not exist.
+        """
         output_dir = options["output_dir"]
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="converted-slack-data-")

@@ -15,10 +15,24 @@ log_to_file(logger, settings.DIGEST_LOG_PATH)
 
 
 class Command(BaseCommand):
+    """Enqueue digest emails for users that haven't checked the app
+    in a while.
+    """
     help = """Enqueue digest emails for users that haven't checked the app
 in a while.
 """
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle method to enqueue digest emails for users who haven't checked the app in
+        a while.
+
+        Args:
+            *args: Any additional arguments.
+            **options: Any additional keyword arguments.
+
+        Returns:
+            None
+        """
         cutoff = timezone_now() - datetime.timedelta(days=DIGEST_CUTOFF)
         enqueue_emails(cutoff)

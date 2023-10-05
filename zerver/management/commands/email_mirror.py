@@ -42,6 +42,20 @@ logger.addHandler(file_handler)
 
 
 def get_imap_messages() -> Generator[EmailMessage, None, None]:
+    """
+    Retrieve email messages from an IMAP server.
+
+    This function connects to the configured IMAP server and retrieves all
+    email messages in the specified folder. Each email message is converted to
+    an EmailMessage object and yielded by the generator. The retrieved
+    messages are marked as deleted and expunged at the end of the process.
+
+    Raises:
+        CommandError: If the email mirror gateway is not properly configured.
+
+    Yields:
+        EmailMessage: The retrieved email message.
+    """
     # We're probably running from cron, try to batch-process mail
     if (
         not settings.EMAIL_GATEWAY_BOT
@@ -78,6 +92,7 @@ def get_imap_messages() -> Generator[EmailMessage, None, None]:
 
 
 class Command(BaseCommand):
+    """This class represents a custom command."""
     help = __doc__
 
     def handle(self, *args: Any, **options: str) -> None:

@@ -7,6 +7,12 @@ from zerver.models import DefaultStreamGroup
 
 
 class Command(ZulipBaseCommand):
+    """
+    Create default stream groups which the users can choose during sign up.
+
+    ./manage.py create_default_stream_groups -s gsoc-1,gsoc-2,gsoc-3 -d "Google
+    summer of code"  -r zulip
+    """
     help = """
 Create default stream groups which the users can choose during sign up.
 
@@ -14,6 +20,13 @@ Create default stream groups which the users can choose during sign up.
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command line arguments to the parser for the name, description, and streams
+        of the group to be created.
+
+        Args:
+            parser (ArgumentParser): The argument parser to add the arguments to.
+        """
         self.add_realm_args(parser, required=True)
 
         parser.add_argument(
@@ -35,6 +48,13 @@ Create default stream groups which the users can choose during sign up.
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command with the given arguments and options.
+
+        Args:
+            *args: Additional positional arguments.
+            **options: Additional keyword arguments.
+        """
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

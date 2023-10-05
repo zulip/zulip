@@ -10,13 +10,38 @@ from zerver.models import Message, UserProfile
 
 
 class Command(ZulipBaseCommand):
+    """Script to permanently delete a realm. Recommended only for removing
+    realms used for testing; consider using deactivate_realm instead."""
     help = """Script to permanently delete a realm. Recommended only for removing
 realms used for testing; consider using deactivate_realm instead."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """Add command line arguments to the script.
+
+        Args:
+            parser (ArgumentParser): The argument parser object.
+        """
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
+        """
+        Handle the command with the provided arguments and options.
+
+        This function performs various operations based on the provided options. It
+        retrieves a realm based on the options, counts the number of active
+        non-bot users in the realm, counts the number of messages in the realm,
+        and prints the counts. If billing is enabled, it checks if the realm has a
+        billing relationship associated with it and raises an error if it does. It
+        then asks for confirmation to delete the realm and deletes the realm along
+        with its attachments. Finally, it prints a success message.
+
+        Args:
+            args: Any additional arguments passed to the function.
+            options (str): Additional options passed to the function as keyword arguments.
+
+        Returns:
+            None
+        """
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

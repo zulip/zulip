@@ -75,6 +75,8 @@ def strip_whitespaces(src: str) -> str:
 
 
 class Command(makemessages.Command):
+    """Subclass of makemessages.Command that adds custom command line arguments and
+performs some actions."""
     xgettext_options = makemessages.Command.xgettext_options
     for func, tag in tags:
         xgettext_options += [f'--keyword={func}:1,"{tag}"']
@@ -112,6 +114,24 @@ class Command(makemessages.Command):
         all: bool,
         **options: Any,
     ) -> None:
+        """
+        Handle frontend locales.
+
+        This method handles the frontend locales by setting the provided arguments as
+        instance variables and then calling the 'get_translation_strings' method
+        to retrieve the translation strings. Finally, it passes these translation
+        strings to the 'write_translation_strings' method.
+
+        Args:
+            self: The object instance.
+            frontend_source (str): The source of the frontend.
+            frontend_output (str): The output of the frontend.
+            frontend_namespace (str): The namespace of the frontend.
+            locale (List[str]): A list of locales.
+            exclude (List[str]): A list of locales to exclude.
+            all (bool): A boolean indicating whether to include all locales.
+            **options (Any): Additional options.
+        """
         self.frontend_source = frontend_source
         self.frontend_output = frontend_output
         self.frontend_namespace = frontend_namespace
@@ -123,6 +143,7 @@ class Command(makemessages.Command):
         self.write_translation_strings(translation_strings)
 
     def handle_django_locales(self, *args: Any, **options: Any) -> None:
+        """Handle Django locales."""
         old_endblock_re = template.endblock_re
         old_block_re = template.block_re
         old_constant_re = template.constant_re
@@ -161,6 +182,19 @@ class Command(makemessages.Command):
             template.constant_re = old_constant_re
 
     def extract_strings(self, data: str) -> List[str]:
+        """
+        Extracts all translation strings from the given data.
+
+        This function takes a string as input and uses a list of precompiled
+        regular expressions to extract all the translation strings from it.
+        The extracted strings are added to a list and returned.
+
+        Args:
+            data (str): The input string containing the translation strings.
+
+        Returns:
+            List[str]: A list of the extracted translation strings.
+        """
         translation_strings: List[str] = []
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
@@ -171,6 +205,19 @@ class Command(makemessages.Command):
         return translation_strings
 
     def ignore_javascript_comments(self, data: str) -> str:
+        """
+        Removes JavaScript comments from the given data.
+
+        This function takes a string as input and removes both multi-line
+        and single-line JavaScript comments from it. The modified string with the
+        comments removed is returned.
+
+        Args:
+            data (str): The input string containing JavaScript comments.
+
+        Returns:
+            str: The modified string with the JavaScript comments removed.
+        """
         # Removes multi line comments.
         data = multiline_js_comment.sub("", data)
         # Removes single line (//) comments.
@@ -178,6 +225,12 @@ class Command(makemessages.Command):
         return data
 
     def get_translation_strings(self) -> List[str]:
+        """
+        Get the translation strings from template and JavaScript files.
+
+        Returns:
+            List[str]: A list of unique translation strings.
+        """
         translation_strings: List[str] = []
         dirname = self.get_template_dir()
 
@@ -215,12 +268,15 @@ class Command(makemessages.Command):
         return list(set(translation_strings))
 
     def get_template_dir(self) -> str:
+        """Returns the directory of the template."""
         return self.frontend_source
 
     def get_namespace(self) -> str:
+        """Returns the namespace."""
         return self.frontend_namespace
 
     def get_locales(self) -> Collection[str]:
+        """Returns the collection of locales."""
         locale = self.frontend_locale
         exclude = self.frontend_exclude
         process_all = self.frontend_all
@@ -239,9 +295,11 @@ class Command(makemessages.Command):
             return set(locales) - set(exclude)
 
     def get_base_path(self) -> str:
+        """Returns the base path."""
         return self.frontend_output
 
     def get_output_paths(self) -> Iterator[str]:
+        """Returns an iterator of output paths."""
         base_path = self.get_base_path()
         locales = self.get_locales()
         for path in [os.path.join(base_path, locale) for locale in locales]:
@@ -256,6 +314,14 @@ class Command(makemessages.Command):
         """
         Missing strings are removed, new strings are added and already
         translated strings are not touched.
+
+        Args:
+            old_strings (Mapping[str, str]): A dictionary of old strings.
+            translation_strings (List[str]): A list of translation strings.
+            locale (str): The locale for translation.
+
+        Returns:
+            Dict[str, str]: A dictionary of new strings.
         """
         new_strings = {}  # Dict[str, str]
         for k in translation_strings:
@@ -268,6 +334,15 @@ class Command(makemessages.Command):
         return new_strings
 
     def write_translation_strings(self, translation_strings: List[str]) -> None:
+        """
+        Write translation strings to output files for each locale.
+
+        Args:
+            translation_strings (List[str]): A list of translation strings.
+
+        Returns:
+            None
+        """
         for locale, output_path in zip(self.get_locales(), self.get_output_paths()):
             self.stdout.write(f"[frontend] processing locale {locale}")
             try:

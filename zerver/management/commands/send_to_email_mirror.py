@@ -37,6 +37,20 @@ Example:
 """
 
     def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add command line arguments to the parser object.
+
+        This function adds two arguments to the 'parser' object. The first argument is
+        '-f' or '--fixture' which specifies the path to an email message file. The
+        second argument is '-s' or '--stream' which specifies the name of the
+        stream to which the message should be sent.
+
+        Args:
+            parser (CommandParser): The parser object used to parse command line arguments.
+
+        Returns:
+            None
+        """
         parser.add_argument(
             "-f",
             "--fixture",
@@ -55,6 +69,27 @@ Example:
         self.add_realm_args(parser, help="Specify which realm to connect to; default is zulip")
 
     def handle(self, *args: Any, **options: Optional[str]) -> None:
+        """Handle command line arguments and process an email fixture.
+
+        This method handles the command line arguments passed to the script and processes
+        an email fixture. It retrieves the fixture path from the `options`
+        dictionary and checks if it exists. If the path does not exist, it raises
+        a `CommandError`.
+        It then retrieves the `stream` option from the `options` dictionary and sets it to
+        'Denmark' if it is None. It gets the realm from the `options` dictionary
+        and if it is None, it retrieves the 'zulip' realm. It constructs the full
+        fixture path by joining the `DEPLOY_ROOT` setting and the fixture path
+        from `options`. It parses the email fixture into an `EmailMessage` object
+        and prepares it for processing by calling `_prepare_message`. Finally, it
+        calls `mirror_email_message` to send the email message.
+
+        Args:
+            *args: Optional positional arguments.
+            **options: Optional keyword arguments.
+
+        Returns:
+            None
+        """
         if options["fixture"] is None:
             self.print_help("./manage.py", "send_to_email_mirror")
             raise CommandError
@@ -80,9 +115,33 @@ Example:
         )
 
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
+        """Check if the given fixture path exists.
+
+        This method checks if the given fixture path exists by calling the `os.path.exists`
+        function.
+
+        Args:
+            fixture_path (str): The path to the fixture file.
+
+        Returns:
+            bool: True if the fixture path exists, False otherwise.
+        """
         return os.path.exists(fixture_path)
 
     def _parse_email_json_fixture(self, fixture_path: str) -> EmailMessage:
+        """Parse a JSON email fixture and return an EmailMessage object.
+
+        This method parses a JSON email fixture by reading its content using the `orjson`
+        library and extracting the necessary fields to construct the email
+        message. It returns an `EmailMessage` object with the 'From', 'Subject',
+        and 'body' fields set.
+
+        Args:
+            fixture_path (str): The path to the JSON fixture file.
+
+        Returns:
+            EmailMessage: The parsed email message.
+        """
         with open(fixture_path, "rb") as fp:
             json_content = orjson.loads(fp.read())[0]
 
@@ -93,6 +152,24 @@ Example:
         return message
 
     def _parse_email_fixture(self, fixture_path: str) -> EmailMessage:
+        """
+        Parse an email fixture and return an EmailMessage object.
+
+        This method takes a fixture path as input and returns an EmailMessage object.
+        It first checks if the fixture path exists and raises a CommandError if it does not.
+        Then, it checks the file extension of the fixture_path and calls the appropriate
+        helper function to parse the email fixture. If the file extension is
+        '.json', it calls _parse_email_json_fixture, otherwise, it opens the
+        fixture file in binary mode and uses email.message_from_binary_file to
+        parse the message. Finally, it asserts that the parsed message is an
+        instance of EmailMessage and returns it.
+
+        Args:
+            fixture_path (str): The path to the email fixture.
+
+        Returns:
+            EmailMessage: The parsed EmailMessage object.
+        """
         if not self._does_fixture_path_exist(fixture_path):
             raise CommandError(f"Fixture {fixture_path} does not exist")
 
@@ -106,6 +183,24 @@ Example:
                 return message
 
     def _prepare_message(self, message: EmailMessage, realm: Realm, stream_name: str) -> None:
+        """
+        Prepare an email message for sending to a stream.
+
+        This method takes an EmailMessage object, a Realm object, and a stream_name as input.
+        It retrieves the stream object corresponding to the stream_name from the realm.
+        Then, it removes recipient-like headers from the message that are inconsistent with
+        the stream address and replaces them with the encoded stream address. It
+        also removes and replaces the 'To' header in the message with the encoded
+        stream address.
+
+        Args:
+            message (EmailMessage): The email message to be prepared.
+            realm (Realm): The realm object representing the email domain.
+            stream_name (str): The name of the stream to which the email should be sent.
+
+        Returns:
+            None
+        """
         stream = get_stream(stream_name, realm)
 
         # The block below ensures that the imported email message doesn't have any recipient-like

@@ -10,9 +10,16 @@ from zerver.lib.users import get_active_bots_owned_by_user
 
 
 class Command(ZulipBaseCommand):
+    """Deactivate a user, including forcibly logging them out."""
     help = "Deactivate a user, including forcibly logging them out."
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        """
+        Add command-line arguments to the parser.
+
+        Args:
+            parser (ArgumentParser): The argument parser.
+        """
         parser.add_argument(
             "-f",
             "--for-real",
@@ -23,6 +30,13 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command.
+
+        Args:
+            args: Command-line arguments.
+            options: Command options.
+        """
         realm = self.get_realm(options)
         user_profile = self.get_user(options["email"], realm)
 

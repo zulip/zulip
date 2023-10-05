@@ -9,6 +9,9 @@ from zerver.worker.queue_processors import get_active_worker_queues
 
 
 class Command(BaseCommand):
+    """
+    Discards all messages from the given queue
+    """
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(dest="queue_name", nargs="?", help="queue to purge")
         parser.add_argument("--all", action="store_true", help="purge all queues")
@@ -16,6 +19,7 @@ class Command(BaseCommand):
     help = "Discards all messages from the given queue"
 
     def handle(self, *args: Any, **options: str) -> None:
+
         def purge_queue(queue_name: str) -> None:
             queue = SimpleQueueClient()
             queue.ensure_queue(queue_name, lambda channel: channel.queue_purge(queue_name))

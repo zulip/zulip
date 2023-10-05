@@ -11,6 +11,9 @@ from zerver.models import ArchivedAttachment, Attachment, get_old_unclaimed_atta
 
 
 class Command(BaseCommand):
+    """Remove unclaimed attachments from storage older than a supplied
+    numerical value indicating the limit of how old the attachment can be.
+    The default is five weeks."""
     help = """Remove unclaimed attachments from storage older than a supplied
               numerical value indicating the limit of how old the attachment can be.
               The default is five weeks."""
@@ -41,6 +44,26 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle function to delete unclaimed attached files.
+
+        This function takes in *args and **options as parameters, and it does not
+        return anything.
+        It retrieves the delta_weeks value from the options dictionary and prints a
+        message indicating the number of weeks being used for deletion.
+        It then calls the get_old_unclaimed_attachments function to retrieve two lists
+        of old attachments and old archived attachments.
+        It iterates through both lists and prints information about each attachment.
+        If the 'for_real' option is True, it calls the
+        do_delete_old_unclaimed_attachments function to delete the old unclaimed
+        attachments and prints a message indicating that the files have been
+        deleted.
+        If the 'clean_up_storage' option is True, it calls the
+        clean_attachment_upload_backend function to clean up the attachment upload
+        backend.
+        Finally, if the 'for_real' option is False, it raises a CommandError exception
+        with a specific message.
+        """
         delta_weeks = options["delta_weeks"]
         print(f"Deleting unclaimed attached files older than {delta_weeks} weeks")
 
@@ -67,6 +90,22 @@ class Command(BaseCommand):
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
     def clean_attachment_upload_backend(self, dry_run: bool = True) -> None:
+        """
+        Clean up extra files in the storage backend.
+
+        This function removes extra files in the storage backend that are not
+        associated with any 'Attachment' or 'ArchivedAttachment' models. It
+        iterates through all message attachments and checks if each attachment
+        exists in either the 'Attachment' or 'ArchivedAttachment' models. If it
+        does not exist and the 'modified_at' timestamp is older than 5 minutes
+        ago, the attachment is added to a list of files to be deleted. After
+        iterating through all attachments, the function deletes the files in the
+        list if 'dry_run' is False.
+
+        Args:
+            dry_run (bool, optional): If True, the function will only print the
+                files to be deleted without actually deleting them. Defaults to True.
+        """
         cutoff = timezone_now() - datetime.timedelta(minutes=5)
         print(f"Removing extra files in storage black-end older than {cutoff.isoformat()}")
         to_delete = []

@@ -16,6 +16,23 @@ from zerver.models import Realm, UserProfile
 
 
 def get_users_from_emails(emails: List[str], filter_kwargs: Dict[str, Realm]) -> List[UserProfile]:
+    """
+    Retrieve user profiles based on a list of email addresses and filter arguments.
+
+    This function queries the 'UserProfile' model to retrieve user profiles whose delivery
+    emails match the provided email addresses. If any email addresses are not
+    found, a 'CommandError' is raised.
+
+    Args:
+        emails (List[str]): A list of email addresses.
+        filter_kwargs (Dict[str, Realm]): A dictionary of filter arguments.
+
+    Returns:
+        List[UserProfile]: A list of user profiles.
+
+    Raises:
+        CommandError: If any email addresses are not found.
+    """
     # Bug: Ideally, this would be case-insensitive like our other email queries.
     users = list(UserProfile.objects.filter(delivery_email__in=emails, **filter_kwargs))
 
@@ -31,6 +48,9 @@ def get_users_from_emails(emails: List[str], filter_kwargs: Dict[str, Realm]) ->
 
 
 class Command(ZulipBaseCommand):
+    """
+    Soft activate/deactivate users. Users are recognised by their emails here.
+    """
     help = """Soft activate/deactivate users. Users are recognised by their emails here."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
@@ -55,6 +75,19 @@ class Command(ZulipBaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        """
+        Handle the command.
+
+        This method is responsible for handling the command by checking the options and
+        performing the necessary actions.
+
+        Args:
+            *args: Variable length argument list.
+            **options: Arbitrary keyword arguments.
+
+        Returns:
+            None.
+        """
         if settings.STAGING:
             print("This is a Staging server. Suppressing management command.")
             sys.exit(0)
