@@ -142,10 +142,12 @@ mock_esm("../src/user_topics", {
     all_visibility_policies,
 });
 const narrow = mock_esm("../src/narrow", {
-    update_narrow_title: noop,
     hide_unread_banner: noop,
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,
+});
+mock_esm("../src/narrow_title", {
+    update_narrow_title() {},
 });
 mock_esm("../src/pm_list", {
     update_private_messages: noop,
