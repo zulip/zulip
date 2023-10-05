@@ -1,7 +1,7 @@
 import $ from "jquery";
 import url_template_lib from "url-template";
 
-import render_playground_links_popover from "../templates/playground_links_popover.hbs";
+import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as popover_menus from "./popover_menus";

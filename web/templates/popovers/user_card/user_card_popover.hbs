@@ -52,7 +52,7 @@
             <li>{{ user_type }}</li>
         {{/if}}
         {{!-- Display selected custom profile fields in this popover. --}}
-        {{> user_custom_profile_fields profile_fields=display_profile_fields for_user_card_popover=true}}
+        {{> ../../user_custom_profile_fields profile_fields=display_profile_fields for_user_card_popover=true}}
 
         <li class="only-visible-for-spectators">{{t "Joined {date_joined}" }}</li>
 

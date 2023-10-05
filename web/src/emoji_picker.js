@@ -2,10 +2,10 @@ import $ from "jquery";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as typeahead from "../shared/src/typeahead";
-import render_emoji_popover from "../templates/emoji_popover.hbs";
-import render_emoji_popover_emoji_map from "../templates/emoji_popover_emoji_map.hbs";
-import render_emoji_popover_search_results from "../templates/emoji_popover_search_results.hbs";
-import render_emoji_showcase from "../templates/emoji_showcase.hbs";
+import render_emoji_popover from "../templates/popovers/emoji/emoji_popover.hbs";
+import render_emoji_popover_emoji_map from "../templates/popovers/emoji/emoji_popover_emoji_map.hbs";
+import render_emoji_popover_search_results from "../templates/popovers/emoji/emoji_popover_search_results.hbs";
+import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
@@ -646,9 +646,9 @@ function get_default_emoji_popover_options() {
             emoji_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
-            instance.setContent(ui_util.parse_html(
-                generate_emoji_picker_content(current_message_id),
-            ));
+            instance.setContent(
+                ui_util.parse_html(generate_emoji_picker_content(current_message_id)),
+            );
             emoji_catalog_last_coordinates = {
                 section: 0,
                 index: 0,

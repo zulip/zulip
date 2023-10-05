@@ -1,9 +1,9 @@
 import $ from "jquery";
 import {delegate} from "tippy.js";
 
+import render_send_later_popover from "../templates/popovers/send_later_popover.hbs";
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
-import render_send_later_popover from "../templates/send_later_popover.hbs";
 
 import * as compose from "./compose";
 import * as compose_validate from "./compose_validate";

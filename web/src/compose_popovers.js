@@ -1,9 +1,9 @@
 import $ from "jquery";
 import {delegate} from "tippy.js";
 
-import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
-import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
-import render_mobile_message_buttons_popover from "../templates/mobile_message_buttons_popover.hbs";
+import render_compose_control_buttons_popover from "../templates/popovers/compose_control_buttons/compose_control_buttons_popover.hbs";
+import render_compose_select_enter_behaviour_popover from "../templates/popovers/compose_select_enter_behaviour_popover.hbs";
+import render_mobile_message_buttons_popover from "../templates/popovers/mobile_message_buttons_popover.hbs";
 
 import * as channel from "./channel";
 import * as common from "./common";
