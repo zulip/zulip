@@ -13,6 +13,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
@@ -368,7 +369,7 @@ export function initialize_kitchen_sink_stuff() {
 
 function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook((counts) =>
-        activity.update_dom_with_unread_counts(counts),
+        activity_ui.update_dom_with_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
         left_sidebar_navigation_area.update_dom_with_unread_counts(counts, skip_animations),
@@ -674,6 +675,7 @@ export function initialize_everything() {
 
     initialize_unread_ui();
     activity.initialize();
+    activity_ui.initialize();
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();

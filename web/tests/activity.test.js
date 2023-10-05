@@ -40,6 +40,7 @@ const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
 const activity = zrequire("activity");
+const activity_ui = zrequire("activity_ui");
 
 const me = {
     email: "me@zulip.com",
@@ -119,7 +120,7 @@ function test(label, f) {
         muted_users.set_muted_users([]);
 
         activity.clear_for_testing();
-        activity.set_cursor_and_filter();
+        activity_ui.set_cursor_and_filter();
 
         f(helpers);
 
@@ -129,8 +130,9 @@ function test(label, f) {
 
 run_test("reload_defaults", () => {
     activity.clear_for_testing();
+    activity_ui.clear_for_testing();
     blueslip.expect("warn", "get_filter_text() is called before initialization");
-    assert.equal(activity.get_filter_text(), "");
+    assert.equal(activity_ui.get_filter_text(), "");
 });
 
 test("get_status", () => {
@@ -219,7 +221,7 @@ test("presence_list_full_update", ({override, mock_template}) => {
     compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
 
-    const user_ids = activity.build_user_sidebar();
+    const user_ids = activity_ui.build_user_sidebar();
 
     assert.deepEqual(user_ids, [
         me.user_id,
@@ -260,12 +262,12 @@ test("direct_message_update_dom_counts", () => {
     counts.set(pm_key, 5);
     $li.addClass("user_sidebar_entry");
 
-    activity.update_dom_with_unread_counts({pm_count: counts});
+    activity_ui.update_dom_with_unread_counts({pm_count: counts});
     assert.equal($count.text(), "5");
 
     counts.set(pm_key, 0);
 
-    activity.update_dom_with_unread_counts({pm_count: counts});
+    activity_ui.update_dom_with_unread_counts({pm_count: counts});
     assert.equal($count.text(), "");
 });
 
@@ -302,7 +304,7 @@ test("handlers", ({override, mock_template}) => {
         buddy_list.populate({
             keys: [me.user_id, alice.user_id, fred.user_id],
         });
-        activity.set_cursor_and_filter();
+        activity_ui.set_cursor_and_filter();
         $("#user_presences").empty = () => {};
 
         $me_li = $.create("me stub");
@@ -316,7 +318,7 @@ test("handlers", ({override, mock_template}) => {
 
     (function test_filter_keys() {
         init();
-        activity.user_cursor.go_to(alice.user_id);
+        activity_ui.user_cursor.go_to(alice.user_id);
         filter_key_handlers.ArrowDown();
         filter_key_handlers.ArrowUp();
     })();
@@ -348,12 +350,12 @@ test("handlers", ({override, mock_template}) => {
 
         $(".user-list-filter").val("al");
         narrowed = false;
-        activity.user_cursor.go_to(alice.user_id);
+        activity_ui.user_cursor.go_to(alice.user_id);
         filter_key_handlers.Enter();
         assert.ok(narrowed);
 
         // get line coverage for cleared case
-        activity.user_cursor.clear();
+        activity_ui.user_cursor.clear();
         filter_key_handlers.Enter();
     })();
 
@@ -362,7 +364,7 @@ test("handlers", ({override, mock_template}) => {
         // We wire up the click handler in click_handlers.js,
         // so this just tests the called function.
         narrowed = false;
-        activity.narrow_for_user({$li: $alice_li});
+        activity_ui.narrow_for_user({$li: $alice_li});
         assert.ok(narrowed);
     })();
 
@@ -433,8 +435,8 @@ test("first/prev/next", ({override, mock_template}) => {
 
     override(buddy_list.$container, "append", () => {});
 
-    activity.redraw_user(alice.user_id);
-    activity.redraw_user(fred.user_id);
+    activity_ui.redraw_user(alice.user_id);
+    activity_ui.redraw_user(fred.user_id);
 
     assert.equal(buddy_list.first_key(), alice.user_id);
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
@@ -477,7 +479,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
         appended_html = html;
     });
 
-    activity.redraw_user(alice.user_id);
+    activity_ui.redraw_user(alice.user_id);
     assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 });
@@ -491,11 +493,11 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
     });
     override(padded_widget, "update_padding", () => {});
 
-    activity.redraw_user(alice.user_id);
+    activity_ui.redraw_user(alice.user_id);
     assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 
-    activity.redraw_user(fred.user_id);
+    activity_ui.redraw_user(fred.user_id);
     assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 });
@@ -509,7 +511,7 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
     });
     override(padded_widget, "update_padding", () => {});
 
-    activity.redraw_user(fred.user_id);
+    activity_ui.redraw_user(fred.user_id);
     assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 
@@ -526,7 +528,7 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
         fred_removed = true;
     };
 
-    activity.redraw_user(alice.user_id);
+    activity_ui.redraw_user(alice.user_id);
     assert.ok(inserted_html.indexOf('data-user-id="1"') > 0);
     assert.ok(inserted_html.indexOf("user_circle_green") > 0);
 
@@ -545,7 +547,7 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
         inserted_html = html;
     };
 
-    activity.redraw_user(fred_with_new_name.user_id);
+    activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
     assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
 
@@ -559,19 +561,19 @@ test("insert_unfiltered_user_with_filter", () => {
     // match the search filter.
     const $user_filter = $(".user-list-filter");
     $user_filter.val("do-not-match-filter");
-    activity.redraw_user(fred.user_id);
+    activity_ui.redraw_user(fred.user_id);
 });
 
 test("realm_presence_disabled", () => {
     page_params.realm_presence_disabled = true;
 
-    activity.redraw_user();
-    activity.build_user_sidebar();
+    activity_ui.redraw_user();
+    activity_ui.build_user_sidebar();
 });
 
 test("redraw_muted_user", () => {
     muted_users.add_muted_user(mark.user_id);
-    activity.redraw_user(mark.user_id);
+    activity_ui.redraw_user(mark.user_id);
     assert.equal($("#user_presences").html(), "never-been-set");
 });
 
@@ -599,12 +601,12 @@ test("update_presence_info", ({override}) => {
     });
 
     presence.presence_info.delete(me.user_id);
-    activity.update_presence_info(me.user_id, info, server_time);
+    activity_ui.update_presence_info(me.user_id, info, server_time);
     assert.ok(inserted);
     assert.deepEqual(presence.presence_info.get(me.user_id).status, "active");
 
     presence.presence_info.delete(alice.user_id);
-    activity.update_presence_info(alice.user_id, info, server_time);
+    activity_ui.update_presence_info(alice.user_id, info, server_time);
     assert.ok(inserted);
 
     const expected = {status: "active", last_active: 500};
@@ -656,6 +658,7 @@ test("initialize", ({override, mock_template}) => {
     });
 
     activity.initialize();
+    activity_ui.initialize();
     payload.success({
         zephyr_mirror_active: true,
         presences: {},
@@ -676,6 +679,7 @@ test("initialize", ({override, mock_template}) => {
 
     $(window).off("focus");
     activity.initialize();
+    activity_ui.initialize();
     payload.success({
         zephyr_mirror_active: false,
         presences: {},

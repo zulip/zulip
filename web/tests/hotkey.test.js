@@ -121,7 +121,7 @@ message_lists.current = {
     },
 };
 
-const activity = zrequire("activity");
+const activity_ui = zrequire("activity_ui");
 const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const hotkey = zrequire("hotkey");
@@ -318,7 +318,7 @@ run_test("streams", ({override}) => {
 run_test("basic mappings", () => {
     assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
-    assert_mapping_rewire("w", activity, "initiate_search");
+    assert_mapping_rewire("w", activity_ui, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
     assert_mapping("A", narrow, "stream_cycle_backward");
