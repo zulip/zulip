@@ -16,6 +16,7 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 const narrow = zrequire("narrow");
+const narrow_title = zrequire("narrow_title");
 const settings_config = zrequire("settings_config");
 const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
@@ -773,22 +774,22 @@ run_test("narrow_compute_title", () => {
     filter = undefined;
     recent_view_util.set_visible(true);
     inbox_util.set_visible(false);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Recent conversations");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Recent conversations");
 
     recent_view_util.set_visible(false);
     inbox_util.set_visible(true);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Inbox");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Inbox");
 
     inbox_util.set_visible(false);
     filter = new Filter([{operator: "in", operand: "home"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: All messages");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: All messages");
 
     // Search & uncommon narrows
     filter = new Filter([{operator: "search", operand: "potato"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Search results");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Search results");
 
     filter = new Filter([{operator: "sender", operand: "me"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Messages sent by you");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Messages sent by you");
 
     // Stream narrows
     const sub = {
@@ -801,13 +802,13 @@ run_test("narrow_compute_title", () => {
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "bar"},
     ]);
-    assert.equal(narrow.compute_narrow_title(filter), "#Foo > bar");
+    assert.equal(narrow_title.compute_narrow_title(filter), "#Foo > bar");
 
     filter = new Filter([{operator: "stream", operand: "foo"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "#Foo");
+    assert.equal(narrow_title.compute_narrow_title(filter), "#Foo");
 
     filter = new Filter([{operator: "stream", operand: "Elephant"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
 
     // Direct messages with narrows
     const joe = {
@@ -818,14 +819,14 @@ run_test("narrow_compute_title", () => {
     people.add_active_user(joe);
 
     filter = new Filter([{operator: "dm", operand: "joe@example.com"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "joe");
+    assert.equal(narrow_title.compute_narrow_title(filter), "joe");
 
     filter = new Filter([{operator: "dm", operand: "joe@example.com,sally@doesnotexist.com"}]);
     blueslip.expect("warn", "Unknown emails");
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid users");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid users");
 
     blueslip.reset();
     filter = new Filter([{operator: "dm", operand: "sally@doesnotexist.com"}]);
     blueslip.expect("warn", "Unknown emails");
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid user");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid user");
 });

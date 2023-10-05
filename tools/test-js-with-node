@@ -140,6 +140,7 @@ EXEMPT_FILES = make_set(
         "web/src/muted_users_ui.js",
         "web/src/narrow.js",
         "web/src/narrow_history.js",
+        "web/src/narrow_title.js",
         "web/src/navbar_alerts.js",
         "web/src/navigate.js",
         "web/src/notifications.js",

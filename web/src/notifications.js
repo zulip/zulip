@@ -6,14 +6,12 @@ import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
-import * as favicon from "./favicon";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_parser from "./message_parser";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
@@ -100,45 +98,6 @@ export function permission_state() {
         return "denied";
     }
     return NotificationAPI.permission;
-}
-
-let unread_count = 0;
-let pm_count = 0;
-
-export function redraw_title() {
-    // Update window title to reflect unread messages in current view
-    const new_title =
-        (unread_count ? "(" + unread_count + ") " : "") +
-        narrow.narrow_title +
-        " - " +
-        page_params.realm_name +
-        " - " +
-        "Zulip";
-
-    document.title = new_title;
-}
-
-export function update_unread_counts(counts) {
-    const new_unread_count = unread.calculate_notifiable_count(counts);
-    const new_pm_count = counts.direct_message_count;
-    if (new_unread_count === unread_count && new_pm_count === pm_count) {
-        return;
-    }
-
-    unread_count = new_unread_count;
-    pm_count = new_pm_count;
-
-    // Indicate the message count in the favicon
-    favicon.update_favicon(unread_count, pm_count);
-
-    // Notify the current desktop app's UI about the new unread count.
-    if (window.electron_bridge !== undefined) {
-        window.electron_bridge.send_event("total_unread_count", unread_count);
-    }
-
-    // TODO: Add a `window.electron_bridge.updateDirectMessageCount(new_pm_count);` call?
-
-    redraw_title();
 }
 
 function notify_unmute(muted_narrow, stream_id, topic_name) {
