@@ -43,3 +43,13 @@ class StatuspageHookTests(WebhookTestCase):
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
+
+    def test_statuspage_anomalous_payload(self) -> None:
+        result = self.client_post(
+            self.url,
+            {},
+            content_type="application/json",
+        )
+        self.assert_json_error(
+            result, "Unable to parse request: Did Statuspage generate this event?", 400
+        )
