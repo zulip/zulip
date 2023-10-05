@@ -1,4 +1,3 @@
-import $ from "jquery";
 import {z} from "zod";
 
 import render_topic_muted from "../templates/topic_muted.hbs";
@@ -125,7 +124,7 @@ export function set_user_topic_visibility_policy(
     visibility_policy: number,
     from_hotkey?: boolean,
     from_banner?: boolean,
-    status_element?: JQuery,
+    $status_element?: JQuery,
 ): void {
     const data = {
         stream_id,
@@ -134,8 +133,8 @@ export function set_user_topic_visibility_policy(
     };
 
     let $spinner: JQuery;
-    if (status_element) {
-        $spinner = $(status_element).expectOne();
+    if ($status_element) {
+        $spinner = $status_element.expectOne();
         $spinner.fadeTo(0, 1);
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
     }
@@ -144,7 +143,7 @@ export function set_user_topic_visibility_policy(
         url: "/json/user_topics",
         data,
         success() {
-            if (status_element) {
+            if ($status_element) {
                 const remove_after = 1000;
                 const appear_after = 500;
                 setTimeout(() => {

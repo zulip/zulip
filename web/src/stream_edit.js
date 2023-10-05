@@ -324,7 +324,7 @@ export function stream_setting_changed(e, from_notification_settings) {
     }
 
     const sub = get_sub_for_target(e.target);
-    const status_element = from_notification_settings
+    const $status_element = from_notification_settings
         ? $(e.target).closest(".subsection-parent").find(".alert-notification")
         : $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`);
     const setting = e.target.name;
@@ -336,7 +336,7 @@ export function stream_setting_changed(e, from_notification_settings) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
-    stream_settings_api.set_stream_property(sub, setting, e.target.checked, status_element);
+    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
 }
 
 export function archive_stream(stream_id, $alert_element, $stream_row) {
