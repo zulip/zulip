@@ -463,8 +463,31 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
     pages.append(get_page(query, cols, title))
 
-    ###
+    return pages
 
+
+@require_server_admin
+@has_request_variables
+def get_installation_activity(request: HttpRequest) -> HttpResponse:
+    duration_content, realm_minutes = user_activity_intervals()
+    counts_content: str = realm_summary_table(realm_minutes)
+    data = [
+        ("Counts", counts_content),
+        ("Durations", duration_content),
+        *((page["title"], page["content"]) for page in ad_hoc_queries()),
+    ]
+
+    title = "Activity"
+
+    return render(
+        request,
+        "analytics/activity.html",
+        context=dict(data=data, title=title, is_home=True),
+    )
+
+
+@require_server_admin
+def get_integrations_activity(request: HttpRequest) -> HttpResponse:
     title = "Integrations by client"
 
     query = SQL(
@@ -501,26 +524,14 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         "Last time",
     ]
 
-    pages.append(get_page(query, cols, title))
-
-    return pages
-
-
-@require_server_admin
-@has_request_variables
-def get_installation_activity(request: HttpRequest) -> HttpResponse:
-    duration_content, realm_minutes = user_activity_intervals()
-    counts_content: str = realm_summary_table(realm_minutes)
-    data = [
-        ("Counts", counts_content),
-        ("Durations", duration_content),
-        *((page["title"], page["content"]) for page in ad_hoc_queries()),
-    ]
-
-    title = "Activity"
+    integrations_activity = get_page(query, cols, title)
 
     return render(
         request,
-        "analytics/activity.html",
-        context=dict(data=data, title=title, is_home=True),
+        "analytics/activity_details_template.html",
+        context=dict(
+            data=integrations_activity["content"],
+            title=integrations_activity["title"],
+            is_home=False,
+        ),
     )
