@@ -40,6 +40,7 @@ from zerver.lib.push_notifications import (
     get_apns_badge_count,
     get_apns_badge_count_future,
     get_apns_context,
+    get_base_payload,
     get_message_payload_apns,
     get_message_payload_gcm,
     get_mobile_push_content,
@@ -111,18 +112,24 @@ class BouncerTestCase(ZulipTestCase):
         super().tearDown()
 
     def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
-        assert isinstance(request.body, str) or request.body is None
-        params: Dict[str, List[str]] = parse.parse_qs(request.body)
-        # In Python 3, the values of the dict from `parse_qs` are
-        # in a list, because there might be multiple values.
-        # But since we are sending values with no same keys, hence
-        # we can safely pick the first value.
-        data = {k: v[0] for k, v in params.items()}
+        kwargs = {}
+        if isinstance(request.body, bytes):
+            # send_json_to_push_bouncer sends the body as bytes containing json.
+            data = orjson.loads(request.body)
+            kwargs = dict(content_type="application/json")
+        else:
+            assert isinstance(request.body, str) or request.body is None
+            params: Dict[str, List[str]] = parse.parse_qs(request.body)
+            # In Python 3, the values of the dict from `parse_qs` are
+            # in a list, because there might be multiple values.
+            # But since we are sending values with no same keys, hence
+            # we can safely pick the first value.
+            data = {k: v[0] for k, v in params.items()}
         assert request.url is not None  # allow mypy to infer url is present.
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if request.method == "POST":
-            result = self.uuid_post(self.server_uuid, local_url, data, subdomain="")
+            result = self.uuid_post(self.server_uuid, local_url, data, subdomain="", **kwargs)
         elif request.method == "GET":
             result = self.uuid_get(self.server_uuid, local_url, data, subdomain="")
         return (result.status_code, result.headers, result.content)
@@ -140,6 +147,186 @@ class BouncerTestCase(ZulipTestCase):
         token_kind = PushDeviceToken.GCM
 
         return {"user_id": user_id, "token": token, "token_kind": token_kind}
+
+
+class SendTestPushNotificationEndpointTest(BouncerTestCase):
+    def test_send_test_push_notification_api_invalid_token(self) -> None:
+        user = self.example_user("cordelia")
+        result = self.api_post(
+            user, "/api/v1/mobile_push/test_notification", {"token": "invalid"}, subdomain="zulip"
+        )
+        self.assert_json_error(result, "Token does not exist")
+
+        payload = {
+            "user_uuid": str(user.uuid),
+            "user_id": user.id,
+            "token": "invalid",
+            "token_kind": PushDeviceToken.GCM,
+            "base_payload": get_base_payload(user),
+        }
+        result = self.uuid_post(
+            self.server_uuid,
+            "/api/v1/remotes/push/test_notification",
+            payload,
+            subdomain="",
+            content_type="application/json",
+        )
+        self.assert_json_error(result, "Token does not exist")
+
+    def test_send_test_push_notification_api_no_bouncer_config(self) -> None:
+        """
+        Tests the endpoint on a server that doesn't use the bouncer, due to having its
+        own ability to send push notifications to devices directly.
+        """
+        user = self.example_user("cordelia")
+
+        android_token = "111222"
+        android_token_kind = PushDeviceToken.GCM
+        apple_token = "111223"
+        apple_token_kind = PushDeviceToken.APNS
+        android_device = PushDeviceToken.objects.create(
+            user=user, token=android_token, kind=android_token_kind
+        )
+        apple_device = PushDeviceToken.objects.create(
+            user=user, token=apple_token, kind=apple_token_kind
+        )
+
+        endpoint = "/api/v1/mobile_push/test_notification"
+        time_now = now()
+
+        # 1. First test for an android device.
+        # 2. Then test for an apple device.
+        # 3. Then test without submitting a specific token,
+        #    meaning both devices should get notified.
+
+        with mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android_push_notification, time_machine.travel(time_now, tick=False):
+            result = self.api_post(user, endpoint, {"token": android_token}, subdomain="zulip")
+
+        expected_android_payload = {
+            "server": "testserver",
+            "realm_id": user.realm_id,
+            "realm_uri": "http://zulip.testserver",
+            "user_id": user.id,
+            "event": "test-by-device-token",
+            "time": datetime_to_timestamp(time_now),
+        }
+        expected_gcm_options = {"priority": "high"}
+        mock_send_android_push_notification.assert_called_once_with(
+            UserPushIdentityCompat(user_id=user.id, user_uuid=str(user.uuid)),
+            [android_device],
+            expected_android_payload,
+            expected_gcm_options,
+            remote=None,
+        )
+        self.assert_json_success(result)
+
+        with mock.patch(
+            "zerver.lib.push_notifications.send_apple_push_notification"
+        ) as mock_send_apple_push_notification, time_machine.travel(time_now, tick=False):
+            result = self.api_post(user, endpoint, {"token": apple_token}, subdomain="zulip")
+
+        expected_apple_payload = {
+            "alert": {
+                "title": "Test notification",
+                "body": "This is a test notification from http://zulip.testserver.",
+            },
+            "sound": "default",
+            "custom": {
+                "zulip": {
+                    "server": "testserver",
+                    "realm_id": user.realm_id,
+                    "realm_uri": "http://zulip.testserver",
+                    "user_id": user.id,
+                    "event": "test-by-device-token",
+                }
+            },
+        }
+        mock_send_apple_push_notification.assert_called_once_with(
+            UserPushIdentityCompat(user_id=user.id, user_uuid=str(user.uuid)),
+            [apple_device],
+            expected_apple_payload,
+            remote=None,
+        )
+        self.assert_json_success(result)
+
+        # Test without submitting a token value. Both devices should get notified.
+        with mock.patch(
+            "zerver.lib.push_notifications.send_apple_push_notification"
+        ) as mock_send_apple_push_notification, mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android_push_notification, time_machine.travel(
+            time_now, tick=False
+        ):
+            result = self.api_post(user, endpoint, subdomain="zulip")
+
+        mock_send_android_push_notification.assert_called_once_with(
+            UserPushIdentityCompat(user_id=user.id, user_uuid=str(user.uuid)),
+            [android_device],
+            expected_android_payload,
+            expected_gcm_options,
+            remote=None,
+        )
+        mock_send_apple_push_notification.assert_called_once_with(
+            UserPushIdentityCompat(user_id=user.id, user_uuid=str(user.uuid)),
+            [apple_device],
+            expected_apple_payload,
+            remote=None,
+        )
+        self.assert_json_success(result)
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_send_test_push_notification_api_with_bouncer_config(self) -> None:
+        """
+        Tests the endpoint on a server that uses the bouncer. This will simulate the
+        end-to-end flow:
+        1. First we simulate a request from the mobile device to the remote server's
+        endpoint for a test notification.
+        2. As a result, the remote server makes a request to the bouncer to send that
+        notification.
+
+        We verify that the appropriate function for sending the notification to the
+        device is called on the bouncer as the ultimate result of the flow.
+        """
+
+        self.add_mock_response()
+
+        user = self.example_user("cordelia")
+        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+        PushDeviceToken.objects.create(user=user, token=token, kind=token_kind)
+        remote_device = RemotePushDeviceToken.objects.create(
+            server=server, user_uuid=str(user.uuid), token=token, kind=token_kind
+        )
+
+        endpoint = "/api/v1/mobile_push/test_notification"
+        time_now = now()
+        with mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android_push_notification, time_machine.travel(time_now, tick=False):
+            result = self.api_post(user, endpoint, {"token": token}, subdomain="zulip")
+        expected_payload = {
+            "server": "testserver",
+            "realm_id": user.realm_id,
+            "realm_uri": "http://zulip.testserver",
+            "user_id": user.id,
+            "event": "test-by-device-token",
+            "time": datetime_to_timestamp(time_now),
+        }
+        expected_gcm_options = {"priority": "high"}
+        user_identity = UserPushIdentityCompat(user_id=user.id, user_uuid=str(user.uuid))
+        mock_send_android_push_notification.assert_called_once_with(
+            user_identity,
+            [remote_device],
+            expected_payload,
+            expected_gcm_options,
+            remote=server,
+        )
+        self.assert_json_success(result)
 
 
 class PushBouncerNotificationTest(BouncerTestCase):
