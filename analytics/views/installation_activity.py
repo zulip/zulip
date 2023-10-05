@@ -2,8 +2,8 @@ import itertools
 import time
 from collections import defaultdict
 from contextlib import suppress
-from datetime import datetime, timedelta
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+from datetime import timedelta
+from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.db import connection
@@ -17,13 +17,11 @@ from psycopg2.sql import SQL, Composable, Literal
 from analytics.lib.counts import COUNT_STATS
 from analytics.views.activity_common import (
     dictfetchall,
-    format_date_for_activity_reports,
-    make_table,
+    get_page,
     realm_activity_link,
     realm_stats_link,
     realm_support_link,
     realm_url_link,
-    remote_installation_stats_link,
 )
 from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
@@ -355,48 +353,6 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
     return content, realm_minutes
 
 
-def get_page(
-    query: Composable, cols: Sequence[str], title: str, totals_columns: Sequence[int] = []
-) -> Dict[str, str]:
-    cursor = connection.cursor()
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    rows = list(map(list, rows))
-    cursor.close()
-
-    def fix_rows(
-        i: int, fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str]]
-    ) -> None:
-        for row in rows:
-            row[i] = fixup_func(row[i])
-
-    total_row = []
-    for i, col in enumerate(cols):
-        if col == "Realm":
-            fix_rows(i, realm_activity_link)
-        elif col in ["Last time", "Last visit"]:
-            fix_rows(i, format_date_for_activity_reports)
-        elif col == "Hostname":
-            for row in rows:
-                row[i] = remote_installation_stats_link(row[0], row[i])
-        if len(totals_columns) > 0:
-            if i == 0:
-                total_row.append("Total")
-            elif i in totals_columns:
-                total_row.append(str(sum(row[i] for row in rows if row[i] is not None)))
-            else:
-                total_row.append("")
-    if len(totals_columns) > 0:
-        rows.insert(0, total_row)
-
-    content = make_table(title, cols, rows)
-
-    return dict(
-        content=content,
-        title=title,
-    )
-
-
 def ad_hoc_queries() -> List[Dict[str, str]]:
     pages = []
 
@@ -567,57 +523,4 @@ def get_installation_activity(request: HttpRequest) -> HttpResponse:
         request,
         "analytics/activity.html",
         context=dict(data=data, title=title, is_home=True),
-    )
-
-
-@require_server_admin
-def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
-    title = "Remote servers"
-
-    query = SQL(
-        """
-        with icount as (
-            select
-                server_id,
-                max(value) as max_value,
-                max(end_time) as max_end_time
-            from zilencer_remoteinstallationcount
-            where
-                property='active_users:is_bot:day'
-                and subgroup='false'
-            group by server_id
-            ),
-        remote_push_devices as (
-            select server_id, count(distinct(user_id)) as push_user_count from zilencer_remotepushdevicetoken
-            group by server_id
-        )
-        select
-            rserver.id,
-            rserver.hostname,
-            rserver.contact_email,
-            max_value,
-            push_user_count,
-            max_end_time
-        from zilencer_remotezulipserver rserver
-        left join icount on icount.server_id = rserver.id
-        left join remote_push_devices on remote_push_devices.server_id = rserver.id
-        order by max_value DESC NULLS LAST, push_user_count DESC NULLS LAST
-    """
-    )
-
-    cols = [
-        "ID",
-        "Hostname",
-        "Contact email",
-        "Analytics users",
-        "Mobile users",
-        "Last update time",
-    ]
-
-    remote_servers = get_page(query, cols, title, totals_columns=[3, 4])
-
-    return render(
-        request,
-        "analytics/activity_details_template.html",
-        context=dict(data=remote_servers["content"], title=remote_servers["title"], is_home=False),
     )
