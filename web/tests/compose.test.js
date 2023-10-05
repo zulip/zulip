@@ -56,6 +56,7 @@ const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
+const compose_setup = zrequire("compose_setup");
 const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -124,7 +125,7 @@ function initialize_handlers({override}) {
     override(page_params, "realm_video_chat_provider", 0);
     override(upload, "feature_check", () => {});
     override(resize, "watch_manual_resize", () => {});
-    compose.initialize();
+    compose_setup.initialize();
 }
 
 test_ui("send_message_success", ({override_rewire}) => {
@@ -445,7 +446,7 @@ test_ui("initialize", ({override}) => {
     });
     override(upload, "feature_check", () => {});
 
-    compose.initialize();
+    compose_setup.initialize();
 
     assert.ok(resize_watch_manual_resize_checked);
 
@@ -460,7 +461,7 @@ test_ui("initialize", ({override}) => {
         reset_jquery();
         set_up_compose_start_mock({});
 
-        compose.initialize();
+        compose_setup.initialize();
 
         assert.ok(compose_actions_start_checked);
     })();
@@ -471,16 +472,16 @@ test_ui("initialize", ({override}) => {
         reset_jquery();
         set_up_compose_start_mock({topic: "testing"});
 
-        compose.initialize();
+        compose_setup.initialize();
 
         assert.ok(compose_actions_start_checked);
     })();
 
     (function test_abort_xhr() {
         reset_jquery();
-        compose.initialize();
+        compose_setup.initialize();
 
-        compose.abort_xhr();
+        compose_setup.abort_xhr();
 
         assert.equal($("#compose-send-button").attr(), undefined);
         assert.ok(uppy_cancel_all_called);

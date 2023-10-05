@@ -26,6 +26,7 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_setup from "./compose_setup";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
 import * as composebox_typeahead from "./composebox_typeahead";
@@ -646,8 +647,8 @@ export function initialize_everything() {
         playground_data: page_params.realm_playgrounds,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
-    compose.initialize();
-    // Typeahead must be initialized after compose.initialize()
+    compose_setup.initialize();
+    // Typeahead must be initialized after compose_setup.initialize()
     composebox_typeahead.initialize({
         on_enter_send: compose.finish,
     });
