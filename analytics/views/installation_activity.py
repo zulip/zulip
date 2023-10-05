@@ -3,7 +3,7 @@ import time
 from collections import defaultdict
 from contextlib import suppress
 from datetime import timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from django.conf import settings
 from django.db import connection
@@ -12,7 +12,7 @@ from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from markupsafe import Markup
-from psycopg2.sql import SQL, Composable, Literal
+from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.views.activity_common import (
@@ -353,119 +353,6 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
     return content, realm_minutes
 
 
-def ad_hoc_queries() -> List[Dict[str, str]]:
-    pages = []
-
-    for mobile_type in ["Android", "ZulipiOS"]:
-        title = f"{mobile_type} usage"
-
-        query: Composable = SQL(
-            """
-            select
-                realm.string_id,
-                up.id user_id,
-                client.name,
-                sum(count) as hits,
-                max(last_visit) as last_time
-            from zerver_useractivity ua
-            join zerver_client client on client.id = ua.client_id
-            join zerver_userprofile up on up.id = ua.user_profile_id
-            join zerver_realm realm on realm.id = up.realm_id
-            where
-                client.name like {mobile_type}
-            group by string_id, up.id, client.name
-            having max(last_visit) > now() - interval '2 week'
-            order by string_id, up.id, client.name
-        """
-        ).format(
-            mobile_type=Literal(mobile_type),
-        )
-
-        cols = [
-            "Realm",
-            "User id",
-            "Name",
-            "Hits",
-            "Last time",
-        ]
-
-        pages.append(get_page(query, cols, title))
-
-    ###
-
-    title = "Desktop users"
-
-    query = SQL(
-        """
-        select
-            realm.string_id,
-            client.name,
-            sum(count) as hits,
-            max(last_visit) as last_time
-        from zerver_useractivity ua
-        join zerver_client client on client.id = ua.client_id
-        join zerver_userprofile up on up.id = ua.user_profile_id
-        join zerver_realm realm on realm.id = up.realm_id
-        where
-            client.name like 'desktop%%'
-        group by string_id, client.name
-        having max(last_visit) > now() - interval '2 week'
-        order by string_id, client.name
-    """
-    )
-
-    cols = [
-        "Realm",
-        "Client",
-        "Hits",
-        "Last time",
-    ]
-
-    pages.append(get_page(query, cols, title))
-
-    ###
-
-    title = "Integrations by realm"
-
-    query = SQL(
-        """
-        select
-            realm.string_id,
-            case
-                when query like '%%external%%' then split_part(query, '/', 5)
-                else client.name
-            end client_name,
-            sum(count) as hits,
-            max(last_visit) as last_time
-        from zerver_useractivity ua
-        join zerver_client client on client.id = ua.client_id
-        join zerver_userprofile up on up.id = ua.user_profile_id
-        join zerver_realm realm on realm.id = up.realm_id
-        where
-            (query in ('send_message_backend', '/api/v1/send_message')
-            and client.name not in ('Android', 'ZulipiOS')
-            and client.name not like 'test: Zulip%%'
-            )
-        or
-            query like '%%external%%'
-        group by string_id, client_name
-        having max(last_visit) > now() - interval '2 week'
-        order by string_id, client_name
-    """
-    )
-
-    cols = [
-        "Realm",
-        "Client",
-        "Hits",
-        "Last time",
-    ]
-
-    pages.append(get_page(query, cols, title))
-
-    return pages
-
-
 @require_server_admin
 @has_request_variables
 def get_installation_activity(request: HttpRequest) -> HttpResponse:
@@ -474,7 +361,6 @@ def get_installation_activity(request: HttpRequest) -> HttpResponse:
     data = [
         ("Counts", counts_content),
         ("Durations", duration_content),
-        *((page["title"], page["content"]) for page in ad_hoc_queries()),
     ]
 
     title = "Activity"
