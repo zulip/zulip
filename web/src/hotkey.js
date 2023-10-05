@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as compose from "./compose";
@@ -293,8 +294,8 @@ export function process_escape_key(e) {
     }
 
     if (processing_text()) {
-        if (activity.searching()) {
-            activity.escape_search();
+        if (activity_ui.searching()) {
+            activity_ui.escape_search();
             return true;
         }
 
@@ -886,7 +887,7 @@ export function process_hotkey(e, hotkey) {
             stream_list.initiate_search();
             return true;
         case "query_users":
-            activity.initiate_search();
+            activity_ui.initiate_search();
             return true;
         case "search":
         case "search_with_k":

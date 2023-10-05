@@ -55,7 +55,7 @@ const {run_test} = require("./lib/test");
 */
 
 // We are going to use mock versions of some of our libraries.
-const activity = mock_esm("../src/activity");
+const activity_ui = mock_esm("../src/activity_ui");
 const message_live_update = mock_esm("../src/message_live_update");
 const pm_list = mock_esm("../src/pm_list");
 const settings_users = mock_esm("../src/settings_users");
@@ -132,7 +132,7 @@ run_test("update user with event", ({override}) => {
     // verify that they run. Fortunately, the run_test()
     // wrapper will tell us if we override a method that
     // doesn't get called!
-    override(activity, "redraw", () => {});
+    override(activity_ui, "redraw", () => {});
     override(message_live_update, "update_user_full_name", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(settings_users, "update_user_data", () => {});
