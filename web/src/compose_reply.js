@@ -42,7 +42,8 @@ export function respond_to_message(opts) {
         }
         message = message_opts.message;
     } else {
-        message = message_lists.current.selected_message();
+        message =
+            message_lists.current.get(opts.message_id) || message_lists.current.selected_message();
 
         if (message === undefined) {
             // empty narrow implementation
