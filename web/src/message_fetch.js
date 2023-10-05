@@ -26,8 +26,8 @@ const consts = {
     num_before_home_anchor: 200,
     num_after_home_anchor: 200,
     recent_view_initial_fetch_size: 400,
-    backward_batch_size: 100,
-    forward_batch_size: 100,
+    narrowed_view_backward_batch_size: 100,
+    narrowed_view_forward_batch_size: 100,
     catch_up_batch_size: 1000,
 };
 
@@ -394,7 +394,7 @@ export function maybe_load_older_messages(opts) {
 
     do_backfill({
         msg_list,
-        num_before: consts.backward_batch_size,
+        num_before: consts.narrowed_view_backward_batch_size,
     });
 }
 
@@ -438,7 +438,7 @@ export function maybe_load_newer_messages(opts) {
     load_messages({
         anchor,
         num_before: 0,
-        num_after: consts.forward_batch_size,
+        num_after: consts.narrowed_view_forward_batch_size,
         msg_list,
         cont: load_more,
     });
