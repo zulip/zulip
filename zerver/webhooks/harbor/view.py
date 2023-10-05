@@ -65,7 +65,7 @@ def handle_scanning_completed_event(
     scan_results = ""
     scan_overview = payload["event_data"]["resources"][0]["scan_overview"]
     if "application/vnd.security.vulnerability.report; version=1.1" not in scan_overview:
-        raise UnsupportedWebhookEventTypeError("Unsupported harbor scanning webhook payload")
+        raise UnsupportedWebhookEventTypeError(str(list(scan_overview.keys())))
     scan_summaries = scan_overview["application/vnd.security.vulnerability.report; version=1.1"][
         "summary"
     ]["summary"]
