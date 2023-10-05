@@ -10,7 +10,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_call from "./compose_call";
-import {get_recipient_label} from "./compose_closed_ui";
+import * as compose_call_ui from "./compose_call_ui";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -18,7 +18,7 @@ import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
 import * as flatpickr from "./flatpickr";
-import {$t, $t_html} from "./i18n";
+import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
@@ -39,7 +39,6 @@ import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import {get_timestamp_for_flatpickr} from "./timerender";
 import * as transmit from "./transmit";
-import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
@@ -318,16 +317,6 @@ export function update_email(user_id, new_email) {
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
     compose_state.private_message_recipient(reply_to);
-}
-
-function insert_video_call_url(url, target_textarea) {
-    const link_text = $t({defaultMessage: "Join video call."});
-    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
-}
-
-function insert_audio_call_url(url, target_textarea) {
-    const link_text = $t({defaultMessage: "Join audio call."});
-    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
 }
 
 export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
@@ -615,7 +604,7 @@ export function initialize() {
             return;
         }
 
-        generate_and_insert_audio_or_video_call_link($(e.target), false);
+        compose_call_ui.generate_and_insert_audio_or_video_call_link($(e.target), false);
     });
 
     $("body").on("click", ".audio_link", (e) => {
@@ -628,7 +617,7 @@ export function initialize() {
             return;
         }
 
-        generate_and_insert_audio_or_video_call_link($(e.target), true);
+        compose_call_ui.generate_and_insert_audio_or_video_call_link($(e.target), true);
     });
 
     $("body").on("click", ".time_pick", (e) => {
@@ -800,117 +789,4 @@ function schedule_message_to_custom_date() {
         success,
         error,
     });
-}
-
-function generate_and_insert_audio_or_video_call_link($target_element, is_audio_call) {
-    let $target_textarea;
-    let edit_message_id;
-    if ($target_element.parents(".message_edit_form").length === 1) {
-        edit_message_id = rows.id($target_element.parents(".message_row"));
-        $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
-    }
-
-    const available_providers = page_params.realm_available_video_chat_providers;
-
-    if (
-        available_providers.zoom &&
-        page_params.realm_video_chat_provider === available_providers.zoom.id
-    ) {
-        compose_call.abort_video_callbacks(edit_message_id);
-        const key = edit_message_id || "";
-
-        const request = {
-            is_video_call: !is_audio_call,
-        };
-
-        const make_zoom_call = () => {
-            compose_call.video_call_xhrs.set(
-                key,
-                channel.post({
-                    url: "/json/calls/zoom/create",
-                    data: request,
-                    success(res) {
-                        compose_call.video_call_xhrs.delete(key);
-                        if (is_audio_call) {
-                            insert_audio_call_url(res.url, $target_textarea);
-                        } else {
-                            insert_video_call_url(res.url, $target_textarea);
-                        }
-                    },
-                    error(xhr, status) {
-                        compose_call.video_call_xhrs.delete(key);
-                        if (
-                            status === "error" &&
-                            xhr.responseJSON &&
-                            xhr.responseJSON.code === "INVALID_ZOOM_TOKEN"
-                        ) {
-                            page_params.has_zoom_token = false;
-                        }
-                        if (status !== "abort") {
-                            ui_report.generic_embed_error(
-                                $t_html({defaultMessage: "Failed to create video call."}),
-                            );
-                        }
-                    },
-                }),
-            );
-        };
-
-        if (page_params.has_zoom_token) {
-            make_zoom_call();
-        } else {
-            compose_call.zoom_token_callbacks.set(key, make_zoom_call);
-            window.open(
-                window.location.protocol + "//" + window.location.host + "/calls/zoom/register",
-                "_blank",
-                "width=800,height=500,noopener,noreferrer",
-            );
-        }
-    } else if (
-        available_providers.big_blue_button &&
-        page_params.realm_video_chat_provider === available_providers.big_blue_button.id
-    ) {
-        if (is_audio_call) {
-            // TODO: Add support for audio-only BigBlueButton calls here.
-            return;
-        }
-        const meeting_name = get_recipient_label() + " meeting";
-        channel.get({
-            url: "/json/calls/bigbluebutton/create",
-            data: {
-                meeting_name,
-            },
-            success(response) {
-                insert_video_call_url(response.url, $target_textarea);
-            },
-        });
-    } else {
-        // TODO: Use `new URL` to generate the URLs here.
-        const video_call_id = util.random_int(100000000000000, 999999999999999);
-        const video_call_link = compose_call.get_jitsi_server_url() + "/" + video_call_id;
-        if (is_audio_call) {
-            insert_audio_call_url(
-                video_call_link + "#config.startWithVideoMuted=true",
-                $target_textarea,
-            );
-        } else {
-            /* Because Jitsi remembers what last call type you joined
-               in browser local storage, we need to specify that video
-               should not be muted in the video call case, or your
-               next call will also join without video after joining an
-               audio-only call.
-
-               This has the annoying downside that it requires users
-               who have a personal preference to disable video every
-               time, but Jitsi's UI makes that very easy to do, and
-               that inconvenience is probably less important than letting
-               the person organizing a call specify their intended
-               call type (video vs audio).
-           */
-            insert_video_call_url(
-                video_call_link + "#config.startWithVideoMuted=false",
-                $target_textarea,
-            );
-        }
-    }
 }
