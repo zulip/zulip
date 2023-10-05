@@ -1113,8 +1113,8 @@ class DeferredWorker(QueueProcessingWorker):
             # triggered the export know the export finished.
             with override_language(user_profile.default_language):
                 content = _(
-                    "Your data export is complete and has been uploaded here:\n\n{public_url}"
-                ).format(public_url=public_url)
+                    "Your data export is complete. [View and download exports]({export_settings_link})."
+                ).format(export_settings_link="/#organization/data-exports-admin")
             internal_send_private_message(
                 sender=get_system_bot(settings.NOTIFICATION_BOT, realm.id),
                 recipient_user=user_profile,
