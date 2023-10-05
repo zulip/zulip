@@ -62,19 +62,19 @@ export function get_recipient_label(message) {
 function update_reply_button_state(disable = false) {
     $(".compose_reply_button").attr("disabled", disable);
     if (disable) {
-        $("#compose_buttons > .reply_button_container").attr(
+        $("#compose_buttons .compose_reply_button").attr(
             "data-tooltip-template-id",
             "compose_reply_button_disabled_tooltip_template",
         );
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#compose_buttons > .reply_button_container").attr(
+        $("#compose_buttons .compose_reply_button").attr(
             "data-tooltip-template-id",
             "compose_reply_message_button_tooltip_template",
         );
     } else {
-        $("#compose_buttons > .reply_button_container").attr(
+        $("#compose_buttons .compose_reply_button").attr(
             "data-tooltip-template-id",
             "compose_reply_selected_topic_button_tooltip_template",
         );
@@ -135,7 +135,7 @@ export function update_buttons_for_private() {
     // disable the [Message X] button when in a private narrow
     // if the user cannot dm the current recipient
     const disable_reply = true;
-    $("#compose_buttons > .reply_button_container").attr(
+    $("#compose_buttons .compose_reply_button").attr(
         "data-tooltip-template-id",
         "disable_reply_compose_reply_button_tooltip_template",
     );
