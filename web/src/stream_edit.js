@@ -72,7 +72,7 @@ export function get_display_text_for_realm_message_retention_setting() {
 
 function get_stream_id(target) {
     const $row = $(target).closest(
-        ".stream-row, .stream-notifications-row, .stream_settings_header, .subscription_settings, .save-button",
+        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
     );
     return Number.parseInt($row.attr("data-stream-id"), 10);
 }
@@ -153,7 +153,7 @@ function show_subscription_settings(sub) {
     });
 }
 
-export function is_notification_setting(setting_label) {
+function is_notification_setting(setting_label) {
     if (setting_label.includes("_notifications")) {
         return true;
     } else if (setting_label.includes("_notify")) {
@@ -318,15 +318,13 @@ function stream_is_muted_changed(e) {
     );
 }
 
-export function stream_setting_changed(e, from_notification_settings) {
+function stream_setting_changed(e) {
     if (e.target.name === "is_muted") {
         return;
     }
 
     const sub = get_sub_for_target(e.target);
-    const $status_element = from_notification_settings
-        ? $(e.target).closest(".subsection-parent").find(".alert-notification")
-        : $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`);
+    const $status_element = $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`);
     const setting = e.target.name;
     if (!sub) {
         blueslip.error("undefined sub in stream_setting_changed()");
