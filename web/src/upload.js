@@ -6,6 +6,7 @@ import render_upload_banner from "../templates/compose_banner/upload_banner.hbs"
 
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {csrf_token} from "./csrf";
@@ -312,7 +313,7 @@ export function setup_upload(config) {
         event.stopPropagation();
         const files = event.originalEvent.dataTransfer.files;
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_actions.respond_to_message({trigger: "file drop or paste"});
+            compose_reply.respond_to_message({trigger: "file drop or paste"});
         }
         upload_files(uppy, config, files);
     });
@@ -339,7 +340,7 @@ export function setup_upload(config) {
         // present a plain-text version of the file name.
         event.preventDefault();
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_actions.respond_to_message({trigger: "file drop or paste"});
+            compose_reply.respond_to_message({trigger: "file drop or paste"});
         }
         upload_files(uppy, config, files);
     });
@@ -459,7 +460,7 @@ export function initialize() {
             upload_files(edit_upload_object, {mode: "edit", row: row_id}, files);
         } else if (message_lists.current.selected_message()) {
             // Start a reply to selected message, if viewing a message feed.
-            compose_actions.respond_to_message({trigger: "drag_drop_file"});
+            compose_reply.respond_to_message({trigger: "drag_drop_file"});
             upload_files(compose_upload_object, {mode: "compose"}, files);
         } else {
             // Start a new message in other views.

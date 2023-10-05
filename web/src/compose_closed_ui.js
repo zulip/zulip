@@ -175,8 +175,4 @@ export function initialize() {
     $("body").on("click", ".compose_private_button", () => {
         compose_actions.start("private", {trigger: "new direct message"});
     });
-
-    $("body").on("click", ".compose_reply_button", () => {
-        compose_actions.respond_to_message({trigger: "reply button"});
-    });
 }
