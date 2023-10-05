@@ -806,8 +806,6 @@ def api_github_webhook(
     refine it based on the payload.
     """
     header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
-    if header_event is None:
-        raise UnsupportedWebhookEventTypeError("no header provided")
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
