@@ -17,13 +17,12 @@ const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 const narrow = zrequire("narrow");
 const settings_config = zrequire("settings_config");
+const recent_view_util = zrequire("recent_view_util");
+const inbox_util = zrequire("inbox_util");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/spectators", {
     login_to_access() {},
-});
-const recent_view_util = mock_esm("../src/recent_view_util", {
-    is_visible() {},
 });
 
 function empty_narrow_html(title, html, search_data) {
@@ -766,16 +765,22 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
 });
 
-run_test("narrow_compute_title", ({override}) => {
+run_test("narrow_compute_title", () => {
     // Only tests cases where the narrow title is different from the filter title.
     let filter;
 
-    // Recent conversations & All messages have `undefined` filter.
+    // Recent conversations & Inbox have `undefined` filter.
     filter = undefined;
-    override(recent_view_util, "is_visible", () => true);
+    recent_view_util.set_visible(true);
+    inbox_util.set_visible(false);
     assert.equal(narrow.compute_narrow_title(filter), "translated: Recent conversations");
 
-    override(recent_view_util, "is_visible", () => false);
+    recent_view_util.set_visible(false);
+    inbox_util.set_visible(true);
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Inbox");
+
+    inbox_util.set_visible(false);
+    filter = new Filter([{operator: "in", operand: "home"}]);
     assert.equal(narrow.compute_narrow_title(filter), "translated: All messages");
 
     // Search & uncommon narrows
