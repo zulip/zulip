@@ -285,8 +285,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         () => "https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado",
     );
 
-    override(message_lists.current, "selected_message", () => selected_message);
-    override(message_lists.current, "selected_id", () => 100);
+    override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
 
     let success_function;
     override(channel, "get", (opts) => {
@@ -368,7 +367,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     let quote_text = "Testing caret position";
     override_with_quote_text(quote_text);
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
-    compose_reply.quote_and_reply();
+    compose_reply.quote_and_reply({message_id: 100});
 
     success_function({
         raw_content: quote_text,
@@ -383,7 +382,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
     set_compose_content_with_caret("%hello there");
-    compose_reply.quote_and_reply();
+    compose_reply.quote_and_reply({message_id: 100});
 
     quote_text = "Testing with caret initially positioned at 0.";
     override_with_quote_text(quote_text);
@@ -403,7 +402,8 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // If the compose-box is close, or open with no content while
     // quoting a message, the quoted message should be placed
     // at the beginning of compose-box.
-    compose_reply.quote_and_reply();
+    override(message_lists.current, "selected_id", () => 100);
+    compose_reply.quote_and_reply({});
 
     quote_text = "Testing with compose-box closed initially.";
     override_with_quote_text(quote_text);
@@ -418,7 +418,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // newlines), the compose-box should re-open and thus the quoted
     // message should start from the beginning of compose-box.
     set_compose_content_with_caret("  \n\n \n %");
-    compose_reply.quote_and_reply();
+    compose_reply.quote_and_reply({});
 
     quote_text = "Testing with compose-box containing whitespaces and newlines only.";
     override_with_quote_text(quote_text);
@@ -435,7 +435,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         assert.equal(syntax, "\ntranslated: [Quoting…]\n");
     });
     set_compose_content_with_caret("1st line\n%\n2nd line");
-    compose_reply.quote_and_reply();
+    compose_reply.quote_and_reply({});
 
     quote_text = "Testing with caret on a new line between 2 lines of text.";
     override_with_quote_text(quote_text);
@@ -452,7 +452,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         assert.equal(syntax, "translated: [Quoting…]");
     });
     set_compose_content_with_caret("lots of\n\n\n\n%\n\n\nnewlines");
-    compose_reply.quote_and_reply();
+    compose_reply.quote_and_reply({});
 
     quote_text = "Testing with caret on a new line between many empty newlines.";
     override_with_quote_text(quote_text);
