@@ -57,10 +57,10 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, value, status_element) {
+function change_notification_setting(setting, value, $status_element) {
     const data = {};
     data[setting] = value;
-    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element);
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_element);
 }
 
 function update_desktop_icon_count_display(settings_panel) {
