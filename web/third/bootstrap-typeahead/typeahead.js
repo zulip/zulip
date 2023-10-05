@@ -546,7 +546,7 @@ import {get_string_diff} from "../../src/util";
   , blur: function (e) {
       // Blurs that move focus to elsewhere within the parent element shouldn't
       // hide the typeahead.
-      if ($(e.relatedTarget).parents(this.options.parentElement).length > 0) {
+      if (this.options.parentElement && $(e.relatedTarget).parents(this.options.parentElement).length > 0) {
         return;
       }
       var that = this
