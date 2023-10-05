@@ -13,7 +13,7 @@ import * as compose_textarea from "./compose_textarea";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as deprecated_feature_notice from "./deprecated_feature_notice";
-import * as drafts from "./drafts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
@@ -460,7 +460,7 @@ export function process_enter_key(e) {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
-        drafts.handle_keyboard_events("enter");
+        drafts_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
 
@@ -705,7 +705,7 @@ export function process_hotkey(e, hotkey) {
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
-                drafts.handle_keyboard_events(event_name);
+                drafts_overlay_ui.handle_keyboard_events(event_name);
                 return true;
             }
             if (overlays.scheduled_messages_open()) {
