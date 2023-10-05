@@ -61,8 +61,8 @@ const subscriptions_table_colorpicker_options = {
     palette: stream_color_palette,
 };
 
-export function set_colorpicker_color(colorpicker, color) {
-    colorpicker.spectrum({
+export function set_colorpicker_color($colorpicker, color) {
+    $colorpicker.spectrum({
         ...subscriptions_table_colorpicker_options,
         color,
         container: "#subscription_overlay .subscription_settings.show",
