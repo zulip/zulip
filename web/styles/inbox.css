@@ -61,7 +61,8 @@
                 position: absolute;
                 top: 23px;
                 left: 6px;
-                color: var(--color-icon-search-inbox);
+                color: var(--color-icon-inbox-search);
+                opacity: 0.4;
             }
         }
 
@@ -71,8 +72,6 @@
             overflow: hidden;
             width: var(--width-inbox-search);
             height: var(--height-inbox-search);
-            background-color: var(--color-background-inbox-search);
-            border: 1px solid transparent;
             padding-right: 20px;
             padding-left: 30px;
             font-size: 14px;
@@ -80,11 +79,20 @@
             font-weight: 400;
             line-height: 17px;
             border-radius: 4px;
+            background-color: var(--color-background-inbox);
+            color: var(--color-inbox-search-text);
+            border: 1px solid var(--color-border-inbox-search);
+
+            &:not(:placeholder-shown), &:hover {
+                background-color: var(--color-background-inbox-search-hover);
+                border: 1px solid var(--color-border-inbox-search-hover);
+            }
 
             &:focus {
                 outline: none;
-                background: var(--color-background-inbox-search-focus);
+                background-color: var(--color-background-inbox-search-focus);
                 border: 1px solid var(--color-border-inbox-search-focus);
+                box-shadow: 0 0 5px var(--color-box-shadow-inbox-search-focus);
             }
         }
 
