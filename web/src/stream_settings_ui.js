@@ -254,11 +254,6 @@ export function update_is_default_stream() {
     }
 }
 
-export function set_color(stream_id, color) {
-    const sub = sub_store.get(stream_id);
-    stream_settings_api.set_stream_property(sub, "color", color);
-}
-
 export function update_subscribers_ui(sub) {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
