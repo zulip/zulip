@@ -379,7 +379,7 @@ def bulk_get_digest_context(
 
 
 def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
-    for _, context in bulk_get_digest_context([user], cutoff):
+    for ignored, context in bulk_get_digest_context([user], cutoff):
         return context
     raise AssertionError("Unreachable")
 
