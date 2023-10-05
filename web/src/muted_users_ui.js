@@ -1,4 +1,4 @@
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
@@ -17,7 +17,7 @@ export function rerender_for_muted_user() {
         settings_muted_users.populate_list();
     }
 
-    activity.redraw();
+    activity_ui.redraw();
     pm_list.update_private_messages();
 
     // If a user is (un)muted, we want to update their avatars on the Recent Conversations

@@ -4,7 +4,7 @@
 // (We should do bot updates here too.)
 import $ from "jquery";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as message_live_update from "./message_live_update";
@@ -57,7 +57,7 @@ export const update_person = function update(person) {
         people.set_full_name(person_obj, person.full_name);
 
         settings_users.update_user_data(person.user_id, person);
-        activity.redraw();
+        activity_ui.redraw();
         message_live_update.update_user_full_name(person.user_id, person.full_name);
         pm_list.update_private_messages();
         if (people.is_my_user_id(person.user_id)) {

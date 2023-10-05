@@ -19,7 +19,7 @@ const typing_person1 = events.typing_person1;
 
 set_global("requestAnimationFrame", (func) => func());
 
-const activity = mock_esm("../src/activity");
+const activity_ui = mock_esm("../src/activity_ui");
 const alert_words_ui = mock_esm("../src/alert_words_ui");
 const attachments_ui = mock_esm("../src/attachments_ui");
 const bot_data = mock_esm("../src/bot_data");
@@ -347,7 +347,7 @@ run_test("presence", ({override}) => {
     const event = event_fixtures.presence;
 
     const stub = make_stub();
-    override(activity, "update_presence_info", stub.f);
+    override(activity_ui, "update_presence_info", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("user_id", "presence", "server_time");
@@ -936,7 +936,7 @@ run_test("user_settings", ({override}) => {
         event = event_fixtures.user_settings__emojiset;
         called = false;
         override(settings_display, "report_emojiset_change", stub.f);
-        override(activity, "build_user_sidebar", noop);
+        override(activity_ui, "build_user_sidebar", noop);
         user_settings.emojiset = "text";
         dispatch(event);
         assert.equal(stub.num_calls, 1);
@@ -981,7 +981,7 @@ run_test("user_settings", ({override}) => {
         event = event_fixtures.user_settings__user_list_style;
         override(settings_display, "report_user_list_style_change", stub.f);
         user_settings.user_list_style = 1;
-        override(activity, "build_user_sidebar", stub.f);
+        override(activity_ui, "build_user_sidebar", stub.f);
         dispatch(event);
         assert.equal(stub.num_calls, 2);
         assert_same(user_settings.user_list_style, 2);
@@ -994,12 +994,12 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__presence_disabled;
     user_settings.presence_enabled = true;
-    override(activity, "redraw_user", noop);
+    override(activity_ui, "redraw_user", noop);
     dispatch(event);
     assert_same(user_settings.presence_enabled, false);
 
     event = event_fixtures.user_settings__presence_enabled;
-    override(activity, "redraw_user", noop);
+    override(activity_ui, "redraw_user", noop);
     dispatch(event);
     assert_same(user_settings.presence_enabled, true);
 
@@ -1107,7 +1107,7 @@ run_test("user_status", ({override}) => {
     let event = event_fixtures.user_status__set_status_emoji;
     {
         const stub = make_stub();
-        override(activity, "redraw_user", stub.f);
+        override(activity_ui, "redraw_user", stub.f);
         override(pm_list, "update_private_messages", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
@@ -1126,7 +1126,7 @@ run_test("user_status", ({override}) => {
     event = event_fixtures.user_status__set_status_text;
     {
         const stub = make_stub();
-        override(activity, "redraw_user", stub.f);
+        override(activity_ui, "redraw_user", stub.f);
         override(compose_pm_pill, "get_user_ids", () => [event.user_id]);
         dispatch(event);
         assert.equal(stub.num_calls, 1);

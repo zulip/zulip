@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as alert_words from "./alert_words";
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
@@ -160,7 +160,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "presence":
-            activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
+            activity_ui.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
 
         case "restart": {
@@ -751,7 +751,7 @@ export function dispatch_normal_event(event) {
                 settings_display.report_user_list_style_change(
                     settings_display.user_settings_panel,
                 );
-                activity.build_user_sidebar();
+                activity_ui.build_user_sidebar();
             }
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
@@ -796,7 +796,7 @@ export function dispatch_normal_event(event) {
                     msg_list.rerender();
                 }
                 // Rerender buddy list status emoji
-                activity.build_user_sidebar();
+                activity_ui.build_user_sidebar();
             }
 
             if (event.property === "display_emoji_reaction_users") {
@@ -814,7 +814,7 @@ export function dispatch_normal_event(event) {
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
-                activity.redraw_user(page_params.user_id);
+                activity_ui.redraw_user(page_params.user_id);
                 break;
             }
             if (event.property === "email_address_visibility") {
@@ -899,7 +899,7 @@ export function dispatch_normal_event(event) {
                     user_id: event.user_id,
                     status_text: event.status_text,
                 });
-                activity.redraw_user(event.user_id);
+                activity_ui.redraw_user(event.user_id);
 
                 // Update the status text in compose box placeholder when opened to self.
                 if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
@@ -909,7 +909,7 @@ export function dispatch_normal_event(event) {
 
             if (event.emoji_name !== undefined) {
                 user_status.set_status_emoji(event);
-                activity.redraw_user(event.user_id);
+                activity_ui.redraw_user(event.user_id);
                 pm_list.update_private_messages();
                 message_live_update.update_user_status_emoji(
                     event.user_id,

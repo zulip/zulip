@@ -14,7 +14,7 @@ const settings_account = mock_esm("../src/settings_account", {
     update_account_settings_display() {},
 });
 
-mock_esm("../src/activity", {
+mock_esm("../src/activity_ui", {
     redraw() {},
 });
 mock_esm("../src/compose", {
