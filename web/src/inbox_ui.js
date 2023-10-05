@@ -157,7 +157,7 @@ export function toggle_muted_filter() {
     update();
 }
 
-function format_dm(user_ids_string, unread_count) {
+function format_dm(user_ids_string, unread_count, latest_msg_id) {
     const recipient_ids = people.user_ids_string_to_ids_array(user_ids_string);
     if (!recipient_ids.length) {
         // Self DM
@@ -194,18 +194,48 @@ function format_dm(user_ids_string, unread_count) {
         unread_count,
         is_hidden: filter_should_hide_row({dm_key: user_ids_string}),
         is_collapsed: collapsed_containers.has("inbox-dm-header"),
+        latest_msg_id,
     };
 
     return context;
 }
 
-function rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data) {
+function insert_dms(keys_to_insert) {
+    const sorted_keys = [...dms_dict.keys()];
+    // If we need to insert at the top, we do it separately to avoid edge case in loop below.
+    if (keys_to_insert.includes(sorted_keys[0])) {
+        $("#inbox-direct-messages-container").prepend(
+            render_inbox_row(dms_dict.get(sorted_keys[0])),
+        );
+    }
+
+    for (const [i, key] of sorted_keys.entries()) {
+        if (i === 0) {
+            continue;
+        }
+
+        if (keys_to_insert.includes(key)) {
+            const $previous_row = get_row_from_conversation_key(sorted_keys[i - 1]);
+            $previous_row.after(render_inbox_row(dms_dict.get(key)));
+        }
+    }
+}
+
+function rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data, dm_keys_to_insert) {
     if (old_dm_data === undefined) {
         // This row is not rendered yet.
-        $("#inbox-direct-messages-container").append(render_inbox_row(new_dm_data));
+        dm_keys_to_insert.push(new_dm_data.conversation_key);
         return;
     }
 
+    if (old_dm_data.latest_msg_id !== new_dm_data.latest_msg_id) {
+        // Row's index likely changed in list, so remove it and insert again.
+        get_row_from_conversation_key(new_dm_data.conversation_key).remove();
+        dm_keys_to_insert.push(new_dm_data.conversation_key);
+        return;
+    }
+
+    // If row's latest_msg_id didn't change, we can inplace rerender it, if needed.
     for (const property in new_dm_data) {
         if (new_dm_data[property] !== old_dm_data[property]) {
             const $rendered_row = get_row_from_conversation_key(new_dm_data.conversation_key);
@@ -242,16 +272,17 @@ function update_stream_data(stream_id, stream_key, topic_dict) {
     topics_dict.set(stream_key, new Map());
     const stream_data = format_stream(stream_id);
     let stream_post_filter_unread_count = 0;
-    for (const [topic, topic_unread_count] of topic_dict) {
+    for (const [topic, {topic_count, latest_msg_id}] of topic_dict) {
         const topic_key = get_topic_key(stream_id, topic);
-        if (topic_unread_count) {
-            const topic_data = format_topic(stream_id, topic, topic_unread_count);
+        if (topic_count) {
+            const topic_data = format_topic(stream_id, topic, topic_count, latest_msg_id);
             topics_dict.get(stream_key).set(topic_key, topic_data);
             if (!topic_data.is_hidden) {
                 stream_post_filter_unread_count += topic_data.unread_count;
             }
         }
     }
+    topics_dict.set(stream_key, get_sorted_row_dict(topics_dict.get(stream_key)));
     stream_data.is_hidden = stream_post_filter_unread_count === 0;
     stream_data.unread_count = stream_post_filter_unread_count;
     streams_dict.set(stream_key, stream_data);
@@ -267,7 +298,7 @@ function rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data
     }
 }
 
-function format_topic(stream_id, topic, topic_unread_count) {
+function format_topic(stream_id, topic, topic_unread_count, latest_msg_id) {
     const context = {
         is_topic: true,
         stream_id,
@@ -278,6 +309,7 @@ function format_topic(stream_id, topic, topic_unread_count) {
         is_hidden: filter_should_hide_row({stream_id, topic}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
         mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
+        latest_msg_id,
     };
 
     return context;
@@ -302,13 +334,40 @@ function insert_stream(stream_id, topic_dict) {
     return !streams_dict.get(stream_key).is_hidden;
 }
 
-function rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data) {
-    // This row is not rendered yet.
+function insert_topics(keys, stream_key) {
+    const stream_topics_data = topics_dict.get(stream_key);
+    const sorted_keys = [...stream_topics_data.keys()];
+    // If we need to insert at the top, we do it separately to avoid edge case in loop below.
+    if (keys.includes(sorted_keys[0])) {
+        const $stream = get_stream_container(stream_key);
+        $stream
+            .find(".inbox-topic-container")
+            .prepend(render_inbox_row(stream_topics_data.get(sorted_keys[0])));
+    }
+
+    for (const [i, key] of sorted_keys.entries()) {
+        if (i === 0) {
+            continue;
+        }
+
+        if (keys.includes(key)) {
+            const $previous_row = get_row_from_conversation_key(sorted_keys[i - 1]);
+            $previous_row.after(render_inbox_row(stream_topics_data.get(key)));
+        }
+    }
+}
+
+function rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data, topic_keys_to_insert) {
     if (old_topic_data === undefined) {
-        const stream_key = get_stream_key(new_topic_data.stream_id);
-        const $topic_container = get_stream_container(stream_key).find(".inbox-topic-container");
-        $topic_container.prepend(render_inbox_row(new_topic_data));
+        // This row is not rendered yet.
+        topic_keys_to_insert.push(new_topic_data.conversation_key);
         return;
+    }
+
+    if (old_topic_data.latest_msg_id !== new_topic_data.latest_msg_id) {
+        // Row's index likely changed in list, so remove it and insert again.
+        get_row_from_conversation_key(new_topic_data.conversation_key).remove();
+        topic_keys_to_insert.push(new_topic_data.conversation_key);
     }
 
     for (const property in new_topic_data) {
@@ -362,24 +421,41 @@ function get_sorted_stream_topic_dict() {
     return sorted_topic_dict;
 }
 
+function get_sorted_row_keys(row_dict) {
+    return [...row_dict.keys()].sort(
+        (a, b) => row_dict.get(b).latest_msg_id - row_dict.get(a).latest_msg_id,
+    );
+}
+
+function get_sorted_row_dict(row_dict) {
+    const sorted_row_keys = get_sorted_row_keys(row_dict);
+    const sorted_row_dict = new Map();
+    for (const row_key of sorted_row_keys) {
+        sorted_row_dict.set(row_key, row_dict.get(row_key));
+    }
+    return sorted_row_dict;
+}
+
 function reset_data() {
     dms_dict = new Map();
     topics_dict = new Map();
     streams_dict = new Map();
 
-    const unread_dms = unread.get_unread_pm();
+    const include_per_bucket_max_msg_id = true;
+    const unread_dms = unread.get_unread_pm(include_per_bucket_max_msg_id);
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
 
-    const unread_stream_message = unread.get_unread_topics();
+    const include_per_topic_max_msg_id = true;
+    const unread_stream_message = unread.get_unread_topics(include_per_topic_max_msg_id);
     const unread_stream_msg_count = unread_stream_message.stream_unread_messages;
     const unread_streams_dict = unread_stream_message.stream_count;
 
     let has_dms_post_filter = false;
     if (unread_dms_count) {
-        for (const [key, value] of unread_dms_dict) {
-            if (value) {
-                const dm_data = format_dm(key, value);
+        for (const [key, {count, latest_msg_id}] of unread_dms_dict) {
+            if (count) {
+                const dm_data = format_dm(key, count, latest_msg_id);
                 dms_dict.set(key, dm_data);
                 if (!dm_data.is_hidden) {
                     has_dms_post_filter = true;
@@ -387,6 +463,7 @@ function reset_data() {
             }
         }
     }
+    dms_dict = get_sorted_row_dict(dms_dict);
 
     let has_topics_post_filter = false;
     if (unread_stream_msg_count) {
@@ -744,19 +821,22 @@ export function update() {
         return;
     }
 
-    const unread_dms = unread.get_unread_pm();
+    const include_per_bucket_max_msg_id = true;
+    const unread_dms = unread.get_unread_pm(include_per_bucket_max_msg_id);
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
 
-    const unread_stream_message = unread.get_unread_topics();
+    const include_per_topic_max_msg_id = true;
+    const unread_stream_message = unread.get_unread_topics(include_per_topic_max_msg_id);
     const unread_streams_dict = unread_stream_message.stream_count;
 
     let has_dms_post_filter = false;
-    for (const [key, value] of unread_dms_dict) {
-        if (value !== 0) {
+    const dm_keys_to_insert = [];
+    for (const [key, {count, latest_msg_id}] of unread_dms_dict) {
+        if (count !== 0) {
             const old_dm_data = dms_dict.get(key);
-            const new_dm_data = format_dm(key, value);
-            rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data);
+            const new_dm_data = format_dm(key, count, latest_msg_id);
+            rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data, dm_keys_to_insert);
             dms_dict.set(key, new_dm_data);
             if (!new_dm_data.is_hidden) {
                 has_dms_post_filter = true;
@@ -769,6 +849,9 @@ export function update() {
             }
         }
     }
+
+    dms_dict = get_sorted_row_dict(dms_dict);
+    insert_dms(dm_keys_to_insert);
 
     const $inbox_dm_header = $("#inbox-dm-header");
     if (!has_dms_post_filter) {
@@ -791,14 +874,24 @@ export function update() {
                 continue;
             }
 
+            const topic_keys_to_insert = [];
             const new_stream_data = format_stream(stream_id);
-            for (const [topic, topic_unread_count] of topic_dict) {
+            for (const [topic, {topic_count, latest_msg_id}] of topic_dict) {
                 const topic_key = get_topic_key(stream_id, topic);
-                if (topic_unread_count) {
+                if (topic_count) {
                     const old_topic_data = topics_dict.get(stream_key).get(topic_key);
-                    const new_topic_data = format_topic(stream_id, topic, topic_unread_count);
+                    const new_topic_data = format_topic(
+                        stream_id,
+                        topic,
+                        topic_count,
+                        latest_msg_id,
+                    );
                     topics_dict.get(stream_key).set(topic_key, new_topic_data);
-                    rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data);
+                    rerender_topic_inbox_row_if_needed(
+                        new_topic_data,
+                        old_topic_data,
+                        topic_keys_to_insert,
+                    );
                     if (!new_topic_data.is_hidden) {
                         has_topics_post_filter = true;
                         stream_post_filter_unread_count += new_topic_data.unread_count;
@@ -813,8 +906,10 @@ export function update() {
             const old_stream_data = streams_dict.get(stream_key);
             new_stream_data.is_hidden = stream_post_filter_unread_count === 0;
             new_stream_data.unread_count = stream_post_filter_unread_count;
-            streams_dict.set(stream_key, new_stream_data)
+            streams_dict.set(stream_key, new_stream_data);
             rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data);
+            topics_dict.set(stream_key, get_sorted_row_dict(topics_dict.get(stream_key)));
+            insert_topics(topic_keys_to_insert, stream_key);
         } else {
             topic_dict.delete(stream_key);
             streams_dict.delete(stream_key);
