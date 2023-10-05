@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
@@ -12,7 +13,6 @@ import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
-import * as stream_edit from "./stream_edit";
 import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_data from "./stream_settings_data";
 import * as sub_store from "./sub_store";
@@ -118,6 +118,29 @@ export function set_enable_marketing_emails_visibility() {
     }
 }
 
+function stream_notification_setting_changed(e) {
+    const $row = $(e.target).closest(".stream-notifications-row");
+    const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
+    if (!stream_id) {
+        blueslip.error("Cannot find stream id for target");
+        return;
+    }
+
+    const sub = sub_store.get(stream_id);
+    if (!sub) {
+        blueslip.error("stream_notification_setting_changed() failed id lookup", {stream_id});
+        return;
+    }
+
+    const $status_element = $(e.target).closest(".subsection-parent").find(".alert-notification");
+    const setting = e.target.name;
+    if (sub[setting] === null) {
+        sub[setting] =
+            user_settings[settings_config.generalize_stream_notification_setting[setting]];
+    }
+    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
+}
+
 export function set_up(settings_panel) {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
@@ -189,7 +212,7 @@ export function set_up(settings_panel) {
         e.stopPropagation();
         const $input_elem = $(e.currentTarget);
         if ($input_elem.parents("#stream-specific-notify-table").length) {
-            stream_edit.stream_setting_changed(e, true);
+            stream_notification_setting_changed(e);
             return;
         }
         let setting_name = $input_elem.attr("name");
