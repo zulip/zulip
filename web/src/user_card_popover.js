@@ -4,9 +4,9 @@ import $ from "jquery";
 import tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
-import render_user_card_popover from "../templates/user_card_popover.hbs";
-import render_user_card_popover_avatar from "../templates/user_card_popover_avatar.hbs";
-import render_user_card_popover_manage_menu from "../templates/user_card_popover_manage_menu.hbs";
+import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
+import render_user_card_popover_avatar from "../templates/popovers/user_card/user_card_popover_avatar.hbs";
+import render_user_card_popover_manage_menu from "../templates/popovers/user_card/user_card_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";

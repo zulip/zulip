@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
+import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
