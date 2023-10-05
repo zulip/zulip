@@ -1,14 +1,16 @@
 import re
 import sys
 from datetime import datetime
-from typing import Any, Collection, Dict, List, Optional, Sequence
+from typing import Any, Callable, Collection, Dict, List, Optional, Sequence, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
+from django.db import connection
 from django.db.backends.utils import CursorWrapper
 from django.template import loader
 from django.urls import reverse
 from markupsafe import Markup
+from psycopg2.sql import Composable
 
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserActivity, get_realm
@@ -43,6 +45,48 @@ def make_table(
     )
 
     return content
+
+
+def get_page(
+    query: Composable, cols: Sequence[str], title: str, totals_columns: Sequence[int] = []
+) -> Dict[str, str]:
+    cursor = connection.cursor()
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    rows = list(map(list, rows))
+    cursor.close()
+
+    def fix_rows(
+        i: int, fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str]]
+    ) -> None:
+        for row in rows:
+            row[i] = fixup_func(row[i])
+
+    total_row = []
+    for i, col in enumerate(cols):
+        if col == "Realm":
+            fix_rows(i, realm_activity_link)
+        elif col in ["Last time", "Last visit"]:
+            fix_rows(i, format_date_for_activity_reports)
+        elif col == "Hostname":
+            for row in rows:
+                row[i] = remote_installation_stats_link(row[0], row[i])
+        if len(totals_columns) > 0:
+            if i == 0:
+                total_row.append("Total")
+            elif i in totals_columns:
+                total_row.append(str(sum(row[i] for row in rows if row[i] is not None)))
+            else:
+                total_row.append("")
+    if len(totals_columns) > 0:
+        rows.insert(0, total_row)
+
+    content = make_table(title, cols, rows)
+
+    return dict(
+        content=content,
+        title=title,
+    )
 
 
 def dictfetchall(cursor: CursorWrapper) -> List[Dict[str, Any]]:
