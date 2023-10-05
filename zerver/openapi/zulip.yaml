@@ -9142,6 +9142,54 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /mobile_push/test_notification:
+    post:
+      operationId: test-notify
+      summary: Sends a test notifications to the user's mobile device(s)
+      tags: ["mobile"]
+      description: |
+        This endpoint allows a user to trigger a test push notification to their
+        selected mobile devices, or all their mobile devices.
+
+        **Changes**: New in Zulip 8.0 (feature level 217).
+      parameters:
+        - name: token
+          in: query
+          description: |
+            The push token for the device to send the test notification to.
+
+            If this parameter is not submitted, the test notification will be sent to all of the
+            user's devices registered on the server.
+
+            Mobile device clients should pass this parameter in order to trigger a notification
+            that is only delivered to this client.
+          schema:
+            type: string
+          example: "111222"
+          required: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Token does not exist",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when a device with the specified token
+                      does not exist:
   /user_topics:
     post:
       operationId: update-user-topic

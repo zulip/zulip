@@ -15,6 +15,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
+from pydantic import BaseModel, ConfigDict
 
 from analytics.lib.counts import COUNT_STATS
 from corporate.lib.stripe import do_deactivate_remote_server
@@ -24,9 +25,11 @@ from zerver.lib.push_notifications import (
     UserPushIdentityCompat,
     send_android_push_notification,
     send_apple_push_notification,
+    send_test_push_notification_directly_to_devices,
 )
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
@@ -279,6 +282,52 @@ def delete_duplicate_registrations(
         deduplicated_registrations_to_return.append(registration)
 
     return deduplicated_registrations_to_return
+
+
+class TestNotificationPayload(BaseModel):
+    token: str
+    token_kind: int
+    user_id: int
+    user_uuid: str
+    base_payload: Dict[str, Any]
+
+    model_config = ConfigDict(extra="forbid")
+
+
+@typed_endpoint
+def remote_server_send_test_notification(
+    request: HttpRequest,
+    server: RemoteZulipServer,
+    *,
+    payload: JsonBodyPayload[TestNotificationPayload],
+) -> HttpResponse:
+    token = payload.token
+    token_kind = payload.token_kind
+
+    user_id = payload.user_id
+    user_uuid = payload.user_uuid
+
+    # The remote server only sends the base payload with basic user and server info,
+    # and the actual format of the test notification is defined on the bouncer, as that
+    # gives us the flexibility to modify it freely, without relying on other servers
+    # upgrading.
+    base_payload = payload.base_payload
+
+    # This is a new endpoint, so it can assume it will only be used by newer
+    # servers that will send user both UUID and ID.
+    user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
+
+    try:
+        device = RemotePushDeviceToken.objects.get(
+            user_identity.filter_q(), token=token, kind=token_kind, server=server
+        )
+    except RemotePushDeviceToken.DoesNotExist:
+        raise JsonableError(err_("Token does not exist"))
+
+    send_test_push_notification_directly_to_devices(
+        user_identity, [device], base_payload, remote=server
+    )
+    return json_success(request)
 
 
 @has_request_variables
