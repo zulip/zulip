@@ -34,6 +34,7 @@ const message_events = mock_esm("../src/message_events");
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
+const narrow_title = mock_esm("../src/narrow_title");
 const notifications = mock_esm("../src/notifications");
 const pm_list = mock_esm("../src/pm_list");
 const reactions = mock_esm("../src/reactions");
@@ -420,7 +421,7 @@ run_test("realm settings", ({override}) => {
     override(settings_invites, "update_invite_user_panel", noop);
     override(sidebar_ui, "update_invite_user_option", noop);
     override(gear_menu, "initialize", noop);
-    override(notifications, "redraw_title", noop);
+    override(narrow_title, "redraw_title", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
         with_overrides(({override}) => {
