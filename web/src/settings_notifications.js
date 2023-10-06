@@ -7,7 +7,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
-import * as notifications from "./notifications";
+import * as message_notifications from "./message_notifications";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
@@ -280,7 +280,7 @@ export function set_up(settings_panel) {
     // intentionally don't let organization administrators set
     // organization-level defaults.
     $container.find(".send_test_notification").on("click", () => {
-        notifications.send_test_notification(
+        message_notifications.send_test_notification(
             $t({defaultMessage: "This is what a Zulip notification looks like."}),
         );
     });
