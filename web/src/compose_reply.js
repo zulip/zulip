@@ -30,13 +30,15 @@ export function respond_to_message(opts) {
             return;
         }
     } else if (inbox_util.is_visible()) {
-        message = inbox_ui.get_focused_row_message();
-        if (message === undefined) {
-            // Open empty compose with nothing pre-filled since
-            // user is not focused on any table row.
-            compose_actions.start("stream", {trigger: "inbox_nofocus"});
+        const message_opts = inbox_ui.get_focused_row_message();
+        if (message_opts.message === undefined) {
+            compose_actions.start(message_opts.msg_type, {
+                trigger: "inbox_nofocus",
+                stream_id: message_opts.stream_id,
+            });
             return;
         }
+        message = message_opts.message;
     } else {
         message = message_lists.current.selected_message();
 
