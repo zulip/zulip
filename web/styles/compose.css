@@ -271,18 +271,13 @@
     border-radius: 5px;
     border: 1px solid;
     display: flex;
-    /* Baseline alignment ensures the closing X
-       appears centered with the banner text. */
-    align-items: baseline;
+    align-items: center;
     font-size: 15px;
     line-height: 18px;
 
     .main-view-banner-elements-wrapper {
         display: flex;
-        /* Baseline alignment ensures the banner
-           and button text appear centered with
-           each other. */
-        align-items: baseline;
+        align-items: center;
         /* Allow this flex container to grow or
            shrink to fit the outer container. */
         flex: 1 1 auto;
@@ -366,10 +361,50 @@
         }
     }
 
+    .main-view-banner-action-button {
+        /* Establish a uniform top and bottom
+           space around the button, which also
+           works with the space around the message
+           text. */
+        margin-top: 8px;
+        margin-bottom: 8px;
+        /* Make as tall as two lines of banner message
+           text, which have a line-height of 18px, but
+           no more. */
+        max-height: 36px;
+        /* Keep to the top of the box, but stretch
+           taller based on how the box is flexing. */
+        min-height: 0;
+        align-self: stretch;
+    }
+
     .main-view-banner-close-button {
         font-size: 16px;
         text-decoration: none;
-        padding: 9px 8px;
+        padding: 0 8px;
+        /* Let the close button's box stretch,
+           but no larger than the height of the
+           banner box when the action button
+           achieves its full height (margin,
+           padding, and height), which keeps
+           the X vertically centered with it. */
+        align-self: stretch;
+        max-height: 52px;
+        /* Display as flexbox to better control
+           the X icon's position. This creates
+           an anonymous flexbox item out of the
+           ::before content where the icon sits. */
+        display: flex;
+        align-items: center;
+    }
+
+    .banner_content + .main-view-banner-close-button {
+        /* When there's no action button, set the max
+           height for the typical height of the box
+           when it contains only banner message text.
+           This will keep the action button aligned
+           with the first or only line of text. */
+        max-height: 34px;
     }
 
     &.success {
