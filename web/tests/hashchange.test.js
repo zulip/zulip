@@ -18,7 +18,6 @@ const admin = mock_esm("../src/admin");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const info_overlay = mock_esm("../src/info_overlay");
 const message_viewport = mock_esm("../src/message_viewport");
-const narrow = mock_esm("../src/narrow");
 const overlays = mock_esm("../src/overlays");
 const popovers = mock_esm("../src/popovers");
 const recent_view_ui = mock_esm("../src/recent_view_ui");
@@ -32,6 +31,7 @@ const browser_history = zrequire("browser_history");
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
+const narrow = zrequire("../src/narrow");
 const stream_data = zrequire("stream_data");
 
 run_test("operators_round_trip", () => {
@@ -120,7 +120,7 @@ run_test("people_slugs", () => {
     assert.deepEqual(narrow, [{operator: "pm-with", operand: "alice@example.com", negated: false}]);
 });
 
-function test_helper({override, change_tab}) {
+function test_helper({override, override_rewire, change_tab}) {
     let events = [];
     let narrow_terms;
 
@@ -143,7 +143,7 @@ function test_helper({override, change_tab}) {
     stub(ui_report, "error");
 
     if (change_tab) {
-        override(narrow, "activate", (terms) => {
+        override_rewire(narrow, "activate", (terms) => {
             narrow_terms = terms;
             events.push("narrow.activate");
         });
@@ -164,11 +164,11 @@ function test_helper({override, change_tab}) {
     };
 }
 
-run_test("hash_interactions", ({override}) => {
+run_test("hash_interactions", ({override, override_rewire}) => {
     $window_stub = $.create("window-stub");
     user_settings.default_view = "recent_topics";
 
-    const helper = test_helper({override, change_tab: true});
+    const helper = test_helper({override, override_rewire, change_tab: true});
 
     let recent_view_ui_shown = false;
     override(recent_view_ui, "show", () => {
@@ -331,13 +331,13 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([[ui_util, "blur_active_element"]]);
 });
 
-run_test("save_narrow", ({override}) => {
-    const helper = test_helper({override});
+run_test("save_narrow", ({override, override_rewire}) => {
+    const helper = test_helper({override, override_rewire});
 
     let operators = [{operator: "is", operand: "dm"}];
 
     blueslip.expect("error", "browser does not support pushState");
-    hashchange.save_narrow(operators);
+    narrow.save_narrow(operators);
 
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(window.location.hash, "#narrow/is/dm");
@@ -350,7 +350,7 @@ run_test("save_narrow", ({override}) => {
     operators = [{operator: "is", operand: "starred"}];
 
     helper.clear_events();
-    hashchange.save_narrow(operators);
+    narrow.save_narrow(operators);
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
 });

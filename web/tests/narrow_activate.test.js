@@ -11,11 +11,13 @@ mock_esm("../src/resize", {
 });
 
 const all_messages_data = mock_esm("../src/all_messages_data");
+const browser_history = mock_esm("../src/browser_history", {
+    state: {changing_hash: false},
+});
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_banner = mock_esm("../src/compose_banner");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_recipient = mock_esm("../src/compose_recipient");
-const hashchange = mock_esm("../src/hashchange");
 const message_fetch = mock_esm("../src/message_fetch");
 const message_list = mock_esm("../src/message_list");
 const message_lists = mock_esm("../src/message_lists", {
@@ -28,6 +30,7 @@ const message_lists = mock_esm("../src/message_lists", {
 const message_feed_top_notices = mock_esm("../src/message_feed_top_notices");
 const message_feed_loading = mock_esm("../src/message_feed_loading");
 const message_view_header = mock_esm("../src/message_view_header");
+const message_viewport = mock_esm("../src/message_viewport");
 const narrow_history = mock_esm("../src/narrow_history");
 const narrow_title = mock_esm("../src/narrow_title");
 const stream_list = mock_esm("../src/stream_list");
@@ -76,16 +79,17 @@ function test_helper({override}) {
         });
     }
 
+    stub(browser_history, "set_hash");
     stub(compose_banner, "clear_message_sent_banners");
     stub(compose_actions, "on_narrow");
     stub(compose_closed_ui, "update_reply_recipient_label");
     stub(narrow_history, "save_narrow_state_and_flush");
-    stub(hashchange, "save_narrow");
     stub(message_feed_loading, "hide_indicators");
     stub(message_feed_top_notices, "hide_top_of_narrow_notices");
     stub(narrow_title, "update_narrow_title");
     stub(stream_list, "handle_narrow_activated");
     stub(message_view_header, "render_title_area");
+    stub(message_viewport, "stop_auto_scrolling");
     stub(left_sidebar_navigation_area, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
     stub(compose_recipient, "update_narrow_to_recipient_visibility");
@@ -185,7 +189,8 @@ run_test("basics", ({override}) => {
         [compose_banner, "clear_message_sent_banners"],
         [unread_ops, "process_visible"],
         [narrow_history, "save_narrow_state_and_flush"],
-        [hashchange, "save_narrow"],
+        [message_viewport, "stop_auto_scrolling"],
+        [browser_history, "set_hash"],
         [typing_events, "render_notifications_for_narrow"],
         [compose_closed_ui, "update_buttons_for_stream"],
         [compose_closed_ui, "update_reply_recipient_label"],
