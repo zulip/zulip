@@ -130,7 +130,7 @@ import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as upload from "./upload";
-import * as user_card_popover from "./user_card_popover";
+import * as user_card_popover_setup from "./user_card_popover_setup";
 import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_popover from "./user_group_popover";
@@ -683,7 +683,7 @@ export function initialize_everything() {
     activity_ui.initialize();
     emoji_picker.initialize();
     user_group_popover.initialize();
-    user_card_popover.initialize();
+    user_card_popover_setup.initialize();
     playground_links_popover.initialize();
     pm_list.initialize();
     topic_list.initialize({
