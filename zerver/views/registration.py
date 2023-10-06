@@ -17,6 +17,7 @@ from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
+from django.views.defaults import server_error
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 from confirmation.models import (
@@ -817,6 +818,8 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 send_confirm_registration_email(email, activation_url, request=request)
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during realm creation")
+                if settings.CORPORATE_ENABLED:
+                    return server_error(request)
                 return config_error(request, "smtp")
 
             if key_record is not None:
@@ -947,6 +950,8 @@ def accounts_home(
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during user registration")
+                if settings.CORPORATE_ENABLED:
+                    return server_error(request)
                 return config_error(request, "smtp")
             signup_send_confirm_url = reverse("signup_send_confirm")
             query = urlencode({"email": email})
