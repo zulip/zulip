@@ -201,12 +201,6 @@ function elem_to_user_id($elem) {
     return Number.parseInt($elem.attr("data-user-id"), 10);
 }
 
-function clipboard_enable(arg) {
-    // arg is a selector or element
-    // We extract this function for testing purpose.
-    return new ClipboardJS(arg);
-}
-
 // Functions related to user card popover.
 
 export function toggle_user_card_popover(element, user) {
@@ -420,7 +414,7 @@ function init_email_clipboard() {
             */
             if ($copy_email_icon[0]) {
                 $copy_email_icon.removeClass("hide_copy_icon");
-                const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
+                const copy_email_clipboard = new ClipboardJS($copy_email_icon[0]);
                 copy_email_clipboard.on("success", copy_email_handler);
             }
         }
@@ -864,5 +858,5 @@ function register_click_handlers() {
 
 export function initialize() {
     register_click_handlers();
-    clipboard_enable(".copy_mention_syntax");
+    new ClipboardJS(".copy_mention_syntax");
 }
