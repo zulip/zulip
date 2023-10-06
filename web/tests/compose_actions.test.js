@@ -44,9 +44,6 @@ const narrow_state = mock_esm("../src/narrow_state", {
 mock_esm("../src/reload_state", {
     is_in_progress: () => false,
 });
-mock_esm("../src/recent_view_util", {
-    is_visible: noop,
-});
 mock_esm("../src/drafts", {
     update_draft: noop,
 });

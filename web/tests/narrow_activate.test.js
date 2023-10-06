@@ -34,9 +34,6 @@ const stream_list = mock_esm("../src/stream_list");
 const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area");
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
-mock_esm("../src/recent_view_util", {
-    is_visible() {},
-});
 mock_esm("../src/pm_list", {
     handle_narrow_activated() {},
 });
