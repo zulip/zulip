@@ -143,6 +143,7 @@ import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as user_topic_popover from "./user_topic_popover";
 import * as user_topics from "./user_topics";
+import * as widgets from "./widgets";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -532,6 +533,7 @@ export function initialize_everything() {
     }
 
     i18n.initialize(i18n_params);
+    widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
