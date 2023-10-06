@@ -200,6 +200,7 @@ function set_table_focus(row, col, using_keyboard) {
     // TODO: This fake "message" object is designed to allow using the
     // get_recipient_label helper inside compose_closed_ui. Surely
     // there's a more readable way to write this code.
+    // Similar code is present in Inbox.
     let message;
     if (type === "private") {
         message = {
