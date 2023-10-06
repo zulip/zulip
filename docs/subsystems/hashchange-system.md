@@ -109,7 +109,7 @@ Here are some key functions in the reload system:
 - `reload.preserve_state` is called when a server-initiated browser
   reload happens, and encodes a bunch of data like the current scroll
   position into the hash.
-- `reload.initialize` handles restoring the preserved state after a
+- `reload_setup.initialize` handles restoring the preserved state after a
   reload where the hash starts with `/#reload`.
 
 ## All reloads
