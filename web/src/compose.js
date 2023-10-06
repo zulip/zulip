@@ -268,18 +268,6 @@ export function do_post_send_tasks() {
     $(document).trigger("compose_finished.zulip");
 }
 
-export function update_email(user_id, new_email) {
-    let reply_to = compose_state.private_message_recipient();
-
-    if (!reply_to) {
-        return;
-    }
-
-    reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
-
-    compose_state.private_message_recipient(reply_to);
-}
-
 export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
     function show_preview(rendered_content, raw_content) {
         // content is passed to check for status messages ("/me ...")
