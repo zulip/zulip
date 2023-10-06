@@ -1,0 +1,15 @@
+{% extends "zerver/config_error/container.html" %}
+
+{% block error_content %}
+    <p>
+        SAML authentication is either not enabled or misconfigured. Have a look at
+        our <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#SAML">setup guide</a>.
+    </p>
+    {% if development_environment %}
+        <p>
+            See also the
+            <a href="https://zulip.readthedocs.io/en/latest/development/authentication.html#saml">SAML guide</a>
+            for the development environment.
+        </p>
+    {% endif %}
+{% endblock %}
