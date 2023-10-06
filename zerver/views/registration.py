@@ -11,6 +11,7 @@ from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
@@ -573,24 +574,30 @@ def registration_helper(
             # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:
-            user_profile = do_create_user(
-                email,
-                password,
-                realm,
-                full_name,
-                prereg_user=prereg_user,
-                prereg_realm=prereg_realm,
-                role=role,
-                tos_version=settings.TERMS_OF_SERVICE_VERSION,
-                timezone=timezone,
-                default_language=get_default_language_for_new_user(realm, request=request),
-                default_stream_groups=default_stream_groups,
-                source_profile=source_profile,
-                realm_creation=realm_creation,
-                acting_user=None,
-                enable_marketing_emails=enable_marketing_emails,
-                email_address_visibility=email_address_visibility,
-            )
+            try:
+                user_profile = do_create_user(
+                    email,
+                    password,
+                    realm,
+                    full_name,
+                    prereg_user=prereg_user,
+                    prereg_realm=prereg_realm,
+                    role=role,
+                    tos_version=settings.TERMS_OF_SERVICE_VERSION,
+                    timezone=timezone,
+                    default_language=get_default_language_for_new_user(realm, request=request),
+                    default_stream_groups=default_stream_groups,
+                    source_profile=source_profile,
+                    realm_creation=realm_creation,
+                    acting_user=None,
+                    enable_marketing_emails=enable_marketing_emails,
+                    email_address_visibility=email_address_visibility,
+                )
+            except IntegrityError:
+                # Race condition making the user, leading to a
+                # duplicate email address.  Redirect them to the login
+                # form.
+                return redirect_to_email_login_url(email)
 
         if realm_creation:
             # Because for realm creation, registration happens on the
