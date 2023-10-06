@@ -165,6 +165,7 @@ EXEMPT_FILES = make_set(
         "web/src/recent_view_ui.js",
         "web/src/recent_view_util.js",
         "web/src/reload.js",
+        "web/src/reload_setup.js",
         "web/src/reminder.js",
         "web/src/resize.js",
         "web/src/resize_handler.js",

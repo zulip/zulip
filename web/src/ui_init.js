@@ -85,7 +85,7 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_view_ui from "./recent_view_ui";
-import * as reload from "./reload";
+import * as reload_setup from "./reload_setup";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
@@ -638,7 +638,7 @@ export function initialize_everything() {
         on_pill_create_or_remove: compose_recipient.update_placeholder_text,
     });
     compose_closed_ui.initialize();
-    reload.initialize();
+    reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize(server_events.home_view_loaded);
