@@ -294,9 +294,10 @@
         flex-wrap: wrap;
     }
 
-    & .banner_content,
-    & > p {
-        margin: 0; /* override bootstrap */
+    & .banner_content {
+        /* Override Bootstrap when .banner_content is
+           a paragraph element. */
+        margin: 0;
         /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
         padding: 8px 5px 8px 15px;
         /* The banner text uses a flex-basis of 150px,
@@ -304,6 +305,13 @@
            text lines are still comfortably readable.
            Still, it can grow and shrink as needed. */
         flex: 1 1 150px;
+
+        & .banner_message {
+            /* Override Bootstrap when .banner_content
+               contains an inner .banner_message
+               paragraph. */
+            margin: 0;
+        }
     }
 
     .main-view-banner-action-button,
