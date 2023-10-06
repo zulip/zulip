@@ -76,7 +76,7 @@ def dev_direct_login(
     if (not dev_auth_enabled()) or settings.PRODUCTION:
         # This check is probably not required, since authenticate would fail without
         # an enabled DevAuthBackend.
-        return config_error(request, "dev")
+        return config_error(request, "dev_not_supported")
 
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
@@ -88,7 +88,7 @@ def dev_direct_login(
     email = request.POST["direct_email"]
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
-        return config_error(request, "dev")
+        return config_error(request, "dev_not_supported")
     assert isinstance(user_profile, UserProfile)
     do_login(request, user_profile)
 
