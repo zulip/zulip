@@ -70,7 +70,7 @@ export class MessageState {
         // or took a while to process it, but there is nothing
         // wrong with our event loop.
 
-        if (!this.received) {
+        if (!this.saw_event) {
             setTimeout(() => this.maybe_restart_event_loop(), 5000);
         }
     }
