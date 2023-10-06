@@ -24,6 +24,8 @@ preference settings, including the following:
 * Notification settings, including:
     * [What types of messages trigger notifications][default-notifications]
     * [Configurations for email notifications](/help/email-notifications)
+* Organization settings:
+    * [Default language for new users](/help/configure-organization-language)
 
 [default-notifications]: /help/stream-notifications#set-default-notifications-for-all-streams
 
