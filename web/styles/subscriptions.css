@@ -2,6 +2,10 @@
     margin: 10px auto;
 }
 
+#remove_subscriber_stream {
+    margin-right: 20px;
+}
+
 .member_list_loading_indicator,
 .subscriber_list_loading_indicator {
     margin: 10px auto;
