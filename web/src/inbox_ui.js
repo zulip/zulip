@@ -321,7 +321,7 @@ function insert_stream(stream_id, topic_dict) {
     const sorted_stream_keys = get_sorted_stream_keys();
     const stream_index = sorted_stream_keys.indexOf(stream_key);
     const rendered_stream = render_inbox_stream_container({
-        topics_dict: new Map(stream_key, topics_dict.get(stream_key)),
+        topics_dict: new Map([[stream_key, topics_dict.get(stream_key)]]),
         streams_dict,
     });
 
@@ -911,7 +911,7 @@ export function update() {
             topics_dict.set(stream_key, get_sorted_row_dict(topics_dict.get(stream_key)));
             insert_topics(topic_keys_to_insert, stream_key);
         } else {
-            topic_dict.delete(stream_key);
+            topics_dict.delete(stream_key);
             streams_dict.delete(stream_key);
             get_stream_container(stream_key).remove();
         }
