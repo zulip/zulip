@@ -816,7 +816,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             try:
                 send_confirm_registration_email(email, activation_url, request=request)
             except EmailNotDeliveredError:
-                logging.error("Error in create_realm")
+                logging.exception("Failed to deliver email during realm creation")
                 return config_error(request, "smtp")
 
             if key_record is not None:
@@ -946,7 +946,7 @@ def accounts_home(
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredError:
-                logging.error("Error in accounts_home")
+                logging.exception("Failed to deliver email during user registration")
                 return config_error(request, "smtp")
             signup_send_confirm_url = reverse("signup_send_confirm")
             query = urlencode({"email": email})
