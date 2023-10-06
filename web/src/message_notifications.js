@@ -2,10 +2,10 @@ import $ from "jquery";
 
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
+import * as desktop_notifications from "./desktop_notifications";
 import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
 import * as narrow from "./narrow";
-import * as notifications from "./notifications";
 import * as people from "./people";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
@@ -139,9 +139,9 @@ export function process_notification(notification) {
 
     debug_notification_source_value(message);
 
-    if (notifications.notice_memory.has(key)) {
-        msg_count = notifications.notice_memory.get(key).msg_count + 1;
-        notification_object = notifications.notice_memory.get(key).obj;
+    if (desktop_notifications.notice_memory.has(key)) {
+        msg_count = desktop_notifications.notice_memory.get(key).msg_count + 1;
+        notification_object = desktop_notifications.notice_memory.get(key).obj;
         notification_object.close();
     }
 
@@ -149,12 +149,12 @@ export function process_notification(notification) {
 
     if (notification.desktop_notify) {
         const icon_url = people.small_avatar_url(message);
-        notification_object = new notifications.NotificationAPI(title, {
+        notification_object = new desktop_notifications.NotificationAPI(title, {
             icon: icon_url,
             body: content,
             tag: message.id,
         });
-        notifications.notice_memory.set(key, {
+        desktop_notifications.notice_memory.set(key, {
             obj: notification_object,
             msg_count,
             message_id: message.id,
@@ -173,7 +173,7 @@ export function process_notification(notification) {
                 window.focus();
             });
             notification_object.addEventListener("close", () => {
-                notifications.notice_memory.delete(key);
+                desktop_notifications.notice_memory.delete(key);
             });
         }
     }
@@ -380,7 +380,7 @@ export function received_messages(messages) {
         if (should_send_desktop_notification(message)) {
             process_notification({
                 message,
-                desktop_notify: notifications.granted_desktop_notifications_permission(),
+                desktop_notify: desktop_notifications.granted_desktop_notifications_permission(),
             });
         }
         if (should_send_audible_notification(message)) {

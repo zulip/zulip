@@ -11,7 +11,7 @@ import "jquery-validation";
 import "../setup";
 import "../reload";
 import "../hotkey";
-import "../notifications";
+import "../desktop_notifications";
 import "../server_events";
 import "../templates";
 import "../settings";

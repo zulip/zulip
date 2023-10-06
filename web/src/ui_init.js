@@ -36,6 +36,7 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as dark_theme from "./dark_theme";
+import * as desktop_notifications from "./desktop_notifications";
 import * as drafts from "./drafts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui";
 import * as echo from "./echo";
@@ -74,7 +75,6 @@ import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
-import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -670,7 +670,7 @@ export function initialize_everything() {
         on_narrow_search: narrow.activate,
     });
     tutorial.initialize();
-    notifications.initialize();
+    desktop_notifications.initialize();
     audible_notifications.initialize();
     compose_notifications.initialize({
         on_click_scroll_to_selected: navigate.scroll_to_selected,
