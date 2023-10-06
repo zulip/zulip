@@ -94,6 +94,7 @@ from zerver.views.auth import (
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
 )
+from zerver.views.errors import config_error
 from zproject.backends import (
     ExternalAuthResult,
     NoMatchingLDAPUserError,
@@ -816,7 +817,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 send_confirm_registration_email(email, activation_url, request=request)
             except EmailNotDeliveredError:
                 logging.error("Error in create_realm")
-                return HttpResponseRedirect("/config-error/smtp")
+                return config_error(request, "smtp")
 
             if key_record is not None:
                 key_record.delete()
@@ -946,7 +947,7 @@ def accounts_home(
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredError:
                 logging.error("Error in accounts_home")
-                return HttpResponseRedirect("/config-error/smtp")
+                return config_error(request, "smtp")
             signup_send_confirm_url = reverse("signup_send_confirm")
             query = urlencode({"email": email})
             url = append_url_query_string(signup_send_confirm_url, query)
