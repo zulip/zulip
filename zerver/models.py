@@ -3022,9 +3022,7 @@ class AbstractMessage(models.Model):
     # The last time the message was modified by message editing or moving.
     last_edit_time = models.DateTimeField(null=True)
 
-    # A JSON-encoded list of objects describing any past edits to this
-    # message, oldest first.
-    edit_history = models.TextField(null=True)
+    # A list of objects describing any past edits to this message, oldest first.
     edit_history_entries = models.JSONField(default=list)
 
     # Whether the message contains a (link to) an uploaded file.
