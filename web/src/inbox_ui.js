@@ -1175,4 +1175,8 @@ export function initialize() {
         search_and_update();
         focus_inbox_search();
     });
+
+    $("body").on("click", "#inbox-search", () => {
+        current_focus_id = INBOX_SEARCH_ID;
+    });
 }
