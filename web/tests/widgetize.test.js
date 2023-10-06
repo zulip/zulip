@@ -61,6 +61,9 @@ mock_esm("../src/poll_widget", fake_poll_widget);
 set_global("document", "document-stub");
 
 const widgetize = zrequire("widgetize");
+const widgets = zrequire("widgets");
+
+widgets.initialize();
 
 function test(label, f) {
     run_test(label, ({override}) => {
