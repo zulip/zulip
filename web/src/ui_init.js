@@ -123,6 +123,7 @@ import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_popover from "./topic_popover";
 import * as topic_zoom from "./topic_zoom";
+import * as transmit from "./transmit";
 import * as tutorial from "./tutorial";
 import * as typeahead_helper from "./typeahead_helper";
 import * as typing from "./typing";
@@ -597,7 +598,10 @@ export function initialize_everything() {
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
-    echo.initialize({on_send_message_success: compose.send_message_success});
+    echo.initialize({
+        on_send_message_success: compose.send_message_success,
+        send_message: transmit.send_message,
+    });
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
