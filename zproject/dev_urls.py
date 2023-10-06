@@ -92,7 +92,6 @@ urls = [
     ),
     path("devtools/integrations/<integration_name>/fixtures", get_fixtures),
     path("config-error/<error_category_name>", config_error, name="config_error"),
-    path("config-error/remoteuser/<error_category_name>", config_error),
     # Special endpoint to remove all the server-side caches.
     path("flush_caches", remove_caches),
     # Redirect camo URLs for development
