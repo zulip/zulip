@@ -123,10 +123,10 @@ export function initialize() {
 }
 
 export function highlight_inbox_view() {
-    removeActiveClasse($(".top_left_all_messages"));
-    removeActiveClasse($(".top_left_starred_messages"));
-    removeActiveClasse($(".top_left_recent_view"));
-    removeActiveClasse($(".top_left_mentions"));
+    removeActiveClasses($(".top_left_all_messages"));
+    removeActiveClasses($(".top_left_starred_messages"));
+    removeActiveClasses($(".top_left_recent_view"));
+    removeActiveClasses($(".top_left_mentions"));
     $(".top_left_inbox").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
