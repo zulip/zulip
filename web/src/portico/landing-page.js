@@ -192,21 +192,6 @@ $(() => {
         delete page_params.contributors;
         render_tabs(contributors);
     }
-
-    // Source: https://stackoverflow.com/questions/819416/adjust-width-and-height-of-iframe-to-fit-with-content-in-it
-    // Resize tweet to avoid overlapping with image. Since tweet uses an iframe which doesn't adjust with
-    // screen resize, we need to manually adjust its width.
-
-    function resize_iframe_to_fit_content(iFrame) {
-        $(iFrame).width("38vw");
-    }
-
-    window.addEventListener("resize", () => {
-        const iframes = document.querySelectorAll(".twitter-tweet iframe");
-        for (const iframe of iframes) {
-            resize_iframe_to_fit_content(iframe);
-        }
-    });
 });
 
 // Scroll to anchor link when clicked. Note that help.js has a similar

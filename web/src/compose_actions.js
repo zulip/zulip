@@ -234,9 +234,11 @@ export function start(msg_type, opts) {
     stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
 
     if (msg_type === "private") {
-        compose_state.set_compose_recipient_id(compose_recipient.DIRECT_MESSAGE_ID);
+        compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
+        compose_recipient.on_compose_select_recipient_update();
     } else if (opts.stream_id) {
         compose_state.set_stream_id(opts.stream_id);
+        compose_recipient.on_compose_select_recipient_update();
     } else {
         // Open stream selection dropdown if no stream is selected.
         compose_recipient.open_compose_recipient_dropdown();

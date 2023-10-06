@@ -12,6 +12,7 @@ from zerver.lib.validator import (
     check_list,
     check_none_or,
     check_string,
+    check_string_fixed_length,
     check_union,
 )
 from zerver.lib.webhooks.common import check_send_webhook_message, unix_milliseconds_to_timestamp
@@ -59,7 +60,7 @@ def api_newrelic_webhook(
 ) -> HttpResponse:
     # Handle old format
     # Once old is EOLed, delete if block and keep else block
-    if not payload.get("id").tame(check_none_or(check_int)):
+    if not payload.get("id").tame(check_none_or(check_string_fixed_length(36))):
         info = {
             "condition_name": payload.get("condition_name", "Unknown condition").tame(check_string),
             "details": payload.get("details", "No details.").tame(check_string),
@@ -160,9 +161,7 @@ def api_newrelic_webhook(
             policy_names_str = "Unknown Policy"
         topic_info = {
             "policy_name": policy_names_str,
-            "incident_id": payload.get("id", "Unknown ID").tame(
-                check_union([check_string, check_int])
-            ),
+            "incident_id": payload.get("id", "Unknown ID").tame(check_string),
         }
         topic = TOPIC_TEMPLATE.format(**topic_info)
 

@@ -6,9 +6,10 @@ from django.urls.resolvers import URLPattern, URLResolver
 
 from analytics.views.installation_activity import (
     get_installation_activity,
-    get_remote_server_activity,
+    get_integrations_activity,
 )
 from analytics.views.realm_activity import get_realm_activity
+from analytics.views.remote_activity import get_remote_server_activity
 from analytics.views.stats import (
     get_chart_data,
     get_chart_data_for_installation,
@@ -29,6 +30,7 @@ i18n_urlpatterns: List[Union[URLPattern, URLResolver]] = [
     # Server admin (user_profile.is_staff) visible stats pages
     path("activity", get_installation_activity),
     path("activity/remote", get_remote_server_activity),
+    path("activity/integrations", get_integrations_activity),
     path("activity/support", support, name="support"),
     path("activity/remote/support", remote_servers_support, name="remote_servers_support"),
     path("realm_activity/<realm_str>/", get_realm_activity),

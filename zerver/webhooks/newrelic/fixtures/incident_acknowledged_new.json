@@ -1,6 +1,6 @@
 {
     "incident_acknowledge_url": "https://alerts.newrelic.com/accounts/2941966/incidents/1234/acknowledge",
-    "id": 1234,
+    "id": "3576f543-dc3c-4d97-9f16-5c81f35195cb",
     "details": "Violation description test.",
     "alertPolicyNames": ["Test policy name"],
     "condition_name": "Server Down",

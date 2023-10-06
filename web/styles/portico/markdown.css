@@ -93,7 +93,7 @@
 
     .legend_symbol {
         position: absolute;
-        left: calc(40px);
+        left: calc(340px);
         transform: translateX(-50%);
 
         /* Adjust for 50px closed left sidebar state */

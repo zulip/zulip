@@ -6,7 +6,7 @@ import WinChan from "winchan";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
@@ -480,7 +480,7 @@ export function initialize() {
         .on("click", ".selectable_sidebar_block", (e) => {
             const $li = $(e.target).parents("li");
 
-            activity.narrow_for_user({$li});
+            activity_ui.narrow_for_user({$li});
 
             e.preventDefault();
             e.stopPropagation();

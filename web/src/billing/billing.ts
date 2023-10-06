@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import * as portico_modals from "../portico/portico_modals";
+
 import * as helpers from "./helpers";
 
 export function create_update_license_request(): void {
@@ -40,13 +42,14 @@ export function initialize(): void {
         if (new_licenses > current_licenses) {
             $("#new_license_count_holder").text(new_licenses);
             $("#current_license_count_holder").text(current_licenses);
-            $("#confirm-licenses-modal").modal("show");
+            portico_modals.open_modal("confirm-licenses-modal");
         } else {
             create_update_license_request();
         }
     });
 
-    $("#confirm-license-update-button").on("click", () => {
+    $("#confirm-licenses-modal .dialog_submit_button").on("click", () => {
+        portico_modals.close_modal("confirm-licenses-modal");
         create_update_license_request();
     });
 

@@ -4,9 +4,9 @@ import $ from "jquery";
 import tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
-import render_user_card_popover_content from "../templates/user_card_popover_content.hbs";
-import render_user_card_popover_manage_menu from "../templates/user_card_popover_manage_menu.hbs";
-import render_user_card_popover_title from "../templates/user_card_popover_title.hbs";
+import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
+import render_user_card_popover_avatar from "../templates/popovers/user_card/user_card_popover_avatar.hbs";
+import render_user_card_popover_manage_menu from "../templates/popovers/user_card/user_card_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
@@ -209,7 +209,7 @@ function clipboard_enable(arg) {
 // Functions related to user card popover.
 
 export function toggle_user_card_popover(element, user) {
-    render_user_card_popover(
+    show_user_card_popover(
         user,
         $(element),
         false,
@@ -303,7 +303,7 @@ function get_user_card_popover_data(
     return args;
 }
 
-function render_user_card_popover(
+function show_user_card_popover(
     user,
     $popover_element,
     is_sender_popover,
@@ -311,7 +311,6 @@ function render_user_card_popover(
     private_msg_class,
     template_class,
     popover_placement,
-    show_as_overlay,
     on_mount,
 ) {
     const args = get_user_card_popover_data(
@@ -327,15 +326,15 @@ function render_user_card_popover(
             placement: popover_placement,
             arrow: false,
             onCreate(instance) {
+                instance.setContent(ui_util.parse_html(render_user_card_popover(args)));
                 user_card_popovers[template_class].instance = instance;
-                instance.setContent(ui_util.parse_html(render_user_card_popover_content(args)));
 
                 const $popover = $(instance.popper);
                 const $popover_title = $popover.find(".popover-title");
 
                 $popover.addClass(get_popover_classname(template_class));
                 $popover_title.append(
-                    render_user_card_popover_title({
+                    render_user_card_popover_avatar({
                         // See the load_medium_avatar comment for important background.
                         user_avatar: people.small_avatar_url_for_person(user),
                         user_is_guest: user.is_guest,
@@ -377,7 +376,9 @@ function render_user_card_popover(
                 }
             },
         },
-        {show_as_overlay},
+        {
+            show_as_overlay_on_mobile: true,
+        },
     );
 }
 
@@ -519,7 +520,7 @@ function toggle_user_card_popover_for_message(element, user, message, on_mount) 
         }
 
         const is_sender_popover = message.sender_id === user.user_id;
-        render_user_card_popover(
+        show_user_card_popover(
             user,
             $elt,
             is_sender_popover,
@@ -605,7 +606,7 @@ function toggle_sidebar_user_card_popover($target) {
         return;
     }
 
-    render_user_card_popover(
+    show_user_card_popover(
         user,
         $target,
         false,

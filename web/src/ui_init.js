@@ -13,6 +13,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
@@ -25,6 +26,7 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_setup from "./compose_setup";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
 import * as composebox_typeahead from "./composebox_typeahead";
@@ -65,6 +67,7 @@ import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
+import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
@@ -83,7 +86,7 @@ import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_view_ui from "./recent_view_ui";
 import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
-import * as resize from "./resize";
+import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scheduled_messages_popover from "./scheduled_messages_popover";
@@ -250,7 +253,7 @@ export function initialize_kitchen_sink_stuff() {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).on("resize", _.throttle(resize.handler, 50));
+    $(window).on("resize", _.throttle(resize_handler.handler, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
@@ -284,7 +287,7 @@ export function initialize_kitchen_sink_stuff() {
 
     // A little hackish, because it doesn't seem to totally get us the
     // exact right width for the compose box, but, close enough for now.
-    resize.handler();
+    resize_handler.handler();
 
     if (page_params.is_spectator) {
         $("body").addClass("spectator-view");
@@ -368,7 +371,7 @@ export function initialize_kitchen_sink_stuff() {
 
 function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook((counts) =>
-        activity.update_dom_with_unread_counts(counts),
+        activity_ui.update_dom_with_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
         left_sidebar_navigation_area.update_dom_with_unread_counts(counts, skip_animations),
@@ -381,7 +384,7 @@ function initialize_unread_ui() {
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
     unread_ui.register_update_unread_counts_hook((counts) =>
-        notifications.update_unread_counts(counts),
+        narrow_title.update_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
@@ -645,8 +648,8 @@ export function initialize_everything() {
         playground_data: page_params.realm_playgrounds,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
-    compose.initialize();
-    // Typeahead must be initialized after compose.initialize()
+    compose_setup.initialize();
+    // Typeahead must be initialized after compose_setup.initialize()
     composebox_typeahead.initialize({
         on_enter_send: compose.finish,
     });
@@ -674,6 +677,7 @@ export function initialize_everything() {
 
     initialize_unread_ui();
     activity.initialize();
+    activity_ui.initialize();
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
