@@ -693,13 +693,20 @@ function update_closed_compose_text($row, is_header_row) {
 
 export function get_focused_row_message() {
     if (!is_list_focused()) {
-        return undefined;
+        return {message: undefined};
     }
 
     const $all_rows = get_all_rows();
     const $focused_row = $($all_rows.get(row_focus));
     if (is_row_a_header($focused_row)) {
-        return undefined;
+        const is_dm_header = $focused_row.attr("id") === "inbox-dm-header";
+        if (is_dm_header) {
+            return {message: undefined, msg_type: "private"};
+        }
+
+        const stream_id = Number.parseInt($focused_row.attr("data-stream-id"), 10);
+        compose_state.set_compose_recipient_id(stream_id);
+        return {message: undefined, msg_type: "stream", stream_id};
     }
 
     const is_dm = $focused_row.parent("#inbox-direct-messages-container").length > 0;
@@ -712,7 +719,7 @@ export function get_focused_row_message() {
         const stream_key = $stream.attr("id");
         latest_msg_id = topics_dict.get(stream_key).get(conversation_key).latest_msg_id;
     }
-    return message_store.get(latest_msg_id);
+    return {message: message_store.get(latest_msg_id)};
 }
 
 function is_row_a_header($row) {
