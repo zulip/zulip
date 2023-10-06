@@ -113,7 +113,7 @@ engine (files in `templates/zerver`).
 The syntax for using conditionals and other common structures can be
 found [here][jconditionals].
 
-The context for Jinja2 templates is assembled from a few places:
+The context for Jinja2 templates is assembled from a couple places:
 
 - `zulip_default_context` in `zerver/context_processors.py`. This is
   the default context available to all Jinja2 templates.
@@ -128,15 +128,6 @@ zerver/views/home.py:    response = render(request, 'zerver/app/index.html',
 ```
 
 The next line in the code being the context definition.
-
-- `zproject/urls.py` for some fairly static pages that are rendered
-  using `TemplateView`, for example:
-
-```python
-path('config-error/google', TemplateView.as_view(
-    template_name='zerver/config_error.html',),
-    {'google_error': True},),
-```
 
 ### Frontend templates
 
