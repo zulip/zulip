@@ -12,7 +12,7 @@ mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
 
-const notifications = zrequire("notifications");
+const desktop_notifications = zrequire("desktop_notifications");
 const message_notifications = zrequire("message_notifications");
 
 // Not muted streams
@@ -365,7 +365,7 @@ test("basic_notifications", () => {
         }
     }
 
-    notifications.set_notification_api(StubNotification);
+    desktop_notifications.set_notification_api(StubNotification);
 
     const message_1 = {
         id: 1000,
@@ -395,14 +395,14 @@ test("basic_notifications", () => {
 
     // Send notification.
     message_notifications.process_notification({message: message_1, desktop_notify: true});
-    n = notifications.get_notifications();
+    n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Remove notification.
-    notifications.close_notification(message_1);
-    n = notifications.get_notifications();
+    desktop_notifications.close_notification(message_1);
+    n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_1.id);
@@ -410,7 +410,7 @@ test("basic_notifications", () => {
     // Send notification.
     message_1.id = 1001;
     message_notifications.process_notification({message: message_1, desktop_notify: true});
-    n = notifications.get_notifications();
+    n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
@@ -418,23 +418,23 @@ test("basic_notifications", () => {
     // Process same message again. Notification count shouldn't increase.
     message_1.id = 1002;
     message_notifications.process_notification({message: message_1, desktop_notify: true});
-    n = notifications.get_notifications();
+    n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Send another message. Notification count should increase.
     message_notifications.process_notification({message: message_2, desktop_notify: true});
-    n = notifications.get_notifications();
+    n = desktop_notifications.get_notifications();
     assert.equal(n.has("Gus Fring to general > lunch"), true);
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 2);
     assert.equal(last_shown_message_id, message_2.id);
 
     // Remove notifications.
-    notifications.close_notification(message_1);
-    notifications.close_notification(message_2);
-    n = notifications.get_notifications();
+    desktop_notifications.close_notification(message_1);
+    desktop_notifications.close_notification(message_2);
+    n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_2.id);
