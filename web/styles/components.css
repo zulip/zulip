@@ -99,6 +99,13 @@ i.zulip-icon.zulip-icon-bot {
     padding: 0 2px;
 }
 
+.pill-label {
+    & .zulip-icon-bot {
+        font-size: 12px;
+        padding: 0 0 0 5px !important;
+    }
+}
+
 .tippy-content {
     /* Set the default font size for tooltips. Popovers override this with
        a rule looking at the data-theme.

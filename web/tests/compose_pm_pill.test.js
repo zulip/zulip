@@ -173,7 +173,12 @@ run_test("pills", ({override, override_rewire}) => {
     const persons = [othello, iago, hamlet];
     const items = compose_pm_pill.filter_taken_users(persons);
     assert.deepEqual(items, [
-        {email: "iago@zulip.com", user_id: 2, full_name: "Iago", is_moderator: false},
+        {
+            email: "iago@zulip.com",
+            user_id: 2,
+            full_name: "Iago",
+            is_moderator: false,
+        },
     ]);
 
     test_create_item(create_item_handler);
