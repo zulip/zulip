@@ -4,9 +4,9 @@
 // (We should do bot updates here too.)
 import $ from "jquery";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
-import * as compose from "./compose";
+import * as compose_state from "./compose_state";
 import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -34,7 +34,7 @@ export const update_person = function update(person) {
         const new_email = person.new_email;
 
         narrow_state.update_email(user_id, new_email);
-        compose.update_email(user_id, new_email);
+        compose_state.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {
             page_params.email = new_email;
@@ -57,7 +57,7 @@ export const update_person = function update(person) {
         people.set_full_name(person_obj, person.full_name);
 
         settings_users.update_user_data(person.user_id, person);
-        activity.redraw();
+        activity_ui.redraw();
         message_live_update.update_user_full_name(person.user_id, person.full_name);
         pm_list.update_private_messages();
         if (people.is_my_user_id(person.user_id)) {

@@ -63,6 +63,7 @@ user_settings.twenty_four_hour_time = false;
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
+const drafts_overlay_ui = zrequire("drafts_overlay_ui");
 const messages_overlay_ui = zrequire("messages_overlay_ui");
 const timerender = zrequire("timerender");
 
@@ -155,7 +156,6 @@ test("draft_model delete", ({override}) => {
 test("snapshot_message", ({override_rewire}) => {
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     mock_banners();
 
     $(".narrow_to_compose_recipients").toggleClass = noop;
@@ -215,6 +215,7 @@ test("initialize", ({override_rewire}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.initialize();
+    drafts_overlay_ui.initialize();
 });
 
 test("remove_old_drafts", () => {
@@ -604,7 +605,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
-    drafts.launch();
+    drafts_overlay_ui.launch();
 
     $.clear_all_elements();
     $.create("#drafts_table .overlay-message-row", {children: []});
@@ -623,7 +624,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     $(".draft-selection-checkbox").filter = () => [];
-    drafts.launch();
+    drafts_overlay_ui.launch();
 });
 
 test("filter_drafts", ({override_rewire, mock_template}) => {
@@ -771,5 +772,5 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
 
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
-    drafts.launch();
+    drafts_overlay_ui.launch();
 });

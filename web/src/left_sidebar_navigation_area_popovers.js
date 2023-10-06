@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
-import render_left_sidebar_inbox_popover from "../templates/left_sidebar_inbox_popover.hbs";
+import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar_inbox_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 
 import * as channel from "./channel";

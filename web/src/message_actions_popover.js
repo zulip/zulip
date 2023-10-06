@@ -1,10 +1,10 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
-import render_actions_popover_content from "../templates/actions_popover_content.hbs";
+import render_actions_popover from "../templates/popovers/actions_popover.hbs";
 
 import * as blueslip from "./blueslip";
-import * as compose_actions from "./compose_actions";
+import * as compose_reply from "./compose_reply";
 import * as condense from "./condense";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as emoji_picker from "./emoji_picker";
@@ -80,7 +80,7 @@ export function initialize() {
             const message_id = rows.id($row);
             message_lists.current.select_id(message_id);
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
-            instance.setContent(parse_html(render_actions_popover_content(args)));
+            instance.setContent(parse_html(render_actions_popover(args)));
             $row.addClass("has_actions_popover");
         },
         onMount(instance) {
@@ -97,9 +97,9 @@ export function initialize() {
                 // Arguably, we should fetch the message ID to respond to from
                 // e.target, but that should always be the current selected
                 // message in the current message list (and
-                // compose_actions.respond_to_message doesn't take a message
+                // compose_reply.respond_to_message doesn't take a message
                 // argument).
-                compose_actions.quote_and_reply({trigger: "popover respond"});
+                compose_reply.quote_and_reply({trigger: "popover respond"});
                 e.preventDefault();
                 e.stopPropagation();
                 instance.hide();

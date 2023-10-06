@@ -44,9 +44,6 @@ const narrow_state = mock_esm("../src/narrow_state", {
 mock_esm("../src/reload_state", {
     is_in_progress: () => false,
 });
-mock_esm("../src/recent_view_util", {
-    is_visible: noop,
-});
 mock_esm("../src/drafts", {
     update_draft: noop,
 });
@@ -64,18 +61,19 @@ mock_esm("../src/resize", {
 
 const people = zrequire("people");
 
-const compose = zrequire("compose");
+const compose_setup = zrequire("compose_setup");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
+const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
-const respond_to_message = compose_actions.respond_to_message;
-const reply_with_mention = compose_actions.reply_with_mention;
-const quote_and_reply = compose_actions.quote_and_reply;
+const respond_to_message = compose_reply.respond_to_message;
+const reply_with_mention = compose_reply.reply_with_mention;
+const quote_and_reply = compose_reply.quote_and_reply;
 
 function assert_visible(sel) {
     assert.ok($(sel).visible());
@@ -224,11 +222,11 @@ test("start", ({override, override_rewire, mock_template}) => {
     };
 
     let abort_xhr_called = false;
-    override_rewire(compose, "abort_xhr", () => {
+    override_rewire(compose_setup, "abort_xhr", () => {
         abort_xhr_called = true;
     });
 
-    compose_actions.register_compose_cancel_hook(compose.abort_xhr);
+    compose_actions.register_compose_cancel_hook(compose_setup.abort_xhr);
     $("#compose-textarea").set_height(50);
 
     assert_hidden("#compose_controls");

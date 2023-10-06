@@ -15,7 +15,7 @@ set_global("document", "document-stub");
 const history = set_global("history", {});
 
 const admin = mock_esm("../src/admin");
-const drafts = mock_esm("../src/drafts");
+const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const info_overlay = mock_esm("../src/info_overlay");
 const message_viewport = mock_esm("../src/message_viewport");
 const narrow = mock_esm("../src/narrow");
@@ -26,9 +26,6 @@ const settings = mock_esm("../src/settings");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const ui_util = mock_esm("../src/ui_util");
 const ui_report = mock_esm("../src/ui_report");
-mock_esm("../src/left_sidebar_navigation_area", {
-    handle_narrow_deactivated() {},
-});
 set_global("favicon", {});
 
 const browser_history = zrequire("browser_history");
@@ -135,7 +132,7 @@ function test_helper({override, change_tab}) {
 
     stub(admin, "launch");
     stub(admin, "build_page");
-    stub(drafts, "launch");
+    stub(drafts_overlay_ui, "launch");
     stub(message_viewport, "stop_auto_scrolling");
     stub(narrow, "deactivate");
     stub(overlays, "close_for_hash_change");
@@ -303,7 +300,7 @@ run_test("hash_interactions", ({override}) => {
     $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
-        [drafts, "launch"],
+        [drafts_overlay_ui, "launch"],
     ]);
 
     window.location.hash = "#settings/alert-words";

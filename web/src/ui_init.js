@@ -13,6 +13,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
@@ -25,6 +26,8 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_reply from "./compose_reply";
+import * as compose_setup from "./compose_setup";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
 import * as composebox_typeahead from "./composebox_typeahead";
@@ -32,6 +35,7 @@ import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as dark_theme from "./dark_theme";
 import * as drafts from "./drafts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui";
 import * as echo from "./echo";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
@@ -65,6 +69,7 @@ import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
+import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
@@ -81,9 +86,9 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_view_ui from "./recent_view_ui";
-import * as reload from "./reload";
+import * as reload_setup from "./reload_setup";
 import * as rendered_markdown from "./rendered_markdown";
-import * as resize from "./resize";
+import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scheduled_messages_popover from "./scheduled_messages_popover";
@@ -118,6 +123,7 @@ import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_popover from "./topic_popover";
 import * as topic_zoom from "./topic_zoom";
+import * as transmit from "./transmit";
 import * as tutorial from "./tutorial";
 import * as typeahead_helper from "./typeahead_helper";
 import * as typing from "./typing";
@@ -137,6 +143,7 @@ import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as user_topic_popover from "./user_topic_popover";
 import * as user_topics from "./user_topics";
+import * as widgets from "./widgets";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -250,7 +257,7 @@ export function initialize_kitchen_sink_stuff() {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).on("resize", _.throttle(resize.handler, 50));
+    $(window).on("resize", _.throttle(resize_handler.handler, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
@@ -284,7 +291,7 @@ export function initialize_kitchen_sink_stuff() {
 
     // A little hackish, because it doesn't seem to totally get us the
     // exact right width for the compose box, but, close enough for now.
-    resize.handler();
+    resize_handler.handler();
 
     if (page_params.is_spectator) {
         $("body").addClass("spectator-view");
@@ -368,7 +375,7 @@ export function initialize_kitchen_sink_stuff() {
 
 function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook((counts) =>
-        activity.update_dom_with_unread_counts(counts),
+        activity_ui.update_dom_with_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
         left_sidebar_navigation_area.update_dom_with_unread_counts(counts, skip_animations),
@@ -381,7 +388,7 @@ function initialize_unread_ui() {
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
     unread_ui.register_update_unread_counts_hook((counts) =>
-        notifications.update_unread_counts(counts),
+        narrow_title.update_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
@@ -526,6 +533,7 @@ export function initialize_everything() {
     }
 
     i18n.initialize(i18n_params);
+    widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
@@ -592,7 +600,10 @@ export function initialize_everything() {
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
-    echo.initialize({on_send_message_success: compose.send_message_success});
+    echo.initialize({
+        on_send_message_success: compose.send_message_success,
+        send_message: transmit.send_message,
+    });
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
@@ -634,7 +645,8 @@ export function initialize_everything() {
         on_pill_create_or_remove: compose_recipient.update_placeholder_text,
     });
     compose_closed_ui.initialize();
-    reload.initialize();
+    compose_reply.initialize();
+    reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize(server_events.home_view_loaded);
@@ -645,8 +657,8 @@ export function initialize_everything() {
         playground_data: page_params.realm_playgrounds,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
-    compose.initialize();
-    // Typeahead must be initialized after compose.initialize()
+    compose_setup.initialize();
+    // Typeahead must be initialized after compose_setup.initialize()
     composebox_typeahead.initialize({
         on_enter_send: compose.finish,
     });
@@ -674,6 +686,7 @@ export function initialize_everything() {
 
     initialize_unread_ui();
     activity.initialize();
+    activity_ui.initialize();
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
@@ -693,6 +706,7 @@ export function initialize_everything() {
     });
     topic_zoom.initialize();
     drafts.initialize();
+    drafts_overlay_ui.initialize();
     sent_messages.initialize();
     hotspots.initialize();
     typing.initialize();

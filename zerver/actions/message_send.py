@@ -239,6 +239,11 @@ def get_recipient_info(
             topic_participant_user_ids = participants_for_topic(
                 realm_id, recipient.id, stream_topic.topic_name
             )
+            # We explicitly include the sender as a topic participant because the message will
+            # be actually sent at a later stage in this codepath, so `participants_for_topic`
+            # misses this sender. This is useful when the sender is sending their first message
+            # in the topic.
+            topic_participant_user_ids.add(sender_id)
         subscription_rows = (
             get_subscriptions_for_send_message(
                 realm_id=realm_id,

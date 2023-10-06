@@ -142,14 +142,16 @@ mock_esm("../src/user_topics", {
     all_visibility_policies,
 });
 const narrow = mock_esm("../src/narrow", {
-    update_narrow_title: noop,
     hide_unread_banner: noop,
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,
 });
+mock_esm("../src/narrow_title", {
+    update_narrow_title() {},
+});
 mock_esm("../src/pm_list", {
     update_private_messages: noop,
-    handle_narrow_deactivated: noop,
+    handle_message_view_deactivated: noop,
 });
 mock_esm("../src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
@@ -166,7 +168,7 @@ mock_esm("../src/stream_data", {
     get_stream_name_from_id: () => "stream_name",
 });
 mock_esm("../src/stream_list", {
-    handle_narrow_deactivated: noop,
+    handle_message_view_deactivated: noop,
 });
 mock_esm("../src/timerender", {
     relative_time_string_from_date: () => "Just now",

@@ -235,26 +235,32 @@
 </div>
 
 
-<div id="confirm-licenses-modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
-        <h3 id="deactivation_self_modal_label">Confirm license increase</h3>
-    </div>
-    <div class="modal-body">
-        <p>
-            Are you sure you want to increase the licenses from
-            <b><span id="current_license_count_holder"></span></b> to
-            <b><span id="new_license_count_holder"></span></b>?
-        </p>
-        <p>
-            You would be charged for the additional licenses.
-        </p>
-    </div>
-    <div class="modal-footer">
-        <button class="button" data-dismiss="modal">Cancel</button>
-        <button class="button btn-success rounded" id="confirm-license-update-button" data-dismiss="modal" aria-hidden="true">
-            <span id="confirm-license-update">Confirm</span>
-        </button>
+<div id="confirm-licenses-modal" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    {{ _('Confirm license increase') }}
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Are you sure you want to increase the licenses from
+                    <b><span id="current_license_count_holder"></span></b> to
+                    <b><span id="new_license_count_holder"></span></b>?
+                </p>
+                <p>
+                    You would be charged for the additional licenses.
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Confirm') }}</span>
+                </button>
+            </footer>
+        </div>
     </div>
 </div>
 {% endblock %}

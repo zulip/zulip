@@ -53,6 +53,7 @@
     ],
     "landing-page-hello": [
         "./src/bundles/hello",
+        "./src/portico/hello",
         "./src/portico/landing-page",
         "./src/portico/header",
         "./styles/portico/svg_icons.css",

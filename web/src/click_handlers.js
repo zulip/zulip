@@ -6,13 +6,14 @@ import WinChan from "winchan";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
 import * as dark_theme from "./dark_theme";
@@ -207,7 +208,7 @@ export function initialize() {
         if (page_params.is_spectator) {
             return;
         }
-        compose_actions.respond_to_message({trigger: "message click"});
+        compose_reply.respond_to_message({trigger: "message click"});
         e.stopPropagation();
     };
 
@@ -480,7 +481,7 @@ export function initialize() {
         .on("click", ".selectable_sidebar_block", (e) => {
             const $li = $(e.target).parents("li");
 
-            activity.narrow_for_user({$li});
+            activity_ui.narrow_for_user({$li});
 
             e.preventDefault();
             e.stopPropagation();

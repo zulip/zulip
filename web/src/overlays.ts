@@ -27,6 +27,9 @@ export type ModalConfig = {
 let active_overlay: Overlay | undefined;
 let open_overlay_name: string | undefined;
 
+// Used for both overlays and modals.
+// We could split these hooks so that they are separate for
+// overlays and modals if we need to.
 const pre_open_hooks: Hook[] = [];
 const pre_close_hooks: Hook[] = [];
 
@@ -261,6 +264,7 @@ export function open_modal(
             conf.on_show();
         }
         disable_scrolling();
+        call_hooks(pre_open_hooks);
     }
 
     function on_close_callback(): void {
@@ -268,6 +272,7 @@ export function open_modal(
             conf.on_hide();
         }
         enable_scrolling();
+        call_hooks(pre_close_hooks);
     }
 
     Micromodal.show(modal_id, {

@@ -63,7 +63,6 @@ message_lists.home = {view: {}};
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 const message_store = zrequire("message_store");
-const recent_view_util = zrequire("recent_view_util");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
 const unread_ops = zrequire("unread_ops");
@@ -91,9 +90,6 @@ run_test("unread_ops", ({override}) => {
             unread: true,
         },
     ];
-
-    // We don't want Recent Conversations to process message for this test.
-    recent_view_util.set_visible(false);
 
     // Make our test message appear to be unread, so that
     // we then need to subsequently process them as read.

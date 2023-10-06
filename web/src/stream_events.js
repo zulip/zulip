@@ -16,6 +16,7 @@ import * as stream_color_events from "./stream_color_events";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
+import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
@@ -130,7 +131,7 @@ export function mark_subscribed(sub, subscribers, color) {
         // needed.
         blueslip.warn("Frontend needed to pick a color in mark_subscribed");
         color = color_data.pick_color();
-        stream_settings_ui.set_color(sub.stream_id, color);
+        stream_settings_api.set_color(sub.stream_id, color);
     }
     stream_data.subscribe_myself(sub);
     if (subscribers) {

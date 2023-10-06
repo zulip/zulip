@@ -34,8 +34,9 @@ set_global("document", "document-stub");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_reply = mock_esm("../src/compose_reply");
 const condense = mock_esm("../src/condense");
-const drafts = mock_esm("../src/drafts");
+const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
     toggle_emoji_popover() {},
@@ -121,7 +122,7 @@ message_lists.current = {
     },
 };
 
-const activity = zrequire("activity");
+const activity_ui = zrequire("activity_ui");
 const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const hotkey = zrequire("hotkey");
@@ -318,7 +319,7 @@ run_test("streams", ({override}) => {
 run_test("basic mappings", () => {
     assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
-    assert_mapping_rewire("w", activity, "initiate_search");
+    assert_mapping_rewire("w", activity_ui, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
     assert_mapping("A", narrow, "stream_cycle_backward");
@@ -370,14 +371,14 @@ run_test("misc", ({override}) => {
 
     // TODO: Similar check for being in the subs page
 
-    assert_mapping("@", compose_actions, "reply_with_mention");
+    assert_mapping("@", compose_reply, "reply_with_mention");
     assert_mapping("+", reactions, "toggle_emoji_reaction");
     // Without an existing emoji reaction, this next one will only
     // call get_message_reactions, so we verify just that.
     assert_mapping("=", reactions, "get_message_reactions");
     assert_mapping("-", condense, "toggle_collapse");
-    assert_mapping("r", compose_actions, "respond_to_message");
-    assert_mapping("R", compose_actions, "respond_to_message", true);
+    assert_mapping("r", compose_reply, "respond_to_message");
+    assert_mapping("R", compose_reply, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
     assert_mapping("J", navigate, "page_down");
     assert_mapping("k", navigate, "up");
@@ -385,7 +386,7 @@ run_test("misc", ({override}) => {
     assert_mapping("u", popovers, "toggle_sender_info");
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
-    assert_mapping(">", compose_actions, "quote_and_reply");
+    assert_mapping(">", compose_reply, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
@@ -539,8 +540,8 @@ run_test("motion_keys", () => {
 
     delete overlays.is_active;
     overlays.drafts_open = () => true;
-    assert_mapping("up_arrow", drafts, "handle_keyboard_events");
-    assert_mapping("down_arrow", drafts, "handle_keyboard_events");
+    assert_mapping("up_arrow", drafts_overlay_ui, "handle_keyboard_events");
+    assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
     delete overlays.is_active;
     delete overlays.drafts_open;
 });

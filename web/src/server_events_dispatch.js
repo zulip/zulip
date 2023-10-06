@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as alert_words from "./alert_words";
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
@@ -8,10 +8,11 @@ import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
-import * as compose from "./compose";
 import * as compose_call from "./compose_call";
+import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_state from "./compose_state";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
@@ -27,6 +28,7 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
+import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
@@ -159,7 +161,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "presence":
-            activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
+            activity_ui.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
 
         case "restart": {
@@ -223,7 +225,7 @@ export function dispatch_normal_event(event) {
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
                 move_messages_between_streams_policy: noop,
-                name: notifications.redraw_title,
+                name: narrow_title.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
@@ -233,8 +235,8 @@ export function dispatch_normal_event(event) {
                 enable_spectator_access: noop,
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
-                video_chat_provider: compose.update_audio_and_video_chat_button_display,
-                jitsi_server_url: compose.update_audio_and_video_chat_button_display,
+                video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
+                jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
                 giphy_rating: giphy.update_giphy_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
@@ -552,8 +554,9 @@ export function dispatch_normal_event(event) {
                         stream_settings_ui.remove_stream(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
-                            if (stream.stream_id === compose_recipient.selected_recipient_id) {
-                                compose_recipient.set_selected_recipient_id("");
+                            if (stream.stream_id === compose_state.selected_recipient_id) {
+                                compose_state.set_selected_recipient_id("");
+                                compose_recipient.on_compose_select_recipient_update();
                             }
                         }
                         settings_streams.update_default_streams_table();
@@ -749,7 +752,7 @@ export function dispatch_normal_event(event) {
                 settings_display.report_user_list_style_change(
                     settings_display.user_settings_panel,
                 );
-                activity.build_user_sidebar();
+                activity_ui.build_user_sidebar();
             }
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
@@ -794,7 +797,7 @@ export function dispatch_normal_event(event) {
                     msg_list.rerender();
                 }
                 // Rerender buddy list status emoji
-                activity.build_user_sidebar();
+                activity_ui.build_user_sidebar();
             }
 
             if (event.property === "display_emoji_reaction_users") {
@@ -812,7 +815,7 @@ export function dispatch_normal_event(event) {
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
-                activity.redraw_user(page_params.user_id);
+                activity_ui.redraw_user(page_params.user_id);
                 break;
             }
             if (event.property === "email_address_visibility") {
@@ -897,7 +900,7 @@ export function dispatch_normal_event(event) {
                     user_id: event.user_id,
                     status_text: event.status_text,
                 });
-                activity.redraw_user(event.user_id);
+                activity_ui.redraw_user(event.user_id);
 
                 // Update the status text in compose box placeholder when opened to self.
                 if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
@@ -907,7 +910,7 @@ export function dispatch_normal_event(event) {
 
             if (event.emoji_name !== undefined) {
                 user_status.set_status_emoji(event);
-                activity.redraw_user(event.user_id);
+                activity_ui.redraw_user(event.user_id);
                 pm_list.update_private_messages();
                 message_live_update.update_user_status_emoji(
                     event.user_id,

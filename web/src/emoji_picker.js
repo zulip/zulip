@@ -2,15 +2,13 @@ import $ from "jquery";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as typeahead from "../shared/src/typeahead";
-import render_emoji_popover from "../templates/emoji_popover.hbs";
-import render_emoji_popover_content from "../templates/emoji_popover_content.hbs";
-import render_emoji_popover_emoji_map from "../templates/emoji_popover_emoji_map.hbs";
-import render_emoji_popover_search_results from "../templates/emoji_popover_search_results.hbs";
-import render_emoji_showcase from "../templates/emoji_showcase.hbs";
+import render_emoji_popover from "../templates/popovers/emoji/emoji_popover.hbs";
+import render_emoji_popover_emoji_map from "../templates/popovers/emoji/emoji_popover_emoji_map.hbs";
+import render_emoji_popover_search_results from "../templates/popovers/emoji/emoji_popover_search_results.hbs";
+import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
-import {media_breakpoints_num} from "./css_variables";
 import * as emoji from "./emoji";
 import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
@@ -171,7 +169,7 @@ const generate_emoji_picker_content = function (id) {
         emoji_dict.has_reacted = emoji_dict.aliases.some((alias) => emojis_used.includes(alias));
     }
 
-    return render_emoji_popover_content({
+    return render_emoji_popover({
         message_id: id,
         emoji_categories: complete_emoji_catalog,
         is_status_emoji_popover: user_status_ui.user_status_picker_open(),
@@ -647,10 +645,9 @@ function get_default_emoji_popover_options() {
             emoji_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
-            instance.setContent(ui_util.parse_html(render_emoji_popover()));
-            $popover
-                .find(".popover-content")
-                .append(generate_emoji_picker_content(current_message_id));
+            instance.setContent(
+                ui_util.parse_html(generate_emoji_picker_content(current_message_id)),
+            );
             emoji_catalog_last_coordinates = {
                 section: 0,
                 index: 0,
@@ -688,21 +685,15 @@ export function toggle_emoji_popover(target, id, additional_popover_options) {
         current_message_id = id;
     }
 
-    let show_as_overlay = false;
-
-    // If the window is mobile-sized, we will render the
-    // emoji popover centered on the screen with the overlay.
-    if (window.innerWidth <= media_breakpoints_num.md) {
-        show_as_overlay = true;
-    }
-
     popover_menus.toggle_popover_menu(
         target,
         {
             ...get_default_emoji_popover_options(),
             ...additional_popover_options,
         },
-        {show_as_overlay},
+        {
+            show_as_overlay_on_mobile: true,
+        },
     );
 }
 function register_click_handlers() {
