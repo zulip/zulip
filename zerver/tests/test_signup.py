@@ -2086,7 +2086,9 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
         )
-        self.assertTrue("ERROR:root:Error in accounts_home" in m.output[0])
+        self.assertTrue(
+            "ERROR:root:Failed to deliver email during user registration" in m.output[0]
+        )
 
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
@@ -2108,7 +2110,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
         )
-        self.assertTrue("ERROR:root:Error in create_realm" in m.output[0])
+        self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
 
     def test_user_default_language_and_timezone(self) -> None:
         """
