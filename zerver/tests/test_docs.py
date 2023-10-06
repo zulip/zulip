@@ -468,9 +468,14 @@ class AboutPageTest(ZulipTestCase):
 
 class SmtpConfigErrorTest(ZulipTestCase):
     def test_smtp_error(self) -> None:
-        result = self.client_get("/config-error/smtp")
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["email configuration"], result)
+        with self.assertLogs("django.request", level="ERROR") as m:
+            result = self.client_get("/config-error/smtp")
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response("email configuration", result)
+            self.assertEqual(
+                m.output,
+                ["ERROR:django.request:Internal Server Error: /config-error/smtp"],
+            )
 
 
 class PlansPageTest(ZulipTestCase):
