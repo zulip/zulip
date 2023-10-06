@@ -7,9 +7,6 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-mock_esm("../src/recent_view_util", {
-    is_visible: () => false,
-});
 const noop = () => {};
 // Mocking and stubbing things
 set_global("document", "document-stub");
