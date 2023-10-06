@@ -612,6 +612,12 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     };
     on_info_visible_callback();
 
+    let hide_upload_banner_called = false;
+    override_rewire(upload, "hide_upload_banner", (_uppy, config) => {
+        hide_upload_banner_called = true;
+        assert.equal(config.mode, "compose");
+    });
+
     const on_upload_error_callback = callbacks["upload-error"];
     $("#compose_banners .upload_banner .upload_msg").text("");
     compose_ui_replace_syntax_called = false;
@@ -628,6 +634,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     assert.ok(compose_ui_replace_syntax_called);
 
     $("#compose_banners .upload_banner .upload_msg").text("");
+    assert.ok(hide_upload_banner_called);
     $("#compose-textarea").val("user modified text");
     on_upload_error_callback(file, null);
     assert.ok(compose_ui_replace_syntax_called);
