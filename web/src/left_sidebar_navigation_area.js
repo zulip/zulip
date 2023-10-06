@@ -40,16 +40,22 @@ export function update_dom_with_unread_counts(counts, skip_animations) {
 // TODO: Rewrite how we handle activation of narrows when doing the redesign.
 // We don't want to adjust class for all the buttons when switching narrows.
 
-function remove($elem) {
+function removeActiveClasses($elem) {
     $elem.removeClass("active-filter active-sub-filter");
 }
 
 export function deselect_top_left_corner_items() {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_mentions"));
-    remove($(".top_left_recent_view"));
-    remove($(".top_left_inbox"));
+    const classToRemove = [
+        ".top_left_all_messages",
+        ".top_left_starred_messages",
+        ".top_left_mentions",
+        ".top_left_recent_view",
+        ".top_left_inbox",
+    ];
+
+    for (const classname of classToRemove) {
+        removeActiveClasses($(classname));
+    }
 }
 
 export function handle_narrow_activated(filter) {
@@ -82,10 +88,10 @@ export function handle_narrow_activated(filter) {
 }
 
 export function highlight_recent_view() {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_mentions"));
-    remove($(".top_left_inbox"));
+    removeActiveClasses($(".top_left_all_messages"));
+    removeActiveClasses($(".top_left_starred_messages"));
+    removeActiveClasses($(".top_left_mentions"));
+    removeActiveClasses($(".top_left_inbox"));
     $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -102,11 +108,11 @@ export function animate_mention_changes($li, new_mention_count) {
 function do_new_messages_animation($li) {
     $li.addClass("new_messages");
     function mid_animation() {
-        $li.removeClass("new_messages");
+        $li.removeActiveClassesClass("new_messages");
         $li.addClass("new_messages_fadeout");
     }
     function end_animation() {
-        $li.removeClass("new_messages_fadeout");
+        $li.removeActiveClassesClass("new_messages_fadeout");
     }
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
@@ -117,10 +123,10 @@ export function initialize() {
 }
 
 export function highlight_inbox_view() {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_recent_view"));
-    remove($(".top_left_mentions"));
+    removeActiveClasses($(".top_left_all_messages"));
+    removeActiveClasses($(".top_left_starred_messages"));
+    removeActiveClasses($(".top_left_recent_view"));
+    removeActiveClasses($(".top_left_mentions"));
     $(".top_left_inbox").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
