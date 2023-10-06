@@ -11,9 +11,9 @@ import render_profile_incomplete_alert_content from "../templates/navbar_alerts/
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 
 import * as compose_ui from "./compose_ui";
+import * as desktop_notifications from "./desktop_notifications";
 import * as keydown_util from "./keydown_util";
 import {localstorage} from "./localstorage";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import {should_display_profile_incomplete_alert} from "./timerender";
 import * as unread from "./unread";
@@ -65,9 +65,9 @@ export function should_show_notifications(ls) {
         // don't exist like `Notification.permission`.
         !util.is_mobile() &&
         // if permission has not been granted yet.
-        !notifications.granted_desktop_notifications_permission() &&
+        !desktop_notifications.granted_desktop_notifications_permission() &&
         // if permission is allowed to be requested (e.g. not in "denied" state).
-        notifications.permission_state() !== "denied"
+        desktop_notifications.permission_state() !== "denied"
     );
 }
 
@@ -193,7 +193,7 @@ export function initialize() {
     $(".request-desktop-notifications").on("click", function (e) {
         e.preventDefault();
         $(this).closest(".alert").hide();
-        notifications.request_desktop_notifications_permission();
+        desktop_notifications.request_desktop_notifications_permission();
         $(window).trigger("resize");
     });
 

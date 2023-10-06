@@ -53,9 +53,9 @@ const $ = require("./lib/zjquery");
 set_global("document", {hasFocus: () => true});
 
 const channel = mock_esm("../src/channel");
+const desktop_notifications = mock_esm("../src/desktop_notifications");
 const message_lists = mock_esm("../src/message_lists");
 const message_viewport = mock_esm("../src/message_viewport");
-const notifications = mock_esm("../src/notifications");
 const unread_ui = mock_esm("../src/unread_ui");
 
 message_lists.current = {view: {}};
@@ -108,7 +108,7 @@ run_test("unread_ops", ({override}) => {
     // Ignore these interactions for now:
     override(message_lists.current.view, "show_message_as_read", () => {});
     override(message_lists.home.view, "show_message_as_read", () => {});
-    override(notifications, "close_notification", () => {});
+    override(desktop_notifications, "close_notification", () => {});
     override(unread_ui, "update_unread_counts", () => {});
     override(unread_ui, "notify_messages_remain_unread", () => {});
 
