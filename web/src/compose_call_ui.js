@@ -10,6 +10,23 @@ import * as rows from "./rows";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
+export function update_audio_and_video_chat_button_display() {
+    update_audio_chat_button_display();
+    update_video_chat_button_display();
+}
+
+export function update_video_chat_button_display() {
+    const show_video_chat_button = compose_call.compute_show_video_chat_button();
+    $("#below-compose-content .video_link").toggle(show_video_chat_button);
+    $(".message-edit-feature-group .video_link").toggle(show_video_chat_button);
+}
+
+export function update_audio_chat_button_display() {
+    const show_audio_chat_button = compose_call.compute_show_audio_chat_button();
+    $("#below-compose-content .audio_link").toggle(show_audio_chat_button);
+    $(".message-edit-feature-group .audio_link").toggle(show_audio_chat_button);
+}
+
 function insert_video_call_url(url, target_textarea) {
     const link_text = $t({defaultMessage: "Join video call."});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);

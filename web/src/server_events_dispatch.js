@@ -8,8 +8,8 @@ import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
-import * as compose from "./compose";
 import * as compose_call from "./compose_call";
+import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
@@ -235,8 +235,8 @@ export function dispatch_normal_event(event) {
                 enable_spectator_access: noop,
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
-                video_chat_provider: compose.update_audio_and_video_chat_button_display,
-                jitsi_server_url: compose.update_audio_and_video_chat_button_display,
+                video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
+                jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
                 giphy_rating: giphy.update_giphy_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
