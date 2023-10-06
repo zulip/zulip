@@ -5407,7 +5407,7 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assert_in_success_response(["Configuration error", "DevAuthBackend"], response)
 
     def test_dev_direct_production_config_error(self) -> None:
-        result = self.client_get("/config-error/dev")
+        result = self.client_get("/config-error/dev_not_supported")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["DevAuthBackend"], result)
 
