@@ -2068,6 +2068,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_logged_in_user_id(user_profile.id)
         return user_profile
 
+    @override_settings(CORPORATE_ENABLED=False)
     def test_bad_email_configuration_for_accounts_home(self) -> None:
         """
         Make sure we show an error page for EmailNotDeliveredError.
@@ -2090,6 +2091,31 @@ class UserSignUpTest(ZulipTestCase):
             "ERROR:root:Failed to deliver email during user registration" in m.output[0]
         )
 
+    @override_settings(CORPORATE_ENABLED=True)
+    def test_bad_email_configuration_for_corporate_accounts_home(self) -> None:
+        """
+        This should show a generic 500.
+        """
+        email = self.nonreg_email("newguy")
+
+        smtp_mock = patch(
+            "zerver.views.registration.send_confirm_registration_email",
+            side_effect=EmailNotDeliveredError,
+        )
+
+        with smtp_mock, self.assertLogs(level="ERROR") as m:
+            result = self.client_post("/accounts/home/", {"email": email})
+
+        self.assertEqual(result.status_code, 500)
+        self.assertNotIn(
+            "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
+        )
+        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assertTrue(
+            "ERROR:root:Failed to deliver email during user registration" in m.output[0]
+        )
+
+    @override_settings(CORPORATE_ENABLED=False)
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
         Make sure we show an error page for EmailNotDeliveredError.
@@ -2110,6 +2136,30 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
         )
+        self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
+
+    @override_settings(CORPORATE_ENABLED=True)
+    def test_bad_email_configuration_for_corporate_create_realm(self) -> None:
+        """
+        This should show a generic 500.
+        """
+        email = self.nonreg_email("newguy")
+
+        smtp_mock = patch(
+            "zerver.views.registration.send_confirm_registration_email",
+            side_effect=EmailNotDeliveredError,
+        )
+
+        with smtp_mock, self.assertLogs(level="ERROR") as m:
+            result = self.submit_realm_creation_form(
+                email, realm_subdomain="custom-test", realm_name="Zulip test"
+            )
+
+        self.assertEqual(result.status_code, 500)
+        self.assertNotIn(
+            "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
+        )
+        self.assert_in_response("server is experiencing technical difficulties", result)
         self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
 
     def test_user_default_language_and_timezone(self) -> None:
