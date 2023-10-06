@@ -512,17 +512,6 @@
         top: 0;
         bottom: 0;
     }
-
-    .upload_msg {
-        flex-grow: 1;
-    }
-
-    .upload_msg,
-    .main-view-banner-close-button,
-    .upload_banner_cancel_button {
-        z-index: 1;
-        position: relative;
-    }
 }
 
 .composition-area {
