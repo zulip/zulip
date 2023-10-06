@@ -9,7 +9,7 @@ const {page_params} = require("./lib/zpage_params");
 
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
-const notifications = mock_esm("../src/notifications");
+const message_notifications = mock_esm("../src/message_notifications");
 const pm_list = mock_esm("../src/pm_list");
 const stream_list = mock_esm("../src/stream_list");
 const unread_ui = mock_esm("../src/unread_ui");
@@ -99,7 +99,7 @@ run_test("update_messages", () => {
 
     const side_effects = [
         [message_edit, "end_message_edit"],
-        [notifications, "received_messages"],
+        [message_notifications, "received_messages"],
         [unread_ui, "update_unread_counts"],
         [stream_list, "update_streams_sidebar"],
         [pm_list, "update_private_messages"],

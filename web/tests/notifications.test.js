@@ -13,6 +13,7 @@ const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
 
 const notifications = zrequire("notifications");
+const message_notifications = zrequire("message_notifications");
 
 // Not muted streams
 const general = {
@@ -82,10 +83,10 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "whatever",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
     // Not notifiable because it was sent by the current user
-    assert.equal(notifications.message_is_notifiable(message), false);
+    assert.equal(message_notifications.message_is_notifiable(message), false);
 
     // Case 2: If the user has already been sent a notification about this message,
     //  DO NOT notify the user
@@ -103,9 +104,9 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "whatever",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), false);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), false);
 
     // Case 3: If a message mentions the user directly,
     //  DO notify the user
@@ -121,9 +122,9 @@ test("message_is_notifiable", () => {
         stream_id: muted.stream_id,
         topic: "topic_three",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Case 4: If the message has been sent to a followed topic,
     // DO visually and audibly notify the user if 'enable_followed_topic_desktop_notifications'
@@ -140,17 +141,17 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "followed topic",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // But not if 'enable_followed_topic_desktop_notifications'
     // and 'enable_followed_topic_audible_notifications' are disabled.
     user_settings.enable_followed_topic_desktop_notifications = false;
     user_settings.enable_followed_topic_audible_notifications = false;
-    assert.equal(notifications.should_send_desktop_notification(message), false);
-    assert.equal(notifications.should_send_audible_notification(message), false);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), false);
+    assert.equal(message_notifications.should_send_audible_notification(message), false);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Reset state
     user_settings.enable_followed_topic_desktop_notifications = true;
@@ -168,9 +169,9 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "vanilla",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Case 6:
     // Wildcard mention should trigger notification in unmuted topic
@@ -186,21 +187,21 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "vanilla",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // But not if it's disabled
     user_settings.wildcard_mentions_notify = false;
-    assert.equal(notifications.should_send_desktop_notification(message), false);
-    assert.equal(notifications.should_send_audible_notification(message), false);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), false);
+    assert.equal(message_notifications.should_send_audible_notification(message), false);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // And the stream-level setting overrides the global setting
     general.wildcard_mentions_notify = true;
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Reset state
     user_settings.wildcard_mentions_notify = true;
@@ -220,9 +221,9 @@ test("message_is_notifiable", () => {
         stream_id: muted.stream_id,
         topic: "whatever",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), false);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), false);
 
     // Case 8: If a message is in a muted stream
     //  and does mention the user DIRECTLY,
@@ -238,9 +239,9 @@ test("message_is_notifiable", () => {
         stream_id: muted.stream_id,
         topic: "whatever",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Case 9: If a message is in a muted topic
     //  and does not mention the user DIRECTLY (i.e. wildcard mention),
@@ -256,9 +257,9 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "muted topic",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), false);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), false);
 
     // Case 10:
     // Wildcard mentions in a followed topic with 'wildcard_mentions_notify',
@@ -280,15 +281,15 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "followed topic",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // But not if 'enable_followed_topic_wildcard_mentions_notify' is disabled
     user_settings.enable_followed_topic_wildcard_mentions_notify = false;
-    assert.equal(notifications.should_send_desktop_notification(message), false);
-    assert.equal(notifications.should_send_audible_notification(message), false);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), false);
+    assert.equal(message_notifications.should_send_audible_notification(message), false);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Reset state
     user_settings.wildcard_mentions_notify = true;
@@ -310,9 +311,9 @@ test("message_is_notifiable", () => {
         topic: "whatever",
     };
     user_settings.notification_sound = "none";
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), false);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), false);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Reset state
     user_settings.notification_sound = "ding";
@@ -332,9 +333,9 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "whatever",
     };
-    assert.equal(notifications.should_send_desktop_notification(message), false);
-    assert.equal(notifications.should_send_audible_notification(message), false);
-    assert.equal(notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), false);
+    assert.equal(message_notifications.should_send_audible_notification(message), false);
+    assert.equal(message_notifications.message_is_notifiable(message), true);
 });
 
 test("basic_notifications", () => {
@@ -393,7 +394,7 @@ test("basic_notifications", () => {
     };
 
     // Send notification.
-    notifications.process_notification({message: message_1, desktop_notify: true});
+    message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
@@ -408,7 +409,7 @@ test("basic_notifications", () => {
 
     // Send notification.
     message_1.id = 1001;
-    notifications.process_notification({message: message_1, desktop_notify: true});
+    message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
@@ -416,14 +417,14 @@ test("basic_notifications", () => {
 
     // Process same message again. Notification count shouldn't increase.
     message_1.id = 1002;
-    notifications.process_notification({message: message_1, desktop_notify: true});
+    message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Send another message. Notification count should increase.
-    notifications.process_notification({message: message_2, desktop_notify: true});
+    message_notifications.process_notification({message: message_2, desktop_notify: true});
     n = notifications.get_notifications();
     assert.equal(n.has("Gus Fring to general > lunch"), true);
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
