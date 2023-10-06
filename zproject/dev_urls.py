@@ -10,7 +10,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 from django.views.static import serve
 
-from zerver.views.auth import config_error, login_page
+from zerver.views.auth import login_page
 from zerver.views.development.cache import remove_caches
 from zerver.views.development.camo import handle_camo_url
 from zerver.views.development.dev_login import (
@@ -31,6 +31,7 @@ from zerver.views.development.registration import (
     register_development_realm,
     register_development_user,
 )
+from zerver.views.errors import config_error
 
 # These URLs are available only in the development environment
 
