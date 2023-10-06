@@ -17,7 +17,7 @@ const settings_account = mock_esm("../src/settings_account", {
 mock_esm("../src/activity_ui", {
     redraw() {},
 });
-mock_esm("../src/compose", {
+mock_esm("../src/compose_state", {
     update_email() {},
 });
 mock_esm("../src/narrow_state", {

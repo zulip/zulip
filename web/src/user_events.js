@@ -6,7 +6,7 @@ import $ from "jquery";
 
 import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
-import * as compose from "./compose";
+import * as compose_state from "./compose_state";
 import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -34,7 +34,7 @@ export const update_person = function update(person) {
         const new_email = person.new_email;
 
         narrow_state.update_email(user_id, new_email);
-        compose.update_email(user_id, new_email);
+        compose_state.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {
             page_params.email = new_email;
