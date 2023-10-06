@@ -697,7 +697,7 @@ html_rules: List["Rule"] = [
             "web/templates/popovers/user_card/user_card_popover_avatar.hbs",
             "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
-            "templates/zerver/config_error.html",
+            "templates/zerver/config_error/container.html",
             "templates/zerver/dev_env_email_access_details.html",
             "templates/zerver/confirm_continue_registration.html",
             "templates/zerver/register.html",
