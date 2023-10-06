@@ -196,9 +196,7 @@ export function unsubscribe_from_private_stream(sub) {
     const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream: sub});
 
     const html_body = render_unsubscribe_private_stream_modal({
-        message: $t({
-            defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
-        }),
+        unsubscribing_other_user: false,
         display_stream_archive_warning: sub_count === 1 && invite_only,
     });
 
@@ -215,7 +213,7 @@ export function unsubscribe_from_private_stream(sub) {
 
     confirm_dialog.launch({
         html_heading: $t_html(
-            {defaultMessage: "Unsubscribe from <z-link></z-link>"},
+            {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
             {"z-link": () => stream_name_with_privacy_symbol_html},
         ),
         html_body,
