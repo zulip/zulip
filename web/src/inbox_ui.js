@@ -651,7 +651,7 @@ function get_row_index($elt) {
     return $all_rows.index($row);
 }
 
-function focus_clicked_element($elt) {
+function focus_clicked_list_element($elt) {
     row_focus = get_row_index($elt);
     update_triggered_by_user = true;
 }
@@ -1098,7 +1098,7 @@ export function initialize() {
         const $elt = $(e.currentTarget);
         const container_id = $elt.parents(".inbox-header").attr("id");
         col_focus = COLUMNS.COLLAPSE_BUTTON;
-        focus_clicked_element($elt);
+        focus_clicked_list_element($elt);
         collapse_or_expand(container_id);
         e.stopPropagation();
     });
@@ -1116,7 +1116,7 @@ export function initialize() {
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", (e) => {
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.RECIPIENT;
-        focus_clicked_element($elt);
+        focus_clicked_list_element($elt);
         window.location.href = $elt.find("a").attr("href");
     });
 
@@ -1131,7 +1131,7 @@ export function initialize() {
         e.preventDefault();
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.UNREAD_COUNT;
-        focus_clicked_element($elt);
+        focus_clicked_list_element($elt);
         const user_ids_string = $elt.attr("data-user-ids-string");
         if (user_ids_string) {
             // direct message row
@@ -1154,7 +1154,7 @@ export function initialize() {
         e.preventDefault();
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.UNREAD_COUNT;
-        focus_clicked_element($elt);
+        focus_clicked_list_element($elt);
         const user_ids_string = $elt.attr("data-user-ids-string");
         if (user_ids_string) {
             // direct message row
