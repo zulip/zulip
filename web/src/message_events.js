@@ -13,6 +13,7 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
 import * as message_lists from "./message_lists";
+import * as message_notifications from "./message_notifications";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as narrow from "./narrow";
@@ -161,7 +162,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     }
 
     unread_ops.process_visible();
-    notifications.received_messages(messages);
+    message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
     recent_view_ui.process_messages(messages);
@@ -482,7 +483,7 @@ export function update_messages(events) {
                 anchor_message.last_edit_timestamp = event.edit_timestamp;
             }
 
-            notifications.received_messages([anchor_message]);
+            message_notifications.received_messages([anchor_message]);
             alert_words.process_message(anchor_message);
         }
 
