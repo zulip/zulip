@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.http import HttpResponse, HttpResponseBase
 from django.template.response import TemplateResponse
 from django.test import Client, override_settings
@@ -2377,6 +2378,38 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assert_in_success_response(
             ["Enter your account details to complete registration."], result
+        )
+
+    def test_signup_with_email_address_race(self) -> None:
+        """
+        The check for if an email is in use can race with other user
+        creation; it is caught by database uniqueness rules.  Verify
+        that that is transformed into a redirect to log into the
+        account.
+        """
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        self.client_post("/accounts/home/", {"email": email})
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+        self.client_post(
+            "/accounts/register/",
+            {
+                "password": password,
+                "key": find_key_by_email(email),
+                "terms": True,
+                "full_name": "New Guy",
+                "from_confirmation": "1",
+            },
+        )
+        with patch("zerver.actions.create_user.create_user", side_effect=IntegrityError):
+            result = self.submit_reg_form_for_user(email, "easy", full_name="New Guy")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/login/?email={urllib.parse.quote(email)}&already_registered=1"
+            )
         )
 
     def test_signup_with_weak_password(self) -> None:
