@@ -664,6 +664,33 @@ function revive_current_focus() {
     }
 }
 
+function update_closed_compose_text($row, is_header_row) {
+    // TODO: This fake "message" object is designed to allow using the
+    // get_recipient_label helper inside compose_closed_ui. Surely
+    // there's a more readable way to write this code.
+    // Similar code is present in recent view.
+
+    if (is_header_row) {
+        compose_closed_ui.set_standard_text_for_reply_button();
+        return;
+    }
+
+    let message;
+    const is_dm = $row.parent("#inbox-direct-messages-container").length > 0;
+    if (is_dm) {
+        message = {
+            display_reply_to: $row.find(".recipients_name").text(),
+        };
+    } else {
+        const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");
+        message = {
+            stream_id: Number.parseInt($stream.attr("data-stream-id"), 10),
+            topic: $row.find(".inbox-topic-name a").text(),
+        };
+    }
+    compose_closed_ui.update_reply_recipient_label(message);
+}
+
 function is_row_a_header($row) {
     return $row.hasClass("inbox-header");
 }
@@ -698,6 +725,7 @@ function set_list_focus(input_key) {
     const total_cols = $cols_to_focus.length;
     current_focus_id = $row_to_focus.attr("id");
     const is_header_row = is_row_a_header($row_to_focus);
+    update_closed_compose_text($row_to_focus, is_header_row);
 
     // Loop through columns.
     if (col_focus > total_cols - 1) {
@@ -1124,6 +1152,7 @@ export function initialize() {
         current_focus_id = MUTED_FILTER_ID;
         update_triggered_by_user = true;
         toggle_muted_filter();
+        compose_closed_ui.set_standard_text_for_reply_button();
     });
 
     $("body").on("click", "#inbox-list .on_hover_dm_read", (e) => {
@@ -1178,5 +1207,6 @@ export function initialize() {
 
     $("body").on("click", "#inbox-search", () => {
         current_focus_id = INBOX_SEARCH_ID;
+        compose_closed_ui.set_standard_text_for_reply_button();
     });
 }
