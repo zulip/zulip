@@ -14,7 +14,7 @@ import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import {Filter} from "./filter";
 import * as hash_parser from "./hash_parser";
-import * as hashchange from "./hashchange";
+import * as hash_util from "./hash_util";
 import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -28,6 +28,7 @@ import {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
+import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
@@ -88,6 +89,22 @@ export function handle_middle_pane_transition() {
     if (compose_state.composing) {
         compose_recipient.update_narrow_to_recipient_visibility();
     }
+}
+
+export function changehash(newhash) {
+    if (browser_history.state.changing_hash) {
+        return;
+    }
+    message_viewport.stop_auto_scrolling();
+    browser_history.set_hash(newhash);
+}
+
+export function save_narrow(operators) {
+    if (browser_history.state.changing_hash) {
+        return;
+    }
+    const new_hash = hash_util.operators_to_hash(operators);
+    changehash(new_hash);
 }
 
 export function activate(raw_operators, opts) {
@@ -479,7 +496,7 @@ export function activate(raw_operators, opts) {
         // Disabled when the URL fragment was the source
         // of this narrow.
         if (opts.change_hash) {
-            hashchange.save_narrow(operators);
+            save_narrow(operators);
         }
 
         handle_post_view_change(msg_list);
@@ -1019,7 +1036,7 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
 
         reset_ui_state();
         handle_middle_pane_transition();
-        hashchange.save_narrow();
+        save_narrow();
 
         if (message_lists.current.selected_id() !== -1) {
             const preserve_pre_narrowing_screen_position =
