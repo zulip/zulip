@@ -23,6 +23,7 @@ import * as click_handlers from "./click_handlers";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
@@ -668,7 +669,13 @@ export function initialize_everything() {
         on_narrow_search: narrow.activate,
     });
     tutorial.initialize();
-    notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
+    notifications.initialize();
+    compose_notifications.initialize({
+        on_click_scroll_to_selected: navigate.scroll_to_selected,
+        on_narrow_to_recipient(message_id) {
+            narrow.by_topic(message_id, {trigger: "compose_notification"});
+        },
+    });
     unread_ops.initialize();
     gear_menu.initialize();
     giphy.initialize();
