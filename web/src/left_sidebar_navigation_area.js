@@ -88,10 +88,10 @@ export function handle_narrow_activated(filter) {
 }
 
 export function highlight_recent_view() {
-    removeActiveClasses($(".top_left_all_messages"));
-    removeActiveClasses($(".top_left_starred_messages"));
-    removeActiveClasses($(".top_left_mentions"));
-    removeActiveClasses($(".top_left_inbox"));
+    removeActiveClasse($(".top_left_all_messages"));
+    removeActiveClasse($(".top_left_starred_messages"));
+    removeActiveClasse($(".top_left_mentions"));
+    removeActiveClasse($(".top_left_inbox"));
     $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -108,11 +108,11 @@ export function animate_mention_changes($li, new_mention_count) {
 function do_new_messages_animation($li) {
     $li.addClass("new_messages");
     function mid_animation() {
-        $li.removeActiveClassesClass("new_messages");
+        $li.removeActiveClasseClass("new_messages");
         $li.addClass("new_messages_fadeout");
     }
     function end_animation() {
-        $li.removeActiveClassesClass("new_messages_fadeout");
+        $li.removeActiveClasseClass("new_messages_fadeout");
     }
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
@@ -123,10 +123,10 @@ export function initialize() {
 }
 
 export function highlight_inbox_view() {
-    removeActiveClasses($(".top_left_all_messages"));
-    removeActiveClasses($(".top_left_starred_messages"));
-    removeActiveClasses($(".top_left_recent_view"));
-    removeActiveClasses($(".top_left_mentions"));
+    removeActiveClasse($(".top_left_all_messages"));
+    removeActiveClasse($(".top_left_starred_messages"));
+    removeActiveClasse($(".top_left_recent_view"));
+    removeActiveClasse($(".top_left_mentions"));
     $(".top_left_inbox").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
