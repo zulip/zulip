@@ -32,7 +32,15 @@ sent by Zapier directly in Zulip.
 1. Under **Action** in the right sidebar, configure **Recipients** for a direct
    message, or **Stream name** and **Topic**, as well as **Message content**.
 
+    !!! tip ""
+        To send direct messages, enter a **Zulip account email** in the
+        **Recipients** box, if the email is [configured](/help/configure-email-visibility)
+        to be visible to **Admins, moderators, members and guests**. Otherwise, enter
+        `user` + [user ID](/help/view-someones-profile) + `@your Zulip domain`. For
+        example: `user123@acme.zulipchat.com`.
+
 1. When everything has been configured as desired, click **Publish** to enable
    your Zap.
+
 
 **Congratulations! You're done!**
