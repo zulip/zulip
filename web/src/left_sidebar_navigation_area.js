@@ -88,10 +88,10 @@ export function handle_narrow_activated(filter) {
 }
 
 export function highlight_recent_view() {
-    removeActiveClasse($(".top_left_all_messages"));
-    removeActiveClasse($(".top_left_starred_messages"));
-    removeActiveClasse($(".top_left_mentions"));
-    removeActiveClasse($(".top_left_inbox"));
+    removeActiveClasses($(".top_left_all_messages"));
+    removeActiveClasses($(".top_left_starred_messages"));
+    removeActiveClasses($(".top_left_mentions"));
+    removeActiveClasses($(".top_left_inbox"));
     $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
