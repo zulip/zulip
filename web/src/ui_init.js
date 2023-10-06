@@ -16,6 +16,7 @@ import * as activity from "./activity";
 import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
+import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
@@ -670,6 +671,7 @@ export function initialize_everything() {
     });
     tutorial.initialize();
     notifications.initialize();
+    audible_notifications.initialize();
     compose_notifications.initialize({
         on_click_scroll_to_selected: navigate.scroll_to_selected,
         on_narrow_to_recipient(message_id) {
