@@ -1,17 +1,18 @@
-from typing import Dict
-
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 
-def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse:
-    contexts: Dict[str, Dict[str, object]] = {
-        "apple": {"social_backend_name": "apple", "has_error_template": True},
-        "google": {"social_backend_name": "google", "has_error_template": True},
-        "github": {"social_backend_name": "github", "has_error_template": True},
-        "gitlab": {"social_backend_name": "gitlab", "has_error_template": True},
+def config_error(request: HttpRequest, error_name: str) -> HttpResponse:
+    assert "/" not in error_name
+    context = {
+        "error_name": error_name,
     }
+    if settings.DEVELOPMENT:
+        context["auth_settings_path"] = "zproject/dev-secrets.conf"
+        context["client_id_key_name"] = f"social_auth_{error_name}_key"
+    else:
+        context["auth_settings_path"] = "/etc/zulip/settings.py"
+        context["client_id_key_name"] = f"SOCIAL_AUTH_{error_name.upper()}_KEY"
 
-    context = contexts.get(error_category_name, {})
-    context["error_name"] = error_category_name
-    return render(request, "zerver/config_error.html", context)
+    return render(request, f"zerver/config_error/{error_name}.html", context)
