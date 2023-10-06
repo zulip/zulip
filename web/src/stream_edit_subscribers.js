@@ -263,15 +263,13 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
         });
 
         const html_body = render_unsubscribe_private_stream_modal({
-            message: $t({
-                defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
-            }),
+            unsubscribing_other_user: false,
             display_stream_archive_warning: sub_count === 1,
         });
 
         confirm_dialog.launch({
             html_heading: $t_html(
-                {defaultMessage: "Unsubscribe from <z-link></z-link>"},
+                {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
             html_body,
