@@ -5,6 +5,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
@@ -18,7 +19,6 @@ import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
@@ -80,7 +80,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
-            notifications.notify_messages_outside_current_search(elsewhere_messages);
+            compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error(xhr) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
@@ -154,7 +154,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
     if (sent_by_this_client) {
-        notifications.notify_local_mixes(messages, need_user_to_scroll);
+        compose_notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
 
     if (any_untracked_unread_messages) {
