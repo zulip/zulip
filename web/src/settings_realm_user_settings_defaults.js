@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as notifications from "./notifications";
+import * as audible_notifications from "./audible_notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
@@ -59,14 +59,14 @@ export function set_up() {
 
     settings_display.set_up(realm_default_settings_panel);
 
-    notifications.update_notification_sound_source(
+    audible_notifications.update_notification_sound_source(
         $notification_sound_elem,
         realm_default_settings_panel.settings_object,
     );
 
     $notification_sound_dropdown.on("change", () => {
         const sound = $notification_sound_dropdown.val().toLowerCase();
-        notifications.update_notification_sound_source($notification_sound_elem, {
+        audible_notifications.update_notification_sound_source($notification_sound_elem, {
             notification_sound: sound,
         });
     });

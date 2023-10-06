@@ -22,6 +22,7 @@ set_global("requestAnimationFrame", (func) => func());
 const activity_ui = mock_esm("../src/activity_ui");
 const alert_words_ui = mock_esm("../src/alert_words_ui");
 const attachments_ui = mock_esm("../src/attachments_ui");
+const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const composebox_typeahead = mock_esm("../src/composebox_typeahead");
@@ -35,7 +36,6 @@ const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
-const notifications = mock_esm("../src/notifications");
 const pm_list = mock_esm("../src/pm_list");
 const reactions = mock_esm("../src/reactions");
 const realm_icon = mock_esm("../src/realm_icon");
@@ -1016,7 +1016,7 @@ run_test("user_settings", ({override}) => {
     }
 
     event = event_fixtures.user_settings__notification_sound;
-    override(notifications, "update_notification_sound_source", noop);
+    override(audible_notifications, "update_notification_sound_source", noop);
     dispatch(event);
 
     event = event_fixtures.user_settings__email_address_visibility;
@@ -1189,7 +1189,7 @@ run_test("realm_user_settings_defaults", ({override}) => {
     event = event_fixtures.realm_user_settings_defaults__notification_sound;
     realm_user_settings_defaults.notification_sound = "zulip";
     let called = false;
-    notifications.update_notification_sound_source = () => {
+    audible_notifications.update_notification_sound_source = () => {
         called = true;
     };
     dispatch(event);
