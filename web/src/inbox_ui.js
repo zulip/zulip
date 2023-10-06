@@ -691,6 +691,30 @@ function update_closed_compose_text($row, is_header_row) {
     compose_closed_ui.update_reply_recipient_label(message);
 }
 
+export function get_focused_row_message() {
+    if (!is_list_focused()) {
+        return undefined;
+    }
+
+    const $all_rows = get_all_rows();
+    const $focused_row = $($all_rows.get(row_focus));
+    if (is_row_a_header($focused_row)) {
+        return undefined;
+    }
+
+    const is_dm = $focused_row.parent("#inbox-direct-messages-container").length > 0;
+    const conversation_key = $focused_row.attr("id").slice(CONVERSATION_ID_PREFIX.length);
+    let latest_msg_id;
+    if (is_dm) {
+        latest_msg_id = dms_dict.get(conversation_key).latest_msg_id;
+    } else {
+        const $stream = $focused_row.parent(".inbox-topic-container").parent();
+        const stream_key = $stream.attr("id");
+        latest_msg_id = topics_dict.get(stream_key).get(conversation_key).latest_msg_id;
+    }
+    return message_store.get(latest_msg_id);
+}
+
 function is_row_a_header($row) {
     return $row.hasClass("inbox-header");
 }

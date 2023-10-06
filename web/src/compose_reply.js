@@ -8,6 +8,8 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as inbox_ui from "./inbox_ui";
+import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
@@ -25,6 +27,14 @@ export function respond_to_message(opts) {
             // Open empty compose with nothing pre-filled since
             // user is not focused on any table row.
             compose_actions.start("stream", {trigger: "recent_view_nofocus"});
+            return;
+        }
+    } else if (inbox_util.is_visible()) {
+        message = inbox_ui.get_focused_row_message();
+        if (message === undefined) {
+            // Open empty compose with nothing pre-filled since
+            // user is not focused on any table row.
+            compose_actions.start("stream", {trigger: "inbox_nofocus"});
             return;
         }
     } else {
