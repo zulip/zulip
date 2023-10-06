@@ -14,10 +14,19 @@ function sync_open_organizations_page_with_current_hash(): void {
     }
 }
 
+function toggle_categories_dropdown(): void {
+    const $dropdown_list = $(".integration-categories-dropdown .dropdown-list");
+    $dropdown_list.slideToggle(250);
+}
+
 // init
 $(() => {
     sync_open_organizations_page_with_current_hash();
     $(window).on("hashchange", () => {
         sync_open_organizations_page_with_current_hash();
+    });
+
+    $(".integration-categories-dropdown .dropdown-toggle").on("click", () => {
+        toggle_categories_dropdown();
     });
 });
