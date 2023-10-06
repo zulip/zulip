@@ -2011,10 +2011,6 @@ class RealmCreationTest(ZulipTestCase):
 
 
 class UserSignUpTest(ZulipTestCase):
-    def _assert_redirected_to(self, result: "TestHttpResponse", url: str) -> None:
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["LOCATION"], url)
-
     def verify_signup(
         self,
         *,
@@ -2074,7 +2070,7 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_bad_email_configuration_for_accounts_home(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredError.
+        Make sure we show an error page for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
@@ -2086,12 +2082,15 @@ class UserSignUpTest(ZulipTestCase):
         with smtp_mock, self.assertLogs(level="ERROR") as m:
             result = self.client_post("/accounts/home/", {"email": email})
 
-        self._assert_redirected_to(result, "/config-error/smtp")
-        self.assertEqual(m.output, ["ERROR:root:Error in accounts_home"])
+        self.assertEqual(result.status_code, 500)
+        self.assert_in_response(
+            "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
+        )
+        self.assertTrue("ERROR:root:Error in accounts_home" in m.output[0])
 
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredError.
+        Make sure we show an error page for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
@@ -2105,8 +2104,11 @@ class UserSignUpTest(ZulipTestCase):
                 email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
 
-        self._assert_redirected_to(result, "/config-error/smtp")
-        self.assertEqual(m.output, ["ERROR:root:Error in create_realm"])
+        self.assertEqual(result.status_code, 500)
+        self.assert_in_response(
+            "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
+        )
+        self.assertTrue("ERROR:root:Error in create_realm" in m.output[0])
 
     def test_user_default_language_and_timezone(self) -> None:
         """
