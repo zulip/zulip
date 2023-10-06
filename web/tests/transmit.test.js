@@ -14,7 +14,10 @@ const reload = mock_esm("../src/reload");
 const reload_state = mock_esm("../src/reload_state");
 const sent_messages = mock_esm("../src/sent_messages", {
     start_tracking_message: noop,
-    report_server_ack: noop,
+    get_message_state: () => ({
+        report_server_ack: noop,
+        saw_event: true,
+    }),
     start_send: noop,
 });
 

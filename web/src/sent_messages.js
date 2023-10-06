@@ -1,7 +1,6 @@
 import * as Sentry from "@sentry/browser";
 
 import * as blueslip from "./blueslip";
-import * as server_events from "./server_events";
 
 export let next_local_id;
 export const messages = new Map();
@@ -49,30 +48,9 @@ export class MessageState {
         this.rendered_changed = true;
     }
 
-    maybe_restart_event_loop() {
-        if (this.saw_event) {
-            // We got our event, no need to do anything
-            return;
-        }
-
-        blueslip.log(
-            `Restarting get_events due to delayed receipt of sent message ${this.local_id}`,
-        );
-
-        server_events.restart_get_events();
-    }
-
     report_server_ack() {
         this.server_acked = true;
         this.maybe_finish_txn();
-        // We only start our timer for events coming in here,
-        // since it's plausible the server rejected our message,
-        // or took a while to process it, but there is nothing
-        // wrong with our event loop.
-
-        if (!this.saw_event) {
-            setTimeout(() => this.maybe_restart_event_loop(), 5000);
-        }
     }
 
     report_event_received() {
@@ -135,15 +113,6 @@ export function start_send(local_id) {
     }
 
     return state.start_send();
-}
-
-export function report_server_ack(local_id) {
-    const state = get_message_state(local_id);
-    if (!state) {
-        return;
-    }
-
-    state.report_server_ack();
 }
 
 export function mark_disparity(local_id) {
