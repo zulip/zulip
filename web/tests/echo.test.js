@@ -9,9 +9,9 @@ const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
 const {page_params} = require("./lib/zpage_params");
 
+const compose_notifications = mock_esm("../src/compose_notifications");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
-const notifications = mock_esm("../src/notifications");
 
 let disparities = [];
 
@@ -328,7 +328,7 @@ run_test("test reify_message_id", ({override}) => {
         message_store_reify_called = true;
     });
 
-    override(notifications, "reify_message_id", () => {
+    override(compose_notifications, "reify_message_id", () => {
         notifications_reify_called = true;
     });
 
