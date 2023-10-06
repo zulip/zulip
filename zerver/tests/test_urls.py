@@ -150,8 +150,14 @@ class PublicURLTest(ZulipTestCase):
         urls = [f"/config-error/{err_page_name}" for err_page_name in auth_error_pages]
         with self.settings(DEVELOPMENT=True):
             for url in urls:
-                response = self.client_get(url)
-                self.assert_in_success_response(["Configuration error"], response)
+                with self.assertLogs("django.request", level="ERROR") as m:
+                    response = self.client_get(url)
+                    self.assertEqual(response.status_code, 500)
+                    self.assert_in_response("Configuration error", response)
+                    self.assertEqual(
+                        m.output,
+                        [f"ERROR:django.request:Internal Server Error: {url}"],
+                    )
 
 
 class URLResolutionTest(ZulipTestCase):

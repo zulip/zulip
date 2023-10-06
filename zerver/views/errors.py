@@ -15,4 +15,4 @@ def config_error(request: HttpRequest, error_name: str) -> HttpResponse:
         context["auth_settings_path"] = "/etc/zulip/settings.py"
         context["client_id_key_name"] = f"SOCIAL_AUTH_{error_name.upper()}_KEY"
 
-    return render(request, f"zerver/config_error/{error_name}.html", context)
+    return render(request, f"zerver/config_error/{error_name}.html", context=context, status=500)
