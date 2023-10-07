@@ -16,7 +16,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
         result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_error(result, "Missing 'op' argument")
 
-    def test_invalid_parameter_pm(self) -> None:
+    def test_invalid_parameter_direct_message(self) -> None:
         """
         Sending typing notification with invalid value for op parameter fails
         """
@@ -50,9 +50,9 @@ class TypingMessagetypeTest(ZulipTestCase):
 
 
 class TypingValidateToArgumentsTest(ZulipTestCase):
-    def test_empty_to_array_pms(self) -> None:
+    def test_empty_to_array_direct_messages(self) -> None:
         """
-        Sending pms typing notification without recipient fails
+        Sending dms typing notification without recipient fails
         """
         sender = self.example_user("hamlet")
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": "[]"})
@@ -131,7 +131,7 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid stream ID")
 
 
-class TypingHappyPathTestPMs(ZulipTestCase):
+class TypingHappyPathTestDirectMessages(ZulipTestCase):
     def test_valid_type_and_op_parameters(self) -> None:
         operator_type = ["start", "stop"]
         sender = self.example_user("hamlet")
