@@ -34,7 +34,7 @@ export function respond_to_message(opts) {
         if (message_opts.message === undefined) {
             compose_actions.start(message_opts.msg_type, {
                 trigger: "inbox_nofocus",
-                stream_id: message_opts.stream_id,
+                ...message_opts,
             });
             return;
         }
