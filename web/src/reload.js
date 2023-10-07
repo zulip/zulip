@@ -40,6 +40,13 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         return;
     }
 
+    if (!message_lists.home) {
+        // If we haven't yet initialized the message_lists module,
+        // we can't preserve state across reloads.
+        blueslip.log("Can't preserve state; message_lists not yet initialized.");
+        return;
+    }
+
     let url = "#reload:send_after_reload=" + Number(send_after_reload);
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
