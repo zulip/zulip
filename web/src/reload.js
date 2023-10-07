@@ -8,6 +8,7 @@ import * as hash_util from "./hash_util";
 import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -286,6 +287,12 @@ window.addEventListener("beforeunload", () => {
 });
 
 reload_state.set_csrf_failed_handler(() => {
+    if (page_params.is_spectator) {
+        // If the user is a spectator, we don't want to reload the page
+        // since it will most likely lead an infinite reload loop.
+        return;
+    }
+
     initiate({
         immediate: true,
         save_pointer: true,
