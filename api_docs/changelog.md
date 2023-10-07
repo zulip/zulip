@@ -29,6 +29,14 @@ format used by the Zulip server that they are interacting with.
 * [`POST /typing`](/api/set-typing-status): Stopped supporting `private`
   as a valid value for the `type` parameter.
 
+* [`POST /typing`](/api/set-typing-status): When the `type` of the message
+  being composed is `"stream"`, changed the `to` parameter to accept the
+  ID of the stream in which the message is being typed. Previously, it
+  accepted a single-element list containing the ID of the stream.
+
+* Note that stream typing notifications were not enabled in any Zulip client
+  prior to feature level 215.
+
 **Feature level 214**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
