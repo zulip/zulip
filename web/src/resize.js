@@ -3,8 +3,8 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import * as message_viewport from "./message_viewport";
-import * as navbar_alerts from "./navbar_alerts";
 
 function get_bottom_whitespace_height() {
     return message_viewport.height() * 0.4;
@@ -144,8 +144,22 @@ export function update_recent_view_filters_height() {
     $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
 }
 
+function resize_navbar_alerts() {
+    const navbar_alerts_height = $("#navbar_alerts_wrapper").height();
+    document.documentElement.style.setProperty(
+        "--navbar-alerts-wrapper-height",
+        navbar_alerts_height + "px",
+    );
+
+    // If the compose-box is in expanded state,
+    // reset its height as well.
+    if (compose_ui.is_full_size()) {
+        compose_ui.set_compose_box_top(true);
+    }
+}
+
 export function resize_page_components() {
-    navbar_alerts.resize_app();
+    resize_navbar_alerts();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
 }
