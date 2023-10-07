@@ -35,6 +35,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     APNsContext,
     DeviceToken,
+    InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
     b64_to_hex,
     get_apns_badge_count,
@@ -150,13 +151,20 @@ class BouncerTestCase(ZulipTestCase):
 
 
 class SendTestPushNotificationEndpointTest(BouncerTestCase):
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
     def test_send_test_push_notification_api_invalid_token(self) -> None:
+        # What happens when the mobile device isn't registered with its server,
+        # and makes a request to this API:
         user = self.example_user("cordelia")
         result = self.api_post(
             user, "/api/v1/mobile_push/test_notification", {"token": "invalid"}, subdomain="zulip"
         )
-        self.assert_json_error(result, "Token does not exist")
+        self.assert_json_error(result, "Device not recognized")
+        self.assertEqual(orjson.loads(result.content)["code"], "INVALID_PUSH_DEVICE_TOKEN")
 
+        # What response the server receives when it makes a request to the bouncer
+        # to the /test_notification endpoint:
         payload = {
             "user_uuid": str(user.uuid),
             "user_id": user.id,
@@ -171,7 +179,33 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
             subdomain="",
             content_type="application/json",
         )
-        self.assert_json_error(result, "Token does not exist")
+        self.assert_json_error(result, "Device not recognized by the push bouncer")
+        self.assertEqual(orjson.loads(result.content)["code"], "INVALID_REMOTE_PUSH_DEVICE_TOKEN")
+
+        # Finally, test the full scenario where the mobile device is registered with its
+        # server, but for some reason the server failed to register it with the bouncer.
+
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+        # We create a PushDeviceToken object, but no RemotePushDeviceToken object, to simulate
+        # a missing registration on the bouncer.
+        PushDeviceToken.objects.create(user=user, token=token, kind=token_kind)
+
+        # As verified above, this is the response the server receives from the bouncer in this kind of case.
+        # We have to simulate it with a response mock.
+        error_response = json_response_from_error(InvalidRemotePushDeviceTokenError())
+        responses.add(
+            responses.POST,
+            f"{settings.PUSH_NOTIFICATION_BOUNCER_URL}/api/v1/remotes/push/test_notification",
+            body=error_response.content,
+            status=error_response.status_code,
+        )
+
+        result = self.api_post(
+            user, "/api/v1/mobile_push/test_notification", {"token": token}, subdomain="zulip"
+        )
+        self.assert_json_error(result, "Device not recognized by the push bouncer")
+        self.assertEqual(orjson.loads(result.content)["code"], "INVALID_REMOTE_PUSH_DEVICE_TOKEN")
 
     def test_send_test_push_notification_api_no_bouncer_config(self) -> None:
         """

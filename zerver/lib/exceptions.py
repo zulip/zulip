@@ -25,6 +25,8 @@ class ErrorCode(Enum):
     CSRF_FAILED = auto()
     INVITATION_FAILED = auto()
     INVALID_ZULIP_SERVER = auto()
+    INVALID_PUSH_DEVICE_TOKEN = auto()
+    INVALID_REMOTE_PUSH_DEVICE_TOKEN = auto()
     INVALID_MARKDOWN_INCLUDE_STATEMENT = auto()
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()

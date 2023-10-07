@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from zerver.decorator import human_users_only
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
+    InvalidPushDeviceTokenError,
     add_push_device_token,
     b64_to_hex,
     remove_push_device_token,
@@ -83,7 +84,7 @@ def send_test_push_notification_api(
         try:
             devices = [PushDeviceToken.objects.get(token=token, user=user_profile)]
         except PushDeviceToken.DoesNotExist:
-            raise JsonableError(_("Token does not exist"))
+            raise InvalidPushDeviceTokenError
     else:
         devices = list(PushDeviceToken.objects.filter(user=user_profile))
 
