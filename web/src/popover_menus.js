@@ -151,7 +151,6 @@ export function on_show_prep(instance) {
         e.stopPropagation();
         instance.hide();
     });
-    popovers.hide_all();
 }
 
 function get_props_for_popover_centering(popover_props) {

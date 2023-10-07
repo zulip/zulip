@@ -13,9 +13,120 @@ This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
 log][commit-log] for an up-to-date list of all changes.
 
+#### Highlights
+
+- New Inbox view shows all unread messages in a conveniently
+  browsable experience, similar to the mobile home screen.
+- (Incomplete) Added support for following a topic, with configurable
+  notification settings for followed topics and flexible configuration
+  options to automatically follow topics when sending a message or
+  otherwise interacting with it.
+- (Incomplete) New @topic mentions support mentioning only users who
+  have participated in a topic.
+- (Incomplete) Typing notifications now support stream messages.
+- Clicking on a message in search views now directly takes the user to
+  the target message, instead of starting a reply.
+- Added new unread count display style setting, controlling in which
+  streams to display a numeric unread count or a simple dot unread
+  indicator. Defaults to numeric counts in normal streams, but a dot
+  indicator in muted streams.
+- Added support for creating voice calls.
+- Major visual design improvements in the message feed, search
+  area/navbar, and left sidebar.
+- Added thumbnails and lightbox player support for video links and
+  video files uploaded directly in Zulip. Previously, Zulip only
+  supported this for videos hosted by third-party platforms that
+  provide an embedded player, like YouTube and Vimeo.
+- (Incomplete) Pasting HTML into the compose box will now convert it
+  into corresponding Zulip markup. Improved pasting URLs with text
+  selected. New formatting buttons for bulleted and numbered lists.
+
+#### Full feature changelog
+
+- Redesigned the "invite users" modal to be more user-friendly.
+- Redesigned file upload, including a cancel button, better
+  drag-and-drop support, better message-edit handling, and many bug
+  fixes.
+- Redesigned how very tall messages are condensed.
+- Redesigned email confirmation page.
+- Redesigned various settings panels to remove clutter and simplify
+  the user experience.
+- The LDAP integration now supports syncing user groups.
+- The SCIM integration now supports syncing user roles.
+- Added support for sorting the recent view by unread count.
+- Added support for printing a message feed as a lightweight
+  conversation export experience.
+- Added support for muting bot users.
+- Added support for multi-character emoji sequences.
+- Added user profile tab for administrators to edit the profile.
+- Added support for subscribing users in user profile streams tab.
+- Added new permissions setting for who can create reusable invitation
+  links.
+- Added new setting to configure the Jitsi server URL to use.
+- Added new settings warnings for making a stream private that one is
+  not subscribed to, and for archiving a stream used for automated
+  notifications.
+- Added new wizard for creating incoming webhook URLs.
+- Added bulk-delete UI for drafts.
+- Display settings was renamed to Preferences.
+- Default streams can now be managed via the manage streams UI.
+- Linkifiers and code playgrounds now use RFC 6570 compliant URL
+  templates to specify the target URL.
+- Linkifiers are now processed in a defined, editable order.
+- Message edit history has a Shift+H keyboard shortuct and is now
+  accessed via the mouse exclusively by clicking on EDITED/MOVED
+  notices, simplifying the main message actions popover.
+- Simplified and clarified recipient bar inline topic editing.
+- The compose/edit interfaces now disable formatting buttons in
+  preview mode.
+- Improved design for /todo widgets.
+- Improved semantics and explanations of reactivating previously
+  deactivated bot users.
+- Improved dozens of existing help center articles, including mobile
+  documentation for many common workflows and a new system for message
+  formatting documentation.
+- Improved content and styling for many tooltips across the web
+  application, including several new "Copied!" tooltips.
+- Improved integrations: CircleCI, Gitea, GitHub, GitLab,
+  Sentry. Regenerated integration screenshots to show the current
+  visual design.
+- Webhook integrations now return a 200 success status code when
+  processing requests that match the format for an integration but
+  where the specific event type is not implemented.
+- New /health healthcehck endpoint designed for reverse proxies in
+  front of the Zulip server.
+- Rewrote all popovers, fixing many bugs involving positioning, mobile
+  web UI, and keyboard navigation.
+- Rewrote message feed layout using CSS grid, fixing many subtle
+  layout bugs.
+- Fixed dozens of rare exceptions in the web application.
+- Fixed several longstanding performance issues both in the web
+  application and the server.
+- Fixed several subtle bugs in error reporting internals.
+- Fixed multiple subtle deadlocks in database locking code.
+- Fixed several subtle internationalization bugs.
+- Fixed multiple subtle linkification bugs.
+- Fixed many subtle bugs in settings.
+- Fixed nginx configuration for HTTP/3.
+- Added explicit SAML configuration documentation for Authentik.
+- Clarified dozens of ambiguous details and minor errors in API
+  documentation.
+- Reworked the main database indexes used to fetch messages.
+- Reimplemented the internals of the audit logging system.
+- Many structural improvements to the permission settings internals
+  working towards permission settings being group-based.
+- Many structural improvements to the web app codebase. About 25% of
+  the web codebase is now TypeScript, most of the legacy Bootstrap
+  code has been deleted, and most import cycles have been cut.
+- Added new request parsing framework based on Pydantic 2.
+- Upgraded many dependnecies.
+
 #### Upgrade notes for 8.0
 
-- None yet.
+- Minor: User group names starting with `@`, `role:`, `user:`, and
+  various certain other special patterns are now forbidden. In the
+  unlikely event that existing user groups have names matching these
+  patterns, they will be automatically renamed on upgrade.
 
 ## Zulip Server 7.x series
 

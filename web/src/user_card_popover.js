@@ -12,6 +12,7 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as confirm_dialog from "./confirm_dialog";
@@ -736,7 +737,7 @@ function register_click_handlers() {
 
     $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
         if (!compose_state.composing()) {
-            compose_actions.respond_to_message({trigger: "user sidebar popover"});
+            compose_reply.respond_to_message({trigger: "user sidebar popover"});
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;

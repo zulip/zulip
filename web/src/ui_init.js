@@ -16,6 +16,7 @@ import * as activity from "./activity";
 import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
+import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
@@ -23,9 +24,11 @@ import * as click_handlers from "./click_handlers";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_reply from "./compose_reply";
 import * as compose_setup from "./compose_setup";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
@@ -33,7 +36,9 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as dark_theme from "./dark_theme";
+import * as desktop_notifications from "./desktop_notifications";
 import * as drafts from "./drafts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui";
 import * as echo from "./echo";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
@@ -70,7 +75,6 @@ import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
-import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -84,7 +88,7 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_view_ui from "./recent_view_ui";
-import * as reload from "./reload";
+import * as reload_setup from "./reload_setup";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
@@ -120,7 +124,7 @@ import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_popover from "./topic_popover";
-import * as topic_zoom from "./topic_zoom";
+import * as transmit from "./transmit";
 import * as tutorial from "./tutorial";
 import * as typeahead_helper from "./typeahead_helper";
 import * as typing from "./typing";
@@ -140,6 +144,7 @@ import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as user_topic_popover from "./user_topic_popover";
 import * as user_topics from "./user_topics";
+import * as widgets from "./widgets";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -529,6 +534,7 @@ export function initialize_everything() {
     }
 
     i18n.initialize(i18n_params);
+    widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
@@ -586,7 +592,12 @@ export function initialize_everything() {
     realm_logo.initialize();
     message_lists.initialize();
     message_list.initialize();
-    recent_view_ui.initialize();
+    recent_view_ui.initialize({
+        on_click_participant(avatar_element, participant_user_id) {
+            const user = people.get_by_user_id(participant_user_id);
+            user_card_popover.toggle_user_card_popover(avatar_element, user);
+        },
+    });
     inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
@@ -595,7 +606,10 @@ export function initialize_everything() {
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
-    echo.initialize({on_send_message_success: compose.send_message_success});
+    echo.initialize({
+        on_send_message_success: compose.send_message_success,
+        send_message: transmit.send_message,
+    });
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
@@ -637,7 +651,8 @@ export function initialize_everything() {
         on_pill_create_or_remove: compose_recipient.update_placeholder_text,
     });
     compose_closed_ui.initialize();
-    reload.initialize();
+    compose_reply.initialize();
+    reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize(server_events.home_view_loaded);
@@ -659,7 +674,14 @@ export function initialize_everything() {
         on_narrow_search: narrow.activate,
     });
     tutorial.initialize();
-    notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
+    desktop_notifications.initialize();
+    audible_notifications.initialize();
+    compose_notifications.initialize({
+        on_click_scroll_to_selected: navigate.scroll_to_selected,
+        on_narrow_to_recipient(message_id) {
+            narrow.by_topic(message_id, {trigger: "compose_notification"});
+        },
+    });
     unread_ops.initialize();
     gear_menu.initialize();
     giphy.initialize();
@@ -695,8 +717,8 @@ export function initialize_everything() {
             );
         },
     });
-    topic_zoom.initialize();
     drafts.initialize();
+    drafts_overlay_ui.initialize();
     sent_messages.initialize();
     hotspots.initialize();
     typing.initialize();

@@ -4,12 +4,13 @@ import * as activity_ui from "./activity_ui";
 import * as alert_words from "./alert_words";
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
+import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
-import * as compose from "./compose";
 import * as compose_call from "./compose_call";
+import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
@@ -30,7 +31,6 @@ import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
-import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -235,8 +235,8 @@ export function dispatch_normal_event(event) {
                 enable_spectator_access: noop,
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
-                video_chat_provider: compose.update_audio_and_video_chat_button_display,
-                jitsi_server_url: compose.update_audio_and_video_chat_button_display,
+                video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
+                jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
                 giphy_rating: giphy.update_giphy_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
@@ -450,7 +450,7 @@ export function dispatch_normal_event(event) {
             settings_realm_user_settings_defaults.update_page(event.property);
 
             if (event.property === "notification_sound") {
-                notifications.update_notification_sound_source(
+                audible_notifications.update_notification_sound_source(
                     $("#realm-default-notification-sound-audio"),
                     realm_user_settings_defaults,
                 );
@@ -673,7 +673,7 @@ export function dispatch_normal_event(event) {
 
                 if (notification_name === "notification_sound") {
                     // Change the sound source with the new page `notification_sound`.
-                    notifications.update_notification_sound_source(
+                    audible_notifications.update_notification_sound_source(
                         $("#user-notification-sound-audio"),
                         user_settings,
                     );

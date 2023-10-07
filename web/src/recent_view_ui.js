@@ -34,7 +34,6 @@ import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
-import * as user_card_popover from "./user_card_popover";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as views_util from "./views_util";
@@ -1245,7 +1244,7 @@ export function change_focused_element($elt, input_key) {
     return false;
 }
 
-export function initialize() {
+export function initialize({on_click_participant}) {
     // load filters from local storage.
     if (!page_params.is_spectator) {
         // A user may have a stored filter and can log out
@@ -1257,8 +1256,7 @@ export function initialize() {
     $("body").on("click", "#recent_view_table .recent_view_participant_avatar", function (e) {
         const participant_user_id = Number.parseInt($(this).parent().attr("data-user-id"), 10);
         e.stopPropagation();
-        const user = people.get_by_user_id(participant_user_id);
-        user_card_popover.toggle_user_card_popover(this, user);
+        on_click_participant(this, participant_user_id);
     });
 
     $("body").on(

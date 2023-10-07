@@ -5,6 +5,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
 
+import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -14,7 +15,6 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html, get_language_name} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
@@ -717,7 +717,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
 
     switch (property_name) {
         case "notification_sound":
-            notifications.update_notification_sound_source(
+            audible_notifications.update_notification_sound_source(
                 $("#realm-default-notification-sound-audio"),
                 {
                     notification_sound: property_value,

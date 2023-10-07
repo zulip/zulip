@@ -3,16 +3,8 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
-import * as poll_widget from "./poll_widget";
-import * as todo_widget from "./todo_widget";
-import * as zform from "./zform";
 
-const widgets = new Map([
-    ["poll", poll_widget],
-    ["todo", todo_widget],
-    ["zform", zform],
-]);
-
+export const widgets = new Map();
 export const widget_contents = new Map();
 
 export function clear_for_testing() {

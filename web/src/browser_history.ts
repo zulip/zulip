@@ -102,3 +102,54 @@ export function update_hash_internally_if_required(hash: string): void {
 export function return_to_web_public_hash(): void {
     window.location.hash = state.spectator_old_hash ?? `#${user_settings.default_view}`;
 }
+
+export function get_full_url(hash: string): string {
+    const location = window.location;
+
+    if (hash.charAt(0) !== "#" && hash !== "") {
+        hash = "#" + hash;
+    }
+
+    // IE returns pathname as undefined and missing the leading /
+    let pathname = location.pathname;
+    if (pathname === undefined) {
+        pathname = "/";
+    } else if (pathname === "" || pathname.charAt(0) !== "/") {
+        pathname = "/" + pathname;
+    }
+
+    // Build a full URL to not have same origin problems
+    const url = location.protocol + "//" + location.host + pathname + hash;
+    return url;
+}
+
+export function set_hash(hash: string): void {
+    if (hash === window.location.hash) {
+        // Avoid adding duplicate entries in browser history.
+        return;
+    }
+    if (history.pushState) {
+        const url = get_full_url(hash);
+        try {
+            history.pushState(null, "", url);
+            update_web_public_hash(hash);
+        } catch (error) {
+            if (error instanceof TypeError) {
+                // The window has been destroyed and the history object has been marked dead, so cannot
+                // be updated.  Silently do nothing, since there's nothing we can do.
+            } else {
+                throw error;
+            }
+        }
+    } else {
+        // pushState has 97% global support according to caniuse. So, we will ideally never reach here.
+        // TODO: Delete this case if we don't see any error reports in a while.
+        if (hash === "" || hash === "#") {
+            // Setting empty hash here would scroll to the top.
+            hash = user_settings.default_view;
+        }
+
+        blueslip.error("browser does not support pushState");
+        window.location.hash = hash;
+    }
+}

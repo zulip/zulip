@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill";
 import {$t} from "./i18n";
+import * as people from "./people";
 import * as sub_store from "./sub_store";
 
 let message_type = false; // 'stream', 'private', or false-y
@@ -184,4 +185,16 @@ export function has_full_recipient() {
         return stream_id() !== "" && topic() !== "";
     }
     return private_message_recipient() !== "";
+}
+
+export function update_email(user_id, new_email) {
+    let reply_to = private_message_recipient();
+
+    if (!reply_to) {
+        return;
+    }
+
+    reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
+
+    private_message_recipient(reply_to);
 }
