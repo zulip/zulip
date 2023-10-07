@@ -13,7 +13,7 @@ const noop = () => {};
 
 let autosize_called;
 
-mock_esm("../src/compose_ui", {
+const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea() {
         autosize_called = true;
     },
@@ -52,7 +52,6 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
-const text_field_edit = mock_esm("text-field-edit");
 const pygments_data = zrequire("../generated/pygments_data.json");
 
 const ct = composebox_typeahead;
@@ -1161,8 +1160,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         selectionStart: 0,
         selectionEnd: 0,
     };
-    override(text_field_edit, "insert", (_textarea, syntax) => {
-        assert.equal(syntax, "\n");
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n");
     });
     $("#compose-textarea").caret = () => $("#compose-textarea")[0].selectionStart;
 
@@ -1189,8 +1188,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("#compose-textarea").val("- List item 1\n- List item 2");
     $("#compose-textarea")[0].selectionStart = 27;
     $("#compose-textarea")[0].selectionEnd = 27;
-    override(text_field_edit, "insert", (_textarea, syntax) => {
-        assert.equal(syntax, "\n- ");
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n- ");
     });
     $("form#send_message_form").trigger(event);
 
@@ -1202,8 +1201,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         assert.equal(start, 28);
         assert.equal(end, 30);
     };
-    override(text_field_edit, "insert", (_textarea, syntax) => {
-        assert.equal(syntax, "");
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "");
     });
     $("form#send_message_form").trigger(event);
 
@@ -1211,8 +1210,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("#compose-textarea").val("1. List item 1\n2. List item 2");
     $("#compose-textarea")[0].selectionStart = 29;
     $("#compose-textarea")[0].selectionEnd = 29;
-    override(text_field_edit, "insert", (_textarea, syntax) => {
-        assert.equal(syntax, "\n3. ");
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n3. ");
     });
     $("form#send_message_form").trigger(event);
 
@@ -1224,16 +1223,16 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         assert.equal(start, 30);
         assert.equal(end, 33);
     };
-    override(text_field_edit, "insert", (_textarea, syntax) => {
-        assert.equal(syntax, "");
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "");
     });
     $("form#send_message_form").trigger(event);
 
     $("#compose-textarea").val("A");
     $("#compose-textarea")[0].selectionStart = 4;
     $("#compose-textarea")[0].selectionEnd = 4;
-    override(text_field_edit, "insert", (_textarea, syntax) => {
-        assert.equal(syntax, "\n");
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n");
     });
     event.altKey = false;
     event.metaKey = true;
