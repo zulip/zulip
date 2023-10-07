@@ -137,7 +137,6 @@ import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_popover from "./user_group_popover";
 import * as user_groups from "./user_groups";
-import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import * as user_profile from "./user_profile";
 import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
@@ -619,7 +618,6 @@ export function initialize_everything() {
     user_topics.initialize(user_topics_params);
     muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
-    user_groups_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
