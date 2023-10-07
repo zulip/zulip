@@ -2,7 +2,6 @@ import datetime
 import logging
 from typing import List, Optional, Sequence, Tuple
 
-import orjson
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -18,6 +17,7 @@ from zerver.actions.uploads import check_attachment_reference_change, do_claim_a
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
 from zerver.lib.message import SendMessageRequest, render_markdown, truncate_topic
+from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
 from zerver.models import (
@@ -32,31 +32,6 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event
 
 SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES = 10
-
-
-def extract_stream_id(req_to: str) -> List[int]:
-    # Recipient should only be a single stream ID.
-    try:
-        stream_id = int(req_to)
-    except ValueError:
-        raise JsonableError(_("Invalid data type for stream ID"))
-    return [stream_id]
-
-
-def extract_direct_message_recipient_ids(req_to: str) -> List[int]:
-    try:
-        user_ids = orjson.loads(req_to)
-    except orjson.JSONDecodeError:
-        user_ids = req_to
-
-    if not isinstance(user_ids, list):
-        raise JsonableError(_("Invalid data type for recipients"))
-
-    for user_id in user_ids:
-        if not isinstance(user_id, int):
-            raise JsonableError(_("Recipient list may only contain user IDs"))
-
-    return list(set(user_ids))
 
 
 def check_schedule_message(
@@ -182,7 +157,8 @@ def edit_scheduled_message(
             # Update message recipient if changed.
             if message_to is not None:
                 if updated_recipient_type_name == "stream":
-                    updated_recipient = extract_stream_id(message_to)
+                    stream_id = extract_stream_id(message_to)
+                    updated_recipient = [stream_id]
                 else:
                     updated_recipient = extract_direct_message_recipient_ids(message_to)
             else:
