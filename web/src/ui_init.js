@@ -677,7 +677,7 @@ export function initialize_everything() {
     desktop_notifications.initialize();
     audible_notifications.initialize();
     compose_notifications.initialize({
-        on_click_scroll_to_selected: navigate.scroll_to_selected,
+        on_click_scroll_to_selected: message_viewport.scroll_to_selected,
         on_narrow_to_recipient(message_id) {
             narrow.by_topic(message_id, {trigger: "compose_notification"});
         },

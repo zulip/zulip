@@ -483,6 +483,28 @@ export function keep_pointer_in_view() {
     message_lists.current.select_id(rows.id($next_row), {from_scroll: true});
 }
 
+export function scroll_to_selected() {
+    const $selected_row = message_lists.current.selected_row();
+    if ($selected_row && $selected_row.length !== 0) {
+        recenter_view($selected_row);
+    }
+}
+
+export let scroll_to_selected_planned = false;
+
+export function plan_scroll_to_selected() {
+    scroll_to_selected_planned = true;
+}
+
+export function maybe_scroll_to_selected() {
+    // If we have made a plan to scroll to the selected message but
+    // deferred doing so, do so here.
+    if (scroll_to_selected_planned) {
+        scroll_to_selected();
+        scroll_to_selected_planned = false;
+    }
+}
+
 export function initialize() {
     $jwindow = $(window);
     $scroll_container = $("html");
