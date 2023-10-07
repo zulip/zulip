@@ -33,7 +33,6 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as views_util from "./views_util";
@@ -1244,7 +1243,7 @@ export function change_focused_element($elt, input_key) {
     return false;
 }
 
-export function initialize({on_click_participant}) {
+export function initialize({on_click_participant, on_mark_pm_as_read, on_mark_topic_as_read}) {
     // load filters from local storage.
     if (!page_params.is_spectator) {
         // A user may have a stored filter and can log out
@@ -1326,12 +1325,12 @@ export function initialize({on_click_participant}) {
         const user_ids_string = $elt.attr("data-user-ids-string");
         if (user_ids_string) {
             // direct message row
-            unread_ops.mark_pm_as_read(user_ids_string);
+            on_mark_pm_as_read(user_ids_string);
         } else {
             // Stream row
             const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
             const topic = $elt.attr("data-topic-name");
-            unread_ops.mark_topic_as_read(stream_id, topic);
+            on_mark_topic_as_read(stream_id, topic);
         }
         // If `unread` filter is selected, the focused topic row gets removed
         // and we automatically move one row down.
