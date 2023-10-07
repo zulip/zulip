@@ -52,7 +52,6 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as topic_zoom from "./topic_zoom";
 import * as unread_ops from "./unread_ops";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
@@ -349,8 +348,8 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (topic_zoom.is_zoomed_in()) {
-        topic_zoom.zoom_out();
+    if (stream_list.is_zoomed_in()) {
+        stream_list.zoom_out();
         return true;
     }
 

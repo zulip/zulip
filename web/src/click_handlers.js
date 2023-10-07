@@ -41,7 +41,6 @@ import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
-import * as topic_zoom from "./topic_zoom";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
 import * as user_topics from "./user_topics";
@@ -730,8 +729,8 @@ export function initialize() {
             );
             const scroll_position = $left_sidebar_scrollbar.scrollTop();
 
-            if (topic_zoom.is_zoomed_in()) {
-                topic_zoom.zoom_out();
+            if (stream_list.is_zoomed_in()) {
+                stream_list.zoom_out();
             }
 
             // This next bit of logic is a bit subtle; this header

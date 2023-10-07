@@ -23,13 +23,69 @@ import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";
 import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
-import * as topic_zoom from "./topic_zoom";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
+
+let pending_stream_list_rerender = false;
+let zoomed_in = false;
 
 export let stream_cursor;
 
 let has_scrolled = false;
+
+export function is_zoomed_in() {
+    return zoomed_in;
+}
+
+function zoom_in() {
+    const stream_id = topic_list.active_stream_id();
+
+    popovers.hide_all();
+    pm_list.close();
+    topic_list.zoom_in();
+    zoom_in_topics({
+        stream_id,
+    });
+
+    zoomed_in = true;
+}
+
+export function set_pending_stream_list_rerender(value) {
+    pending_stream_list_rerender = value;
+}
+
+export function zoom_out() {
+    if (pending_stream_list_rerender) {
+        update_streams_sidebar(true);
+    }
+    const $stream_li = topic_list.get_stream_li();
+
+    popovers.hide_all();
+    topic_list.zoom_out();
+    zoom_out_topics();
+
+    if ($stream_li) {
+        scroll_stream_into_view($stream_li);
+    }
+
+    zoomed_in = false;
+}
+
+export function clear_topics() {
+    const $stream_li = topic_list.get_stream_li();
+
+    topic_list.close();
+
+    if (zoomed_in) {
+        zoom_out_topics();
+
+        if ($stream_li) {
+            scroll_stream_into_view($stream_li);
+        }
+    }
+
+    zoomed_in = false;
+}
 
 export function update_count_in_dom(
     $stream_li,
@@ -197,7 +253,7 @@ export function build_stream_list(force_rerender) {
         elems.push(sidebar_row.get_li());
     }
 
-    topic_zoom.clear_topics();
+    clear_topics();
     $parent.empty();
 
     const any_pinned_streams =
@@ -491,17 +547,17 @@ function set_stream_unread_count(
 }
 
 export function update_streams_sidebar(force_rerender) {
-    if (!force_rerender && topic_zoom.is_zoomed_in()) {
+    if (!force_rerender && is_zoomed_in()) {
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
         // once the user zooms out. This avoids user being zoomed out
         // when a new message causes streams to re-arrange.
         const filter = narrow_state.filter();
         update_stream_sidebar_for_narrow(filter);
-        topic_zoom.set_pending_stream_list_rerender(true);
+        set_pending_stream_list_rerender(true);
         return;
     }
-    topic_zoom.set_pending_stream_list_rerender(false);
+    set_pending_stream_list_rerender(false);
 
     build_stream_list(force_rerender);
 
@@ -624,7 +680,7 @@ export function update_stream_sidebar_for_narrow(filter) {
     const stream_id = info.stream_id;
 
     if (!stream_id) {
-        topic_zoom.clear_topics();
+        clear_topics();
         return undefined;
     }
 
@@ -637,7 +693,7 @@ export function update_stream_sidebar_for_narrow(filter) {
         // stopped appearing from March 2018 until at least
         // April 2020, so if it appears again, something regressed.
         blueslip.error("No stream_li for subscribed stream", {stream_id});
-        topic_zoom.clear_topics();
+        clear_topics();
         return undefined;
     }
 
@@ -651,7 +707,7 @@ export function update_stream_sidebar_for_narrow(filter) {
     $stream_li.addClass("stream-expanded");
 
     if (stream_id !== topic_list.active_stream_id()) {
-        topic_zoom.clear_topics();
+        clear_topics();
     }
 
     topic_list.rebuild($stream_li, stream_id);
@@ -668,7 +724,7 @@ export function handle_narrow_activated(filter) {
 
 export function handle_message_view_deactivated() {
     deselect_stream_items();
-    topic_zoom.clear_topics();
+    clear_topics();
 }
 
 function focus_stream_filter(e) {
@@ -711,6 +767,20 @@ export function initialize({on_stream_click}) {
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
     set_event_handlers({on_stream_click});
+
+    $("#stream_filters").on("click", ".show-more-topics", (e) => {
+        zoom_in();
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $(".show-all-streams").on("click", (e) => {
+        zoom_out();
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
 }
 
 export function set_event_handlers({on_stream_click}) {
