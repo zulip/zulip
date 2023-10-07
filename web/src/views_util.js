@@ -1,7 +1,8 @@
 import $ from "jquery";
 
+import * as compose_recipient from "./compose_recipient";
+import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
-import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
 import * as navigate from "./navigate";
@@ -12,8 +13,8 @@ import * as stream_list from "./stream_list";
 import * as unread_ui from "./unread_ui";
 
 export function show(opts) {
-    if (narrow.has_shown_message_list_view) {
-        narrow.save_pre_narrow_offset_for_reload();
+    if (narrow_state.has_shown_message_list_view) {
+        message_lists.save_pre_narrow_offset_for_reload();
     }
 
     if (opts.is_visible()) {
@@ -38,7 +39,7 @@ export function show(opts) {
     narrow_state.reset_current_filter();
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
-    narrow.handle_middle_pane_transition();
+    compose_recipient.handle_middle_pane_transition();
     search.clear_search_form();
     opts.complete_rerender();
     resize.update_recent_view_filters_height();

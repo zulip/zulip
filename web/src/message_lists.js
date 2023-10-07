@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as inbox_util from "./inbox_util";
 import * as recent_view_util from "./recent_view_util";
 import * as ui_util from "./ui_util";
@@ -32,6 +33,23 @@ export function update_recipient_bar_background_color() {
         msg_list.view.update_recipient_bar_background_color();
     }
     inbox_util.update_stream_colors();
+}
+
+export function save_pre_narrow_offset_for_reload() {
+    if (current.selected_id() !== -1) {
+        if (current.selected_row().length === 0) {
+            blueslip.debug("narrow.activate missing selected row", {
+                selected_id: current.selected_id(),
+                selected_idx: current.selected_idx(),
+                selected_idx_exact: current
+                    .all_messages()
+                    .indexOf(current.get(current.selected_id())),
+                render_start: current.view._render_win_start,
+                render_end: current.view._render_win_end,
+            });
+        }
+        current.pre_narrow_offset = current.selected_row().get_offset_to_window().top;
+    }
 }
 
 export function initialize() {
