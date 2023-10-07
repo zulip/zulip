@@ -3,9 +3,9 @@ import $ from "jquery";
 import * as compose_recipient from "./compose_recipient";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
+import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
-import * as navigate from "./navigate";
 import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as search from "./search";
@@ -71,5 +71,5 @@ export function hide(opts) {
 
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.
-    navigate.plan_scroll_to_selected();
+    message_viewport.plan_scroll_to_selected();
 }

@@ -3,7 +3,7 @@ import $ from "jquery";
 import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
 import * as message_lists from "./message_lists";
-import * as navigate from "./navigate";
+import * as message_viewport from "./message_viewport";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -42,6 +42,6 @@ export function handler() {
             popover_menus.set_suppress_scroll_hide();
         }
 
-        navigate.scroll_to_selected();
+        message_viewport.scroll_to_selected();
     }
 }
