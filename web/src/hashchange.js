@@ -15,7 +15,6 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
-import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
@@ -58,7 +57,7 @@ function show_all_message_view() {
     narrow.deactivate(!(coming_from_recent_view || coming_from_inbox), is_actively_scrolling);
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
-    setTimeout(navigate.maybe_scroll_to_selected, 0);
+    setTimeout(message_viewport.maybe_scroll_to_selected, 0);
 }
 
 export function set_hash_to_default_view() {

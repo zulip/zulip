@@ -116,25 +116,3 @@ export function page_down() {
         page_down_the_right_amount();
     }
 }
-
-export function scroll_to_selected() {
-    const $selected_row = message_lists.current.selected_row();
-    if ($selected_row && $selected_row.length !== 0) {
-        message_viewport.recenter_view($selected_row);
-    }
-}
-
-let scroll_to_selected_planned = false;
-
-export function plan_scroll_to_selected() {
-    scroll_to_selected_planned = true;
-}
-
-export function maybe_scroll_to_selected() {
-    // If we have made a plan to scroll to the selected message but
-    // deferred doing so, do so here.
-    if (scroll_to_selected_planned) {
-        scroll_to_selected();
-        scroll_to_selected_planned = false;
-    }
-}
