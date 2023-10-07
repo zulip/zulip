@@ -97,16 +97,13 @@ export function respond_to_message(opts) {
     if (msg_type === "stream") {
         stream_id = message.stream_id;
         topic = message.topic;
+    } else if (opts.reply_type === "personal") {
+        // reply_to for direct messages is everyone involved, so for
+        // personals replies we need to set the direct message
+        // recipient to just the sender
+        pm_recipient = people.get_by_user_id(message.sender_id).email;
     } else {
-        pm_recipient = message.reply_to;
-        if (opts.reply_type === "personal") {
-            // reply_to for direct messages is everyone involved, so for
-            // personals replies we need to set the direct message
-            // recipient to just the sender
-            pm_recipient = people.get_by_user_id(message.sender_id).email;
-        } else {
-            pm_recipient = people.pm_reply_to(message);
-        }
+        pm_recipient = people.pm_reply_to(message);
     }
 
     compose_actions.start(msg_type, {
