@@ -711,15 +711,36 @@ export function get_focused_row_message() {
 
     const is_dm = $focused_row.parent("#inbox-direct-messages-container").length > 0;
     const conversation_key = $focused_row.attr("id").slice(CONVERSATION_ID_PREFIX.length);
-    let latest_msg_id;
+    let row_info;
     if (is_dm) {
-        latest_msg_id = dms_dict.get(conversation_key).latest_msg_id;
+        row_info = dms_dict.get(conversation_key);
     } else {
         const $stream = $focused_row.parent(".inbox-topic-container").parent();
         const stream_key = $stream.attr("id");
-        latest_msg_id = topics_dict.get(stream_key).get(conversation_key).latest_msg_id;
+        row_info = topics_dict.get(stream_key).get(conversation_key);
     }
-    return {message: message_store.get(latest_msg_id)};
+
+    const message = message_store.get(row_info.latest_msg_id);
+    // Since inbox is populated based on unread data which is part
+    // of /register request, it is possible that we don't have the
+    // actual message in our message_store. In that case, we return
+    // a fake message object.
+    if (message === undefined) {
+        if (is_dm) {
+            const recipients = people.user_ids_string_to_emails_string(row_info.user_ids_string);
+            return {
+                msg_type: "private",
+                private_message_recipient: recipients,
+            };
+        }
+        return {
+            msg_type: "stream",
+            stream_id: row_info.stream_id,
+            topic: row_info.topic_name,
+        };
+    }
+
+    return {message};
 }
 
 function is_row_a_header($row) {
