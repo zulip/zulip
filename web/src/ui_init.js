@@ -596,6 +596,8 @@ export function initialize_everything() {
             const user = people.get_by_user_id(participant_user_id);
             user_card_popover.toggle_user_card_popover(avatar_element, user);
         },
+        on_mark_pm_as_read: unread_ops.mark_pm_as_read,
+        on_mark_topic_as_read: unread_ops.mark_topic_as_read,
     });
     inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
