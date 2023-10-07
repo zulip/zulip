@@ -141,11 +141,6 @@ mock_esm("../src/user_topics", {
     },
     all_visibility_policies,
 });
-const narrow = mock_esm("../src/narrow", {
-    hide_unread_banner: noop,
-    handle_middle_pane_transition: noop,
-    has_shown_message_list_view: true,
-});
 mock_esm("../src/narrow_title", {
     update_narrow_title() {},
 });
@@ -452,9 +447,7 @@ function test(label, f) {
     });
 }
 
-test("test_recent_view_show", ({mock_template, override}) => {
-    override(narrow, "save_pre_narrow_offset_for_reload", () => {});
-
+test("test_recent_view_show", ({mock_template}) => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.

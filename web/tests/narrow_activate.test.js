@@ -83,16 +83,17 @@ function test_helper({override}) {
     stub(compose_banner, "clear_message_sent_banners");
     stub(compose_actions, "on_narrow");
     stub(compose_closed_ui, "update_reply_recipient_label");
+    stub(compose_recipient, "handle_middle_pane_transition");
     stub(narrow_history, "save_narrow_state_and_flush");
     stub(message_feed_loading, "hide_indicators");
     stub(message_feed_top_notices, "hide_top_of_narrow_notices");
+    stub(message_lists, "save_pre_narrow_offset_for_reload");
     stub(narrow_title, "update_narrow_title");
     stub(stream_list, "handle_narrow_activated");
     stub(message_view_header, "render_title_area");
     stub(message_viewport, "stop_auto_scrolling");
     stub(left_sidebar_navigation_area, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
-    stub(compose_recipient, "update_narrow_to_recipient_visibility");
     stub(unread_ops, "process_visible");
     stub(compose_closed_ui, "update_buttons_for_stream");
     stub(compose_closed_ui, "update_buttons_for_private");
@@ -186,6 +187,7 @@ run_test("basics", ({override}) => {
     helper.assert_events([
         [message_feed_top_notices, "hide_top_of_narrow_notices"],
         [message_feed_loading, "hide_indicators"],
+        [message_lists, "save_pre_narrow_offset_for_reload"],
         [compose_banner, "clear_message_sent_banners"],
         [unread_ops, "process_visible"],
         [narrow_history, "save_narrow_state_and_flush"],
@@ -199,7 +201,7 @@ run_test("basics", ({override}) => {
         [left_sidebar_navigation_area, "handle_narrow_activated"],
         [stream_list, "handle_narrow_activated"],
         [compose_actions, "on_narrow"],
-        [compose_recipient, "update_narrow_to_recipient_visibility"],
+        [compose_recipient, "handle_middle_pane_transition"],
     ]);
 
     message_lists.current.selected_id = () => -1;
