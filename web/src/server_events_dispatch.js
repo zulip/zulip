@@ -81,7 +81,6 @@ import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
-import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics_ui from "./user_topics_ui";
@@ -862,7 +861,7 @@ export function dispatch_normal_event(event) {
                 case "add":
                     user_groups.add(event.group);
                     if (overlays.groups_open()) {
-                        user_groups_settings_ui.add_group_to_table(event.group);
+                        user_group_edit.add_group_to_table(event.group);
                     }
                     break;
                 case "remove":
@@ -885,7 +884,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     user_groups.update(event);
-                    user_groups_settings_ui.update_group(event.group_id);
+                    user_group_edit.update_group(event.group_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type user_group/" + event.op);

@@ -29,7 +29,7 @@ import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
-import * as user_groups_settings_ui from "./user_groups_settings_ui";
+import * as user_group_edit from "./user_group_edit";
 import {user_settings} from "./user_settings";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -263,7 +263,7 @@ function do_hashchange_overlay(old_hash) {
         }
 
         if (base === "groups") {
-            user_groups_settings_ui.change_state(section);
+            user_group_edit.change_state(section);
         }
 
         if (base === "settings") {
@@ -328,7 +328,7 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "groups") {
-        user_groups_settings_ui.launch(section);
+        user_group_edit.launch(section);
         return;
     }
 
