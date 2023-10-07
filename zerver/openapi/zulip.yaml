@@ -16630,7 +16630,11 @@ paths:
         See the subsystems documentation on [typing indicators][typing-protocol-docs]
         for additional design details on Zulip's typing notifications protocol.
 
-        **Changes**: Support for displaying stream typing notifications was new
+        **Changes**: Clients shouldn't care about the APIs prior to Zulip 8.0 (feature level 215)
+        for stream typing notifications, as no client actually implemented
+        the previous API for those.
+
+        Support for displaying stream typing notifications was new
         in Zulip 4.0 (feature level 58). Clients should indicate they support
         processing stream typing notifications via the `stream_typing_notifications`
         value in the `client_capabilities` parameter of the
@@ -16689,10 +16693,15 @@ paths:
             being typed. Send a JSON-encoded list of user IDs. (Use a list even if
             there is only one recipient.)
 
-            For `"stream"` type it is a single element list containing ID of stream in
-            which the message is being typed.
+            For `"stream"` type it is the ID of the stream in which the message is
+            being typed.
 
-            **Changes**: Support for typing notifications for stream messages
+            **Changes**: In Zulip 8.0 (feature level 215), for the `"stream"` `type`,
+            changed this parameter to accept the ID of the stream in which the message
+            is being typed. Previously, it accepted a single-element list containing
+            the ID of the stream.
+
+            Support for typing notifications for stream messages
             is new in Zulip 4.0 (feature level 58). Previously, typing
             notifications were only for direct messages.
 
@@ -16702,9 +16711,12 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: integer
+                oneOf:
+                  - type: integer
+                  - type: array
+                    items:
+                      type: integer
+                    minLength: 1
               example: [9, 10]
           required: true
         - name: topic
