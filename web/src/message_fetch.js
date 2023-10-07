@@ -7,7 +7,7 @@ import * as huddle_data from "./huddle_data";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
-import * as message_list from "./message_list";
+import * as message_list_data from "./message_list_data";
 import * as message_lists from "./message_lists";
 import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
@@ -47,7 +47,8 @@ function process_result(data, opts) {
         all_messages_data.add_messages(messages);
     }
 
-    if (messages.length !== 0) {
+    if (messages.length !== 0 && !opts.msg_list.is_recent_view_list) {
+        // Recent view has it's own hooks for capturing data.
         message_util.add_old_messages(messages, opts.msg_list);
     }
 
@@ -196,6 +197,10 @@ function handle_operators_supporting_id_based_api(data) {
 }
 
 export function load_messages(opts, attempt = 1) {
+    // NOTE: opts.msg_list can be normal object containing
+    // `{data: MessageListData}` and can be identified via
+    // msg_list.is_recent_view_list property.
+
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -547,9 +552,10 @@ export function initialize(home_view_loaded) {
     // visual artifacts shortly after page load; just more forgivable
     // ones).
     //
-    // This MessageList is defined similarly to home_message_list,
-    // without a `table_name` attached.
-    const recent_view_message_list = new message_list.MessageList({
+    // We only initialize MessageListData here, since we don't
+    // want update the UI and confuse the functions in MessageList.
+    // Recent view can handle the UI updates itself.
+    const recent_view_message_list_data = new message_list_data.MessageListData({
         filter: new Filter([{operator: "in", operand: "home"}]),
         excludes_muted_topics: true,
     });
@@ -562,7 +568,10 @@ export function initialize(home_view_loaded) {
         anchor: "newest",
         num_before: consts.recent_view_initial_fetch_size,
         num_after: 0,
-        msg_list: recent_view_message_list,
+        msg_list: {
+            data: recent_view_message_list_data,
+            is_recent_view_list: true,
+        },
         cont: recent_view_ui.hide_loading_indicator,
     });
 }
