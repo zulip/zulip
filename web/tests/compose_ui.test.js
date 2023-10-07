@@ -80,6 +80,8 @@ function make_textbox(s) {
         return $widget.s;
     };
 
+    $widget.trigger = noop;
+
     return $widget;
 }
 
