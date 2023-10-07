@@ -34,7 +34,7 @@ from typing_extensions import TypeAlias, override
 
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
@@ -1251,3 +1251,27 @@ def send_test_push_notification(user_profile: UserProfile, devices: List[PushDev
     send_test_push_notification_directly_to_devices(
         user_identity, devices, base_payload, remote=None
     )
+
+
+class InvalidPushDeviceTokenError(JsonableError):
+    code = ErrorCode.INVALID_PUSH_DEVICE_TOKEN
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Device not recognized")
+
+
+class InvalidRemotePushDeviceTokenError(JsonableError):
+    code = ErrorCode.INVALID_REMOTE_PUSH_DEVICE_TOKEN
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Device not recognized by the push bouncer")

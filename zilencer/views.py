@@ -22,6 +22,7 @@ from corporate.lib.stripe import do_deactivate_remote_server
 from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
+    InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
     send_android_push_notification,
     send_apple_push_notification,
@@ -322,7 +323,7 @@ def remote_server_send_test_notification(
             user_identity.filter_q(), token=token, kind=token_kind, server=server
         )
     except RemotePushDeviceToken.DoesNotExist:
-        raise JsonableError(err_("Token does not exist"))
+        raise InvalidRemotePushDeviceTokenError
 
     send_test_push_notification_directly_to_devices(
         user_identity, [device], base_payload, remote=server
