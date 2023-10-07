@@ -1,6 +1,5 @@
 import $ from "jquery";
 import _ from "lodash";
-import {insert} from "text-field-edit";
 
 import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
@@ -165,8 +164,7 @@ function handle_bulleting_or_numbering($textarea, e) {
             // below we select and replace the last 2 characters in the textarea before
             // the cursor - the bullet syntax - with an empty string
             $textarea[0].setSelectionRange($textarea.caret() - 2, $textarea.caret());
-            insert($textarea[0], "");
-            compose_ui.autosize_textarea($textarea);
+            compose_ui.insert_and_scroll_into_view("", $textarea);
             e.preventDefault();
             return;
         }
@@ -183,8 +181,7 @@ function handle_bulleting_or_numbering($textarea, e) {
                 $textarea.caret() - previous_number_string.length - 2,
                 $textarea.caret(),
             );
-            insert($textarea[0], "");
-            compose_ui.autosize_textarea($textarea);
+            compose_ui.insert_and_scroll_into_view("", $textarea);
             e.preventDefault();
             return;
         }
@@ -194,8 +191,7 @@ function handle_bulleting_or_numbering($textarea, e) {
     // if previous line was neither numbered nor bulleted, only add
     // a new line to emulate default behaviour (to_append is blank)
     // else we add the bulleting / numbering syntax to the new line
-    insert($textarea[0], "\n" + to_append);
-    compose_ui.autosize_textarea($textarea);
+    compose_ui.insert_and_scroll_into_view("\n" + to_append, $textarea);
     e.preventDefault();
 }
 
@@ -217,8 +213,7 @@ export function handle_enter($textarea, e) {
     if ($textarea[0].selectionStart !== $textarea[0].selectionEnd) {
         // Replace it with the newline, remembering to resize the
         // textarea if needed.
-        insert($textarea[0], "\n");
-        compose_ui.autosize_textarea($textarea);
+        compose_ui.insert_and_scroll_into_view("\n", $textarea);
         e.preventDefault();
     } else {
         // if nothing had been selected in the texarea we

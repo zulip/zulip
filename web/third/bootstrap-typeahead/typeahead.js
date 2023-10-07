@@ -199,6 +199,9 @@ import {get_string_diff} from "../../src/util";
         // select / highlight the minimal text to be replaced
         this.$element[0].setSelectionRange(from, to_before);
         insert(this.$element[0], replacement);
+        // Blurring and refocusing ensures the cursor is in view.
+        this.$element.trigger("blur");
+        this.$element.trigger("focus");
       }
 
       return this.hide()

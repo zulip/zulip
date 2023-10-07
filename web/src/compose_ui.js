@@ -35,6 +35,14 @@ export function autosize_textarea($textarea) {
     }
 }
 
+export function insert_and_scroll_into_view(content, $textarea) {
+    insert($textarea[0], content);
+    // Blurring and refocusing ensures the cursor / selection is in view.
+    $textarea.trigger("blur");
+    $textarea.trigger("focus");
+    autosize_textarea($textarea);
+}
+
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
     if (msg_type === "stream" && opts.stream_id && !opts.topic) {
@@ -99,8 +107,7 @@ export function smart_insert_inline($textarea, syntax) {
         syntax += " ";
     }
 
-    insert($textarea[0], syntax);
-    autosize_textarea($textarea);
+    insert_and_scroll_into_view(syntax, $textarea);
 }
 
 export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
@@ -146,8 +153,7 @@ export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
     const new_lines_needed_after_count = padding_newlines - new_lines_after_count;
     syntax = syntax + "\n".repeat(new_lines_needed_after_count);
 
-    insert($textarea[0], syntax);
-    autosize_textarea($textarea);
+    insert_and_scroll_into_view(syntax, $textarea);
 }
 
 export function insert_syntax_and_focus(
