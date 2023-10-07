@@ -4,10 +4,12 @@
             <div class="collapsible-button"><i class="zulip-icon zulip-icon-arrow-down toggle-inbox-header-icon {{#if is_collapsed}}icon-collapsed-state{{/if}}"></i></div>
             <div class="inbox-left-part">
                 <div tabindex="0" class="inbox-header-name">
-                    <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
-                        {{> ../stream_privacy }}
-                    </span>
-                    <a tabindex="-1" href="{{stream_url}}">{{stream_name}}</a>
+                    <div class="inbox-header-name-focus-border">
+                        <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                            {{> ../stream_privacy }}
+                        </span>
+                        <a tabindex="-1" href="{{stream_url}}">{{stream_name}}</a>
+                    </div>
                 </div>
                 <span class="unread_mention_info tippy-zulip-tooltip
                   {{#unless mention_in_unread}}hidden{{/unless}}"

@@ -188,8 +188,17 @@
                         overflow: hidden;
                     }
 
-                    &:focus a {
-                        box-shadow: inset 0 -3px 0 var(--color-outline-focus);
+                    .inbox-header-name-focus-border {
+                        display: flex;
+                        align-items: center;
+                        overflow: hidden;
+                        border: 2px solid transparent;
+                        border-radius: 3px;
+                        padding-left: 4px;
+                    }
+
+                    &:focus .inbox-header-name-focus-border {
+                        border-color: var(--color-outline-focus);
                     }
                 }
 
