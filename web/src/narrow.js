@@ -55,27 +55,6 @@ import * as widgetize from "./widgetize";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
 
-export function save_pre_narrow_offset_for_reload() {
-    if (message_lists.current.selected_id() !== -1) {
-        if (message_lists.current.selected_row().length === 0) {
-            blueslip.debug("narrow.activate missing selected row", {
-                selected_id: message_lists.current.selected_id(),
-                selected_idx: message_lists.current.selected_idx(),
-                selected_idx_exact: message_lists.current
-                    .all_messages()
-                    .indexOf(message_lists.current.get(message_lists.current.selected_id())),
-                render_start: message_lists.current.view._render_win_start,
-                render_end: message_lists.current.view._render_win_end,
-            });
-        }
-        message_lists.current.pre_narrow_offset = message_lists.current
-            .selected_row()
-            .get_offset_to_window().top;
-    }
-}
-
-export let has_shown_message_list_view = false;
-
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
@@ -83,12 +62,6 @@ export function reset_ui_state() {
     message_feed_top_notices.hide_top_of_narrow_notices();
     message_feed_loading.hide_indicators();
     unread_ui.reset_unread_banner();
-}
-
-export function handle_middle_pane_transition() {
-    if (compose_state.composing) {
-        compose_recipient.update_narrow_to_recipient_visibility();
-    }
 }
 
 export function changehash(newhash) {
@@ -355,7 +328,7 @@ export function activate(raw_operators, opts) {
             // We must instead be switching from another message view.
             // Save the scroll position in that message list, so that
             // we can restore it if/when we later navigate back to that view.
-            save_pre_narrow_offset_for_reload();
+            message_lists.save_pre_narrow_offset_for_reload();
         }
 
         // most users aren't going to send a bunch of a out-of-narrow messages
@@ -392,7 +365,7 @@ export function activate(raw_operators, opts) {
         // populating the new narrow, so we update our narrow_state.
         // From here on down, any calls to the narrow_state API will
         // reflect the upcoming narrow.
-        has_shown_message_list_view = true;
+        narrow_state.set_has_shown_message_list_view();
         narrow_state.set_current_filter(filter);
 
         const excludes_muted_topics = narrow_state.excludes_muted_topics();
@@ -507,7 +480,7 @@ export function activate(raw_operators, opts) {
 
         // It is important to call this after other important updates
         // like narrow filter and compose recipients happen.
-        handle_middle_pane_transition();
+        compose_recipient.handle_middle_pane_transition();
 
         const post_span = span.startChild({
             op: "function",
@@ -1025,7 +998,7 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
         }
 
         narrow_state.reset_current_filter();
-        has_shown_message_list_view = true;
+        narrow_state.set_has_shown_message_list_view();
 
         $("body").removeClass("narrowed_view");
         $("#zfilt").removeClass("focused-message-list");
@@ -1035,7 +1008,7 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
         condense.condense_and_collapse($("#zhome div.message_row"));
 
         reset_ui_state();
-        handle_middle_pane_transition();
+        compose_recipient.handle_middle_pane_transition();
         save_narrow();
 
         if (message_lists.current.selected_id() !== -1) {
