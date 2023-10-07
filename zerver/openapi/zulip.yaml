@@ -9175,21 +9175,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/JsonSuccess"
         "400":
-          description: Bad request.
+          description: |
+            Bad request.
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Token does not exist",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON response for when a device with the specified token
-                      does not exist:
+                oneOf:
+                  - $ref: "#/components/schemas/InvalidPushDeviceTokenError"
+                  - $ref: "#/components/schemas/InvalidRemotePushDeviceTokenError"
   /user_topics:
     post:
       operationId: update-user-topic
@@ -19619,6 +19612,33 @@ components:
             before Zulip 5.0 (feature level 76).
 
             A typical failed json response for when user's organization is deactivated:
+    InvalidPushDeviceTokenError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INVALID_PUSH_DEVICE_TOKEN",
+              "msg": "Device not recognized",
+              "result": "error",
+            }
+          description: |
+            ## Invalid push device token
+
+            A typical failed JSON response for when the push device token is invalid:
+    InvalidRemotePushDeviceTokenError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INVALID_REMOTE_PUSH_DEVICE_TOKEN",
+              "msg": "Device not recognized by the push bouncer",
+              "result": "error",
+            }
+          description: |
+            ## Invalid push device token
+
+            A typical failed JSON response for when the push device token is not recognized
+            by the push notification bouncer:
 
   ###################
   # Shared responses
