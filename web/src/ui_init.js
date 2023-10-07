@@ -592,7 +592,12 @@ export function initialize_everything() {
     realm_logo.initialize();
     message_lists.initialize();
     message_list.initialize();
-    recent_view_ui.initialize();
+    recent_view_ui.initialize({
+        on_click_participant(avatar_element, participant_user_id) {
+            const user = people.get_by_user_id(participant_user_id);
+            user_card_popover.toggle_user_card_popover(avatar_element, user);
+        },
+    });
     inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
