@@ -50,22 +50,39 @@ class TypingMessagetypeTest(ZulipTestCase):
 
 
 class TypingValidateToArgumentsTest(ZulipTestCase):
+    def test_invalid_to_for_direct_messages(self) -> None:
+        """
+        Sending dms typing notifications without 'to' as a list fails.
+        """
+        sender = self.example_user("hamlet")
+        result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": "2"})
+        self.assert_json_error(result, "Invalid data type for recipients")
+
+    def test_invalid_to_for_stream_messages(self) -> None:
+        """
+        Sending stream typing notifications without 'to' as an integer fails.
+        """
+        sender = self.example_user("hamlet")
+        result = self.api_post(
+            sender, "/api/v1/typing", {"type": "stream", "op": "start", "to": "invalid"}
+        )
+        self.assert_json_error(result, "Invalid data type for stream ID")
+
+    def test_invalid_user_id_for_direct_messages(self) -> None:
+        """
+        Sending dms typing notifications with invalid user_id fails.
+        """
+        sender = self.example_user("hamlet")
+        invalid_user_ids = orjson.dumps([2, "a", 4]).decode()
+        result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": invalid_user_ids})
+        self.assert_json_error(result, "Recipient list may only contain user IDs")
+
     def test_empty_to_array_direct_messages(self) -> None:
         """
         Sending dms typing notification without recipient fails
         """
         sender = self.example_user("hamlet")
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": "[]"})
-        self.assert_json_error(result, "Empty 'to' list")
-
-    def test_empty_to_array_stream(self) -> None:
-        """
-        Sending stream typing notification without recipient fails
-        """
-        sender = self.example_user("hamlet")
-        result = self.api_post(
-            sender, "/api/v1/typing", {"type": "stream", "op": "start", "to": "[]"}
-        )
         self.assert_json_error(result, "Empty 'to' list")
 
     def test_missing_recipient(self) -> None:
@@ -76,15 +93,6 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         result = self.api_post(sender, "/api/v1/typing", {"op": "start"})
         self.assert_json_error(result, "Missing 'to' argument")
 
-    def test_argument_to_is_not_valid_json(self) -> None:
-        """
-        Sending typing notification to invalid recipient fails
-        """
-        sender = self.example_user("hamlet")
-        invalid = "bad email"
-        result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": invalid})
-        self.assert_json_error(result, 'Argument "to" is not valid JSON.')
-
     def test_bogus_user_id(self) -> None:
         """
         Sending typing notification to invalid recipient fails
@@ -94,14 +102,6 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": invalid})
         self.assert_json_error(result, "Invalid user ID 9999999")
 
-    def test_send_multiple_stream_ids(self) -> None:
-        sender = self.example_user("hamlet")
-
-        result = self.api_post(
-            sender, "/api/v1/typing", {"type": "stream", "op": "stop", "to": "[1, 2, 3]"}
-        )
-        self.assert_json_error(result, "Cannot send to multiple streams")
-
     def test_includes_stream_id_but_not_topic(self) -> None:
         sender = self.example_user("hamlet")
         stream_id = self.get_stream_id("general")
@@ -109,7 +109,7 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         result = self.api_post(
             sender,
             "/api/v1/typing",
-            {"type": "stream", "op": "start", "to": orjson.dumps([stream_id]).decode()},
+            {"type": "stream", "op": "start", "to": str(stream_id)},
         )
         self.assert_json_error(result, "Missing topic")
 
@@ -124,7 +124,7 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
             {
                 "type": "stream",
                 "op": "start",
-                "to": orjson.dumps([stream_id]).decode(),
+                "to": str(stream_id),
                 "topic": topic,
             },
         )
@@ -364,7 +364,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         params = dict(
             type="stream",
             op="start",
-            to=orjson.dumps([stream_id]).decode(),
+            to=str(stream_id),
             topic=topic,
         )
 
@@ -398,7 +398,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         params = dict(
             type="stream",
             op="stop",
-            to=orjson.dumps([stream_id]).decode(),
+            to=str(stream_id),
             topic=topic,
         )
 
@@ -467,7 +467,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         params = dict(
             type="stream",
             op="start",
-            to=orjson.dumps([stream_id]).decode(),
+            to=str(stream_id),
             topic=topic,
         )
 
