@@ -10,7 +10,6 @@ import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 
-import * as compose_ui from "./compose_ui";
 import * as desktop_notifications from "./desktop_notifications";
 import * as keydown_util from "./keydown_util";
 import {localstorage} from "./localstorage";
@@ -20,22 +19,6 @@ import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
-
-/* This is called by resize.js, and thus indirectly when we trigger
- * resize events in the logic below. */
-export function resize_app() {
-    const navbar_alerts_height = $("#navbar_alerts_wrapper").height();
-    document.documentElement.style.setProperty(
-        "--navbar-alerts-wrapper-height",
-        navbar_alerts_height + "px",
-    );
-
-    // If the compose-box is in expanded state,
-    // reset its height as well.
-    if (compose_ui.is_full_size()) {
-        compose_ui.set_compose_box_top(true);
-    }
-}
 
 const show_step = function ($process, step) {
     $process
