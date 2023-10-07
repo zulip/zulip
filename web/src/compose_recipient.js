@@ -305,6 +305,12 @@ function on_hidden_callback() {
     }
 }
 
+export function handle_middle_pane_transition() {
+    if (compose_state.composing) {
+        update_narrow_to_recipient_visibility();
+    }
+}
+
 export function initialize() {
     new dropdown_widget.DropdownWidget({
         widget_name: "compose_select_recipient",
