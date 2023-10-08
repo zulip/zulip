@@ -13,6 +13,7 @@ from zerver.actions.user_groups import (
     bulk_remove_members_from_user_groups,
     check_add_user_group,
     check_deactivate_user_group,
+    check_reactivate_user_group,
     do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
@@ -159,6 +160,19 @@ def deactivate_user_group(
     user_group_id: PathOnly[int],
 ) -> HttpResponse:
     check_deactivate_user_group(user_group_id, acting_user=user_profile)
+    return json_success(request)
+
+
+@require_user_group_edit_permission
+@typed_endpoint
+def reactivate_user_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_group_id: PathOnly[int],
+) -> HttpResponse:
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
+    check_reactivate_user_group(user_group, acting_user=user_profile)
     return json_success(request)
 
 

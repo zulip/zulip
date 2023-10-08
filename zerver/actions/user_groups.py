@@ -469,6 +469,20 @@ def check_deactivate_user_group(user_group_id: int, *, acting_user: UserProfile)
         do_send_deactivate_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
 
 
+def do_send_reactivate_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:
+    event = dict(type="user_group", op="reactivate", group_id=user_group_id)
+    send_event_on_commit(realm, event, active_user_ids(realm_id))
+
+
+@transaction.atomic(savepoint=False)
+def check_reactivate_user_group(user_group: UserGroup, *, acting_user: UserProfile) -> None:
+    if not user_group.deactivated:
+        raise JsonableError(_("Cannot reactivate an active group"))
+    user_group.deactivated = False
+    user_group.save(update_fields=["deactivated"])
+    do_send_reactivate_user_group_event(acting_user.realm, user_group.id, acting_user.realm.id)
+
+
 @transaction.atomic(savepoint=False)
 def do_change_user_group_permission_setting(
     user_group: UserGroup,
