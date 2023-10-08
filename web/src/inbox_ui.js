@@ -684,7 +684,7 @@ function set_list_focus(input_key) {
     const $cols_to_focus = [$row_to_focus, ...$row_to_focus.find("[tabindex=0]")];
     const total_cols = $cols_to_focus.length;
     current_focus_id = $row_to_focus.attr("id");
-    const not_a_header_row = !is_row_a_header($row_to_focus);
+    const is_header_row = is_row_a_header($row_to_focus);
 
     // Loop through columns.
     if (col_focus > total_cols - 1) {
@@ -695,12 +695,12 @@ function set_list_focus(input_key) {
 
     // Since header rows always have a collapse button, other rows have one less element to focus.
     if (col_focus === COLUMNS.COLLAPSE_BUTTON) {
-        if (not_a_header_row && LEFT_NAVIGATION_KEYS.includes(input_key)) {
+        if (!is_header_row && LEFT_NAVIGATION_KEYS.includes(input_key)) {
             // In `inbox-row` user pressed left on COLUMNS.RECIPIENT, so
             // go to the last column.
             col_focus = total_cols - 1;
         }
-    } else if (not_a_header_row && col_focus === COLUMNS.RECIPIENT) {
+    } else if (!is_header_row && col_focus === COLUMNS.RECIPIENT) {
         if (RIGHT_NAVIGATION_KEYS.includes(input_key)) {
             // In `inbox-row` user pressed right on COLUMNS.COLLAPSE_BUTTON.
             // Since `inbox-row` has no collapse button, user wants to go
