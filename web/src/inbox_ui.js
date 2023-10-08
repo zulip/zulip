@@ -495,11 +495,11 @@ function reset_data() {
 
     const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
     topics_dict = get_sorted_stream_topic_dict();
-    const is_dms_collaped = collapsed_containers.has("inbox-dm-header");
+    const is_dms_collapsed = collapsed_containers.has("inbox-dm-header");
 
     return {
         unread_dms_count,
-        is_dms_collaped,
+        is_dms_collapsed,
         has_dms_post_filter,
         has_visible_unreads,
     };
@@ -727,7 +727,7 @@ function set_list_focus(input_key) {
             col_focus = COLUMNS.COLLAPSE_BUTTON;
         } else {
             // up / down arrow
-            // For `inbox-row`, we focus entier row for COLUMNS.RECIPIENT.
+            // For `inbox-row`, we focus entire row for COLUMNS.RECIPIENT.
             $row_to_focus.trigger("focus");
             return;
         }
