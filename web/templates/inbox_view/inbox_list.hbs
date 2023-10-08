@@ -9,7 +9,11 @@
                         <a tabindex="-1" role="button" href="/#narrow/is/private">{{t 'Direct message'}}</a>
                     </div>
                 </div>
-                <span class="unread_count tippy-zulip-tooltip on_hover_all_dms_read" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_dms_count}}</span>
+                <div class="unread-count-focus-outline" tabindex="0">
+                    <span class="unread_count tippy-zulip-tooltip on_hover_all_dms_read"
+                      data-tippy-content="{{t 'Mark as read' }}"
+                      aria-label="{{t 'Mark as read' }}">{{unread_dms_count}}</span>
+                </div>
             </div>
         </div>
     </div>
