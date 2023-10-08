@@ -1206,21 +1206,22 @@ div.overlay {
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
-    width: 100%;
-    height: 27px;
+    padding: 1px;
+    height: 33px;
+    gap: 2px;
     background-color: var(--color-background-tab-picker-container);
-    position: relative;
     border-radius: 5px;
 
     & i {
         z-index: 2;
         color: var(--color-tab-picker-icon);
-        font-size: 17px;
+        font-size: 16px;
     }
 
     .selected-tab {
-        background-color: var(--color-background-tab-picker-tab-option);
+        background-color: var(--color-background-tab-picker-selected-tab);
         outline: 1px solid var(--color-outline-tab-picker-tab-option);
+        outline-offset: -1px;
         z-index: 1;
     }
 
@@ -1230,14 +1231,19 @@ div.overlay {
         align-items: center;
         box-sizing: border-box;
         width: 100%;
-        height: 100%;
-        margin: 1px;
+        height: 31px;
         cursor: pointer;
         border-radius: 5px;
 
         &:hover:not(.selected-tab) {
-            background-color: var(--color-background-tab-picker-tab-option);
+            background-color: var(
+                --color-background-tab-picker-tab-option-hover
+            );
+        }
+
+        &:active:not(.selected-tab) {
             outline: 1px solid var(--color-outline-tab-picker-tab-option);
+            outline-offset: -1px;
         }
     }
 }
