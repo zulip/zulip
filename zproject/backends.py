@@ -843,17 +843,18 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         # If neither setting is configured, allow access.
         if realm_access_control is None:
             return False
+        if realm.subdomain not in realm_access_control:
+            # If a realm is not configured in this setting, it shouldn't
+            # be affected by it - therefore, allow access.
+            return False
 
         # With settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL, we
         # allow access if and only if one of the entries for the
         # target subdomain matches the user's LDAP attributes.
-        if not (
-            realm.subdomain in realm_access_control
-            and isinstance(realm_access_control[realm.subdomain], list)
-            and len(realm_access_control[realm.subdomain]) > 0
-        ):
-            # If configuration is wrong, do not allow access
-            return True
+
+        # Make sure the format of the setting makes sense.
+        assert isinstance(realm_access_control[realm.subdomain], list)
+        assert len(realm_access_control[realm.subdomain]) > 0
 
         # Go through every "or" check
         for attribute_group in realm_access_control[realm.subdomain]:
