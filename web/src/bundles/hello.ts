@@ -4,3 +4,4 @@
 import "source-sans/source-sans-3VF.css";
 import "source-code-pro/source-code-pro.css";
 import "@fontsource-variable/open-sans";
+import "../portico/google-analytics";
