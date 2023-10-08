@@ -641,7 +641,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_user_group.id}", info=params)
         self.assert_json_error(result, f"User group '{marketing_user_group.name}' already exists.")
 
-    def test_user_group_delete(self) -> None:
+    def test_user_group_deactivate(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
         params = {
@@ -652,14 +652,20 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.client_post("/json/user_groups/create", info=params)
         user_group = UserGroup.objects.get(name="support")
         # Test success
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 10)
-        self.assertEqual(UserGroupMembership.objects.count(), 45)
+        self.assertEqual(
+            UserGroup.objects.filter(realm=hamlet.realm, deactivated=False).count(), 10
+        )
+        self.assertEqual(
+            UserGroupMembership.objects.filter(user_group__deactivated=False).count(), 45
+        )
         self.assertTrue(UserGroup.objects.filter(id=user_group.id).exists())
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
         self.assert_json_success(result)
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
-        self.assertEqual(UserGroupMembership.objects.count(), 44)
-        self.assertFalse(UserGroup.objects.filter(id=user_group.id).exists())
+        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm, deactivated=False).count(), 9)
+        self.assertEqual(
+            UserGroupMembership.objects.filter(user_group__deactivated=False).count(), 44
+        )
+        self.assertFalse(UserGroup.objects.filter(id=user_group.id, deactivated=False).exists())
         # Test when invalid user group is supplied; transaction needed for
         # error handling
         with transaction.atomic():
@@ -883,14 +889,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
             else:
                 self.assert_json_error(result, error_msg)
 
-        def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
+        def check_deactivate_user_group_and_force_delete(
+            acting_user: str, error_msg: Optional[str] = None
+        ) -> None:
             self.login(acting_user)
             user_group = UserGroup.objects.get(name="support")
             with transaction.atomic():
                 result = self.client_delete(f"/json/user_groups/{user_group.id}")
             if error_msg is None:
                 self.assert_json_success(result)
-                self.assert_length(UserGroup.objects.filter(realm=realm), 9)
+                self.assert_length(UserGroup.objects.filter(realm=realm, deactivated=False), 9)
+                UserGroup.objects.get(name="support", deactivated=True).delete()
             else:
                 self.assert_json_error(result, error_msg)
 
@@ -905,8 +914,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_create_user_group("shiva", "Insufficient permission")
         check_create_user_group("iago")
 
-        check_delete_user_group("shiva", "Insufficient permission")
-        check_delete_user_group("iago")
+        check_deactivate_user_group_and_force_delete("shiva", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("iago")
 
         # Check moderators are allowed to create/delete user group but not members. Moderators are
         # allowed even if they are not a member of the group.
@@ -919,8 +928,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_create_user_group("cordelia", "Insufficient permission")
         check_create_user_group("shiva")
 
-        check_delete_user_group("hamlet", "Insufficient permission")
-        check_delete_user_group("shiva")
+        check_deactivate_user_group_and_force_delete("hamlet", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("shiva")
 
         # Check only members are allowed to create the user group and they are allowed to delete
         # a user group only if they are a member of that group.
@@ -933,9 +942,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_create_user_group("polonius", "Not allowed for guest users")
         check_create_user_group("cordelia")
 
-        check_delete_user_group("polonius", "Not allowed for guest users")
-        check_delete_user_group("cordelia", "Insufficient permission")
-        check_delete_user_group("hamlet")
+        check_deactivate_user_group_and_force_delete("polonius", "Not allowed for guest users")
+        check_deactivate_user_group_and_force_delete("cordelia", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("hamlet")
 
         # Check only full members are allowed to create the user group and they are allowed to delete
         # a user group only if they are a member of that group.
@@ -959,12 +968,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         hamlet.date_joined = timezone_now() - timedelta(days=9)
         hamlet.save()
 
-        check_delete_user_group("cordelia", "Insufficient permission")
-        check_delete_user_group("hamlet", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("cordelia", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("hamlet", "Insufficient permission")
 
         hamlet.date_joined = timezone_now() - timedelta(days=11)
         hamlet.save()
-        check_delete_user_group("hamlet")
+        check_deactivate_user_group_and_force_delete("hamlet")
 
     def test_user_group_edit_policy_for_updating_user_groups(self) -> None:
         othello = self.example_user("othello")

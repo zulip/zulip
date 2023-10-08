@@ -3,12 +3,15 @@ from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
 import django.db.utils
 from django.db import transaction
+from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.user_groups import (
+    find_references_from_permission_group_settings,
     get_role_based_system_groups_dict,
+    lock_subgroups_with_respect_to_supergroup,
     set_defaults_for_group_settings,
 )
 from zerver.models import (
@@ -417,15 +420,53 @@ def remove_subgroups_from_user_group(
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
 
 
-def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:
+def do_send_deactivate_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:
     event = dict(type="user_group", op="remove", group_id=user_group_id)
-    send_event(realm, event, active_user_ids(realm_id))
+    send_event_on_commit(realm, event, active_user_ids(realm_id))
 
 
-def check_delete_user_group(user_group: UserGroup, *, acting_user: UserProfile) -> None:
-    user_group_id = user_group.id
-    user_group.delete()
-    do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
+def check_deactivate_user_group(user_group_id: int, *, acting_user: UserProfile) -> None:
+    """Lock the user group to be deactivated and check if the user group
+    can be removed.
+
+    If the user group passes the checks, proceed to remove all direct subgroups
+    and supergroups of the user group, and set the deactivated field to True.
+    The removal of the group-group memberships is not reversible."""
+    with lock_subgroups_with_respect_to_supergroup(
+        [user_group_id], user_group_id, acting_user=acting_user
+    ) as context:
+        group_to_deactivate = context.supergroup
+
+        if group_to_deactivate.is_system_group:
+            raise JsonableError(_("System group cannot be deactivated"))
+
+        if group_to_deactivate.deactivated:
+            raise JsonableError(_("User group is already deactivated"))
+
+        # Find all existing permission group settings that refers to the user
+        # group and prevent from going forward if there is any outstanding ones.
+        # TODO: In rare cases, a client might add a reference after this check
+        # to bypass it. We can make code paths that update permission group
+        # settings respect the lock we put on the user group rows to avoid this
+        # race.
+        references = find_references_from_permission_group_settings(group_to_deactivate)
+        if len(references) > 0:
+            # TODO: Construct a more helpful error message from the references data
+            raise JsonableError(_("User group is referenced in settings"))
+
+        # Remove existing subgroups from the user group. There is no need to
+        # lock the direct supergroup rows here, because the group to deactivate
+        # is already locked, such that none of the direct supergroup can add the
+        # group to deactivate as a subgroup in a race.
+        GroupGroupMembership.objects.filter(
+            Q(subgroup=group_to_deactivate) | Q(supergroup=group_to_deactivate)
+        ).delete()
+
+        # Deactivate the user group and save the changes.
+        group_to_deactivate.deactivated = True
+        group_to_deactivate.save(update_fields=["deactivated"])
+
+        do_send_deactivate_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
 
 
 @transaction.atomic(savepoint=False)

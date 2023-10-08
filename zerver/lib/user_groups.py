@@ -241,7 +241,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
-    realm_groups = UserGroup.objects.filter(realm=realm)
+    realm_groups = UserGroup.objects.filter(realm=realm, deactivated=False)
     group_dicts: Dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
         group_dicts[user_group.id] = dict(
@@ -252,11 +252,12 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
             direct_subgroup_ids=[],
             is_system_group=user_group.is_system_group,
             can_mention_group=user_group.can_mention_group_id,
+            # deactivated=user_group.deactivated,
         )
 
-    membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
-        "user_group_id", "user_profile_id"
-    )
+    membership = UserGroupMembership.objects.filter(
+        user_group__realm=realm, user_group__deactivated=False
+    ).values_list("user_group_id", "user_profile_id")
     for user_group_id, user_profile_id in membership:
         group_dicts[user_group_id]["members"].append(user_profile_id)
 

@@ -105,7 +105,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
     check_add_user_group,
-    check_delete_user_group,
+    check_deactivate_user_group,
     do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
@@ -190,7 +190,7 @@ from zerver.lib.event_schema import (
     check_user_group_add,
     check_user_group_add_members,
     check_user_group_add_subgroups,
-    check_user_group_remove,
+    check_user_group_deactivate,
     check_user_group_remove_members,
     check_user_group_remove_subgroups,
     check_user_group_update,
@@ -1677,8 +1677,10 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_subgroups("events[0]", events[0])
 
         # Test remove event
-        events = self.verify_action(lambda: check_delete_user_group(backend, acting_user=othello))
-        check_user_group_remove("events[0]", events[0])
+        events = self.verify_action(
+            lambda: check_deactivate_user_group(backend.id, acting_user=othello)
+        )
+        check_user_group_deactivate("events[0]", events[0])
 
     def test_default_stream_groups_events(self) -> None:
         streams = [

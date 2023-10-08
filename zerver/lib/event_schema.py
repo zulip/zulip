@@ -1771,14 +1771,14 @@ user_group_add_members_event = event_dict_type(
 )
 check_user_group_add_members = make_checker(user_group_add_members_event)
 
-user_group_remove_event = event_dict_type(
+user_group_deactivate_event = event_dict_type(
     required_keys=[
         ("type", Equals("user_group")),
         ("op", Equals("remove")),
         ("group_id", int),
     ]
 )
-check_user_group_remove = make_checker(user_group_remove_event)
+check_user_group_deactivate = make_checker(user_group_deactivate_event)
 
 user_group_remove_members_event = event_dict_type(
     required_keys=[
