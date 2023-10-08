@@ -159,6 +159,12 @@ _Released 2023-11-16_
   various certain other special patterns are now forbidden. In the
   unlikely event that existing user groups have names matching these
   patterns, they will be automatically renamed on upgrade.
+- The behavior of the `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` has
+  subtly changed. Previously, using this setting at all would block
+  LDAP authentication in organizations that are configured to use LDAP
+  authentication but not explicitly configured with advanced access
+  controls. This behavior was removed to simplify hosting multiple
+  organizations with different LDAP configuration preferences.
 
 ## Zulip Server 7.x series
 

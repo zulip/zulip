@@ -4985,7 +4985,8 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
         self.remove_ldap_user_attr("hamlet", "department")
 
-        # Test wrong configuration
+        # Test a realm that's not configured in the setting. Such a realm should not be affected,
+        # and just allow normal ldap login.
         with override_settings(
             AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={"not_zulip": [{"department": "zulip"}]}
         ):
@@ -4993,7 +4994,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
-            self.assert_json_error(result, "Your username or password is incorrect", 401)
+            self.assert_json_success(result)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
