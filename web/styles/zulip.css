@@ -208,8 +208,9 @@ body {
     --color-background-unread-counter: hsl(105deg 2% 50%);
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
-    --color-background-tab-picker-tab-option: hsl(0deg 0% 100%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
 
     /* Compose box colors */
     --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
@@ -338,8 +339,9 @@ body {
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
-    --color-background-tab-picker-tab-option: hsl(0deg 0% 17% / 50%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
 
     /* Compose box colors */
     --color-compose-collapsed-reply-button-area-background: hsl(
