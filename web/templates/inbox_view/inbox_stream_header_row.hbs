@@ -15,6 +15,7 @@
                   {{#unless mention_in_unread}}hidden{{/unless}}"
                   data-tippy-content="{{t 'You have mentions'}}">@</span>
                 <span class="unread_count tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
+                <div class="topic-visibility-indicator invisible" tabindex="0"></div>
             </div>
         </div>
         <div class="inbox-right-part-wrapper">
