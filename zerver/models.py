@@ -2283,6 +2283,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
 
     objects: CTEManager = CTEManager()
     name = models.CharField(max_length=MAX_NAME_LENGTH)
+    deactivated = models.BooleanField(default=False)
     direct_members = models.ManyToManyField(
         UserProfile, through="UserGroupMembership", related_name="direct_groups"
     )
@@ -2687,7 +2688,7 @@ class Stream(models.Model):
     message_retention_days = models.IntegerField(null=True, default=None)
 
     # on_delete field here is set to RESTRICT because we don't want to allow
-    # deleting a user group in case it is referenced by this settig.
+    # deleting a user group in case it is referenced by this setting.
     # We are not using PROTECT since we want to allow deletion of user groups
     # when realm itself is deleted.
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
