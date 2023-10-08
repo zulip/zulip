@@ -311,6 +311,7 @@
                     display: flex;
                     align-items: center;
                     border-radius: 3px;
+                    margin-left: 3px;
 
                     &:focus {
                         outline: 2px solid var(--color-outline-focus);
@@ -318,10 +319,17 @@
                 }
             }
 
-            .unread_count {
+            .unread-count-focus-outline {
                 grid-area: unread_count;
-                margin: 0 5px;
-                align-self: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 3px;
+                padding: 5px;
+
+                &:focus {
+                    outline: 2px solid var(--color-outline-focus);
+                }
             }
 
             .unread_mention_info {
@@ -366,10 +374,6 @@
                 .inbox-row:focus {
                     box-shadow: inset 0 0 0 2px var(--color-outline-focus);
                 }
-            }
-
-            #inbox-direct-messages-container .inbox-left-part {
-                padding: 3px 0;
             }
 
             #inbox-direct-messages-container .inbox-left-part,
