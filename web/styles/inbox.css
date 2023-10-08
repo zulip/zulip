@@ -296,6 +296,26 @@
                 .inbox-topic-name {
                     grid-area: recipient_info;
                 }
+
+                .inbox-right-part-wrapper {
+                    flex-grow: 1;
+
+                    .inbox-right-part {
+                        display: flex;
+                        justify-content: space-between;
+                        flex-grow: 1;
+                    }
+                }
+
+                .visibility-policy-indicator {
+                    display: flex;
+                    align-items: center;
+                    border-radius: 3px;
+
+                    &:focus {
+                        outline: 2px solid var(--color-outline-focus);
+                    }
+                }
             }
 
             .unread_count {
