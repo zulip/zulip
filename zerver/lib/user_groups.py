@@ -1,19 +1,21 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Collection, Dict, Iterable, Iterator, List, Mapping, TypedDict
+from typing import Collection, Dict, Iterable, Iterator, List, Mapping, Tuple, Type, TypedDict
 
 from django.db import transaction
-from django.db.models import F, QuerySet
+from django.db.models import F, Model, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import With
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.types import GroupPermissionSetting
 from zerver.models import (
     GroupGroupMembership,
     Realm,
     RealmAuditLog,
+    Stream,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -400,6 +402,45 @@ def set_defaults_for_group_settings(
         setattr(user_group, setting_name, default_group)
 
     return user_group
+
+
+@dataclass
+class UserGroupReference:
+    model: Type[Model]
+    referring_instances: List[Model]
+    setting_name: str
+    permission_setting: GroupPermissionSetting
+
+
+def find_references_from_permission_group_settings(
+    user_group: UserGroup,
+) -> List[UserGroupReference]:
+    """This looks up all the permission group settings across models and returns
+    information about each setting that has references to the user group"""
+    models_with_group_permission_setting_dict: List[
+        Tuple[Type[Model], Dict[str, GroupPermissionSetting]]
+    ] = [
+        (Stream, Stream.stream_permission_group_settings),
+        (Realm, Realm.REALM_PERMISSION_GROUP_SETTINGS),
+        (UserGroup, UserGroup.GROUP_PERMISSION_SETTINGS),
+    ]
+    references = []
+    for model, permission_setting_dict in models_with_group_permission_setting_dict:
+        for setting_name, permission_setting in permission_setting_dict.items():
+            # For each setting, there can be multiple referring instances, but
+            # we pack them into a single UserGroupReference object.
+            # https://github.com/typeddjango/django-stubs/issues/1684
+            referring_instances = model._default_manager.filter(
+                **{permission_setting.id_field_name: user_group.id}
+            )
+            if len(referring_instances) == 0:
+                continue
+            references.append(
+                UserGroupReference(
+                    model, list(referring_instances), setting_name, permission_setting
+                )
+            )
+    return references
 
 
 @transaction.atomic(savepoint=False)

@@ -4,6 +4,7 @@ from unittest import mock
 
 import orjson
 from django.db import transaction
+from django.db.models import Model
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
@@ -21,6 +22,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
+    find_references_from_permission_group_settings,
     get_direct_user_groups,
     get_recursive_group_members,
     get_recursive_membership_groups,
@@ -34,10 +36,12 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     GroupGroupMembership,
     Realm,
+    Stream,
     UserGroup,
     UserGroupMembership,
     UserProfile,
     get_realm,
+    get_stream,
 )
 
 
@@ -248,6 +252,47 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertTrue(has_user_group_access(zulip_group, iago, for_read=False, as_subgroup=True))
         self.assertTrue(
             has_user_group_access(moderators_group, iago, for_read=False, as_subgroup=True)
+        )
+
+    def test_find_user_group_references_from_settings(self) -> None:
+        iago = self.example_user("iago")
+        foo_group = check_add_user_group(iago.realm, "foo", [], acting_user=iago)
+
+        def assert_model_references(
+            setting_name: str, expected_referring_instances: Iterable[Model], total: int
+        ) -> None:
+            references = find_references_from_permission_group_settings(foo_group)
+            self.assert_length(references, total)
+            for reference in references:
+                if reference.setting_name == setting_name:
+                    self.assertCountEqual(
+                        reference.referring_instances, expected_referring_instances
+                    )
+
+        references = find_references_from_permission_group_settings(foo_group)
+        self.assert_length(references, 0)
+
+        scotland = get_stream("Scotland", iago.realm)
+        denmark = get_stream("Denmark", iago.realm)
+        scotland.can_remove_subscribers_group = foo_group
+        denmark.can_remove_subscribers_group = foo_group
+        Stream.objects.bulk_update([scotland, denmark], fields=["can_remove_subscribers_group"])
+        assert_model_references(
+            "can_remove_subscribers_group",
+            expected_referring_instances=[scotland, denmark],
+            total=1,
+        )
+
+        iago.realm.create_multiuse_invite_group = foo_group
+        iago.realm.save(update_fields=["create_multiuse_invite_group"])
+        assert_model_references(
+            "create_multiuse_invite_group", expected_referring_instances=[iago.realm], total=2
+        )
+
+        foo_group.can_mention_group = foo_group
+        foo_group.save(update_fields=["can_mention_group"])
+        assert_model_references(
+            "can_mention_group", expected_referring_instances=[foo_group], total=3
         )
 
 
