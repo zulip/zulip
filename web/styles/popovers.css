@@ -103,6 +103,15 @@
     }
 }
 
+/* Used extra classes to override styles from .nav */
+.tippy-box .tippy-content .user-card-popover-content {
+    padding: 5px 0;
+
+    .user-card-popover-actions {
+        margin: 0;
+    }
+}
+
 .user-card-popover-actions .custom_user_field {
     display: flex;
     align-items: center;
