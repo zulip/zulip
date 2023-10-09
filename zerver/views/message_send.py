@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from typing import Iterable, Optional, Sequence, Union, cast
+from typing import Dict, Iterable, Optional, Sequence, Union, cast
 
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -221,7 +221,8 @@ def send_message_backend(
             raise JsonableError(_("Invalid mirrored message"))
         sender = user_profile
 
-    ret = check_send_message(
+    data: Dict[str, int] = {}
+    sent_message_result = check_send_message(
         sender,
         client,
         recipient_type_name,
@@ -236,7 +237,12 @@ def send_message_backend(
         sender_queue_id=queue_id,
         widget_content=widget_content,
     )
-    return json_success(request, data={"id": ret})
+    data["id"] = sent_message_result.message_id
+    if sent_message_result.automatic_new_visibility_policy:
+        data[
+            "automatic_new_visibility_policy"
+        ] = sent_message_result.automatic_new_visibility_policy
+    return json_success(request, data=data)
 
 
 @has_request_variables
