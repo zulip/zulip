@@ -1,5 +1,6 @@
 .modal-body {
     max-height: 60vh;
+    padding: 15px;
 }
 
 .modal-bg {
