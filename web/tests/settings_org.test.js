@@ -24,6 +24,7 @@ mock_esm("../src/loading", {
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
 const settings_account = zrequire("settings_account");
+const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
 const dropdown_widget = zrequire("dropdown_widget");
 
@@ -225,37 +226,37 @@ function test_change_save_button_state() {
     $save_button_header.attr("id", "org-msg-editing");
 
     {
-        settings_org.change_save_button_state($save_button_controls, "unsaved");
+        settings_components.change_save_button_state($save_button_controls, "unsaved");
         assert.equal($save_button_text.text(), "translated: Save changes");
         assert.equal(props.hidden, false);
         assert.equal($save_button.attr("data-status"), "unsaved");
         assert.equal($discard_button.visible(), true);
     }
     {
-        settings_org.change_save_button_state($save_button_controls, "saved");
+        settings_components.change_save_button_state($save_button_controls, "saved");
         assert.equal($save_button_text.text(), "translated: Save changes");
         assert.equal(props.hidden, true);
         assert.equal($save_button.attr("data-status"), "");
     }
     {
-        settings_org.change_save_button_state($save_button_controls, "saving");
+        settings_components.change_save_button_state($save_button_controls, "saving");
         assert.equal($save_button_text.text(), "translated: Saving");
         assert.equal($save_button.attr("data-status"), "saving");
         assert.equal($save_button.hasClass("saving"), true);
         assert.equal($discard_button.visible(), false);
     }
     {
-        settings_org.change_save_button_state($save_button_controls, "discarded");
+        settings_components.change_save_button_state($save_button_controls, "discarded");
         assert.equal(props.hidden, true);
     }
     {
-        settings_org.change_save_button_state($save_button_controls, "succeeded");
+        settings_components.change_save_button_state($save_button_controls, "succeeded");
         assert.equal(props.hidden, true);
         assert.equal($save_button.attr("data-status"), "saved");
         assert.equal($save_button_text.text(), "translated: Saved");
     }
     {
-        settings_org.change_save_button_state($save_button_controls, "failed");
+        settings_components.change_save_button_state($save_button_controls, "failed");
         assert.equal(props.hidden, false);
         assert.equal($save_button.attr("data-status"), "failed");
         assert.equal($save_button_text.text(), "translated: Save changes");
@@ -281,7 +282,7 @@ function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
 function test_extract_property_name() {
     $("#id_realm_allow_message_editing").attr("id", "id_realm_allow_message_editing");
     assert.equal(
-        settings_org.extract_property_name($("#id_realm_allow_message_editing")),
+        settings_components.extract_property_name($("#id_realm_allow_message_editing")),
         "realm_allow_message_editing",
     );
 
@@ -290,13 +291,15 @@ function test_extract_property_name() {
         "id_realm_message_content_edit_limit_minutes_label",
     );
     assert.equal(
-        settings_org.extract_property_name($("#id_realm_message_content_edit_limit_minutes_label")),
+        settings_components.extract_property_name(
+            $("#id_realm_message_content_edit_limit_minutes_label"),
+        ),
         "realm_message_content_edit_limit_minutes_label",
     );
 
     $("#id-realm-allow-message-deleting").attr("id", "id-realm-allow-message-deleting");
     assert.equal(
-        settings_org.extract_property_name($("#id-realm-allow-message-deleting")),
+        settings_components.extract_property_name($("#id-realm-allow-message-deleting")),
         "realm_allow_message_deleting",
     );
 }
@@ -391,9 +394,10 @@ function test_parse_time_limit() {
     const $elem = $("#id_realm_message_content_edit_limit_minutes");
     const test_function = (value, expected_value = value) => {
         $elem.val(value);
-        page_params.realm_message_content_edit_limit_seconds = settings_org.parse_time_limit($elem);
+        page_params.realm_message_content_edit_limit_seconds =
+            settings_components.parse_time_limit($elem);
         assert.equal(
-            settings_org.get_realm_time_limits_in_minutes(
+            settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
             ),
             expected_value,
@@ -725,7 +729,10 @@ test("test get_sorted_options_list", () => {
             description: $t({defaultMessage: "Admins"}),
         },
     ];
-    assert.deepEqual(settings_org.get_sorted_options_list(option_values_1), expected_option_values);
+    assert.deepEqual(
+        settings_components.get_sorted_options_list(option_values_1),
+        expected_option_values,
+    );
 
     const option_values_2 = {
         by_admins_only: {
@@ -758,7 +765,10 @@ test("test get_sorted_options_list", () => {
             description: $t({defaultMessage: "Admins, moderators and members"}),
         },
     ];
-    assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
+    assert.deepEqual(
+        settings_components.get_sorted_options_list(option_values_2),
+        expected_option_values,
+    );
 });
 
 test("misc", () => {
