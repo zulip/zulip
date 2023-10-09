@@ -780,7 +780,7 @@ these instructions are for that provider; please [contact
 us](https://zulip.com/help/contact-support) if you need help using
 this with another IdP.
 
-#### IdP-initated Single Logout
+#### IdP-initiated Single Logout
 
 1. In the KeyCloak configuration for Zulip, enable `Force Name ID Format`
    and set `Name ID Format` to `email`. Zulip needs to receive

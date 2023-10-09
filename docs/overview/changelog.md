@@ -221,7 +221,7 @@ _Released 2023-08-25_
 _Released 2023-07-05_
 
 - Started logging a more accurate, detailed, and actionable error messages when
-  [common reverse proxy mis-configurations][proxies] are detected.
+  [common reverse proxy misconfigurations][proxies] are detected.
 
 - Improved [reverse proxy documentation][proxies] to clarify that trust of
   `X-Forwarded-Proto` is also necessary.

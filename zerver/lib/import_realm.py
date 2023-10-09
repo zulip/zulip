@@ -1473,7 +1473,7 @@ def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> List[int]:
             # save memory and speed up the sort.  For
             # Zulip-to-Zulip imports, the
             # message_id will generally be a good tiebreaker.
-            # If we occasionally mis-order the ids for two
+            # If we occasionally misorder the ids for two
             # messages from the same second, it's not the
             # end of the world, as it's likely those messages
             # arrived to the original server in somewhat

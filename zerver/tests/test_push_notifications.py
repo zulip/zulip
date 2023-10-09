@@ -472,8 +472,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "apns_payload": apns_payload,
             "gcm_options": gcm_options,
         }
-        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
-        with time_machine.travel(time_recieved, tick=False), mock.patch(
+        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        with time_machine.travel(time_received, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification"
         ), mock.patch("zilencer.views.send_apple_push_notification"), self.assertLogs(
             "zilencer.views", level="INFO"
@@ -1165,12 +1165,12 @@ class HandlePushNotificationTest(PushNotificationTest):
                 message=message,
             )
 
-        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
-        with time_machine.travel(time_recieved, tick=False), mock.patch(
+        with time_machine.travel(time_received, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
         ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -1232,12 +1232,12 @@ class HandlePushNotificationTest(PushNotificationTest):
                 message=message,
             )
 
-        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
-        with time_machine.travel(time_recieved, tick=False), mock.patch(
+        with time_machine.travel(time_received, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
         ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
