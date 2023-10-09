@@ -331,7 +331,7 @@ function show_user_card_popover(
                 user_card_popovers[template_class].instance = instance;
 
                 const $popover = $(instance.popper);
-                const $popover_title = $popover.find(".popover-title");
+                const $popover_title = $popover.find(".user-card-popover-title");
 
                 $popover.addClass(get_popover_classname(template_class));
                 $popover_title.append(

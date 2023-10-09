@@ -68,19 +68,6 @@
     padding: 5px 0;
 }
 
-.popover-title {
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-
-    font-size: inherit;
-    line-height: inherit;
-
-    &:empty {
-        display: none;
-    }
-}
-
 .user_full_name,
 .bot_owner {
     text-overflow: ellipsis;
@@ -323,7 +310,7 @@ ul {
     margin: -14px;
     padding: 0;
 
-    .popover-title {
+    .user-card-popover-title {
         padding: 0;
         border-color: hsl(0deg 0% 0% / 20%);
     }
@@ -338,11 +325,6 @@ ul {
 .user-card-popover-root {
     width: 240px;
     padding: 0;
-
-    .popover-title {
-        padding: 0;
-        border-color: hsl(0deg 0% 0% / 20%);
-    }
 }
 
 .group-info-popover {
