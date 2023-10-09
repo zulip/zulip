@@ -54,6 +54,16 @@ export const CLASSNAMES = {
     user_not_subscribed: "user_not_subscribed",
 };
 
+export const visible_banners = new Set();
+
+export function append_visible_banners(banner_data: string): void {
+    visible_banners.add(banner_data);
+}
+
+export function in_visible_banners(banner_data: string): boolean {
+    return visible_banners.has(banner_data);
+}
+
 export function get_compose_banner_container($textarea: JQuery): JQuery {
     return $textarea.attr("id") === "compose-textarea"
         ? $("#compose_banners")
@@ -86,6 +96,12 @@ export function update_or_append_banner(
 export function clear_message_sent_banners(include_unmute_banner = true): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
         $(`#compose_banners .${CSS.escape(classname)}`).remove();
+        for (const banner_data_string of visible_banners) {
+            const banner_string = banner_data_string as string;
+            if (banner_string.includes(classname)) {
+                visible_banners.delete(banner_string);
+            }
+        }
     }
     if (include_unmute_banner) {
         clear_unmute_topic_notifications();
@@ -123,6 +139,7 @@ export function clear_unmute_topic_notifications(): void {
 
 export function clear_all(): void {
     scroll_util.get_content_element($(`#compose_banners`)).empty();
+    visible_banners.clear();
 }
 
 export function show_error_message(

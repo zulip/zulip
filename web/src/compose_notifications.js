@@ -51,7 +51,11 @@ export function notify_above_composebox(
     // We pass in include_unmute_banner as false because we don't want to
     // clear any unmute_banner associated with this same message.
     compose_banner.clear_message_sent_banners(false);
-    compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
+    const banner_data = JSON.stringify({classname, link_msg_id});
+    if (!compose_banner.in_visible_banners(banner_data)) {
+        compose_banner.append_visible_banners(banner_data);
+        compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
+    }
 }
 
 export function notify_automatic_new_visibility_policy(message, data) {

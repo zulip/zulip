@@ -10,6 +10,7 @@ import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
@@ -700,6 +701,7 @@ export function initialize() {
 
     $("body").on("click", "#compose_close", () => {
         compose_actions.cancel();
+        compose_banner.visible_banners.clear();
     });
 
     // LEFT SIDEBAR
@@ -842,6 +844,7 @@ export function initialize() {
                 // Check if the click is within the body to prevent extensions from
                 // interfering with the compose box.
                 compose_actions.cancel();
+                compose_banner.visible_banners.clear();
             }
         }
     });

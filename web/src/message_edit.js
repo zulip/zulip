@@ -1118,6 +1118,7 @@ export function edit_last_sent_message() {
 
     // Finally do the real work!
     compose_actions.cancel();
+    compose_banner.visible_banners.clear();
     start($msg_row, () => {
         $(".message_edit_content").trigger("focus");
     });

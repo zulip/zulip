@@ -245,6 +245,11 @@ export function initialize() {
         $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event) => {
             event.preventDefault();
             $(event.target).parents(classname_selector).remove();
+            for (const banner_data of compose_banner.visible_banners) {
+                if (banner_data.includes(classname_selector.slice(1))) {
+                    compose_banner.visible_banners.delete(JSON.stringify(banner_data));
+                }
+            }
         });
     }
 

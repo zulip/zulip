@@ -128,8 +128,17 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
         stream_name: linked_stream.name,
         classname: compose_banner.CLASSNAMES.private_stream_warning,
     });
+    const banner_data = JSON.stringify({
+        banner_type: compose_banner.WARNING,
+        stream_name: linked_stream.name,
+        classname: compose_banner.CLASSNAMES.private_stream_warning,
+    });
+    if (compose_banner.in_visible_banners(banner_data)) {
+        return;
+    }
     const $container = compose_banner.get_compose_banner_container($textarea);
     compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+    compose_banner.append_visible_banners(banner_data);
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
@@ -178,7 +187,16 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
 
             const new_row = render_not_subscribed_warning(context);
             const $container = compose_banner.get_compose_banner_container($textarea);
-            compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+            const banner_data = JSON.stringify({
+                classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
+                user_id,
+                stream_id,
+                banner_type: compose_banner.WARNING,
+            });
+            if (!compose_banner.in_visible_banners(banner_data)) {
+                compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+                compose_banner.append_visible_banners(banner_data);
+            }
         }
     }
 }
@@ -238,6 +256,7 @@ export function warn_if_topic_resolved(topic_changed) {
         };
 
         const new_row = render_compose_banner(context);
+
         compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
         compose_state.set_recipient_viewed_topic_resolved_banner(true);
     } else {
@@ -270,12 +289,18 @@ function show_wildcard_warnings(opts) {
         scheduling_message: opts.scheduling_message,
     });
 
+    const banner_data = JSON.stringify({
+        banner_type: compose_banner.WARNING,
+        classname,
+        stream_name,
+    });
     // only show one error for any number of @all or @everyone mentions
     if (opts.$banner_container.find(`.${CSS.escape(classname)}`).length === 0) {
         compose_banner.append_compose_banner_to_banner_list(
             wildcard_template,
             opts.$banner_container,
         );
+        compose_banner.append_visible_banners(banner_data);
     } else {
         // if there is already a banner, replace it with the new one
         compose_banner.update_or_append_banner(
@@ -283,6 +308,14 @@ function show_wildcard_warnings(opts) {
             classname,
             opts.$banner_container,
         );
+        for (const banner_data_string of compose_banner.visible_banners) {
+            const banner_data_object = JSON.parse(banner_data_string);
+            if (banner_data_object.classname === classname) {
+                compose_banner.visible_banners.remove(banner_data_string);
+                compose_banner.append_visible_banners(banner_data);
+                break;
+            }
+        }
     }
 
     user_acknowledged_wildcard = false;
@@ -462,7 +495,11 @@ export function validation_error(error_type, stream_name) {
                 // closing the banner would be more confusing than helpful.
                 hide_close_button: true,
             });
-            compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+            const banner_data = JSON.stringify({error_type, stream_name});
+            if (!compose_banner.in_visible_banners(banner_data)) {
+                compose_banner.append_visible_banners(banner_data);
+                compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+            }
             return false;
         }
     }

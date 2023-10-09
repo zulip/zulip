@@ -374,7 +374,16 @@ function schedule_message_to_custom_date() {
             deliver_at,
         });
         compose_banner.clear_message_sent_banners();
-        compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+
+        const banner_data = JSON.stringify({
+            scheduled_message_id: data.scheduled_message_id,
+            deliver_at,
+            message_type,
+        });
+        if (!compose_banner.in_visible_banners(banner_data)) {
+            compose_banner.append_visible_banners(banner_data);
+            compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+        }
     };
 
     const error = function (xhr) {

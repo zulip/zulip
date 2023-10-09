@@ -328,6 +328,7 @@ export function cancel() {
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
+    compose_banner.visible_banners.clear();
 }
 
 export function on_topic_narrow() {
