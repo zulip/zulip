@@ -589,7 +589,6 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
         # We log a warning so that this endpoint being taken out of
         # service doesn't silently remove this functionality.
         logger.warning("Failed to fetch TOR exit node list: %s", err)
-        pass
     RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
 
 
