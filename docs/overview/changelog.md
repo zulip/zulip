@@ -333,7 +333,7 @@ _Released 2023-05-31_
 - New webhook integrations: Rundeck.
 - Reworked linkifiers to use URL templates for the URL patterns.
 - Improved left sidebar to show more topics within the current stream,
-  and more private message converations, especially when many are
+  and more private message conversations, especially when many are
   unread.
 - Reworked the internals of the main message feed scrollbar, fixing
   several longstanding bugs.

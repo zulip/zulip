@@ -1,4 +1,4 @@
-// TODO: Use `common.ts` directly in hello page when `boostrap` is
+// TODO: Use `common.ts` directly in hello page when `bootstrap` is
 // removed from it.
 
 import "source-sans/source-sans-3VF.css";

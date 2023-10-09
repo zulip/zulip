@@ -705,7 +705,7 @@ ul {
         }
     }
 
-    /* Make sure breakpoints apprear sorted so that lower breakpoints always
+    /* Make sure breakpoints appear sorted so that lower breakpoints always
     override higher ones. */
     @media (width <= 1320px) {
         .client-logos {

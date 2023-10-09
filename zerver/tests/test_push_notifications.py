@@ -1774,7 +1774,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         # Topic wildcard mention in followed topic should soft reactivate the user
         # user should be a topic participant
-        self.send_stream_message(self.user_profile, "Denmark", "topic paticipant")
+        self.send_stream_message(self.user_profile, "Denmark", "topic participant")
 
         def send_topic_wildcard_mention() -> None:
             mention = "@**topic**"

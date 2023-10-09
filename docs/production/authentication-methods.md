@@ -384,7 +384,7 @@ You can restrict access to your Zulip server to a set of LDAP groups
 using the `AUTH_LDAP_REQUIRE_GROUP` and `AUTH_LDAP_DENY_GROUP`
 settings in `/etc/zulip/settings.py`.
 
-An example configation for Active Directory group restriction can be:
+An example configuration for Active Directory group restriction can be:
 
 ```python
 import django_auth_ldap

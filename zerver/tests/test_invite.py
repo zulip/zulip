@@ -1636,7 +1636,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         prereg_user.refresh_from_db()
         self.assertIsNotNone(prereg_user.created_user)
 
-        # Now attempt to re-use the same key.
+        # Now attempt to reuse the same key.
         result = self.client_post("/accounts/register/", {"key": registration_key})
         self.assertEqual(result.status_code, 404)
         self.assert_in_response(
