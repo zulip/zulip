@@ -273,7 +273,7 @@ function get_end_tr_from_endc($endc) {
     // We can tell this is the case because the selection isn't inside a
     // `messagebox-content` div, which is where the message text itself is.
     // TODO: Ideally make it so that the selection cannot end there.
-    // For now, we find find the message row directly above wherever the
+    // For now, we find the message row directly above wherever the
     // selection ended.
     if ($endc.closest(".messagebox-content").length === 0) {
         // If the selection ends within the message following the selected

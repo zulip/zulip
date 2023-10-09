@@ -732,7 +732,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.zmd.image_preview_enabled:
             return False
         parsed_url = urllib.parse.urlparse(url)
-        # remove HTML URLs which end with image extensions that can not be shorted
+        # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
 
