@@ -11,6 +11,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as channel from "./channel";
 import * as common from "./common";
+import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
@@ -184,7 +185,16 @@ function generate_multiuse_invite(): void {
         success(data) {
             const copy_link_html = copy_invite_link(data);
             ui_report.success(copy_link_html, $invite_status);
-            new ClipboardJS("#copy_generated_invite_link");
+            const clipboard = new ClipboardJS("#copy_generated_invite_link");
+
+            clipboard.on("success", () => {
+                const tippy_timeout_in_ms = 800;
+                show_copied_confirmation(
+                    $("#copy_generated_invite_link")[0],
+                    () => {},
+                    tippy_timeout_in_ms,
+                );
+            });
         },
         error(xhr) {
             ui_report.error("", xhr, $invite_status);
