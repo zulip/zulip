@@ -1,10 +1,11 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
+import {$t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
 import * as scroll_util from "./scroll_util";
-import * as settings from "./settings";
 import * as settings_sections from "./settings_sections";
 
 export let normal_settings;
@@ -18,6 +19,29 @@ export function mobile_deactivate_section() {
 
 function two_column_mode() {
     return $("#settings_overlay_container").css("--single-column") === undefined;
+}
+
+function set_settings_header(key) {
+    const selected_tab_key = $("#settings_page .tab-switcher .selected").data("tab-key");
+    let header_prefix = $t_html({defaultMessage: "Personal settings"});
+    if (selected_tab_key === "organization") {
+        header_prefix = $t_html({defaultMessage: "Organization settings"});
+    }
+    $(".settings-header h1 .header-prefix").text(header_prefix);
+
+    const header_text = $(
+        `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
+    ).text();
+    if (header_text) {
+        $(".settings-header h1 .section").text(" / " + header_text);
+    } else {
+        blueslip.warn(
+            "Error: the key '" +
+                key +
+                "' does not exist in the settings" +
+                " sidebar list. Please add it.",
+        );
+    }
 }
 
 export class SettingsPanelMenu {
@@ -144,7 +168,7 @@ export class SettingsPanelMenu {
         $settings_overlay_container.find(".right").addClass("show");
         $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
 
-        settings.set_settings_header(section);
+        set_settings_header(section);
     }
 
     get_panel() {

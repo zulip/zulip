@@ -5,10 +5,9 @@ import timezones from "../generated/timezones.json";
 import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
-import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as flatpickr from "./flatpickr";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -157,29 +156,6 @@ export function launch(section) {
     open_settings_overlay();
     settings_panel_menu.normal_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("settings");
-}
-
-export function set_settings_header(key) {
-    const selected_tab_key = $("#settings_page .tab-switcher .selected").data("tab-key");
-    let header_prefix = $t_html({defaultMessage: "Personal settings"});
-    if (selected_tab_key === "organization") {
-        header_prefix = $t_html({defaultMessage: "Organization settings"});
-    }
-    $(".settings-header h1 .header-prefix").text(header_prefix);
-
-    const header_text = $(
-        `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
-    ).text();
-    if (header_text) {
-        $(".settings-header h1 .section").text(" / " + header_text);
-    } else {
-        blueslip.warn(
-            "Error: the key '" +
-                key +
-                "' does not exist in the settings" +
-                " sidebar list. Please add it.",
-        );
-    }
 }
 
 export function initialize() {
