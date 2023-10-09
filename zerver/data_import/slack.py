@@ -1368,7 +1368,7 @@ def do_convert_data(
             # Slack's export doesn't set the UTF-8 flag on each
             # filename entry, despite encoding them as such, so
             # zipfile mojibake's the output.  Explicitly re-interpret
-            # it as UTF-8 mis-decoded as cp437, the default.
+            # it as UTF-8 misdecoded as cp437, the default.
             for fileinfo in zipObj.infolist():
                 fileinfo.flag_bits |= 0x800
                 fileinfo.filename = fileinfo.filename.encode("cp437").decode("utf-8")
