@@ -714,7 +714,11 @@ h4.user_group_setting_subsection_title {
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
-            padding-top: 9px;
+            padding: 9px 15px 15px;
+            text-align: right;
+            background-color: hsl(0deg 0% 96%);
+            border-top: 1px solid hsl(0deg 0% 87%);
+            box-shadow: inset 0 1px 0 hsl(0deg 0% 100%);
         }
 
         @media (width > $md_min) {
