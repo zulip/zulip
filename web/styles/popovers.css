@@ -876,10 +876,11 @@ ul {
         }
     }
 
-    .popover-content {
+    .giphy-scrolling-container {
         overflow: auto;
         height: 200px;
         margin: 2px;
+        padding: 5px 0;
     }
 
     .popover-footer {
