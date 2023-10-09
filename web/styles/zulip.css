@@ -160,6 +160,13 @@ body {
     */
     --max-unexpanded-compose-height: 40vh;
 
+    /*
+    Maximum height of the subscribers list in stream settings so that
+    it doesn't cause the container to have a second scrollbar.
+    This value will be overridden when stream settings is opened.
+    */
+    --stream-subscriber-list-max-height: 100%;
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);

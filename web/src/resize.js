@@ -126,6 +126,41 @@ export function resize_bottom_whitespace() {
     }
 }
 
+export function resize_stream_subscribers_list() {
+    // Calculates the height of the subscribers list in stream settings.
+    // This avoids the stream settings from overflowing the container and
+    // having a scroll bar.
+
+    if (!$("#stream_settings").length === 1) {
+        // Don't run if stream settings (like $subscriptions_info below) is not open.
+        return;
+    }
+
+    const $subscriptions_info = $("#subscription_overlay .subscriptions-container .right");
+    const classes_above_subscribers_list = [
+        ".display-type", // = stream_settings_title
+        ".subscriber_list_settings_container .stream_settings_header",
+        ".subscription_settings .stream_setting_subsection_title",
+        ".subscription_settings .subscriber_list_settings",
+        ".subscription_settings .stream_setting_subsection_title",
+    ];
+    const $classes_above_subscribers_list = $subscriptions_info.find(
+        classes_above_subscribers_list.join(", "),
+    );
+    let total_height_of_classes_above_subscribers_list = 0;
+    $classes_above_subscribers_list.each(function () {
+        total_height_of_classes_above_subscribers_list += $(this).outerHeight(true);
+    });
+    const subscribers_list_header_height = 30;
+    const margin_between_tab_switcher_and_add_subscribers_title = 20;
+    const subscribers_list_height =
+        $subscriptions_info.height() -
+        total_height_of_classes_above_subscribers_list -
+        subscribers_list_header_height -
+        margin_between_tab_switcher_and_add_subscribers_title;
+    $("html").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
+}
+
 export function resize_stream_filters_container() {
     const h = get_new_heights();
     resize_bottom_whitespace();
@@ -162,4 +197,5 @@ export function resize_page_components() {
     resize_navbar_alerts();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
+    resize_stream_subscribers_list();
 }
