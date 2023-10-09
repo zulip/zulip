@@ -680,7 +680,6 @@
     .dropdown-menu ul,
     .dropdown .dropdown-menu,
     .popover,
-    .popover-title,
     .popover-content {
         background-color: hsl(212deg 32% 14%);
     }
