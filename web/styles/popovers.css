@@ -337,6 +337,10 @@ ul {
 }
 
 .group-info-popover {
+    .group-info-content {
+        padding: 5px 0;
+    }
+
     .manage-group a {
         text-align: center;
     }
