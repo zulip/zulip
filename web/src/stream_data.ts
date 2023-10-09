@@ -668,7 +668,7 @@ export function is_default_stream_id(stream_id: number): boolean {
 
 export function get_name(stream_name: string): string {
     // This returns the actual name of a stream if we are subscribed to
-    // it (i.e "Denmark" vs. "denmark"), while falling thru to
+    // it (e.g. "Denmark" vs. "denmark"), while falling thru to
     // stream_name if we don't have a subscription.  (Stream names
     // are case-insensitive, but we try to display the actual name
     // when we know it.)

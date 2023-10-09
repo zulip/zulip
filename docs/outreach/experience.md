@@ -38,7 +38,7 @@ help you along.
 
 Don't forget to have fun! Spending a few months coding on open source is an
 amazing opportunity, and we hope you'll have a blast. Your acceptance to the
-program means that we we are confident that if you put in the effort, your
+program means that we are confident that if you put in the effort, your
 contributions to the open source world will be something you can be proud of for
 the rest of your life.
 

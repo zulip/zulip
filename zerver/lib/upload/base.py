@@ -137,8 +137,8 @@ def resize_emoji(
 ) -> Tuple[bytes, bool, Optional[bytes]]:
     # This function returns three values:
     # 1) Emoji image data.
-    # 2) If emoji is gif i.e animated.
-    # 3) If is animated then return still image data i.e first frame of gif.
+    # 2) If emoji is gif i.e. animated.
+    # 3) If is animated then return still image data i.e. first frame of gif.
 
     try:
         im = Image.open(io.BytesIO(image_data))

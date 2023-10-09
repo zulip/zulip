@@ -3961,7 +3961,7 @@ paths:
                                       type: object
                                       additionalProperties:
                                         description: |
-                                          Boolean describing whether the authentication method (i.e its key)
+                                          Boolean describing whether the authentication method (i.e. its key)
                                           is enabled in this organization.
                                         type: boolean
                                       description: |
@@ -13759,7 +13759,7 @@ paths:
                         type: object
                         additionalProperties:
                           description: |
-                            Boolean describing whether the authentication method (i.e its key)
+                            Boolean describing whether the authentication method (i.e. its key)
                             is enabled in this organization.
                           type: boolean
                         description: |

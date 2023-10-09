@@ -68,7 +68,7 @@ export function process_message(message: Message): void {
                 // case when there is an alert word just before `<` or `>`.
                 const check_string = pre_match + match.slice(0, -1);
                 const in_tag = check_string.lastIndexOf("<") > check_string.lastIndexOf(">");
-                // Matched word is inside a HTML tag so don't perform any highlighting.
+                // Matched word is inside an HTML tag so don't perform any highlighting.
                 if (in_tag) {
                     return before + word + after;
                 }
