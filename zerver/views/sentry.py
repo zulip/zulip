@@ -41,7 +41,7 @@ def sentry_tunnel(
     # debugging more complicated.
     updated_body = request.body
     # If we fail to update the body for any reason, leave it as-is; it
-    # is better to mis-report the IP than to drop the report entirely.
+    # is better to misreport the IP than to drop the report entirely.
     with suppress(Exception):
         # This parses the Sentry ingestion format, known as an
         # Envelope.  See https://develop.sentry.dev/sdk/envelopes/ for
