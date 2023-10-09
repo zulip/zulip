@@ -30,12 +30,7 @@ Pillow
 
 # Needed for building complex DB queries
 SQLAlchemy==1.4.*
-# A requirement of SQLAlchemy that we don't use
-# (https://github.com/sqlalchemy/sqlalchemy/issues/6136) but that can
-# lead to segfaults when restarting
-# (https://github.com/python-greenlet/greenlet/issues/330), so bump to
-# the fixed version
-greenlet>=3.0.0a1
+greenlet
 
 # Needed for S3 file uploads and other AWS tools
 boto3
@@ -139,7 +134,7 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
-https://github.com/andersk/django-two-factor-auth/archive/b0ae80051d45ac360595ed327b044c766f57d32f.zip#egg=django-two-factor-auth[call,phonenumberslite,sms]==1.15.4+git  # https://github.com/jazzband/django-two-factor-auth/pull/649
+django-two-factor-auth[call,phonenumberslite,sms]
 
 # Needed for processing payments (in corporate)
 stripe
