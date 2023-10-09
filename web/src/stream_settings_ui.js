@@ -20,6 +20,7 @@ import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
 import * as settings_config from "./settings_config";
@@ -698,6 +699,7 @@ export function switch_to_stream_row(stream_id) {
 function show_right_section() {
     $(".right").addClass("show");
     $(".subscriptions-header").addClass("slide-left");
+    resize.resize_stream_subscribers_list();
 }
 
 export function change_state(section) {
