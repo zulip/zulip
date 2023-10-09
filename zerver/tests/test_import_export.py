@@ -1048,8 +1048,8 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_group_names_for_group_settings(r: Realm) -> Set[str]:
             return {
-                getattr(r, permmission_name).name
-                for permmission_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+                getattr(r, permission_name).name
+                for permission_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
             }
 
         # test recipients
