@@ -256,12 +256,16 @@
             height: 25px;
             width: 25px;
 
-            &.reacted.reaction:focus {
+            &.reacted.reaction:focus-visible
+             {
                 background-color: hsl(195deg 55% 88%);
-                outline: none;
-            }
 
-            &:not(.reacted):focus {
+            }
+            &.reacted.reaction:focus:not(:focus-visible) {
+                outline: none;
+             }
+
+            &:not(.reacted):focus-visible {
                 background-color: hsl(0deg 0% 93%);
                 outline: none;
             }

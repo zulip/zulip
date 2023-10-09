@@ -129,10 +129,13 @@ input::-ms-reveal {
 
 select.bootstrap-focus-style,
 button.dropdown-toggle {
-    &:focus {
+    &:focus-visible {
         outline: 1px dotted hsl(0deg 0% 20%);
         outline: 5px auto -webkit-focus-ring-color;
         outline-offset: -2px;
         transition: none;
     }
+    &:focus:not(:focus-visible) {
+        outline: none !important;
+     }
 }

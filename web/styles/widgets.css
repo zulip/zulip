@@ -62,7 +62,7 @@
                 border-color: hsl(156deg 30% 50%);
             }
 
-            &:focus ~ span {
+            &:focus-visible ~ span {
                 outline-color: hsl(0deg 0% 100% / 0%);
             }
         }
@@ -109,12 +109,14 @@
         border-radius: 4px;
         color: hsl(0deg 0% 33%);
 
-        &:focus {
+        &:focus-visible {
             border-color: hsl(206deg 80% 62% / 80%);
-            outline: 0;
             box-shadow: none;
             background-color: var(--color-background-widget-input);
         }
+        &:focus:not(:focus-visible) {
+            outline: none;
+         }
     }
 }
 
@@ -157,10 +159,12 @@
             border-color: hsl(156deg 30% 50%);
         }
 
-        &:focus {
-            outline: 0;
+        &:focus-visible {
             background-color: hsl(156deg 41% 90%);
         }
+        &:focus:not(:focus-visible) {
+            outline: none;
+         }
     }
 
     .poll-names {
@@ -198,10 +202,12 @@ button {
         transition: all 0.2s ease;
 
         &:hover,
-        &:focus {
-            outline: 0;
+        &:focus-visible {
             border-color: hsl(156deg 30% 50%);
         }
+        &:focus:not(:focus-visible) {
+            outline: none;
+         }
 
         &:active {
             border-color: hsl(156deg 30% 40%);

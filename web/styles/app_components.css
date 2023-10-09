@@ -191,7 +191,7 @@ input::placeholder {
         }
 
         &:hover,
-        &:focus {
+        &:focus-visible {
             border-color: hsl(0deg 0% 60%);
         }
 
@@ -206,7 +206,7 @@ input::placeholder {
             border-color: hsl(156deg 28% 70%);
 
             &:hover,
-            &:focus {
+            &:focus-visible {
                 border-color: hsl(156deg 30% 50%);
             }
 
@@ -222,7 +222,7 @@ input::placeholder {
             border-color: hsl(35deg 98% 84%);
 
             &:hover,
-            &:focus {
+            &:focus-visible {
                 border-color: hsl(35deg 55% 70%);
             }
 
@@ -238,7 +238,7 @@ input::placeholder {
             border-color: hsl(4deg 56% 82%);
 
             &:hover,
-            &:focus {
+            &:focus-visible {
                 border-color: hsl(2deg 46% 68%);
             }
 
@@ -254,7 +254,7 @@ input::placeholder {
             text-decoration: none;
 
             &:hover,
-            &:focus {
+            &:focus-visible {
                 color: hsl(208deg 56% 38%);
             }
         }
@@ -295,9 +295,9 @@ input::placeholder {
             justify-content: center;
             align-items: center;
 
-            &:focus {
+            &:focus:not(:focus-visible) {
                 outline: none;
-            }
+             }
 
             &:not(.selected) {
                 border: 1px solid hsl(0deg 0% 80%);
@@ -413,7 +413,7 @@ div.overlay {
     }
 
     &,
-    &:focus,
+    &:focus-visible,
     &:active,
     &:disabled:hover {
         position: relative;
@@ -604,10 +604,9 @@ div.overlay {
     }
 
     .convert-demo-organization-button {
-        &:focus {
-            outline: 1px solid hsl(200deg 100% 25%);
-            outline-offset: 0;
-        }
+        &:focus:not(:focus-visible) {
+            outline: none;
+         }
     }
 }
 
@@ -705,7 +704,7 @@ div.overlay {
         box-shadow: 0 1px 4px hsl(0deg 0% 0% / 30%);
     }
 
-    &:focus {
+    &:focus-visible {
         background-color: hsl(240deg 41% 50%);
         box-shadow: 0 1px 4px 0 hsl(235deg 18% 7%);
         outline: none;
@@ -886,7 +885,7 @@ div.overlay {
         vertical-align: text-bottom;
 
         &:hover,
-        &:focus {
+        &:focus-visible {
             border: 1px solid hsl(0deg 0% 61%);
 
             .discard-button.save-discard-widget-button-text {
@@ -900,7 +899,7 @@ div.overlay {
             border: 1px solid hsl(155deg 30% 50%);
 
             &:hover,
-            &:focus {
+            &:focus-visible {
                 background-color: hsl(166deg 35% 57%);
                 border: 1px solid hsl(166deg 35% 57%);
             }
@@ -1173,13 +1172,15 @@ div.overlay {
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     border-radius: 4px;
 
-    &:focus {
+    &:focus-visible {
         border-color: hsl(206deg 80% 62% / 80%);
-        outline: 0;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+    &:focus:not(:focus-visible) {
+        outline: none;
+     }
 }
 
 /* Icon-based tab picker used for topics popover. */

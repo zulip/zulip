@@ -54,7 +54,7 @@ details summary::-webkit-details-marker {
 .top-menu-mobile a {
     &,
     &:hover,
-    &:focus,
+    &:focus-visible,
     &:visited {
         color: hsl(0deg 0% 100% / 80%);
     }

@@ -27,7 +27,7 @@
             border linear 0.2s,
             box-shadow linear 0.2s;
 
-        &:focus {
+        &:focus-visible{
             border-color: hsl(206.5deg 80% 62% / 80%);
             outline: 0;
 
@@ -72,7 +72,7 @@
             box-shadow linear 0.2s;
         margin-bottom: 10px;
 
-        &:focus {
+        &:focus-visible{
             border-color: hsl(206deg 80% 62% / 80%);
             outline: 0;
             box-shadow:
@@ -122,7 +122,7 @@
 
         &:hover,
         &:active,
-        &:focus {
+        &:focus-visible{
             background-color: hsl(208deg 56% 45%);
             border-color: hsl(208deg 56% 36%);
         }

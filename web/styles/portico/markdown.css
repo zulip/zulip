@@ -409,7 +409,7 @@
         right: 10px;
         line-height: 3px;
 
-        &:focus {
+        &:focus-visible {
             outline-offset: -1px;
             outline-color: hsl(176deg 46% 41%);
         }

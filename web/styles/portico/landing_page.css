@@ -56,7 +56,7 @@ a {
     }
 
     &:hover,
-    &:focus {
+    &focus-visible {
         text-decoration: none;
     }
 
@@ -1959,11 +1959,11 @@ button {
     transition: all 0.3s ease;
 }
 
-.pricing-model .pricing-container .price-box:focus {
+.pricing-model .pricing-container .price-box::focus-visible  {
     outline: none;
 }
 
-.pricing-model .pricing-container .price-box:focus .button {
+.pricing-model .pricing-container .price-box:focus-visible .button {
     box-shadow: 0 0 25px hsl(169deg 48% 60%);
     animation: box-shadow-pulse 2s infinite;
 }
@@ -2786,7 +2786,7 @@ button {
     font-weight: 700;
     padding: 15px 5px;
 
-    &:focus {
+    &:focus:not(:focus-visible)  {
         outline: none;
     }
 

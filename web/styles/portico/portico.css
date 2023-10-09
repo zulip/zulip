@@ -405,7 +405,7 @@ input.text-error {
         }
 
         & a,
-        a:focus,
+        a:focus-visible,
         a:hover {
             text-decoration: none;
             color: hsl(0deg 0% 20%);

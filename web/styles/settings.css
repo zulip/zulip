@@ -1127,11 +1127,14 @@ label.display-settings-radio-choice-label {
         width: auto;
         cursor: pointer;
 
-        &:focus {
+        &:focus-visible {
             outline: 1px dotted hsl(0deg 0% 20%);
             outline: 5px auto -webkit-focus-ring-color;
             outline-offset: -2px;
         }
+        &:focus:not(:focus-visible) {
+            outline: none;
+         }
 
         &:disabled {
             cursor: not-allowed;
@@ -1237,7 +1240,7 @@ $option_title_width: 180px;
             }
         }
 
-        & span[contenteditable]:focus,
+        & span[contenteditable]:focus-visible,
         span[contenteditable="true"]:hover {
             border-bottom: 1px solid hsl(0deg 0% 80%);
             margin-bottom: -1px;
@@ -1542,13 +1545,15 @@ $option_title_width: 180px;
         border linear 0.2s,
         box-shadow linear 0.2s;
 
-    &:focus {
+    &:focus-visible {
         border-color: hsl(206deg 80% 62% / 80%);
-        outline: 0;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+    &:focus:not(:focus-visible) {
+        outline: none;
+     }
 }
 
 #realm_jitsi_server_url_setting {
@@ -1839,15 +1844,16 @@ $option_title_width: 180px;
         border linear 0.2s,
         box-shadow linear 0.2s;
 
-    &:focus {
+    &:focus-visible {
         border-color: hsl(206.5deg 80% 62% / 80%);
-        outline: 0;
 
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206.5deg 80% 62% / 60%);
     }
-
+    &:focus:not(:focus-visible) {
+    outline: none;
+    }
     &:disabled {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
@@ -2075,13 +2081,15 @@ $option_title_width: 180px;
     elements in settings) */
     width: 311px;
 
-    &:focus {
+    &:focus-visible {
         border-color: hsl(206deg 80% 62% / 80%);
-        outline: 0;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+    &:focus:not(:focus-visible) {
+        outline: none;
+     }
 }
 
 #generate-integration-url-modal {

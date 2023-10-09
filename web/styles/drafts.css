@@ -22,7 +22,7 @@
             gap: 10px;
 
             .delete-selected-drafts-button {
-                &:focus {
+                &:focus-visible {
                     background-color: hsl(0deg 0% 93%);
                 }
             }
@@ -35,7 +35,7 @@
                 padding-left: 15px;
                 padding-right: 15px;
 
-                &:focus {
+                &:focus-visible {
                     background-color: hsl(0deg 0% 93%);
                 }
             }

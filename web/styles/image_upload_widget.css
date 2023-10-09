@@ -67,7 +67,7 @@
         padding: 0 10px;
     }
 
-    .image-delete-button:focus,
+    .image-delete-button:focus-visible,
     .image-delete-button:hover {
         color: hsl(0deg 0% 100%);
     }

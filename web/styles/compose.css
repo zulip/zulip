@@ -554,7 +554,7 @@ textarea.new_message_textarea {
     background-color: hsl(0deg 0% 100%);
 
     &.over_limit,
-    &.over_limit:focus {
+    &.over_limit:focus-visible {
         box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
 
         &.flash {
@@ -569,7 +569,7 @@ textarea.new_message_textarea {
     }
 
     &.invalid,
-    &.invalid:focus {
+    &.invalid:focus-visible {
         border: 1px solid hsl(3deg 57% 33%);
         box-shadow: 0 0 2px hsl(3deg 57% 33%);
     }
@@ -582,11 +582,13 @@ textarea.new_message_textarea,
     transition: border 0.2s ease;
     color: var(--color-text-default);
 
-    &:focus {
-        outline: 0;
+    &:focus-visible {
         border: 1px solid hsl(0deg 0% 67%);
         box-shadow: none;
     }
+    &:focus:not(:focus-visible) {
+        outline: none;
+     }
 }
 
 input.recipient_box {
@@ -645,11 +647,14 @@ input.recipient_box {
             cursor: pointer;
             margin: 4px 0 0;
 
-            &:focus {
+            &:focus-visible {
                 outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
             }
+            &:focus:not(:focus-visible) {
+                outline: none !important;
+             }
         }
 
         &:first-child {
@@ -942,7 +947,7 @@ input.recipient_box {
     }
 
     &:hover,
-    &:focus {
+    &:focus-visible {
         box-shadow: none;
     }
 }

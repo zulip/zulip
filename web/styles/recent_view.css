@@ -157,11 +157,12 @@
             border-radius: 40px;
             margin: 0 5px 10px 0;
 
-            &:focus {
+            &:focus-visible {
                 background-color: hsl(0deg 0% 80%);
-                outline: 0;
             }
-
+            &:focus:not(:focus-visible) {
+                outline: none;
+             }
             &.fake_disabled_button {
                 cursor: not-allowed;
                 opacity: 0.5;

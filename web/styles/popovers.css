@@ -104,7 +104,7 @@
 
 .user-card-popover-manage-menu-btn {
     &:hover,
-    &:focus {
+    &:focus-visible {
         text-decoration: none;
     }
 }
@@ -140,7 +140,7 @@
             background-color: transparent !important;
         }
 
-        &:focus {
+        &:focus-visible {
             background-color: transparent !important;
         }
     }
@@ -170,9 +170,9 @@
             }
         }
 
-        &:focus {
+        &:focus:not(:focus-visible) {
             outline: none;
-        }
+         }
     }
 }
 
@@ -853,7 +853,7 @@ ul {
         cursor: pointer;
     }
 
-    .giphy-gif-img:focus {
+    .giphy-gif-img:focus-visible {
         /* Red outline for clear visibility
          * of which image is in focus.
          */
@@ -877,7 +877,7 @@ ul {
             right: 3px;
             font-size: 16px;
 
-            &:focus {
+            &:focus-visible {
                 .fa-remove {
                     outline: 2px solid var(--color-outline-focus);
                 }

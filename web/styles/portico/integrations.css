@@ -126,7 +126,7 @@ $category-text: hsl(219deg 23% 33%);
                         border linear 0.2s,
                         box-shadow linear 0.2s;
 
-                    &:focus {
+                    &:focus-visible{
                         border: 1px solid $border-green;
                         outline: 0;
                     }

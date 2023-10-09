@@ -657,7 +657,7 @@
         }
 
         &:hover,
-        &:focus {
+        &:focus-visible {
             color: hsl(200deg 100% 25%);
             text-decoration: underline;
 
@@ -723,9 +723,9 @@
         margin-top: -4px;
 
         /* Remove the outline when clicking on the copy-to-clipboard button */
-        &:focus {
+        &:focus:not(:focus-visible) {
             outline: none;
-        }
+         }
     }
 
     .code_external_link {

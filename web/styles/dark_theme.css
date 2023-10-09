@@ -19,7 +19,7 @@
         color: hsl(3deg 73% 80%);
 
         .convert-demo-organization-button {
-            &:focus {
+            &:focus-visible {
                 color: hsl(200deg 79% 66%);
                 outline-color: hsl(200deg 79% 66%);
             }
@@ -190,7 +190,7 @@
     }
 
     .dropdown-list-container .dropdown-list .list-item {
-        &:focus {
+        &:focus-visible {
             background-color: hsl(220deg 12% 95.1% / 5%);
         }
 
@@ -368,7 +368,7 @@
 
     & textarea.new_message_textarea {
         &.invalid,
-        &.invalid:focus {
+        &.invalid:focus-visible {
             border-color: hsl(3deg 73% 74%);
             box-shadow: 0 0 2px hsl(3deg 73% 74%);
         }
@@ -463,7 +463,7 @@
         }
 
         &:hover,
-        &:focus,
+        &:focus-visible,
         &:active {
             background-color: hsl(0deg 0% 0% / 15%);
         }
@@ -495,7 +495,7 @@
         color: inherit;
     }
 
-    .dropdown-list-search .dropdown-list-search-input:focus {
+    .dropdown-list-search .dropdown-list-search-input:focus-visible {
         background-color: hsl(225deg 6% 7%);
         border: 1px solid hsl(0deg 0% 100% / 50%);
         box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
@@ -594,16 +594,16 @@
         }
     }
 
-    .emoji-popover .reaction:focus {
+    .emoji-popover .reaction:focus-visible {
         box-shadow: 0 0 1px hsl(0deg 0% 98%);
     }
 
-    & input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="number"]:focus,
-    textarea:focus,
-    textarea.new_message_textarea:focus,
-    .compose_table .recipient_box:focus {
+    & input[type="text"]:focus-visible,
+    input[type="email"]:focus-visible,
+    input[type="number"]:focus-visible,
+    textarea:focus-visible,
+    textarea.new_message_textarea:focus-visible,
+    .compose_table .recipient_box:focus-visible {
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
@@ -656,7 +656,7 @@
         #user_group_creating_indicator:not(:empty),
     .emoji-picker-popover
         .emoji-popover
-        .emoji-popover-emoji:not(.reacted):focus {
+        .emoji-popover-emoji:not(.reacted):focus-visible {
         background-color: hsl(212deg 28% 8% / 75%);
     }
 
@@ -729,7 +729,7 @@
     .expand_composebox_button,
     .collapse_composebox_button,
     .clear_search_button,
-    .clear_search_button:focus,
+    .clear_search_button:focus-visible,
     .clear_search_button:active,
     .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
@@ -807,10 +807,12 @@
         border-color: hsl(0deg 0% 0%);
         color: hsl(0deg 0% 100%);
 
-        &:focus {
+        &:focus-visible {
             background-color: hsl(0deg 0% 0% / 50%) !important;
-            outline: 0;
         }
+        &:focus:not(:focus-visible) {
+            outline: none;
+         }
 
         &.fake_disabled_button {
             cursor: not-allowed;
@@ -866,13 +868,13 @@
         }
     }
 
-    .drafts-container .header-body .delete-drafts-group > *:focus {
+    .drafts-container .header-body .delete-drafts-group > *:focus-visible {
         background-color: hsl(228deg 11% 17%);
     }
 
     & thead,
     .drafts-container .drafts-header,
-    .nav > li > a:focus,
+    .nav > li > a:focus-visible,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
     .user-groups-container .user-groups-header,
@@ -1414,16 +1416,16 @@
         }
     }
 
-    & a:not(:active):focus,
-    button:focus,
-    .new-style label.checkbox input[type="checkbox"]:focus ~ span,
-    i.fa:focus,
-    i.zulip-icon:focus,
-    [role="button"]:focus {
+    & a:not(:active):focus-visible,
+    button:focus-visible,
+    .new-style label.checkbox input[type="checkbox"]:focus-visible ~ span,
+    i.fa:focus-visible,
+    i.zulip-icon:focus-visible,
+    [role="button"]:focus-visible {
         outline-color: hsl(0deg 0% 67%);
     }
 
-    .animated-purple-button:focus {
+    .animated-purple-button:focus-visible {
         box-shadow: 0 1px 4px 0 hsl(0deg 0% 100% / 66.6%);
     }
 
@@ -1451,7 +1453,7 @@
                 background-color: hsl(185deg 20% 20%);
             }
 
-            &:focus {
+            &:focus-visible {
                 color: hsl(185deg 50% 65%);
                 border-color: hsl(185deg 40% 50%);
                 background-color: hsl(185deg 40% 35%);
@@ -1481,7 +1483,7 @@
                     background-color: hsl(185deg 40% 45%);
                 }
 
-                &:focus ~ span {
+                &:focus-visible ~ span {
                     outline-color: hsl(0deg 0% 100% / 0%);
                 }
             }
@@ -1508,7 +1510,7 @@
         }
 
         &:active,
-        &:focus {
+        &:focus-visible {
             background-color: hsl(0deg 0% 100% / 10%);
         }
     }

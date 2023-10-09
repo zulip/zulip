@@ -76,7 +76,7 @@
     }
 
     & a:hover,
-    a:focus {
+    a:focus-visible{
         color: var(--color-links);
         border-bottom: 1px solid var(--color-links);
         transition: none;

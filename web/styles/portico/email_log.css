@@ -40,7 +40,7 @@
             margin: 4px 0 0 -20px;
             line-height: normal;
 
-            &:focus {
+            &:focus:not(:focus-visible) {
                 outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
@@ -59,7 +59,7 @@
             margin-bottom: 10px;
             width: 206px;
 
-            &:focus {
+            &:focus-visible{
                 border-color: hsl(206deg 80% 62% / 80%);
                 outline: 0;
                 box-shadow:
@@ -73,7 +73,7 @@
         width: auto;
         cursor: pointer;
 
-        &:focus {
+        &:focus-visible{
             outline: 1px dotted hsl(0deg 0% 20%);
             outline: 5px auto -webkit-focus-ring-color;
             outline-offset: -2px;
