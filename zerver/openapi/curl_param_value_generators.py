@@ -35,7 +35,7 @@ helpers = ZulipTestCase()
 def openapi_param_value_generator(
     endpoints: List[str],
 ) -> Callable[[Callable[[], Dict[str, object]]], Callable[[], Dict[str, object]]]:
-    """This decorator is used to register OpenAPI param value genarator functions
+    """This decorator is used to register OpenAPI param value generator functions
     with endpoints. Example usage:
 
     @openapi_param_value_generator(["/messages/render:post"])

@@ -117,7 +117,7 @@ class TestReadReceipts(ZulipTestCase):
         self.assertTrue(hamlet.id not in result.json()["user_ids"])
         self.assertTrue(cordelia.id in result.json()["user_ids"])
 
-        # Reactivate hamlet and verify hamlet appears again in read recipts.
+        # Reactivate hamlet and verify hamlet appears again in read receipts.
         do_reactivate_user(hamlet, acting_user=None)
         result = self.client_get(f"/json/messages/{message_id}/read_receipts")
         self.assert_json_success(result)

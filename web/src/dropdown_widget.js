@@ -74,7 +74,7 @@ export function setup(tippy_props, get_options, item_click_callback, dropdown_pr
                 function trigger_element_focus($element) {
                     e.preventDefault();
                     e.stopPropagation();
-                    // When brining a non-visible element into view, scroll as minimum as possible.
+                    // When bringing a non-visible element into view, scroll as minimum as possible.
                     $element[0]?.scrollIntoView({block: "nearest"});
                     $element.trigger("focus");
                 }
