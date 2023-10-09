@@ -679,8 +679,7 @@
     .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
     .dropdown .dropdown-menu,
-    .popover,
-    .popover-content {
+    .popover {
         background-color: hsl(212deg 32% 14%);
     }
 

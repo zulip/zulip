@@ -64,10 +64,6 @@
     }
 }
 
-.popover-content {
-    padding: 5px 0;
-}
-
 .user_full_name,
 .bot_owner {
     text-overflow: ellipsis;
@@ -806,14 +802,14 @@ ul {
         color: var(--color-text-default);
     }
 
-    & .popover-content ul.nav {
+    & ul.nav {
         /* TODO: Clean this logic up after drop Bootstrap styling */
         margin: 0;
     }
 }
 
 .user-group-popover-root {
-    & .popover-content ul.nav {
+    & ul.nav {
         /* TODO: Clean this logic up after drop Bootstrap styling */
         margin: 0;
     }
