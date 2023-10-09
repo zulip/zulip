@@ -45,7 +45,7 @@ function reset_test_setup($pill_container_stub) {
 }
 
 function test_ui(label, f) {
-    // The sloppy_$ flag lets us re-use setup from prior tests.
+    // The sloppy_$ flag lets us reuse setup from prior tests.
     run_test(label, f, {sloppy_$: true});
 }
 

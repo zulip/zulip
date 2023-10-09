@@ -172,12 +172,12 @@ def check_prereg_key(
 
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
-        # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+        # Defensive assert to make sure no mix-up in how .status is set leading to reuse
         # of a PreregistrationRealm object.
         assert prereg_object.created_realm is None
     else:
         assert isinstance(prereg_object, PreregistrationUser)
-        # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+        # Defensive assert to make sure no mix-up in how .status is set leading to reuse
         # of a PreregistrationUser object.
         assert prereg_object.created_user is None
 
