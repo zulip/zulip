@@ -9,8 +9,8 @@ import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as message_notifications from "./message_notifications";
 import {page_params} from "./page_params";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
-import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
@@ -88,7 +88,10 @@ export function set_notification_batching_ui($container, setting_seconds, force_
 
     $container.find(".setting_email_notifications_batching_period_seconds").val(select_elem_val);
     $edit_elem.val(setting_seconds / 60);
-    settings_org.change_element_block_display_property($edit_elem.attr("id"), show_edit_elem);
+    settings_components.change_element_block_display_property(
+        $edit_elem.attr("id"),
+        show_edit_elem,
+    );
 }
 
 export function set_enable_digest_emails_visibility(settings_panel) {
@@ -216,7 +219,7 @@ export function set_up(settings_panel) {
             return;
         }
         let setting_name = $input_elem.attr("name");
-        let setting_value = settings_org.get_input_element_value(this);
+        let setting_value = settings_components.get_input_element_value(this);
 
         if (setting_name === "email_notifications_batching_period_seconds") {
             if ($input_elem.val() === "custom_period") {
