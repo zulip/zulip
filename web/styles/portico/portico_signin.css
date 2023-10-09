@@ -875,6 +875,18 @@ button#register_auth_button_gitlab {
     text-align: left;
 }
 
+.register-page-container .register-form-login-redirect {
+    margin-top: 10px;
+    float: right;
+    font-size: 17px;
+    font-weight: normal;
+
+    .register-link {
+        font-size: 17px;
+        margin-left: 5px;
+    }
+}
+
 .back-to-login-wrapper .back-to-login {
     display: flex;
     gap: 5px;
