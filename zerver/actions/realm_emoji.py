@@ -41,7 +41,7 @@ def check_add_realm_emoji(
     emoji_file_name = get_emoji_file_name(image_file.name, realm_emoji.id)
 
     # The only user-controlled portion of 'emoji_file_name' is an extension,
-    # which can not contain '..' or '/' or '\', making it difficult to exploit
+    # which cannot contain '..' or '/' or '\', making it difficult to exploit
     emoji_file_name = mark_sanitized(emoji_file_name)
 
     emoji_uploaded_successfully = False

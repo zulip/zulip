@@ -100,7 +100,7 @@ export const user_card = new PopoverMenu();
 
 function popover_items_handle_keyboard_with_overrides(key, $items) {
     /* Variant of popover_items_handle_keyboard with somewhat hacky
-     * logic for for opening the manage menu. */
+     * logic for opening the manage menu. */
     if (!$items) {
         return;
     }

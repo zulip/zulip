@@ -12,7 +12,7 @@ for Zulip.
 Zulip's SCIM integration has the following limitations:
 
 * Provisioning Groups is not yet implemented.
-* While Zulip's SCIM integration is generic, it has has only been
+* While Zulip's SCIM integration is generic, it has only been
   fully tested and documented with Okta's SCIM provider, and it is
   possible minor adjustments may be required. [Zulip
   support](/help/contact-support) is happy to help customers configure
@@ -71,7 +71,7 @@ Zulip's SCIM integration has the following limitations:
      * **familyName**
 
 1. **Optional:** If you'd like to also sync [user role](/help/roles-and-permissions),
-   you can do it by by adding a custom attribute in Okta. Go to the **Profile Editor**,
+   you can do it by adding a custom attribute in Okta. Go to the **Profile Editor**,
    click into the entry of the SCIM app you've just set up and **Add Attribute**.
    Configure the following:
     * **Data type**: `string`

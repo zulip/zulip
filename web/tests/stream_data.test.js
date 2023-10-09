@@ -253,7 +253,7 @@ test("get_streams_for_user", () => {
     // #social: current user is can get this as neither this is invite only nor current
     //          user is a guest.
     // #test: current user is no longer subscribed to a private stream, so
-    //        he can not see whether test_user is subscribed to it.
+    //        he cannot see whether test_user is subscribed to it.
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).subscribed, [
         denmark,
         social,

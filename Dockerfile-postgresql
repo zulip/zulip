@@ -8,7 +8,7 @@
 #       -f ./Dockerfile-postgresql -t zulip/zulip-postgresql:14 --push .
 
 # Currently the PostgreSQL images do not support automatic upgrading of
-# the on-disk data in volumes. So the base image can not currently be upgraded
+# the on-disk data in volumes. So the base image cannot currently be upgraded
 # without users needing a manual pgdump and restore.
 
 # https://hub.docker.com/r/groonga/pgroonga/tags

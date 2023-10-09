@@ -179,7 +179,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
             continue
 
         old_packages = get_venv_packages(curr_venv_path)
-        # We only consider using using old virtualenvs that only
+        # We only consider using old virtualenvs that only
         # contain packages that we want in our new virtualenv.
         if not (old_packages - new_packages):
             overlap = new_packages & old_packages

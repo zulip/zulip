@@ -64,7 +64,7 @@ this file:
   rendered content, since the APNS and GCM push notification systems
   don't support richer markup. Mostly, this involves stripping HTML,
   but there's some syntax we take special care with. Tests for what
-  this plain-text version of content should be are stored in the
+  this plain-text version of content should be stored in the
   `text_content` field.
 
 If you're going to manually test some changes in the frontend Markdown
