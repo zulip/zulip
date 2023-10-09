@@ -259,11 +259,11 @@
             &.reacted.reaction:focus-visible
              {
                 background-color: hsl(195deg 55% 88%);
-
-            }
-            &.reacted.reaction:focus:not(:focus-visible) {
                 outline: none;
-             }
+            }
+            /* &.reacted.reaction:focus:not(:focus-visible) {
+                outline: none;
+             } */
 
             &:not(.reacted):focus-visible {
                 background-color: hsl(0deg 0% 93%);

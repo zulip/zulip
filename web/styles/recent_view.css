@@ -159,10 +159,11 @@
 
             &:focus-visible {
                 background-color: hsl(0deg 0% 80%);
-            }
-            &:focus:not(:focus-visible) {
                 outline: none;
-             }
+            }
+            /* &:focus:not(:focus-visible) {
+                outline: none;
+             } */
             &.fake_disabled_button {
                 cursor: not-allowed;
                 opacity: 0.5;

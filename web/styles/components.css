@@ -135,7 +135,7 @@ button.dropdown-toggle {
         outline-offset: -2px;
         transition: none;
     }
-    &:focus:not(:focus-visible) {
+    &:focus-visible {
         outline: none !important;
      }
 }

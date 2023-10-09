@@ -1178,7 +1178,7 @@ div.overlay {
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
-    &:focus:not(:focus-visible) {
+    &:focus-visible {
         outline: none;
      }
 }

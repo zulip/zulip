@@ -28,10 +28,11 @@
             color: hsl(0deg 0% 100%);
             border: 1px solid hsl(176deg 78% 28%);
             background-color: hsl(176deg 49% 42%);
-        }
-        &:focus:not(:focus-visible) {
             outline: none;
-         }
+        }
+        /* &:focus:not(:focus-visible) {
+            outline: none;
+         } */
 
         .pill-image {
             height: 20px;

@@ -48,10 +48,8 @@
 
             &:focus-visible {
                 background-color: var(--color-background-btn-inbox-focus);
-            }
-            &:focus:not(:focus-visible) {
                 outline: none;
-             }
+            }
         }
 
         .btn-inbox-selected {
@@ -135,10 +133,11 @@
                 background-color: var(--color-background-inbox-search-focus);
                 border: 1px solid var(--color-border-inbox-search-focus);
                 box-shadow: 0 0 5px var(--color-box-shadow-inbox-search-focus);
-            }
-            &:focus:not(:focus-visible) {
                 outline: none;
-             }
+            }
+            /* &:focus:not(:focus-visible) {
+                outline: none;
+             } */
         }
 
         #inbox-list {
@@ -205,10 +204,11 @@
                     .toggle-inbox-header-icon {
                         opacity: 1;
                     }
-                }
-                &:focus:not(:focus-visible) {
                     outline: none;
-                 }
+                }
+                /* &:focus:not(:focus-visible) {
+                    outline: none;
+                 } */
             }
 
             .fa-lock {

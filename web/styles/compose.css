@@ -585,10 +585,8 @@ textarea.new_message_textarea,
     &:focus-visible {
         border: 1px solid hsl(0deg 0% 67%);
         box-shadow: none;
-    }
-    &:focus:not(:focus-visible) {
         outline: none;
-     }
+    } 
 }
 
 input.recipient_box {
@@ -652,9 +650,9 @@ input.recipient_box {
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
             }
-            &:focus:not(:focus-visible) {
+            /* &:focus:not(:focus-visible) {
                 outline: none !important;
-             }
+             } */
         }
 
         &:first-child {

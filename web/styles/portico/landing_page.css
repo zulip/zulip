@@ -1959,7 +1959,7 @@ button {
     transition: all 0.3s ease;
 }
 
-.pricing-model .pricing-container .price-box::focus-visible  {
+.pricing-model .pricing-container .price-box:focus-visible  {
     outline: none;
 }
 

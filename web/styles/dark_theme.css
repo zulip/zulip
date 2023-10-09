@@ -809,10 +809,8 @@
 
         &:focus-visible {
             background-color: hsl(0deg 0% 0% / 50%) !important;
-        }
-        &:focus:not(:focus-visible) {
             outline: none;
-         }
+        }
 
         &.fake_disabled_button {
             cursor: not-allowed;

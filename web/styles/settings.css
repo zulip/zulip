@@ -1131,10 +1131,11 @@ label.display-settings-radio-choice-label {
             outline: 1px dotted hsl(0deg 0% 20%);
             outline: 5px auto -webkit-focus-ring-color;
             outline-offset: -2px;
-        }
-        &:focus:not(:focus-visible) {
             outline: none;
-         }
+        }
+        /* &:focus:not(:focus-visible) {
+            outline: none;
+         } */
 
         &:disabled {
             cursor: not-allowed;
@@ -1550,10 +1551,12 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
-    }
-    &:focus:not(:focus-visible) {
+
         outline: none;
-     }
+    }
+    /* &:focus:not(:focus-visible) {
+        outline: none;
+     } */
 }
 
 #realm_jitsi_server_url_setting {
@@ -1846,14 +1849,14 @@ $option_title_width: 180px;
 
     &:focus-visible {
         border-color: hsl(206.5deg 80% 62% / 80%);
-
+        outline: none;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206.5deg 80% 62% / 60%);
     }
-    &:focus:not(:focus-visible) {
+    /* &:focus:not(:focus-visible) {
     outline: none;
-    }
+    } */
     &:disabled {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
@@ -2083,13 +2086,14 @@ $option_title_width: 180px;
 
     &:focus-visible {
         border-color: hsl(206deg 80% 62% / 80%);
+        outline: none;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
-    &:focus:not(:focus-visible) {
+    /* &:focus:not(:focus-visible) {
         outline: none;
-     }
+     } */
 }
 
 #generate-integration-url-modal {
