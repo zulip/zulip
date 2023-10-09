@@ -47,23 +47,6 @@
     }
 }
 
-.popover {
-    width: auto;
-    max-width: 100%;
-
-    & hr {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-
-    .sub_disable_btn_hint {
-        padding-left: 5px;
-        padding-right: 5px;
-        font-size: small;
-        text-align: justify;
-    }
-}
-
 .user_full_name,
 .bot_owner {
     text-overflow: ellipsis;
@@ -751,10 +734,6 @@ ul {
         &.fade.in {
             opacity: 1;
             pointer-events: all;
-        }
-
-        .popover {
-            display: inline-block;
         }
     }
 
