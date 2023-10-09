@@ -184,7 +184,7 @@ class FooTestCase(ZulipTestCase):
         return self.client_get("/bar")
 ```
 
-We sometimes encounter innaccurate type annotations in the Django
+We sometimes encounter inaccurate type annotations in the Django
 stubs project. We prefer to address these by [submitting a pull
 request](https://github.com/typeddjango/django-stubs/pulls) to fix the
 issue in the upstream project, just like we do with `typeshed` bugs.

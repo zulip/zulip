@@ -356,7 +356,7 @@ run_test("topic links ordering by priority", () => {
         {pattern: "a#(?P<id>[a-z]+)", url_template: "http://example.com/a/{id}"},
     ]);
 
-    // There should be 5 link matches in the topic, if ordered from the most priortized to the least:
+    // There should be 5 link matches in the topic, if ordered from the most prioritized to the least:
     // 1. "http" (linkifier)
     // 2. "b#bar" (linkifier)
     // 3. "a#asd b#bar" (linkifier)
