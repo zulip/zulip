@@ -6,6 +6,7 @@ import * as unread from "./unread";
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
 const fetched_stream_ids = new Set();
+const request_pending_stream_ids = new Set();
 
 export function all_topics_in_cache(sub) {
     // Checks whether this browser's cache of contiguous messages
@@ -312,4 +313,17 @@ export function reset() {
     // This is only used by tests.
     stream_dict.clear();
     fetched_stream_ids.clear();
+    request_pending_stream_ids.clear();
+}
+
+export function is_request_pending_for(stream_id) {
+    return request_pending_stream_ids.has(stream_id);
+}
+
+export function add_request_pending_for(stream_id) {
+    request_pending_stream_ids.add(stream_id);
+}
+
+export function remove_request_pending_for(stream_id) {
+    request_pending_stream_ids.delete(stream_id);
 }
