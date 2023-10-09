@@ -98,7 +98,7 @@ Its main downside is that contributions to projects other than
 zulip/zulip in the last few weeks before a zulip/zulip release will be
 delayed (i.e. counted in the total for the next zulip/zulip release).
 
-Expects that all Zulip repositories repositories are in the current working
+Expects that all Zulip repositories are in the current working
 directory, which does not need to be the directory this is run from.
 
 # Changes between two major releases.

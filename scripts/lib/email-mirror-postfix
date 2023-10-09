@@ -30,7 +30,7 @@ Also you can use optional keys to configure the script and change default values
                     the HTTP requests made by this tool.
 
 -d HOST             Destination Zulip host for email uploading. Address must contain type of
-                    HTTP protocol, i.e "https://example.com". Default value: "https://127.0.0.1".
+                    HTTP protocol, e.g. "https://example.com". Default value: "https://127.0.0.1".
 
 -u URL             Destination relative for email uploading. Default value: "/email_mirror_message".
 

@@ -405,7 +405,7 @@ export function initialize() {
     });
 
     $("#streams_overlay_container").on("keypress", "#change_stream_description", (e) => {
-        // Stream descriptions can not be multiline, so disable enter key
+        // Stream descriptions cannot be multiline, so disable enter key
         // to prevent new line
         if (keydown_util.is_enter_event(e)) {
             return false;

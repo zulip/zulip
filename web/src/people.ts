@@ -707,7 +707,7 @@ export function slug_to_emails(slug: string): string | undefined {
     /*
         It's not super important to be flexible about
         direct message related slugs, since you would
-        rarely post them to the web, but we we do want
+        rarely post them to the web, but we do want
         to support reasonable variations:
 
             99-alice@example.com
