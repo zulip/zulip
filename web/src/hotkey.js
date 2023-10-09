@@ -665,6 +665,8 @@ export function process_hotkey(e, hotkey) {
         case "vim_down":
         case "vim_left":
         case "vim_right":
+        case "page_up":
+        case "page_down":
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
             }
