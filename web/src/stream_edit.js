@@ -22,6 +22,7 @@ import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as stream_color from "./stream_color";
@@ -204,7 +205,7 @@ function setup_dropdown(sub, slim_sub) {
             event.preventDefault();
             event.stopPropagation();
             can_remove_subscribers_group_widget.render();
-            settings_org.save_discard_widget_status_handler(
+            settings_components.save_discard_widget_status_handler(
                 $("#stream_permission_settings"),
                 false,
                 slim_sub,
@@ -220,7 +221,9 @@ function setup_dropdown(sub, slim_sub) {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
-    settings_org.set_can_remove_subscribers_group_widget(can_remove_subscribers_group_widget);
+    settings_components.set_can_remove_subscribers_group_widget(
+        can_remove_subscribers_group_widget,
+    );
     can_remove_subscribers_group_widget.setup();
 }
 
@@ -632,7 +635,7 @@ export function initialize() {
 
     $("#streams_overlay_container").on("change", ".stream_message_retention_setting", (e) => {
         const message_retention_setting_dropdown_value = e.target.value;
-        settings_org.change_element_block_display_property(
+        settings_components.change_element_block_display_property(
             "stream_message_retention_custom_input",
             message_retention_setting_dropdown_value === "custom_period",
         );
@@ -652,7 +655,7 @@ export function initialize() {
         const stream_id = get_stream_id(e.target);
         const sub = sub_store.get(stream_id);
         const $subsection = $(e.target).closest(".settings-subsection-parent");
-        settings_org.save_discard_widget_status_handler($subsection, false, sub);
+        settings_components.save_discard_widget_status_handler($subsection, false, sub);
         if (sub) {
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
         }
@@ -688,12 +691,12 @@ export function initialize() {
             const sub = sub_store.get(stream_id);
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
-            for (const elem of settings_org.get_subsection_property_elements($subsection)) {
+            for (const elem of settings_components.get_subsection_property_elements($subsection)) {
                 settings_org.discard_property_element_changes(elem, false, sub);
             }
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
             const $save_btn_controls = $(e.target).closest(".save-button-controls");
-            settings_org.change_save_button_state($save_btn_controls, "discarded");
+            settings_components.change_save_button_state($save_btn_controls, "discarded");
         },
     );
 }

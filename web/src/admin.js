@@ -10,6 +10,7 @@ import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_invites from "./settings_invites";
@@ -116,12 +117,14 @@ export function build_page() {
         realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
-        realm_message_content_edit_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
-            "realm_message_content_edit_limit_seconds",
-        ),
-        realm_message_content_delete_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
-            "realm_message_content_delete_limit_seconds",
-        ),
+        realm_message_content_edit_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_message_content_edit_limit_seconds",
+            ),
+        realm_message_content_delete_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_message_content_delete_limit_seconds",
+            ),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
