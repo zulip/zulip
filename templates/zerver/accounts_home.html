@@ -88,6 +88,9 @@ page can be easily identified in it's respective JavaScript file -->
                             </form>
                         </div>
                         {% endfor %}
+                        <div class="register-form-login-redirect actions">
+                            {{ _('Already have an account?') }}<a class="register-link" href="/login/"> {{ _('Log in') }}</a>
+                        </div>
                     {% endif %}
                 </div>
             </div>
