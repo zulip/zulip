@@ -837,6 +837,48 @@ function is_muted_filter_focused() {
     return current_focus_id === MUTED_FILTER_ID;
 }
 
+function get_page_up_down_delta() {
+    const element_above = document.querySelector("#inbox-filters");
+    const element_down = document.querySelector("#compose");
+    const visible_top = element_above.getBoundingClientRect().bottom;
+    const visible_bottom = element_down.getBoundingClientRect().top;
+    // One usually wants PageDown to move what had been the bottom row
+    // to now be at the top, so one can be confident one will see
+    // every row using it. This offset helps achieve that goal.
+    //
+    // See navigate.amount_to_paginate for similar logic in the message feed.
+    const scrolling_reduction_to_maintain_context = 30;
+
+    const delta = visible_bottom - visible_top - scrolling_reduction_to_maintain_context;
+    return delta;
+}
+
+function page_up_navigation() {
+    const delta = get_page_up_down_delta();
+    const scroll_element = document.documentElement;
+    const new_scrollTop = scroll_element.scrollTop - delta;
+    if (new_scrollTop <= 0) {
+        row_focus = 0;
+    }
+    scroll_element.scrollTop = new_scrollTop;
+    set_list_focus();
+}
+
+function page_down_navigation() {
+    const delta = get_page_up_down_delta();
+    const scroll_element = document.documentElement;
+    const new_scrollTop = scroll_element.scrollTop + delta;
+    const $all_rows = get_all_rows();
+    const $last_row = $all_rows.last();
+    const last_row_bottom = $last_row.offset().top + $last_row.outerHeight();
+    // Move focus to last row if it is visible and we are at the bottom.
+    if (last_row_bottom <= new_scrollTop) {
+        row_focus = get_all_rows().length - 1;
+    }
+    scroll_element.scrollTop = new_scrollTop;
+    set_list_focus();
+}
+
 export function change_focused_element(input_key) {
     if (is_search_focused()) {
         const textInput = $(`#${INBOX_SEARCH_ID}`).get(0);
@@ -910,6 +952,12 @@ export function change_focused_element(input_key) {
             case LEFT_NAVIGATION_KEYS[2]:
                 col_focus -= 1;
                 set_list_focus(input_key);
+                return true;
+            case "page_up":
+                page_up_navigation();
+                return true;
+            case "page_down":
+                page_down_navigation();
                 return true;
         }
     }
