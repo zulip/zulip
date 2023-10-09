@@ -737,7 +737,7 @@ class HomeTest(ZulipTestCase):
         self.assertIn(bots[2].id, bot_ids)
         self.assertIn(bots[2].id, active_ids)
 
-        # Make sure nobody got mis-bucketed.
+        # Make sure nobody got misbucketed.
         self.assertNotIn(hamlet.id, non_active_ids)
         self.assertNotIn(defunct_user.id, active_ids)
 
