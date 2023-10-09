@@ -568,6 +568,47 @@ class MessagePOSTTest(ZulipTestCase):
             result, "Stream '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist"
         )
 
+    def test_message_to_stream_with_automatically_change_visibility_policy(self) -> None:
+        """
+        Sending a message to a stream with the automatic follow/unmute policy
+        enabled results in including an extra optional parameter in the response.
+        """
+        user = self.example_user("hamlet")
+        do_change_user_setting(
+            user,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+            acting_user=None,
+        )
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        content = self.assert_json_success(result)
+        assert "automatic_new_visibility_policy" in content
+        self.assertEqual(content["automatic_new_visibility_policy"], 3)
+
+        # Hamlet sends another message to the same topic. There will be no change in the visibility
+        # policy, so the 'automatic_new_visibility_policy' parameter should be absent in the result.
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Another Test message",
+                "topic": "Test topic",
+            },
+        )
+        content = self.assert_json_success(result)
+        assert "automatic_new_visibility_policy" not in content
+
     def test_personal_message(self) -> None:
         """
         Sending a personal message to a valid username is successful.

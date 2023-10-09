@@ -6166,6 +6166,8 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
+                    required:
+                      - id
                     properties:
                       result: {}
                       msg: {}
@@ -6174,7 +6176,36 @@ paths:
                         type: integer
                         description: |
                           The unique ID assigned to the sent message.
-                    example: {"msg": "", "id": 42, "result": "success"}
+                      automatic_new_visibility_policy:
+                        type: integer
+                        enum:
+                          - 2
+                          - 3
+                        description: |
+                          If the message's sender had configured their [visibility policy settings](/help/mute-a-topic)
+                          to potentially automatically follow or unmute topics when sending messages,
+                          and one of these policies did in fact change the user's visibility policy
+                          for the topic where this message was sent, the new value for that user's
+                          visibility policy for the recipient topic.
+
+                          Only present if the sender's visibility was in fact changed.
+
+                          Intended to be used by clients where it is important to explicitly display a
+                          notice that the topic's visibility policy has changed automatically due to
+                          the message sent. The information is also important to correctly decide whether to
+                          display a warning or notice suggesting to unmute the topic after sending a message
+                          to a muted stream. Such a notice might feel confusing in the event that the act of
+                          sending the message had already resulted in the user unmuting or following the topic
+                          in question.
+
+                          **Changes**: New in Zulip 8.0 (feature level 218).
+                    example:
+                      {
+                        "msg": "",
+                        "id": 42,
+                        "automatic_new_visibility_policy": 2,
+                        "result": "success",
+                      }
         "400":
           description: Bad request.
           content:

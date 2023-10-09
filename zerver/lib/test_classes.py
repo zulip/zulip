@@ -1071,7 +1071,7 @@ Output:
         recipient_list = [to_user.id]
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_message(
+        sent_message_result = check_send_message(
             from_user,
             sending_client,
             "private",
@@ -1079,6 +1079,7 @@ Output:
             None,
             content,
         )
+        return sent_message_result.message_id
 
     def send_huddle_message(
         self,
@@ -1092,7 +1093,7 @@ Output:
 
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_message(
+        sent_message_result = check_send_message(
             from_user,
             sending_client,
             "private",
@@ -1100,6 +1101,7 @@ Output:
             None,
             content,
         )
+        return sent_message_result.message_id
 
     def send_stream_message(
         self,
