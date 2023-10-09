@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@8.7.5+sha256.c69c54d81c58e23ee23324729e68d012fe3ef3b7e62e2dc521b1141c2a36567e",
+  "packageManager": "pnpm@8.9.0+sha256.8f5264ad1d100da11a6add6bb8a94c6f1e913f9e9261b2a551fabefad2ec0fec",
   "dependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",

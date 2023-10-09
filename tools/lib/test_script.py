@@ -122,7 +122,7 @@ def prepare_puppeteer_run(is_firefox: bool = False) -> None:
     os.chdir(ZULIP_PATH)
     # This will determine if the browser will be firefox or chrome.
     os.environ["PUPPETEER_PRODUCT"] = "firefox" if is_firefox else "chrome"
-    subprocess.check_call(["node", "install.js"], cwd="node_modules/puppeteer")
+    subprocess.check_call(["node", "install.mjs"], cwd="node_modules/puppeteer")
     os.makedirs("var/puppeteer", exist_ok=True)
     for f in glob.glob("var/puppeteer/failure-*.png"):
         os.remove(f)
