@@ -92,7 +92,7 @@
        space offscreen and cause document to have the wrong scroll height.
        Setting `display: none` makes sure it doesn't occupy any offscreen space.
 
-       NOTE: This data attribtute has changed each time in the past 3 releases and
+       NOTE: This data attribute has changed each time in the past 3 releases and
        if we upgrade tippy from v6, we should check if this attribute is still valid.
 
        See https://github.com/atomiks/tippyjs/issues/555 for some discussion on this.

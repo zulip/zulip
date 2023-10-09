@@ -217,7 +217,7 @@ $category-text: hsl(219deg 23% 33%);
         }
 
         @media (width <= 906px) {
-            /* Change it to `display: block` when enabling catergories. */
+            /* Change it to `display: block` when enabling categories. */
             display: none;
             width: 670px;
 
