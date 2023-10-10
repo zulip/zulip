@@ -294,7 +294,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
 
 export function hide_user_profile() {
     user_streams_list_widget = undefined;
-    modals.close_modal_if_open("user-profile-modal");
+    modals.close_if_open("user-profile-modal");
 }
 
 function show_manage_user_tab(target) {
