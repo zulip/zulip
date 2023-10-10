@@ -2098,7 +2098,8 @@ div.focused-message-list {
             }
         }
 
-        .zulip-icon-inbox {
+        .zulip-icon-inbox,
+        .zulip-icon-star-filled {
             position: relative;
             top: 2px;
         }
@@ -3326,5 +3327,13 @@ select.invite-as {
 
     .zulip-icon {
         padding: 5px;
+    }
+}
+
+#unstar_all_messages,
+.emoji-popover-tab-item {
+    .zulip-icon-star {
+        position: relative;
+        top: 2px;
     }
 }
