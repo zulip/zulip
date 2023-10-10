@@ -24,7 +24,7 @@ import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
@@ -74,7 +74,7 @@ function compare_by_name(a, b) {
 }
 
 export function get_user_id_if_user_profile_modal_open() {
-    if (overlays.is_modal_open() && overlays.active_modal() === "#user-profile-modal") {
+    if (modals.is_modal_open() && modals.active_modal() === "#user-profile-modal") {
         const user_id = $("#user-profile-modal").data("user-id");
         return user_id;
     }
@@ -294,7 +294,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
 
 export function hide_user_profile() {
     user_streams_list_widget = undefined;
-    overlays.close_modal_if_open("user-profile-modal");
+    modals.close_modal_if_open("user-profile-modal");
 }
 
 function show_manage_user_tab(target) {
@@ -370,7 +370,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    overlays.open_modal("user-profile-modal", {autoremove: true});
+    modals.open_modal("user-profile-modal", {autoremove: true});
     $(".tabcontent").hide();
 
     let default_tab = 0;

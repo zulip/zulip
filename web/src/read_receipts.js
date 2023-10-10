@@ -8,7 +8,7 @@ import * as channel from "./channel";
 import { $t, $t_html } from "./i18n";
 import * as loading from "./loading";
 import * as message_store from "./message_store";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import * as people from "./people";
 import * as ui_report from "./ui_report";
 

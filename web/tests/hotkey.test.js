@@ -55,6 +55,10 @@ const narrow_state = mock_esm("../src/narrow_state", {
     is_message_feed_visible: () => true,
 });
 const navigate = mock_esm("../src/navigate");
+const modals = mock_esm("../src/modals", {
+    is_modal_open: () => false,
+    active_modal: () => undefined,
+});
 const overlays = mock_esm("../src/overlays", {
     is_active: () => false,
     settings_open: () => false,
@@ -63,8 +67,6 @@ const overlays = mock_esm("../src/overlays", {
     drafts_open: () => false,
     scheduled_messages_open: () => false,
     info_overlay_open: () => false,
-    is_modal_open: () => false,
-    active_modal: () => undefined,
 });
 const popovers = mock_esm("../src/user_card_popover", {
     manage_menu: {
@@ -347,8 +349,8 @@ run_test("drafts closed launch", ({ override }) => {
     assert_mapping("d", browser_history, "go_to_location");
 });
 
-run_test("modal open", ({ override }) => {
-    override(overlays, "is_modal_open", () => true);
+run_test("modal open", ({override}) => {
+    override(modals, "is_modal_open", () => true);
     test_normal_typing();
 });
 
