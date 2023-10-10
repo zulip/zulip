@@ -17,9 +17,9 @@ function active_modal(): string | undefined {
     return `#${CSS.escape($micromodal.attr("id")!)}`;
 }
 
-function close_active_modal(): void {
+function close_active(): void {
     if (!is_open()) {
-        blueslip.warn("close_active_modal() called without checking is_open()");
+        blueslip.warn("close_active() called without checking is_open()");
         return;
     }
 
@@ -62,7 +62,7 @@ export function open_modal(modal_id: string, recursive_call_count: number = 0): 
             return;
         }
 
-        close_active_modal();
+        close_active();
         setTimeout(() => {
             open_modal(modal_id, recursive_call_count);
         }, 10);
@@ -119,7 +119,7 @@ export function close_modal(modal_id: string): void {
     }
 
     if (!is_open()) {
-        blueslip.warn("close_active_modal() called without checking is_open()");
+        blueslip.warn("close_active() called without checking is_open()");
         return;
     }
 
