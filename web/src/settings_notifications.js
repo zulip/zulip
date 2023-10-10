@@ -94,9 +94,7 @@ export function set_notification_batching_ui($container, setting_seconds, force_
     );
 }
 
-export function set_enable_digest_emails_visibility(settings_panel) {
-    const $container = $(settings_panel.container);
-    const for_realm_settings = settings_panel.for_realm_settings;
+export function set_enable_digest_emails_visibility($container, for_realm_settings) {
     if (page_params.realm_digest_emails_enabled) {
         if (for_realm_settings) {
             $container.find(".other_email_notifications").show();
@@ -200,7 +198,7 @@ export function set_up(settings_panel) {
         settings_object.automatically_unmute_topics_in_muted_streams_policy,
     );
 
-    set_enable_digest_emails_visibility(settings_panel);
+    set_enable_digest_emails_visibility($container, for_realm_settings);
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
