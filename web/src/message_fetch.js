@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {all_messages_data} from "./all_messages_data";
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
@@ -48,7 +49,13 @@ function process_result(data, opts) {
     }
 
     if (messages.length !== 0) {
-        message_util.add_old_messages(messages, opts.msg_list);
+        if (opts.msg_list) {
+            // Since this adds messages to the MessageList and renders MessageListView,
+            // we don't need to call it if msg_list was not defined by the caller.
+            message_util.add_old_messages(messages, opts.msg_list);
+        } else {
+            opts.msg_list_data.add_messages(messages);
+        }
     }
 
     huddle_data.process_loaded_messages(messages);
@@ -90,8 +97,9 @@ function process_result(data, opts) {
 
 function get_messages_success(data, opts) {
     const update_loading_indicator = opts.msg_list === message_lists.current;
+    const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
     if (opts.num_before > 0) {
-        opts.msg_list.data.fetch_status.finish_older_batch({
+        msg_list_data.fetch_status.finish_older_batch({
             update_loading_indicator,
             found_oldest: data.found_oldest,
             history_limited: data.history_limited,
@@ -109,7 +117,7 @@ function get_messages_success(data, opts) {
     }
 
     if (opts.num_after > 0) {
-        opts.fetch_again = opts.msg_list.data.fetch_status.finish_newer_batch(data.messages, {
+        opts.fetch_again = msg_list_data.fetch_status.finish_newer_batch(data.messages, {
             update_loading_indicator,
             found_newest: data.found_newest,
         });
@@ -123,7 +131,7 @@ function get_messages_success(data, opts) {
         }
     }
 
-    if (opts.msg_list.narrowed && opts.msg_list !== message_lists.current) {
+    if (opts.msg_list && opts.msg_list.narrowed && opts.msg_list !== message_lists.current) {
         // We unnarrowed before receiving new messages so
         // don't bother processing the newly arrived messages.
         return;
@@ -204,6 +212,11 @@ export function load_messages(opts, attempt = 1) {
         opts.anchor = opts.anchor.toFixed(0);
     }
     let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
+    const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+
+    if (msg_list_data === undefined) {
+        blueslip.error("Message list data is undefined!");
+    }
 
     // This block is a hack; structurally, we want to set
     //   data.narrow = opts.msg_list.data.filter.public_operators()
@@ -221,7 +234,7 @@ export function load_messages(opts, attempt = 1) {
         // streams and topics even though message_lists.home's in:home
         // operators will filter those.
     } else {
-        let operators = opts.msg_list.data.filter.public_operators();
+        let operators = msg_list_data.filter.public_operators();
         if (page_params.narrow !== undefined) {
             operators = [...operators, ...page_params.narrow];
         }
@@ -230,7 +243,7 @@ export function load_messages(opts, attempt = 1) {
 
     let update_loading_indicator = opts.msg_list === message_lists.current;
     if (opts.num_before > 0) {
-        opts.msg_list.data.fetch_status.start_older_batch({
+        msg_list_data.fetch_status.start_older_batch({
             update_loading_indicator,
         });
         if (opts.msg_list === message_lists.home) {
@@ -243,7 +256,7 @@ export function load_messages(opts, attempt = 1) {
     if (opts.num_after > 0) {
         // We hide the bottom loading indicator when we're fetching both top and bottom messages.
         update_loading_indicator = update_loading_indicator && opts.num_before === 0;
-        opts.msg_list.data.fetch_status.start_newer_batch({
+        msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });
         if (opts.msg_list === message_lists.home) {
