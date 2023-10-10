@@ -15,6 +15,10 @@ $message_box_margin: 3px;
    anything wider than 60px. */
 $time_column_min_width: 42px; /* + padding */
 
+:root {
+    --formatted-time-width: 8ch;
+}
+
 .message_row {
     display: grid;
     /* Prevent the messagebox column from overflowing the 1fr
@@ -180,6 +184,7 @@ $time_column_min_width: 42px; /* + padding */
         .message_time {
             justify-self: end;
             padding-right: 5px;
+            width: var(--formatted-time-width);
             /* Maintain first-line baseline regardless of
                what happens in the message-content area (e.g., a
                collapsed message, or source/edit view). This

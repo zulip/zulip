@@ -12,6 +12,7 @@ import {page_params} from "./page_params";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
+import {calculateFormattedTimeWidth} from "./timestamp_width_handler";
 import {LONG_HOVER_DELAY} from "./tippyjs";
 import {parse_html} from "./ui_util";
 
@@ -183,6 +184,7 @@ export function initialize() {
             if (message.locally_echoed) {
                 return false;
             }
+            calculateFormattedTimeWidth();
             const time = new Date(message.timestamp * 1000);
             instance.setContent(timerender.get_full_datetime_clarification(time));
             return true;
