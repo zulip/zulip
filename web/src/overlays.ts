@@ -2,6 +2,7 @@ import $ from "jquery";
 import Micromodal from "micromodal";
 
 import * as blueslip from "./blueslip";
+import * as overlay_util from "./overlay_util";
 
 type Hook = () => void;
 
@@ -50,20 +51,6 @@ function call_hooks(func_list: Hook[]): void {
     for (const element of func_list) {
         element();
     }
-}
-
-export function disable_scrolling(): void {
-    // Why disable scrolling?
-    // Since fixed / absolute positioned elements don't capture the scroll event unless
-    // they overflow their defined container. Since fixed / absolute elements are not treated
-    // as part of the document flow, we cannot capture `scroll` events on them and prevent propagation
-    // as event bubbling doesn't work naturally.
-    const scrollbar_width = window.innerWidth - document.documentElement.clientWidth;
-    $("html").css({"overflow-y": "hidden", "--disabled-scrollbar-width": `${scrollbar_width}px`});
-}
-
-function enable_scrolling(): void {
-    $("html").css({"overflow-y": "scroll", "--disabled-scrollbar-width": "0px"});
 }
 
 export function is_active(): boolean {
@@ -151,7 +138,7 @@ export function open_overlay(opts: OverlayOptions): void {
         },
     };
 
-    disable_scrolling();
+    overlay_util.disable_scrolling();
     opts.$overlay.addClass("show");
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
@@ -263,7 +250,7 @@ export function open_modal(
         if (conf.on_show) {
             conf.on_show();
         }
-        disable_scrolling();
+        overlay_util.disable_scrolling();
         call_hooks(pre_open_hooks);
     }
 
@@ -271,7 +258,7 @@ export function open_modal(
         if (conf.on_hide) {
             conf.on_hide();
         }
-        enable_scrolling();
+        overlay_util.enable_scrolling();
         call_hooks(pre_close_hooks);
     }
 
@@ -309,7 +296,7 @@ export function close_overlay(name: string): void {
     $("#navbar-fixed-container").attr("aria-hidden", "false");
 
     active_overlay.close_handler();
-    enable_scrolling();
+    overlay_util.enable_scrolling();
 }
 
 export function close_active(): void {
