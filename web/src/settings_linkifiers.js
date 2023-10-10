@@ -53,7 +53,7 @@ function open_linkifier_edit_form(linkifier_id) {
         const opts = {
             success_continuation() {
                 $change_linkifier_button.prop("disabled", false);
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error_continuation(xhr) {
                 $change_linkifier_button.prop("disabled", false);
