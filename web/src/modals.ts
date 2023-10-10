@@ -90,7 +90,7 @@ export function open_modal(
             return;
         }
 
-        close_active_modal();
+        close_active();
         setTimeout(() => {
             open_modal(modal_id, conf);
         }, 10);
@@ -179,7 +179,7 @@ export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden
     }
 
     if (!is_open()) {
-        blueslip.warn("close_active_modal() called without checking is_open()");
+        blueslip.warn("close_active() called without checking is_open()");
         return;
     }
 
@@ -228,9 +228,9 @@ export function close_modal_if_open(modal_id: string): void {
     }
 }
 
-export function close_active_modal(): void {
+export function close_active(): void {
     if (!is_open()) {
-        blueslip.warn("close_active_modal() called without checking is_open()");
+        blueslip.warn("close_active() called without checking is_open()");
         return;
     }
 

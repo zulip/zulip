@@ -236,7 +236,7 @@ export function on_load_success(
     }
     $(".admin_invites_table").on("click", ".revoke", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
         const $row = $(e.target).closest(".invite_row");
@@ -267,7 +267,7 @@ export function on_load_success(
 
     $(".admin_invites_table").on("click", ".resend", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 

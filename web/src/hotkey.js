@@ -281,7 +281,7 @@ export function process_escape_key(e) {
     }
 
     if (modals.is_open()) {
-        modals.close_active_modal();
+        modals.close_active();
         return true;
     }
 
