@@ -50,10 +50,10 @@ export function deselect_top_left_corner_items() {
         ".top_left_starred_messages",
         ".top_left_mentions",
         ".top_left_recent_view",
-        ".top_left_inbox"
-    ]
+        ".top_left_inbox",
+    ];
 
-    for(const classname of classToRemove) {
+    for (const classname of classToRemove) {
         remove_active_class($(classname));
     }
 }
@@ -88,7 +88,7 @@ export function handle_narrow_activated(filter) {
 }
 
 export function highlight_recent_view() {
-    deselect_top_left_corner_items()
+    deselect_top_left_corner_items();
     $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -120,7 +120,7 @@ export function initialize() {
 }
 
 export function highlight_inbox_view() {
-    deselect_top_left_corner_items()
+    deselect_top_left_corner_items();
     $(".top_left_inbox").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
