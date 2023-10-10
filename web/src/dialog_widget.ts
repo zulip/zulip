@@ -22,7 +22,7 @@ import * as ui_report from "./ui_report";
  *         to avoid interference from other elements.
  *
  *      3) For settings, we have a click handler in settings.js
- *         that will close the dialog via modals.close_active_modal.
+ *         that will close the dialog via modals.close_active.
  *
  *      4) We assume that since this is a modal, you will
  *         only ever have one confirm dialog active at any
