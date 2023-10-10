@@ -39,7 +39,7 @@ $(() => {
         // event to the parent container otherwise the modal will not open. This
         // is so because this event handler will get fired on any click in settings
         // overlay and subsequently close any open modal.
-        modals.close_active_modal();
+        modals.close_active();
     });
 });
 
