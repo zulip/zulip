@@ -703,7 +703,7 @@ function register_click_handlers() {
             channel.post({
                 url,
                 success() {
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                 },
                 error(xhr) {
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));

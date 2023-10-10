@@ -239,7 +239,7 @@ export function add_a_new_bot() {
             contentType: false,
             success() {
                 create_avatar_widget.clear();
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error(xhr) {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
@@ -367,7 +367,7 @@ export function set_up() {
             channel.post({
                 url: "/json/users/" + encodeURIComponent(user_id) + "/reactivate",
                 success() {
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                 },
                 error(xhr) {
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));

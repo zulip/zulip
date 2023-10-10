@@ -243,7 +243,7 @@ $(() => {
             10,
         );
         $("#email_address_visibility").val(selected_val);
-        portico_modals.close_modal("change-email-address-visibility-modal");
+        portico_modals.close("change-email-address-visibility-modal");
 
         let selected_option_text;
 

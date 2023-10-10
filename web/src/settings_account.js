@@ -492,7 +492,7 @@ export function set_up() {
         const opts = {
             success_continuation() {
                 channel.set_password_change_in_progress(false);
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error_continuation() {
                 dialog_widget.hide_dialog_spinner();
@@ -541,7 +541,7 @@ export function set_up() {
                         4000,
                     );
                 }
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error_continuation() {
                 dialog_widget.hide_dialog_spinner();
@@ -600,7 +600,7 @@ export function set_up() {
                         4000,
                     );
                 }
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error_continuation() {
                 dialog_widget.hide_dialog_spinner();
@@ -706,7 +706,7 @@ export function set_up() {
                 url: "/json/users/me",
                 success() {
                     dialog_widget.hide_dialog_spinner();
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                     window.location.href = "/login/";
                 },
                 error(xhr) {
@@ -734,7 +734,7 @@ export function set_up() {
                         }
                     }
                     dialog_widget.hide_dialog_spinner();
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                     $("#account-settings-status")
                         .addClass("alert-error")
                         .html(rendered_error_msg)

@@ -318,7 +318,7 @@ export function add_user_group() {
         success() {
             $user_group_status.hide();
             ui_report.success($t_html({defaultMessage: "User group added!"}), $user_group_status);
-            dialog_widget.close_modal();
+            dialog_widget.close();
         },
         error(xhr) {
             $user_group_status.hide();
