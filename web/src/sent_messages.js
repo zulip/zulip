@@ -2,12 +2,8 @@ import * as Sentry from "@sentry/browser";
 
 import * as blueslip from "./blueslip";
 
-export let next_local_id;
+export let next_local_id = 0;
 export const messages = new Map();
-
-export function reset_id_state() {
-    next_local_id = 0;
-}
 
 export function get_new_local_id() {
     next_local_id += 1;
@@ -133,8 +129,4 @@ export function report_event_received(local_id) {
     }
 
     state.report_event_received();
-}
-
-export function initialize() {
-    reset_id_state();
 }
