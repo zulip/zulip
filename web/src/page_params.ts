@@ -10,15 +10,8 @@ export const page_params: {
         allowed: boolean;
     }[];
     corporate_enabled: boolean;
-    development_environment: boolean;
-    language_list: {
-        code: string;
-        locale: string;
-        name: string;
-        percent_translated: number | undefined;
-    }[];
-    login_page: string;
     delivery_email: string;
+    development_environment: boolean;
     is_admin: boolean;
     is_billing_admin: boolean;
     is_bot: boolean;
@@ -26,6 +19,13 @@ export const page_params: {
     is_moderator: boolean;
     is_owner: boolean;
     is_spectator: boolean;
+    language_list: {
+        code: string;
+        locale: string;
+        name: string;
+        percent_translated: number | undefined;
+    }[];
+    login_page: string;
     max_avatar_file_size_mib: number;
     max_icon_file_size_mib: number;
     max_logo_file_size_mib: number;
@@ -50,11 +50,11 @@ export const page_params: {
     realm_is_zephyr_mirror_realm: boolean;
     realm_logo_source: string;
     realm_logo_url: string;
-    realm_night_logo_source: string;
-    realm_night_logo_url: string;
     realm_move_messages_between_streams_policy: number;
     realm_name_changes_disabled: boolean;
     realm_name: string;
+    realm_night_logo_source: string;
+    realm_night_logo_url: string;
     realm_notifications_stream_id: number;
     realm_org_type: number;
     realm_plan_type: number;
@@ -81,8 +81,8 @@ export const page_params: {
     translation_data: Record<string, string>;
     user_id: number | undefined;
     webpack_public_path: string;
-    zulip_plan_is_not_limited: boolean;
     zulip_merge_base: string;
+    zulip_plan_is_not_limited: boolean;
     zulip_version: string;
 } = $("#page-params").remove().data("params");
 const t2 = performance.now();
