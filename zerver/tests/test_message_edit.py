@@ -861,7 +861,9 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        msg = Message.objects.get(id=msg_id)
+        history = orjson.loads(assert_is_not_none(msg.edit_history))
+        self.assertListEqual(history, msg.edit_history_entries)
         self.assertEqual(history[0]["prev_content"], "content 1")
         self.assertEqual(history[0]["user_id"], hamlet.id)
         self.assertEqual(
@@ -882,7 +884,9 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        msg = Message.objects.get(id=msg_id)
+        history = orjson.loads(assert_is_not_none(msg.edit_history))
+        self.assertListEqual(history, msg.edit_history_entries)
         self.assertEqual(history[0]["prev_topic"], "topic 1")
         self.assertEqual(history[0]["topic"], "topic 2")
         self.assertEqual(history[0]["user_id"], hamlet.id)
@@ -899,7 +903,9 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        msg = Message.objects.get(id=msg_id)
+        history = orjson.loads(assert_is_not_none(msg.edit_history))
+        self.assertListEqual(history, msg.edit_history_entries)
         self.assertEqual(history[0]["prev_stream"], stream_1.id)
         self.assertEqual(history[0]["stream"], stream_2.id)
         self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
@@ -914,7 +920,9 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        msg = Message.objects.get(id=msg_id)
+        history = orjson.loads(assert_is_not_none(msg.edit_history))
+        self.assertListEqual(history, msg.edit_history_entries)
         self.assertEqual(history[0]["prev_content"], "content 2")
         self.assertEqual(history[0]["prev_topic"], "topic 2")
         self.assertEqual(history[0]["topic"], "topic 3")
@@ -939,7 +947,9 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        msg = Message.objects.get(id=msg_id)
+        history = orjson.loads(assert_is_not_none(msg.edit_history))
+        self.assertListEqual(history, msg.edit_history_entries)
         self.assertEqual(history[0]["prev_content"], "content 3")
         self.assertEqual(history[0]["user_id"], hamlet.id)
 
@@ -952,7 +962,9 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        msg = Message.objects.get(id=msg_id)
+        history = orjson.loads(assert_is_not_none(msg.edit_history))
+        self.assertListEqual(history, msg.edit_history_entries)
         self.assertEqual(history[0]["prev_topic"], "topic 3")
         self.assertEqual(history[0]["topic"], "topic 4")
         self.assertEqual(history[0]["prev_stream"], stream_2.id)
@@ -972,7 +984,9 @@ class EditMessageTest(EditMessageTestCase):
 
         # Now, we verify that all of the edits stored in the message.edit_history
         # have the correct data structure
-        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        msg = Message.objects.get(id=msg_id)
+        history = orjson.loads(assert_is_not_none(msg.edit_history))
+        self.assertListEqual(history, msg.edit_history_entries)
 
         self.assertEqual(history[0]["prev_topic"], "topic 3")
         self.assertEqual(history[0]["topic"], "topic 4")
@@ -2584,10 +2598,12 @@ class EditMessageTest(EditMessageTestCase):
                 self.assert_length(
                     orjson.loads(assert_is_not_none(msg.edit_history)), len_edit_history
                 )
+                self.assert_length(msg.edit_history_entries, len_edit_history)
 
             for msg_id in [id3, id4]:
                 msg = Message.objects.get(id=msg_id)
                 self.assertEqual(msg.edit_history, None)
+                self.assertFalse(msg.edit_history_entries)
 
         new_topic = "edited"
         result = self.client_patch(
@@ -2639,11 +2655,13 @@ class EditMessageTest(EditMessageTestCase):
 
         msg1_edit_history = orjson.loads(assert_is_not_none(msg1.edit_history))
         self.assertTrue("prev_content" in msg1_edit_history[0])
+        self.assertTrue("prev_content" in msg1.edit_history_entries[0])
 
         for msg in [msg2, msg3]:
             self.assertFalse(
                 "prev_content" in orjson.loads(assert_is_not_none(msg.edit_history))[0]
             )
+            self.assertFalse("prev_content" in msg.edit_history_entries[0])
 
         for msg in [msg1, msg2, msg3]:
             self.assertEqual(
@@ -2651,6 +2669,7 @@ class EditMessageTest(EditMessageTestCase):
                 msg.topic_name(),
             )
             self.assert_length(orjson.loads(assert_is_not_none(msg.edit_history)), 1)
+            self.assert_length(msg.edit_history_entries, 1)
 
     def test_propagate_topic_forward(self) -> None:
         self.login("hamlet")
