@@ -72,12 +72,15 @@ class Command(ZulipBaseCommand):
                     f"/usr/lib/postgresql/{major_pg_version}/bin/pg_dump",
                     "--format=directory",
                     "--file=" + os.path.join(tmp, "zulip-backup", "database"),
-                    "--host=" + settings.DATABASES["default"]["HOST"],
-                    "--port=" + settings.DATABASES["default"]["PORT"],
                     "--username=" + settings.DATABASES["default"]["USER"],
                     "--dbname=" + settings.DATABASES["default"]["NAME"],
                     "--no-password",
                 ]
+                if settings.DATABASES["default"]["HOST"] != "":
+                    pg_dump_command += ["--host=" + settings.DATABASES["default"]["HOST"]]
+                if settings.DATABASES["default"]["PORT"] != "":
+                    pg_dump_command += ["--port=" + settings.DATABASES["default"]["PORT"]]
+
                 os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
 
                 run(
