@@ -2,7 +2,7 @@ import $ from "jquery";
 
 const list_selectors = [
     "#stream_filters",
-    "#global_filters",
+    "#left-sidebar-navigation-list",
     "#user_presences",
     "#send_later_options",
 ];
