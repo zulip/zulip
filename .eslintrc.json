@@ -50,6 +50,7 @@
         "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
+        "import/no-cycle": ["error", {"ignoreExternal": true}],
         "import/no-duplicates": "error",
         "import/no-self-import": "error",
         "import/no-unresolved": "off",
@@ -193,7 +194,6 @@
                 "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
                 "@typescript-eslint/parameter-properties": "error",
                 "@typescript-eslint/promise-function-async": "error",
-                "import/no-cycle": "error",
                 "no-undef": "error"
             }
         },
