@@ -34,6 +34,12 @@ export const page_params: {
     page_load_time: number;
     promote_sponsoring_zulip: boolean;
     realm_add_custom_emoji_policy: number;
+    realm_available_video_chat_providers: {
+        disabled: {name: string; id: number};
+        jitsi_meet: {name: string; id: number};
+        zoom?: {name: string; id: number};
+        big_blue_button?: {name: string; id: number};
+    };
     realm_avatar_changes_disabled: boolean;
     realm_create_multiuse_invite_group: number;
     realm_create_private_stream_policy: number;
@@ -48,6 +54,7 @@ export const page_params: {
     realm_invite_to_realm_policy: number;
     realm_invite_to_stream_policy: number;
     realm_is_zephyr_mirror_realm: boolean;
+    realm_jitsi_server_url: string | null;
     realm_logo_source: string;
     realm_logo_url: string;
     realm_move_messages_between_streams_policy: number;
@@ -64,9 +71,11 @@ export const page_params: {
     realm_upload_quota_mib: number | null;
     realm_uri: string;
     realm_user_group_edit_policy: number;
+    realm_video_chat_provider: number;
     realm_waiting_period_threshold: number;
     request_language: string;
     server_avatar_changes_disabled: boolean;
+    server_jitsi_server_url: string | null;
     server_name_changes_disabled: boolean;
     server_needs_upgrade: boolean;
     server_presence_offline_threshold_seconds: number;
