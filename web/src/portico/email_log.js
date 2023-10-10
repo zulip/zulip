@@ -50,6 +50,6 @@ $(() => {
     });
     $(".open-forward-email-modal").on("click", (e) => {
         e.preventDefault();
-        portico_modals.open_modal("forward_email_modal");
+        portico_modals.open("forward_email_modal");
     });
 });

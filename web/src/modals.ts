@@ -52,19 +52,19 @@ export function active_modal(): string | undefined {
 // on_shown: Callback to run when the modal is shown.
 // on_hide: Callback to run when the modal is triggered to hide.
 // on_hidden: Callback to run when the modal is hidden.
-export function open_modal(
+export function open(
     modal_id: string,
     conf: ModalConfig & {recursive_call_count?: number} = {},
 ): void {
     if (modal_id === undefined) {
-        blueslip.error("Undefined id was passed into open_modal");
+        blueslip.error("Undefined id was passed into open");
         return;
     }
 
     // Don't accept hash-based selector to enforce modals to have unique ids and
     // since micromodal doesn't accept hash based selectors.
     if (modal_id.startsWith("#")) {
-        blueslip.error("hash-based selector passed in to open_modal", {modal_id});
+        blueslip.error("hash-based selector passed in to open", {modal_id});
         return;
     }
 
@@ -92,7 +92,7 @@ export function open_modal(
 
         close_active();
         setTimeout(() => {
-            open_modal(modal_id, conf);
+            open(modal_id, conf);
         }, 10);
         return;
     }
@@ -194,7 +194,7 @@ export function close(modal_id: string, conf: Pick<ModalConfig, "on_hidden"> = {
     const $micromodal = $(id_selector);
 
     // On-hidden hooks should typically be registered in
-    // overlays.open_modal.  However, we offer this alternative
+    // overlays.open.  However, we offer this alternative
     // mechanism as a convenience for hooks only known when
     // closing the modal.
     $micromodal.find(".modal__container").on("animationend", (event) => {

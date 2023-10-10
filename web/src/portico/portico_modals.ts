@@ -27,16 +27,16 @@ function close_active(): void {
     Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
 }
 
-export function open_modal(modal_id: string, recursive_call_count: number = 0): void {
+export function open(modal_id: string, recursive_call_count: number = 0): void {
     if (modal_id === undefined) {
-        blueslip.error("Undefined id was passed into open_modal");
+        blueslip.error("Undefined id was passed into open");
         return;
     }
 
     // Don't accept hash-based selector to enforce modals to have unique ids and
     // since micromodal doesn't accept hash based selectors.
     if (modal_id.startsWith("#")) {
-        blueslip.error("hash-based selector passed in to open_modal", {modal_id});
+        blueslip.error("hash-based selector passed in to open", {modal_id});
         return;
     }
 
@@ -64,7 +64,7 @@ export function open_modal(modal_id: string, recursive_call_count: number = 0): 
 
         close_active();
         setTimeout(() => {
-            open_modal(modal_id, recursive_call_count);
+            open(modal_id, recursive_call_count);
         }, 10);
         return;
     }
