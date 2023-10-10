@@ -377,7 +377,7 @@ export function format_text($textarea, type, inserted_content) {
     range = $textarea.range();
     const selected_text = range.text;
 
-    const is_selection_bold = () =>
+    const is_selection_bold = (bold_syntax) =>
         // First check if there are enough characters before/after selection.
         range.start >= bold_syntax.length &&
         text.length - range.end >= bold_syntax.length &&
@@ -385,7 +385,7 @@ export function format_text($textarea, type, inserted_content) {
         text.slice(range.start - bold_syntax.length, range.start) === bold_syntax &&
         text.slice(range.end, range.end + bold_syntax.length) === bold_syntax;
 
-    const is_inner_text_bold = () =>
+    const is_inner_text_bold = (bold_syntax) =>
         // Check if selected text itself has bold_syntax inside it.
         range.length > 4 &&
         selected_text.slice(0, bold_syntax.length) === bold_syntax &&
@@ -505,37 +505,40 @@ export function format_text($textarea, type, inserted_content) {
         }
     };
 
+    const format = (bold_syntax) => {
+        // If the selection is already surrounded by bold syntax,
+        // remove it rather than adding another copy.
+        if (is_selection_bold(bold_syntax)) {
+            // Remove the bold_syntax from text.
+            text =
+                text.slice(0, range.start - bold_syntax.length) +
+                text.slice(range.start, range.end) +
+                text.slice(range.end + bold_syntax.length);
+            set(field, text);
+            field.setSelectionRange(
+                range.start - bold_syntax.length,
+                range.end - bold_syntax.length,
+            );
+            return;
+        } else if (is_inner_text_bold(bold_syntax)) {
+            // Remove bold syntax inside the selection, if present.
+            text =
+                text.slice(0, range.start) +
+                text.slice(range.start + bold_syntax.length, range.end - bold_syntax.length) +
+                text.slice(range.end);
+            set(field, text);
+            field.setSelectionRange(range.start, range.end - bold_syntax.length * 2);
+            return;
+        }
+
+        // Otherwise, we don't have bold syntax, so we add it.
+        wrapSelection(field, bold_syntax);
+    };
+
     switch (type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
-
-            // If the selection is already surrounded by bold syntax,
-            // remove it rather than adding another copy.
-            if (is_selection_bold()) {
-                // Remove the bold_syntax from text.
-                text =
-                    text.slice(0, range.start - bold_syntax.length) +
-                    text.slice(range.start, range.end) +
-                    text.slice(range.end + bold_syntax.length);
-                set(field, text);
-                field.setSelectionRange(
-                    range.start - bold_syntax.length,
-                    range.end - bold_syntax.length,
-                );
-                break;
-            } else if (is_inner_text_bold()) {
-                // Remove bold syntax inside the selection, if present.
-                text =
-                    text.slice(0, range.start) +
-                    text.slice(range.start + bold_syntax.length, range.end - bold_syntax.length) +
-                    text.slice(range.end);
-                set(field, text);
-                field.setSelectionRange(range.start, range.end - bold_syntax.length * 2);
-                break;
-            }
-
-            // Otherwise, we don't have bold syntax, so we add it.
-            wrapSelection(field, bold_syntax);
+            format(bold_syntax);
             break;
         case "italic":
             // Ctrl + I: Toggle italic syntax on selection. This is
@@ -552,7 +555,7 @@ export function format_text($textarea, type, inserted_content) {
                     text.slice(range.start - italic_syntax.length, range.start) === italic_syntax &&
                     text.slice(range.end, range.end + italic_syntax.length) === italic_syntax;
 
-                if (is_selection_bold()) {
+                if (is_selection_bold(bold_syntax)) {
                     // If text has bold_syntax around it.
                     if (
                         range.start >= 3 &&
@@ -592,7 +595,7 @@ export function format_text($textarea, type, inserted_content) {
                 selected_text.slice(0, italic_syntax.length) === italic_syntax &&
                 selected_text.slice(-italic_syntax.length) === italic_syntax
             ) {
-                if (is_inner_text_bold()) {
+                if (is_inner_text_bold(bold_syntax)) {
                     if (
                         selected_text.length > bold_and_italic_syntax.length * 2 &&
                         selected_text.slice(0, bold_and_italic_syntax.length) ===
