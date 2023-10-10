@@ -536,7 +536,7 @@ test_ui("on_events", ({mock_template, override, override_rewire}) => {
                     assert.equal(text, "translated HTML: User group added!");
                     assert.equal(ele, $("#dialog_error"));
                 };
-                dialog_widget.close_modal = () => {};
+                dialog_widget.close = () => {};
 
                 opts.success();
 

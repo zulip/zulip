@@ -533,7 +533,7 @@ function open_edit_form_modal(e) {
             if (Object.keys(deleted_values).length !== 0) {
                 const edit_select_field_modal_callback = () =>
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
-                dialog_widget.close_modal(edit_select_field_modal_callback);
+                dialog_widget.close(edit_select_field_modal_callback);
                 return;
             }
         }

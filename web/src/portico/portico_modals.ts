@@ -103,7 +103,7 @@ export function open_modal(modal_id: string, recursive_call_count: number = 0): 
         if (document.getSelection()?.type === "Range") {
             return;
         }
-        close_modal(modal_id);
+        close(modal_id);
     });
 
     Micromodal.show(modal_id, {
@@ -112,9 +112,9 @@ export function open_modal(modal_id: string, recursive_call_count: number = 0): 
     });
 }
 
-export function close_modal(modal_id: string): void {
+export function close(modal_id: string): void {
     if (modal_id === undefined) {
-        blueslip.error("Undefined id was passed into close_modal");
+        blueslip.error("Undefined id was passed into close");
         return;
     }
 

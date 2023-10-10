@@ -59,7 +59,7 @@ export function submit_new_status() {
         old_emoji_info.reaction_type === selected_emoji_info.reaction_type &&
         old_emoji_info.emoji_code === selected_emoji_info.emoji_code
     ) {
-        dialog_widget.close_modal();
+        dialog_widget.close();
         return;
     }
 
@@ -69,7 +69,7 @@ export function submit_new_status() {
         emoji_code: selected_emoji_info.emoji_code || "",
         reaction_type: selected_emoji_info.reaction_type || "",
         success() {
-            dialog_widget.close_modal();
+            dialog_widget.close();
         },
     });
 }

@@ -139,7 +139,7 @@ export function mark_all_as_read(args = {}) {
                     blueslip.log("Cleared old_unreads_missing after bankruptcy.");
                 }
             }
-            dialog_widget.close_modal();
+            dialog_widget.close();
         },
         error(xhr) {
             if (xhr.readyState === 0) {

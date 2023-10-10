@@ -98,8 +98,8 @@ export function show_dialog_spinner(): void {
 }
 
 // Supports a callback to be called once the modal finishes closing.
-export function close_modal(on_hidden_callback?: () => void): void {
-    modals.close_modal("dialog_widget_modal", {on_hidden: on_hidden_callback});
+export function close(on_hidden_callback?: () => void): void {
+    modals.close("dialog_widget_modal", {on_hidden: on_hidden_callback});
 }
 
 export function launch(conf: DialogWidgetConfig): void {
@@ -204,7 +204,7 @@ export function launch(conf: DialogWidgetConfig): void {
         if (conf.loading_spinner) {
             show_dialog_spinner();
         } else if (conf.close_on_submit) {
-            close_modal();
+            close();
         }
         $("#dialog_error").hide();
         conf.on_click(e);
@@ -241,7 +241,7 @@ export function submit_api_request(
         url,
         data,
         success(response_data, textStatus, jqXHR) {
-            close_modal();
+            close();
             if (success_continuation !== undefined) {
                 success_continuation(response_data, textStatus, jqXHR);
             }

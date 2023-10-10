@@ -1123,7 +1123,7 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
                 dialog_widget.hide_dialog_spinner();
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error(xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
@@ -1258,7 +1258,7 @@ export function move_topic_containing_message_to_stream(
             // The main UI will update via receiving the event
             // from server_events.js.
             reset_modal_ui();
-            dialog_widget.close_modal();
+            dialog_widget.close();
         },
         error(xhr) {
             reset_modal_ui();
@@ -1277,7 +1277,7 @@ export function move_topic_containing_message_to_stream(
 
                 const partial_move_confirmation_modal_callback = () =>
                     handle_message_move_failure_due_to_time_limit(xhr, handle_confirm);
-                dialog_widget.close_modal(partial_move_confirmation_modal_callback);
+                dialog_widget.close(partial_move_confirmation_modal_callback);
                 return;
             }
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));

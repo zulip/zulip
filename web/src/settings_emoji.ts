@@ -227,7 +227,7 @@ function show_modal(): void {
                 processData: false,
                 contentType: false,
                 success() {
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                 },
                 error(xhr) {
                     $("#dialog_error").hide();
@@ -281,7 +281,7 @@ function show_modal(): void {
                 return;
             }
 
-            dialog_widget.close_modal(() => {
+            dialog_widget.close(() => {
                 const html_body = emoji_settings_warning_modal({
                     emoji_name: emoji.name,
                 });

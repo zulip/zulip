@@ -49,7 +49,7 @@ export function initialize(): void {
     });
 
     $("#confirm-licenses-modal .dialog_submit_button").on("click", () => {
-        portico_modals.close_modal("confirm-licenses-modal");
+        portico_modals.close("confirm-licenses-modal");
         create_update_license_request();
     });
 
