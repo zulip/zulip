@@ -40,16 +40,22 @@ export function update_dom_with_unread_counts(counts, skip_animations) {
 // TODO: Rewrite how we handle activation of narrows when doing the redesign.
 // We don't want to adjust class for all the buttons when switching narrows.
 
-function remove($elem) {
+function remove_active_class($elem) {
     $elem.removeClass("active-filter active-sub-filter");
 }
 
 export function deselect_top_left_corner_items() {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_mentions"));
-    remove($(".top_left_recent_view"));
-    remove($(".top_left_inbox"));
+    const classToRemove = [
+        ".top_left_all_messages",
+        ".top_left_starred_messages",
+        ".top_left_mentions",
+        ".top_left_recent_view",
+        ".top_left_inbox"
+    ]
+
+    for(const classname of classToRemove) {
+        remove_active_class($(classname));
+    }
 }
 
 export function handle_narrow_activated(filter) {
@@ -82,10 +88,7 @@ export function handle_narrow_activated(filter) {
 }
 
 export function highlight_recent_view() {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_mentions"));
-    remove($(".top_left_inbox"));
+    deselect_top_left_corner_items()
     $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -117,10 +120,7 @@ export function initialize() {
 }
 
 export function highlight_inbox_view() {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_recent_view"));
-    remove($(".top_left_mentions"));
+    deselect_top_left_corner_items()
     $(".top_left_inbox").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
