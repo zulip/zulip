@@ -74,16 +74,12 @@ export const show_subs_pane = {
     },
 };
 
-export function row_for_stream_id(stream_id) {
-    return $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}']`);
-}
-
 export function is_sub_already_present(sub) {
-    return row_for_stream_id(sub.stream_id).length > 0;
+    return stream_ui_updates.row_for_stream_id(sub.stream_id).length > 0;
 }
 
 export function update_left_panel_row(sub) {
-    const $row = row_for_stream_id(sub.stream_id);
+    const $row = stream_ui_updates.row_for_stream_id(sub.stream_id);
 
     if ($row.length === 0) {
         return;
@@ -105,14 +101,6 @@ export function update_left_panel_row(sub) {
     }
 
     $row.replaceWith($new_row);
-}
-
-export function settings_button_for_sub(sub) {
-    // We don't do expectOne() here, because this button is only
-    // visible if the user has that stream selected in the streams UI.
-    return $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id)}'] .subscribe-button`,
-    );
 }
 
 function get_row_data($row) {
@@ -155,14 +143,6 @@ export function toggle_pin_to_top_stream(sub) {
     stream_settings_api.set_stream_property(sub, "pin_to_top", !sub.pin_to_top);
 }
 
-let subscribed_only = true;
-
-export function is_subscribed_stream_tab_active() {
-    // Returns true if "Subscribed" tab in stream settings is open
-    // otherwise false.
-    return subscribed_only;
-}
-
 export function update_stream_name(sub, new_name) {
     // Rename the stream internally.
     stream_data.rename_sub(sub, new_name);
@@ -175,7 +155,7 @@ export function update_stream_name(sub, new_name) {
     stream_edit.update_stream_name(sub, new_name);
 
     // Update the subscriptions page
-    const $sub_row = row_for_stream_id(stream_id);
+    const $sub_row = stream_ui_updates.row_for_stream_id(stream_id);
     $sub_row.find(".stream-name").text(new_name);
 
     // Update the message feed.
@@ -196,7 +176,7 @@ export function update_stream_description(sub, description, rendered_description
     stream_data.clean_up_description(sub);
 
     // Update stream row
-    const $sub_row = row_for_stream_id(sub.stream_id);
+    const $sub_row = stream_ui_updates.row_for_stream_id(sub.stream_id);
     $sub_row.find(".description").html(util.clean_user_content_links(sub.rendered_description));
 
     // Update stream settings
@@ -297,7 +277,7 @@ export function add_sub_to_table(sub) {
         // good way to associate with this request because the stream
         // ID isn't known yet.  These are appended to the top of the
         // list, so they are more visible.
-        row_for_stream_id(sub.stream_id).trigger("click");
+        stream_ui_updates.row_for_stream_id(sub.stream_id).trigger("click");
         stream_create.reset_created_stream();
     }
     update_empty_left_panel_message();
@@ -306,7 +286,7 @@ export function add_sub_to_table(sub) {
 export function remove_stream(stream_id) {
     // It is possible that row is empty when we deactivate a
     // stream, but we let jQuery silently handle that.
-    const $row = row_for_stream_id(stream_id);
+    const $row = stream_ui_updates.row_for_stream_id(stream_id);
     $row.remove();
     update_empty_left_panel_message();
     if (hash_parser.is_editing_stream(stream_id)) {
@@ -347,7 +327,7 @@ export function show_active_stream_in_left_panel() {
     const selected_row = hash_parser.get_current_hash_section();
 
     if (Number.parseFloat(selected_row)) {
-        const $sub_row = row_for_stream_id(selected_row);
+        const $sub_row = stream_ui_updates.row_for_stream_id(selected_row);
         $sub_row.addClass("active");
     }
 }
@@ -449,7 +429,7 @@ export function update_empty_left_panel_message() {
     // Check if we have any streams in panel to decide whether to
     // display a notice.
     let has_streams;
-    if (is_subscribed_stream_tab_active()) {
+    if (stream_ui_updates.is_subscribed_stream_tab_active()) {
         // We don't remove stream row from UI on unsubscribe, To handle
         // this case here we are also checking DOM if there are streams
         // displayed in panel or not.
@@ -463,7 +443,7 @@ export function update_empty_left_panel_message() {
         $(".no-streams-to-show").hide();
         return;
     }
-    if (is_subscribed_stream_tab_active()) {
+    if (stream_ui_updates.is_subscribed_stream_tab_active()) {
         $(".all_streams_tab_empty_text").hide();
         $(".subscribed_streams_tab_empty_text").show();
     } else {
@@ -538,7 +518,7 @@ export function get_left_panel_params() {
     const input = $search_box.expectOne().val().trim();
     const params = {
         input,
-        subscribed_only,
+        subscribed_only: stream_ui_updates.subscribed_only,
         sort_order,
     };
     return params;
@@ -563,9 +543,9 @@ export function switch_stream_tab(tab_name) {
     */
 
     if (tab_name === "all-streams") {
-        subscribed_only = false;
+        stream_ui_updates.set_subscribed_only(false);
     } else if (tab_name === "subscribed") {
-        subscribed_only = true;
+        stream_ui_updates.set_subscribed_only(true);
     }
 
     redraw_left_panel();
@@ -661,7 +641,7 @@ export function setup_page(callback) {
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".
-        subscribed_only = true;
+        stream_ui_updates.set_subscribed_only(true);
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
@@ -776,7 +756,7 @@ export function setup_page(callback) {
 }
 
 export function switch_to_stream_row(stream_id) {
-    const $stream_row = row_for_stream_id(stream_id);
+    const $stream_row = stream_ui_updates.row_for_stream_id(stream_id);
     const $container = $(".streams-list");
 
     get_active_data().$row.removeClass("active");
@@ -1099,58 +1079,6 @@ export function sub_or_unsub(sub, $stream_row) {
     }
 }
 
-export function update_web_public_stream_privacy_option_state($container) {
-    const $web_public_stream_elem = $container.find(
-        `input[value='${CSS.escape(
-            settings_config.stream_privacy_policy_values.web_public.code,
-        )}']`,
-    );
-
-    const for_stream_edit_panel = $container.attr("id") === "stream_permission_settings";
-    if (for_stream_edit_panel) {
-        const stream_id = Number.parseInt(
-            $container.closest(".subscription_settings.show").attr("data-stream-id"),
-            10,
-        );
-        const sub = sub_store.get(stream_id);
-        if (!stream_data.can_change_permissions(sub)) {
-            // We do not want to enable the already disabled web-public option
-            // in stream-edit panel if user is not allowed to change stream
-            // privacy at all.
-            return;
-        }
-    }
-
-    if (
-        !page_params.server_web_public_streams_enabled ||
-        !page_params.realm_enable_spectator_access
-    ) {
-        if (for_stream_edit_panel && $web_public_stream_elem.is(":checked")) {
-            // We do not hide web-public option in the "Change privacy" modal if
-            // stream is web-public already. The option is disabled in this case.
-            $web_public_stream_elem.prop("disabled", true);
-            return;
-        }
-        $web_public_stream_elem.closest(".settings-radio-input-parent").hide();
-        $container
-            .find(".stream-privacy-values .settings-radio-input-parent:visible")
-            .last()
-            .css("border-bottom", "none");
-    } else {
-        if (!$web_public_stream_elem.is(":visible")) {
-            $container
-                .find(".stream-privacy-values .settings-radio-input-parent:visible")
-                .last()
-                .css("border-bottom", "");
-            $web_public_stream_elem.closest(".settings-radio-input-parent").show();
-        }
-        $web_public_stream_elem.prop(
-            "disabled",
-            !settings_data.user_can_create_web_public_streams(),
-        );
-    }
-}
-
 export function update_public_stream_privacy_option_state($container) {
     const $public_stream_elem = $container.find(
         `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.public.code)}']`,
@@ -1158,37 +1086,12 @@ export function update_public_stream_privacy_option_state($container) {
     $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
 }
 
-export function update_private_stream_privacy_option_state($container, is_default_stream = false) {
-    // Disable both "Private, shared history" and "Private, protected history" options.
-    const $private_stream_elem = $container.find(
-        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
-    );
-    const $private_with_public_history_elem = $container.find(
-        `input[value='${CSS.escape(
-            settings_config.stream_privacy_policy_values.private_with_public_history.code,
-        )}']`,
-    );
-
-    const disable_private_stream_options =
-        is_default_stream || !settings_data.user_can_create_private_streams();
-
-    $private_stream_elem.prop("disabled", disable_private_stream_options);
-    $private_with_public_history_elem.prop("disabled", disable_private_stream_options);
-
-    $private_stream_elem
-        .closest("div")
-        .toggleClass("default_stream_private_tooltip", is_default_stream);
-    $private_with_public_history_elem
-        .closest("div")
-        .toggleClass("default_stream_private_tooltip", is_default_stream);
-}
-
 export function hide_or_disable_stream_privacy_options_if_required($container) {
-    update_web_public_stream_privacy_option_state($container);
+    stream_ui_updates.update_web_public_stream_privacy_option_state($container);
 
     update_public_stream_privacy_option_state($container);
 
-    update_private_stream_privacy_option_state($container);
+    stream_ui_updates.update_private_stream_privacy_option_state($container);
 }
 
 export function update_stream_privacy_choices(policy) {
@@ -1207,13 +1110,13 @@ export function update_stream_privacy_choices(policy) {
     }
 
     if (policy === "create_private_stream_policy") {
-        update_private_stream_privacy_option_state($container);
+        stream_ui_updates.update_private_stream_privacy_option_state($container);
     }
     if (policy === "create_public_stream_policy") {
         update_public_stream_privacy_option_state($container);
     }
     if (policy === "create_web_public_stream_policy") {
-        update_web_public_stream_privacy_option_state($container);
+        stream_ui_updates.update_web_public_stream_privacy_option_state($container);
     }
 }
 

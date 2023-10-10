@@ -8,12 +8,114 @@ import render_stream_settings_tip from "../templates/stream_settings/stream_sett
 import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as stream_data from "./stream_data";
 import * as stream_edit_toggler from "./stream_edit_toggler";
 import * as stream_settings_containers from "./stream_settings_containers";
-import * as stream_settings_ui from "./stream_settings_ui";
+import * as sub_store from "./sub_store";
+
+export function row_for_stream_id(stream_id) {
+    return $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}']`);
+}
+
+function settings_button_for_sub(sub) {
+    // We don't do expectOne() here, because this button is only
+    // visible if the user has that stream selected in the streams UI.
+    return $(
+        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id)}'] .subscribe-button`,
+    );
+}
+
+export let subscribed_only = true;
+
+export function is_subscribed_stream_tab_active() {
+    // Returns true if "Subscribed" tab in stream settings is open
+    // otherwise false.
+    return subscribed_only;
+}
+
+export function set_subscribed_only(value) {
+    subscribed_only = value;
+}
+
+export function update_web_public_stream_privacy_option_state($container) {
+    const $web_public_stream_elem = $container.find(
+        `input[value='${CSS.escape(
+            settings_config.stream_privacy_policy_values.web_public.code,
+        )}']`,
+    );
+
+    const for_stream_edit_panel = $container.attr("id") === "stream_permission_settings";
+    if (for_stream_edit_panel) {
+        const stream_id = Number.parseInt(
+            $container.closest(".subscription_settings.show").attr("data-stream-id"),
+            10,
+        );
+        const sub = sub_store.get(stream_id);
+        if (!stream_data.can_change_permissions(sub)) {
+            // We do not want to enable the already disabled web-public option
+            // in stream-edit panel if user is not allowed to change stream
+            // privacy at all.
+            return;
+        }
+    }
+
+    if (
+        !page_params.server_web_public_streams_enabled ||
+        !page_params.realm_enable_spectator_access
+    ) {
+        if (for_stream_edit_panel && $web_public_stream_elem.is(":checked")) {
+            // We do not hide web-public option in the "Change privacy" modal if
+            // stream is web-public already. The option is disabled in this case.
+            $web_public_stream_elem.prop("disabled", true);
+            return;
+        }
+        $web_public_stream_elem.closest(".settings-radio-input-parent").hide();
+        $container
+            .find(".stream-privacy-values .settings-radio-input-parent:visible")
+            .last()
+            .css("border-bottom", "none");
+    } else {
+        if (!$web_public_stream_elem.is(":visible")) {
+            $container
+                .find(".stream-privacy-values .settings-radio-input-parent:visible")
+                .last()
+                .css("border-bottom", "");
+            $web_public_stream_elem.closest(".settings-radio-input-parent").show();
+        }
+        $web_public_stream_elem.prop(
+            "disabled",
+            !settings_data.user_can_create_web_public_streams(),
+        );
+    }
+}
+
+export function update_private_stream_privacy_option_state($container, is_default_stream = false) {
+    // Disable both "Private, shared history" and "Private, protected history" options.
+    const $private_stream_elem = $container.find(
+        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
+    );
+    const $private_with_public_history_elem = $container.find(
+        `input[value='${CSS.escape(
+            settings_config.stream_privacy_policy_values.private_with_public_history.code,
+        )}']`,
+    );
+
+    const disable_private_stream_options =
+        is_default_stream || !settings_data.user_can_create_private_streams();
+
+    $private_stream_elem.prop("disabled", disable_private_stream_options);
+    $private_with_public_history_elem.prop("disabled", disable_private_stream_options);
+
+    $private_stream_elem
+        .closest("div")
+        .toggleClass("default_stream_private_tooltip", is_default_stream);
+    $private_with_public_history_elem
+        .closest("div")
+        .toggleClass("default_stream_private_tooltip", is_default_stream);
+}
 
 export function initialize_disable_btn_hint_popover($btn_wrapper, hint_text) {
     tippy($btn_wrapper[0], {
@@ -75,7 +177,7 @@ export function update_settings_button_for_sub(sub) {
     }
 
     // This is for the Subscribe/Unsubscribe button in the right panel.
-    const $settings_button = stream_settings_ui.settings_button_for_sub(sub);
+    const $settings_button = settings_button_for_sub(sub);
 
     if (!$settings_button.length) {
         // `subscribe` button hasn't been rendered yet while we are processing the event.
@@ -137,7 +239,7 @@ export function update_default_stream_and_stream_privacy_state($container) {
 
     // If the default stream option is checked, the private stream options are disabled.
     const is_default_stream = $default_stream.find("input").prop("checked");
-    stream_settings_ui.update_private_stream_privacy_option_state($container, is_default_stream);
+    update_private_stream_privacy_option_state($container, is_default_stream);
 }
 
 export function enable_or_disable_permission_settings_in_edit_panel(sub) {
@@ -167,9 +269,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
         .find(".message-retention-setting-custom-input")
         .prop("disabled", disable_message_retention_setting);
 
-    stream_settings_ui.update_web_public_stream_privacy_option_state(
-        $("#stream_permission_settings"),
-    );
+    update_web_public_stream_privacy_option_state($("#stream_permission_settings"));
 }
 
 export function update_announce_stream_option() {
@@ -233,8 +333,8 @@ export function update_stream_row_in_settings_tab(sub) {
     // If user is subscribed to stream, it will show sub row under
     // "Subscribed" tab, otherwise if stream is not public hide
     // stream row under tab.
-    if (stream_settings_ui.is_subscribed_stream_tab_active()) {
-        const $sub_row = stream_settings_ui.row_for_stream_id(sub.stream_id);
+    if (is_subscribed_stream_tab_active()) {
+        const $sub_row = row_for_stream_id(sub.stream_id);
         if (sub.subscribed) {
             $sub_row.removeClass("notdisplayed");
         } else if (sub.invite_only || page_params.is_guest) {
