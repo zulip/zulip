@@ -106,7 +106,7 @@ export function toggle_collapse(message) {
     if (message.is_me_message) {
         // Disabled temporarily because /me messages don't have a
         // styling for collapsing /me messages (they only recently
-        // added multi-line support).  See also popovers.js.
+        // added multi-line support).  See also popover_menus_data.js.
         return;
     }
 
