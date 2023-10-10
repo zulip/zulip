@@ -8,13 +8,13 @@ import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_store from "./message_store";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import * as people from "./people";
 import * as ui_report from "./ui_report";
 
 export function show_user_list(message_id) {
     $("body").append(render_read_receipts_modal());
-    overlays.open_modal("read_receipts_modal", {
+    modals.open_modal("read_receipts_modal", {
         autoremove: true,
         on_show() {
             const message = message_store.get(message_id);

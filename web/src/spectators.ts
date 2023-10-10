@@ -10,7 +10,7 @@ import $ from "jquery";
 import render_login_to_access_modal from "../templates/login_to_access.hbs";
 
 import * as browser_history from "./browser_history";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import {page_params} from "./page_params";
 
 export function current_hash_as_next(): string {
@@ -40,7 +40,7 @@ export function login_to_access(empty_narrow?: boolean): void {
         }),
     );
 
-    overlays.open_modal("login_to_access_modal", {
+    modals.open_modal("login_to_access_modal", {
         autoremove: true,
         on_hide() {
             browser_history.return_to_web_public_hash();

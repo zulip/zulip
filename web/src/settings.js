@@ -8,6 +8,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 import * as browser_history from "./browser_history";
 import * as flatpickr from "./flatpickr";
 import {$t} from "./i18n";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -25,7 +26,7 @@ export let settings_label;
 
 $(() => {
     $("#settings_overlay_container").on("click", (e) => {
-        if (!overlays.is_modal_open()) {
+        if (!modals.is_modal_open()) {
             return;
         }
         if ($(e.target).closest(".micromodal").length > 0) {
@@ -38,7 +39,7 @@ $(() => {
         // event to the parent container otherwise the modal will not open. This
         // is so because this event handler will get fired on any click in settings
         // overlay and subsequently close any open modal.
-        overlays.close_active_modal();
+        modals.close_active_modal();
     });
 });
 
