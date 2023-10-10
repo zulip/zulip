@@ -99,7 +99,6 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
-import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
 import * as settings_data from "./settings_data";
@@ -720,7 +719,6 @@ export function initialize_everything() {
     });
     drafts.initialize();
     drafts_overlay_ui.initialize();
-    sent_messages.initialize();
     hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();
