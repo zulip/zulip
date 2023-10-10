@@ -186,6 +186,7 @@
                         padding: 1px 0;
                         text-overflow: ellipsis;
                         overflow: hidden;
+                        white-space: nowrap;
                     }
 
                     .inbox-header-name-focus-border {
