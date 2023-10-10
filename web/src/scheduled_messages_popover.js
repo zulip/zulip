@@ -31,7 +31,7 @@ export function open_send_later_menu() {
     $("body").append(render_send_later_modal(filtered_send_opts));
     let interval;
 
-    modals.open_modal("send_later_modal", {
+    modals.open("send_later_modal", {
         autoremove: true,
         on_show() {
             interval = setInterval(

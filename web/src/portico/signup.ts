@@ -234,7 +234,7 @@ $(() => {
     });
 
     $("#new-user-email-address-visibility .change_email_address_visibility").on("click", () => {
-        portico_modals.open_modal("change-email-address-visibility-modal");
+        portico_modals.open("change-email-address-visibility-modal");
     });
 
     $("#change-email-address-visibility-modal .dialog_submit_button").on("click", () => {

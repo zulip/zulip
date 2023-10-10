@@ -362,7 +362,7 @@ export function set_up() {
         $("body").append(render_settings_api_key_modal());
         setup_api_key_modal();
         $("#api_key_status").hide();
-        modals.open_modal("api_key_modal", {
+        modals.open("api_key_modal", {
             autoremove: true,
             on_show() {
                 $("#get_api_key_password").trigger("focus");
