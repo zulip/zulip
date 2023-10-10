@@ -8,7 +8,7 @@ import {show_copied_confirmation} from "./copied_tooltip";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 
-export function launch() {
+export function launch(): void {
     overlays.open_overlay({
         name: "about-zulip",
         $overlay: $("#about-zulip"),
@@ -24,7 +24,7 @@ export function launch() {
     });
 }
 
-export function initialize() {
+export function initialize(): void {
     const rendered_about_zulip = render_about_zulip({
         zulip_version: page_params.zulip_version,
         zulip_merge_base: page_params.zulip_merge_base,

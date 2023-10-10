@@ -4,7 +4,7 @@ import {$t} from "./i18n";
 
 export function show_copied_confirmation(
     copy_button: HTMLElement,
-    on_hide_callback: () => void,
+    on_hide_callback?: () => void,
     timeout_in_ms = 1000,
 ): void {
     // Display a tooltip to notify the user the message or code was copied.
