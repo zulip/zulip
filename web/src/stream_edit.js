@@ -11,7 +11,6 @@ import render_stream_settings from "../templates/stream_settings/stream_settings
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
-import * as components from "./components";
 import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
@@ -28,6 +27,7 @@ import * as settings_org from "./settings_org";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
+import * as stream_edit_toggler from "./stream_edit_toggler";
 import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_data from "./stream_settings_data";
@@ -38,9 +38,6 @@ import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-
-export let toggler;
-export let select_tab = "personal_settings";
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_url(sub);
@@ -261,7 +258,7 @@ export function show_settings_for(node) {
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
-    $("#stream_settings .tab-container").prepend(toggler.get());
+    $("#stream_settings .tab-container").prepend(stream_edit_toggler.toggler.get());
     stream_ui_updates.update_toggler_for_sub(sub);
 
     const $edit_container = stream_settings_containers.get_edit_container(sub);
@@ -278,20 +275,7 @@ export function show_settings_for(node) {
 }
 
 export function setup_stream_settings(node) {
-    toggler = components.toggle({
-        child_wants_focus: true,
-        values: [
-            {label: $t({defaultMessage: "General"}), key: "general_settings"},
-            {label: $t({defaultMessage: "Personal"}), key: "personal_settings"},
-            {label: $t({defaultMessage: "Subscribers"}), key: "subscriber_settings"},
-        ],
-        callback(_name, key) {
-            $(".stream_section").hide();
-            $(`.${CSS.escape(key)}`).show();
-            select_tab = key;
-        },
-    });
-
+    stream_edit_toggler.setup_toggler();
     show_settings_for(node);
 }
 

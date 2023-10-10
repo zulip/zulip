@@ -11,7 +11,7 @@ import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as stream_data from "./stream_data";
-import * as stream_edit from "./stream_edit";
+import * as stream_edit_toggler from "./stream_edit_toggler";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_ui from "./stream_settings_ui";
 
@@ -37,18 +37,18 @@ export function update_toggler_for_sub(sub) {
         return;
     }
     if (sub.subscribed) {
-        stream_edit.toggler.enable_tab("personal_settings");
-        stream_edit.toggler.goto(stream_edit.select_tab);
+        stream_edit_toggler.toggler.enable_tab("personal_settings");
+        stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
     } else {
-        if (stream_edit.select_tab === "personal_settings") {
+        if (stream_edit_toggler.select_tab === "personal_settings") {
             // Go to the general settings tab, if the user is not
             // subscribed. Also preserve the previous selected tab,
             // to render next time a stream row is selected.
-            stream_edit.toggler.goto("general_settings");
+            stream_edit_toggler.toggler.goto("general_settings");
         } else {
-            stream_edit.toggler.goto(stream_edit.select_tab);
+            stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
         }
-        stream_edit.toggler.disable_tab("personal_settings");
+        stream_edit_toggler.toggler.disable_tab("personal_settings");
     }
     enable_or_disable_subscribers_tab(sub);
 }
@@ -59,14 +59,14 @@ export function enable_or_disable_subscribers_tab(sub) {
     }
 
     if (!stream_data.can_view_subscribers(sub)) {
-        stream_edit.toggler.disable_tab("subscriber_settings");
-        if (stream_edit.select_tab === "subscriber_settings") {
-            stream_edit.toggler.goto("general_settings");
+        stream_edit_toggler.toggler.disable_tab("subscriber_settings");
+        if (stream_edit_toggler.select_tab === "subscriber_settings") {
+            stream_edit_toggler.toggler.goto("general_settings");
         }
         return;
     }
 
-    stream_edit.toggler.enable_tab("subscriber_settings");
+    stream_edit_toggler.toggler.enable_tab("subscriber_settings");
 }
 
 export function update_settings_button_for_sub(sub) {
