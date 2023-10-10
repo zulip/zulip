@@ -8,7 +8,7 @@ import * as huddle_data from "./huddle_data";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
-import * as message_list from "./message_list";
+import * as message_list_data from "./message_list_data";
 import * as message_lists from "./message_lists";
 import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
@@ -560,9 +560,10 @@ export function initialize(home_view_loaded) {
     // visual artifacts shortly after page load; just more forgivable
     // ones).
     //
-    // This MessageList is defined similarly to home_message_list,
-    // without a `table_name` attached.
-    const recent_view_message_list = new message_list.MessageList({
+    // We only initialize MessageListData here, since we don't
+    // want update the UI and confuse the functions in MessageList.
+    // Recent view can handle the UI updates itself.
+    const recent_view_message_list_data = new message_list_data.MessageListData({
         filter: new Filter([{operator: "in", operand: "home"}]),
         excludes_muted_topics: true,
     });
@@ -575,7 +576,7 @@ export function initialize(home_view_loaded) {
         anchor: "newest",
         num_before: consts.recent_view_initial_fetch_size,
         num_after: 0,
-        msg_list: recent_view_message_list,
+        msg_list_data: recent_view_message_list_data,
         cont: recent_view_ui.hide_loading_indicator,
     });
 }
