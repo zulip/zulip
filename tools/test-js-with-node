@@ -45,7 +45,7 @@ def make_set(files: List[str]) -> Set[str]:
 EXEMPT_FILES = make_set(
     [
         "web/shared/src/poll_data.ts",
-        "web/src/about_zulip.js",
+        "web/src/about_zulip.ts",
         "web/src/add_stream_options_popover.js",
         "web/src/add_subscribers_pill.js",
         "web/src/admin.js",
