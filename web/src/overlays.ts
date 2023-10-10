@@ -61,10 +61,6 @@ export function is_modal_open(): boolean {
     return $(".micromodal").hasClass("modal--open");
 }
 
-export function is_overlay_or_modal_open(): boolean {
-    return is_active() || is_modal_open();
-}
-
 export function info_overlay_open(): boolean {
     return open_overlay_name === "informationalOverlays";
 }

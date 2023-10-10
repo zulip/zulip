@@ -15,7 +15,7 @@ import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
-import * as overlays from "./overlays";
+import * as overlays_modals from "./overlays_modals";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
@@ -1191,7 +1191,7 @@ export function is_in_focus() {
         !compose_state.composing() &&
         !popovers.any_active() &&
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
-        !overlays.is_overlay_or_modal_open() &&
+        !overlays_modals.any_active() &&
         !$(".home-page-input").is(":focus")
     );
 }
