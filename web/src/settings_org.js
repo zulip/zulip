@@ -462,7 +462,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
     switch (property_name) {
         case "notification_sound":
             audible_notifications.update_notification_sound_source(
-                $("#realm-default-notification-sound-audio"),
+                $("audio#realm-default-notification-sound-audio"),
                 {
                     notification_sound: property_value,
                 },
