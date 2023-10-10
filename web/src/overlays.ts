@@ -54,7 +54,7 @@ function call_hooks(func_list: Hook[]): void {
 
 export function disable_scrolling(): void {
     // Why disable scrolling?
-    // Since fixed / absolute positined elements don't capture the scroll event unless
+    // Since fixed / absolute positioned elements don't capture the scroll event unless
     // they overflow their defined container. Since fixed / absolute elements are not treated
     // as part of the document flow, we cannot capture `scroll` events on them and prevent propagation
     // as event bubbling doesn't work naturally.
