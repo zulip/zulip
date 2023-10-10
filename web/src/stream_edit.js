@@ -29,9 +29,9 @@ import * as stream_data from "./stream_data";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_edit_toggler from "./stream_edit_toggler";
 import * as stream_settings_api from "./stream_settings_api";
+import * as stream_settings_components from "./stream_settings_components";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_data from "./stream_settings_data";
-import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -94,17 +94,17 @@ export function open_edit_panel_for_row(stream_row) {
     const sub = get_sub_for_target(stream_row);
 
     $(".stream-row.active").removeClass("active");
-    stream_settings_ui.show_subs_pane.settings(sub);
+    stream_settings_components.show_subs_pane.settings(sub);
     $(stream_row).addClass("active");
     setup_subscriptions_stream_hash(sub);
     setup_stream_settings(stream_row);
 }
 
 export function open_edit_panel_empty() {
-    const tab_key = stream_settings_ui.get_active_data().$tabs.first().attr("data-tab-key");
+    const tab_key = stream_settings_components.get_active_data().$tabs.first().attr("data-tab-key");
     $(".stream-row.active").removeClass("active");
     $("#subscription_overlay .right").removeClass("show");
-    stream_settings_ui.show_subs_pane.nothing_selected();
+    stream_settings_components.show_subs_pane.nothing_selected();
     setup_subscriptions_tab_hash(tab_key);
 }
 
@@ -113,9 +113,9 @@ export function update_stream_name(sub, new_name) {
     $edit_container.find(".email-address").text(sub.email_address);
     $edit_container.find(".sub-stream-name").text(new_name);
 
-    const active_data = stream_settings_ui.get_active_data();
+    const active_data = stream_settings_components.get_active_data();
     if (active_data.id === sub.stream_id) {
-        stream_settings_ui.set_right_panel_title(sub);
+        stream_settings_components.set_right_panel_title(sub);
     }
 }
 
@@ -358,7 +358,7 @@ export function initialize() {
             return;
         }
 
-        stream_settings_ui.sub_or_unsub(sub);
+        stream_settings_components.sub_or_unsub(sub);
     });
 
     $("#streams_overlay_container").on("click", "#open_stream_info_modal", (e) => {
@@ -425,7 +425,7 @@ export function initialize() {
                 )}']`,
             );
             const sub = sub_store.get(stream_id);
-            stream_settings_ui.sub_or_unsub(sub, $stream_row);
+            stream_settings_components.sub_or_unsub(sub, $stream_row);
             $("#stream_permission_settings .stream-permissions-warning-banner").empty();
         },
     );
@@ -542,7 +542,7 @@ export function initialize() {
                 sub.stream_id,
             )}']`,
         );
-        stream_settings_ui.sub_or_unsub(sub, $stream_row);
+        stream_settings_components.sub_or_unsub(sub, $stream_row);
 
         if (!sub.subscribed) {
             open_edit_panel_for_row($stream_row);
