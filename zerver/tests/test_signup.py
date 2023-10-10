@@ -2387,8 +2387,7 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_signup_with_weak_password(self) -> None:
         """
-        Check if signing up without a full name redirects to a registration
-        form.
+        Check if signing up with a weak password fails.
         """
         email = "newguy@zulip.com"
 
