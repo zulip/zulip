@@ -65,7 +65,6 @@ const overlays = mock_esm("../src/overlays", {
     info_overlay_open: () => false,
     is_modal_open: () => false,
     active_modal: () => undefined,
-    is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
 const popovers = mock_esm("../src/user_card_popover", {
     manage_menu: {

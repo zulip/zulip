@@ -76,6 +76,7 @@ import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import * as overlays_modals from "./overlays_modals";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as playground_links_popover from "./playground_links_popover";
@@ -249,7 +250,7 @@ export function initialize_kitchen_sink_stuff() {
 
     message_viewport.$scroll_container.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_overlay_or_modal_open() && narrow_state.is_message_feed_visible()) {
+        if (!overlays_modals.any_active() && narrow_state.is_message_feed_visible()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
