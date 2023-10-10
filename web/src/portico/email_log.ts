@@ -37,7 +37,7 @@ $(() => {
         const csrf_token = $('input[name="csrfmiddlewaretoken"]').attr("value");
         const data = {forward_address: address, csrfmiddlewaretoken: csrf_token};
 
-        channel.post({
+        void channel.post({
             url: "/emails/",
             data,
             success() {
