@@ -2343,10 +2343,9 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
 
-    def test_signup_with_full_name(self) -> None:
+    def test_correct_signup(self) -> None:
         """
-        Check if signing up without a full name redirects to a registration
-        form.
+        Verify the happy path of signing up with name and email address.
         """
         email = "newguy@zulip.com"
         password = "newpassword"
