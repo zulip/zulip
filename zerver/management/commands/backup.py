@@ -52,6 +52,7 @@ class Command(ZulipBaseCommand):
 
             with open(os.path.join(tmp, "zulip-backup", "postgres-version"), "w") as f:
                 pg_server_version = connection.cursor().connection.server_version
+                major_pg_version = pg_server_version // 10000
                 print(pg_server_version, file=f)
             members.append("zulip-backup/postgres-version")
 
@@ -68,7 +69,7 @@ class Command(ZulipBaseCommand):
 
             if not options["skip_db"]:
                 pg_dump_command = [
-                    "pg_dump",
+                    f"/usr/lib/postgresql/{major_pg_version}/bin/pg_dump",
                     "--format=directory",
                     "--file=" + os.path.join(tmp, "zulip-backup", "database"),
                     "--host=" + settings.DATABASES["default"]["HOST"],
