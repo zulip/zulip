@@ -31,6 +31,7 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
+import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -279,8 +280,8 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (overlays.is_modal_open()) {
-        overlays.close_active_modal();
+    if (modals.is_modal_open()) {
+        modals.close_active_modal();
         return true;
     }
 
@@ -485,7 +486,7 @@ export function process_enter_key(e) {
 
     // All custom logic for overlays/modals is above; if we're in a
     // modal at this point, let the browser handle the event.
-    if (overlays.is_modal_open()) {
+    if (modals.is_modal_open()) {
         return false;
     }
 
@@ -694,7 +695,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // `list_util` will process the event in send later modal.
-    if (overlays.is_modal_open() && overlays.active_modal() !== "#send_later_modal") {
+    if (modals.is_modal_open() && modals.active_modal() !== "#send_later_modal") {
         return false;
     }
 

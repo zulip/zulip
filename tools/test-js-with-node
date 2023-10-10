@@ -144,6 +144,7 @@ EXEMPT_FILES = make_set(
         "web/src/message_view_header.js",
         "web/src/message_viewport.js",
         "web/src/messages_overlay_ui.ts",
+        "web/src/modals.ts",
         "web/src/muted_users_ui.js",
         "web/src/narrow.js",
         "web/src/narrow_history.js",

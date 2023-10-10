@@ -8,7 +8,7 @@ import render_send_later_modal_options from "../templates/send_later_modal_optio
 import * as compose from "./compose";
 import * as compose_validate from "./compose_validate";
 import * as flatpickr from "./flatpickr";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import * as popover_menus from "./popover_menus";
 import * as scheduled_messages from "./scheduled_messages";
 import {parse_html} from "./ui_util";
@@ -31,7 +31,7 @@ export function open_send_later_menu() {
     $("body").append(render_send_later_modal(filtered_send_opts));
     let interval;
 
-    overlays.open_modal("send_later_modal", {
+    modals.open_modal("send_later_modal", {
         autoremove: true,
         on_show() {
             interval = setInterval(
@@ -100,7 +100,7 @@ export function open_send_later_menu() {
 }
 
 export function do_schedule_message(send_at_time) {
-    overlays.close_modal_if_open("send_later_modal");
+    modals.close_modal_if_open("send_later_modal");
 
     if (!Number.isInteger(send_at_time)) {
         // Convert to timestamp if this is not a timestamp.
