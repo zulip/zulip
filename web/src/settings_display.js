@@ -51,7 +51,7 @@ function spectator_default_language_modal_post_render() {
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dialog_widget.close_modal();
+            dialog_widget.close();
 
             const $link = $(e.target).closest("a[data-code]");
             Cookies.set(page_params.language_cookie_name, $link.attr("data-code"));
@@ -65,7 +65,7 @@ function org_notification_default_language_modal_post_render() {
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dialog_widget.close_modal();
+            dialog_widget.close();
 
             const $link = $(e.target).closest("a[data-code]");
             const setting_value = $link.attr("data-code");
@@ -85,7 +85,7 @@ function user_default_language_modal_post_render() {
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dialog_widget.close_modal();
+            dialog_widget.close();
 
             const $link = $(e.target).closest("a[data-code]");
             const setting_value = $link.attr("data-code");

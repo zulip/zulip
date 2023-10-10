@@ -143,7 +143,7 @@ export function open_modal(
         if (document.getSelection()?.type === "Range") {
             return;
         }
-        close_modal(modal_id);
+        close(modal_id);
     });
 
     function on_show_callback(): void {
@@ -172,9 +172,9 @@ export function open_modal(
 
 // `conf` is an object with the following optional properties:
 // * on_hidden: Callback to run when the modal finishes hiding.
-export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden"> = {}): void {
+export function close(modal_id: string, conf: Pick<ModalConfig, "on_hidden"> = {}): void {
     if (modal_id === undefined) {
-        blueslip.error("Undefined id was passed into close_modal");
+        blueslip.error("Undefined id was passed into close");
         return;
     }
 

@@ -134,7 +134,7 @@ run_test("licensechange", ({override}) => {
     assert.ok(!create_ajax_request_called);
     assert.ok(confirm_license_modal_shown);
 
-    override(portico_modals, "close_modal", (modal_id) => {
+    override(portico_modals, "close", (modal_id) => {
         assert.equal(modal_id, "confirm-licenses-modal");
         confirm_license_modal_shown = false;
     });
