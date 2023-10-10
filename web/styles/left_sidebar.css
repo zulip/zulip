@@ -54,13 +54,13 @@ $before_unread_count_padding: 3px;
     cursor: pointer;
 }
 
-#global_filters .filter-icon i {
+#left-sidebar-navigation-list .filter-icon i {
     padding-right: 3px;
-    color: var(--color-global-filter-icon);
+    color: var(--color-left-sidebar-navigation-icon);
 }
 
 #stream_filters,
-#global_filters {
+#left-sidebar-navigation-list {
     margin-right: 12px;
 }
 
@@ -203,7 +203,7 @@ li.show-more-topics {
     }
 }
 
-.narrows_panel {
+.left-sidebar-navigation-area {
     & li a {
         margin-top: 1px;
 
@@ -485,14 +485,14 @@ li.active-sub-filter {
     }
 }
 
-#global_filters {
+#left-sidebar-navigation-list {
     margin-bottom: $sections_vertical_gutter;
 
-    .global-filter-container {
+    .left-sidebar-navigation-label-container {
         display: flex;
         padding-right: 20px;
 
-        .global-filter-name {
+        .left-sidebar-navigation-label {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
