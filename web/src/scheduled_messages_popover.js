@@ -100,7 +100,7 @@ export function open_send_later_menu() {
 }
 
 export function do_schedule_message(send_at_time) {
-    modals.close_modal_if_open("send_later_modal");
+    modals.close_if_open("send_later_modal");
 
     if (!Number.isInteger(send_at_time)) {
         // Convert to timestamp if this is not a timestamp.

@@ -207,9 +207,9 @@ export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden
     Micromodal.close(modal_id);
 }
 
-export function close_modal_if_open(modal_id: string): void {
+export function close_if_open(modal_id: string): void {
     if (modal_id === undefined) {
-        blueslip.error("Undefined id was passed into close_modal_if_open");
+        blueslip.error("Undefined id was passed into close_if_open");
         return;
     }
 
