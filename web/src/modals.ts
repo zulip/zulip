@@ -31,12 +31,12 @@ function call_hooks(func_list: Hook[]): void {
     }
 }
 
-export function is_modal_open(): boolean {
+export function is_open(): boolean {
     return $(".micromodal").hasClass("modal--open");
 }
 
 export function active_modal(): string | undefined {
-    if (!is_modal_open()) {
+    if (!is_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
         return undefined;
     }
@@ -68,10 +68,10 @@ export function open_modal(
         return;
     }
 
-    if (is_modal_open()) {
+    if (is_open()) {
         /*
           Our modal system doesn't directly support opening a modal
-          when one is already open, because the `is_modal_open` CSS
+          when one is already open, because the `is_open` CSS
           class doesn't update until Micromodal has finished its
           animations, which can take 100ms or more.
 
@@ -178,8 +178,8 @@ export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden
         return;
     }
 
-    if (!is_modal_open()) {
-        blueslip.warn("close_active_modal() called without checking is_modal_open()");
+    if (!is_open()) {
+        blueslip.warn("close_active_modal() called without checking is_open()");
         return;
     }
 
@@ -213,7 +213,7 @@ export function close_modal_if_open(modal_id: string): void {
         return;
     }
 
-    if (!is_modal_open()) {
+    if (!is_open()) {
         return;
     }
 
@@ -229,8 +229,8 @@ export function close_modal_if_open(modal_id: string): void {
 }
 
 export function close_active_modal(): void {
-    if (!is_modal_open()) {
-        blueslip.warn("close_active_modal() called without checking is_modal_open()");
+    if (!is_open()) {
+        blueslip.warn("close_active_modal() called without checking is_open()");
         return;
     }
 

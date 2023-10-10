@@ -74,7 +74,7 @@ function compare_by_name(a, b) {
 }
 
 export function get_user_id_if_user_profile_modal_open() {
-    if (modals.is_modal_open() && modals.active_modal() === "#user-profile-modal") {
+    if (modals.is_open() && modals.active_modal() === "#user-profile-modal") {
         const user_id = $("#user-profile-modal").data("user-id");
         return user_id;
     }
