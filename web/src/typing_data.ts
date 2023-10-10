@@ -3,11 +3,11 @@ import * as util from "./util";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
-const typist_dct = new Map<string, number[]>();
+const typists_dict = new Map<string, number[]>();
 const inbound_timer_dict = new Map<string, ReturnType<typeof setInterval> | undefined>();
 
 export function clear_for_testing(): void {
-    typist_dct.clear();
+    typists_dict.clear();
     inbound_timer_dict.clear();
 }
 
@@ -17,15 +17,15 @@ export function get_direct_message_conversation_key(group: number[]): string {
 }
 
 export function add_typist(key: string, typist: number): void {
-    const current = typist_dct.get(key) ?? [];
+    const current = typists_dict.get(key) ?? [];
     if (!current.includes(typist)) {
         current.push(typist);
     }
-    typist_dct.set(key, util.sorted_ids(current));
+    typists_dict.set(key, util.sorted_ids(current));
 }
 
 export function remove_typist(key: string, typist: number): boolean {
-    let current = typist_dct.get(key) ?? [];
+    let current = typists_dict.get(key) ?? [];
 
     if (!current.includes(typist)) {
         return false;
@@ -33,18 +33,18 @@ export function remove_typist(key: string, typist: number): boolean {
 
     current = current.filter((user_id) => user_id !== typist);
 
-    typist_dct.set(key, current);
+    typists_dict.set(key, current);
     return true;
 }
 
 export function get_group_typists(group: number[]): number[] {
     const key = get_direct_message_conversation_key(group);
-    const user_ids = typist_dct.get(key) ?? [];
+    const user_ids = typists_dict.get(key) ?? [];
     return muted_users.filter_muted_user_ids(user_ids);
 }
 
 export function get_all_direct_message_typists(): number[] {
-    let typists = [...typist_dct.values()].flat();
+    let typists = [...typists_dict.values()].flat();
     typists = util.sorted_ids(typists);
     return muted_users.filter_muted_user_ids(typists);
 }
