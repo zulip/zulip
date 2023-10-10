@@ -370,7 +370,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    modals.open_modal("user-profile-modal", {autoremove: true});
+    modals.open("user-profile-modal", {autoremove: true});
     $(".tabcontent").hide();
 
     let default_tab = 0;

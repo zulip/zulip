@@ -42,7 +42,7 @@ export function initialize(): void {
         if (new_licenses > current_licenses) {
             $("#new_license_count_holder").text(new_licenses);
             $("#current_license_count_holder").text(current_licenses);
-            portico_modals.open_modal("confirm-licenses-modal");
+            portico_modals.open("confirm-licenses-modal");
         } else {
             create_update_license_request();
         }

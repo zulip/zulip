@@ -210,7 +210,7 @@ export function launch(conf: DialogWidgetConfig): void {
         conf.on_click(e);
     });
 
-    modals.open_modal("dialog_widget_modal", {
+    modals.open("dialog_widget_modal", {
         autoremove: true,
         on_show() {
             if (conf.focus_submit_on_open) {

@@ -112,7 +112,7 @@ run_test("licensechange", ({override}) => {
 
     let confirm_license_modal_shown = false;
     override(helpers, "is_valid_input", () => true);
-    override(portico_modals, "open_modal", (modal_id) => {
+    override(portico_modals, "open", (modal_id) => {
         assert.equal(modal_id, "confirm-licenses-modal");
         confirm_license_modal_shown = true;
     });
