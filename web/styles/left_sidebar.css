@@ -568,9 +568,13 @@ li.top_left_scheduled_messages {
     font-size: 15px;
 }
 
-.top_left_mentions i.fa-at,
+.top_left_mentions img.at-sign,
 .top_left_starred_messages i.fa-star {
     font-size: 13px;
+}
+
+img.at-sign {
+    padding-right: 2px;
 }
 
 /* New .topic-box grid definitions here. */
