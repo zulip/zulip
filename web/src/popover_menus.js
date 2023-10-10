@@ -7,6 +7,7 @@ import tippy from "tippy.js";
 
 import * as blueslip from "./blueslip";
 import {media_breakpoints_num} from "./css_variables";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 
@@ -259,6 +260,8 @@ export function initialize() {
     /* Configure popovers to hide when toggling overlays. */
     overlays.register_pre_open_hook(popovers.hide_all);
     overlays.register_pre_close_hook(popovers.hide_all);
+    modals.register_pre_open_hook(popovers.hide_all);
+    modals.register_pre_close_hook(popovers.hide_all);
 
     let last_scroll = 0;
 

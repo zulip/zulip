@@ -17,6 +17,7 @@ import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -361,7 +362,7 @@ export function set_up() {
         $("body").append(render_settings_api_key_modal());
         setup_api_key_modal();
         $("#api_key_status").hide();
-        overlays.open_modal("api_key_modal", {
+        modals.open_modal("api_key_modal", {
             autoremove: true,
             on_show() {
                 $("#get_api_key_password").trigger("focus");
