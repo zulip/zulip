@@ -35,6 +35,7 @@ import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import * as overlays_modals from "./overlays_modals";
 import {page_params} from "./page_params";
 import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
@@ -861,7 +862,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Prevent navigation in the background when the overlays are active.
-    if (overlays.is_overlay_or_modal_open()) {
+    if (overlays_modals.any_active()) {
         if (event_name === "view_selected_stream" && overlays.streams_open()) {
             stream_settings_ui.view_stream();
             return true;
