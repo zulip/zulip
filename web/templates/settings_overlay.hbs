@@ -79,10 +79,8 @@
                     <li tabindex="0" data-section="emoji-settings">
                         <i class="icon fa fa-smile-o" aria-hidden="true"></i>
                         <div class="text">{{t "Custom emoji" }}</div>
-                        {{#if is_guest}}
-                            <i class="locked fa fa-lock" title="{{t 'Guest users cannot edit custom emoji.' }}"></i>
-                        {{else if show_emoji_settings_lock}}
-                            <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.'}}"></i>
+                        {{#if show_emoji_settings_lock}}
+                            <i class="locked fa fa-lock" title="{{t 'You do not have permission to add custom emoji.'}}"></i>
                         {{/if}}
                     </li>
                     <li tabindex="0" data-section="linkifier-settings">
