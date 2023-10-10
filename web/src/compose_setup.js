@@ -18,7 +18,7 @@ import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as stream_data from "./stream_data";
-import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_settings_components from "./stream_settings_components";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import {get_timestamp_for_flatpickr} from "./timerender";
@@ -134,7 +134,7 @@ export function initialize() {
                 return;
             }
             const sub = stream_data.get_sub_by_id(stream_id);
-            stream_settings_ui.sub_or_unsub(sub);
+            stream_settings_components.sub_or_unsub(sub);
             $(user_not_subscribed_selector).remove();
         },
     );
