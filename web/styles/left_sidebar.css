@@ -522,7 +522,8 @@ li.active-sub-filter {
         margin-top: 1px !important;
     }
 
-    .zulip-icon-inbox {
+    .zulip-icon-inbox,
+    .zulip-icon-star-filled {
         font-size: 14px;
         top: 2px;
         position: relative;
@@ -568,8 +569,7 @@ li.top_left_scheduled_messages {
     font-size: 15px;
 }
 
-.top_left_mentions i.fa-at,
-.top_left_starred_messages i.fa-star {
+.top_left_mentions i.fa-at {
     font-size: 13px;
 }
 
