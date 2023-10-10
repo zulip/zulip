@@ -2350,34 +2350,8 @@ class UserSignUpTest(ZulipTestCase):
         email = "newguy@zulip.com"
         password = "newpassword"
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        result = self.client_post(
-            "/accounts/register/",
-            {
-                "password": password,
-                "key": find_key_by_email(email),
-                "terms": True,
-                "full_name": "New Guy",
-                "from_confirmation": "1",
-            },
-        )
-        self.assert_in_success_response(
-            ["Enter your account details to complete registration."], result
-        )
+        result = self.verify_signup(email=email, password=password)
+        assert isinstance(result, UserProfile)
 
     def test_signup_with_email_address_race(self) -> None:
         """
