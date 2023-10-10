@@ -1,12 +1,12 @@
 // Mark this as a module for ESLint and Webpack.
 export {};
 
-function get_new_rand(old_random_int, max) {
+function get_new_rand(old_random_int: number, max: number): number {
     const random_int = Math.floor(Math.random() * max);
     return random_int === old_random_int ? get_new_rand(random_int, max) : random_int;
 }
 
-function get_random_item_from_array(array) {
+function get_random_item_from_array<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
 }
 
@@ -30,7 +30,7 @@ const future_client_logo_class_names = new Set([
     "client-logos__logo_asciidoc",
 ]);
 let current_client_logo_class_names_index = 0;
-function update_client_logo() {
+function update_client_logo(): void {
     if (document.hidden) {
         return;
     }
