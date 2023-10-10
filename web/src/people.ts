@@ -421,6 +421,10 @@ export function get_display_full_name(user_id: number): string {
     }
 
     if (muted_users.is_user_muted(user_id)) {
+        if (should_add_guest_user_indicator(user_id)) {
+            return $t({defaultMessage: "Muted user (guest)"});
+        }
+
         return $t({defaultMessage: "Muted user"});
     }
 

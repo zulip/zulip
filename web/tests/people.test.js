@@ -496,6 +496,26 @@ test_people("get_display_full_names", () => {
         "translated: Muted user",
         "Guest User",
     ]);
+
+    muted_users.add_muted_user(guest.user_id);
+    names = people.get_display_full_names(user_ids);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "translated: Muted user",
+    ]);
+
+    page_params.realm_enable_guest_user_indicator = true;
+    names = people.get_display_full_names(user_ids);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "translated: Muted user (guest)",
+    ]);
 });
 
 test_people("my_custom_profile_data", () => {
