@@ -555,6 +555,15 @@
         top: 0;
         bottom: 0;
     }
+
+    /* Keep these elements visible above the
+       .moving_bar element on file uploads. */
+    .upload_msg,
+    .main-view-banner-close-button,
+    .upload_banner_cancel_button {
+        z-index: 1;
+        position: relative;
+    }
 }
 
 .composition-area {
