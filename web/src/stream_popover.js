@@ -21,6 +21,7 @@ import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
+import * as stream_settings_components from "./stream_settings_components";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -177,7 +178,7 @@ function build_stream_popover(opts) {
                 $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
                 const sub = stream_popover_sub(e);
-                stream_settings_ui.sub_or_unsub(sub);
+                stream_settings_components.sub_or_unsub(sub);
                 e.preventDefault();
                 e.stopPropagation();
             });
