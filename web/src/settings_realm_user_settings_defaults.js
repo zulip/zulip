@@ -55,7 +55,7 @@ export function update_page(property) {
 
 export function set_up() {
     const $container = $(realm_default_settings_panel.container);
-    const $notification_sound_elem = $("#realm-default-notification-sound-audio");
+    const $notification_sound_elem = $("audio#realm-default-notification-sound-audio");
     const $notification_sound_dropdown = $container.find(".setting_notification_sound");
 
     settings_display.set_up(realm_default_settings_panel);
