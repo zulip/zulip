@@ -88,6 +88,10 @@ export const web_stream_unreads_count_display_policy_values = {
 };
 
 export const default_view_values = {
+    inbox: {
+        code: "inbox",
+        description: $t({defaultMessage: "Inbox"}),
+    },
     recent_topics: {
         code: "recent_topics",
         description: $t({defaultMessage: "Recent conversations"}),
@@ -95,10 +99,6 @@ export const default_view_values = {
     all_messages: {
         code: "all_messages",
         description: $t({defaultMessage: "All messages"}),
-    },
-    inbox: {
-        code: "inbox",
-        description: $t({defaultMessage: "Inbox"}),
     },
 };
 
