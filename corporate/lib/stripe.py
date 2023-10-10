@@ -55,6 +55,8 @@ DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 # The version of Stripe API the billing system supports.
 STRIPE_API_VERSION = "2020-08-27"
 
+stripe.api_version = STRIPE_API_VERSION
+
 
 def get_latest_seat_count(realm: Realm) -> int:
     return get_seat_count(realm, extra_non_guests_count=0, extra_guests_count=0)
