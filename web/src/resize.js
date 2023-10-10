@@ -18,9 +18,9 @@ function get_new_heights() {
     res.stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        ($("#global_filters").outerHeight(true) ?? 0) -
+        Number.parseInt($("#left-sidebar-navigation-area").css("marginTop"), 10) -
+        Number.parseInt($("#left-sidebar-navigation-area").css("marginBottom"), 10) -
+        ($("#left-sidebar-navigation-list").outerHeight(true) ?? 0) -
         ($("#private_messages_sticky_header").outerHeight(true) ?? 0);
 
     // Don't let us crush the stream sidebar completely out of view

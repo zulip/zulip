@@ -28,7 +28,7 @@ async function toggle_test_star_message(page: Page): Promise<void> {
 }
 
 async function test_narrow_to_starred_messages(page: Page): Promise<void> {
-    await page.click('#global_filters a[href^="#narrow/is/starred"]');
+    await page.click('#left-sidebar-navigation-list a[href^="#narrow/is/starred"]');
     await common.check_messages_sent(page, "zfilt", [["Verona > stars", [message]]]);
 
     // Go back to all messages narrow.
