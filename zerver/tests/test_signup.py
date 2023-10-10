@@ -2391,37 +2391,10 @@ class UserSignUpTest(ZulipTestCase):
         """
         email = "newguy@zulip.com"
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
         with self.settings(PASSWORD_MIN_LENGTH=6, PASSWORD_MIN_GUESSES=1000):
-            result = self.client_post(
-                "/accounts/register/",
-                {
-                    "password": "easy",
-                    "key": find_key_by_email(email),
-                    "terms": True,
-                    "full_name": "New Guy",
-                    "from_confirmation": "1",
-                },
-            )
-            self.assert_in_success_response(
-                ["Enter your account details to complete registration."], result
-            )
-
-            result = self.submit_reg_form_for_user(email, "easy", full_name="New Guy")
+            result = self.verify_signup(email=email, password="easy")
+            # _WSGIPatchedWSGIResponse does not exist in Django, thus the inverted isinstance check.
+            assert not isinstance(result, UserProfile)
             self.assert_in_success_response(["The password is too weak."], result)
             with self.assertRaises(UserProfile.DoesNotExist):
                 # Account wasn't created.
