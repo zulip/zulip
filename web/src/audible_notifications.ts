@@ -2,11 +2,14 @@ import $ from "jquery";
 
 import {user_settings} from "./user_settings";
 
-export function initialize() {
-    update_notification_sound_source($("#user-notification-sound-audio"), user_settings);
+export function initialize(): void {
+    update_notification_sound_source($("audio#user-notification-sound-audio"), user_settings);
 }
 
-export function update_notification_sound_source($container_elem, settings_object) {
+export function update_notification_sound_source(
+    $container_elem: JQuery<HTMLAudioElement>,
+    settings_object: {notification_sound: string},
+): void {
     const notification_sound = settings_object.notification_sound;
     const audio_file_without_extension = "/static/audio/notification_sounds/" + notification_sound;
     $container_elem
