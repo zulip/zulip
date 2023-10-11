@@ -54,6 +54,7 @@ import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as unread_ops from "./unread_ops";
+import * as read_receipts from "./read_receipts";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
 import { user_settings } from "./user_settings";
@@ -229,7 +230,6 @@ export function get_keypress_hotkey(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
         return undefined;
     }
-
     return keypress_mappings[e.which];
 }
 
@@ -1119,6 +1119,9 @@ export function process_hotkey(e, hotkey) {
             stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
             return true;
         }
+        case "read_receipts":
+            read_receipts.show_user_list(msg.id);
+            return true;
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`

@@ -151,6 +151,12 @@ export function initialize() {
                 e.stopPropagation();
                 instance.hide();
             });
+            $(document).keydown(function(event) {
+                // Check the keyCode or which property for the pressed key
+                if (event.keyCode == 65) { // For example, 65 is the keyCode for the 'A' key
+                    console.log('The "A" key is pressed.');
+                }
+            });
 
             $popper.one("click", ".rehide_muted_user_message", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
@@ -168,6 +174,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".view_read_receipts", (e) => {
+                console.log("click event")
                 const message_id = $(e.currentTarget).data("message-id");
                 read_receipts.show_user_list(message_id);
                 e.preventDefault();
