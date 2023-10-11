@@ -28,11 +28,11 @@ def api_freshping_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    body = get_body_for_http_request(payload)
-    topic = get_topic_for_http_request(payload)
     check_state_name = payload["webhook_event_data"]["check_state_name"].tame(check_string)
     if check_state_name not in CHECK_STATE_NAME_TO_EVENT_TYPE:
         raise UnsupportedWebhookEventTypeError(check_state_name)
+    body = get_body_for_http_request(payload)
+    topic = get_topic_for_http_request(payload)
 
     check_send_webhook_message(
         request,
