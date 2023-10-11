@@ -13,8 +13,9 @@ import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
+import * as modals from "./modals";
 import * as narrow_state from "./narrow_state";
-import * as overlays_modals from "./overlays_modals";
+import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
 import * as ui_report from "./ui_report";
@@ -471,7 +472,8 @@ export function mark_pm_as_read(user_ids_string) {
 
 export function viewport_is_visible_and_focused() {
     if (
-        overlays_modals.any_active() ||
+        overlays.any_active() ||
+        modals.any_active() ||
         !is_window_focused() ||
         !$("#message_feed_container").is(":visible")
     ) {
