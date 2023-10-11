@@ -286,7 +286,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (overlays.is_active()) {
+    if (overlays.any_active()) {
         overlays.close_active();
         return true;
     }
@@ -719,7 +719,7 @@ export function process_hotkey(e, hotkey) {
             }
     }
 
-    if (hotkey.message_view_only && overlays.is_active()) {
+    if (hotkey.message_view_only && overlays.any_active()) {
         if (processing_text()) {
             return false;
         }
