@@ -3,10 +3,10 @@ import $ from "jquery";
 import * as components from "./components";
 import {$t} from "./i18n";
 
-export let toggler;
+export let toggler: components.Toggle;
 export let select_tab = "personal_settings";
 
-export function setup_toggler() {
+export function setup_toggler(): void {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
