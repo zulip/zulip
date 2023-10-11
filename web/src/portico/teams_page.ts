@@ -1,13 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-// The list of repository names is duplicated here in order to provide
-// a clear type for Contributor objects.
-//
-// TODO: We can avoid this if we introduce a `contributions` object
-// referenced from Contributor, rather than having repository names be
-// direct keys in the namespace that also has `email`.
-const all_repository_names = [
+export const all_repository_names = [
     "zulip",
     "zulip-desktop",
     "zulip-mobile",
@@ -20,7 +14,7 @@ const all_repository_names = [
 ] as const;
 type RepositoryName = (typeof all_repository_names)[number];
 
-const repo_name_to_tab_name: Record<RepositoryName, string> = {
+export const repo_name_to_tab_name: Record<RepositoryName, string> = {
     zulip: "server",
     "zulip-desktop": "desktop",
     "zulip-mobile": "mobile",
@@ -90,7 +84,10 @@ function exclude_bot_contributors(contributor: Contributor): boolean {
 // TODO (for v2 of /team/ contributors):
 //   - Make tab header responsive.
 //   - Display full name instead of GitHub username.
-export default function render_tabs(contributors: Contributor[]): void {
+export default function render_tabs(contributors: Contributor[] | undefined): void {
+    if (!contributors) {
+        return;
+    }
     const template = _.template($("#contributors-template").html());
     const count_template = _.template($("#count-template").html());
     const total_count_template = _.template($("#total-count-template").html());
@@ -171,3 +168,6 @@ export default function render_tabs(contributors: Contributor[]): void {
         });
     }
 }
+
+const contributors: Contributor[] | undefined = $("#page-params").data("params").contributors;
+render_tabs(contributors);
