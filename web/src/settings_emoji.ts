@@ -52,6 +52,7 @@ export function update_custom_emoji_ui(): void {
         $(".add-emoji-text").hide();
         $("#add-custom-emoji-button").hide();
         $("#emoji-settings .emoji-settings-tip-container").show();
+        $(".org-settings-list li[data-section='emoji-settings'] .locked").show();
     } else {
         $(".add-emoji-text").show();
         $("#add-custom-emoji-button").show();
@@ -60,6 +61,7 @@ export function update_custom_emoji_ui(): void {
         } else {
             $("#emoji-settings .emoji-settings-tip-container").hide();
         }
+        $(".org-settings-list li[data-section='emoji-settings'] .locked").hide();
     }
 
     populate_emoji();
