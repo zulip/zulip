@@ -51,7 +51,7 @@ function setup_settings_label() {
         }),
         presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
         send_stream_typing_notifications: $t({
-            defaultMessage: "Let subscribers see when I'm typing messages in streams",
+            defaultMessage: "Let recipients see when I'm typing messages in streams",
         }),
         send_private_typing_notifications: $t({
             defaultMessage: "Let recipients see when I'm typing direct messages",
