@@ -962,8 +962,9 @@ class InviteUserTest(InviteUserBase):
 
         self.assertEqual(signups_stream_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
-            signups_stream_msg.content.startswith(
-                f"@_**alice_zulip.com|{invitee_profile.id}** just signed up",
+            user_profile.realm.signup_notifications_include_referrer
+            and signups_stream_msg.content.startswith(
+                f"@_**alice_zulip.com|{invitee_profile.id}** accepted @_**King Hamlet|{user_profile.id}**'s invite",
             )
         )
 

@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "Bao gồm nội dung tin nhắn trong email thông báo tin nhắn",
   "Include muted": "Bao gồm các Topic tắt tiếng",
   "Include organization name in subject of message notification emails": "Bao gồm tên tổ chức trong chủ đề của email thông báo tin nhắn",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Webhook đến chỉ có thể gửi tin nhắn.",
   "Initiate a search": "Bắt đầu tìm kiếm",
   "Insert new line": "Thêm dòng mới",

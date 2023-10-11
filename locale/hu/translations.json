@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "Az üzenet szövege megjelenhet az üzenetről értesítő mailekben",
   "Include muted": "Némítottakkal együtt",
   "Include organization name in subject of message notification emails": "Szerepeljen a szervezet neve az üzenet értesítő emailek témájában",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "A bejövő webhookok csak küldeni tudnak üzeneteket.",
   "Initiate a search": "Keresés indítása",
   "Insert new line": "Új sor beszúrása",

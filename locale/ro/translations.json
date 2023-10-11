@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "Includeți conținutul mesajului în e-mailurile de notificare",
   "Include muted": "Include cele fără alertă sonoră",
   "Include organization name in subject of message notification emails": "Includeți numele organizației în subiectul e-mailurilor de notificare a mesajelor",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Hook-urile primite doar pot trimite mesaje.",
   "Initiate a search": "Inițiază o căutare",
   "Insert new line": "Inserează o linie nouă",

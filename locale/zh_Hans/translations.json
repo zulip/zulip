@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "在消息通知电子邮箱中包含消息内容",
   "Include muted": "包括静音",
   "Include organization name in subject of message notification emails": "在消息通知电子邮箱的主题中包含社群名称",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "传入的webhooks只能发送消息。",
   "Initiate a search": "发起搜索",
   "Insert new line": "插入新的一行",

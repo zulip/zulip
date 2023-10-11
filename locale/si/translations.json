@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "පණිවිඩ දැනුම්දීම් වි-තැපැල් හි පණිවිඩ අන්තර්ගතය ඇතුළත් කරන්න",
   "Include muted": "නිහඬ කිරීම් ඇතුළත්ව",
   "Include organization name in subject of message notification emails": "පණිවිඩ දැනුම් දීමේ වි-තැපැල් වලට සංවිධානයේ නම ඇතුළත් කරන්න",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "",
   "Initiate a search": "",
   "Insert new line": "නව රේඛාවක් ඇතුළු කරන්න",

@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "تضمين محتوى الرسالة في رسائل البريد الإلكتروني للإشعارات",
   "Include muted": "تضمين الصامتة",
   "Include organization name in subject of message notification emails": "تضمين اسم المؤسسة في موضوع رسائل البريد الإلكتروني للإشعارات",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "يمكن للويب هوك الواردة إرسال الرسائل فقط.",
   "Initiate a search": "ابدأ بحث",
   "Insert new line": "أدخل سطر جديد",

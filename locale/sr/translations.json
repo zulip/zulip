@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "Прикажи садржај поруке у е-порукама обавештења",
   "Include muted": "Укључујући пригушене",
   "Include organization name in subject of message notification emails": "Прикажи назив организације у наслову е-порука обавештења",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Долазне веб закачке могу само да шаљу поруке.",
   "Initiate a search": "Покрени претрагу",
   "Insert new line": "Уметни нову линију",

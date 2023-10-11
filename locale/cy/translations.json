@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "Cynhwyswch gynnwys neges mewn e-byst hysbysu neges",
   "Include muted": "Cynhwyswch dawel",
   "Include organization name in subject of message notification emails": "Cynhwyswch enw'r sefydliad yn destun e-byst hysbysu neges",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Dim ond anfon negeseuon y gall webhooks sy'n dod i mewn eu hanfon.",
   "Initiate a search": "Dechreuwch chwiliad",
   "Insert new line": "Mewnosod llinell newydd",

@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "Sisällytä viestin sisältö viestien sähköposti-ilmoituksissa",
   "Include muted": "Sisällytä mykistetyt",
   "Include organization name in subject of message notification emails": "Sisällytä organisaation nimi sähköposti-ilmoituksen otsikossa",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Sisään tulevat webhookit voivat vain lähettää viestejä.",
   "Initiate a search": "Aloita haku",
   "Insert new line": "Lisää uusi rivi",

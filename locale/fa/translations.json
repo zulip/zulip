@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "",
   "Include muted": "",
   "Include organization name in subject of message notification emails": "",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "وب هوک های ورودی تنها پیام می فرستند.",
   "Initiate a search": "شروع یک جستجو",
   "Insert new line": "وارد کردن کاراکتر خط جدید",

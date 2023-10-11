@@ -586,6 +586,7 @@
   "Include message content in message notification emails": "Мессежийн мэдэгдэл имэйлд агуулгыг оруулна уу",
   "Include muted": "Muted оруулах",
   "Include organization name in subject of message notification emails": "Мэдэгдэл мессежийн гарчих дээр байгууллагын нэрийг оруулна уу",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Ирж буй Webhook нь зөвхөн мессеж илгээх боломжтой.",
   "Initiate a search": "Хайлт эхлүүлэх",
   "Insert new line": "Шинэ мөр оруулах",
