@@ -175,6 +175,17 @@ export function initialize() {
                 instance.hide();
             });
 
+            //issue number , issue description
+            $popper.one("keydown", ".view_read_receipts", (e) => {
+                if (e.shiftKey && e.key === 'V' ) {
+                    const message_id = $(e.currentTarget).data("message-id");
+                    read_receipts.show_user_list(message_id);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    instance.hide();
+                 }
+            });
+
             $popper.one("click", ".delete_message", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
                 message_edit.delete_message(message_id);
