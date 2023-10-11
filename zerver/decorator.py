@@ -362,7 +362,8 @@ def webhook_view(
                     log_exception_to_webhook_logger(request, err)
                 elif isinstance(err, WebhookError):
                     # Anything explicitly a webhook error deserves to
-                    # go to the webhook logs
+                    # go to the webhook logs.  The error middleware
+                    # skips logging these exceptions a second time.
                     err.webhook_name = webhook_client_name
                     log_exception_to_webhook_logger(request, err)
                 elif isinstance(err, InvalidJSONError) and notify_bot_owner_on_invalid_json:
@@ -777,7 +778,8 @@ def authenticated_rest_api_view(
                     log_exception_to_webhook_logger(request, err)
                 elif isinstance(err, WebhookError):
                     # Anything explicitly a webhook error deserves to
-                    # go to the webhook logs
+                    # go to the webhook logs.  The error middleware
+                    # skips logging these exceptions a second time.
                     err.webhook_name = webhook_client_name
                     log_exception_to_webhook_logger(request, err)
 
