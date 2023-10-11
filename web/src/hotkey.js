@@ -52,6 +52,7 @@ import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as unread_ops from "./unread_ops";
+import * as read_receipts from "./read_receipts";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
 import {user_settings} from "./user_settings";
@@ -176,6 +177,7 @@ const keypress_mappings = {
     119: {name: "query_users", message_view_only: true}, // 'w'
     120: {name: "compose_private_message", message_view_only: true}, // 'x'
     122: {name: "zoom_to_message_near", message_view_only: true}, // 'z'
+    86: {name: "read_receipts", message_view_only: true}, // ','
 };
 
 export function get_keydown_hotkey(e) {
@@ -224,7 +226,6 @@ export function get_keypress_hotkey(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
         return undefined;
     }
-
     return keypress_mappings[e.which];
 }
 
@@ -1107,6 +1108,9 @@ export function process_hotkey(e, hotkey) {
             stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
             return true;
         }
+        case "read_receipts":
+            read_receipts.show_user_list(msg.id);
+            return true;
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`
