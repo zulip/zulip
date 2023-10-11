@@ -313,11 +313,11 @@ def log_unsupported_webhook_event(request: HttpRequest, summary: str) -> None:
 def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> None:
     extra = {"request": request}
     if isinstance(err, AnomalousWebhookPayloadError):
-        webhook_anomalous_payloads_logger.exception(str(err), stack_info=True, extra=extra)
+        webhook_anomalous_payloads_logger.exception(err, stack_info=True, extra=extra)
     elif isinstance(err, UnsupportedWebhookEventTypeError):
-        webhook_unsupported_events_logger.exception(str(err), stack_info=True, extra=extra)
+        webhook_unsupported_events_logger.exception(err, stack_info=True, extra=extra)
     else:
-        webhook_logger.exception(str(err), stack_info=True, extra=extra)
+        webhook_logger.exception(err, stack_info=True, extra=extra)
 
 
 def full_webhook_client_name(raw_client_name: Optional[str] = None) -> Optional[str]:
