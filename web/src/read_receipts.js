@@ -13,8 +13,7 @@ import * as people from "./people";
 import * as ui_report from "./ui_report";
 
 
-
-function fetch_receipts(message_id) {
+function fetch_receipts(message_id, showLoader) {
     const message = message_store.get(message_id);
     if (message.sender_email === "notification-bot@zulip.com") {
         $("#read_receipts_modal .read_receipts_info").text(
@@ -25,6 +24,9 @@ function fetch_receipts(message_id) {
         );
         $("#read_receipts_modal .modal__content").addClass("compact");
     } else {
+        if (showLoader) {
+            loading.make_indicator($("#read_receipts_modal .loading_indicator"));
+        }
         channel.get({
             url: `/json/messages/${message_id}/read_receipts`,
             success(data) {
@@ -44,7 +46,6 @@ function fetch_receipts(message_id) {
                         $t({ defaultMessage: "No one has read this message yet." }),
                     );
                 } else {
-
                     $("#read_receipts_modal .read_receipts_info").html(
                         $t_html(
                             {
@@ -63,7 +64,6 @@ function fetch_receipts(message_id) {
                     $("#read_receipts_modal .modal__container").addClass(
                         "showing_read_receipts_list",
                     );
-
                     $("#read_receipts_modal .read_receipts_content").html(
                         render_read_receipts({ users }),
                     );
@@ -79,21 +79,20 @@ function fetch_receipts(message_id) {
         });
     }
 }
+
 export function show_user_list(message_id) {
     $("body").append(render_read_receipts_modal());
-
     let intervalFunc;
-    overlays.open_modal("read_receipts_modal", {
     modals.open("read_receipts_modal", {
         autoremove: true,
         on_show() {
-            loading.make_indicator($("#read_receipts_modal .loading_indicator"));
-            fetch_receipts(message_id);
+            fetch_receipts(message_id, true);
             intervalFunc = setInterval(() => {
-                fetch_receipts(message_id);
-            }, 6000);
+                fetch_receipts(message_id, false);
+            }, 60000);
         },
         on_hide() {
+            loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
             clearInterval(intervalFunc);
         }
     });
