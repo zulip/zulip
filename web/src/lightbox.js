@@ -317,7 +317,7 @@ function display_video(payload) {
 export function build_open_media_function(on_close) {
     if (on_close === undefined) {
         on_close = function () {
-            $(".player-container iframe").remove();
+            remove_video_players();
             is_open = false;
             document.activeElement.blur();
         };
@@ -509,6 +509,13 @@ export function next() {
     $(".image-list .image.selected").next().trigger("click");
 }
 
+function remove_video_players() {
+    // Remove video players from the DOM. Used when closing lightbox
+    // so that videos doesn't keep playing in the background.
+    $(".player-container iframe").remove();
+    $("#lightbox_overlay .video-player").html("");
+}
+
 // this is a block of events that are required for the lightbox to work.
 export function initialize() {
     // Renders the DOM for the lightbox.
@@ -521,7 +528,7 @@ export function initialize() {
     );
 
     const reset_lightbox_state = function () {
-        $(".player-container iframe").remove();
+        remove_video_players();
         is_open = false;
         document.activeElement.blur();
         if (pan_zoom_control.isActive()) {
