@@ -379,8 +379,11 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent generally to all users in an organization for changes
-                                in the set of users or those users metadata.
+                                Event sent generally to all users who can access the modified
+                                user for changes in the set of users or those users metadata.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event
+                                was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
