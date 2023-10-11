@@ -80,6 +80,28 @@ function user_can_change_password() {
     return page_params.realm_email_auth_enabled;
 }
 
+export function update_lock_icon_in_sidebar() {
+    if (page_params.is_owner) {
+        $(".org-settings-list .locked").hide();
+        return;
+    }
+    if (page_params.is_admin) {
+        $(".org-settings-list .locked").hide();
+        $(".org-settings-list li[data-section='auth-methods'] .locked").show();
+        return;
+    }
+
+    $(".org-settings-list .locked").show();
+
+    if (settings_bots.can_create_new_bots()) {
+        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+    }
+
+    if (settings_data.user_can_add_custom_emoji()) {
+        $(".org-settings-list li[data-section='emoji-settings'] .locked").hide();
+    }
+}
+
 export function build_page() {
     setup_settings_label();
 

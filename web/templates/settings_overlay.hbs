@@ -58,44 +58,32 @@
                     <li tabindex="0" data-section="organization-profile">
                         <i class="icon fa fa-id-card" aria-hidden="true"></i>
                         <div class="text">{{t "Organization profile" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-settings">
                         <i class="icon fa fa-sliders" aria-hidden="true"></i>
                         <div class="text">{{t "Organization settings" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings' }}"></i>
                     </li>
                     <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-permissions">
                         <i class="icon fa fa-lock" aria-hidden="true"></i>
                         <div class="text">{{t "Organization permissions" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     <li tabindex="0" data-section="emoji-settings">
                         <i class="icon fa fa-smile-o" aria-hidden="true"></i>
                         <div class="text">{{t "Custom emoji" }}</div>
-                        {{#if show_emoji_settings_lock}}
-                            <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'You do not have permission to add custom emoji.'}}"></i>
-                        {{/if}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#unless show_emoji_settings_lock}}style="display: none;"{{/unless}} data-tippy-content="{{t 'You do not have permission to add custom emoji.'}}"></i>
                     </li>
                     <li tabindex="0" data-section="linkifier-settings">
                         <i class="icon fa fa-font" aria-hidden="true"></i>
                         <div class="text">{{t "Linkifiers" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     <li tabindex="0" data-section="playground-settings">
                         <i class="icon fa fa-external-link" aria-hidden="true"></i>
                         <div class="text">{{t "Code playgrounds" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{#unless is_guest}}
                     <li tabindex="0" data-section="user-groups-admin">
@@ -107,27 +95,21 @@
                     <li tabindex="0" data-section="user-list-admin">
                         <i class="icon fa fa-user" aria-hidden="true"></i>
                         <div class="text">{{t "Users" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
                     <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="deactivated-users-admin">
                         <i class="icon fa fa-user-times" aria-hidden="true"></i>
                         <div class="text">{{t "Deactivated users" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
                     <li tabindex="0" data-section="bot-list-admin">
                         <i class="icon zulip-icon zulip-icon-smart-toy" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
-                        {{#unless can_create_new_bots}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if can_create_new_bots}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
@@ -145,9 +127,7 @@
                     <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-level-user-defaults">
                         <i class="icon fa fa-cog" aria-hidden="true"></i>
                         <div class="text">{{t "Default user settings" }}</div>
-                        {{#unless is_admin}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{#unless is_guest}}
                     <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-streams-list">
@@ -161,9 +141,7 @@
                     <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="auth-methods">
                         <i class="icon fa fa-key" aria-hidden="true"></i>
                         <div class="text">{{t "Authentication methods" }}</div>
-                        {{#unless is_owner}}
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization owners can edit these settings.' }}"></i>
-                        {{/unless}}
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_owner}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization owners can edit these settings.' }}"></i>
                     </li>
                     {{#if is_admin}}
                     <li tabindex="0" data-section="data-exports-admin">
