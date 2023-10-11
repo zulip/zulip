@@ -56,7 +56,7 @@ const narrow_state = mock_esm("../src/narrow_state", {
 });
 const navigate = mock_esm("../src/navigate");
 const modals = mock_esm("../src/modals", {
-    is_open: () => false,
+    any_active: () => false,
     active_modal: () => undefined,
 });
 const overlays = mock_esm("../src/overlays", {
@@ -350,7 +350,7 @@ run_test("drafts closed launch", ({override}) => {
 });
 
 run_test("modal open", ({override}) => {
-    override(modals, "is_open", () => true);
+    override(modals, "any_active", () => true);
     test_normal_typing();
 });
 

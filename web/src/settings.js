@@ -26,7 +26,7 @@ export let settings_label;
 
 $(() => {
     $("#settings_overlay_container").on("click", (e) => {
-        if (!modals.is_open()) {
+        if (!modals.any_active()) {
             return;
         }
         if ($(e.target).closest(".micromodal").length > 0) {
