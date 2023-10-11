@@ -227,21 +227,6 @@ li.show-more-topics {
     margin-left: 6px;
     z-index: 1;
 
-    #toggle_private_messages_section_icon {
-        opacity: 0.7;
-        margin-left: -15px;
-        min-width: 12px;
-
-        &.fa-caret-right {
-            position: relative;
-            left: 3px;
-        }
-
-        &:hover {
-            opacity: 1;
-        }
-    }
-
     #private_messages_section_header {
         cursor: pointer;
         padding: 0 10px 1px 6px;
@@ -310,6 +295,22 @@ li.show-more-topics {
                 margin-top: 2px;
             }
         }
+    }
+}
+
+#toggle_private_messages_section_icon,
+#toggle-top-left-navigation-area-icon {
+    opacity: 0.7;
+    margin-left: -15px;
+    min-width: 12px;
+
+    &.fa-caret-right {
+        position: relative;
+        left: 3px;
+    }
+
+    &:hover {
+        opacity: 1;
     }
 }
 
@@ -485,6 +486,40 @@ li.active-sub-filter {
     }
 }
 
+#left-sidebar-navigation-list-condensed {
+    display: flex;
+    justify-content: center;
+
+    .left-sidebar-navigation-condensed-item {
+        /* 24px minimum width from Vlad's design. */
+        flex: 1 0 24px;
+        /* Unset padding from individual top_left items */
+        padding: 0;
+    }
+
+    .left-sidebar-navigation-icon-container {
+        /* Unset margin from full nav list anchor elements. */
+        margin: 0;
+        /* Horizontally center icons within their boxes. */
+        text-align: center;
+    }
+
+    .filter-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* TODO: Set this 24px height value as a variable.
+           Keep filter-icon height the full height of the box. */
+        height: 24px;
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+
+    .unread_count {
+        /* TODO: properly handle condensed unreads. */
+        display: none;
+    }
+}
+
 #left-sidebar-navigation-list {
     margin-bottom: $sections_vertical_gutter;
 
@@ -574,6 +609,7 @@ li.top_left_scheduled_messages {
 }
 
 /* New .topic-box grid definitions here. */
+#views-label-container,
 .subscription_block,
 .topic-box {
     display: grid;
@@ -591,6 +627,58 @@ li.top_left_scheduled_messages {
        (which alters the box size) or `margin` (which notoriously bleeds outside
        of the element it's defined on). */
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+}
+
+#views-label-container {
+    grid-template-columns:
+        0 15px minmax(0, 0.5fr) minmax(0, 1fr)
+        20px 20px;
+    /* Base height on 24px icon-target area from Vlad's design. */
+    grid-template-rows: 24px;
+    /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
+       value and the styles dependent on it so that this kind of
+       1990s layout shenanigans is made unnecessary. */
+    margin-left: -3px;
+    cursor: pointer;
+
+    #toggle-top-left-navigation-area-icon {
+        grid-area: starting-anchor-element;
+        /* Remove negative left margin. This should be cleaned
+           up along with the `--left-sidebar-collapse-widget-gutter`
+           matters above. */
+        margin-left: 0;
+    }
+
+    .sidebar-title {
+        grid-area: row-content;
+        /* Override heading margin from Bootstrap. */
+        margin: 0;
+        /* Show an ellipsis on the VIEWS header when
+           it won't sit adjacent the icons in their
+           most condensed presentation. */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #left-sidebar-navigation-list-condensed {
+        margin: 0;
+        grid-area: markers-and-controls;
+    }
+
+    .left-sidebar-navigation-menu-icon {
+        grid-area: ending-anchor-element;
+        /* Horizontally center vdots. */
+        justify-self: center;
+        /* Properly size vdots. */
+        font-size: 17px;
+        /* Occupy same clickable height as
+           other condensed-view icons */
+        height: 24px;
+        /* Vertically center dots with
+           flexbox. */
+        display: flex;
+        align-items: center;
+    }
 }
 
 .subscription_block {
