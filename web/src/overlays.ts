@@ -41,7 +41,7 @@ function call_hooks(func_list: Hook[]): void {
     }
 }
 
-export function is_active(): boolean {
+export function any_active(): boolean {
     return Boolean(open_overlay_name);
 }
 
@@ -129,7 +129,7 @@ export function close_overlay(name: string): void {
     }
 
     if (active_overlay === undefined) {
-        blueslip.error("close_overlay called without checking is_active()");
+        blueslip.error("close_overlay called without checking any_active()");
         return;
     }
 
@@ -146,7 +146,7 @@ export function close_overlay(name: string): void {
 
 export function close_active(): void {
     if (!open_overlay_name) {
-        blueslip.warn("close_active() called without checking is_active()");
+        blueslip.warn("close_active() called without checking any_active()");
         return;
     }
 

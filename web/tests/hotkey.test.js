@@ -60,7 +60,7 @@ const modals = mock_esm("../src/modals", {
     active_modal: () => undefined,
 });
 const overlays = mock_esm("../src/overlays", {
-    is_active: () => false,
+    any_active: () => false,
     settings_open: () => false,
     streams_open: () => false,
     lightbox_open: () => false,
@@ -287,14 +287,14 @@ run_test("allow normal typing when processing text", ({override, override_rewire
     override_rewire(hotkey, "processing_text", () => true);
 
     let settings_open;
-    let is_active;
+    let any_active;
     let info_overlay_open;
-    override(overlays, "is_active", () => is_active);
+    override(overlays, "any_active", () => any_active);
     override(overlays, "settings_open", () => settings_open);
     override(overlays, "info_overlay_open", () => info_overlay_open);
 
     for (settings_open of [true, false]) {
-        for (is_active of [true, false]) {
+        for (any_active of [true, false]) {
             for (info_overlay_open of [true, false]) {
                 test_normal_typing();
             }
@@ -307,7 +307,7 @@ run_test("streams", ({override}) => {
     delete settings_data.user_can_create_public_streams;
     delete settings_data.user_can_create_web_public_streams;
     override(overlays, "streams_open", () => true);
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     assert_mapping("S", stream_settings_ui, "keyboard_sub");
     assert_mapping("V", stream_settings_ui, "view_stream");
     assert_mapping("n", stream_settings_ui, "open_create_stream");
@@ -333,19 +333,19 @@ run_test("basic mappings", () => {
 });
 
 run_test("drafts open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
 run_test("drafts closed w/other overlay", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => false);
     test_normal_typing();
 });
 
 run_test("drafts closed launch", ({override}) => {
-    override(overlays, "is_active", () => false);
+    override(overlays, "any_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
 });
 
@@ -409,19 +409,19 @@ run_test("misc", ({override}) => {
 });
 
 run_test("lightbox overlay open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
 });
 
 run_test("lightbox closed w/other overlay open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => false);
     test_normal_typing();
 });
 
 run_test("v w/no overlays", ({override}) => {
-    override(overlays, "is_active", () => false);
+    override(overlays, "any_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
 
@@ -539,10 +539,10 @@ run_test("motion_keys", () => {
     assert_unmapped("spacebar");
     delete overlays.settings_open;
 
-    delete overlays.is_active;
+    delete overlays.any_active;
     overlays.drafts_open = () => true;
     assert_mapping("up_arrow", drafts_overlay_ui, "handle_keyboard_events");
     assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
-    delete overlays.is_active;
+    delete overlays.any_active;
     delete overlays.drafts_open;
 });
