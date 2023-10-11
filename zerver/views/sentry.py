@@ -1,3 +1,4 @@
+import logging
 import urllib
 from contextlib import suppress
 
@@ -6,10 +7,17 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
+from requests.exceptions import RequestException
+from sentry_sdk.integrations.logging import ignore_logger
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.validator import check_url, to_wild_value
+
+# In order to not overload Sentry if it's having a bad day, we tell
+# Sentry to ignore exceptions that we have when talking to Sentry.
+logger = logging.getLogger(__name__)
+ignore_logger(logger.name)
 
 
 class SentryTunnelSession(OutgoingSession):
@@ -74,7 +82,13 @@ def sentry_tunnel(
                 parts.append(b"\n")
         updated_body = b"".join(parts)
 
-    SentryTunnelSession().post(
-        url=url, data=updated_body, headers={"Content-Type": "application/x-sentry-envelope"}
-    ).raise_for_status()
+    try:
+        SentryTunnelSession().post(
+            url=url,
+            data=updated_body,
+            headers={"Content-Type": "application/x-sentry-envelope"},
+        ).raise_for_status()
+    except RequestException as e:
+        # This logger has been configured, above, to not report to Sentry
+        logger.exception(e)
     return HttpResponse(status=200)
