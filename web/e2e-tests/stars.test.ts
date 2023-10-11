@@ -32,13 +32,13 @@ async function test_narrow_to_starred_messages(page: Page): Promise<void> {
     await common.check_messages_sent(page, "zfilt", [["Verona > stars", [message]]]);
 
     // Go back to all messages narrow.
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
 }
 
 async function stars_test(page: Page): Promise<void> {
     await common.log_in(page);
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
     await common.send_message(page, "stream", {
         stream_name: "Verona",

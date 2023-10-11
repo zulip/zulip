@@ -92,11 +92,14 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await navigate_using_left_sidebar(page, verona_narrow);
 
-    await page.click(".home-link");
+    await page.click("#left-sidebar-navigation-list .home-link");
     await page.waitForSelector("#message_feed_container", {visible: true});
 
     await navigate_to_subscriptions(page);
-    await navigate_using_left_sidebar(page, "all_messages");
+
+    await page.click("#left-sidebar-navigation-list .home-link");
+    await page.waitForSelector(`#message_feed_container`, {visible: true});
+
     await navigate_to_settings(page);
     await navigate_to_private_messages(page);
     await navigate_to_subscriptions(page);
