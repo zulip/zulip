@@ -1,4 +1,5 @@
 import unittest
+from typing import Optional
 
 from tools.lib.pretty_print import pretty_print_html
 from tools.lib.template_parser import validate
@@ -280,9 +281,9 @@ GOOD_HTML11 = """
 """
 
 
-def pretty_print(html: str) -> str:
+def pretty_print(html: str, template_format: Optional[str] = None) -> str:
     fn = "<test str>"
-    tokens = validate(fn=fn, text=html)
+    tokens = validate(fn=fn, text=html, template_format=template_format)
     return pretty_print_html(tokens, fn=fn)
 
 
@@ -294,12 +295,12 @@ class TestPrettyPrinter(unittest.TestCase):
         self.compare(pretty_print(GOOD_HTML), GOOD_HTML)
         self.compare(pretty_print(BAD_HTML), GOOD_HTML)
         self.compare(pretty_print(BAD_HTML1), GOOD_HTML1)
-        self.compare(pretty_print(BAD_HTML2), GOOD_HTML2)
+        self.compare(pretty_print(BAD_HTML2, template_format="handlebars"), GOOD_HTML2)
         self.compare(pretty_print(BAD_HTML4), GOOD_HTML4)
-        self.compare(pretty_print(BAD_HTML5), GOOD_HTML5)
+        self.compare(pretty_print(BAD_HTML5, template_format="handlebars"), GOOD_HTML5)
         self.compare(pretty_print(BAD_HTML6), GOOD_HTML6)
-        self.compare(pretty_print(BAD_HTML7), GOOD_HTML7)
-        self.compare(pretty_print(BAD_HTML8), GOOD_HTML8)
-        self.compare(pretty_print(BAD_HTML9), GOOD_HTML9)
-        self.compare(pretty_print(BAD_HTML10), GOOD_HTML10)
+        self.compare(pretty_print(BAD_HTML7, template_format="handlebars"), GOOD_HTML7)
+        self.compare(pretty_print(BAD_HTML8, template_format="handlebars"), GOOD_HTML8)
+        self.compare(pretty_print(BAD_HTML9, template_format="handlebars"), GOOD_HTML9)
+        self.compare(pretty_print(BAD_HTML10, template_format="django"), GOOD_HTML10)
         self.compare(pretty_print(BAD_HTML11), GOOD_HTML11)
