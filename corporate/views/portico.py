@@ -143,9 +143,16 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             )
             unique_org_type_ids.add(realm.org_type)
 
+    # Custom list of org types to show.
+    ORG_TYPES_TO_SHOW = [
+        "opensource",
+        "research",
+        "community",
+    ]
+
     # Remove org_types for which there are no open organizations.
     org_types = dict()
-    for org_type in Realm.ORG_TYPES:
+    for org_type in ORG_TYPES_TO_SHOW:
         if Realm.ORG_TYPES[org_type]["id"] in unique_org_type_ids:
             org_types[org_type] = Realm.ORG_TYPES[org_type]
 
