@@ -312,10 +312,13 @@ def log_unsupported_webhook_event(request: HttpRequest, summary: str) -> None:
 
 def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> None:
     extra = {"request": request}
+    # We intentionally omit the stack_info for these events, where
+    # they are intentionally raised, and the stack_info between that
+    # point and this one is not interesting.
     if isinstance(err, AnomalousWebhookPayloadError):
-        webhook_anomalous_payloads_logger.exception(err, stack_info=True, extra=extra)
+        webhook_anomalous_payloads_logger.exception(err, extra=extra)
     elif isinstance(err, UnsupportedWebhookEventTypeError):
-        webhook_unsupported_events_logger.exception(err, stack_info=True, extra=extra)
+        webhook_unsupported_events_logger.exception(err, extra=extra)
     else:
         webhook_logger.exception(err, stack_info=True, extra=extra)
 

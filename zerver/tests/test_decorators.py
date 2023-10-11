@@ -418,9 +418,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         self.assertIsInstance(mock_exception.call_args.args[0], UnsupportedWebhookEventTypeError)
         self.assertEqual(mock_exception.call_args.args[0].event_type, "test_event")
         self.assertEqual(mock_exception.call_args.args[0].msg, exception_msg)
-        self.assertEqual(
-            mock_exception.call_args.kwargs, {"stack_info": True, "extra": {"request": request}}
-        )
+        self.assertEqual(mock_exception.call_args.kwargs, {"extra": {"request": request}})
 
     def test_authenticated_rest_api_view_with_non_webhook_view(self) -> None:
         @authenticated_rest_api_view()
