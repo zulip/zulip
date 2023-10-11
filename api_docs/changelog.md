@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 228**
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`
+  are now only sent to users who can access the modified user.
+
 **Feature level 227**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),

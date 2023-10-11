@@ -24,7 +24,7 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import get_active_bots_owned_by_user
+from zerver.lib.users import get_active_bots_owned_by_user, get_user_ids_who_can_access_user
 from zerver.models import (
     Message,
     Realm,
@@ -35,7 +35,6 @@ from zerver.models import (
     Subscription,
     UserGroupMembership,
     UserProfile,
-    active_user_ids,
     bot_owner_user_ids,
     get_bot_dicts_in_realm,
     get_bot_services,
@@ -305,7 +304,9 @@ def do_deactivate_user(
             person=dict(user_id=user_profile.id, is_active=False),
         )
         send_event_on_commit(
-            user_profile.realm, event_deactivate_user, active_user_ids(user_profile.realm_id)
+            user_profile.realm,
+            event_deactivate_user,
+            get_user_ids_who_can_access_user(user_profile),
         )
 
         if user_profile.is_bot:
@@ -402,7 +403,7 @@ def do_change_user_role(
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )
-    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
     UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=old_system_group
@@ -450,7 +451,7 @@ def do_change_is_billing_admin(user_profile: UserProfile, value: bool) -> None:
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_billing_admin=value)
     )
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    send_event(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
 def do_change_can_forge_sender(user_profile: UserProfile, value: bool) -> None:
