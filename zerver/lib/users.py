@@ -37,6 +37,8 @@ from zerver.models import (
     SystemGroups,
     UserMessage,
     UserProfile,
+    active_non_guest_user_ids,
+    active_user_ids,
     get_fake_email_domain,
     get_realm_user_dicts,
     get_user,
@@ -587,8 +589,31 @@ def check_can_access_user(
     return False
 
 
+def get_user_ids_who_can_access_user(target_user: UserProfile) -> List[int]:
+    # We assume that caller only needs active users here, since
+    # this function is used to get users to send events.
+    realm = target_user.realm
+    if not user_access_restricted_in_realm(target_user):
+        return active_user_ids(realm.id)
+
+    active_non_guest_user_ids_in_realm = active_non_guest_user_ids(realm.id)
+
+    users_in_subscribed_streams_or_huddles_dict = get_subscribers_of_target_user_subscriptions(
+        [target_user]
+    )
+    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([target_user], realm)
+
+    user_ids_who_can_access_target_user = (
+        {target_user.id}
+        | set(active_non_guest_user_ids_in_realm)
+        | users_in_subscribed_streams_or_huddles_dict[target_user.id]
+        | users_involved_in_dms_dict[target_user.id]
+    )
+    return list(user_ids_who_can_access_target_user)
+
+
 def get_subscribers_of_target_user_subscriptions(
-    target_users: List[UserProfile],
+    target_users: List[UserProfile], include_deactivated_users_for_huddles: bool = False
 ) -> Dict[int, Set[int]]:
     target_user_ids = [user.id for user in target_users]
     target_user_subscriptions = (
@@ -616,10 +641,15 @@ def get_subscribers_of_target_user_subscriptions(
         active=True,
     )
 
-    subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
-        Q(recipient__type=Recipient.STREAM, is_user_active=True)
-        | Q(recipient__type=Recipient.HUDDLE)
-    )
+    if include_deactivated_users_for_huddles:
+        subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
+            Q(recipient__type=Recipient.STREAM, is_user_active=True)
+            | Q(recipient__type=Recipient.HUDDLE)
+        )
+    else:
+        subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
+            recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE], is_user_active=True
+        )
 
     subs_in_target_user_subscriptions = subs_in_target_user_subscriptions_query.order_by(
         "recipient_id"
@@ -644,7 +674,7 @@ def get_subscribers_of_target_user_subscriptions(
 
 
 def get_users_involved_in_dms_with_target_users(
-    target_users: List[UserProfile], realm: Realm
+    target_users: List[UserProfile], realm: Realm, include_deactivated_users: bool = False
 ) -> Dict[int, Set[int]]:
     target_user_ids = [user.id for user in target_users]
 
@@ -657,21 +687,35 @@ def get_users_involved_in_dms_with_target_users(
         .values("sender_id", "recipient__type_id")
     )
 
+    direct_messages_recipient_users_set = {
+        obj["recipient__type_id"] for obj in direct_messages_recipient_users
+    }
+    active_direct_messages_recipient_user_ids = UserProfile.objects.filter(
+        id__in=list(direct_messages_recipient_users_set), is_active=True
+    ).values_list("id", flat=True)
+
     direct_message_participants_dict: Dict[int, Set[int]] = defaultdict(set)
     for sender_id, message_rows in itertools.groupby(
         direct_messages_recipient_users, itemgetter("sender_id")
     ):
         recipient_user_ids = {row["recipient__type_id"] for row in message_rows}
+        if not include_deactivated_users:
+            recipient_user_ids &= set(active_direct_messages_recipient_user_ids)
+
         direct_message_participants_dict[sender_id] = recipient_user_ids
 
     personal_recipient_ids_for_target_users = [user.recipient_id for user in target_users]
+    direct_message_senders_query = Message.objects.filter(
+        realm=realm,
+        recipient_id__in=personal_recipient_ids_for_target_users,
+        recipient__type=Recipient.PERSONAL,
+    )
+
+    if not include_deactivated_users:
+        direct_message_senders_query = direct_message_senders_query.filter(sender__is_active=True)
+
     direct_messages_senders = (
-        Message.objects.filter(
-            realm=realm,
-            recipient_id__in=personal_recipient_ids_for_target_users,
-            recipient__type=Recipient.PERSONAL,
-        )
-        .order_by("recipient__type_id")
+        direct_message_senders_query.order_by("recipient__type_id")
         .distinct("sender_id", "recipient__type_id")
         .values("sender_id", "recipient__type_id")
     )
@@ -759,11 +803,15 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
     return user_dict
 
 
-def get_accessible_user_ids(realm: Realm, user_profile: UserProfile) -> List[int]:
+def get_accessible_user_ids(
+    realm: Realm, user_profile: UserProfile, include_deactivated_users: bool = False
+) -> List[int]:
     subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
-        [user_profile]
+        [user_profile], include_deactivated_users_for_huddles=include_deactivated_users
     )
-    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([user_profile], realm)
+    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
+        [user_profile], realm, include_deactivated_users=include_deactivated_users
+    )
 
     # This does not include bots, because either the caller
     # wants only human users or it handles bots separately.
@@ -787,7 +835,9 @@ def get_user_dicts_in_realm(
         return (all_user_dicts, [])
 
     assert user_profile is not None
-    accessible_user_ids = get_accessible_user_ids(realm, user_profile)
+    accessible_user_ids = get_accessible_user_ids(
+        realm, user_profile, include_deactivated_users=True
+    )
 
     accessible_user_dicts: List[RawUserDict] = []
     inaccessible_user_dicts: List[APIUserDict] = []
@@ -896,7 +946,20 @@ def is_2fa_verified(user: UserProfile) -> bool:
 
 
 def get_users_with_access_to_real_email(user_profile: UserProfile) -> List[int]:
-    active_users = user_profile.realm.get_active_users()
+    if not user_access_restricted_in_realm(user_profile):
+        active_users = user_profile.realm.get_active_users()
+    else:
+        # The get_user_ids_who_can_access_user returns user IDs and not
+        # user objects and we instead do one more query for UserProfile
+        # objects. We need complete UserProfile objects only for a couple
+        # of cases and it is not worth to query the whole UserProfile
+        # objects in all the cases and it is fine to do the extra query
+        # wherever needed.
+        user_ids_who_can_access_user = get_user_ids_who_can_access_user(user_profile)
+        active_users = UserProfile.objects.filter(
+            id__in=user_ids_who_can_access_user, is_active=True
+        )
+
     return [
         user.id
         for user in active_users
