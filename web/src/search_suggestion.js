@@ -500,8 +500,11 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         );
     });
 
-    // Only show home if there's an empty bar
-    if (operators.length === 0 && last_string === "") {
+    // Show home if there's an empty bar or if the user starts to type it
+    if (
+        operators.length === 0 &&
+        (last_string === "" || common.phrase_match(last_string, "All messages"))
+    ) {
         suggestions.unshift({search_string: "", description_html: "All messages"});
     }
     return suggestions;
