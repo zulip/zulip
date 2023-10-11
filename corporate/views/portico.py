@@ -120,9 +120,16 @@ def hello_view(request: HttpRequest) -> HttpResponse:
 def communities_view(request: HttpRequest) -> HttpResponse:
     eligible_realms = []
     unique_org_type_ids = set()
-    want_to_be_advertised_realms = Realm.objects.filter(
-        want_advertise_in_communities_directory=True
-    ).order_by("name")
+    want_to_be_advertised_realms = (
+        Realm.objects.filter(
+            want_advertise_in_communities_directory=True,
+        )
+        .exclude(
+            # Filter out realms who haven't changed their description from the default.
+            description="",
+        )
+        .order_by("name")
+    )
     for realm in want_to_be_advertised_realms:
         open_to_public = not realm.invite_required and not realm.emails_restricted_to_domains
         if realm.allow_web_public_streams_access() or open_to_public:
@@ -143,8 +150,8 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             )
             unique_org_type_ids.add(realm.org_type)
 
-    # Custom list of org types to show.
-    ORG_TYPES_TO_SHOW = [
+    # Custom list of org filters to show.
+    CATEGORIES_TO_OFFER = [
         "opensource",
         "research",
         "community",
@@ -152,16 +159,18 @@ def communities_view(request: HttpRequest) -> HttpResponse:
 
     # Remove org_types for which there are no open organizations.
     org_types = dict()
-    for org_type in ORG_TYPES_TO_SHOW:
+    for org_type in CATEGORIES_TO_OFFER:
         if Realm.ORG_TYPES[org_type]["id"] in unique_org_type_ids:
             org_types[org_type] = Realm.ORG_TYPES[org_type]
 
-        # Remove `Unspecified` ORG_TYPE
-        org_types.pop("unspecified", None)
+    # This code is not required right bot could be useful in future.
+    # If we ever decided to show all the ORG_TYPES.
+    # Remove `Unspecified` ORG_TYPE
+    # org_types.pop("unspecified", None)
 
     # Change display name of non-profit orgs.
-    if org_types.get("nonprofit"):  # nocoverage
-        org_types["nonprofit"]["name"] = "Non-profit"
+    # if org_types.get("nonprofit"):  # nocoverage
+    #    org_types["nonprofit"]["name"] = "Non-profit"
 
     return TemplateResponse(
         request,

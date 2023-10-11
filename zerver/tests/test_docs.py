@@ -295,7 +295,26 @@ class DocPageTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm.want_advertise_in_communities_directory = True
         realm.save()
-        self._test("/communities/", ["Open communities directory", *zulip_dev_info])
+
+        realm.description = ""
+        realm.save()
+        result = self.client_get("/communities/")
+        # Not shown because the realm has default description set.
+        self.assert_not_in_success_response(["Zulip Dev"], result)
+
+        realm.description = "Some description"
+        realm.save()
+        self._test("/communities/", ["Open communities directory", "Zulip Dev", "Some description"])
+
+        # No org with research type so research category not displayed.
+        result = self.client_get("/communities/")
+        self.assert_not_in_success_response(['data-category="research"'], result)
+
+        realm.org_type = Realm.ORG_TYPES["research"]["id"]
+        realm.save()
+        self._test(
+            "/communities/", ["Open communities directory", "Zulip Dev", 'data-category="research"']
+        )
 
     def test_integration_doc_endpoints(self) -> None:
         self._test(
