@@ -12,6 +12,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
+import * as settings from "./settings";
 import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
 import * as settings_linkifiers from "./settings_linkifiers";
@@ -78,6 +79,7 @@ export const update_person = function update(person) {
         if (people.is_my_user_id(person.user_id) && page_params.is_owner !== person_obj.is_owner) {
             page_params.is_owner = person_obj.is_owner;
             settings_org.maybe_disable_widgets();
+            settings.update_lock_icon_in_sidebar();
         }
 
         if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
@@ -88,6 +90,7 @@ export const update_person = function update(person) {
             settings_streams.maybe_disable_widgets();
             settings_realm_user_settings_defaults.maybe_disable_widgets();
             settings_account.update_account_settings_display();
+            settings.update_lock_icon_in_sidebar();
         }
 
         if (
