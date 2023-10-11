@@ -3,11 +3,12 @@ import urllib
 from contextlib import suppress
 
 import orjson
+from circuitbreaker import CircuitBreakerError, circuit
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
-from requests.exceptions import RequestException
+from requests.exceptions import ProxyError, RequestException, Timeout
 from sentry_sdk.integrations.logging import ignore_logger
 
 from zerver.lib.exceptions import JsonableError
@@ -83,12 +84,30 @@ def sentry_tunnel(
         updated_body = b"".join(parts)
 
     try:
-        SentryTunnelSession().post(
-            url=url,
-            data=updated_body,
-            headers={"Content-Type": "application/x-sentry-envelope"},
-        ).raise_for_status()
+        sentry_request(url, updated_body)
+    except CircuitBreakerError:
+        logger.warning("Dropped a client exception due to circuit-breaking")
     except RequestException as e:
         # This logger has been configured, above, to not report to Sentry
         logger.exception(e)
     return HttpResponse(status=200)
+
+
+# Circuit-break and temporarily stop trying to report to
+# Sentry if it keeps timing out.  We include ProxyError in
+# here because we are likely making our requests through
+# Smokescreen as a CONNECT proxy, so failures from Smokescreen
+# failing to connect at the TCP level will report as
+# ProxyErrors.
+@circuit(
+    failure_threshold=2,
+    recovery_timeout=30,
+    name="Sentry tunnel",
+    expected_exception=(ProxyError, Timeout),
+)
+def sentry_request(url: str, data: bytes) -> None:
+    SentryTunnelSession().post(
+        url=url,
+        data=data,
+        headers={"Content-Type": "application/x-sentry-envelope"},
+    ).raise_for_status()
