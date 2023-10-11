@@ -4,18 +4,19 @@
     <div class="clear-float"></div>
     <div>
         {{t "You are viewing all the bots in this organization." }}
-        {{#if can_create_new_bots}}
+        <span class="add-new-bots" {{#unless can_create_new_bots}}style="display: none;"{{/unless}}>
             {{#tr}}
                 You can <z-link-new-bot>add a new bot</z-link-new-bot> or <z-link-manage-bot>manage</z-link-manage-bot> your own bots.
                 {{#*inline "z-link-new-bot"}}<a class="add-a-new-bot">{{> @partial-block}}</a>{{/inline}}
                 {{#*inline "z-link-manage-bot"}}<a href="/#settings/your-bots">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
-        {{else if has_bots}}
+        </span>
+        <span class="manage-your-bots" {{#unless (and (not can_create_new_bots) has_bots)}}style="display: none;"{{/unless}}>
             {{#tr}}
                 You can <z-link>manage</z-link> your own bots.
                 {{#*inline "z-link"}}<a href="/#settings/your-bots">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
-        {{/if}}
+        </span>
     </div>
     <div class="settings_panel_list_header">
         <h3>{{t "Bots"}}</h3>
