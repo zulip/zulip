@@ -3518,28 +3518,6 @@ select.invite-as {
     }
 }
 
-#personal-menu-dropdown {
-    display: block;
-    margin: 0;
-    position: relative;
-    padding: 0;
-    border: solid 1px var(--color-border-dropdown-menu);
-    background-color: var(--color-background-dropdown-menu);
-    max-height: 85vh;
-    min-width: 230px;
-    overflow-x: hidden;
-    user-select: none;
-
-    .simplebar-content {
-        min-width: max-content;
-    }
-
-    .personal-menu-nav {
-        border-radius: 6px;
-        overflow: hidden;
-    }
-}
-
 .personal-menu-tippy {
     .tippy-box {
         border: 0;
