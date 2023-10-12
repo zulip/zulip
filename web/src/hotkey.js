@@ -54,11 +54,11 @@ import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as unread_ops from "./unread_ops";
-import * as read_receipts from "./read_receipts";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
 import { user_settings } from "./user_settings";
 import * as user_topics_ui from "./user_topics_ui";
+import * as read_receipts from "./read_receipts";
 
 function do_narrow_action(action) {
     action(message_lists.current.selected_id(), { trigger: "hotkey" });
@@ -88,6 +88,8 @@ const keydown_shift_mappings = {
     38: { name: "up_arrow", message_view_only: false }, // up arrow
     40: { name: "down_arrow", message_view_only: false }, // down arrow
     72: { name: "view_edit_history", message_view_only: true }, // 'H'
+    86: { name: "read_receipts", message_view_only: true },
+
 };
 
 const keydown_unshift_mappings = {
@@ -179,7 +181,6 @@ const keypress_mappings = {
     119: { name: "query_users", message_view_only: true }, // 'w'
     120: { name: "compose_private_message", message_view_only: true }, // 'x'
     122: { name: "zoom_to_message_near", message_view_only: true }, // 'z'
-    86: { name: "read_receipts", message_view_only: true }, // ','
 };
 
 export function get_keydown_hotkey(e) {
@@ -228,6 +229,7 @@ export function get_keypress_hotkey(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
         return undefined;
     }
+
     return keypress_mappings[e.which];
 }
 
@@ -546,7 +548,7 @@ export function process_enter_key(e) {
         return true;
     }
 
-    compose_actions.respond_to_message({ trigger: "hotkey enter" });
+    compose_reply.respond_to_message({ trigger: "hotkey enter" });
     return true;
 }
 
@@ -931,7 +933,7 @@ export function process_hotkey(e, hotkey) {
         case "reply_message": // 'r': respond to message
             // Note that you can "Enter" to respond to messages as well,
             // but that is handled in process_enter_key().
-            compose_actions.respond_to_message({ trigger: "hotkey" });
+            compose_reply.respond_to_message({ trigger: "hotkey" });
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {
@@ -1031,10 +1033,10 @@ export function process_hotkey(e, hotkey) {
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
             return true;
         case "respond_to_author": // 'R': respond to author
-            compose_actions.respond_to_message({ reply_type: "personal", trigger: "hotkey pm" });
+            compose_reply.respond_to_message({ reply_type: "personal", trigger: "hotkey pm" });
             return true;
         case "compose_reply_with_mention": // '@': respond to message with mention to author
-            compose_actions.reply_with_mention({ trigger: "hotkey" });
+            compose_reply.reply_with_mention({ trigger: "hotkey" });
             return true;
         case "show_lightbox":
             lightbox.show_from_selected_message();
@@ -1089,7 +1091,7 @@ export function process_hotkey(e, hotkey) {
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
         case "compose_quote_reply": // > : respond to selected message with quote
-            compose_actions.quote_and_reply({ trigger: "hotkey" });
+            compose_reply.quote_and_reply({ trigger: "hotkey" });
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);
@@ -1104,6 +1106,11 @@ export function process_hotkey(e, hotkey) {
             }
             return false;
         }
+        case "read_receipts": {
+            read_receipts.show_user_list(msg.id);
+            return true;
+        }
+
         case "move_message": {
             if (!message_edit.can_move_message(msg)) {
                 return false;
@@ -1112,9 +1119,6 @@ export function process_hotkey(e, hotkey) {
             stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
             return true;
         }
-        case "read_receipts":
-            read_receipts.show_user_list(msg.id);
-            return true;
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`
