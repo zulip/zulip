@@ -13,6 +13,7 @@ to check out your branch.
   - You can find it under `page actions / Take a screenshot`
   - It is capable of screenshotting the entire page, visible area and individual DOM elements
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html) (Chrome, Firefox, IE & Opera)
+- [Chrome Capture](https://chrome.google.com/webstore/detail/chrome-capture-screenshot/ggaabchcecdbomdcnbahdfddfikjmphe?hl=en)
 
 ### macOS
 
@@ -29,6 +30,7 @@ to check out your branch.
 - Snipping Tool (inbuilt)
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html)
 - [Gyazo](https://gyazo.com/en)
+- [ScreenToGif](https://www.screentogif.com/)
 
 ### Linux
 
