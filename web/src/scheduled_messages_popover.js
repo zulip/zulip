@@ -20,9 +20,15 @@ function set_compose_box_schedule(element) {
     return selected_send_at_time;
 }
 
-export function open_send_later_menu() {
-    if (!compose_validate.validate(true)) {
+export function open_send_later_menu(opts) {
+    if (!opts?.is_message_reminder && !compose_validate.validate(true)) {
         return;
+    }
+
+    const message_id = opts?.message_id;
+    let schedule_callback = do_schedule_message;
+    if (opts?.is_message_reminder) {
+        schedule_callback = opts.callback;
     }
 
     // Only show send later options that are possible today.
@@ -59,7 +65,7 @@ export function open_send_later_menu() {
                 const current_time = new Date();
                 flatpickr.show_flatpickr(
                     $(".send_later_custom")[0],
-                    do_schedule_message,
+                    (send_at_time) => schedule_callback(send_at_time, message_id),
                     new Date(current_time.getTime() + 60 * 60 * 1000),
                     {
                         minDate: new Date(
@@ -82,7 +88,7 @@ export function open_send_later_menu() {
                 ".send_later_today, .send_later_tomorrow, .send_later_monday",
                 (e) => {
                     const send_at_time = set_compose_box_schedule(e.currentTarget);
-                    do_schedule_message(send_at_time);
+                    schedule_callback(send_at_time, message_id);
                     e.preventDefault();
                     e.stopPropagation();
                 },

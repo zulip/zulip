@@ -10,11 +10,13 @@ import {show_copied_confirmation} from "./copied_tooltip";
 import * as emoji_picker from "./emoji_picker";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
+import * as message_reminder from "./message_reminder";
 import * as message_viewport from "./message_viewport";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
+import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as stream_popover from "./stream_popover";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
@@ -112,6 +114,15 @@ export function initialize() {
                 e.preventDefault();
                 e.stopPropagation();
                 instance.hide();
+            });
+
+            $popper.one("click", ".message-reminder", (e) => {
+                const message_id = $(e.currentTarget).data("message-id");
+                scheduled_messages_popover.open_send_later_menu({
+                    is_message_reminder: true,
+                    callback: message_reminder.set_message_reminder,
+                    message_id,
+                });
             });
 
             $popper.one("click", ".popover_move_message", (e) => {
