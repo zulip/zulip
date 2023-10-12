@@ -1351,7 +1351,7 @@ def set_typing_status(client: Client) -> None:
     request = {
         "type": "stream",
         "op": "start",
-        "to": stream_id,
+        "stream_id": stream_id,
         "topic": topic,
     }
     result = client.set_typing_status(request)
@@ -1369,7 +1369,7 @@ def set_typing_status(client: Client) -> None:
     request = {
         "type": "stream",
         "op": "stop",
-        "to": stream_id,
+        "stream_id": stream_id,
         "topic": topic,
     }
     result = client.set_typing_status(request)
