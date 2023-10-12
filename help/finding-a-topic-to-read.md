@@ -1,16 +1,20 @@
-# Finding a topic to read
+# Finding a conversation to read
 
-Like your email inbox, Zulip works best if you read it topic-by-topic.
+{!conversation-definition.md!}
+
+{!conversation-recommendation.md!}
 
 ## From the Inbox view
 
-{!inbox.md!}
+{!inbox-intro.md!}
+
+{!inbox-instructions.md!}
 
 ## From Recent conversations
 
 {!recent-conversations.md!}
 
-## From the list of streams
+## From the left sidebar
 
 {!left-sidebar-topics.md!}
 
@@ -18,5 +22,4 @@ Like your email inbox, Zulip works best if you read it topic-by-topic.
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Reading strategies](/help/reading-strategies)
-* [Reading topics](/help/reading-topics)
-* [Reading direct messages (DMs)](/help/reading-dms)
+* [Reading conversations](/help/reading-topics)
