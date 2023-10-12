@@ -268,7 +268,7 @@ $time_column_min_width: 42px; /* + padding */
                stretch the reactions taller. */
             align-items: flex-start;
             /* Control reaction spacing with a gap */
-            gap: 6px;
+            gap: 4px;
         }
 
         .message_edit {
