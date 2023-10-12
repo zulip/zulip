@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from tornado import autoreload
 from tornado.platform.asyncio import AsyncIOMainLoop
+from typing_extensions import override
 
 settings.RUNNING_INSIDE_TORNADO = True
 if settings.PRODUCTION:
@@ -38,12 +39,14 @@ asyncio.set_event_loop_policy(NoAutoCreateEventLoopPolicy())
 class Command(BaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "addrport",
             help="[port number or ipaddr:port]",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         interactive_debug_listen()
         addrport = options["addrport"]

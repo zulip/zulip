@@ -1,3 +1,6 @@
+# https://github.com/typeddjango/django-stubs/issues/1698
+# mypy: disable-error-code="explicit-override"
+
 import datetime
 import hashlib
 import secrets
@@ -51,6 +54,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
 from django_stubs_ext import StrPromise, ValuesQuerySet
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -137,6 +141,7 @@ class EmojiInfo(TypedDict):
 class AndZero(models.Lookup[int]):
     lookup_name = "andz"
 
+    @override
     def as_sql(
         self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
     ) -> Tuple[str, List[Union[str, int]]]:  # nocoverage # currently only used in migrations
@@ -149,6 +154,7 @@ class AndZero(models.Lookup[int]):
 class AndNonZero(models.Lookup[int]):
     lookup_name = "andnz"
 
+    @override
     def as_sql(
         self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
     ) -> Tuple[str, List[Union[str, int]]]:  # nocoverage # currently only used in migrations
@@ -816,6 +822,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
     night_logo_version = models.PositiveSmallIntegerField(default=1)
 
+    @override
     def __str__(self) -> str:
         return f"{self.string_id} {self.id}"
 
@@ -1161,6 +1168,7 @@ class RealmEmoji(models.Model):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
@@ -1279,9 +1287,11 @@ class RealmFilter(models.Model):
     class Meta:
         unique_together = ("realm", "pattern")
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm.string_id}: {self.pattern} {self.url_template}"
 
+    @override
     def clean(self) -> None:
         """Validate whether the set of parameters in the URL template
         match the set of parameters in the regular expression.
@@ -1382,9 +1392,11 @@ class RealmPlayground(models.Model):
     class Meta:
         unique_together = (("realm", "pygments_language", "name"),)
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm.string_id}: {self.pygments_language} {self.name}"
 
+    @override
     def clean(self) -> None:
         """Validate whether the URL template is valid for the playground,
         ensuring that "code" is the sole variable present in it.
@@ -1468,6 +1480,7 @@ class Recipient(models.Model):
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _type_names = {PERSONAL: "personal", STREAM: "stream", HUDDLE: "huddle"}
 
+    @override
     def __str__(self) -> str:
         return f"{self.label()} ({self.type_id}, {self.type})"
 
@@ -2062,6 +2075,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         else:
             return False
 
+    @override
     def __str__(self) -> str:
         return f"{self.email} {self.realm!r}"
 
@@ -2259,6 +2273,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     def format_requester_for_logs(self) -> str:
         return "{}@{}".format(self.id, self.realm.string_id or "root")
 
+    @override
     def set_password(self, password: Optional[str]) -> None:
         if password is None:
             self.set_unusable_password()
@@ -2718,6 +2733,7 @@ class Stream(models.Model):
             models.Index(Upper("name"), name="upper_stream_name_idx"),
         ]
 
+    @override
     def __str__(self) -> str:
         return self.name
 
@@ -2837,6 +2853,7 @@ class UserTopic(models.Model):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.last_updated})"
 
@@ -2849,6 +2866,7 @@ class MutedUser(models.Model):
     class Meta:
         unique_together = ("user_profile", "muted_user")
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile.email} -> {self.muted_user.email}"
 
@@ -2861,6 +2879,7 @@ class Client(models.Model):
     MAX_NAME_LENGTH = 30
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True, unique=True)
 
+    @override
     def __str__(self) -> str:
         return self.name
 
@@ -3040,6 +3059,7 @@ class AbstractMessage(models.Model):
     class Meta:
         abstract = True
 
+    @override
     def __str__(self) -> str:
         return f"{self.recipient.label()} / {self.subject} / {self.sender!r}"
 
@@ -3058,6 +3078,7 @@ class ArchiveTransaction(models.Model):
     # If type is set to MANUAL, this should be null.
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
+    @override
     def __str__(self) -> str:
         return "id: {id}, type: {type}, realm: {realm}, timestamp: {timestamp}".format(
             id=self.id,
@@ -3304,6 +3325,7 @@ class Draft(models.Model):
     content = models.TextField()  # Length should not exceed MAX_MESSAGE_LENGTH
     last_edit_time = models.DateTimeField(db_index=True)
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.id} / {self.last_edit_time}"
 
@@ -3395,6 +3417,7 @@ class Reaction(AbstractReaction):
         # client-side sorting code.
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields).order_by("id")
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
 
@@ -3585,6 +3608,7 @@ class UserMessage(AbstractUserMessage):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         recipient_string = self.message.recipient.label()
         return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
@@ -3623,6 +3647,7 @@ class ArchivedUserMessage(AbstractUserMessage):
 
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
 
+    @override
     def __str__(self) -> str:
         recipient_string = self.message.recipient.label()
         return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
@@ -3666,6 +3691,7 @@ class AbstractAttachment(models.Model):
     class Meta:
         abstract = True
 
+    @override
     def __str__(self) -> str:
         return self.file_name
 
@@ -3926,6 +3952,7 @@ class Subscription(models.Model):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile!r} -> {self.recipient!r}"
 
@@ -4394,6 +4421,7 @@ class ScheduledEmail(AbstractScheduledJob):
     INVITATION_REMINDER = 3
     type = models.PositiveSmallIntegerField()
 
+    @override
     def __str__(self) -> str:
         return f"{self.type} {self.address or list(self.users.all())} {self.scheduled_timestamp}"
 
@@ -4408,6 +4436,7 @@ class MissedMessageEmailAddress(models.Model):
     # Number of times the missed message address has been used.
     times_used = models.PositiveIntegerField(default=0, db_index=True)
 
+    @override
     def __str__(self) -> str:
         return settings.EMAIL_GATEWAY_PATTERN % (self.email_token,)
 
@@ -4544,6 +4573,7 @@ class ScheduledMessage(models.Model):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.recipient.label()} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
 
@@ -4780,6 +4810,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
     )
     event_last_message_id = models.IntegerField(null=True)
 
+    @override
     def __str__(self) -> str:
         if self.modified_user is not None:
             return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
@@ -4933,6 +4964,7 @@ class CustomProfileField(models.Model):
     class Meta:
         unique_together = ("realm", "name")
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm!r} {self.name} {self.field_type} {self.order}"
 
@@ -4969,6 +5001,7 @@ class CustomProfileFieldValue(models.Model):
     class Meta:
         unique_together = ("user_profile", "field")
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile!r} {self.field!r} {self.value}"
 

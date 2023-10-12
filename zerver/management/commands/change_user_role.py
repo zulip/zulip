@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.users import (
     do_change_can_create_users,
@@ -18,6 +19,7 @@ class Command(ZulipBaseCommand):
 ONLY perform this on customer request from an authorized person.
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("email", metavar="<email>", help="email of user to change role")
         parser.add_argument(
@@ -42,6 +44,7 @@ ONLY perform this on customer request from an authorized person.
         )
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         email = options["email"]
         realm = self.get_realm(options)

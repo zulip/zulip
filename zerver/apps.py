@@ -5,6 +5,7 @@ from django.apps import AppConfig
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models.signals import post_migrate
+from typing_extensions import override
 
 
 def flush_cache(sender: Optional[AppConfig], **kwargs: Any) -> None:
@@ -15,6 +16,7 @@ def flush_cache(sender: Optional[AppConfig], **kwargs: Any) -> None:
 class ZerverConfig(AppConfig):
     name: str = "zerver"
 
+    @override
     def ready(self) -> None:
         if settings.SENTRY_DSN:  # nocoverage
             from zproject.config import get_config

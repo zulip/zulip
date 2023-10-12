@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.management.base import CommandError
 from django.utils.crypto import get_random_string
 from requests.models import Response
+from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.remote_server import PushBouncerSession
@@ -20,6 +21,7 @@ else:
 class Command(ZulipBaseCommand):
     help = """Register a remote Zulip server for push notifications."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--agree_to_terms_of_service",
@@ -32,6 +34,7 @@ class Command(ZulipBaseCommand):
             help="Automatically rotate your server's zulip_org_key",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         if not settings.DEVELOPMENT:
             check_config()

@@ -3,6 +3,7 @@ from configparser import ConfigParser
 from typing import Any
 
 from django.core.management.base import BaseCommand
+from typing_extensions import override
 
 from zerver.models import UserProfile, get_realm, get_user_by_delivery_email
 
@@ -10,6 +11,7 @@ from zerver.models import UserProfile, get_realm, get_user_by_delivery_email
 class Command(BaseCommand):
     help = """Sync your API key from ~/.zuliprc into your development instance"""
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         config_file = os.path.join(os.environ["HOME"], ".zuliprc")
         if not os.path.exists(config_file):

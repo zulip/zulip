@@ -7,6 +7,7 @@ from django.db import migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from mypy_boto3_s3.type_defs import CopySourceTypeDef
+from typing_extensions import override
 
 
 class Uploader:
@@ -49,6 +50,7 @@ class LocalUploader(Uploader):
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
 
+    @override
     def copy_files(self, src_path: str, dst_path: str) -> None:
         assert settings.LOCAL_UPLOADS_DIR is not None
         assert settings.LOCAL_AVATARS_DIR is not None
@@ -69,6 +71,7 @@ class S3Uploader(Uploader):
             "s3", region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL
         ).Bucket(self.bucket_name)
 
+    @override
     def copy_files(self, src_key: str, dst_key: str) -> None:
         source = CopySourceTypeDef(Bucket=self.bucket_name, Key=src_key)
         self.bucket.copy(CopySource=source, Key=dst_key)

@@ -3,6 +3,7 @@ import os
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError, CommandParser
+from typing_extensions import override
 
 from zerver.data_import.rocketchat import do_convert_data
 
@@ -10,6 +11,7 @@ from zerver.data_import.rocketchat import do_convert_data
 class Command(BaseCommand):
     help = """Convert the Rocketchat data into Zulip data format."""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         dir_help = "Directory containing all the `bson` files from mongodb dump of rocketchat."
         parser.add_argument(
@@ -22,6 +24,7 @@ class Command(BaseCommand):
 
         parser.formatter_class = argparse.RawTextHelpFormatter
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         output_dir = options["output_dir"]
         if output_dir is None:

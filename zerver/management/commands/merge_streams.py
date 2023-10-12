@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from typing_extensions import override
+
 from zerver.actions.streams import merge_streams
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import get_stream
@@ -9,6 +11,7 @@ from zerver.models import get_stream
 class Command(ZulipBaseCommand):
     help = """Merge two streams."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("stream_to_keep", help="name of stream to keep")
         parser.add_argument(
@@ -16,6 +19,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

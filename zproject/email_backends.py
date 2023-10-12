@@ -9,6 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import EmailMessage
 from django.template import loader
+from typing_extensions import override
 
 
 def get_forward_address() -> str:
@@ -94,6 +95,7 @@ class EmailLogBackEnd(EmailBackend):
     def _do_send_messages(self, email_messages: Sequence[EmailMessage]) -> int:
         return super().send_messages(email_messages)  # nocoverage
 
+    @override
     def send_messages(self, email_messages: Sequence[EmailMessage]) -> int:
         num_sent = len(email_messages)
         if get_forward_address():

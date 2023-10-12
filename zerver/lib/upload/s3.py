@@ -13,6 +13,7 @@ from botocore.client import Config
 from django.conf import settings
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
+from typing_extensions import override
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.upload.base import (
@@ -194,6 +195,7 @@ class S3UploadBackend(ZulipUploadBackend):
             (split_url.scheme, split_url.netloc, split_url.path[: -len(DUMMY_KEY)], "", "")
         )
 
+    @override
     def get_public_upload_root_url(self) -> str:
         return self.public_upload_url_base
 
@@ -204,6 +206,7 @@ class S3UploadBackend(ZulipUploadBackend):
         assert not key.startswith("/")
         return urllib.parse.urljoin(self.public_upload_url_base, key)
 
+    @override
     def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
         return "/".join(
             [
@@ -213,6 +216,7 @@ class S3UploadBackend(ZulipUploadBackend):
             ]
         )
 
+    @override
     def upload_message_attachment(
         self,
         uploaded_file_name: str,
@@ -241,18 +245,22 @@ class S3UploadBackend(ZulipUploadBackend):
         )
         return url
 
+    @override
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
         for chunk in self.uploads_bucket.Object(path_id).get()["Body"]:
             filehandle.write(chunk)
 
+    @override
     def delete_message_attachment(self, path_id: str) -> bool:
         return self.delete_file_from_s3(path_id, self.uploads_bucket)
 
+    @override
     def delete_message_attachments(self, path_ids: List[str]) -> None:
         self.uploads_bucket.delete_objects(
             Delete={"Objects": [{"Key": path_id} for path_id in path_ids]}
         )
 
+    @override
     def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
         client = self.session.client(
             "s3", region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL
@@ -308,10 +316,12 @@ class S3UploadBackend(ZulipUploadBackend):
         key = self.avatar_bucket.Object(file_name)
         return key
 
+    @override
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         medium_suffix = "-medium.png" if medium else ""
         return self.get_public_upload_url(f"{hash_key}{medium_suffix}")
 
+    @override
     def upload_avatar_image(
         self,
         user_file: IO[bytes],
@@ -326,6 +336,7 @@ class S3UploadBackend(ZulipUploadBackend):
         image_data = user_file.read()
         self.write_avatar_images(s3_file_name, target_user_profile, image_data, content_type)
 
+    @override
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         s3_source_file_name = user_avatar_path(source_profile)
         s3_target_file_name = user_avatar_path(target_profile)
@@ -336,6 +347,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)
 
+    @override
     def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
         # BUG: The else case should be user_avatar_path(user_profile) + ".png".
         # See #12852 for details on this bug and how to migrate it.
@@ -358,6 +370,7 @@ class S3UploadBackend(ZulipUploadBackend):
             resized_avatar,
         )
 
+    @override
     def delete_avatar_image(self, user: UserProfile) -> None:
         path_id = user_avatar_path(user)
 
@@ -365,10 +378,12 @@ class S3UploadBackend(ZulipUploadBackend):
         self.delete_file_from_s3(path_id + "-medium.png", self.avatar_bucket)
         self.delete_file_from_s3(path_id, self.avatar_bucket)
 
+    @override
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         public_url = self.get_public_upload_url(f"{realm_id}/realm/icon.png")
         return public_url + f"?version={version}"
 
+    @override
     def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
@@ -393,6 +408,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
 
+    @override
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
         if not night:
             file_name = "logo.png"
@@ -401,6 +417,7 @@ class S3UploadBackend(ZulipUploadBackend):
         public_url = self.get_public_upload_url(f"{realm_id}/realm/{file_name}")
         return public_url + f"?version={version}"
 
+    @override
     def upload_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
     ) -> None:
@@ -431,6 +448,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
 
+    @override
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         if still:
             emoji_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
@@ -444,6 +462,7 @@ class S3UploadBackend(ZulipUploadBackend):
             )
             return self.get_public_upload_url(emoji_path)
 
+    @override
     def upload_emoji_image(
         self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> bool:
@@ -486,10 +505,12 @@ class S3UploadBackend(ZulipUploadBackend):
 
         return is_animated
 
+    @override
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         # export_path has a leading /
         return self.get_public_upload_url(export_path[1:])
 
+    @override
     def upload_export_tarball(
         self,
         realm: Optional[Realm],
@@ -509,6 +530,7 @@ class S3UploadBackend(ZulipUploadBackend):
         public_url = self.get_public_upload_url(key.key)
         return public_url
 
+    @override
     def delete_export_tarball(self, export_path: str) -> Optional[str]:
         assert export_path.startswith("/")
         path_id = export_path[1:]

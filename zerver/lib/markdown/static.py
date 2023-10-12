@@ -4,11 +4,13 @@ from xml.etree.ElementTree import Element
 import markdown
 from django.contrib.staticfiles.storage import staticfiles_storage
 from markdown.extensions import Extension
+from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 
 class MarkdownStaticImagesGenerator(Extension):
+    @override
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.treeprocessors.register(
             StaticImageProcessor(md),
@@ -22,6 +24,7 @@ class StaticImageProcessor(markdown.treeprocessors.Treeprocessor):
     Rewrite img tags which refer to /static/ to use staticfiles
     """
 
+    @override
     def run(self, root: Element) -> None:
         for img in root.iter("img"):
             url = img.get("src")

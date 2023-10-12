@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, TypeV
 
 from psycopg2.extensions import connection, cursor
 from psycopg2.sql import Composable
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 CursorObj = TypeVar("CursorObj", bound=cursor)
 Query: TypeAlias = Union[str, bytes, Composable]
@@ -32,9 +32,11 @@ def wrapper_execute(
 class TimeTrackingCursor(cursor):
     """A psycopg2 cursor class that tracks the time spent executing queries."""
 
+    @override
     def execute(self, query: Query, vars: Params = None) -> None:
         wrapper_execute(self, super().execute, query, vars)
 
+    @override
     def executemany(self, query: Query, vars: Iterable[Params]) -> None:  # nocoverage
         wrapper_execute(self, super().executemany, query, vars)
 

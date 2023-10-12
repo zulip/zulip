@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_reactivate_user
@@ -877,6 +878,7 @@ class TestIncomingWebhookBot(ZulipTestCase):
 
 
 class TestValidateApiKey(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         zulip_realm = get_realm("zulip")

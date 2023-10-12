@@ -38,6 +38,7 @@ from django.test import override_settings
 from django.urls import URLResolver
 from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
+from typing_extensions import override
 
 from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.user_settings import do_change_user_setting
@@ -372,6 +373,7 @@ class HostRequestMock(HttpRequest):
             ),
         )
 
+    @override
     def get_host(self) -> str:
         return self.host
 

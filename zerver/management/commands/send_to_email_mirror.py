@@ -8,6 +8,7 @@ from typing import Any, Optional
 import orjson
 from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
+from typing_extensions import override
 
 from zerver.lib.email_mirror import mirror_email_message
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -36,6 +37,7 @@ Example:
 
 """
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "-f",
@@ -54,6 +56,7 @@ Example:
 
         self.add_realm_args(parser, help="Specify which realm to connect to; default is zulip")
 
+    @override
     def handle(self, *args: Any, **options: Optional[str]) -> None:
         if options["fixture"] is None:
             self.print_help("./manage.py", "send_to_email_mirror")

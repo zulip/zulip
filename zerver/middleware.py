@@ -23,7 +23,7 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
 from sentry_sdk import set_tag
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import Concatenate, ParamSpec, override
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
@@ -444,6 +444,7 @@ class CsrfFailureError(JsonableError):
         self.reason: str = reason
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("CSRF error: {reason}")
 
@@ -456,6 +457,7 @@ def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
 
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
+    @override
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
     ) -> HttpResponseBase:
@@ -610,6 +612,7 @@ class ProxyMisconfigurationError(JsonableError):
         self.proxy_reason = proxy_reason
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Reverse proxy misconfiguration: {proxy_reason}")
 

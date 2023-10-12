@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.send_email import EmailNotDeliveredError, deliver_scheduled_emails
@@ -31,6 +32,7 @@ Run this command under supervisor.
 Usage: ./manage.py deliver_scheduled_emails
 """
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             while True:
