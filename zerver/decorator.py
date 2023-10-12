@@ -60,6 +60,7 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format
+from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
 from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
 
 if TYPE_CHECKING:
@@ -367,12 +368,6 @@ def webhook_view(
                 elif isinstance(err, InvalidJSONError) and notify_bot_owner_on_invalid_json:
                     # Invalid JSON is not notable for the logs -- it's
                     # the sender's fault, so tell the owner
-
-                    # NOTE: importing this at the top of file leads to a
-                    # cyclic import; correct fix is probably to move
-                    # notify_bot_owner_about_invalid_json to a smaller file.
-                    from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
-
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
 
                 raise err
