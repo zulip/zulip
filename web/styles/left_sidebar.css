@@ -495,6 +495,11 @@ li.active-sub-filter {
         flex: 1 0 24px;
         /* Unset padding from individual top_left items */
         padding: 0;
+        border-radius: 4px;
+
+        &:hover {
+            background: var(--color-background-hover-narrow-filter);
+        }
     }
 
     .left-sidebar-navigation-icon-container {
@@ -502,6 +507,11 @@ li.active-sub-filter {
         margin: 0;
         /* Horizontally center icons within their boxes. */
         text-align: center;
+    }
+
+    .active-filter {
+        /* Don't display a background on condensed icons. */
+        background: unset;
     }
 
     .filter-icon {
