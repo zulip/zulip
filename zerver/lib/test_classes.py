@@ -45,6 +45,7 @@ from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.plugins.phonenumber.models import PhoneDevice
+from typing_extensions import override
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.message_send import check_send_message, check_send_stream_message
@@ -133,6 +134,7 @@ class UploadSerializeMixin(SerializeMixin):
     lockfile = "var/upload_lock"
 
     @classmethod
+    @override
     def setUpClass(cls: Any) -> None:
         if not os.path.exists(cls.lockfile):
             with open(cls.lockfile, "w"):  # nocoverage - rare locking case
@@ -149,6 +151,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
     # expectation.
     expected_console_output: Optional[str] = None
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.API_KEYS: Dict[str, str] = {}
@@ -157,6 +160,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
         bounce_key_prefix_for_testing(test_name)
         bounce_redis_key_prefix_for_testing(test_name)
 
+    @override
     def tearDown(self) -> None:
         super().tearDown()
         # Important: we need to clear event queues to avoid leaking data to future tests.
@@ -179,6 +183,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
     def get_user_from_email(self, email: str, realm: Realm) -> UserProfile:
         return get_user(email, realm)
 
+    @override
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
         if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
@@ -1975,10 +1980,12 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
     ZulipTransactionTestCase tests if they leak state.
     """
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.models_ids_set = dict(get_row_ids_in_all_tables())
 
+    @override
     def tearDown(self) -> None:
         """Verifies that the test did not adjust the set of rows in the test
         database. This is a sanity check to help ensure that tests
@@ -2029,6 +2036,7 @@ class WebhookTestCase(ZulipTestCase):
     def test_user(self) -> UserProfile:
         return self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.url = self.build_webhook_url()
@@ -2274,6 +2282,7 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
     migrate_from: Optional[str] = None
     migrate_to: Optional[str] = None
 
+    @override
     def setUp(self) -> None:
         assert (
             self.migrate_from and self.migrate_to

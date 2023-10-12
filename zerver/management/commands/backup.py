@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.management.base import CommandParser
 from django.db import connection
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from scripts.lib.zulip_tools import TIMESTAMP_FORMAT, parse_os_release, run
 from version import ZULIP_VERSION
@@ -17,16 +18,19 @@ from zerver.logging_handlers import try_git_describe
 
 class Command(ZulipBaseCommand):
     # Fix support for multi-line usage strings
+    @override
     def create_parser(self, prog_name: str, subcommand: str, **kwargs: Any) -> CommandParser:
         parser = super().create_parser(prog_name, subcommand, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--output", help="Filename of output tarball")
         parser.add_argument("--skip-db", action="store_true", help="Skip database backup")
         parser.add_argument("--skip-uploads", action="store_true", help="Skip uploads backup")
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         timestamp = timezone_now().strftime(TIMESTAMP_FORMAT)
         with tempfile.TemporaryDirectory(

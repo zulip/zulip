@@ -3,6 +3,7 @@ from typing import Callable, Dict, List, Tuple
 
 from django.http import HttpRequest, HttpResponse
 from returns.curry import partial
+from typing_extensions import override
 
 from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
@@ -73,6 +74,7 @@ class MLStripper(HTMLParser):
         self.convert_charrefs = True
         self.fed: List[str] = []
 
+    @override
     def handle_data(self, d: str) -> None:
         self.fed.append(d)
 

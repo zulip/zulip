@@ -6,6 +6,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
 from zerver.lib.logging_util import log_to_file
@@ -24,6 +25,7 @@ This management command is run via supervisor.
 Usage: ./manage.py deliver_scheduled_messages
 """
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             while True:

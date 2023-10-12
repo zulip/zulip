@@ -13,6 +13,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 
 class _RateLimitFilter:
@@ -108,11 +109,13 @@ class EmailLimiter(_RateLimitFilter):
 
 
 class ReturnTrue(logging.Filter):
+    @override
     def filter(self, record: logging.LogRecord) -> bool:
         return True
 
 
 class RequireReallyDeployed(logging.Filter):
+    @override
     def filter(self, record: logging.LogRecord) -> bool:
         return settings.PRODUCTION
 
@@ -193,6 +196,7 @@ class ZulipFormatter(logging.Formatter):
         pieces.extend(["[%(zulip_origin)s]", "%(message)s"])
         return " ".join(pieces)
 
+    @override
     def format(self, record: logging.LogRecord) -> str:
         if not hasattr(record, "zulip_decorated"):
             record.zulip_level_abbrev = abbrev_log_levelname(record.levelname)
@@ -202,6 +206,7 @@ class ZulipFormatter(logging.Formatter):
 
 
 class ZulipWebhookFormatter(ZulipFormatter):
+    @override
     def _compute_fmt(self) -> str:
         basic = super()._compute_fmt()
         multiline = [
@@ -217,6 +222,7 @@ class ZulipWebhookFormatter(ZulipFormatter):
         ]
         return "\n".join(multiline)
 
+    @override
     def format(self, record: logging.LogRecord) -> str:
         request: Optional[HttpRequest] = getattr(record, "request", None)
         if request is None:

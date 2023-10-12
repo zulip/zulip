@@ -12,6 +12,7 @@ from django.views.generic import TemplateView
 from lxml import html
 from lxml.etree import Element, SubElement, XPath, _Element
 from markupsafe import Markup
+from typing_extensions import override
 
 from zerver.context_processors import zulip_default_context
 from zerver.decorator import add_google_analytics_context
@@ -63,6 +64,7 @@ def add_api_url_context(context: Dict[str, Any], request: HttpRequest) -> None:
 
 
 class ApiURLView(TemplateView):
+    @override
     def get_context_data(self, **kwargs: Any) -> Dict[str, str]:
         context = super().get_context_data(**kwargs)
         add_api_url_context(context, self.request)
@@ -148,6 +150,7 @@ class MarkdownDirectoryView(ApiURLView):
             endpoint_method=endpoint_method,
         )
 
+    @override
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         article = kwargs["article"]
         context: Dict[str, Any] = super().get_context_data()
@@ -261,6 +264,7 @@ class MarkdownDirectoryView(ApiURLView):
         add_google_analytics_context(context)
         return context
 
+    @override
     def get(
         self, request: HttpRequest, *args: object, article: str = "", **kwargs: object
     ) -> HttpResponse:
@@ -319,6 +323,7 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
 class IntegrationView(ApiURLView):
     template_name = "zerver/integrations/index.html"
 
+    @override
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context: Dict[str, Any] = super().get_context_data(**kwargs)
         add_integrations_context(context)

@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 # Tests for the Desk.com webhook integration.
@@ -76,5 +78,6 @@ class DeskDotComHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("deskdotcom", fixture_name, file_type="txt")

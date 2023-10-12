@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 from django.core.management.base import BaseCommand
+from typing_extensions import override
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import do_send_messages, internal_prep_stream_message
@@ -147,5 +148,6 @@ From image editing program:
             starr, preview_message, "thumbs_up", thumbs_up.emoji_code, thumbs_up.reaction_type
         )
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         self.add_message_formatting_conversation()

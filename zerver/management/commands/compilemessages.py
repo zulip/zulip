@@ -14,9 +14,11 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from django.utils.translation import to_language
 from pyuca import Collator
+from typing_extensions import override
 
 
 class Command(compilemessages.Command):
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         super().add_arguments(parser)
 
@@ -24,6 +26,7 @@ class Command(compilemessages.Command):
             "--strict", "-s", action="store_true", help="Stop execution in case of errors."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         super().handle(*args, **options)
         self.strict = options["strict"]

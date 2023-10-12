@@ -13,6 +13,7 @@ setup_path()
 
 from django.core.management import ManagementUtility, get_commands
 from django.core.management.color import color_style
+from typing_extensions import override
 
 from scripts.lib.zulip_tools import assert_not_running_as_root
 
@@ -73,6 +74,7 @@ class FilteredManagementUtility(ManagementUtility):
     All other change are just code style differences to pass the Zulip linter.
     """
 
+    @override
     def main_help_text(self, commands_only: bool = False) -> str:
         """Return the script's main help text, as a string."""
         if commands_only:

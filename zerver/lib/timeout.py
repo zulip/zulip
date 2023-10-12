@@ -6,12 +6,15 @@ import time
 from types import TracebackType
 from typing import Callable, Optional, Tuple, Type, TypeVar
 
+from typing_extensions import override
+
 # Based on https://code.activestate.com/recipes/483752/
 
 
 class TimeoutExpiredError(Exception):
     """Exception raised when a function times out."""
 
+    @override
     def __str__(self) -> str:
         return "Function call timed out."
 
@@ -49,6 +52,7 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
             # if this is the only thread left.
             self.daemon = True
 
+        @override
         def run(self) -> None:
             try:
                 self.result = func()

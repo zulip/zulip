@@ -8,6 +8,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import ClauseElement, Select, and_, column, select, table
 from sqlalchemy.types import Integer
+from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
@@ -101,6 +102,7 @@ def first_visible_id_as(message_id: int) -> Any:
 
 
 class NarrowBuilderTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")

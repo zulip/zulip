@@ -3,12 +3,14 @@ from xml.etree.ElementTree import Element, SubElement
 
 import markdown
 from markdown.extensions import Extension
+from typing_extensions import override
 
 from zerver.lib.markdown import ResultWithFamily, walk_tree_with_family
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 
 class NestedCodeBlocksRenderer(Extension):
+    @override
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.treeprocessors.register(
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
@@ -21,6 +23,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
+    @override
     def run(self, root: Element) -> None:
         code_tags = walk_tree_with_family(root, self.get_code_tags)
         nested_code_blocks = self.get_nested_code_blocks(code_tags)

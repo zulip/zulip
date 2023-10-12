@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -7,6 +9,7 @@ class TaigaHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/taiga?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "taiga"
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.url = self.build_webhook_url(topic=self.TOPIC)

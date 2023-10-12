@@ -7,7 +7,7 @@ from urllib.parse import unquote
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from pydantic import Json
-from typing_extensions import Annotated, TypeAlias
+from typing_extensions import Annotated, TypeAlias, override
 
 from zerver.actions.message_send import (
     check_send_private_message,
@@ -74,6 +74,7 @@ class MissingHTTPEventHeaderError(AnomalousWebhookPayloadError):
         self.header = header
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Missing the HTTP event header '{header}'")
 

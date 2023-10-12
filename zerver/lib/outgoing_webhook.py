@@ -9,6 +9,7 @@ import requests
 from django.conf import settings
 from django.utils.translation import gettext as _
 from requests import Response
+from typing_extensions import override
 
 from version import ZULIP_VERSION
 from zerver.actions.message_send import check_send_message
@@ -52,6 +53,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
+    @override
     def make_request(
         self, base_url: str, event: Dict[str, Any], realm: Realm
     ) -> Optional[Response]:
@@ -82,6 +84,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
         return self.session.post(base_url, json=request_data)
 
+    @override
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "response_not_required" in response_json and response_json["response_not_required"]:
             return None
@@ -103,6 +106,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
+    @override
     def make_request(
         self, base_url: str, event: Dict[str, Any], realm: Realm
     ) -> Optional[Response]:
@@ -142,6 +146,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         ]
         return self.session.post(base_url, data=request_data)
 
+    @override
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "text" in response_json:
             content = response_json["text"]

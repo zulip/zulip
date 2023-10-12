@@ -1,4 +1,5 @@
 from django.conf import settings
+from typing_extensions import override
 
 from zerver.actions.message_send import internal_send_private_message
 from zerver.lib.test_classes import ZulipTestCase
@@ -7,6 +8,7 @@ from zerver.models import UserProfile, get_system_bot
 
 
 class TutorialTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         # This emulates the welcome message sent by the welcome bot to hamlet@zulip.com

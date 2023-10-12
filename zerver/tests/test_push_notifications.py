@@ -21,6 +21,7 @@ from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 from requests.exceptions import ConnectionError
 from requests.models import PreparedRequest
+from typing_extensions import override
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
@@ -92,6 +93,7 @@ if settings.ZILENCER_ENABLED:
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class BouncerTestCase(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
         self.server = RemoteZulipServer(
@@ -103,6 +105,7 @@ class BouncerTestCase(ZulipTestCase):
         self.server.save()
         super().setUp()
 
+    @override
     def tearDown(self) -> None:
         RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
         super().tearDown()
@@ -1032,6 +1035,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
 
 class PushNotificationTest(BouncerTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -1136,6 +1140,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.user_profile = self.example_user("hamlet")
         self.soft_deactivate_user(self.user_profile)
 
+    @override
     def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
         assert request.url is not None  # allow mypy to infer url is present.
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
@@ -2678,6 +2683,7 @@ class GCMParseOptionsTest(ZulipTestCase):
 
 @mock.patch("zerver.lib.push_notifications.gcm_client")
 class GCMSendTest(PushNotificationTest):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.setup_gcm_tokens()

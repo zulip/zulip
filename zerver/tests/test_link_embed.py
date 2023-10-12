@@ -9,6 +9,7 @@ from django.test import override_settings
 from django.utils.html import escape
 from pyoembed.providers import get_provider
 from requests.exceptions import ConnectionError
+from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
@@ -321,6 +322,7 @@ class PreviewTestCase(ZulipTestCase):
           </html>
         """
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         Realm.objects.all().update(inline_url_embed_preview=True)

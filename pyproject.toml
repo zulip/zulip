@@ -32,6 +32,7 @@ enable_error_code = [
     "truthy-iterable",
     "ignore-without-code",
     "unused-awaitable",
+    "explicit-override",
 ]
 
 # Display the codes needed for # type: ignore[code] annotations.

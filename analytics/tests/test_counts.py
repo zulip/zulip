@@ -8,6 +8,7 @@ from django.db import models
 from django.db.models import Sum
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
+from typing_extensions import override
 
 from analytics.lib.counts import (
     COUNT_STATS,
@@ -81,6 +82,7 @@ class AnalyticsTestCase(ZulipTestCase):
     TIME_ZERO = datetime(1988, 3, 14, tzinfo=timezone.utc)
     TIME_LAST_HOUR = TIME_ZERO - HOUR
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.default_realm = do_create_realm(
@@ -455,6 +457,7 @@ class TestProcessCountStat(AnalyticsTestCase):
 
 
 class TestCountStats(AnalyticsTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         # This tests two things for each of the queries/CountStats: Handling
@@ -1543,6 +1546,7 @@ class TestDeleteStats(AnalyticsTestCase):
 
 
 class TestActiveUsersAudit(AnalyticsTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user = self.create_user()
@@ -1725,6 +1729,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
 
 
 class TestRealmActiveHumans(AnalyticsTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.stat = COUNT_STATS["realm_active_humans::day"]
