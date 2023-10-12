@@ -259,8 +259,8 @@ class EditMessagePayloadTest(EditMessageTestCase):
 
 
 class EditMessageTest(EditMessageTestCase):
-    def test_query_count_on_to_dict_uncached(self) -> None:
-        # `to_dict_uncached` method is used by the mechanisms
+    def test_query_count_on_messages_to_encoded_cache(self) -> None:
+        # `messages_to_encoded_cache` method is used by the mechanisms
         # tested in this class. Hence, its performance is tested here.
         # Generate 2 messages
         user = self.example_user("hamlet")
@@ -288,12 +288,12 @@ class EditMessageTest(EditMessageTestCase):
         # 1 query for linkifiers
         # 1 query for display recipients
         with self.assert_database_query_count(7):
-            MessageDict.to_dict_uncached(messages)
+            MessageDict.messages_to_encoded_cache(messages)
 
         realm_id = 2  # Fetched from stream object
         # Check number of queries performed with realm_id
         with self.assert_database_query_count(3):
-            MessageDict.to_dict_uncached(messages, realm_id)
+            MessageDict.messages_to_encoded_cache(messages, realm_id)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
