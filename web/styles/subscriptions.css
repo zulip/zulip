@@ -716,7 +716,7 @@ h4.user_group_setting_subsection_title {
             padding: 15px 15px 0;
         }
 
-        .modal-footer {
+        .settings-sticky-footer {
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
@@ -728,7 +728,7 @@ h4.user_group_setting_subsection_title {
         }
 
         @media (width > $md_min) {
-            .modal-footer {
+            .settings-sticky-footer {
                 border-radius: 0 0 6px;
             }
         }

@@ -79,8 +79,8 @@
         }
     }
 
-    #subscription_overlay #stream-creation .modal-footer,
-    #groups_overlay #user-group-creation .modal-footer {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
@@ -896,8 +896,8 @@
     #settings_page .sidebar-wrapper .tab-container,
     .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
-    #subscription_overlay #stream-creation .modal-footer,
-    #groups_overlay #user-group-creation .modal-footer {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
     }
