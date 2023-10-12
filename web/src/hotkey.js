@@ -36,7 +36,7 @@ import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
+import { page_params } from "./page_params";
 import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
@@ -57,11 +57,11 @@ import * as unread_ops from "./unread_ops";
 import * as read_receipts from "./read_receipts";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
-import {user_settings} from "./user_settings";
+import { user_settings } from "./user_settings";
 import * as user_topics_ui from "./user_topics_ui";
 
 function do_narrow_action(action) {
-    action(message_lists.current.selected_id(), {trigger: "hotkey"});
+    action(message_lists.current.selected_id(), { trigger: "hotkey" });
     return true;
 }
 
@@ -81,40 +81,42 @@ const menu_dropdown_hotkeys = new Set(["down_arrow", "up_arrow", "vim_up", "vim_
 
 const keydown_shift_mappings = {
     // these can be triggered by Shift + key only
-    9: {name: "shift_tab", message_view_only: false}, // Tab
-    32: {name: "shift_spacebar", message_view_only: true}, // space bar
-    37: {name: "left_arrow", message_view_only: false}, // left arrow
-    39: {name: "right_arrow", message_view_only: false}, // right arrow
-    38: {name: "up_arrow", message_view_only: false}, // up arrow
-    40: {name: "down_arrow", message_view_only: false}, // down arrow
-    72: {name: "view_edit_history", message_view_only: true}, // 'H'
+    9: { name: "shift_tab", message_view_only: false }, // Tab
+    32: { name: "shift_spacebar", message_view_only: true }, // space bar
+    37: { name: "left_arrow", message_view_only: false }, // left arrow
+    39: { name: "right_arrow", message_view_only: false }, // right arrow
+    38: { name: "up_arrow", message_view_only: false }, // up arrow
+    40: { name: "down_arrow", message_view_only: false }, // down arrow
+    72: { name: "view_edit_history", message_view_only: true }, // 'H'
+    86: { name: "read_receipts", message_view_only: true }, // ','
+
 };
 
 const keydown_unshift_mappings = {
     // these can be triggered by key only (without Shift)
-    9: {name: "tab", message_view_only: false}, // Tab
-    27: {name: "escape", message_view_only: false}, // Esc
-    32: {name: "spacebar", message_view_only: true}, // space bar
-    33: {name: "page_up", message_view_only: true}, // PgUp
-    34: {name: "page_down", message_view_only: true}, // PgDn
-    35: {name: "end", message_view_only: true}, // End
-    36: {name: "home", message_view_only: true}, // Home
-    37: {name: "left_arrow", message_view_only: false}, // left arrow
-    39: {name: "right_arrow", message_view_only: false}, // right arrow
-    38: {name: "up_arrow", message_view_only: false}, // up arrow
-    40: {name: "down_arrow", message_view_only: false}, // down arrow
+    9: { name: "tab", message_view_only: false }, // Tab
+    27: { name: "escape", message_view_only: false }, // Esc
+    32: { name: "spacebar", message_view_only: true }, // space bar
+    33: { name: "page_up", message_view_only: true }, // PgUp
+    34: { name: "page_down", message_view_only: true }, // PgDn
+    35: { name: "end", message_view_only: true }, // End
+    36: { name: "home", message_view_only: true }, // Home
+    37: { name: "left_arrow", message_view_only: false }, // left arrow
+    39: { name: "right_arrow", message_view_only: false }, // right arrow
+    38: { name: "up_arrow", message_view_only: false }, // up arrow
+    40: { name: "down_arrow", message_view_only: false }, // down arrow
 };
 
 const keydown_ctrl_mappings = {
-    219: {name: "escape", message_view_only: false}, // '['
-    13: {name: "ctrl_enter", message_view_only: true}, // enter
+    219: { name: "escape", message_view_only: false }, // '['
+    13: { name: "ctrl_enter", message_view_only: true }, // enter
 };
 
 const keydown_cmd_or_ctrl_mappings = {
-    67: {name: "copy_with_c", message_view_only: false}, // 'C'
-    75: {name: "search_with_k", message_view_only: false}, // 'K'
-    83: {name: "star_message", message_view_only: true}, // 'S'
-    190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
+    67: { name: "copy_with_c", message_view_only: false }, // 'C'
+    75: { name: "search_with_k", message_view_only: false }, // 'K'
+    83: { name: "star_message", message_view_only: true }, // 'S'
+    190: { name: "narrow_to_compose_target", message_view_only: true }, // '.'
 };
 
 const keydown_either_mappings = {
@@ -129,57 +131,56 @@ const keydown_either_mappings = {
     // For Enter, there is some possibly that Shift-Enter is intended to
     // have special behavior for folks that are used to Shift-Enter behavior
     // in other apps, but that's also slightly dubious.
-    8: {name: "backspace", message_view_only: true}, // Backspace
-    13: {name: "enter", message_view_only: false}, // Enter
-    46: {name: "delete", message_view_only: false}, // Delete
+    8: { name: "backspace", message_view_only: true }, // Backspace
+    13: { name: "enter", message_view_only: false }, // Enter
+    46: { name: "delete", message_view_only: false }, // Delete
 };
 
 const keypress_mappings = {
-    42: {name: "star_deprecated", message_view_only: true}, // '*'
-    43: {name: "thumbs_up_emoji", message_view_only: true}, // '+'
-    61: {name: "upvote_first_emoji", message_view_only: true}, // '='
-    45: {name: "toggle_message_collapse", message_view_only: true}, // '-'
-    47: {name: "search", message_view_only: false}, // '/'
-    58: {name: "toggle_reactions_popover", message_view_only: true}, // ':'
-    62: {name: "compose_quote_reply", message_view_only: true}, // '>'
-    63: {name: "show_shortcuts", message_view_only: false}, // '?'
-    64: {name: "compose_reply_with_mention", message_view_only: true}, // '@'
-    65: {name: "stream_cycle_backward", message_view_only: true}, // 'A'
-    67: {name: "C_deprecated", message_view_only: true}, // 'C'
-    68: {name: "stream_cycle_forward", message_view_only: true}, // 'D'
-    71: {name: "G_end", message_view_only: true}, // 'G'
-    73: {name: "open_inbox", message_view_only: true}, // 'I'
-    74: {name: "vim_page_down", message_view_only: true}, // 'J'
-    75: {name: "vim_page_up", message_view_only: true}, // 'K'
-    77: {name: "toggle_topic_visibility_policy", message_view_only: true}, // 'M'
-    80: {name: "narrow_private", message_view_only: true}, // 'P'
-    82: {name: "respond_to_author", message_view_only: true}, // 'R'
-    83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
-    85: {name: "mark_unread", message_view_only: true}, // 'U'
-    86: {name: "view_selected_stream", message_view_only: false}, // 'V'
-    97: {name: "all_messages", message_view_only: true}, // 'a'
-    99: {name: "compose", message_view_only: true}, // 'c'
-    100: {name: "open_drafts", message_view_only: true}, // 'd'
-    101: {name: "edit_message", message_view_only: true}, // 'e'
-    103: {name: "gear_menu", message_view_only: true}, // 'g'
-    104: {name: "vim_left", message_view_only: true}, // 'h'
-    105: {name: "message_actions", message_view_only: true}, // 'i'
-    106: {name: "vim_down", message_view_only: true}, // 'j'
-    107: {name: "vim_up", message_view_only: true}, // 'k'
-    108: {name: "vim_right", message_view_only: true}, // 'l'
-    109: {name: "move_message", message_view_only: true}, // 'm'
-    110: {name: "n_key", message_view_only: false}, // 'n'
-    112: {name: "p_key", message_view_only: false}, // 'p'
-    113: {name: "query_streams", message_view_only: true}, // 'q'
-    114: {name: "reply_message", message_view_only: true}, // 'r'
-    115: {name: "toggle_conversation_view", message_view_only: true}, // 's'
-    116: {name: "open_recent_view", message_view_only: true}, // 't'
-    117: {name: "toggle_sender_info", message_view_only: true}, // 'u'
-    118: {name: "show_lightbox", message_view_only: true}, // 'v'
-    119: {name: "query_users", message_view_only: true}, // 'w'
-    120: {name: "compose_private_message", message_view_only: true}, // 'x'
-    122: {name: "zoom_to_message_near", message_view_only: true}, // 'z'
-    86: {name: "read_receipts", message_view_only: true}, // ','
+    42: { name: "star_deprecated", message_view_only: true }, // '*'
+    43: { name: "thumbs_up_emoji", message_view_only: true }, // '+'
+    61: { name: "upvote_first_emoji", message_view_only: true }, // '='
+    45: { name: "toggle_message_collapse", message_view_only: true }, // '-'
+    47: { name: "search", message_view_only: false }, // '/'
+    58: { name: "toggle_reactions_popover", message_view_only: true }, // ':'
+    62: { name: "compose_quote_reply", message_view_only: true }, // '>'
+    63: { name: "show_shortcuts", message_view_only: false }, // '?'
+    64: { name: "compose_reply_with_mention", message_view_only: true }, // '@'
+    65: { name: "stream_cycle_backward", message_view_only: true }, // 'A'
+    67: { name: "C_deprecated", message_view_only: true }, // 'C'
+    68: { name: "stream_cycle_forward", message_view_only: true }, // 'D'
+    71: { name: "G_end", message_view_only: true }, // 'G'
+    73: { name: "open_inbox", message_view_only: true }, // 'I'
+    74: { name: "vim_page_down", message_view_only: true }, // 'J'
+    75: { name: "vim_page_up", message_view_only: true }, // 'K'
+    77: { name: "toggle_topic_visibility_policy", message_view_only: true }, // 'M'
+    80: { name: "narrow_private", message_view_only: true }, // 'P'
+    82: { name: "respond_to_author", message_view_only: true }, // 'R'
+    83: { name: "toggle_stream_subscription", message_view_only: true }, // 'S'
+    85: { name: "mark_unread", message_view_only: true }, // 'U'
+    86: { name: "view_selected_stream", message_view_only: false }, // 'V'
+    97: { name: "all_messages", message_view_only: true }, // 'a'
+    99: { name: "compose", message_view_only: true }, // 'c'
+    100: { name: "open_drafts", message_view_only: true }, // 'd'
+    101: { name: "edit_message", message_view_only: true }, // 'e'
+    103: { name: "gear_menu", message_view_only: true }, // 'g'
+    104: { name: "vim_left", message_view_only: true }, // 'h'
+    105: { name: "message_actions", message_view_only: true }, // 'i'
+    106: { name: "vim_down", message_view_only: true }, // 'j'
+    107: { name: "vim_up", message_view_only: true }, // 'k'
+    108: { name: "vim_right", message_view_only: true }, // 'l'
+    109: { name: "move_message", message_view_only: true }, // 'm'
+    110: { name: "n_key", message_view_only: false }, // 'n'
+    112: { name: "p_key", message_view_only: false }, // 'p'
+    113: { name: "query_streams", message_view_only: true }, // 'q'
+    114: { name: "reply_message", message_view_only: true }, // 'r'
+    115: { name: "toggle_conversation_view", message_view_only: true }, // 's'
+    116: { name: "open_recent_view", message_view_only: true }, // 't'
+    117: { name: "toggle_sender_info", message_view_only: true }, // 'u'
+    118: { name: "show_lightbox", message_view_only: true }, // 'v'
+    119: { name: "query_users", message_view_only: true }, // 'w'
+    120: { name: "compose_private_message", message_view_only: true }, // 'x'
+    122: { name: "zoom_to_message_near", message_view_only: true }, // 'z'
 };
 
 export function get_keydown_hotkey(e) {
@@ -546,7 +547,7 @@ export function process_enter_key(e) {
         return true;
     }
 
-    compose_reply.respond_to_message({trigger: "hotkey enter"});
+    compose_reply.respond_to_message({ trigger: "hotkey enter" });
     return true;
 }
 
@@ -816,14 +817,14 @@ export function process_hotkey(e, hotkey) {
         } else {
             switch (event_name) {
                 case "page_up":
-                    $(":focus").caret(0).animate({scrollTop: 0}, "fast");
+                    $(":focus").caret(0).animate({ scrollTop: 0 }, "fast");
                     return true;
                 case "page_down": {
                     // so that it always goes to the end of the text box.
                     const height = $(":focus")[0].scrollHeight;
                     $(":focus")
                         .caret(Number.POSITIVE_INFINITY)
-                        .animate({scrollTop: height}, "fast");
+                        .animate({ scrollTop: height }, "fast");
                     return true;
                 }
                 case "search_with_k":
@@ -910,10 +911,10 @@ export function process_hotkey(e, hotkey) {
             narrow.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic({trigger: "hotkey"});
+            narrow.narrow_to_next_topic({ trigger: "hotkey" });
             return true;
         case "p_key":
-            narrow.narrow_to_next_pm_string({trigger: "hotkey"});
+            narrow.narrow_to_next_pm_string({ trigger: "hotkey" });
             return true;
         case "open_recent_view":
             browser_history.go_to_location("#recent");
@@ -931,16 +932,16 @@ export function process_hotkey(e, hotkey) {
         case "reply_message": // 'r': respond to message
             // Note that you can "Enter" to respond to messages as well,
             // but that is handled in process_enter_key().
-            compose_reply.respond_to_message({trigger: "hotkey"});
+            compose_reply.respond_to_message({ trigger: "hotkey" });
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {
-                compose_actions.start("stream", {trigger: "compose_hotkey"});
+                compose_actions.start("stream", { trigger: "compose_hotkey" });
             }
             return true;
         case "compose_private_message":
             if (!compose_state.composing()) {
-                compose_actions.start("private", {trigger: "compose_hotkey"});
+                compose_actions.start("private", { trigger: "compose_hotkey" });
             }
             return true;
         case "open_drafts":
@@ -1031,10 +1032,10 @@ export function process_hotkey(e, hotkey) {
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
             return true;
         case "respond_to_author": // 'R': respond to author
-            compose_reply.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
+            compose_reply.respond_to_message({ reply_type: "personal", trigger: "hotkey pm" });
             return true;
         case "compose_reply_with_mention": // '@': respond to message with mention to author
-            compose_reply.reply_with_mention({trigger: "hotkey"});
+            compose_reply.reply_with_mention({ trigger: "hotkey" });
             return true;
         case "show_lightbox":
             lightbox.show_from_selected_message();
@@ -1050,7 +1051,7 @@ export function process_hotkey(e, hotkey) {
                     ? $row.find(".message-actions-menu-button")[0]
                     : $row.find(".emoji-message-control-button-container")[0],
                 msg.id,
-                {placement: "bottom"},
+                { placement: "bottom" },
             );
             return true;
         }
@@ -1089,7 +1090,7 @@ export function process_hotkey(e, hotkey) {
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
         case "compose_quote_reply": // > : respond to selected message with quote
-            compose_reply.quote_and_reply({trigger: "hotkey"});
+            compose_reply.quote_and_reply({ trigger: "hotkey" });
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);
@@ -1123,10 +1124,10 @@ export function process_hotkey(e, hotkey) {
                 case "private":
                     narrow.activate(
                         [
-                            {operator: "dm", operand: msg.reply_to},
-                            {operator: "near", operand: msg.id},
+                            { operator: "dm", operand: msg.reply_to },
+                            { operator: "near", operand: msg.id },
                         ],
-                        {trigger: "hotkey"},
+                        { trigger: "hotkey" },
                     );
                     return true;
                 case "stream":
@@ -1136,10 +1137,10 @@ export function process_hotkey(e, hotkey) {
                                 operator: "stream",
                                 operand: stream_data.get_stream_name_from_id(msg.stream_id),
                             },
-                            {operator: "topic", operand: msg.topic},
-                            {operator: "near", operand: msg.id},
+                            { operator: "topic", operand: msg.topic },
+                            { operator: "near", operand: msg.id },
                         ],
-                        {trigger: "hotkey"},
+                        { trigger: "hotkey" },
                     );
                     return true;
             }
