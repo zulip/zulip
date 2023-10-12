@@ -115,6 +115,7 @@ class UserPresenceTests(ZulipTestCase):
         Create some initial, old presence data to make the intended set up
         simpler for the tests.
         """
+        super().setUp()
         realm = get_realm("zulip")
         now = timezone_now()
         initial_presence = now - timedelta(days=365)

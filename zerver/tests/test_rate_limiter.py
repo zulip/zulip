@@ -38,6 +38,7 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
     backend: Type[RateLimiterBackend]
 
     def setUp(self) -> None:
+        super().setUp()
         self.requests_record: Dict[str, List[float]] = {}
 
     def create_object(self, name: str, rules: List[Tuple[int, int]]) -> RateLimitedTestObject:
