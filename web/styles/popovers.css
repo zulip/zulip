@@ -548,7 +548,8 @@ ul {
 
     #user-profile-streams-tab {
         .stream_list_info {
-            margin-bottom: 8px;
+            margin: 0;
+            background-color: transparent;
         }
 
         .stream-privacy {

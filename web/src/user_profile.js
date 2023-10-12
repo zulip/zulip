@@ -803,26 +803,30 @@ export function initialize() {
         e.preventDefault();
         const stream_id = Number.parseInt(user_profile_subscribe_widget.value(), 10);
         const sub = sub_store.get(stream_id);
+
+        if (!sub) {
+            return;
+        }
+
         const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
         const $alert_box = $("#user-profile-streams-tab .stream_list_info");
+
         function addition_success(data) {
             if (Object.keys(data.subscribed).length > 0) {
                 reset_subscribe_widget();
                 ui_report.success(
                     $t_html({defaultMessage: "Subscribed successfully!"}),
                     $alert_box,
-                    1200,
                 );
             } else {
                 ui_report.client_error(
                     $t_html({defaultMessage: "Already subscribed."}),
                     $alert_box,
-                    1200,
                 );
             }
         }
         function addition_failure(xhr) {
-            ui_report.error("", xhr, $alert_box, 1200);
+            ui_report.error("", xhr, $alert_box);
         }
         subscriber_api.add_user_ids_to_stream(
             [target_user_id],
@@ -837,6 +841,10 @@ export function initialize() {
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
         const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
+
+        if (!sub) {
+            return;
+        }
         const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
         const $alert_box = $("#user-profile-streams-tab .stream_list_info");
 
@@ -845,13 +853,11 @@ export function initialize() {
                 ui_report.success(
                     $t_html({defaultMessage: "Unsubscribed successfully!"}),
                     $alert_box,
-                    1200,
                 );
             } else {
                 ui_report.client_error(
                     $t_html({defaultMessage: "Already not subscribed."}),
                     $alert_box,
-                    1200,
                 );
             }
         }
@@ -870,7 +876,7 @@ export function initialize() {
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            ui_report.client_error(error_message, $alert_box);
         }
 
         if (sub.invite_only && people.is_my_user_id(target_user_id)) {
