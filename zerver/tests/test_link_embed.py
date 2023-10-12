@@ -17,7 +17,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
-from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
+from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser, TwitterCardParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
@@ -216,6 +216,49 @@ class OpenGraphParserTestCase(ZulipTestCase):
         self.assertEqual(result.title, "中文")
 
 
+class TwitterCardParserTestCase(ZulipTestCase):
+    def test_page_with_twitter_card(self) -> None:
+        html = b"""<html>
+          <head>
+          <meta name="twitter:title" content="The Rock" />
+          <meta name="twitter:image" content="http://ia.media-imdb.com/images/rock.jpg" />
+          <meta name="twitter:description" content="The Rock film" />
+          </head>
+        </html>"""
+
+        parser = TwitterCardParser(html, "text/html; charset=UTF-8")
+        result = parser.extract_data()
+        self.assertEqual(result.title, "The Rock")
+        self.assertEqual(result.description, "The Rock film")
+        self.assertEqual(result.image, "http://ia.media-imdb.com/images/rock.jpg")
+
+    def test_no_content_attr_in_twitter_tag(self) -> None:
+        html = b"""<html>
+          <head>
+          <meta name="twitter:title" />
+          <meta name="twitter:image" content="http://ia.media-imdb.com/images/rock.jpg" />
+          <meta name="twitter:description" content="The Rock film" />
+          </head>
+        </html>"""
+
+        parser = TwitterCardParser(html, "text/html; charset=UTF-8")
+        result = parser.extract_data()
+        self.assertIsNone(result.title)
+        self.assertEqual(result.description, "The Rock film")
+        self.assertEqual(result.image, "http://ia.media-imdb.com/images/rock.jpg")
+
+    def test_bad_image_url_in_twitter_tag(self) -> None:
+        html = b"""<html>
+          <head>
+          <meta name="twitter:image" content="http://[bad url/test.jpg" />
+          </head>
+        </html>"""
+
+        parser = TwitterCardParser(html, "text/html; charset=UTF-8")
+        result = parser.extract_data()
+        self.assertIsNone(result.image)
+
+
 class GenericParserTestCase(ZulipTestCase):
     def test_parser(self) -> None:
         html = b"""
@@ -239,6 +282,24 @@ class GenericParserTestCase(ZulipTestCase):
                 <h1>Main header</h1>
                 <img data-src="Not an image">
                 <img src="http://test.com/test.jpg">
+                <div>
+                    <p>Description text</p>
+                </div>
+            </body>
+          </html>
+        """
+        parser = GenericParser(html, "text/html; charset=UTF-8")
+        result = parser.extract_data()
+        self.assertEqual(result.title, "Main header")
+        self.assertEqual(result.description, "Description text")
+        self.assertEqual(result.image, "http://test.com/test.jpg")
+
+    def test_extract_image_before_heading(self) -> None:
+        html = b"""
+          <html>
+            <body>
+                <img src="http://test.com/test.jpg">
+                <h1>Main header</h1>
                 <div>
                     <p>Description text</p>
                 </div>
@@ -311,6 +372,23 @@ class PreviewTestCase(ZulipTestCase):
                 <meta property="og:type" content="video.movie" />
                 <meta property="og:url" content="http://www.imdb.com/title/tt0117500/" />
                 <meta property="og:image" content="http://ia.media-imdb.com/images/rock.jpg" />
+                <meta http-equiv="refresh" content="30" />
+                <meta property="notog:extra-text" content="Extra!" />
+            </head>
+            <body>
+                <h1>Main header</h1>
+                <p>Description text</p>
+            </body>
+          </html>
+        """
+
+    twitter_card_html = """
+          <html>
+            <head>
+                <title>Test title</title>
+                <meta name="twitter:title" content="The Rock Twitter Title" />
+                <meta name="twitter:description" content="The Rock Twitter Description" />
+                <meta name="twitter:image" content="http://ia.media-imdb.com/images/rock.jpg" />
                 <meta http-equiv="refresh" content="30" />
                 <meta property="notog:extra-text" content="Extra!" />
             </head>
@@ -692,6 +770,45 @@ class PreviewTestCase(ZulipTestCase):
         )
 
     @responses.activate
+    @override_settings(CAMO_URI="")
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_xml_content_type(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        content_type = "text/xml"
+        self.create_mock_response(url, content_type=content_type)
+
+        with self.settings(TEST_SUITE=False):
+            with self.assertLogs(level="INFO") as info_logs:
+                FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
+                in info_logs.output[0]
+            )
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed">'
+            f'<a class="message_embed_image" href="{url}" style="background-image: url(http\\:\\/\\/ia\\.media-imdb\\.com\\/images\\/rock\\.jpg)"></a>'
+            f'<div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock">The Rock</a></div>'
+            f'<div class="message_embed_description">Description text</div></div></div>'
+        )
+        self.assertEqual(
+            preview_url,
+            msg.rendered_content,
+        )
+
+    @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_open_graph_image(self) -> None:
         user = self.example_user("hamlet")
@@ -722,8 +839,50 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed"><div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock">The Rock</a>'
+            f'</div><div class="message_embed_description">Description text</div></div></div>'
+        )
         self.assertEqual(
-            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
+            preview_url,
+            msg.rendered_content,
+        )
+
+    @responses.activate
+    @override_settings(CAMO_URI="")
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_no_oc_tags_but_twitter_tags_present(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+        self.create_mock_response(url, body=self.twitter_card_html)
+        with self.settings(TEST_SUITE=False):
+            with self.assertLogs(level="INFO") as info_logs:
+                FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
+                in info_logs.output[0]
+            )
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed">'
+            f'<a class="message_embed_image" href="{url}" style="background-image: url(http\\:\\/\\/ia\\.media-imdb\\.com\\/images\\/rock\\.jpg)"></a>'
+            f'<div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock Twitter Title">The Rock Twitter Title</a></div>'
+            f'<div class="message_embed_description">The Rock Twitter Description</div></div></div>'
+        )
+        self.assertEqual(
+            preview_url,
             msg.rendered_content,
         )
 
@@ -761,8 +920,14 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed"><div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock">The Rock</a>'
+            f'</div><div class="message_embed_description">Description text</div></div></div>'
+        )
         self.assertEqual(
-            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
+            preview_url,
             msg.rendered_content,
         )
 
@@ -798,8 +963,14 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed"><div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock">The Rock</a>'
+            f'</div><div class="message_embed_description">Description text</div></div></div>'
+        )
         self.assertEqual(
-            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
+            preview_url,
             msg.rendered_content,
         )
 

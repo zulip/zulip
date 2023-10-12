@@ -41,13 +41,20 @@ class GenericParser(BaseParser):
 
     def _get_image(self) -> Optional[str]:
         """
-        Finding a first image after the h1 header.
+        Finding a first image after (or before) the h1 header.
         Presumably it will be the main image.
         """
         soup = self._soup
         first_h1 = soup.find("h1")
         if first_h1:
+            # Normally, we find the first image after the h1 header.
+            # This is because it would presumably be the main image
+            # for the url. However, some websites do not contain
+            # an image after but before, so we need to look for
+            # a picture in both directions.
             first_image = first_h1.find_next_sibling("img", src=True)
+            if not isinstance(first_image, Tag) or first_image["src"] == "":
+                first_image = first_h1.find_previous_sibling("img", src=True)
             if isinstance(first_image, Tag) and first_image["src"] != "":
                 assert isinstance(first_image["src"], str)
                 try:
