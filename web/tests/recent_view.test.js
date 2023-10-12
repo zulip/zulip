@@ -89,7 +89,7 @@ const ListWidget = mock_esm("../src/list_widget", {
 
 mock_esm("../src/compose_closed_ui", {
     set_standard_text_for_reply_button: noop,
-    update_buttons_for_recent_view: noop,
+    update_buttons_for_non_stream_views: noop,
 });
 mock_esm("../src/hash_util", {
     by_stream_url: test_url,
@@ -141,15 +141,12 @@ mock_esm("../src/user_topics", {
     },
     all_visibility_policies,
 });
-const narrow = mock_esm("../src/narrow", {
-    update_narrow_title: noop,
-    hide_unread_banner: noop,
-    handle_middle_pane_transition: noop,
-    has_shown_message_list_view: true,
+mock_esm("../src/narrow_title", {
+    update_narrow_title() {},
 });
 mock_esm("../src/pm_list", {
     update_private_messages: noop,
-    handle_narrow_deactivated: noop,
+    handle_message_view_deactivated: noop,
 });
 mock_esm("../src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
@@ -166,26 +163,11 @@ mock_esm("../src/stream_data", {
     get_stream_name_from_id: () => "stream_name",
 });
 mock_esm("../src/stream_list", {
-    handle_narrow_deactivated: noop,
+    handle_message_view_deactivated: noop,
 });
 mock_esm("../src/timerender", {
     relative_time_string_from_date: () => "Just now",
     get_full_datetime_clarification: () => "date at time",
-});
-mock_esm("../src/sub_store", {
-    get(stream) {
-        if (stream === stream5) {
-            // No data is available for deactivated streams
-            return undefined;
-        }
-
-        return {
-            color: "",
-            invite_only: false,
-            is_web_public: true,
-            subscribed: true,
-        };
-    },
 });
 mock_esm("../src/left_sidebar_navigation_area", {
     highlight_recent_view: noop,
@@ -212,6 +194,16 @@ const rt = zrequire("recent_view_ui");
 const recent_view_util = zrequire("recent_view_util");
 const rt_data = zrequire("recent_view_data");
 const muted_users = zrequire("muted_users");
+const sub_store = zrequire("sub_store");
+
+for (const stream_id of [stream1, stream2, stream3, stream4, stream6]) {
+    sub_store.add_hydrated_sub(stream_id, {
+        color: "",
+        invite_only: false,
+        is_web_public: true,
+        subscribed: true,
+    });
+}
 
 people.add_active_user({
     email: "alice@zulip.com",
@@ -455,9 +447,7 @@ function test(label, f) {
     });
 }
 
-test("test_recent_view_show", ({mock_template, override}) => {
-    override(narrow, "save_pre_narrow_offset_for_reload", () => {});
-
+test("test_recent_view_show", ({mock_template}) => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.

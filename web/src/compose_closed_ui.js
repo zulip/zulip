@@ -62,75 +62,98 @@ export function get_recipient_label(message) {
 function update_reply_button_state(disable = false) {
     $(".compose_reply_button").attr("disabled", disable);
     if (disable) {
-        $("#compose_buttons > .reply_button_container").attr(
+        $("#compose_buttons .compose_reply_button").attr(
             "data-tooltip-template-id",
             "compose_reply_button_disabled_tooltip_template",
         );
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#compose_buttons > .reply_button_container").attr(
+        $("#compose_buttons .compose_reply_button").attr(
             "data-tooltip-template-id",
             "compose_reply_message_button_tooltip_template",
         );
     } else {
-        $("#compose_buttons > .reply_button_container").attr(
+        $("#compose_buttons .compose_reply_button").attr(
             "data-tooltip-template-id",
             "compose_reply_selected_topic_button_tooltip_template",
         );
     }
 }
 
-function update_stream_button(btn_text) {
-    $("#left_bar_compose_stream_button_big").text(btn_text);
+function update_new_conversation_button(btn_text, is_direct_message_narrow) {
+    const $new_conversation_button = $("#new_conversation_button");
+    $new_conversation_button.text(btn_text);
+    // In a direct-message narrow, the new conversation button should act
+    // like a new direct message button
+    if (is_direct_message_narrow) {
+        $new_conversation_button.addClass("compose_new_direct_message_button");
+        $new_conversation_button.removeClass("compose_new_conversation_button");
+    } else {
+        // Restore the usual new conversation button class, if it was
+        // changed after a previous direct-message narrow visit
+        $new_conversation_button.addClass("compose_new_conversation_button");
+        $new_conversation_button.removeClass("compose_new_direct_message_button");
+    }
 }
 
-function update_conversation_button(btn_text) {
-    $("#left_bar_compose_private_button_big").text(btn_text);
+function update_new_direct_message_button(btn_text) {
+    $("#new_direct_message_button").text(btn_text);
 }
 
-function update_buttons(text_stream, disable_reply) {
+function toggle_direct_message_button_visibility(is_direct_message_narrow) {
+    const $new_direct_message_button_container = $(".new_direct_message_button_container");
+    if (is_direct_message_narrow) {
+        $new_direct_message_button_container.hide();
+    } else {
+        $new_direct_message_button_container.show();
+    }
+}
+
+function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
     const text_conversation = $t({defaultMessage: "New direct message"});
-    update_stream_button(text_stream);
-    update_conversation_button(text_conversation);
+    update_new_conversation_button(text_stream, is_direct_message_narrow);
+    update_new_direct_message_button(text_conversation);
     update_reply_button_state(disable_reply);
+    toggle_direct_message_button_visibility(is_direct_message_narrow);
 }
 
 export function update_buttons_for_private() {
-    const text_stream = $t({defaultMessage: "New stream message"});
+    const text_stream = $t({defaultMessage: "Start new conversation"});
+    const is_direct_message_narrow = true;
     if (
         !narrow_state.pm_ids_string() ||
         people.user_can_direct_message(narrow_state.pm_ids_string())
     ) {
-        $("#left_bar_compose_stream_button_big").attr(
+        $("#new_conversation_button").attr(
             "data-tooltip-template-id",
-            "new_stream_message_button_tooltip_template",
+            "new_direct_message_button_tooltip_template",
         );
-        update_buttons(text_stream);
+        update_buttons(text_stream, is_direct_message_narrow);
         return;
     }
     // disable the [Message X] button when in a private narrow
     // if the user cannot dm the current recipient
     const disable_reply = true;
-    $("#compose_buttons > .reply_button_container").attr(
+    $("#compose_buttons .compose_reply_button").attr(
         "data-tooltip-template-id",
         "disable_reply_compose_reply_button_tooltip_template",
     );
-    update_buttons(text_stream, disable_reply);
+    update_buttons(text_stream, is_direct_message_narrow, disable_reply);
 }
 
-export function update_buttons_for_stream() {
-    const text_stream = $t({defaultMessage: "New topic"});
-    $("#left_bar_compose_stream_button_big").attr(
+export function update_buttons_for_stream_views() {
+    const text_stream = $t({defaultMessage: "Start new conversation"});
+    $("#new_conversation_button").attr(
         "data-tooltip-template-id",
         "new_topic_message_button_tooltip_template",
     );
     update_buttons(text_stream);
 }
 
-export function update_buttons_for_recent_view() {
-    const text_stream = $t({defaultMessage: "New stream message"});
-    $("#left_bar_compose_stream_button_big").attr(
+export function update_buttons_for_non_stream_views() {
+    const text_stream = $t({defaultMessage: "Start new conversation"});
+    $("#new_conversation_button").attr(
         "data-tooltip-template-id",
         "new_stream_message_button_tooltip_template",
     );
@@ -138,7 +161,7 @@ export function update_buttons_for_recent_view() {
 }
 
 function set_reply_button_label(label) {
-    $(".compose_reply_button_label").text(label);
+    $("#left_bar_compose_reply_button_big").text(label);
 }
 
 export function set_standard_text_for_reply_button() {
@@ -168,15 +191,11 @@ export function initialize() {
     });
 
     // Click handlers for buttons in the compose box.
-    $("body").on("click", ".compose_stream_button", () => {
-        compose_actions.start("stream", {trigger: "new topic button"});
+    $("body").on("click", ".compose_new_conversation_button", () => {
+        compose_actions.start("stream", {trigger: "clear topic button"});
     });
 
-    $("body").on("click", ".compose_private_button", () => {
+    $("body").on("click", ".compose_new_direct_message_button", () => {
         compose_actions.start("private", {trigger: "new direct message"});
-    });
-
-    $("body").on("click", ".compose_reply_button", () => {
-        compose_actions.respond_to_message({trigger: "reply button"});
     });
 }

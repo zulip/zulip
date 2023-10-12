@@ -6,7 +6,7 @@ import render_dialog_widget from "../templates/dialog_widget.hbs";
 import type {AjaxRequestHandler} from "./channel";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import * as ui_report from "./ui_report";
 
 /*
@@ -22,7 +22,7 @@ import * as ui_report from "./ui_report";
  *         to avoid interference from other elements.
  *
  *      3) For settings, we have a click handler in settings.js
- *         that will close the dialog via overlays.close_active_modal.
+ *         that will close the dialog via modals.close_active.
  *
  *      4) We assume that since this is a modal, you will
  *         only ever have one confirm dialog active at any
@@ -98,8 +98,8 @@ export function show_dialog_spinner(): void {
 }
 
 // Supports a callback to be called once the modal finishes closing.
-export function close_modal(on_hidden_callback?: () => void): void {
-    overlays.close_modal("dialog_widget_modal", {on_hidden: on_hidden_callback});
+export function close(on_hidden_callback?: () => void): void {
+    modals.close("dialog_widget_modal", {on_hidden: on_hidden_callback});
 }
 
 export function launch(conf: DialogWidgetConfig): void {
@@ -204,13 +204,13 @@ export function launch(conf: DialogWidgetConfig): void {
         if (conf.loading_spinner) {
             show_dialog_spinner();
         } else if (conf.close_on_submit) {
-            close_modal();
+            close();
         }
         $("#dialog_error").hide();
         conf.on_click(e);
     });
 
-    overlays.open_modal("dialog_widget_modal", {
+    modals.open("dialog_widget_modal", {
         autoremove: true,
         on_show() {
             if (conf.focus_submit_on_open) {
@@ -241,7 +241,7 @@ export function submit_api_request(
         url,
         data,
         success(response_data, textStatus, jqXHR) {
-            close_modal();
+            close();
             if (success_continuation !== undefined) {
                 success_continuation(response_data, textStatus, jqXHR);
             }

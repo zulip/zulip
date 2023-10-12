@@ -373,9 +373,6 @@ def validate_against_openapi_schema(
     # This first set of checks are primarily training wheels that we
     # hope to eliminate over time as we improve our API documentation.
 
-    # No 500 responses have been documented, so skip them
-    if status_code.startswith("5"):
-        return False
     if path not in openapi_spec.openapi()["paths"]:
         endpoint = find_openapi_endpoint(path)
         # If it doesn't match it hasn't been documented yet.

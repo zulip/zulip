@@ -346,7 +346,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_error(result, "Broken")
 
     def test_check_admin_realm_emoji(self) -> None:
-        # Test that an user A is able to remove a realm emoji uploaded by him
+        # Test that a user A is able to remove a realm emoji uploaded by him
         # and having same name as a deactivated realm emoji uploaded by some
         # other user B.
         emoji_author_1 = self.example_user("cordelia")

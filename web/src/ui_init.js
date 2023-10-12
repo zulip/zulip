@@ -13,8 +13,10 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
+import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
@@ -22,16 +24,21 @@ import * as click_handlers from "./click_handlers";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_reply from "./compose_reply";
+import * as compose_setup from "./compose_setup";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as dark_theme from "./dark_theme";
+import * as desktop_notifications from "./desktop_notifications";
 import * as drafts from "./drafts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui";
 import * as echo from "./echo";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
@@ -61,13 +68,14 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
+import * as modals from "./modals";
 import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
+import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
-import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -81,9 +89,9 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_view_ui from "./recent_view_ui";
-import * as reload from "./reload";
+import * as reload_setup from "./reload_setup";
 import * as rendered_markdown from "./rendered_markdown";
-import * as resize from "./resize";
+import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scheduled_messages_popover from "./scheduled_messages_popover";
@@ -91,7 +99,6 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
-import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
 import * as settings_data from "./settings_data";
@@ -117,7 +124,7 @@ import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_popover from "./topic_popover";
-import * as topic_zoom from "./topic_zoom";
+import * as transmit from "./transmit";
 import * as tutorial from "./tutorial";
 import * as typeahead_helper from "./typeahead_helper";
 import * as typing from "./typing";
@@ -130,13 +137,13 @@ import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_popover from "./user_group_popover";
 import * as user_groups from "./user_groups";
-import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import * as user_profile from "./user_profile";
 import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as user_topic_popover from "./user_topic_popover";
 import * as user_topics from "./user_topics";
+import * as widgets from "./widgets";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -242,7 +249,11 @@ export function initialize_kitchen_sink_stuff() {
 
     message_viewport.$scroll_container.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_overlay_or_modal_open() && narrow_state.is_message_feed_visible()) {
+        if (
+            !overlays.any_active() &&
+            !modals.any_active() &&
+            narrow_state.is_message_feed_visible()
+        ) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
@@ -250,7 +261,7 @@ export function initialize_kitchen_sink_stuff() {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).on("resize", _.throttle(resize.handler, 50));
+    $(window).on("resize", _.throttle(resize_handler.handler, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
@@ -284,7 +295,7 @@ export function initialize_kitchen_sink_stuff() {
 
     // A little hackish, because it doesn't seem to totally get us the
     // exact right width for the compose box, but, close enough for now.
-    resize.handler();
+    resize_handler.handler();
 
     if (page_params.is_spectator) {
         $("body").addClass("spectator-view");
@@ -368,7 +379,7 @@ export function initialize_kitchen_sink_stuff() {
 
 function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook((counts) =>
-        activity.update_dom_with_unread_counts(counts),
+        activity_ui.update_dom_with_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
         left_sidebar_navigation_area.update_dom_with_unread_counts(counts, skip_animations),
@@ -381,7 +392,7 @@ function initialize_unread_ui() {
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
     unread_ui.register_update_unread_counts_hook((counts) =>
-        notifications.update_unread_counts(counts),
+        narrow_title.update_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
@@ -526,6 +537,7 @@ export function initialize_everything() {
     }
 
     i18n.initialize(i18n_params);
+    widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
@@ -583,7 +595,14 @@ export function initialize_everything() {
     realm_logo.initialize();
     message_lists.initialize();
     message_list.initialize();
-    recent_view_ui.initialize();
+    recent_view_ui.initialize({
+        on_click_participant(avatar_element, participant_user_id) {
+            const user = people.get_by_user_id(participant_user_id);
+            user_card_popover.toggle_user_card_popover(avatar_element, user);
+        },
+        on_mark_pm_as_read: unread_ops.mark_pm_as_read,
+        on_mark_topic_as_read: unread_ops.mark_topic_as_read,
+    });
     inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
@@ -592,7 +611,10 @@ export function initialize_everything() {
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
-    echo.initialize({on_send_message_success: compose.send_message_success});
+    echo.initialize({
+        on_send_message_success: compose.send_message_success,
+        send_message: transmit.send_message,
+    });
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
@@ -602,7 +624,6 @@ export function initialize_everything() {
     user_topics.initialize(user_topics_params);
     muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
-    user_groups_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
@@ -634,7 +655,8 @@ export function initialize_everything() {
         on_pill_create_or_remove: compose_recipient.update_placeholder_text,
     });
     compose_closed_ui.initialize();
-    reload.initialize();
+    compose_reply.initialize();
+    reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize(server_events.home_view_loaded);
@@ -645,8 +667,8 @@ export function initialize_everything() {
         playground_data: page_params.realm_playgrounds,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
-    compose.initialize();
-    // Typeahead must be initialized after compose.initialize()
+    compose_setup.initialize();
+    // Typeahead must be initialized after compose_setup.initialize()
     composebox_typeahead.initialize({
         on_enter_send: compose.finish,
     });
@@ -656,7 +678,14 @@ export function initialize_everything() {
         on_narrow_search: narrow.activate,
     });
     tutorial.initialize();
-    notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
+    desktop_notifications.initialize();
+    audible_notifications.initialize();
+    compose_notifications.initialize({
+        on_click_scroll_to_selected: message_viewport.scroll_to_selected,
+        on_narrow_to_recipient(message_id) {
+            narrow.by_topic(message_id, {trigger: "compose_notification"});
+        },
+    });
     unread_ops.initialize();
     gear_menu.initialize();
     giphy.initialize();
@@ -674,6 +703,7 @@ export function initialize_everything() {
 
     initialize_unread_ui();
     activity.initialize();
+    activity_ui.initialize();
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
@@ -691,9 +721,8 @@ export function initialize_everything() {
             );
         },
     });
-    topic_zoom.initialize();
     drafts.initialize();
-    sent_messages.initialize();
+    drafts_overlay_ui.initialize();
     hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();

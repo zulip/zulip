@@ -118,7 +118,7 @@ class zulip_ops::profile::base {
 
   $hosting_provider = zulipconf('machine', 'hosting_provider', 'ec2')
   if $hosting_provider == 'ec2' {
-    # This conditional block is for for whether it's not
+    # This conditional block is for whether it's not
     # chat.zulip.org, which uses a different hosting provider.
     file { '/root/.ssh/authorized_keys':
       ensure => file,

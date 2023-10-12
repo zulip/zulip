@@ -109,7 +109,7 @@ function template_stub({filename, actual_render}) {
 
         if (exercise_template) {
             // If our dev wants to exercise the actual template, then do so.
-            // We set the in_mid_render bool so that included (i.e partial)
+            // We set the in_mid_render bool so that included (i.e. partial)
             // templates get rendered.
             in_mid_render = true;
             const html = actual_render(...args);

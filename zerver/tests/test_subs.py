@@ -4734,7 +4734,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_subscribe_to_stream_post_policy_restrict_new_members_stream(self) -> None:
         """
-        New members can subscribe to streams where they can not post
+        New members can subscribe to streams where they cannot post
         """
         new_member_email = self.nonreg_email("test")
         self.register(new_member_email, "test")

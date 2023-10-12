@@ -623,7 +623,7 @@ div.overlay {
     font-size: 12px;
     font-weight: normal;
     border-radius: 4px;
-    background-color: hsl(105deg 2% 50%);
+    background-color: var(--color-background-unread-counter);
     color: hsl(0deg 0% 100%);
 }
 
@@ -1161,6 +1161,15 @@ div.overlay {
         /* Values set to match text alignment in stream dropdown. */
         padding: 0 5px 0 1px;
     }
+}
+
+#empty-list-message,
+#empty-table-message {
+    background-color: inherit;
+    color: var(--color-text-default);
+    font-size: 1.5em;
+    padding: 3em 1em;
+    text-align: center;
 }
 
 .filter_text_input {

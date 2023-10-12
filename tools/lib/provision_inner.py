@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+############################## NOTE ################################
+# This script is used to provision a development environment ONLY.
+# For production, extend update-prod-static to generate new static
+# assets, and puppet to install other software.
+####################################################################
+
 import argparse
 import glob
 import os

@@ -23,18 +23,6 @@ import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
-// selected_recipient_id is the current state for the stream picker widget:
-// "" -> stream message but no stream is selected
-// integer -> stream id of the selected stream.
-// "direct" -> Direct message is selected.
-export let selected_recipient_id = "";
-export const DIRECT_MESSAGE_ID = "direct";
-
-export function set_selected_recipient_id(recipient_id) {
-    selected_recipient_id = recipient_id;
-    on_compose_select_recipient_update();
-}
-
 function composing_to_current_topic_narrow() {
     return (
         util.lower_same(compose_state.stream_name(), narrow_state.stream_name() || "") &&
@@ -110,7 +98,7 @@ export function update_on_recipient_change() {
 }
 
 export function get_posting_policy_error_message() {
-    if (selected_recipient_id === "direct") {
+    if (compose_state.selected_recipient_id === "direct") {
         const recipients = compose_pm_pill.get_user_ids_string();
         if (!people.user_can_direct_message(recipients)) {
             return $t({
@@ -120,7 +108,7 @@ export function get_posting_policy_error_message() {
         return "";
     }
 
-    const stream = sub_store.get(selected_recipient_id);
+    const stream = sub_store.get(compose_state.selected_recipient_id);
     if (stream && !stream_data.can_post_messages_in_stream(stream)) {
         return $t({
             defaultMessage: "You do not have permission to post in this stream.",
@@ -138,7 +126,7 @@ export function check_posting_policy_for_compose_box() {
     }
 
     let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (selected_recipient_id === "direct") {
+    if (compose_state.selected_recipient_id === "direct") {
         banner_classname = compose_banner.CLASSNAMES.private_messages_disabled;
     }
     $(".compose_right_float_container").addClass("disabled-compose-send-button-container");
@@ -177,14 +165,14 @@ function update_recipient_label(stream_id) {
 export function update_compose_for_message_type(message_type, opts) {
     if (message_type === "stream") {
         $("#compose-direct-recipient").hide();
-        $("#stream_message_recipient_topic").show();
+        $("#compose_recipient_box").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
         $("#compose-direct-recipient").show();
-        $("#stream_message_recipient_topic").hide();
+        $("#compose_recipient_box").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");
@@ -206,7 +194,7 @@ export function on_compose_select_recipient_update() {
     const prev_message_type = compose_state.get_message_type();
 
     let curr_message_type = "stream";
-    if (selected_recipient_id === DIRECT_MESSAGE_ID) {
+    if (compose_state.selected_recipient_id === compose_state.DIRECT_MESSAGE_ID) {
         curr_message_type = "private";
     }
 
@@ -229,17 +217,18 @@ export function on_compose_select_recipient_update() {
 }
 
 export function possibly_update_stream_name_in_compose(stream_id) {
-    if (selected_recipient_id === stream_id) {
+    if (compose_state.selected_recipient_id === stream_id) {
         on_compose_select_recipient_update();
     }
 }
 
 function item_click_callback(event, dropdown) {
     let recipient_id = $(event.currentTarget).attr("data-unique-id");
-    if (recipient_id !== DIRECT_MESSAGE_ID) {
+    if (recipient_id !== compose_state.DIRECT_MESSAGE_ID) {
         recipient_id = Number.parseInt(recipient_id, 10);
     }
-    set_selected_recipient_id(recipient_id);
+    compose_state.set_selected_recipient_id(recipient_id);
+    on_compose_select_recipient_update();
     dropdown.hide();
     event.preventDefault();
     event.stopPropagation();
@@ -250,7 +239,7 @@ function get_options_for_recipient_widget() {
 
     const direct_messages_option = {
         is_direct_message: true,
-        unique_id: DIRECT_MESSAGE_ID,
+        unique_id: compose_state.DIRECT_MESSAGE_ID,
         name: $t({defaultMessage: "Direct message"}),
     };
 
@@ -313,6 +302,12 @@ function on_hidden_callback() {
         } else {
             $("#compose-textarea").trigger("focus");
         }
+    }
+}
+
+export function handle_middle_pane_transition() {
+    if (compose_state.composing) {
+        update_narrow_to_recipient_visibility();
     }
 }
 

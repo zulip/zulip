@@ -1,18 +1,20 @@
 import $ from "jquery";
 
 import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import * as compose_textarea from "./compose_textarea";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as deprecated_feature_notice from "./deprecated_feature_notice";
-import * as drafts from "./drafts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
@@ -29,6 +31,7 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
+import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -50,7 +53,6 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as topic_zoom from "./topic_zoom";
 import * as unread_ops from "./unread_ops";
 import * as read_receipts from "./read_receipts";
 import * as user_card_popover from "./user_card_popover";
@@ -278,12 +280,12 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (overlays.is_modal_open()) {
-        overlays.close_active_modal();
+    if (modals.any_active()) {
+        modals.close_active();
         return true;
     }
 
-    if (overlays.is_active()) {
+    if (overlays.any_active()) {
         overlays.close_active();
         return true;
     }
@@ -294,8 +296,8 @@ export function process_escape_key(e) {
     }
 
     if (processing_text()) {
-        if (activity.searching()) {
-            activity.escape_search();
+        if (activity_ui.searching()) {
+            activity_ui.escape_search();
             return true;
         }
 
@@ -348,8 +350,8 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (topic_zoom.is_zoomed_in()) {
-        topic_zoom.zoom_out();
+    if (stream_list.is_zoomed_in()) {
+        stream_list.zoom_out();
         return true;
     }
 
@@ -460,7 +462,7 @@ export function process_enter_key(e) {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
-        drafts.handle_keyboard_events("enter");
+        drafts_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
 
@@ -484,7 +486,7 @@ export function process_enter_key(e) {
 
     // All custom logic for overlays/modals is above; if we're in a
     // modal at this point, let the browser handle the event.
-    if (overlays.is_modal_open()) {
+    if (modals.any_active()) {
         return false;
     }
 
@@ -544,7 +546,7 @@ export function process_enter_key(e) {
         return true;
     }
 
-    compose_actions.respond_to_message({trigger: "hotkey enter"});
+    compose_reply.respond_to_message({trigger: "hotkey enter"});
     return true;
 }
 
@@ -665,6 +667,8 @@ export function process_hotkey(e, hotkey) {
         case "vim_down":
         case "vim_left":
         case "vim_right":
+        case "page_up":
+        case "page_down":
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
             }
@@ -691,7 +695,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // `list_util` will process the event in send later modal.
-    if (overlays.is_modal_open() && overlays.active_modal() !== "#send_later_modal") {
+    if (modals.any_active() && modals.active_modal() !== "#send_later_modal") {
         return false;
     }
 
@@ -705,7 +709,7 @@ export function process_hotkey(e, hotkey) {
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
-                drafts.handle_keyboard_events(event_name);
+                drafts_overlay_ui.handle_keyboard_events(event_name);
                 return true;
             }
             if (overlays.scheduled_messages_open()) {
@@ -714,7 +718,7 @@ export function process_hotkey(e, hotkey) {
             }
     }
 
-    if (hotkey.message_view_only && overlays.is_active()) {
+    if (hotkey.message_view_only && overlays.any_active()) {
         if (processing_text()) {
             return false;
         }
@@ -859,7 +863,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Prevent navigation in the background when the overlays are active.
-    if (overlays.is_overlay_or_modal_open()) {
+    if (overlays.any_active() || modals.any_active()) {
         if (event_name === "view_selected_stream" && overlays.streams_open()) {
             stream_settings_ui.view_stream();
             return true;
@@ -887,7 +891,7 @@ export function process_hotkey(e, hotkey) {
             stream_list.initiate_search();
             return true;
         case "query_users":
-            activity.initiate_search();
+            activity_ui.initiate_search();
             return true;
         case "search":
         case "search_with_k":
@@ -927,7 +931,7 @@ export function process_hotkey(e, hotkey) {
         case "reply_message": // 'r': respond to message
             // Note that you can "Enter" to respond to messages as well,
             // but that is handled in process_enter_key().
-            compose_actions.respond_to_message({trigger: "hotkey"});
+            compose_reply.respond_to_message({trigger: "hotkey"});
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {
@@ -1027,10 +1031,10 @@ export function process_hotkey(e, hotkey) {
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
             return true;
         case "respond_to_author": // 'R': respond to author
-            compose_actions.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
+            compose_reply.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
             return true;
         case "compose_reply_with_mention": // '@': respond to message with mention to author
-            compose_actions.reply_with_mention({trigger: "hotkey"});
+            compose_reply.reply_with_mention({trigger: "hotkey"});
             return true;
         case "show_lightbox":
             lightbox.show_from_selected_message();
@@ -1085,7 +1089,7 @@ export function process_hotkey(e, hotkey) {
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
         case "compose_quote_reply": // > : respond to selected message with quote
-            compose_actions.quote_and_reply({trigger: "hotkey"});
+            compose_reply.quote_and_reply({trigger: "hotkey"});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);

@@ -6,7 +6,11 @@ export function get_server_history(stream_id, on_success) {
         on_success();
         return;
     }
+    if (stream_topic_history.is_request_pending_for(stream_id)) {
+        return;
+    }
 
+    stream_topic_history.add_request_pending_for(stream_id);
     const url = "/json/users/me/" + stream_id + "/topics";
 
     channel.get({
@@ -15,7 +19,11 @@ export function get_server_history(stream_id, on_success) {
         success(data) {
             const server_history = data.topics;
             stream_topic_history.add_history(stream_id, server_history);
+            stream_topic_history.remove_request_pending_for(stream_id);
             on_success();
+        },
+        error() {
+            stream_topic_history.remove_request_pending_for(stream_id);
         },
     });
 }

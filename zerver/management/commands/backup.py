@@ -2,12 +2,11 @@ import os
 import re
 import tempfile
 from argparse import ArgumentParser, RawTextHelpFormatter
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandParser
 from django.db import connection
-from django.db.backends.postgresql.base import DatabaseWrapper
 from django.utils.timezone import now as timezone_now
 
 from scripts.lib.zulip_tools import TIMESTAMP_FORMAT, parse_os_release, run
@@ -52,13 +51,9 @@ class Command(ZulipBaseCommand):
             members.append("zulip-backup/os-version")
 
             with open(os.path.join(tmp, "zulip-backup", "postgres-version"), "w") as f:
-                # We are accessing a backend specific attribute via a proxy object, whose type
-                # cannot be narrowed with a regular isinstance assertion.
-                # This can be potentially fixed more cleanly with the recently added
-                # connection.get_database_version().
-                if TYPE_CHECKING:
-                    assert isinstance(connection, DatabaseWrapper)
-                print(connection.pg_version, file=f)
+                pg_server_version = connection.cursor().connection.server_version
+                major_pg_version = pg_server_version // 10000
+                print(pg_server_version, file=f)
             members.append("zulip-backup/postgres-version")
 
             if settings.DEVELOPMENT:
@@ -74,15 +69,18 @@ class Command(ZulipBaseCommand):
 
             if not options["skip_db"]:
                 pg_dump_command = [
-                    "pg_dump",
+                    f"/usr/lib/postgresql/{major_pg_version}/bin/pg_dump",
                     "--format=directory",
                     "--file=" + os.path.join(tmp, "zulip-backup", "database"),
-                    "--host=" + settings.DATABASES["default"]["HOST"],
-                    "--port=" + settings.DATABASES["default"]["PORT"],
                     "--username=" + settings.DATABASES["default"]["USER"],
                     "--dbname=" + settings.DATABASES["default"]["NAME"],
                     "--no-password",
                 ]
+                if settings.DATABASES["default"]["HOST"] != "":
+                    pg_dump_command += ["--host=" + settings.DATABASES["default"]["HOST"]]
+                if settings.DATABASES["default"]["PORT"] != "":
+                    pg_dump_command += ["--port=" + settings.DATABASES["default"]["PORT"]]
+
                 os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
 
                 run(

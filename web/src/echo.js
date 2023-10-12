@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as local_message from "./local_message";
@@ -11,7 +12,6 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -21,7 +21,6 @@ import * as sent_messages from "./sent_messages";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
-import * as transmit from "./transmit";
 import * as util from "./util";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -73,7 +72,7 @@ function failed_message_success(message_id) {
     show_failed_message_success(message_id);
 }
 
-function resend_message(message, $row, on_send_message_success) {
+function resend_message(message, $row, {on_send_message_success, send_message}) {
     message.content = message.raw_content;
     if (show_retry_spinner($row)) {
         // retry already in in progress
@@ -107,7 +106,7 @@ function resend_message(message, $row, on_send_message_success) {
         blueslip.log("Manual resend of message failed");
     }
 
-    transmit.send_message(message, on_success, on_error);
+    send_message(message, on_success, on_error);
 }
 
 export function build_display_recipient(message) {
@@ -364,7 +363,7 @@ export function reify_message_id(local_id, server_id) {
 
     message_store.reify_message_id(opts);
     update_message_lists(opts);
-    notifications.reify_message_id(opts);
+    compose_notifications.reify_message_id(opts);
     recent_view_data.reify_message_id_if_available(opts);
 }
 
@@ -474,7 +473,7 @@ export function display_slow_send_loading_spinner(message) {
     }
 }
 
-export function initialize({on_send_message_success}) {
+export function initialize({on_send_message_success, send_message}) {
     function on_failed_action(selector, callback) {
         $("#main_div").on("click", selector, function (e) {
             e.stopPropagation();
@@ -490,7 +489,7 @@ export function initialize({on_send_message_success}) {
                 );
                 return;
             }
-            callback(message, $row, on_send_message_success);
+            callback(message, $row, {on_send_message_success, send_message});
         });
     }
 

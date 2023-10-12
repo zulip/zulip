@@ -24,10 +24,9 @@ import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
@@ -75,7 +74,7 @@ function compare_by_name(a, b) {
 }
 
 export function get_user_id_if_user_profile_modal_open() {
-    if (overlays.is_modal_open() && overlays.active_modal() === "#user-profile-modal") {
+    if (modals.any_active() && modals.active_modal() === "#user-profile-modal") {
         const user_id = $("#user-profile-modal").data("user-id");
         return user_id;
     }
@@ -202,10 +201,18 @@ function render_user_stream_list(streams, user) {
         modifier_html(item) {
             return format_user_stream_list_item_html(item, user);
         },
+        callback_after_render() {
+            $container.parent().removeClass("empty-list");
+        },
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item && item.name.toLocaleLowerCase().includes(value);
+            },
+            onupdate() {
+                if ($container.find("#empty-table-message").length) {
+                    $container.parent().addClass("empty-list");
+                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -219,6 +226,9 @@ function render_user_group_list(groups, user) {
     ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
+        callback_after_render() {
+            $container.parent().removeClass("empty-list");
+        },
         modifier_html(item) {
             return format_user_group_list_item_html(item);
         },
@@ -295,7 +305,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
 
 export function hide_user_profile() {
     user_streams_list_widget = undefined;
-    overlays.close_modal_if_open("user-profile-modal");
+    modals.close_if_open("user-profile-modal");
 }
 
 function show_manage_user_tab(target) {
@@ -317,8 +327,6 @@ function initialize_user_type_fields(user) {
 }
 
 export function show_user_profile(user, default_tab_key = "profile-tab") {
-    popovers.hide_all();
-
     const field_types = page_params.custom_profile_field_types;
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types))
@@ -373,7 +381,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    overlays.open_modal("user-profile-modal", {autoremove: true});
+    modals.open("user-profile-modal", {autoremove: true});
     $(".tabcontent").hide();
 
     let default_tab = 0;

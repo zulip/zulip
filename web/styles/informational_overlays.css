@@ -33,10 +33,6 @@
     .overlay-modal {
         padding-bottom: 10px;
 
-        .modal-header h3 {
-            font-weight: 300;
-        }
-
         .modal-body {
             height: 70vh;
             text-align: center;

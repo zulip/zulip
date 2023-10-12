@@ -1,6 +1,9 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
+import render_empty_list_widget_for_table from "../templates/empty_list_widget_for_table.hbs";
+
 import * as blueslip from "./blueslip";
 import * as scroll_util from "./scroll_util";
 
@@ -177,6 +180,52 @@ function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
     );
 }
 
+function get_column_count_for_table($table: JQuery): number {
+    let column_count = 0;
+    const $thead = $table.find("thead");
+    if ($thead.length) {
+        column_count = $thead.find("tr").children().length;
+    }
+    return column_count;
+}
+
+export function render_empty_list_message_if_needed(
+    $container: JQuery,
+    filter_value: string,
+): void {
+    let empty_list_message = $container.data("empty");
+
+    const empty_search_results_message = $container.data("search-results-empty");
+    if (filter_value && empty_search_results_message) {
+        empty_list_message = empty_search_results_message;
+    }
+
+    if (!empty_list_message || $container.children().length) {
+        return;
+    }
+
+    let empty_list_widget;
+
+    if ($container.is("table, tbody")) {
+        let $table = $container;
+        if ($container.is("tbody")) {
+            $table = $container.closest("table");
+        }
+
+        const column_count = get_column_count_for_table($table);
+        empty_list_widget = render_empty_list_widget_for_table({
+            empty_list_message,
+            column_count,
+        });
+    } else {
+        empty_list_widget = render_empty_list_widget_for_list({
+            empty_list_message,
+        });
+    }
+
+    $container.append(empty_list_widget);
+}
+
 // @params
 // $container: jQuery object to append to.
 // list: The list of items to progressively append.
@@ -249,6 +298,7 @@ export function create<Key = unknown, Item = Key>(
 
             // Stop once the offset reaches the length of the original list.
             if (meta.offset >= meta.filtered_list.length) {
+                render_empty_list_message_if_needed($container, meta.filter_value);
                 return;
             }
 

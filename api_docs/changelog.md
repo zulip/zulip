@@ -20,6 +20,24 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 215**
+
+* [`GET /events`](/api/get-events): Replaced the value `private`
+  with `direct` in the `message_type` field for the `typing` events
+  sent when a user starts or stops typing a message.
+
+* [`POST /typing`](/api/set-typing-status): Stopped supporting `private`
+  as a valid value for the `type` parameter.
+
+* [`POST /typing`](/api/set-typing-status): Stopped using the `to` parameter
+  for the `"stream"` type. Previously, in the case of the `"stream"` type, it
+  accepted a single-element list containing the ID of the stream. Added an
+  optional parameter, `stream_id`. Now, `to` is used only for `"direct"` type.
+  In the case of `"stream"` type, `stream_id` and `topic` are used.
+
+* Note that stream typing notifications were not enabled in any Zulip client
+  prior to feature level 215.
+
 **Feature level 214**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),

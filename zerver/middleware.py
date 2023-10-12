@@ -7,6 +7,7 @@ from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
+from django.core import signals
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.response import HttpResponseBase
@@ -383,35 +384,35 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             response = json_response_from_error(exception)
-            if response.status_code >= 500:
-                # Here we use Django's log_response the way Django uses
-                # it normally to log error responses. However, we make the small
-                # modification of including the traceback to make the log message
-                # more helpful. log_response takes care of knowing not to duplicate
-                # the logging, so Django won't generate a second log message.
-                log_response(
-                    "%s: %s",
-                    response.reason_phrase,
-                    request.path,
-                    response=response,
-                    request=request,
-                    exception=exception,
-                )
-            return response
-
-        if RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
+            if response.status_code < 500:
+                return response
+        elif RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
             response = json_response(res_type="error", msg=_("Internal server error"), status=500)
-            log_response(
-                "%s: %s",
-                response.reason_phrase,
-                request.path,
-                response=response,
-                request=request,
-                exception=exception,
-            )
-            return response
+        else:
+            return None
 
-        return None
+        # Send the same signal that Django sends for an unhandled exception.
+        # This is received by Sentry to log exceptions, and also by the Django
+        # test HTTP client to show better error messages.
+        try:
+            raise exception  # Ensure correct sys.exc_info().
+        except BaseException:
+            signals.got_request_exception.send(sender=None, request=request)
+
+        # Here we use Django's log_response the way Django uses
+        # it normally to log error responses. However, we make the small
+        # modification of including the traceback to make the log message
+        # more helpful. log_response takes care of knowing not to duplicate
+        # the logging, so Django won't generate a second log message.
+        log_response(
+            "%s: %s",
+            response.reason_phrase,
+            request.path,
+            response=response,
+            request=request,
+            exception=exception,
+        )
+        return response
 
 
 class TagRequests(MiddlewareMixin):

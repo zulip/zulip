@@ -131,7 +131,7 @@ No details.
     # corresponding json fixtures have "_new" trailing in the name
 
     def test_activated_new(self) -> None:
-        expected_topic = "Test policy name (1234)"
+        expected_topic = "Test policy name (8ceed342-f305-4bfa-adb8-97ba93f5dd26)"
         expected_message = """
 [Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **active** for condition: **Server Down** at <time:2020-11-11 22:32:11.151000+00:00>
 ``` quote
@@ -147,7 +147,7 @@ Violation description test.
         )
 
     def test_created_new(self) -> None:
-        expected_topic = "Test policy name (1234)"
+        expected_topic = "Test policy name (8114ada3-572e-4550-a310-12375371669e)"
         expected_message = """
 [Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **created** for condition: **Server Down**
 """.strip()
@@ -160,7 +160,7 @@ Violation description test.
         )
 
     def test_closed_new(self) -> None:
-        expected_topic = "Test policy name (1234)"
+        expected_topic = "Test policy name (f0d98b28-bf9d-49e7-b9d0-ac7cbb52e73a)"
         expected_message = """
 [Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **closed** for condition: **Server Down**
 """.strip()
@@ -173,7 +173,7 @@ Violation description test.
         )
 
     def test_acknowledged_new(self) -> None:
-        expected_topic = "Test policy name (1234)"
+        expected_topic = "Test policy name (3576f543-dc3c-4d97-9f16-5c81f35195cb)"
         expected_message = """
 [Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **acknowledged** by **Alice** for condition: **Server Down**
 """.strip()
@@ -199,7 +199,7 @@ Violation description test.
         )
 
     def test_missing_fields_new(self) -> None:
-        expected_topic = "Unknown Policy (1234)"
+        expected_topic = "Unknown Policy (e04156e4-4cac-4f39-9d27-75d361e40a6d)"
         expected_message = """
 [Incident](https://alerts.newrelic.com) **active** for condition: **Unknown condition** at <time:2020-11-11 22:32:11.151000+00:00>
 ``` quote

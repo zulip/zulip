@@ -4,14 +4,15 @@
 // (We should do bot updates here too.)
 import $ from "jquery";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
-import * as compose from "./compose";
+import * as compose_state from "./compose_state";
 import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
+import * as settings from "./settings";
 import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
 import * as settings_linkifiers from "./settings_linkifiers";
@@ -34,7 +35,7 @@ export const update_person = function update(person) {
         const new_email = person.new_email;
 
         narrow_state.update_email(user_id, new_email);
-        compose.update_email(user_id, new_email);
+        compose_state.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {
             page_params.email = new_email;
@@ -57,7 +58,7 @@ export const update_person = function update(person) {
         people.set_full_name(person_obj, person.full_name);
 
         settings_users.update_user_data(person.user_id, person);
-        activity.redraw();
+        activity_ui.redraw();
         message_live_update.update_user_full_name(person.user_id, person.full_name);
         pm_list.update_private_messages();
         if (people.is_my_user_id(person.user_id)) {
@@ -78,6 +79,7 @@ export const update_person = function update(person) {
         if (people.is_my_user_id(person.user_id) && page_params.is_owner !== person_obj.is_owner) {
             page_params.is_owner = person_obj.is_owner;
             settings_org.maybe_disable_widgets();
+            settings.update_lock_icon_in_sidebar();
         }
 
         if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
@@ -88,6 +90,7 @@ export const update_person = function update(person) {
             settings_streams.maybe_disable_widgets();
             settings_realm_user_settings_defaults.maybe_disable_widgets();
             settings_account.update_account_settings_display();
+            settings.update_lock_icon_in_sidebar();
         }
 
         if (

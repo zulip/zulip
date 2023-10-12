@@ -1,3 +1,7 @@
+:root {
+    --color-background-modal: hsl(0deg 0% 98%);
+}
+
 #dev-emails-container {
     .header {
         position: fixed;
@@ -17,6 +21,14 @@
     }
 
     #forward_email_modal {
+        .modal__content label {
+            font-size: 1rem;
+        }
+
+        #forward_address_sections {
+            margin-top: 20px;
+        }
+
         & label.radio {
             padding-left: 20px;
         }

@@ -12,32 +12,31 @@
     </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
-            <span class="new_message_button reply_button_container" data-tooltip-template-id="compose_reply_message_button_tooltip_template">
-                <button type="button" class="button small rounded compose_reply_button"
-                  id="left_bar_compose_reply_button_big">
-                    <span class="compose_reply_button_label">{{t 'Compose message' }}</span>
+            <div class="new_message_button reply_button_container">
+                <button type="button" class="button small compose_reply_button"
+                  id="left_bar_compose_reply_button_big"
+                  data-tooltip-template-id="compose_reply_message_button_tooltip_template">
+                    {{t 'Compose message' }}
                 </button>
-            </span>
+                <button type="button" class="button compose_new_conversation_button"
+                  id="new_conversation_button"
+                  data-tooltip-template-id="new_stream_message_button_tooltip_template">
+                    {{t 'Start new conversation' }}
+                </button>
+            </div>
             <span class="new_message_button mobile_button_container">
                 <button type="button" class="button small rounded compose_mobile_button"
                   id="left_bar_compose_mobile_button_big"
                   data-tooltip-template-id="left_bar_compose_mobile_button_tooltip_template">
-                    <span>+</span>
-                </button>
-            </span>
-            <span class="new_message_button stream_button_container">
-                <button type="button" class="button small rounded compose_stream_button"
-                  id="left_bar_compose_stream_button_big"
-                  data-tooltip-template-id="new_topic_message_button_tooltip_template">
-                    <span class="compose_stream_button_label">{{t 'New topic' }}</span>
+                    +
                 </button>
             </span>
             {{#unless embedded }}
-            <span class="new_message_button private_button_container">
-                <button type="button" class="button small rounded compose_private_button"
-                  id="left_bar_compose_private_button_big"
+            <span class="new_message_button new_direct_message_button_container">
+                <button type="button" class="button small rounded compose_new_direct_message_button"
+                  id="new_direct_message_button"
                   data-tooltip-template-id="new_direct_message_button_tooltip_template">
-                    <span class="compose_private_button_label">{{t 'New direct message' }}</span>
+                    {{t 'New direct message' }}
                 </button>
             </span>
             {{/unless}}
@@ -63,7 +62,12 @@
                             <div class="topic-marker-container">
                                 <i class="fa fa-angle-right" aria-hidden="true"></i>
                             </div>
-                            <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                            <div id="compose_recipient_box">
+                                <input type="text" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                                <button type="button" id="recipient_box_clear_topic_button" class="button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Clear topic' }}" tabindex="-1">
+                                    <i class="zulip-icon zulip-icon-close"></i>
+                                </button>
+                            </div>
                             <div id="compose-direct-recipient" class="pill-container" data-before="{{t 'You and' }}">
                                 <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
                             </div>

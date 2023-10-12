@@ -182,7 +182,7 @@ function show_add_default_streams_modal() {
                     successful_requests = successful_requests + 1;
 
                     if (successful_requests === chosen_streams.size) {
-                        dialog_widget.close_modal();
+                        dialog_widget.close();
                     }
                 },
                 error(xhr) {

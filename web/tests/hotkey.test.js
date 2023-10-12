@@ -1,10 +1,10 @@
 "use strict";
 
-const { strict: assert } = require("assert");
+const {strict: assert} = require("assert");
 
-const { mock_esm, set_global, with_overrides, zrequire } = require("./lib/namespace");
-const { make_stub } = require("./lib/stub");
-const { run_test } = require("./lib/test");
+const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
+const {make_stub} = require("./lib/stub");
+const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 // Important note on these tests:
@@ -34,11 +34,12 @@ set_global("document", "document-stub");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_reply = mock_esm("../src/compose_reply");
 const condense = mock_esm("../src/condense");
-const drafts = mock_esm("../src/drafts");
+const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
-    toggle_emoji_popover() { },
+    toggle_emoji_popover() {},
 });
 const gear_menu = mock_esm("../src/gear_menu", {
     is_open: () => false,
@@ -54,17 +55,18 @@ const narrow_state = mock_esm("../src/narrow_state", {
     is_message_feed_visible: () => true,
 });
 const navigate = mock_esm("../src/navigate");
+const modals = mock_esm("../src/modals", {
+    any_active: () => false,
+    active_modal: () => undefined,
+});
 const overlays = mock_esm("../src/overlays", {
-    is_active: () => false,
+    any_active: () => false,
     settings_open: () => false,
     streams_open: () => false,
     lightbox_open: () => false,
     drafts_open: () => false,
     scheduled_messages_open: () => false,
     info_overlay_open: () => false,
-    is_modal_open: () => false,
-    active_modal: () => undefined,
-    is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
 const popovers = mock_esm("../src/user_card_popover", {
     manage_menu: {
@@ -121,7 +123,7 @@ message_lists.current = {
     },
 };
 
-const activity = zrequire("activity");
+const activity_ui = zrequire("activity_ui");
 const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const hotkey = zrequire("hotkey");
@@ -132,7 +134,7 @@ emoji.initialize({
 });
 
 function stubbing(module, func_name_to_stub, test_function) {
-    with_overrides(({ override }) => {
+    with_overrides(({override}) => {
         const stub = make_stub();
         override(module, func_name_to_stub, stub.f);
         test_function(stub);
@@ -140,7 +142,7 @@ function stubbing(module, func_name_to_stub, test_function) {
 }
 
 function stubbing_rewire(module, func_name_to_stub, test_function) {
-    with_overrides(({ override_rewire }) => {
+    with_overrides(({override_rewire}) => {
         const stub = make_stub();
         override_rewire(module, func_name_to_stub, stub.f);
         test_function(stub);
@@ -275,7 +277,7 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-run_test("allow normal typing when processing text", ({ override, override_rewire }) => {
+run_test("allow normal typing when processing text", ({override, override_rewire}) => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfoyz");
@@ -285,14 +287,14 @@ run_test("allow normal typing when processing text", ({ override, override_rewir
     override_rewire(hotkey, "processing_text", () => true);
 
     let settings_open;
-    let is_active;
+    let any_active;
     let info_overlay_open;
-    override(overlays, "is_active", () => is_active);
+    override(overlays, "any_active", () => any_active);
     override(overlays, "settings_open", () => settings_open);
     override(overlays, "info_overlay_open", () => info_overlay_open);
 
     for (settings_open of [true, false]) {
-        for (is_active of [true, false]) {
+        for (any_active of [true, false]) {
             for (info_overlay_open of [true, false]) {
                 test_normal_typing();
             }
@@ -300,12 +302,12 @@ run_test("allow normal typing when processing text", ({ override, override_rewir
     }
 });
 
-run_test("streams", ({ override }) => {
+run_test("streams", ({override}) => {
     settings_data.user_can_create_private_streams = () => true;
     delete settings_data.user_can_create_public_streams;
     delete settings_data.user_can_create_web_public_streams;
     override(overlays, "streams_open", () => true);
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     assert_mapping("S", stream_settings_ui, "keyboard_sub");
     assert_mapping("V", stream_settings_ui, "view_stream");
     assert_mapping("n", stream_settings_ui, "open_create_stream");
@@ -318,7 +320,7 @@ run_test("streams", ({ override }) => {
 run_test("basic mappings", () => {
     assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
-    assert_mapping_rewire("w", activity, "initiate_search");
+    assert_mapping_rewire("w", activity_ui, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
     assert_mapping("A", narrow, "stream_cycle_backward");
@@ -330,54 +332,54 @@ run_test("basic mappings", () => {
     assert_mapping("g", gear_menu, "open");
 });
 
-run_test("drafts open", ({ override }) => {
-    override(overlays, "is_active", () => true);
+run_test("drafts open", ({override}) => {
+    override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
-run_test("drafts closed w/other overlay", ({ override }) => {
-    override(overlays, "is_active", () => true);
+run_test("drafts closed w/other overlay", ({override}) => {
+    override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => false);
     test_normal_typing();
 });
 
-run_test("drafts closed launch", ({ override }) => {
-    override(overlays, "is_active", () => false);
+run_test("drafts closed launch", ({override}) => {
+    override(overlays, "any_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
 });
 
-run_test("modal open", ({ override }) => {
-    override(overlays, "is_modal_open", () => true);
+run_test("modal open", ({override}) => {
+    override(modals, "any_active", () => true);
     test_normal_typing();
 });
 
-run_test("misc", ({ override }) => {
+run_test("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsuvi:GM";
 
     // Check that they do nothing without a selected message
-    with_overrides(({ override }) => {
+    with_overrides(({override}) => {
         override(message_lists.current, "visibly_empty", () => true);
         assert_unmapped(message_view_only_keys);
     });
 
     // Check that they do nothing while in the settings overlay
-    with_overrides(({ override }) => {
+    with_overrides(({override}) => {
         override(overlays, "settings_open", () => true);
         assert_unmapped("@*+->rRjJkKsSuvi:GM");
     });
 
     // TODO: Similar check for being in the subs page
 
-    assert_mapping("@", compose_actions, "reply_with_mention");
+    assert_mapping("@", compose_reply, "reply_with_mention");
     assert_mapping("+", reactions, "toggle_emoji_reaction");
     // Without an existing emoji reaction, this next one will only
     // call get_message_reactions, so we verify just that.
     assert_mapping("=", reactions, "get_message_reactions");
     assert_mapping("-", condense, "toggle_collapse");
-    assert_mapping("r", compose_actions, "respond_to_message");
-    assert_mapping("R", compose_actions, "respond_to_message", true);
+    assert_mapping("r", compose_reply, "respond_to_message");
+    assert_mapping("R", compose_reply, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
     assert_mapping("J", navigate, "page_down");
     assert_mapping("k", navigate, "up");
@@ -385,7 +387,7 @@ run_test("misc", ({ override }) => {
     assert_mapping("u", popovers, "toggle_sender_info");
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
-    assert_mapping(">", compose_actions, "quote_and_reply");
+    assert_mapping(">", compose_reply, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
@@ -406,24 +408,24 @@ run_test("misc", ({ override }) => {
     assert_unmapped("m");
 });
 
-run_test("lightbox overlay open", ({ override }) => {
-    override(overlays, "is_active", () => true);
+run_test("lightbox overlay open", ({override}) => {
+    override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
 });
 
-run_test("lightbox closed w/other overlay open", ({ override }) => {
-    override(overlays, "is_active", () => true);
+run_test("lightbox closed w/other overlay open", ({override}) => {
+    override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => false);
     test_normal_typing();
 });
 
-run_test("v w/no overlays", ({ override }) => {
-    override(overlays, "is_active", () => false);
+run_test("v w/no overlays", ({override}) => {
+    override(overlays, "any_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
 
-run_test("emoji picker", ({ override }) => {
+run_test("emoji picker", ({override}) => {
     override(emoji_picker, "is_open", () => true);
     assert_mapping(":", emoji_picker, "navigate", true);
 });
@@ -537,10 +539,10 @@ run_test("motion_keys", () => {
     assert_unmapped("spacebar");
     delete overlays.settings_open;
 
-    delete overlays.is_active;
+    delete overlays.any_active;
     overlays.drafts_open = () => true;
-    assert_mapping("up_arrow", drafts, "handle_keyboard_events");
-    assert_mapping("down_arrow", drafts, "handle_keyboard_events");
-    delete overlays.is_active;
+    assert_mapping("up_arrow", drafts_overlay_ui, "handle_keyboard_events");
+    assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
+    delete overlays.any_active;
     delete overlays.drafts_open;
 });

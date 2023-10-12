@@ -548,6 +548,7 @@ html_rules: List["Rule"] = [
         },
         "exclude": {
             "templates/analytics/support.html",
+            "templates/analytics/remote_server_support.html",
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
             "web/templates/settings/playground_settings_admin.hbs",
@@ -693,10 +694,10 @@ html_rules: List["Rule"] = [
             "templates/corporate/billing.html",
             "templates/corporate/upgrade.html",
             # Miscellaneous violations to be cleaned up
-            "web/templates/user_card_popover_title.hbs",
+            "web/templates/popovers/user_card/user_card_popover_avatar.hbs",
             "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
-            "templates/zerver/config_error.html",
+            "templates/zerver/config_error/container.html",
             "templates/zerver/dev_env_email_access_details.html",
             "templates/zerver/confirm_continue_registration.html",
             "templates/zerver/register.html",

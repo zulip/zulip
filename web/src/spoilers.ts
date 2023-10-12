@@ -56,7 +56,7 @@ export function initialize(): void {
         const $target = $(e.target);
 
         // Spoiler headers can contain Markdown, including links.  We
-        // return so that clicking such links will be be processed by
+        // return so that clicking such links will be processed by
         // the browser rather than opening the header.
         if ($target.closest("a").length > 0) {
             return;

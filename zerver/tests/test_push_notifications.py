@@ -472,8 +472,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "apns_payload": apns_payload,
             "gcm_options": gcm_options,
         }
-        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
-        with time_machine.travel(time_recieved, tick=False), mock.patch(
+        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        with time_machine.travel(time_received, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification"
         ), mock.patch("zilencer.views.send_apple_push_notification"), self.assertLogs(
             "zilencer.views", level="INFO"
@@ -563,12 +563,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
             URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/register"
             with responses.RequestsMock() as resp, self.assertLogs(level="ERROR") as error_log:
                 resp.add(responses.POST, URL, body=ConnectionError(), status=502)
-                result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
-                self.assert_json_error(
-                    result,
-                    "ConnectionError while trying to connect to push notification bouncer",
-                    502,
-                )
+                with self.assertRaisesRegex(
+                    PushNotificationBouncerRetryLaterError,
+                    r"^ConnectionError while trying to connect to push notification bouncer$",
+                ):
+                    self.client_post(endpoint, {"token": token}, subdomain="zulip")
                 self.assertIn(
                     f"ERROR:django.request:Bad Gateway: {endpoint}\nTraceback",
                     error_log.output[0],
@@ -576,8 +575,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
             with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as warn_log:
                 resp.add(responses.POST, URL, body=orjson.dumps({"msg": "error"}), status=500)
-                result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
-                self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
+                with self.assertRaisesRegex(
+                    PushNotificationBouncerRetryLaterError,
+                    r"Received 500 from push notification bouncer$",
+                ):
+                    self.client_post(endpoint, {"token": token}, subdomain="zulip")
                 self.assertEqual(
                     warn_log.output[0],
                     "WARNING:root:Received 500 from push notification bouncer",
@@ -1163,12 +1165,12 @@ class HandlePushNotificationTest(PushNotificationTest):
                 message=message,
             )
 
-        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
-        with time_machine.travel(time_recieved, tick=False), mock.patch(
+        with time_machine.travel(time_received, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
         ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -1230,12 +1232,12 @@ class HandlePushNotificationTest(PushNotificationTest):
                 message=message,
             )
 
-        time_recieved = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
-        with time_machine.travel(time_recieved, tick=False), mock.patch(
+        with time_machine.travel(time_received, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
         ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -1772,7 +1774,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         # Topic wildcard mention in followed topic should soft reactivate the user
         # user should be a topic participant
-        self.send_stream_message(self.user_profile, "Denmark", "topic paticipant")
+        self.send_stream_message(self.user_profile, "Denmark", "topic participant")
 
         def send_topic_wildcard_mention() -> None:
             mention = "@**topic**"

@@ -160,6 +160,13 @@ body {
     */
     --max-unexpanded-compose-height: 40vh;
 
+    /*
+    Maximum height of the subscribers list in stream settings so that
+    it doesn't cause the container to have a second scrollbar.
+    This value will be overridden when stream settings is opened.
+    */
+    --stream-subscriber-list-max-height: 100%;
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
@@ -189,6 +196,24 @@ body {
     --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
+    --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
+
+    /* Compose box colors */
+    --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
+    --color-compose-collapsed-reply-button-area-background-interactive: var(
+        --color-compose-collapsed-reply-button-area-background
+    );
+    --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 80%);
+    --color-compose-collapsed-reply-button-area-border-interactive: hsl(
+        0deg 0% 60%
+    );
+    --color-compose-embedded-button-text-color: hsl(231deg 20% 55%);
+    --color-compose-embedded-button-text-color-hover: hsl(231deg 20% 30%);
+    --color-compose-embedded-button-background: transparent;
+    --color-compose-embedded-button-background-hover: hsl(
+        231deg 100% 90% / 50%
+    );
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -210,7 +235,7 @@ body {
     --color-message-star-action: hsl(41deg 100% 47% / 100%);
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
-    --color-global-filter-icon: hsl(0deg 0% 20% / 70%);
+    --color-left-sidebar-navigation-icon: hsl(0deg 0% 20% / 70%);
     --color-vdots-hint: hsl(0deg 0% 0% / 30%);
     --color-vdots-visible: hsl(0deg 0% 0% / 53%);
     --color-vdots-hover: hsl(0deg 0% 0%);
@@ -236,11 +261,15 @@ body {
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
-    --color-background-inbox: hsl(0deg 6.67% 97.06%);
-    --color-background-inbox-search: hsl(0deg 0% 0% / 5%);
-    --color-icon-search-inbox: hsl(0deg 0% 0% / 50%);
-    --color-background-inbox-search-focus: hsl(0deg 0% 100%);
-    --color-border-inbox-search-focus: hsl(0deg 0% 100% / 20%);
+    --color-background-inbox: hsl(0deg 0% 100%);
+    --color-icon-search-inbox: hsl(0deg 0% 0%);
+    --color-inbox-search-text: hsl(0deg 0% 0%);
+    --color-border-inbox-search: hsl(229.09deg 21.57% 10% / 30%);
+    --color-border-inbox-search-hover: hsl(229.09deg 21.57% 10% / 60%);
+    --color-background-inbox-search-hover: var(--color-background-inbox);
+    --color-background-inbox-search-focus: var(--color-background-inbox);
+    --color-border-inbox-search-focus: hsl(229.09deg 21.57% 10% / 80%);
+    --color-box-shadow-inbox-search-focus: hsl(228deg 9.8% 20% / 30%);
     --color-background-inbox-row: hsl(0deg 0% 100%);
     --color-background-inbox-row-hover: linear-gradient(
             0deg,
@@ -251,6 +280,8 @@ body {
     --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
     --color-border-inbox: hsl(0deg 0% 84.31%);
+    --color-icons-inbox: hsl(0deg 0% 0%);
+    --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
 }
 
 %dark-theme {
@@ -279,6 +310,26 @@ body {
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
+    --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
+    --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
+
+    /* Compose box colors */
+    --color-compose-collapsed-reply-button-area-background: hsl(
+        0deg 0% 0% / 20%
+    );
+    --color-compose-collapsed-reply-button-area-background-interactive: hsl(
+        0deg 0% 0% / 15%
+    );
+    --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 0% / 60%);
+    --color-compose-collapsed-reply-button-area-border-interactive: var(
+        --color-compose-collapsed-reply-button-area-border
+    );
+    --color-compose-embedded-button-text-color: hsl(231deg 30% 65%);
+    --color-compose-embedded-button-text-color-hover: hsl(231deg 30% 70%);
+    --color-compose-embedded-button-background: transparent;
+    --color-compose-embedded-button-background-hover: hsl(
+        235deg 100% 70% / 11%
+    );
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -301,7 +352,7 @@ body {
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
     --color-message-action-visible: hsl(217deg 41% 90% / 50%);
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
-    --color-global-filter-icon: hsl(0deg 0% 100% / 56%);
+    --color-left-sidebar-navigation-icon: hsl(0deg 0% 100% / 56%);
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
     --color-vdots-hover: hsl(0deg 0% 100%);
@@ -325,11 +376,15 @@ body {
     --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
 
     /* Inbox view */
-    --color-background-inbox: var(--color-background);
-    --color-background-inbox-search: hsl(0deg 0% 20%);
-    --color-icon-search-inbox: hsl(0deg 0% 100% / 50%);
-    --color-background-inbox-search-focus: hsl(0deg 0% 0%);
-    --color-border-inbox-search-focus: hsl(0deg 0% 0% / 20%);
+    --color-background-inbox: hsl(225deg 6% 10%);
+    --color-icon-search-inbox: hsl(0deg 0% 100%);
+    --color-inbox-search-text: hsl(0deg 0% 95%);
+    --color-border-inbox-search: hsl(0deg 0% 100% / 20%);
+    --color-border-inbox-search-hover: hsl(0deg 0% 100% / 40%);
+    --color-background-inbox-search-hover: hsl(225deg 6% 8%);
+    --color-background-inbox-search-focus: hsl(225deg 6% 7%);
+    --color-border-inbox-search-focus: hsl(0deg 0% 100% / 50%);
+    --color-box-shadow-inbox-search-focus: hsl(0deg 0% 100% / 40%);
     --color-background-inbox-row: hsl(0deg 0% 14%);
     --color-background-inbox-row-hover: linear-gradient(
             0deg,
@@ -340,6 +395,8 @@ body {
     --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
     --color-border-inbox: hsl(0deg 0% 0% / 60%);
+    --color-icons-inbox: hsl(0deg 0% 100%);
+    --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
 }
 
 @media screen {
@@ -1720,9 +1777,16 @@ td.pointer {
 }
 
 .sender_name {
-    display: inline-block;
+    display: inline-flex;
     font-weight: 700;
     color: var(--color-text-sender-name);
+    column-gap: 3px;
+
+    .sender_name_text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 
 .sender_name_hovered {
@@ -2075,7 +2139,8 @@ div.focused-message-list {
             }
         }
 
-        .zulip-icon-inbox {
+        .zulip-icon-inbox,
+        .zulip-icon-star-filled {
             position: relative;
             top: 2px;
         }
@@ -2657,19 +2722,6 @@ select.invite-as {
     margin-right: 0;
 }
 
-.inline-status-emoji {
-    /* Treat as an inline flex container, with an anonymous block around
-      the username text node, for positioning status emoji */
-    display: inline-flex;
-
-    .status-emoji {
-        /* Preserve the distance between the emoji
-           and username that was previously due to
-           whitespace. */
-        margin-left: 6px;
-    }
-}
-
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;
@@ -3102,7 +3154,7 @@ select.invite-as {
             }
         }
 
-        .narrows_panel {
+        .left-sidebar-navigation-area {
             margin-top: 10px;
         }
     }
@@ -3316,5 +3368,13 @@ select.invite-as {
 
     .zulip-icon {
         padding: 5px;
+    }
+}
+
+#unstar_all_messages,
+.emoji-popover-tab-item {
+    .zulip-icon-star {
+        position: relative;
+        top: 2px;
     }
 }

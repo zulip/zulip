@@ -2523,12 +2523,15 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be `"stream"` or `"private"`.
+                                    Type of message being composed. Must be `"stream"` or `"direct"`.
 
-                                    **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly direct messages.
+                                    **Changes**: In Zulip 8.0 (feature level 215), replaced the
+                                    value `"private"` with `"direct"`.
+
+                                    New in Zulip 4.0 (feature level 58). Previously, all typing
+                                    notifications were implicitly direct messages.
                                   enum:
-                                    - private
+                                    - direct
                                     - stream
                                 sender:
                                   additionalProperties: false
@@ -2547,7 +2550,7 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `"private"`.
+                                    Only present if `message_type` is `"direct"`.
 
                                     Array of dictionaries describing the set of users who would be
                                     recipients of the message being typed. Each dictionary contains
@@ -2589,7 +2592,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "start",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -2641,12 +2644,15 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be `"stream"` or `"private"`.
+                                    Type of message being composed. Must be `"stream"` or `"direct"`.
 
-                                    **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly direct messages.
+                                    **Changes**: In Zulip 8.0 (feature level 215), replaced the
+                                    value `"private"` with `"direct"`.
+
+                                    New in Zulip 4.0 (feature level 58). Previously all typing
+                                    notifications were implicitly direct messages.
                                   enum:
-                                    - private
+                                    - direct
                                     - stream
                                 sender:
                                   additionalProperties: false
@@ -2665,7 +2671,7 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `"private"`.
+                                    Only present if `message_type` is `"direct"`.
 
                                     Array of dictionaries describing the set of users who would be
                                     recipients of the message that was previously being typed. Each
@@ -2707,7 +2713,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "stop",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -3961,7 +3967,7 @@ paths:
                                       type: object
                                       additionalProperties:
                                         description: |
-                                          Boolean describing whether the authentication method (i.e its key)
+                                          Boolean describing whether the authentication method (i.e. its key)
                                           is enabled in this organization.
                                         type: boolean
                                       description: |
@@ -13759,7 +13765,7 @@ paths:
                         type: object
                         additionalProperties:
                           description: |
-                            Boolean describing whether the authentication method (i.e its key)
+                            Boolean describing whether the authentication method (i.e. its key)
                             is enabled in this organization.
                           type: boolean
                         description: |
@@ -16624,7 +16630,11 @@ paths:
         See the subsystems documentation on [typing indicators][typing-protocol-docs]
         for additional design details on Zulip's typing notifications protocol.
 
-        **Changes**: Support for displaying stream typing notifications was new
+        **Changes**: Clients shouldn't care about the APIs prior to Zulip 8.0 (feature level 215)
+        for stream typing notifications, as no client actually implemented
+        the previous API for those.
+
+        Support for displaying stream typing notifications was new
         in Zulip 4.0 (feature level 58). Clients should indicate they support
         processing stream typing notifications via the `stream_typing_notifications`
         value in the `client_capabilities` parameter of the
@@ -16648,7 +16658,10 @@ paths:
           description: |
             Type of the message being composed.
 
-            **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added
+            **Changes**: In Zulip 8.0 (feature level 215), stopped supporting
+            `"private"` as a valid value for this parameter.
+
+            In Zulip 7.0 (feature level 174), `"direct"` was added
             as the preferred way to indicate a direct message is being composed,
             becoming the default value for this parameter and deprecating the
             original `"private"`.
@@ -16660,7 +16673,6 @@ paths:
             enum:
               - direct
               - stream
-              - private
             default: direct
           example: direct
         - name: op
@@ -16677,14 +16689,16 @@ paths:
         - name: to
           in: query
           description: |
-            For `"direct"` type it is the user IDs of the recipients of the message
-            being typed. Send a JSON-encoded list of user IDs. (Use a list even if
-            there is only one recipient.)
+            User IDs of the recipients of the message being typed. Required for the
+            `"direct"` type. Ignored in the case of `"stream"` type. Send a JSON-encoded
+            list of user IDs. (Use a list even if there is only one recipient.)
 
-            For `"stream"` type it is a single element list containing ID of stream in
-            which the message is being typed.
+            **Changes**: In Zulip 8.0 (feature level 215), stopped using this parameter
+            for the `"stream"` type. Previously, in the case of the `"stream"` type, it
+            accepted a single-element list containing the ID of the stream. A new parameter,
+            `stream_id`, is now used for this.
 
-            **Changes**: Support for typing notifications for stream messages
+            Support for typing notifications for stream messages
             is new in Zulip 4.0 (feature level 58). Previously, typing
             notifications were only for direct messages.
 
@@ -16697,8 +16711,19 @@ paths:
                 type: array
                 items:
                   type: integer
+                minLength: 1
               example: [9, 10]
-          required: true
+        - name: stream_id
+          in: query
+          description: |
+            ID of the stream in which the message is being typed. Required for the `"stream"`
+            type. Ignored in the case of `"direct"` type.
+
+            **Changes**: New in Zulip 8.0 (feature level 215). Previously, a single-element
+            list containing the ID of the stream was passed in `to` parameter.
+          schema:
+            type: integer
+          example: 7
         - name: topic
           in: query
           description: |

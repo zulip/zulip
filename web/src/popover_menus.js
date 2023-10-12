@@ -6,6 +6,8 @@ import $ from "jquery";
 import tippy from "tippy.js";
 
 import * as blueslip from "./blueslip";
+import {media_breakpoints_num} from "./css_variables";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 
@@ -150,7 +152,6 @@ export function on_show_prep(instance) {
         e.stopPropagation();
         instance.hide();
     });
-    popovers.hide_all();
 }
 
 function get_props_for_popover_centering(popover_props) {
@@ -211,7 +212,9 @@ export function toggle_popover_menu(target, popover_props, options) {
     const instance = target._tippy;
     let mobile_popover_props = {};
 
-    if (options?.show_as_overlay) {
+    // If the window is mobile-sized, we will render the
+    // popover centered on the screen as an overlay.
+    if (options?.show_as_overlay_on_mobile && window.innerWidth <= media_breakpoints_num.md) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
         };
@@ -257,6 +260,8 @@ export function initialize() {
     /* Configure popovers to hide when toggling overlays. */
     overlays.register_pre_open_hook(popovers.hide_all);
     overlays.register_pre_close_hook(popovers.hide_all);
+    modals.register_pre_open_hook(popovers.hide_all);
+    modals.register_pre_close_hook(popovers.hide_all);
 
     let last_scroll = 0;
 

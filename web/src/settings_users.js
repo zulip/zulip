@@ -15,7 +15,6 @@ import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
-import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
@@ -91,25 +90,10 @@ function update_view_on_reactivate($row) {
     $row.addClass("reactivated_user");
 }
 
-function get_status_field() {
-    const current_tab = settings_panel_menu.org_settings.current_tab();
-    switch (current_tab) {
-        case "deactivated-users-admin":
-            return $("#deactivated-user-field-status").expectOne();
-        case "user-list-admin":
-            return $("#user-field-status").expectOne();
-        case "bot-list-admin":
-            return $("#bot-field-status").expectOne();
-        default:
-            throw new Error("Invalid admin settings page");
-    }
-}
-
 function failed_listing_users() {
     loading.destroy_indicator($("#subs_page_loading_indicator"));
-    const status = get_status_field();
     const user_id = people.my_current_user_id();
-    blueslip.error("Error while listing users for user_id", {user_id, status});
+    blueslip.error("Error while listing users for user_id", {user_id});
 }
 
 function populate_users() {
@@ -373,7 +357,7 @@ function start_data_load() {
 function handle_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 

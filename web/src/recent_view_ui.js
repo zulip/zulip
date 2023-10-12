@@ -18,6 +18,7 @@ import * as loading from "./loading";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
+import * as modals from "./modals";
 import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -33,8 +34,6 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
-import * as user_card_popover from "./user_card_popover";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as views_util from "./views_util";
@@ -105,7 +104,8 @@ export function is_in_focus() {
         !compose_state.composing() &&
         !popovers.any_active() &&
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
-        !overlays.is_overlay_or_modal_open() &&
+        !overlays.any_active() &&
+        !modals.any_active() &&
         !$(".home-page-input").is(":focus")
     );
 }
@@ -202,6 +202,7 @@ function set_table_focus(row, col, using_keyboard) {
     // TODO: This fake "message" object is designed to allow using the
     // get_recipient_label helper inside compose_closed_ui. Surely
     // there's a more readable way to write this code.
+    // Similar code is present in Inbox.
     let message;
     if (type === "private") {
         message = {
@@ -292,8 +293,6 @@ export function hide_loading_indicator() {
     loading.destroy_indicator($("#recent_view_loading_messages_indicator"), {
         abs_positioned: false,
     });
-    // Show empty table text if there are no messages fetched.
-    $("#recent_view_table tbody").addClass("required-text");
 }
 
 export function process_messages(messages) {
@@ -919,7 +918,7 @@ export function show() {
         // We want to show `new stream message` instead of
         // `new topic`, which we are already doing in this
         // function. So, we reuse it here.
-        update_compose: compose_closed_ui.update_buttons_for_recent_view,
+        update_compose: compose_closed_ui.update_buttons_for_non_stream_views,
         is_recent_view: true,
         is_visible,
         set_visible,
@@ -1245,7 +1244,7 @@ export function change_focused_element($elt, input_key) {
     return false;
 }
 
-export function initialize() {
+export function initialize({on_click_participant, on_mark_pm_as_read, on_mark_topic_as_read}) {
     // load filters from local storage.
     if (!page_params.is_spectator) {
         // A user may have a stored filter and can log out
@@ -1257,8 +1256,7 @@ export function initialize() {
     $("body").on("click", "#recent_view_table .recent_view_participant_avatar", function (e) {
         const participant_user_id = Number.parseInt($(this).parent().attr("data-user-id"), 10);
         e.stopPropagation();
-        const user = people.get_by_user_id(participant_user_id);
-        user_card_popover.toggle_user_card_popover(this, user);
+        on_click_participant(this, participant_user_id);
     });
 
     $("body").on(
@@ -1328,12 +1326,12 @@ export function initialize() {
         const user_ids_string = $elt.attr("data-user-ids-string");
         if (user_ids_string) {
             // direct message row
-            unread_ops.mark_pm_as_read(user_ids_string);
+            on_mark_pm_as_read(user_ids_string);
         } else {
             // Stream row
             const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
             const topic = $elt.attr("data-topic-name");
-            unread_ops.mark_topic_as_read(stream_id, topic);
+            on_mark_topic_as_read(stream_id, topic);
         }
         // If `unread` filter is selected, the focused topic row gets removed
         // and we automatically move one row down.

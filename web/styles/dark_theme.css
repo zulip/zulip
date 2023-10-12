@@ -79,7 +79,8 @@
         }
     }
 
-    .modal-footer {
+    #subscription_overlay #stream-creation .modal-footer,
+    #groups_overlay #user-group-creation .modal-footer {
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
@@ -489,7 +490,8 @@
     .pill-container,
     .user-status-content-wrapper,
     #custom-expiration-time-input,
-    #org-join-settings .dropdown-widget-button {
+    #org-join-settings .dropdown-widget-button,
+    #compose_recipient_box {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
@@ -509,13 +511,6 @@
     & select option {
         background-color: var(--color-background);
         color: hsl(236deg 33% 90%);
-    }
-
-    .unread_count,
-    /* The actions_popover unread_count object has its own variable CSS,
-       and thus needs to be repeated here with all three classes for precedence) */
-    .actions_popover .mark_as_unread .unread_count {
-        background-color: hsl(105deg 2% 50% / 50%);
     }
 
     .pill-container {
@@ -603,7 +598,7 @@
     input[type="number"]:focus,
     textarea:focus,
     textarea.new_message_textarea:focus,
-    .compose_table .recipient_box:focus {
+    #compose_recipient_box:focus {
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
@@ -677,10 +672,7 @@
 
     .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
-    .dropdown .dropdown-menu,
-    .popover,
-    .popover-title,
-    .popover-content {
+    .dropdown .dropdown-menu {
         background-color: hsl(212deg 32% 14%);
     }
 
@@ -779,7 +771,7 @@
 
     #topics_header {
         .show-all-streams {
-            color: hsl(236deg 33% 90%);
+            color: hsl(0deg 0% 100% / 75%);
             opacity: 0.75;
         }
     }
@@ -886,8 +878,8 @@
     #settings_page .sidebar-wrapper .tab-container,
     .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
-    .modal-footer,
-    .modal-bg .modal-header {
+    #subscription_overlay #stream-creation .modal-footer,
+    #groups_overlay #user-group-creation .modal-footer {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
     }

@@ -1724,20 +1724,6 @@ $option_title_width: 180px;
     width: 100px;
 }
 
-.required-text {
-    &:empty::after {
-        content: attr(data-empty);
-        display: block;
-
-        font-style: italic;
-        color: hsl(0deg 0% 67%);
-    }
-
-    &.thick:empty::after {
-        width: 100%;
-    }
-}
-
 #payload_url_inputbox {
     & input[type="text"] {
         width: 340px;

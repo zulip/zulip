@@ -4,15 +4,7 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import * as condense from "./condense";
-import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
-import * as navbar_alerts from "./navbar_alerts";
-import * as navigate from "./navigate";
-import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
-import * as sidebar_ui from "./sidebar_ui";
-import * as util from "./util";
 
 function get_bottom_whitespace_height() {
     return message_viewport.height() * 0.4;
@@ -26,9 +18,9 @@ function get_new_heights() {
     res.stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        ($("#global_filters").outerHeight(true) ?? 0) -
+        Number.parseInt($("#left-sidebar-navigation-area").css("marginTop"), 10) -
+        Number.parseInt($("#left-sidebar-navigation-area").css("marginBottom"), 10) -
+        ($("#left-sidebar-navigation-list").outerHeight(true) ?? 0) -
         ($("#private_messages_sticky_header").outerHeight(true) ?? 0);
 
     // Don't let us crush the stream sidebar completely out of view
@@ -134,6 +126,41 @@ export function resize_bottom_whitespace() {
     }
 }
 
+export function resize_stream_subscribers_list() {
+    // Calculates the height of the subscribers list in stream settings.
+    // This avoids the stream settings from overflowing the container and
+    // having a scroll bar.
+
+    if (!$("#stream_settings").length === 1) {
+        // Don't run if stream settings (like $subscriptions_info below) is not open.
+        return;
+    }
+
+    const $subscriptions_info = $("#subscription_overlay .subscriptions-container .right");
+    const classes_above_subscribers_list = [
+        ".display-type", // = stream_settings_title
+        ".subscriber_list_settings_container .stream_settings_header",
+        ".subscription_settings .stream_setting_subsection_title",
+        ".subscription_settings .subscriber_list_settings",
+        ".subscription_settings .stream_setting_subsection_title",
+    ];
+    const $classes_above_subscribers_list = $subscriptions_info.find(
+        classes_above_subscribers_list.join(", "),
+    );
+    let total_height_of_classes_above_subscribers_list = 0;
+    $classes_above_subscribers_list.each(function () {
+        total_height_of_classes_above_subscribers_list += $(this).outerHeight(true);
+    });
+    const subscribers_list_header_height = 30;
+    const margin_between_tab_switcher_and_add_subscribers_title = 20;
+    const subscribers_list_height =
+        $subscriptions_info.height() -
+        total_height_of_classes_above_subscribers_list -
+        subscribers_list_header_height -
+        margin_between_tab_switcher_and_add_subscribers_title;
+    $("html").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
+}
+
 export function resize_stream_filters_container() {
     const h = get_new_heights();
     resize_bottom_whitespace();
@@ -152,44 +179,23 @@ export function update_recent_view_filters_height() {
     $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
 }
 
-export function resize_page_components() {
-    navbar_alerts.resize_app();
-    const h = resize_sidebars();
-    resize_bottom_whitespace(h);
+function resize_navbar_alerts() {
+    const navbar_alerts_height = $("#navbar_alerts_wrapper").height();
+    document.documentElement.style.setProperty(
+        "--navbar-alerts-wrapper-height",
+        navbar_alerts_height + "px",
+    );
+
+    // If the compose-box is in expanded state,
+    // reset its height as well.
+    if (compose_ui.is_full_size()) {
+        compose_ui.set_compose_box_top(true);
+    }
 }
 
-let _old_width = $(window).width();
-
-export function handler() {
-    const new_width = $(window).width();
-
-    // On mobile web, we want to avoid hiding a popover here on height change,
-    // especially if this resize was triggered by a virtual keyboard
-    // popping up when the user opened that very popover.
-    const mobile = util.is_mobile();
-    if (!mobile || new_width !== _old_width) {
-        sidebar_ui.hide_all();
-        popovers.hide_all();
-    }
-
-    if (new_width !== _old_width) {
-        _old_width = new_width;
-    }
-    resize_page_components();
-    compose_ui.autosize_textarea($("#compose-textarea"));
-    update_recent_view_filters_height();
-
-    // Re-compute and display/remove 'Show more' buttons to messages
-    condense.condense_and_collapse(message_lists.all_current_message_rows());
-
-    // This function might run onReady (if we're in a narrow window),
-    // but before we've loaded in the messages; in that case, don't
-    // try to scroll to one.
-    if (message_lists.current.selected_id() !== -1) {
-        if (mobile) {
-            popover_menus.set_suppress_scroll_hide();
-        }
-
-        navigate.scroll_to_selected();
-    }
+export function resize_page_components() {
+    resize_navbar_alerts();
+    const h = resize_sidebars();
+    resize_bottom_whitespace(h);
+    resize_stream_subscribers_list();
 }

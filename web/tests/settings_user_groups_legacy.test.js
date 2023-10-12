@@ -45,7 +45,7 @@ function reset_test_setup($pill_container_stub) {
 }
 
 function test_ui(label, f) {
-    // The sloppy_$ flag lets us re-use setup from prior tests.
+    // The sloppy_$ flag lets us reuse setup from prior tests.
     run_test(label, f, {sloppy_$: true});
 }
 
@@ -536,7 +536,7 @@ test_ui("on_events", ({mock_template, override, override_rewire}) => {
                     assert.equal(text, "translated HTML: User group added!");
                     assert.equal(ele, $("#dialog_error"));
                 };
-                dialog_widget.close_modal = () => {};
+                dialog_widget.close = () => {};
 
                 opts.success();
 

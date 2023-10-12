@@ -47,40 +47,6 @@
     }
 }
 
-.popover {
-    width: auto;
-    max-width: 100%;
-
-    & hr {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-
-    .sub_disable_btn_hint {
-        padding-left: 5px;
-        padding-right: 5px;
-        font-size: small;
-        text-align: justify;
-    }
-}
-
-.popover-content {
-    padding: 5px 0;
-}
-
-.popover-title {
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-
-    font-size: inherit;
-    line-height: inherit;
-
-    &:empty {
-        display: none;
-    }
-}
-
 .user_full_name,
 .bot_owner {
     text-overflow: ellipsis;
@@ -113,6 +79,15 @@
     .zulip-icon {
         /* Overriding CSS margin */
         margin-right: 0;
+    }
+}
+
+/* Used extra classes to override styles from .nav */
+.tippy-box .tippy-content .user-card-popover-content {
+    padding: 5px 0;
+
+    .user-card-popover-actions {
+        margin: 0;
     }
 }
 
@@ -303,7 +278,9 @@ ul {
             font-size: 11px;
             font-weight: 600;
             margin-right: 2px;
-            background-color: hsl(200deg 100% 40%);
+            background-color: var(
+                --color-background-unread-counter-popover-menu
+            );
             /* Override random undesired bootstrap style */
             text-shadow: none;
             /* Not center aligned but looks better. */
@@ -323,7 +300,7 @@ ul {
     margin: -14px;
     padding: 0;
 
-    .popover-title {
+    .user-card-popover-title {
         padding: 0;
         border-color: hsl(0deg 0% 0% / 20%);
     }
@@ -338,14 +315,13 @@ ul {
 .user-card-popover-root {
     width: 240px;
     padding: 0;
-
-    .popover-title {
-        padding: 0;
-        border-color: hsl(0deg 0% 0% / 20%);
-    }
 }
 
 .group-info-popover {
+    .group-info-content {
+        padding: 5px 0;
+    }
+
     .manage-group a {
         text-align: center;
     }
@@ -660,20 +636,6 @@ ul {
                     }
                 }
             }
-
-            & tbody:empty::after,
-            &:empty::after {
-                content: attr(data-empty);
-                display: block;
-
-                text-align: center;
-                color: hsl(0deg 0% 67%);
-            }
-
-            &:empty {
-                display: block;
-                padding: 5px;
-            }
         }
     }
 
@@ -695,6 +657,14 @@ ul {
                 padding-top: unset;
                 padding-bottom: unset;
             }
+        }
+    }
+
+    .empty-list {
+        border: none;
+
+        #empty-table-message {
+            padding: 3em 1em;
         }
     }
 }
@@ -761,10 +731,6 @@ ul {
             opacity: 1;
             pointer-events: all;
         }
-
-        .popover {
-            display: inline-block;
-        }
     }
 
     .emoji-picker-popover {
@@ -811,14 +777,14 @@ ul {
         color: var(--color-text-default);
     }
 
-    & .popover-content ul.nav {
+    & ul.nav {
         /* TODO: Clean this logic up after drop Bootstrap styling */
         margin: 0;
     }
 }
 
 .user-group-popover-root {
-    & .popover-content ul.nav {
+    & ul.nav {
         /* TODO: Clean this logic up after drop Bootstrap styling */
         margin: 0;
     }
@@ -885,10 +851,11 @@ ul {
         }
     }
 
-    .popover-content {
+    .giphy-scrolling-container {
         overflow: auto;
         height: 200px;
         margin: 2px;
+        padding: 5px 0;
     }
 
     .popover-footer {

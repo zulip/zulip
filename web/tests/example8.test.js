@@ -76,6 +76,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     // Narrow to a group direct message with four users.
     override(page_params, "user_id", anna.user_id);
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
+    const conversation_key = typing_data.get_direct_message_conversation_key(group);
     const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
     narrow_state.set_current_filter(new Filter([{operator: "dm", operand: group_emails}]));
 
@@ -84,8 +85,8 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     // MAX_USERS_TO_DISPLAY_NAME) or 'Several people are typing…'
 
     // For now, set two of the users as being typists.
-    typing_data.add_typist(group, anna.user_id);
-    typing_data.add_typist(group, vronsky.user_id);
+    typing_data.add_typist(conversation_key, anna.user_id);
+    typing_data.add_typist(conversation_key, vronsky.user_id);
 
     const two_typing_users_rendered_html = "Two typing users rendered html stub";
 
@@ -131,8 +132,8 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
 
     // Change to having four typists and verify the rendered html has
     // 'Several people are typing…' but not the list of users.
-    typing_data.add_typist(group, levin.user_id);
-    typing_data.add_typist(group, kitty.user_id);
+    typing_data.add_typist(conversation_key, levin.user_id);
+    typing_data.add_typist(conversation_key, kitty.user_id);
 
     typing_events.render_notifications_for_narrow();
     assert.ok($typing_notifications.html().includes("Several people are typing…"));

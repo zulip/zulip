@@ -6,7 +6,7 @@ import $ from "jquery";
 import {$t} from "./i18n";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
-import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_settings_api from "./stream_settings_api";
 
 extend([lchPlugin, mixPlugin]);
 
@@ -61,8 +61,8 @@ const subscriptions_table_colorpicker_options = {
     palette: stream_color_palette,
 };
 
-export function set_colorpicker_color(colorpicker, color) {
-    colorpicker.spectrum({
+export function set_colorpicker_color($colorpicker, color) {
+    $colorpicker.spectrum({
         ...subscriptions_table_colorpicker_options,
         color,
         container: "#subscription_overlay .subscription_settings.show",
@@ -85,7 +85,7 @@ function picker_do_change_color(color) {
     $(".colorpicker").spectrum(sidebar_popover_colorpicker_options_full);
     const stream_id = Number.parseInt($(this).attr("stream_id"), 10);
     const hex_color = color.toHexString();
-    stream_settings_ui.set_color(stream_id, hex_color);
+    stream_settings_api.set_color(stream_id, hex_color);
 }
 subscriptions_table_colorpicker_options.change = picker_do_change_color;
 

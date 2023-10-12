@@ -13,6 +13,7 @@ import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
+import * as list_widget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
@@ -74,6 +75,9 @@ export function render_bots() {
         });
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
     }
+
+    list_widget.render_empty_list_message_if_needed($("#active_bots_list"));
+    list_widget.render_empty_list_message_if_needed($("#inactive_bots_list"));
 }
 
 export function generate_zuliprc_url(bot_id) {
@@ -176,10 +180,17 @@ export function update_bot_settings_tip($tip_container, for_org_settings) {
 function update_add_bot_button() {
     if (can_create_new_bots()) {
         $("#bot-settings .add-a-new-bot").show();
-        $("#admin-bot-list .add-a-new-bot").show();
+        $("#admin-bot-list .add-new-bots").show();
+        $("#admin-bot-list .manage-your-bots").hide();
+        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
     } else {
         $("#bot-settings .add-a-new-bot").hide();
-        $("#admin-bot-list .add-a-new-bot").hide();
+        $("#admin-bot-list .add-new-bots").hide();
+        $(".org-settings-list li[data-section='bot-list-admin'] .locked").show();
+
+        if (bot_data.get_all_bots_for_current_user().length > 0) {
+            $("#admin-bot-list .manage-your-bots").show();
+        }
     }
 }
 
@@ -239,7 +250,7 @@ export function add_a_new_bot() {
             contentType: false,
             success() {
                 create_avatar_widget.clear();
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error(xhr) {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
@@ -367,7 +378,7 @@ export function set_up() {
             channel.post({
                 url: "/json/users/" + encodeURIComponent(user_id) + "/reactivate",
                 success() {
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                 },
                 error(xhr) {
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));

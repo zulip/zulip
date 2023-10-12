@@ -52,6 +52,10 @@ html {
     }
 }
 
+#create-account {
+    padding: 20px 0;
+}
+
 .bottom-text-large {
     text-align: center;
     margin-top: 20px;
@@ -871,6 +875,18 @@ button#register_auth_button_gitlab {
     text-align: left;
 }
 
+.register-page-container .register-form-login-redirect {
+    margin-top: 10px;
+    float: right;
+    font-size: 17px;
+    font-weight: normal;
+
+    .register-link {
+        font-size: 17px;
+        margin-left: 5px;
+    }
+}
+
 .back-to-login-wrapper .back-to-login {
     display: flex;
     gap: 5px;
@@ -1339,11 +1355,47 @@ button#register_auth_button_gitlab {
         /* the header becomes smaller, so comp for that. */
         min-height: calc(100vh - 505px);
     }
+
+    #create-account,
+    #new-realm-creation {
+        margin: 0 -30px;
+        transform: scale(0.9);
+    }
+
+    #create-account {
+        margin: -70px;
+
+        #registration {
+            padding: 0;
+        }
+    }
 }
 
 @media (width <= 400px) {
     .flex {
         min-height: calc(100vh - 560px);
+    }
+
+    #create-account,
+    #new-realm-creation {
+        margin: -10px -40px;
+        transform: scale(0.8);
+    }
+
+    #create-account {
+        margin: -100px;
+    }
+}
+
+@media (width <= 340px) {
+    #create-account,
+    #new-realm-creation {
+        margin: -40px -60px;
+        transform: scale(0.7);
+    }
+
+    #create-account {
+        margin: -150px;
     }
 }
 

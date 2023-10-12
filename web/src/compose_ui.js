@@ -35,15 +35,24 @@ export function autosize_textarea($textarea) {
     }
 }
 
+export function insert_and_scroll_into_view(content, $textarea) {
+    insert($textarea[0], content);
+    // Blurring and refocusing ensures the cursor / selection is in view.
+    $textarea.trigger("blur");
+    $textarea.trigger("focus");
+    autosize_textarea($textarea);
+}
+
 function get_focus_area(msg_type, opts) {
-    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
+    // Set focus to "Topic" when narrowed to a stream+topic
+    // and "Start new conversation" button clicked.
     if (msg_type === "stream" && opts.stream_id && !opts.topic) {
         return "#stream_message_recipient_topic";
     } else if (
         (msg_type === "stream" && opts.stream_id) ||
         (msg_type === "private" && opts.private_message_recipient)
     ) {
-        if (opts.trigger === "new topic button") {
+        if (opts.trigger === "clear topic button") {
             return "#stream_message_recipient_topic";
         }
         return "#compose-textarea";
@@ -99,8 +108,7 @@ export function smart_insert_inline($textarea, syntax) {
         syntax += " ";
     }
 
-    insert($textarea[0], syntax);
-    autosize_textarea($textarea);
+    insert_and_scroll_into_view(syntax, $textarea);
 }
 
 export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
@@ -146,8 +154,7 @@ export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
     const new_lines_needed_after_count = padding_newlines - new_lines_after_count;
     syntax = syntax + "\n".repeat(new_lines_needed_after_count);
 
-    insert($textarea[0], syntax);
-    autosize_textarea($textarea);
+    insert_and_scroll_into_view(syntax, $textarea);
 }
 
 export function insert_syntax_and_focus(
@@ -371,19 +378,18 @@ export function format_text($textarea, type, inserted_content) {
     range = $textarea.range();
     const selected_text = range.text;
 
-    const is_selection_bold = () =>
-        // First check if there are enough characters before/after selection.
-        range.start >= bold_syntax.length &&
-        text.length - range.end >= bold_syntax.length &&
-        // And then if the characters have bold_syntax around them.
-        text.slice(range.start - bold_syntax.length, range.start) === bold_syntax &&
-        text.slice(range.end, range.end + bold_syntax.length) === bold_syntax;
+    // Check if the selection is already surrounded by syntax
+    const is_selection_formatted = (syntax_start, syntax_end = syntax_start) =>
+        range.start >= syntax_start.length &&
+        text.length - range.end >= syntax_end.length &&
+        text.slice(range.start - syntax_start.length, range.start) === syntax_start &&
+        text.slice(range.end, range.end + syntax_end.length) === syntax_end;
 
-    const is_inner_text_bold = () =>
-        // Check if selected text itself has bold_syntax inside it.
-        range.length > 4 &&
-        selected_text.slice(0, bold_syntax.length) === bold_syntax &&
-        selected_text.slice(-bold_syntax.length) === bold_syntax;
+    // Check if selected text itself has syntax inside it.
+    const is_inner_text_formatted = (syntax_start, syntax_end = syntax_start) =>
+        range.length >= syntax_start.length + syntax_end.length &&
+        selected_text.slice(0, syntax_start.length) === syntax_start &&
+        selected_text.slice(-syntax_end.length) === syntax_end;
 
     const section_off_selected_lines = () => {
         // Divide all lines of text (separated by `\n`) into those entirely or
@@ -499,37 +505,52 @@ export function format_text($textarea, type, inserted_content) {
         }
     };
 
+    const format = (syntax_start, syntax_end = syntax_start) => {
+        let linebreak_start = "";
+        let linebreak_end = "";
+        if (syntax_start[0] === "\n") {
+            linebreak_start = "\n";
+        }
+        if (syntax_end.at(-1) === "\n") {
+            linebreak_end = "\n";
+        }
+        if (is_selection_formatted(syntax_start, syntax_end)) {
+            text =
+                text.slice(0, range.start - syntax_start.length) +
+                linebreak_start +
+                text.slice(range.start, range.end) +
+                linebreak_end +
+                text.slice(range.end + syntax_end.length);
+            set(field, text);
+            field.setSelectionRange(
+                range.start - syntax_start.length,
+                range.end - syntax_start.length,
+            );
+            return;
+        } else if (is_inner_text_formatted(syntax_start, syntax_end)) {
+            // Remove syntax inside the selection, if present.
+            text =
+                text.slice(0, range.start) +
+                linebreak_start +
+                text.slice(range.start + syntax_start.length, range.end - syntax_end.length) +
+                linebreak_end +
+                text.slice(range.end);
+            set(field, text);
+            field.setSelectionRange(
+                range.start,
+                range.end - syntax_start.length - syntax_end.length,
+            );
+            return;
+        }
+
+        // Otherwise, we don't have syntax within or around, so we add it.
+        wrapSelection(field, syntax_start, syntax_end);
+    };
+
     switch (type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
-
-            // If the selection is already surrounded by bold syntax,
-            // remove it rather than adding another copy.
-            if (is_selection_bold()) {
-                // Remove the bold_syntax from text.
-                text =
-                    text.slice(0, range.start - bold_syntax.length) +
-                    text.slice(range.start, range.end) +
-                    text.slice(range.end + bold_syntax.length);
-                set(field, text);
-                field.setSelectionRange(
-                    range.start - bold_syntax.length,
-                    range.end - bold_syntax.length,
-                );
-                break;
-            } else if (is_inner_text_bold()) {
-                // Remove bold syntax inside the selection, if present.
-                text =
-                    text.slice(0, range.start) +
-                    text.slice(range.start + bold_syntax.length, range.end - bold_syntax.length) +
-                    text.slice(range.end);
-                set(field, text);
-                field.setSelectionRange(range.start, range.end - bold_syntax.length * 2);
-                break;
-            }
-
-            // Otherwise, we don't have bold syntax, so we add it.
-            wrapSelection(field, bold_syntax);
+            format(bold_syntax);
             break;
         case "italic":
             // Ctrl + I: Toggle italic syntax on selection. This is
@@ -546,10 +567,10 @@ export function format_text($textarea, type, inserted_content) {
                     text.slice(range.start - italic_syntax.length, range.start) === italic_syntax &&
                     text.slice(range.end, range.end + italic_syntax.length) === italic_syntax;
 
-                if (is_selection_bold()) {
+                if (is_selection_formatted(bold_syntax)) {
                     // If text has bold_syntax around it.
                     if (
-                        range.start >= 3 &&
+                        range.start > bold_syntax.length &&
                         text.length - range.end >= bold_and_italic_syntax.length
                     ) {
                         // If text is both bold and italic.
@@ -586,7 +607,7 @@ export function format_text($textarea, type, inserted_content) {
                 selected_text.slice(0, italic_syntax.length) === italic_syntax &&
                 selected_text.slice(-italic_syntax.length) === italic_syntax
             ) {
-                if (is_inner_text_bold()) {
+                if (is_inner_text_formatted(bold_syntax)) {
                     if (
                         selected_text.length > bold_and_italic_syntax.length * 2 &&
                         selected_text.slice(0, bold_and_italic_syntax.length) ===

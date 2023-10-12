@@ -135,8 +135,7 @@ h4.user_group_setting_subsection_title {
     .member_list_container,
     .subscriber_list_container {
         position: relative;
-        /* 2*45px (settings header) + 38px(tab-container row) + 20px (margin for .inner-box) + 134px (add user input and search widget area) = 282px */
-        max-height: calc(95vh - 282px);
+        max-height: var(--stream-subscriber-list-max-height);
         overflow: auto;
         text-align: left;
         -webkit-overflow-scrolling: touch;
@@ -714,7 +713,11 @@ h4.user_group_setting_subsection_title {
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
-            padding-top: 9px;
+            padding: 9px 15px 15px;
+            text-align: right;
+            background-color: hsl(0deg 0% 96%);
+            border-top: 1px solid hsl(0deg 0% 87%);
+            box-shadow: inset 0 1px 0 hsl(0deg 0% 100%);
         }
 
         @media (width > $md_min) {

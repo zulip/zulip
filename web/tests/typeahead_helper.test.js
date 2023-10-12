@@ -316,7 +316,7 @@ test("sort_languages", () => {
     assert.deepEqual(test_langs, ["j", "javascript", "java"]);
 
     // (Only one alias should be shown per language
-    // (i.e searching for "js" shouldn't show "javascript")
+    // (e.g. searching for "js" shouldn't show "javascript")
     test_langs = ["js", "javascript", "java"];
     test_langs = th.sort_languages(test_langs, "js");
     assert.deepEqual(test_langs, ["js", "java"]);

@@ -25,7 +25,7 @@ const people = zrequire("people");
 const user_status = zrequire("user_status");
 const hash_util = mock_esm("../src/hash_util");
 const channel = mock_esm("../src/channel");
-const compose_actions = zrequire("compose_actions");
+const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
 
@@ -79,6 +79,8 @@ function make_textbox(s) {
         }
         return $widget.s;
     };
+
+    $widget.trigger = noop;
 
     return $widget;
 }
@@ -352,7 +354,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     let quote_text = "Testing caret position";
     override_with_quote_text(quote_text);
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
-    compose_actions.quote_and_reply();
+    compose_reply.quote_and_reply();
 
     success_function({
         raw_content: quote_text,
@@ -367,7 +369,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
     set_compose_content_with_caret("%hello there");
-    compose_actions.quote_and_reply();
+    compose_reply.quote_and_reply();
 
     quote_text = "Testing with caret initially positioned at 0.";
     override_with_quote_text(quote_text);
@@ -375,7 +377,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         raw_content: quote_text,
     });
 
-    override_rewire(compose_actions, "respond_to_message", () => {
+    override_rewire(compose_reply, "respond_to_message", () => {
         // Reset compose state to replicate the re-opening of compose-box.
         textarea_val = "";
         textarea_caret_pos = 0;
@@ -387,7 +389,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // If the compose-box is close, or open with no content while
     // quoting a message, the quoted message should be placed
     // at the beginning of compose-box.
-    compose_actions.quote_and_reply();
+    compose_reply.quote_and_reply();
 
     quote_text = "Testing with compose-box closed initially.";
     override_with_quote_text(quote_text);
@@ -402,7 +404,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // newlines), the compose-box should re-open and thus the quoted
     // message should start from the beginning of compose-box.
     set_compose_content_with_caret("  \n\n \n %");
-    compose_actions.quote_and_reply();
+    compose_reply.quote_and_reply();
 
     quote_text = "Testing with compose-box containing whitespaces and newlines only.";
     override_with_quote_text(quote_text);
@@ -419,7 +421,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         assert.equal(syntax, "\ntranslated: [Quoting…]\n");
     });
     set_compose_content_with_caret("1st line\n%\n2nd line");
-    compose_actions.quote_and_reply();
+    compose_reply.quote_and_reply();
 
     quote_text = "Testing with caret on a new line between 2 lines of text.";
     override_with_quote_text(quote_text);
@@ -436,7 +438,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         assert.equal(syntax, "translated: [Quoting…]");
     });
     set_compose_content_with_caret("lots of\n\n\n\n%\n\n\nnewlines");
-    compose_actions.quote_and_reply();
+    compose_reply.quote_and_reply();
 
     quote_text = "Testing with caret on a new line between many empty newlines.";
     override_with_quote_text(quote_text);
@@ -483,41 +485,44 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     assert.ok(!compose_box_top_set);
 });
 
-run_test("format_text", ({override}) => {
-    let set_text = "";
-    let wrap_selection_called = false;
-    let wrap_syntax = "";
+let set_text = "";
+let wrap_selection_called = false;
+let wrap_syntax_start = "";
+let wrap_syntax_end = "";
 
+function reset_state() {
+    set_text = "";
+    wrap_selection_called = false;
+    wrap_syntax_start = "";
+    wrap_syntax_end = "";
+}
+
+const $textarea = $("#compose-textarea");
+$textarea.get = () => ({
+    setSelectionRange(start, end) {
+        $textarea.range = () => ({
+            start,
+            end,
+            text: $textarea.val().slice(start, end),
+            length: end - start,
+        });
+    },
+});
+
+function init_textarea(val, range) {
+    $textarea.val = () => val;
+    $textarea.range = () => range;
+}
+
+run_test("format_text - bold and italic", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
         set_text = text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax) => {
+    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
         wrap_selection_called = true;
-        wrap_syntax = syntax;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end || syntax_start;
     });
-
-    function reset_state() {
-        set_text = "";
-        wrap_selection_called = false;
-        wrap_syntax = "";
-    }
-
-    const $textarea = $("#compose-textarea");
-    $textarea.get = () => ({
-        setSelectionRange(start, end) {
-            $textarea.range = () => ({
-                start,
-                end,
-                text: $textarea.val().slice(start, end),
-                length: end - start,
-            });
-        },
-    });
-
-    function init_textarea(val, range) {
-        $textarea.val = () => val;
-        $textarea.range = () => range;
-    }
 
     const italic_syntax = "*";
     const bold_syntax = "**";
@@ -533,7 +538,8 @@ run_test("format_text", ({override}) => {
     compose_ui.format_text($textarea, "bold");
     assert.equal(set_text, "");
     assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax, bold_syntax);
+    assert.equal(wrap_syntax_start, bold_syntax);
+    assert.equal(wrap_syntax_end, bold_syntax);
 
     // Undo bold selected text, syntax not selected
     reset_state();
@@ -570,7 +576,8 @@ run_test("format_text", ({override}) => {
     compose_ui.format_text($textarea, "italic");
     assert.equal(set_text, "");
     assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax, italic_syntax);
+    assert.equal(wrap_syntax_start, italic_syntax);
+    assert.equal(wrap_syntax_end, italic_syntax);
 
     // Undo italic selected text, syntax not selected
     reset_state();
@@ -879,7 +886,7 @@ run_test("get_focus_area", () => {
         get_focus_area("stream", {
             stream_id: 4,
             topic: "more",
-            trigger: "new topic button",
+            trigger: "clear topic button",
         }),
         "#stream_message_recipient_topic",
     );

@@ -199,6 +199,9 @@ import {get_string_diff} from "../../src/util";
         // select / highlight the minimal text to be replaced
         this.$element[0].setSelectionRange(from, to_before);
         insert(this.$element[0], replacement);
+        // Blurring and refocusing ensures the cursor is in view.
+        this.$element.trigger("blur");
+        this.$element.trigger("focus");
       }
 
       return this.hide()
@@ -546,7 +549,7 @@ import {get_string_diff} from "../../src/util";
   , blur: function (e) {
       // Blurs that move focus to elsewhere within the parent element shouldn't
       // hide the typeahead.
-      if ($(e.relatedTarget).parents(this.options.parentElement).length > 0) {
+      if (this.options.parentElement && $(e.relatedTarget).parents(this.options.parentElement).length > 0) {
         return;
       }
       var that = this

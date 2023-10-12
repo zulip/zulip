@@ -11,7 +11,7 @@ import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as settings_org from "./settings_org";
+import * as settings_components from "./settings_components";
 import * as settings_ui from "./settings_ui";
 import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
@@ -51,7 +51,7 @@ function spectator_default_language_modal_post_render() {
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dialog_widget.close_modal();
+            dialog_widget.close();
 
             const $link = $(e.target).closest("a[data-code]");
             Cookies.set(page_params.language_cookie_name, $link.attr("data-code"));
@@ -65,7 +65,7 @@ function org_notification_default_language_modal_post_render() {
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dialog_widget.close_modal();
+            dialog_widget.close();
 
             const $link = $(e.target).closest("a[data-code]");
             const setting_value = $link.attr("data-code");
@@ -75,7 +75,7 @@ function org_notification_default_language_modal_post_render() {
             );
             $language_element.text(new_language);
             $language_element.attr("data-language-code", setting_value);
-            settings_org.save_discard_widget_status_handler($("#org-notifications"));
+            settings_components.save_discard_widget_status_handler($("#org-notifications"));
         });
 }
 
@@ -85,7 +85,7 @@ function user_default_language_modal_post_render() {
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dialog_widget.close_modal();
+            dialog_widget.close();
 
             const $link = $(e.target).closest("a[data-code]");
             const setting_value = $link.attr("data-code");
@@ -196,7 +196,7 @@ export function set_up(settings_panel) {
         const $input_elem = $(e.currentTarget);
         const setting = $input_elem.attr("name");
         const data = {};
-        data[setting] = settings_org.get_input_element_value(this);
+        data[setting] = settings_components.get_input_element_value(this);
         const $status_element = $input_elem
             .closest(".subsection-parent")
             .find(".alert-notification");
@@ -321,7 +321,7 @@ export function update_page(property) {
     }
 
     const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
-    settings_org.set_input_element_value($input_elem, value);
+    settings_components.set_input_element_value($input_elem, value);
 }
 
 export function initialize() {

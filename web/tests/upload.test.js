@@ -21,6 +21,7 @@ mock_esm("@uppy/core", {
 mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
 
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_reply = mock_esm("../src/compose_reply");
 const compose_state = mock_esm("../src/compose_state");
 mock_esm("../src/csrf", {csrf_token: "csrf_token"});
 const rows = mock_esm("../src/rows");
@@ -445,7 +446,7 @@ test("file_drop", ({override, override_rewire}) => {
         upload_files_called = true;
     });
     let compose_actions_start_called = false;
-    override(compose_actions, "respond_to_message", () => {
+    override(compose_reply, "respond_to_message", () => {
         compose_actions_start_called = true;
     });
     drop_handler(drop_event);
@@ -484,7 +485,7 @@ test("copy_paste", ({override, override_rewire}) => {
         upload_files_called = true;
     });
     let compose_actions_start_called = false;
-    override(compose_actions, "respond_to_message", () => {
+    override(compose_reply, "respond_to_message", () => {
         compose_actions_start_called = true;
     });
 
@@ -611,6 +612,12 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     };
     on_info_visible_callback();
 
+    let hide_upload_banner_called = false;
+    override_rewire(upload, "hide_upload_banner", (_uppy, config) => {
+        hide_upload_banner_called = true;
+        assert.equal(config.mode, "compose");
+    });
+
     const on_upload_error_callback = callbacks["upload-error"];
     $("#compose_banners .upload_banner .upload_msg").text("");
     compose_ui_replace_syntax_called = false;
@@ -627,6 +634,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     assert.ok(compose_ui_replace_syntax_called);
 
     $("#compose_banners .upload_banner .upload_msg").text("");
+    assert.ok(hide_upload_banner_called);
     $("#compose-textarea").val("user modified text");
     on_upload_error_callback(file, null);
     assert.ok(compose_ui_replace_syntax_called);
@@ -710,7 +718,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     compose_actions.start = () => {
         compose_actions_start_called = true;
     };
-    compose_actions.respond_to_message = () => {
+    compose_reply.respond_to_message = () => {
         compose_actions_respond_to_message_called = true;
     };
     drop_handler(drop_event);

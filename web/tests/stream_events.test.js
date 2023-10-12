@@ -15,6 +15,7 @@ const compose_fade = mock_esm("../src/compose_fade");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
+const stream_settings_api = mock_esm("../src/stream_settings_api");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
     update_settings_for_subscribed: noop,
     update_empty_left_panel_message: noop,
@@ -41,6 +42,7 @@ const {Filter} = zrequire("../src/filter");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
 const compose_recipient = zrequire("compose_recipient");
@@ -232,12 +234,12 @@ test("update_property", ({override, override_rewire}) => {
         stream_events.update_property(
             stream_id,
             "stream_post_policy",
-            stream_data.stream_post_policy_values.admins.code,
+            settings_config.stream_post_policy_values.admins.code,
         );
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");
         assert.equal(args.sub.stream_id, stream_id);
-        assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
+        assert.equal(args.val, settings_config.stream_post_policy_values.admins.code);
     }
 
     // Test stream message_retention_days change event
@@ -343,7 +345,7 @@ test("marked_subscribed (color)", ({override}) => {
     // narrow state is undefined
     {
         const stub = make_stub();
-        override(stream_settings_ui, "set_color", stub.f);
+        override(stream_settings_api, "set_color", stub.f);
         blueslip.expect("warn", "Frontend needed to pick a color in mark_subscribed");
         stream_events.mark_subscribed(sub, [], undefined);
         assert.equal(stub.num_calls, 1);
