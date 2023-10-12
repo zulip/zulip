@@ -5271,6 +5271,52 @@ paths:
                         "result": "error",
                         "msg": "Draft does not exist",
                       }
+  /reminders:
+    post:
+      operationId: create-reminder
+      tags: ["reminders"]
+      summary: Create a reminder
+      description: |
+        Create a new [reminder](/help/schedule-a-reminder).
+
+        New in Zulip 8.0 (feature level 216).
+      parameters:
+        - name: message_id
+          in: query
+          description: |
+            The ID of the message to be reminded of when the reminder is due.
+          schema:
+            type: integer
+          example: 123
+          required: true
+        - name: scheduled_delivery_timestamp
+          in: query
+          schema:
+            type: integer
+          description: |
+            The UNIX timestamp for when the reminder will be sent,
+            in UTC seconds.
+          required: true
+          example: 3165826990
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      reminder_id:
+                        type: integer
+                        description: |
+                          The unique ID of the reminder.
+                    example: {"msg": "", "reminder_id": 42, "result": "success"}
+
   /scheduled_messages:
     get:
       operationId: get-scheduled-messages

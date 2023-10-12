@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0477_alter_realmuserdefault_automatically_follow_topics_policy_and_more"),
+        ("zerver", "0481_alter_realm_uuid_alter_realm_uuid_owner_secret"),
     ]
 
     operations = [

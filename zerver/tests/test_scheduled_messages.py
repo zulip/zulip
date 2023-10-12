@@ -336,46 +336,6 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message_after_deactivation.content, message_before_deactivation.content)
         self.assertNotIn(expected_failure_message, message_after_deactivation.content)
 
-    def test_delivery_type_reminder_failed_to_deliver_scheduled_message_unknown_exception(
-        self,
-    ) -> None:
-        logger = mock.Mock()
-        self.create_scheduled_message()
-        scheduled_message = self.last_scheduled_message()
-
-        more_than_scheduled_delivery_datetime = (
-            scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
-        )
-
-        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
-            scheduled_message = self.last_scheduled_message()
-            scheduled_message.delivery_type = ScheduledMessage.REMIND
-            scheduled_message.save()
-            result = try_deliver_one_scheduled_message(logger)
-            self.assertTrue(result)
-            scheduled_message.refresh_from_db()
-            logger.info.assert_called_once_with(
-                "Sending scheduled message %s with date %s (sender: %s)",
-                scheduled_message.id,
-                scheduled_message.scheduled_timestamp,
-                scheduled_message.sender_id,
-            )
-            logger.exception.assert_called_once_with(
-                "Unexpected error sending scheduled message %s (sent: %s)",
-                scheduled_message.id,
-                scheduled_message.delivered,
-                stack_info=True,
-            )
-            self.assertTrue(scheduled_message.failed)
-
-        # Verify that the user was sent a message informing them about
-        # the failed scheduled message.
-        realm = scheduled_message.realm
-        msg = most_recent_message(scheduled_message.sender)
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
-        self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
-        self.assertIn("Internal server error", msg.content)
-
     def test_editing_failed_send_scheduled_message(self) -> None:
         expected_failure_message = "Message could not be sent at the scheduled time."
         logger = mock.Mock()

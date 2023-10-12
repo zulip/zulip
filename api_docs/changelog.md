@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 219**
+* [`POST /reminders`](/api/create-reminder): Added a new endpoint to
+  create reminders.
+
 **Feature level 218**
 
 * [`POST /messages`](/api/send-message): Added an optional
@@ -37,6 +41,7 @@ format used by the Zulip server that they are interacting with.
 * `PATCH /realm`, [`POST register`](/api/register-queue),
   [`GET /events`](/api/get-events): Added `enable_guest_user_indicator`
   setting to control whether "(guest)" is added to user names in UI.
+
 
 **Feature level 215**
 

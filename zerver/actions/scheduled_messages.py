@@ -18,7 +18,9 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
 from zerver.lib.message import SendMessageRequest, render_markdown, truncate_topic
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
+from zerver.lib.reminders import access_message_for_reminder, get_reminder_formatted_content
 from zerver.lib.scheduled_messages import access_scheduled_message
+from zerver.lib.streams import access_stream_by_id
 from zerver.lib.string_validation import check_stream_topic
 from zerver.models import (
     Client,
@@ -60,13 +62,15 @@ def check_schedule_message(
 
 
 def do_schedule_messages(
-    send_message_requests: Sequence[SendMessageRequest], sender: UserProfile
+    send_message_requests: Sequence[SendMessageRequest],
+    sender: UserProfile,
+    delivery_type: int = ScheduledMessage.SEND_LATER,
 ) -> List[int]:
     scheduled_messages: List[Tuple[ScheduledMessage, SendMessageRequest]] = []
 
     for send_request in send_message_requests:
         scheduled_message = ScheduledMessage()
-        scheduled_message.sender = send_request.message.sender
+        scheduled_message.sender = sender
         scheduled_message.recipient = send_request.message.recipient
         topic_name = send_request.message.topic_name()
         scheduled_message.set_topic_name(topic_name=topic_name)
@@ -80,7 +84,10 @@ def do_schedule_messages(
         scheduled_message.realm = send_request.realm
         assert send_request.deliver_at is not None
         scheduled_message.scheduled_timestamp = send_request.deliver_at
-        scheduled_message.delivery_type = ScheduledMessage.SEND_LATER
+        scheduled_message.delivery_type = delivery_type
+
+        if delivery_type == ScheduledMessage.REMIND:
+            scheduled_message.reminder_target_message_id = send_request.reminder_target_message_id
 
         scheduled_messages.append((scheduled_message, send_request))
 
@@ -95,14 +102,16 @@ def do_schedule_messages(
                 scheduled_message.has_attachment = True
                 scheduled_message.save(update_fields=["has_attachment"])
 
-    event = {
-        "type": "scheduled_messages",
-        "op": "add",
-        "scheduled_messages": [
-            scheduled_message.to_dict() for scheduled_message, ignored in scheduled_messages
-        ],
-    }
-    send_event(sender.realm, event, [sender.id])
+    if delivery_type == ScheduledMessage.SEND_LATER:
+        # Events for reminders are not implemented yet.
+        event = {
+            "type": "scheduled_messages",
+            "op": "add",
+            "scheduled_messages": [
+                scheduled_message.to_dict() for scheduled_message, ignored in scheduled_messages
+            ],
+        }
+        send_event(sender.realm, event, [sender.id])
     return [scheduled_message.id for scheduled_message, ignored in scheduled_messages]
 
 
@@ -253,17 +262,38 @@ def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: in
     notify_remove_scheduled_message(user_profile, scheduled_message_id)
 
 
+def send_reminder(scheduled_message: ScheduledMessage) -> None:
+    reminder_target_message_id = scheduled_message.reminder_target_message_id
+    assert reminder_target_message_id is not None
+    current_user = scheduled_message.sender
+    message = access_message_for_reminder(current_user, reminder_target_message_id)
+    if message.is_stream_message():
+        stream, _ = access_stream_by_id(current_user, message.recipient.type_id)
+    else:
+        stream = None
+    # Reminder messages are always sent from the notification bot.
+    message_id = internal_send_private_message(
+        get_system_bot(settings.NOTIFICATION_BOT, scheduled_message.realm.id),
+        current_user,
+        get_reminder_formatted_content(message, current_user, stream),
+    )
+    scheduled_message.delivered_message_id = message_id
+    scheduled_message.delivered = True
+    scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
+
+
 def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     assert not scheduled_message.delivered
     assert not scheduled_message.failed
-
-    # It's currently not possible to use the reminder feature.
-    assert scheduled_message.delivery_type == ScheduledMessage.SEND_LATER
 
     # Repeat the checks from validate_account_and_subdomain, in case
     # the state changed since the message as scheduled.
     if scheduled_message.realm.deactivated:
         raise RealmDeactivatedError
+
+    if scheduled_message.delivery_type == ScheduledMessage.REMIND:
+        send_reminder(scheduled_message)
+        return
 
     if not scheduled_message.sender.is_active:
         raise UserDeactivatedError
@@ -291,7 +321,7 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     # have changed since the message was originally scheduled. This
     # means that Markdown syntax referencing mutable organization data
     # (for example, mentioning a user by name) will work (or not) as
-    # if the message was sent at the delviery time, not the sending
+    # if the message was sent at the delivery time, not the sending
     # time.
     send_request = check_message(
         scheduled_message.sender,
@@ -396,6 +426,8 @@ def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
 
             if (
                 not was_delivered
+                # Reminders have their own notification system.
+                and scheduled_message.delivery_type != ScheduledMessage.REMIND
                 # Do not send notification if either the realm or
                 # the sending user account has been deactivated.
                 and not isinstance(e, RealmDeactivatedError)

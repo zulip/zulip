@@ -209,6 +209,9 @@ class SendMessageRequest:
     service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: Optional[int] = None
+    # Store the message id for which the reminder is being sent.
+    # Not defined for SEND_LATER delivery_type ScheduledMessage.
+    reminder_target_message_id: Optional[int] = None
 
 
 # We won't try to fetch more unread message IDs from the database than
