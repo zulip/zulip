@@ -497,8 +497,31 @@ li.active-sub-filter {
         padding: 0;
         border-radius: 4px;
 
+        .unread_count {
+            position: absolute;
+        }
+
         &:hover {
             background: var(--color-background-hover-narrow-filter);
+
+            .unread_count {
+                top: -6px;
+                right: -6px;
+            }
+        }
+
+        &:not(:hover) .unread_count {
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            font-size: 0;
+            padding: 0;
+            background-color: var(--color-background-unread-counter-dot);
+        }
+
+        &.top_left_starred_messages .unread_count {
+            display: none;
         }
     }
 
@@ -507,6 +530,11 @@ li.active-sub-filter {
         margin: 0;
         /* Horizontally center icons within their boxes. */
         text-align: center;
+
+        &:focus {
+            /* Unset inherited :focus outline. */
+            outline: 0;
+        }
     }
 
     .active-filter {
@@ -522,11 +550,6 @@ li.active-sub-filter {
            Keep filter-icon height the full height of the box. */
         height: 24px;
         color: var(--color-left-sidebar-navigation-icon);
-    }
-
-    .unread_count {
-        /* TODO: properly handle condensed unreads. */
-        display: none;
     }
 }
 

@@ -206,6 +206,9 @@ body {
     --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-dot: var(
+        --color-background-unread-counter
+    );
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
@@ -337,6 +340,7 @@ body {
     --color-border-dropdown-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
+    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
