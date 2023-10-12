@@ -332,25 +332,25 @@ run_test("basic mappings", () => {
     assert_mapping("g", gear_menu, "open");
 });
 
-run_test("drafts open", ({override}) => {
-    override(overlays, "any_active", () => true);
+run_test("drafts open", ({ override }) => {
+    override(overlays, "is_active", () => true);
     override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
-run_test("drafts closed w/other overlay", ({override}) => {
-    override(overlays, "any_active", () => true);
+run_test("drafts closed w/other overlay", ({ override }) => {
+    override(overlays, "is_active", () => true);
     override(overlays, "drafts_open", () => false);
     test_normal_typing();
 });
 
-run_test("drafts closed launch", ({override}) => {
-    override(overlays, "any_active", () => false);
+run_test("drafts closed launch", ({ override }) => {
+    override(overlays, "is_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
 });
 
-run_test("modal open", ({override}) => {
-    override(modals, "any_active", () => true);
+run_test("modal open", ({ override }) => {
+    override(overlays, "is_modal_open", () => true);
     test_normal_typing();
 });
 
@@ -408,20 +408,20 @@ run_test("misc", ({ override }) => {
     assert_unmapped("m");
 });
 
-run_test("lightbox overlay open", ({override}) => {
-    override(overlays, "any_active", () => true);
+run_test("lightbox overlay open", ({ override }) => {
+    override(overlays, "is_active", () => true);
     override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
 });
 
-run_test("lightbox closed w/other overlay open", ({override}) => {
-    override(overlays, "any_active", () => true);
+run_test("lightbox closed w/other overlay open", ({ override }) => {
+    override(overlays, "is_active", () => true);
     override(overlays, "lightbox_open", () => false);
     test_normal_typing();
 });
 
-run_test("v w/no overlays", ({override}) => {
-    override(overlays, "any_active", () => false);
+run_test("v w/no overlays", ({ override }) => {
+    override(overlays, "is_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
 
