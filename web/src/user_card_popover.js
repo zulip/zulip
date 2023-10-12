@@ -736,7 +736,6 @@ function register_click_handlers() {
     });
 
     $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
-        console.log("ESTOU TESTANDO!!!")
         if (!compose_state.composing()) {
             compose_reply.respond_to_message({trigger: "user sidebar popover"});
         }
