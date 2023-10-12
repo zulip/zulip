@@ -47,7 +47,7 @@ function send_direct_message_typing_notification(user_ids_array, operation) {
 function send_stream_typing_notification(stream_id, topic, operation) {
     const data = {
         type: "stream",
-        to: JSON.stringify(stream_id),
+        stream_id: JSON.stringify(stream_id),
         topic,
         op: operation,
     };
