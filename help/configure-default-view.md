@@ -23,10 +23,14 @@ organization](/help/configure-default-new-user-settings) to
 [**Inbox**](/help/inbox),
 [**Recent conversations**](/help/recent-conversations), or
 [**All messages**](/help/all-messages).
-The **Inbox** view works best if you regularly clear all unread messages
-in most streams you follow. Otherwise, **Recent conversations**
-works well in high-traffic organizations. **All messages** is convenient for
-low-traffic organizations, or for skimming messages as they come in.
+
+- The **Inbox** view works best if you regularly clear all unread messages in
+streams you follow.
+
+- **Recent conversations** works well for getting an overview of recent activity.
+
+- **All messages** is convenient for low-traffic organizations, or for skimming
+  messages as they come in.
 
 You can customize your personal default view regardless of
 organization settings:
