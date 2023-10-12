@@ -16689,17 +16689,14 @@ paths:
         - name: to
           in: query
           description: |
-            For `"direct"` type it is the user IDs of the recipients of the message
-            being typed. Send a JSON-encoded list of user IDs. (Use a list even if
-            there is only one recipient.)
+            User IDs of the recipients of the message being typed. Required for the
+            `"direct"` type. Ignored in the case of `"stream"` type. Send a JSON-encoded
+            list of user IDs. (Use a list even if there is only one recipient.)
 
-            For `"stream"` type it is the ID of the stream in which the message is
-            being typed.
-
-            **Changes**: In Zulip 8.0 (feature level 215), for the `"stream"` `type`,
-            changed this parameter to accept the ID of the stream in which the message
-            is being typed. Previously, it accepted a single-element list containing
-            the ID of the stream.
+            **Changes**: In Zulip 8.0 (feature level 215), stopped using this parameter
+            for the `"stream"` type. Previously, in the case of the `"stream"` type, it
+            accepted a single-element list containing the ID of the stream. A new parameter,
+            `stream_id`, is now used for this.
 
             Support for typing notifications for stream messages
             is new in Zulip 4.0 (feature level 58). Previously, typing
@@ -16711,14 +16708,22 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: integer
-                  - type: array
-                    items:
-                      type: integer
-                    minLength: 1
+                type: array
+                items:
+                  type: integer
+                minLength: 1
               example: [9, 10]
-          required: true
+        - name: stream_id
+          in: query
+          description: |
+            ID of the stream in which the message is being typed. Required for the `"stream"`
+            type. Ignored in the case of `"direct"` type.
+
+            **Changes**: New in Zulip 8.0 (feature level 215). Previously, a single-element
+            list containing the ID of the stream was passed in `to` parameter.
+          schema:
+            type: integer
+          example: 7
         - name: topic
           in: query
           description: |
