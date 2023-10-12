@@ -5883,6 +5883,7 @@ class TestJWTLogin(ZulipTestCase):
 
 class DjangoToLDAPUsernameTests(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.init_default_ldap_database()
         self.backend = ZulipLDAPAuthBackend()
 
