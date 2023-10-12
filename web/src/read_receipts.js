@@ -67,8 +67,9 @@ function fetch_receipts(message_id) {
                     $("#read_receipts_modal .read_receipts_content").html(
                         render_read_receipts({ users }),
                     );
-
-                    new SimpleBar($("#read_receipts_modal .modal__content")[0]);
+                    if ($("#read_receipts_modal .modal__content")[0] !== undefined) {
+                        new SimpleBar($("#read_receipts_modal .modal__content")[0]);
+                    }
                 }
             },
             error(xhr) {
@@ -80,14 +81,18 @@ function fetch_receipts(message_id) {
 }
 export function show_user_list(message_id) {
     $("body").append(render_read_receipts_modal());
+    let intervalFunc;
     overlays.open_modal("read_receipts_modal", {
         autoremove: true,
         on_show() {
             loading.make_indicator($("#read_receipts_modal .loading_indicator"));
             fetch_receipts(message_id);
-            setInterval(() => {
+            intervalFunc = setInterval(() => {
                 fetch_receipts(message_id);
-            }, 60000);
+            }, 6000);
         },
+        on_hide() {
+            clearInterval(intervalFunc);
+        }
     });
 }

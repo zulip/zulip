@@ -1,10 +1,10 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const { strict: assert } = require("assert");
 
-const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const { mock_esm, set_global, with_overrides, zrequire } = require("./lib/namespace");
+const { make_stub } = require("./lib/stub");
+const { run_test } = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 // Important note on these tests:
@@ -38,7 +38,7 @@ const condense = mock_esm("../src/condense");
 const drafts = mock_esm("../src/drafts");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
-    toggle_emoji_popover() {},
+    toggle_emoji_popover() { },
 });
 const gear_menu = mock_esm("../src/gear_menu", {
     is_open: () => false,
@@ -132,7 +132,7 @@ emoji.initialize({
 });
 
 function stubbing(module, func_name_to_stub, test_function) {
-    with_overrides(({override}) => {
+    with_overrides(({ override }) => {
         const stub = make_stub();
         override(module, func_name_to_stub, stub.f);
         test_function(stub);
@@ -140,7 +140,7 @@ function stubbing(module, func_name_to_stub, test_function) {
 }
 
 function stubbing_rewire(module, func_name_to_stub, test_function) {
-    with_overrides(({override_rewire}) => {
+    with_overrides(({ override_rewire }) => {
         const stub = make_stub();
         override_rewire(module, func_name_to_stub, stub.f);
         test_function(stub);
@@ -275,7 +275,7 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-run_test("allow normal typing when processing text", ({override, override_rewire}) => {
+run_test("allow normal typing when processing text", ({ override, override_rewire }) => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfoyz");
@@ -300,7 +300,7 @@ run_test("allow normal typing when processing text", ({override, override_rewire
     }
 });
 
-run_test("streams", ({override}) => {
+run_test("streams", ({ override }) => {
     settings_data.user_can_create_private_streams = () => true;
     delete settings_data.user_can_create_public_streams;
     delete settings_data.user_can_create_web_public_streams;
@@ -330,40 +330,40 @@ run_test("basic mappings", () => {
     assert_mapping("g", gear_menu, "open");
 });
 
-run_test("drafts open", ({override}) => {
+run_test("drafts open", ({ override }) => {
     override(overlays, "is_active", () => true);
     override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
-run_test("drafts closed w/other overlay", ({override}) => {
+run_test("drafts closed w/other overlay", ({ override }) => {
     override(overlays, "is_active", () => true);
     override(overlays, "drafts_open", () => false);
     test_normal_typing();
 });
 
-run_test("drafts closed launch", ({override}) => {
+run_test("drafts closed launch", ({ override }) => {
     override(overlays, "is_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
 });
 
-run_test("modal open", ({override}) => {
+run_test("modal open", ({ override }) => {
     override(overlays, "is_modal_open", () => true);
     test_normal_typing();
 });
 
-run_test("misc", ({override}) => {
+run_test("misc", ({ override }) => {
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsuvi:GM";
 
     // Check that they do nothing without a selected message
-    with_overrides(({override}) => {
+    with_overrides(({ override }) => {
         override(message_lists.current, "visibly_empty", () => true);
         assert_unmapped(message_view_only_keys);
     });
 
     // Check that they do nothing while in the settings overlay
-    with_overrides(({override}) => {
+    with_overrides(({ override }) => {
         override(overlays, "settings_open", () => true);
         assert_unmapped("@*+->rRjJkKsSuvi:GM");
     });
@@ -406,24 +406,24 @@ run_test("misc", ({override}) => {
     assert_unmapped("m");
 });
 
-run_test("lightbox overlay open", ({override}) => {
+run_test("lightbox overlay open", ({ override }) => {
     override(overlays, "is_active", () => true);
     override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
 });
 
-run_test("lightbox closed w/other overlay open", ({override}) => {
+run_test("lightbox closed w/other overlay open", ({ override }) => {
     override(overlays, "is_active", () => true);
     override(overlays, "lightbox_open", () => false);
     test_normal_typing();
 });
 
-run_test("v w/no overlays", ({override}) => {
+run_test("v w/no overlays", ({ override }) => {
     override(overlays, "is_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
 
-run_test("emoji picker", ({override}) => {
+run_test("emoji picker", ({ override }) => {
     override(emoji_picker, "is_open", () => true);
     assert_mapping(":", emoji_picker, "navigate", true);
 });
