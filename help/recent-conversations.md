@@ -1,5 +1,7 @@
 # Recent conversations
 
+{!conversation-definition.md!}
+
 {!recent-conversations.md!}
 
 !!! keyboard_tip ""
