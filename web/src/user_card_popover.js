@@ -286,7 +286,7 @@ function get_user_card_popover_data(
         status_content_available: Boolean(status_text || status_emoji_info),
         status_text,
         status_emoji_info,
-        user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+        user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id, !is_active),
         date_joined,
         spectator_view,
     };
@@ -736,12 +736,19 @@ function register_click_handlers() {
     });
 
     $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
+        console.log("ESTOU TESTANDO!!!")
         if (!compose_state.composing()) {
             compose_reply.respond_to_message({trigger: "user sidebar popover"});
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
-        const mention = people.get_mention_syntax(name, user_id);
+
+        const is_active = people.is_active_user_for_popover(user_id)
+        console.log(is_active)
+
+        const mention = people.get_mention_syntax(name, user_id, !is_active);
+        console.log(mention)
+        
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();
         e.stopPropagation();
