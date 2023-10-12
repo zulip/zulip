@@ -89,12 +89,12 @@ scheduled_instructions = """
 
 recent_instructions = """
 1. Click on <i class="fa fa-clock-o"></i> **Recent conversations** in the left
-   sidebar.
+   sidebar, or use the <kbd>T</kbd> keyboard shortcut..
 """
 
 all_instructions = """
 1. Click on <i class="fa fa-align-left"></i> **All messages** in the left
-   sidebar or use the <kbd>A</kbd> keyboard shortcut.
+   sidebar, or use the <kbd>A</kbd> keyboard shortcut.
 """
 
 starred_instructions = """
@@ -111,7 +111,7 @@ direct_instructions = """
 
 inbox_instructions = """
 1. Click on <i class="zulip-icon zulip-icon-inbox"></i> **Inbox** in the left
-   sidebar.
+   sidebar, or use the <kbd>Shift</kbd> + <kbd>I</kbd> keyboard shortcut.
 """
 
 message_info = {
