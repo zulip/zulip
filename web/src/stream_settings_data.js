@@ -8,10 +8,26 @@ import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 export function get_sub_for_settings(sub) {
-    const settings_sub = {...sub};
-    add_settings_fields(settings_sub);
-    settings_sub.subscriber_count = peer_data.get_subscriber_count(sub.stream_id);
-    return settings_sub;
+    return {
+        ...sub,
+
+        is_realm_admin: page_params.is_admin,
+        // Admin can change any stream's name & description either stream is public or
+        // private, subscribed or unsubscribed.
+        can_change_name_description: page_params.is_admin,
+
+        should_display_subscription_button: stream_data.can_toggle_subscription(sub),
+        should_display_preview_button: stream_data.can_preview(sub),
+        can_change_stream_permissions: stream_data.can_change_permissions(sub),
+        can_access_subscribers: stream_data.can_view_subscribers(sub),
+        can_add_subscribers: stream_data.can_subscribe_others(sub),
+        can_remove_subscribers: stream_data.can_unsubscribe_others(sub),
+
+        preview_url: hash_util.by_stream_url(sub.stream_id),
+        is_old_stream: sub.stream_weekly_traffic !== null,
+
+        subscriber_count: peer_data.get_subscriber_count(sub.stream_id),
+    };
 }
 
 function get_subs_for_settings(subs) {
@@ -33,34 +49,14 @@ export function get_updated_unsorted_subs() {
     return get_subs_for_settings(all_subs);
 }
 
-export function add_settings_fields(sub) {
-    // Note that we don't calculate subscriber counts here.
-
-    sub.is_realm_admin = page_params.is_admin;
-    // Admin can change any stream's name & description either stream is public or
-    // private, subscribed or unsubscribed.
-    sub.can_change_name_description = page_params.is_admin;
-
-    sub.should_display_subscription_button = stream_data.can_toggle_subscription(sub);
-    sub.should_display_preview_button = stream_data.can_preview(sub);
-    sub.can_change_stream_permissions = stream_data.can_change_permissions(sub);
-    sub.can_access_subscribers = stream_data.can_view_subscribers(sub);
-    sub.can_add_subscribers = stream_data.can_subscribe_others(sub);
-    sub.can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
-
-    sub.preview_url = hash_util.by_stream_url(sub.stream_id);
-    sub.is_old_stream = sub.stream_weekly_traffic !== null;
-}
-
 export function get_unmatched_streams_for_notification_settings() {
     const subscribed_rows = stream_data.subscribed_subs();
     subscribed_rows.sort((a, b) => util.strcmp(a.name, b.name));
 
     const notification_settings = [];
     for (const row of subscribed_rows) {
-        const settings_values = {};
         let make_table_row = false;
-        for (const notification_name of settings_config.stream_specific_notification_settings) {
+        function get_notification_setting(notification_name) {
             const default_setting =
                 user_settings[
                     settings_config.generalize_stream_notification_setting[notification_name]
@@ -70,21 +66,29 @@ export function get_unmatched_streams_for_notification_settings() {
                 notification_name,
             );
 
-            settings_values[notification_name] = stream_setting;
             if (stream_setting !== default_setting) {
                 make_table_row = true;
             }
+            return stream_setting;
         }
+        const settings_values = {
+            desktop_notifications: get_notification_setting("desktop_notifications"),
+            audible_notifications: get_notification_setting("audible_notifications"),
+            push_notifications: get_notification_setting("push_notifications"),
+            email_notifications: get_notification_setting("email_notifications"),
+            wildcard_mentions_notify: get_notification_setting("wildcard_mentions_notify"),
+        };
         // We do not need to display the streams whose settings
         // match with the global settings defined by the user.
         if (make_table_row) {
-            settings_values.stream_name = row.name;
-            settings_values.stream_id = row.stream_id;
-            settings_values.color = row.color;
-            settings_values.invite_only = row.invite_only;
-            settings_values.is_web_public = row.is_web_public;
-
-            notification_settings.push(settings_values);
+            notification_settings.push({
+                ...settings_values,
+                stream_name: row.name,
+                stream_id: row.stream_id,
+                color: row.color,
+                invite_only: row.invite_only,
+                is_web_public: row.is_web_public,
+            });
         }
     }
     return notification_settings;
