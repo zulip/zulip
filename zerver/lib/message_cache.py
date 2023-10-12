@@ -77,7 +77,7 @@ def message_to_dict_json(message: Message, realm_id: Optional[int] = None) -> by
     return MessageDict.to_dict_uncached([message], realm_id)[message.id]
 
 
-def update_to_dict_cache(
+def update_message_cache(
     changed_messages: Collection[Message], realm_id: Optional[int] = None
 ) -> List[int]:
     """Updates the message as stored in the to_dict cache (for serving
