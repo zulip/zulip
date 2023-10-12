@@ -388,6 +388,11 @@ div.overlay {
             transition-timing-function: ease-out;
         }
     }
+
+    .overlay-scroll-container {
+        max-height: 60vh;
+        padding: 15px;
+    }
 }
 
 .input-append {

@@ -270,7 +270,7 @@ export function initialize_kitchen_sink_stuff() {
     // propagation in all cases.  Also, ignore the event if the
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
-    $(".modal-body, .scrolling_list, input, textarea").on("wheel", function (e) {
+    $(".overlay-scroll-container, .scrolling_list, input, textarea").on("wheel", function (e) {
         const $self = scroll_util.get_scroll_element($(this));
         const scroll = $self.scrollTop();
         const delta = e.originalEvent.deltaY;
