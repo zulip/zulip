@@ -54,7 +54,6 @@ import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as unread_ops from "./unread_ops";
-import * as read_receipts from "./read_receipts";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
 import { user_settings } from "./user_settings";
