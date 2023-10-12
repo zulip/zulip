@@ -183,6 +183,7 @@ class MissedMessageHookTest(ZulipTestCase):
             )
 
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user("hamlet")
         self.cordelia = self.example_user("cordelia")
         do_change_user_setting(
@@ -196,6 +197,7 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def tearDown(self) -> None:
         self.destroy_event_queue(self.user_profile, self.client_descriptor.event_queue.id)
+        super().tearDown()
 
     def test_basic(self) -> None:
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
