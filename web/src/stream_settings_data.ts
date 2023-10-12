@@ -3,11 +3,26 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
+import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store";
 import * as sub_store from "./sub_store";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
-export function get_sub_for_settings(sub) {
+export type SettingsSubscription = StreamSubscription & {
+    is_realm_admin: boolean;
+    can_change_name_description: boolean;
+    should_display_subscription_button: boolean;
+    should_display_preview_button: boolean;
+    can_change_stream_permissions: boolean;
+    can_access_subscribers: boolean;
+    can_add_subscribers: boolean;
+    can_remove_subscribers: boolean;
+    preview_url: string;
+    is_old_stream: boolean;
+    subscriber_count: number;
+};
+
+export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
     return {
         ...sub,
 
@@ -30,7 +45,7 @@ export function get_sub_for_settings(sub) {
     };
 }
 
-function get_subs_for_settings(subs) {
+function get_subs_for_settings(subs: StreamSubscription[]): SettingsSubscription[] {
     // We may eventually add subscribers to the subs here, rather than
     // delegating, so that we can more efficiently compute subscriber counts
     // (in bulk).  If that plan appears to have been aborted, feel free to
@@ -38,7 +53,7 @@ function get_subs_for_settings(subs) {
     return subs.map((sub) => get_sub_for_settings(sub));
 }
 
-export function get_updated_unsorted_subs() {
+export function get_updated_unsorted_subs(): SettingsSubscription[] {
     let all_subs = stream_data.get_unsorted_subs();
 
     // We don't display unsubscribed streams to guest users.
@@ -49,14 +64,24 @@ export function get_updated_unsorted_subs() {
     return get_subs_for_settings(all_subs);
 }
 
-export function get_unmatched_streams_for_notification_settings() {
+export function get_unmatched_streams_for_notification_settings(): ({
+    [notification_name in keyof StreamSpecificNotificationSettings]: boolean;
+} & {
+    stream_name: string;
+    stream_id: number;
+    color: string;
+    invite_only: boolean;
+    is_web_public: boolean;
+})[] {
     const subscribed_rows = stream_data.subscribed_subs();
     subscribed_rows.sort((a, b) => util.strcmp(a.name, b.name));
 
     const notification_settings = [];
     for (const row of subscribed_rows) {
         let make_table_row = false;
-        function get_notification_setting(notification_name) {
+        function get_notification_setting(
+            notification_name: keyof StreamSpecificNotificationSettings,
+        ): boolean {
             const default_setting =
                 user_settings[
                     settings_config.generalize_stream_notification_setting[notification_name]
@@ -94,7 +119,7 @@ export function get_unmatched_streams_for_notification_settings() {
     return notification_settings;
 }
 
-export function get_streams_for_settings_page() {
+export function get_streams_for_settings_page(): SettingsSubscription[] {
     // TODO: This function is only used for copy-from-stream, so
     //       the current name is slightly misleading now, plus
     //       it's not entirely clear we need unsubscribed streams
@@ -105,7 +130,7 @@ export function get_streams_for_settings_page() {
     const unsubscribed_rows = stream_data.unsubscribed_subs();
 
     // Sort and combine all our streams.
-    function by_name(a, b) {
+    function by_name(a: StreamSubscription, b: StreamSubscription): number {
         return util.strcmp(a.name, b.name);
     }
     subscribed_rows.sort(by_name);
@@ -115,8 +140,8 @@ export function get_streams_for_settings_page() {
     return get_subs_for_settings(all_subs);
 }
 
-export function sort_for_stream_settings(stream_ids, order) {
-    function name(stream_id) {
+export function sort_for_stream_settings(stream_ids: number[], order: string): void {
+    function name(stream_id: number): string {
         const sub = sub_store.get(stream_id);
         if (!sub) {
             return "";
@@ -124,7 +149,7 @@ export function sort_for_stream_settings(stream_ids, order) {
         return sub.name;
     }
 
-    function weekly_traffic(stream_id) {
+    function weekly_traffic(stream_id: number): number {
         const sub = sub_store.get(stream_id);
         if (sub && sub.stream_weekly_traffic !== null) {
             return sub.stream_weekly_traffic;
@@ -133,13 +158,13 @@ export function sort_for_stream_settings(stream_ids, order) {
         return -1;
     }
 
-    function by_stream_name(id_a, id_b) {
+    function by_stream_name(id_a: number, id_b: number): number {
         const stream_a_name = name(id_a);
         const stream_b_name = name(id_b);
         return util.strcmp(stream_a_name, stream_b_name);
     }
 
-    function by_subscriber_count(id_a, id_b) {
+    function by_subscriber_count(id_a: number, id_b: number): number {
         const out = peer_data.get_subscriber_count(id_b) - peer_data.get_subscriber_count(id_a);
         if (out === 0) {
             return by_stream_name(id_a, id_b);
@@ -147,7 +172,7 @@ export function sort_for_stream_settings(stream_ids, order) {
         return out;
     }
 
-    function by_weekly_traffic(id_a, id_b) {
+    function by_weekly_traffic(id_a: number, id_b: number): number {
         const out = weekly_traffic(id_b) - weekly_traffic(id_a);
         if (out === 0) {
             return by_stream_name(id_a, id_b);
