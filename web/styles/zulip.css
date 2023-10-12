@@ -3509,7 +3509,7 @@ select.invite-as {
         min-width: max-content;
     }
 
-    .inner {
+    .personal-menu-nav {
         border-radius: 6px;
         overflow: hidden;
     }
