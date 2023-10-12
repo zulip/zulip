@@ -862,15 +862,20 @@ export function content_typeahead_selected(item, event) {
                 // that functionality yet, and we haven't gotten much
                 // feedback on this being an actual pitfall.
             } else {
-                const mention_text = people.get_mention_syntax(
+                let mention_text = people.get_mention_syntax(
                     item.full_name,
                     item.user_id,
                     is_silent,
                 );
-                beginning += mention_text + " ";
                 if (!is_silent) {
                     compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
+                    mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
+                        mention_text,
+                        item.full_name,
+                        item.user_id,
+                    );
                 }
+                beginning += mention_text + " ";
             }
             break;
         }

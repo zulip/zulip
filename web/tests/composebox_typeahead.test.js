@@ -476,6 +476,11 @@ test("content_typeahead_selected", ({override}) => {
     fake_this.completing = "mention";
 
     override(compose_validate, "warn_if_mentioning_unsubscribed_user", () => {});
+    override(
+        compose_validate,
+        "convert_mentions_to_silent_in_direct_messages",
+        (mention_text) => mention_text,
+    );
 
     fake_this.query = "@**Mark Tw";
     fake_this.token = "Mark Tw";
