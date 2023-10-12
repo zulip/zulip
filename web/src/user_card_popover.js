@@ -741,11 +741,8 @@ function register_click_handlers() {
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
-
         const is_active = people.is_active_user_for_popover(user_id)
-
         const mention = people.get_mention_syntax(name, user_id, !is_active);
-        
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();
         e.stopPropagation();
