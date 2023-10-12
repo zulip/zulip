@@ -6,8 +6,8 @@
 ## Further reading
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Finding a topic to read](/help/finding-a-topic-to-read)
-* [Reading topics](/help/reading-topics)
+* [Finding a conversation to read](/help/finding-a-topic-to-read)
+* [Reading conversations](/help/reading-topics)
 * [Starting a new topic](/help/starting-a-new-topic)
 * [Replying to messages](/help/replying-to-messages)
 * [Creating streams for your organization](/help/getting-your-organization-started-with-zulip#create-streams)
