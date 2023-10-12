@@ -841,8 +841,21 @@ test_people("message_methods", () => {
     const bot = bot_botson;
     people.add_active_user(bot);
 
+    // Test deactivated sender
+    people.add_active_user(all2);
+    people.deactivate(all2);
+
     message = {sender_id: bot.user_id};
     assert.equal(people.sender_is_bot(message), true);
+
+    message = {sender_id: all2.user_id};
+    assert.equal(people.sender_is_deactivated(message), true);
+
+    message = {sender_id: maria.user_id};
+    assert.equal(people.sender_is_deactivated(message), false);
+
+    message = {sender_id: undefined};
+    assert.equal(people.sender_is_deactivated(message), false);
 
     message = {sender_id: maria.user_id};
     assert.equal(people.sender_is_bot(message), undefined);

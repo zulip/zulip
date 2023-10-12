@@ -44,6 +44,7 @@ export function get_conversations() {
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
 
+        let is_deactivated = false;
         let user_circle_class;
         let status_emoji_info;
         let is_bot = false;
@@ -59,6 +60,7 @@ export function get_conversations() {
             } else {
                 status_emoji_info = user_status.get_status_emoji(user_id);
             }
+            is_deactivated = Boolean(people.get_non_active_human_ids().includes(user_id));
         }
 
         const display_object = {
@@ -72,6 +74,7 @@ export function get_conversations() {
             user_circle_class,
             is_group,
             is_bot,
+            is_deactivated,
         };
         display_objects.push(display_object);
     }

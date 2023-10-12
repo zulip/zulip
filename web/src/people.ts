@@ -749,6 +749,11 @@ export function format_small_avatar_url(raw_url: string): string {
     return url.href;
 }
 
+export function sender_is_deactivated(message: Message): boolean | undefined {
+    const sender_id = message.sender_id;
+    return sender_id ? get_non_active_human_ids().includes(sender_id) : false;
+}
+
 export function sender_is_bot(message: Message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);

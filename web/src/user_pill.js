@@ -58,7 +58,9 @@ export function create_item_from_email(email, current_items) {
     // We pass deactivated true for a deactivated user
     if (!people.is_person_active(user.user_id)) {
         item.deactivated = true;
-        item.display_value = user.full_name + " (deactivated)";
+        item.display_value =
+            user.full_name +
+            ` <i class="fa fa-ban deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="User is deactivated"></i>`;
     }
 
     return item;

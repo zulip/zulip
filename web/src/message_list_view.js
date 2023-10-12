@@ -418,7 +418,9 @@ export class MessageListView {
 
         message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
         message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
-
+        message_container.sender_is_deactivated = people.sender_is_deactivated(
+            message_container.msg,
+        );
         message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
         if (message_container.msg.stream_id) {
             message_container.background_color = stream_data.get_color(

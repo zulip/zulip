@@ -3,7 +3,7 @@
     <img class="pill-image" src="{{img_src}}" />
     {{/if}}
     <span class="pill-label">
-        <span class="pill-value">{{ display_value }}</span>
+        <span class="pill-value">{{#if deactivated}}{{{display_value}}}{{else}}{{display_value}}{{/if}}</span>
         {{~#if has_status~}}
             {{~> status_emoji status_emoji_info~}}
         {{~/if~}}
