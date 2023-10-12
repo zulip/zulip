@@ -433,7 +433,7 @@ def update_realm(
 @has_request_variables
 def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm = user.realm
-    do_deactivate_realm(realm, acting_user=user)
+    do_deactivate_realm(realm, acting_user=user, email_owners=True)
     return json_success(request)
 
 

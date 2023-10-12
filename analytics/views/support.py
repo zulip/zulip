@@ -234,7 +234,7 @@ def support(
                     "success_message"
                 ] = f"Realm reactivation email sent to admins of {realm.string_id}."
             elif status == "deactivated":
-                do_deactivate_realm(realm, acting_user=acting_user)
+                do_deactivate_realm(realm, acting_user=acting_user, email_owners=True)
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif billing_method is not None:
             if billing_method == "send_invoice":
