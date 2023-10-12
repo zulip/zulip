@@ -5,6 +5,7 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
+from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.scim import ZulipSCIMUser
@@ -20,6 +21,7 @@ class SCIMHeadersDict(TypedDict):
 
 
 class SCIMTestCase(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")

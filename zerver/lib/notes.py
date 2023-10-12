@@ -2,6 +2,8 @@ import weakref
 from abc import ABCMeta, abstractmethod
 from typing import Any, ClassVar, Generic, MutableMapping, TypeVar
 
+from typing_extensions import override
+
 _KeyT = TypeVar("_KeyT")
 _DataT = TypeVar("_DataT")
 
@@ -28,6 +30,7 @@ class BaseNotes(Generic[_KeyT, _DataT], metaclass=ABCMeta):
 
     __notes_map: ClassVar[MutableMapping[Any, Any]]
 
+    @override
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         if not hasattr(cls, "__notes_map"):

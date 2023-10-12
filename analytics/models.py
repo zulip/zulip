@@ -1,7 +1,11 @@
+# https://github.com/typeddjango/django-stubs/issues/1698
+# mypy: disable-error-code="explicit-override"
+
 import datetime
 
 from django.db import models
 from django.db.models import Q, UniqueConstraint
+from typing_extensions import override
 
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, Stream, UserProfile
@@ -16,6 +20,7 @@ class FillState(models.Model):
     STARTED = 2
     state = models.PositiveSmallIntegerField()
 
+    @override
     def __str__(self) -> str:
         return f"{self.property} {self.end_time} {self.state}"
 
@@ -58,6 +63,7 @@ class InstallationCount(BaseCount):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.property} {self.subgroup} {self.value}"
 
@@ -86,6 +92,7 @@ class RealmCount(BaseCount):
             )
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm!r} {self.property} {self.subgroup} {self.value}"
 
@@ -117,6 +124,7 @@ class UserCount(BaseCount):
             )
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.user!r} {self.property} {self.subgroup} {self.value}"
 
@@ -148,5 +156,6 @@ class StreamCount(BaseCount):
             )
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.stream!r} {self.property} {self.subgroup} {self.value} {self.id}"

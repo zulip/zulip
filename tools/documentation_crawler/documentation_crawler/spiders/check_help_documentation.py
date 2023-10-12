@@ -3,6 +3,8 @@ from posixpath import basename
 from typing import Any, List, Set
 from urllib.parse import urlparse
 
+from typing_extensions import override
+
 from .common.spiders import BaseDocumentationSpider
 
 
@@ -21,6 +23,7 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
         self.static_images: Set[str] = set()
         self.images_static_dir: str = get_images_dir(self.images_path)
 
+    @override
     def _is_external_url(self, url: str) -> bool:
         is_external = url.startswith("http") and self.start_urls[0] not in url
         if self._has_extension(url) and f"localhost:9981/{self.images_path}" in url:
@@ -55,6 +58,7 @@ class APIDocumentationSpider(UnusedImagesLinterSpider):
 
 
 class PorticoDocumentationSpider(BaseDocumentationSpider):
+    @override
     def _is_external_url(self, url: str) -> bool:
         return (
             not url.startswith("http://localhost:9981")

@@ -5,6 +5,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
+from typing_extensions import override
 
 from zerver.data_import.gitter import do_convert_data
 
@@ -12,6 +13,7 @@ from zerver.data_import.gitter import do_convert_data
 class Command(BaseCommand):
     help = """Convert the Gitter data into Zulip data format."""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "gitter_data", nargs="+", metavar="<gitter data>", help="Gitter data in json format"
@@ -29,6 +31,7 @@ class Command(BaseCommand):
 
         parser.formatter_class = argparse.RawTextHelpFormatter
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         output_dir = options["output_dir"]
         if output_dir is None:

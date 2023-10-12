@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from typing_extensions import override
+
 from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.users import get_api_key
@@ -11,6 +13,7 @@ class Command(ZulipBaseCommand):
 
     fmt = "%-30s %-16s  %-32s"
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "emails",
@@ -20,6 +23,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         print(self.fmt % ("email", "password", "API key"))

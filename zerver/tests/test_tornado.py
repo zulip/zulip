@@ -14,7 +14,7 @@ from django.test import override_settings
 from tornado import netutil
 from tornado.httpclient import AsyncHTTPClient, HTTPResponse
 from tornado.httpserver import HTTPServer
-from typing_extensions import ParamSpec
+from typing_extensions import ParamSpec, override
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.tornado import event_queue
@@ -39,6 +39,7 @@ async def in_django_thread(f: Callable[[], T]) -> T:
 
 class TornadoWebTestCase(ZulipTestCase):
     @async_to_sync_decorator
+    @override
     async def setUp(self) -> None:
         super().setUp()
 
@@ -53,11 +54,13 @@ class TornadoWebTestCase(ZulipTestCase):
         self.session_cookie: Optional[Dict[str, str]] = None
 
     @async_to_sync_decorator
+    @override
     async def tearDown(self) -> None:
         self.http_client.close()
         self.http_server.stop()
         super().tearDown()
 
+    @override
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:
         return async_to_sync(
             sync_to_async(super().run, thread_sensitive=False), force_new_loop=True
@@ -73,6 +76,7 @@ class TornadoWebTestCase(ZulipTestCase):
             f"http://127.0.0.1:{self.port}{path}", method=method, **kwargs
         )
 
+    @override
     def login_user(self, *args: Any, **kwargs: Any) -> None:
         super().login_user(*args, **kwargs)
         session_cookie = settings.SESSION_COOKIE_NAME

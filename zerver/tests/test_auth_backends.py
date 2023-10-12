@@ -52,6 +52,7 @@ from onelogin.saml2.utils import OneLogin_Saml2_Utils
 from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
+from typing_extensions import override
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_create_realm
@@ -898,6 +899,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         raise NotImplementedError
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -1948,6 +1950,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     # We have to define our own social_auth_test as the flow of SAML authentication
     # is different from the other social backends.
+    @override
     def social_auth_test(
         self,
         account_data_dict: Dict[str, str],
@@ -2108,6 +2111,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_get("http://zulip.testserver/complete/saml/", parameters)
         return result
 
+    @override
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name)
 
@@ -2461,6 +2465,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             expect_full_name_prepopulated=False,
         )
 
+    @override
     def test_social_auth_no_key(self) -> None:
         """
         Since in the case of SAML there isn't a direct equivalent of CLIENT_KEY_SETTING,
@@ -2549,6 +2554,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 expect_confirm_registration_page=False,
             )
 
+    @override
     def test_social_auth_complete(self) -> None:
         with mock.patch.object(OneLogin_Saml2_Response, "is_valid", return_value=True):
             with mock.patch.object(
@@ -2574,6 +2580,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 ],
             )
 
+    @override
     def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
         with mock.patch.object(OneLogin_Saml2_Response, "is_valid", return_value=True):
             with mock.patch(
@@ -2843,6 +2850,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             ],
         )
 
+    @override
     def test_social_auth_invalid_email(self) -> None:
         """
         This test needs an override from the original class. For security reasons,
@@ -3327,6 +3335,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
     # dummy value to keep SocialAuthBase common code happy.
     USER_INFO_URL = "/invalid-unused-url"
 
+    @override
     def social_auth_test_finish(
         self,
         result: "TestHttpResponse",
@@ -3344,6 +3353,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
         )
         return result
 
+    @override
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
@@ -3360,6 +3370,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             json=json.loads(EXAMPLE_JWK),
         )
 
+    @override
     def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
         # The ACCESS_TOKEN_URL endpoint works a bit different than in standard Oauth2,
         # and here, similarly to OIDC, id_token is also returned in the response.
@@ -3451,6 +3462,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
     SIGNUP_URL = "/complete/apple/"
     LOGIN_URL = "/complete/apple/"
 
+    @override
     def prepare_login_url_and_headers(
         self,
         subdomain: str,
@@ -3492,6 +3504,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         url += f"&{urlencode(params)}"
         return url, headers
 
+    @override
     def social_auth_test(
         self,
         account_data_dict: Dict[str, str],
@@ -3569,6 +3582,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         )
         self.assert_json_error(result, "Missing id_token parameter")
 
+    @override
     def test_social_auth_session_fields_cleared_correctly(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -3637,12 +3651,14 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             ],
         )
 
+    @override
     def test_social_auth_desktop_success(self) -> None:
         """
         The desktop app doesn't use the native flow currently and the desktop app flow in its
         current form happens in the browser, thus only the web flow is viable there.
         """
 
+    @override
     def test_social_auth_no_key(self) -> None:
         """
         The basic validation of server configuration is handled on the
@@ -3664,6 +3680,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
     USER_INFO_URL = f"{BASE_OIDC_URL}/userinfo"
     AUTH_FINISH_URL = "/complete/oidc/"
 
+    @override
     def social_auth_test(
         self,
         *args: Any,
@@ -3707,6 +3724,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
 
         return result
 
+    @override
     def social_auth_test_finish(self, *args: Any, **kwargs: Any) -> "TestHttpResponse":
         # Trying to generate a (access_token, id_token) pair here in tests that would
         # successfully pass validation by validate_and_return_id_token is impractical
@@ -3719,6 +3737,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         ):
             return super().social_auth_test_finish(*args, **kwargs)
 
+    @override
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
@@ -3732,6 +3751,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             json=json.loads(EXAMPLE_JWK),
         )
 
+    @override
     def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
         return json.dumps(
             {
@@ -3742,6 +3762,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             }
         )
 
+    @override
     def get_account_data_dict(self, email: str, name: Optional[str]) -> Dict[str, Any]:
         if name is not None:
             name_parts = name.split(" ")
@@ -3813,6 +3834,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             expect_full_name_prepopulated=False,
         )
 
+    @override
     def test_social_auth_no_key(self) -> None:
         """
         Requires overriding because client key/secret are configured
@@ -3860,6 +3882,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
                 [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
             )
 
+    @override
     def test_config_error_development(self) -> None:
         """
         This test is redundant for now, as test_social_auth_no_key already
@@ -3868,6 +3891,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         """
         return
 
+    @override
     def test_config_error_production(self) -> None:
         """
         This test is redundant for now, as test_social_auth_no_key already
@@ -3889,6 +3913,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     AUTH_FINISH_URL = "/complete/github/"
     email_data: List[Dict[str, Any]] = []
 
+    @override
     def social_auth_test_finish(
         self,
         result: "TestHttpResponse",
@@ -3939,6 +3964,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
         return result
 
+    @override
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
@@ -3965,6 +3991,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
         self.email_data = email_data
 
+    @override
     def get_account_data_dict(
         self, email: str, name: str, user_avatar_url: str = ""
     ) -> Dict[str, Any]:
@@ -4404,6 +4431,7 @@ class GitLabAuthBackendTest(SocialAuthBase):
         with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.GitLabAuthBackend",)):
             self.assertTrue(gitlab_auth_enabled())
 
+    @override
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name, email_verified=True)
 
@@ -4419,6 +4447,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
     USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
     AUTH_FINISH_URL = "/complete/google/"
 
+    @override
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name, email_verified=True)
 
@@ -4751,6 +4780,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             m.output, [f"WARNING:root:log_into_subdomain: Invalid token given: {token}"]
         )
 
+    @override
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
         data: ExternalAuthDataDict = {
             "full_name": "Full Name",
@@ -4798,6 +4828,7 @@ class JSONFetchAPIKeyTest(ZulipTestCase):
 
 
 class FetchAPIKeyTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -5005,6 +5036,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
 
 class DevFetchAPIKeyTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -5882,6 +5914,7 @@ class TestJWTLogin(ZulipTestCase):
 
 
 class DjangoToLDAPUsernameTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.init_default_ldap_database()
@@ -6022,6 +6055,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
 
 
 class ZulipLDAPTestCase(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
 
@@ -7178,6 +7212,7 @@ class LDAPBackendTest(ZulipTestCase):
 
 
 class JWTFetchAPIKeyTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.email = self.example_email("hamlet")

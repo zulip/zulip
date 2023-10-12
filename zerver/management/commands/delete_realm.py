@@ -3,6 +3,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.realm_settings import do_delete_all_realm_attachments
 from zerver.lib.management import ZulipBaseCommand
@@ -13,9 +14,11 @@ class Command(ZulipBaseCommand):
     help = """Script to permanently delete a realm. Recommended only for removing
 realms used for testing; consider using deactivate_realm instead."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

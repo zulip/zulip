@@ -1,4 +1,5 @@
 from django.utils.translation import gettext as _
+from typing_extensions import override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
 
@@ -11,5 +12,6 @@ class BadEventQueueIdError(JsonableError):
         self.queue_id: str = queue_id
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Bad event queue ID: {queue_id}")

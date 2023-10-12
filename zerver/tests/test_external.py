@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.forms import email_is_not_mit_mailing_list
 from zerver.lib.cache import cache_delete
@@ -76,6 +77,7 @@ class MITNameTest(ZulipTestCase):
 
 
 class RateLimitTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
 
@@ -93,6 +95,7 @@ class RateLimitTests(ZulipTestCase):
 
         settings.RATE_LIMITING = True
 
+    @override
     def tearDown(self) -> None:
         settings.RATE_LIMITING = False
 

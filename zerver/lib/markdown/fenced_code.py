@@ -86,6 +86,7 @@ from markdown.extensions.codehilite import CodeHiliteExtension, parse_hl_lines
 from markdown.preprocessors import Preprocessor
 from pygments.lexers import find_lexer_class_by_name
 from pygments.util import ClassNotFound
+from typing_extensions import override
 
 from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
@@ -156,6 +157,7 @@ class FencedCodeExtension(Extension):
         for key, value in config.items():
             self.setConfig(key, value)
 
+    @override
     def extendMarkdown(self, md: Markdown) -> None:
         """Add FencedBlockPreprocessor to the Markdown instance."""
         md.registerExtension(self)
@@ -268,6 +270,7 @@ class OuterHandler(ZulipBaseHandler):
         self.default_language = default_language
         super().__init__(processor, output)
 
+    @override
     def handle_line(self, line: str) -> None:
         check_for_new_fence(
             self.processor, self.output, line, self.run_content_validators, self.default_language
@@ -287,6 +290,7 @@ class CodeHandler(ZulipBaseHandler):
         self.run_content_validators = run_content_validators
         super().__init__(processor, output, fence)
 
+    @override
     def done(self) -> None:
         # run content validators (if any)
         if self.run_content_validators:
@@ -294,6 +298,7 @@ class CodeHandler(ZulipBaseHandler):
             validator(self.lines)
         super().done()
 
+    @override
     def format_text(self, text: str) -> str:
         return self.processor.format_code(self.lang, text)
 
@@ -309,6 +314,7 @@ class QuoteHandler(ZulipBaseHandler):
         self.default_language = default_language
         super().__init__(processor, output, fence, process_contents=True)
 
+    @override
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
             self.done()
@@ -317,6 +323,7 @@ class QuoteHandler(ZulipBaseHandler):
                 self.processor, self.lines, line, default_language=self.default_language
             )
 
+    @override
     def format_text(self, text: str) -> str:
         return self.processor.format_quote(text)
 
@@ -332,17 +339,20 @@ class SpoilerHandler(ZulipBaseHandler):
         self.spoiler_header = spoiler_header
         super().__init__(processor, output, fence, process_contents=True)
 
+    @override
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
             self.done()
         else:
             check_for_new_fence(self.processor, self.lines, line)
 
+    @override
     def format_text(self, text: str) -> str:
         return self.processor.format_spoiler(self.spoiler_header, text)
 
 
 class TexHandler(ZulipBaseHandler):
+    @override
     def format_text(self, text: str) -> str:
         return self.processor.format_tex(text)
 
@@ -411,6 +421,7 @@ class FencedBlockPreprocessor(Preprocessor):
     def pop(self) -> None:
         self.handlers.pop()
 
+    @override
     def run(self, lines: Iterable[str]) -> List[str]:
         """Match and store Fenced Code Blocks in the HtmlStash."""
 

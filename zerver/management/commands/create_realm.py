@@ -3,6 +3,7 @@ from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
@@ -30,6 +31,7 @@ initial organization owner user for the new realm, using the same
 workflow as `./manage.py create_user`.
 """
 
+    @override
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument("realm_name", help="Name for the new organization")
         parser.add_argument(
@@ -44,6 +46,7 @@ workflow as `./manage.py create_user`.
         )
         self.add_create_user_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm_name = options["realm_name"]
         string_id = options["string_id"]

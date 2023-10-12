@@ -4,6 +4,7 @@ from typing import Callable
 
 from dateutil.tz import tzlocal
 from django.core.management.commands.runserver import Command as DjangoCommand
+from typing_extensions import override
 
 
 def output_styler(style_func: Callable[[str], str]) -> Callable[[str], str]:
@@ -26,6 +27,7 @@ def output_styler(style_func: Callable[[str], str]) -> Callable[[str], str]:
 
 
 class Command(DjangoCommand):
+    @override
     def inner_run(self, *args: object, **options: object) -> None:
         self.stdout.style_func = output_styler(self.stdout.style_func)
         super().inner_run(*args, **options)

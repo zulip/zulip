@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.users import do_delete_user
 from zerver.lib.management import ZulipBaseCommand
@@ -38,6 +39,7 @@ This will:
   sent/received by them, you can use the command on them individually.
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "-f",
@@ -48,6 +50,7 @@ This will:
         self.add_realm_args(parser)
         self.add_user_list_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         user_profiles = self.get_users(options, realm)

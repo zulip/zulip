@@ -4,6 +4,7 @@ from unittest import mock
 import orjson
 from django.test import override_settings
 from pika.exceptions import AMQPConnectionError, ConnectionClosed
+from typing_extensions import override
 
 from zerver.lib.queue import (
     SimpleQueueClient,
@@ -114,6 +115,7 @@ class TestQueueImplementation(ZulipTestCase):
         assert message is None
 
     @override_settings(USING_RABBITMQ=True)
+    @override
     def setUp(self) -> None:
         queue_client = get_queue_client()
         assert queue_client.channel
