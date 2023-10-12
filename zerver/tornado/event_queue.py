@@ -35,6 +35,7 @@ import tornado.ioloop
 from django.conf import settings
 from django.utils.translation import gettext as _
 from tornado import autoreload
+from typing_extensions import override
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
@@ -157,6 +158,7 @@ class ClientDescriptor:
             linkifier_url_template=self.linkifier_url_template,
         )
 
+    @override
     def __repr__(self) -> str:
         return f"ClientDescriptor<{self.event_queue.id}>"
 

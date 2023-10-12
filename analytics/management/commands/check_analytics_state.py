@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.models import installation_epoch
@@ -24,6 +25,7 @@ class Command(BaseCommand):
 
     Run as a cron job that runs every hour."""
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         fill_state = self.get_fill_state()
         status = fill_state["status"]

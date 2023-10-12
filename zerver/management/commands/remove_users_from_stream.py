@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.core.management.base import CommandParser
+from typing_extensions import override
 
 from zerver.actions.streams import bulk_remove_subscriptions
 from zerver.lib.management import ZulipBaseCommand
@@ -10,6 +11,7 @@ from zerver.models import get_stream
 class Command(ZulipBaseCommand):
     help = """Remove some or all users in a realm from a stream."""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("-s", "--stream", required=True, help="A stream name.")
 
@@ -18,6 +20,7 @@ class Command(ZulipBaseCommand):
             parser, all_users_help="Remove all users in realm from this stream."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

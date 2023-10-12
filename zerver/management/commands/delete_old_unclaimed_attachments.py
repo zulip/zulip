@@ -4,6 +4,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.upload import all_message_attachments, delete_message_attachments
@@ -15,6 +16,7 @@ class Command(BaseCommand):
               numerical value indicating the limit of how old the attachment can be.
               The default is five weeks."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "-w",
@@ -40,6 +42,7 @@ class Command(BaseCommand):
             "any files which are not in the database. This may take a very long time!",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         delta_weeks = options["delta_weeks"]
         print(f"Deleting unclaimed attached files older than {delta_weeks} weeks")

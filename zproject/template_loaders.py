@@ -2,9 +2,11 @@ from pathlib import Path
 from typing import List, Union
 
 from django.template.loaders import app_directories
+from typing_extensions import override
 
 
 class TwoFactorLoader(app_directories.Loader):
+    @override
     def get_dirs(self) -> List[Union[str, Path]]:
         dirs = super().get_dirs()
         # app_directories.Loader returns only a list of

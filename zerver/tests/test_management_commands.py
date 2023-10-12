@@ -12,6 +12,7 @@ from django.core.management import call_command, find_commands
 from django.core.management.base import CommandError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from zerver.actions.create_user import do_create_user
@@ -47,6 +48,7 @@ class TestCheckConfig(ZulipTestCase):
 
 
 class TestZulipBaseCommand(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.zulip_realm = get_realm("zulip")
@@ -200,6 +202,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
 
 class TestCommandsCanStart(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.commands = [
@@ -224,6 +227,7 @@ class TestCommandsCanStart(ZulipTestCase):
 class TestSendWebhookFixtureMessage(ZulipTestCase):
     COMMAND_NAME = "send_webhook_fixture_message"
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.fixture_path = os.path.join("some", "fake", "path.json")

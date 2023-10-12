@@ -3,6 +3,7 @@ from typing import Any, Iterable
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.forms import generate_password_reset_url
 from zerver.lib.management import ZulipBaseCommand
@@ -13,6 +14,7 @@ from zerver.models import UserProfile
 class Command(ZulipBaseCommand):
     help = """Send email to specified email address."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--entire-server", action="store_true", help="Send to every user on the server. "
@@ -24,6 +26,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         if options["entire_server"]:
             users: Iterable[UserProfile] = UserProfile.objects.filter(

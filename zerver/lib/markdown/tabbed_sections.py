@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Mapping, Optional
 import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
@@ -105,6 +106,7 @@ TAB_SECTION_LABELS = {
 
 
 class TabbedSectionsGenerator(Extension):
+    @override
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             TabbedSectionsPreprocessor(md, self.getConfigs()),
@@ -117,6 +119,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         tab_section = self.parse_tabs(lines)
         while tab_section:

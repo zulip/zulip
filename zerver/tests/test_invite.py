@@ -15,6 +15,7 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from returns.curry import partial
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
@@ -2239,6 +2240,7 @@ class InvitationsTestCase(InviteUserBase):
 
 
 class InviteeEmailsParserTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.email1 = "email1@zulip.com"
@@ -2269,6 +2271,7 @@ class InviteeEmailsParserTests(ZulipTestCase):
 
 
 class MultiuseInviteTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")

@@ -1,6 +1,7 @@
 import orjson
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_domains import do_change_realm_domain, do_remove_realm_domain
@@ -13,6 +14,7 @@ from zerver.models import DomainNotAllowedForRealmError, RealmDomain, UserProfil
 
 
 class RealmDomainTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         realm = get_realm("zulip")

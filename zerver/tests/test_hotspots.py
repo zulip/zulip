@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from zerver.actions.create_user import do_create_user
 from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, get_next_hotspots
@@ -8,6 +10,7 @@ from zerver.models import UserHotspot, UserProfile, get_realm
 # Splitting this out, since I imagine this will eventually have most of the
 # complicated hotspots logic.
 class TestGetNextHotspots(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user = do_create_user(

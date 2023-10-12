@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Optional
 import orjson
 from django.conf import settings
 from django.db.models import Q, QuerySet
+from typing_extensions import override
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.management import ZulipBaseCommand
@@ -20,6 +21,7 @@ class Command(ZulipBaseCommand):
     The From and Subject headers can be provided in the body of the Markdown
     document used to generate the email, or on the command line."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         targets = parser.add_mutually_exclusive_group(required=True)
         targets.add_argument(
@@ -83,6 +85,7 @@ class Command(ZulipBaseCommand):
             help="Prints emails of the recipients and text of the email.",
         )
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         target_emails: List[str] = []
         users: QuerySet[UserProfile] = UserProfile.objects.none()

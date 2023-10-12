@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import orjson
+from typing_extensions import override
 
 from zerver.lib.bot_lib import EmbeddedBotQuitError
 from zerver.lib.test_classes import ZulipTestCase
@@ -14,6 +15,7 @@ from zerver.models import (
 
 
 class TestEmbeddedBotMessaging(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")

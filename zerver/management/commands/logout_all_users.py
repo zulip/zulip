@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.db.models import Q
+from typing_extensions import override
 
 from zerver.actions.user_settings import bulk_regenerate_api_keys
 from zerver.lib.management import ZulipBaseCommand
@@ -21,6 +22,7 @@ Does not disable API keys, and thus will not log users out of the
 mobile apps.
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--deactivated-only",
@@ -34,6 +36,7 @@ mobile apps.
         )
         self.add_realm_args(parser, help="Only log out all users in a particular realm")
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         rotate_api_keys = options["rotate_api_keys"]

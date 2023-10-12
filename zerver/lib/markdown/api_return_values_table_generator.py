@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Mapping, Optional
 import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 from zerver.openapi.openapi import check_deprecated_consistency, get_openapi_return_values
@@ -16,6 +17,7 @@ REGEXP = re.compile(r"\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}"
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
+    @override
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             APIReturnValuesTablePreprocessor(md, self.getConfigs()),
@@ -28,6 +30,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         done = False
         while not done:

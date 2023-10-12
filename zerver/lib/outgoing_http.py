@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 import requests
+from typing_extensions import override
 from urllib3.util import Retry
 
 
@@ -35,10 +36,12 @@ class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):
         self.timeout = timeout
         super().__init__(max_retries=max_retries)
 
+    @override
     def send(self, *args: Any, **kwargs: Any) -> requests.Response:
         if kwargs.get("timeout") is None:
             kwargs["timeout"] = self.timeout
         return super().send(*args, **kwargs)
 
+    @override
     def proxy_headers(self, proxy: str) -> Dict[str, str]:
         return {"X-Smokescreen-Role": self.role}

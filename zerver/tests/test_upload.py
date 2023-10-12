@@ -10,6 +10,7 @@ from unittest.mock import patch
 import orjson
 from django.conf import settings
 from PIL import Image
+from typing_extensions import override
 from urllib3 import encode_multipart_formdata
 from urllib3.fields import RequestField
 
@@ -1750,6 +1751,7 @@ class SanitizeNameTests(ZulipTestCase):
 
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")
@@ -1790,6 +1792,7 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 
 
 class DecompressionBombTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.test_urls = [

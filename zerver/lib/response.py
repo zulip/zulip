@@ -2,6 +2,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 import orjson
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
+from typing_extensions import override
 
 from zerver.lib.exceptions import JsonableError, UnauthorizedError
 
@@ -36,6 +37,7 @@ class MutableJsonResponse(HttpResponse):
     # is used here to encompass all of those return values.
     # See https://github.com/typeddjango/django-stubs/commit/799b41fe47cfe2e56be33eee8cfbaf89a9853a8e
     # and https://github.com/python/mypy/issues/3004.
+    @override  # type: ignore[explicit-override] # https://github.com/python/mypy/issues/15900
     @property
     def content(self) -> Any:
         """Get content for the response. If the content hasn't been
@@ -68,6 +70,7 @@ class MutableJsonResponse(HttpResponse):
     # property, so in order to not break the implementation of the superclass with
     # our lazy content generation, we override the iterator to access `self.content`
     # through our getter.
+    @override
     def __iter__(self) -> Iterator[bytes]:
         return iter([self.content])
 

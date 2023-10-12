@@ -4,6 +4,7 @@ from typing import IO, Any
 
 import orjson
 from django.core.management.base import BaseCommand
+from typing_extensions import override
 
 from zerver.lib.queue import queue_json_publish
 
@@ -41,6 +42,7 @@ first field is a timestamp that we ignore.)
 You can use "-" to represent stdin.
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "queue_name", metavar="<queue>", help="name of worker queue to enqueue to"
@@ -49,6 +51,7 @@ You can use "-" to represent stdin.
             "file_name", metavar="<file>", help="name of file containing JSON lines"
         )
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         queue_name = options["queue_name"]
         file_name = options["file_name"]

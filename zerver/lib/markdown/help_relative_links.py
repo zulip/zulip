@@ -4,6 +4,7 @@ from typing import Any, List, Match
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
@@ -133,6 +134,7 @@ LINK_TYPE_HANDLERS = {
 
 
 class RelativeLinksHelpExtension(Extension):
+    @override
     def extendMarkdown(self, md: Markdown) -> None:
         """Add RelativeLinksHelpExtension to the Markdown instance."""
         md.registerExtension(self)
@@ -150,6 +152,7 @@ def set_relative_help_links(value: bool) -> None:
 
 
 class RelativeLinks(Preprocessor):
+    @override
     def run(self, lines: List[str]) -> List[str]:
         done = False
         while not done:

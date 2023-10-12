@@ -1,5 +1,7 @@
 import asyncio
 
+from typing_extensions import override
+
 
 class NoAutoCreateEventLoopPolicy(asyncio.DefaultEventLoopPolicy):
     """
@@ -12,5 +14,6 @@ class NoAutoCreateEventLoopPolicy(asyncio.DefaultEventLoopPolicy):
     accident.
     """
 
+    @override
     def get_event_loop(self) -> asyncio.AbstractEventLoop:  # nocoverage
         return asyncio.get_running_loop()
