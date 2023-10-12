@@ -1101,6 +1101,19 @@ ul {
 .navbar-dropdown-menu {
     display: flex;
     flex-flow: column nowrap;
+    margin: 0;
+    padding: 0;
+    border: solid 1px var(--color-border-dropdown-menu);
+    background-color: var(--color-background-dropdown-menu);
+    max-height: 85vh;
+    min-width: 230px;
+    overflow-x: hidden;
+    user-select: none;
+    border-radius: 6px;
+
+    .simplebar-content {
+        min-width: max-content;
+    }
 
     .text-item,
     .link-item a {
