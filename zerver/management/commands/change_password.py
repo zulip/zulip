@@ -5,6 +5,7 @@ from typing import Any, List
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 
@@ -27,10 +28,12 @@ class Command(ZulipBaseCommand):
             raise CommandError("aborted")
         return p
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("email", metavar="<email>", help="email of user to change role")
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> str:
         email = options["email"]
         realm = self.get_realm(options)

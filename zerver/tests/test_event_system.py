@@ -8,6 +8,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
@@ -1307,6 +1308,7 @@ class FetchQueriesTest(ZulipTestCase):
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -1350,6 +1352,7 @@ class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
 
 
 class TestEventsRegisterNarrowDefaults(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")

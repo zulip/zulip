@@ -10,6 +10,7 @@ from django.db import transaction
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
 from returns.curry import partial
+from typing_extensions import override
 from urllib3.util import Retry
 
 from zerver.lib.queue import queue_json_publish
@@ -31,6 +32,7 @@ class TornadoAdapter(HTTPAdapter):
         retry = Retry(total=3, backoff_factor=1, allowed_methods=retry_methods)
         super().__init__(max_retries=retry)
 
+    @override
     def send(
         self,
         request: PreparedRequest,

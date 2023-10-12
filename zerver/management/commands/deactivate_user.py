@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.management import ZulipBaseCommand
@@ -12,6 +13,7 @@ from zerver.lib.users import get_active_bots_owned_by_user
 class Command(ZulipBaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "-f",
@@ -22,6 +24,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument("email", metavar="<email>", help="email of user to deactivate")
         self.add_realm_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         user_profile = self.get_user(options["email"], realm)

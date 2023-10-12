@@ -24,7 +24,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import Concatenate, ParamSpec, override
 
 from zerver.lib import rate_limiter
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
@@ -74,6 +74,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     is_webhook_view: bool = False
 
     @classmethod
+    @override
     def init_notes(cls) -> "RequestNotes":
         return RequestNotes()
 
@@ -87,6 +88,7 @@ class RequestConfusingParamsError(JsonableError):
         self.var_name2: str = var_name2
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Can't decide between '{var_name1}' and '{var_name2}' arguments")
 
@@ -99,6 +101,7 @@ class RequestVariableMissingError(JsonableError):
         self.var_name: str = var_name
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Missing '{var_name}' argument")
 
@@ -112,6 +115,7 @@ class RequestVariableConversionError(JsonableError):
         self.bad_value = bad_value
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Bad value for '{var_name}': {bad_value}")
 

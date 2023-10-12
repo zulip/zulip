@@ -1,11 +1,13 @@
 from typing import Any
 
 from django.db import connection
+from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
+    @override
     def handle(self, *args: Any, **kwargs: str) -> None:
         with connection.cursor() as cursor:
             cursor.execute(

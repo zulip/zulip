@@ -16,6 +16,7 @@ from django.db import connection
 from django.db.models import F
 from django.db.models.signals import post_delete
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.actions.create_realm import do_create_realm
@@ -196,6 +197,7 @@ def create_alert_words(realm_id: int) -> None:
 class Command(BaseCommand):
     help = "Populate a test database"
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "-n", "--num-messages", type=int, default=1000, help="The number of messages to create."
@@ -284,6 +286,7 @@ class Command(BaseCommand):
             "data set for the backend tests.",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         # Suppress spammy output from the push notifications logger
         push_notifications_logger.disabled = True

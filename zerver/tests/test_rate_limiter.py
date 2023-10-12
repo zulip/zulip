@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple, Type
 from unittest import mock
 
+from typing_extensions import override
+
 from zerver.lib.rate_limiter import (
     RateLimitedIPAddr,
     RateLimitedObject,
@@ -27,9 +29,11 @@ class RateLimitedTestObject(RateLimitedObject):
         self._rules.sort(key=lambda x: x[0])
         super().__init__(backend)
 
+    @override
     def key(self) -> str:
         return RANDOM_KEY_PREFIX + self.name
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return self._rules
 
@@ -37,6 +41,7 @@ class RateLimitedTestObject(RateLimitedObject):
 class RateLimiterBackendBase(ZulipTestCase, ABC):
     backend: Type[RateLimiterBackend]
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.requests_record: Dict[str, List[float]] = {}
@@ -155,6 +160,7 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
 class RedisRateLimiterBackendTest(RateLimiterBackendBase):
     backend = RedisRateLimiterBackend
 
+    @override
     def api_calls_left_from_history(
         self, history: List[float], max_window: int, max_calls: int, now: float
     ) -> Tuple[int, float]:
@@ -180,6 +186,7 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
 class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
     backend = TornadoInMemoryRateLimiterBackend
 
+    @override
     def api_calls_left_from_history(
         self, history: List[float], max_window: int, max_calls: int, now: float
     ) -> Tuple[int, float]:

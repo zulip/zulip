@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints, ValidationInfo, WrapValidator
 from pydantic.dataclasses import dataclass
 from pydantic.functional_validators import ModelWrapValidatorHandler
-from typing_extensions import Annotated
+from typing_extensions import Annotated, override
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
 from zerver.lib.request import RequestConfusingParamsError, RequestVariableMissingError
@@ -599,6 +599,7 @@ class ValidationErrorHandlingTest(ZulipTestCase):
             # data.
             error_message: str
 
+            @override
             def __repr__(self) -> str:
                 return f"Pydantic error type: {self.error_type}; Parameter type: {self.param_type}; Expected error message: {self.error_message}"
 

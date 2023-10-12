@@ -29,7 +29,7 @@ from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
@@ -115,6 +115,7 @@ class UserPushIdentityCompat:
             assert self.user_id is not None and self.user_uuid is not None
             return Q(user_uuid=self.user_uuid) | Q(user_id=self.user_id)
 
+    @override
     def __str__(self) -> str:
         result = ""
         if self.user_id is not None:
@@ -124,6 +125,7 @@ class UserPushIdentityCompat:
 
         return result
 
+    @override
     def __eq__(self, other: object) -> bool:
         if isinstance(other, UserPushIdentityCompat):
             return self.user_id == other.user_id and self.user_uuid == other.user_uuid

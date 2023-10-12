@@ -4,8 +4,11 @@ from http.client import HTTPConnection
 from typing import Dict, List, Optional, Tuple, Union
 from xmlrpc import client
 
+from typing_extensions import override
+
 
 class UnixStreamHTTPConnection(HTTPConnection):
+    @override
     def connect(self) -> None:
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         connected = False
@@ -28,6 +31,7 @@ class UnixStreamTransport(client.Transport):
         self.socket_path = socket_path
         super().__init__()
 
+    @override
     def make_connection(
         self, host: Union[Tuple[str, Dict[str, str]], str]
     ) -> UnixStreamHTTPConnection:

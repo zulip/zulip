@@ -1,6 +1,7 @@
 from unittest import mock
 
 from redis import StrictRedis
+from typing_extensions import override
 
 from zerver.lib.redis_utils import (
     MAX_KEY_LENGTH,
@@ -19,6 +20,7 @@ class RedisUtilsTest(ZulipTestCase):
     redis_client: "StrictRedis[bytes]"
 
     @classmethod
+    @override
     def setUpClass(cls) -> None:
         cls.redis_client = get_redis_client()
         return super().setUpClass()

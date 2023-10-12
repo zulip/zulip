@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -107,5 +109,6 @@ class WordPressHookTests(WebhookTestCase):
 
         self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("wordpress", fixture_name, file_type="txt")

@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict, List, Tuple
 
 import orjson
+from typing_extensions import override
 
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
@@ -12,6 +13,7 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class SlackMessageConversion(ZulipTestCase):
+    @override
     def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
         if isinstance(first, str) and isinstance(second, str):
             if first != second:

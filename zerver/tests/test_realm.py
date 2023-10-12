@@ -8,6 +8,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
@@ -1156,6 +1157,7 @@ class RealmTest(ZulipTestCase):
 
 
 class RealmAPITest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.login("desdemona")

@@ -1,8 +1,12 @@
+# https://github.com/typeddjango/django-stubs/issues/1698
+# mypy: disable-error-code="explicit-override"
+
 from typing import List, Tuple
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from typing_extensions import override
 
 from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
@@ -49,6 +53,7 @@ class RemoteZulipServer(models.Model):
     # The current billing plan for the remote server, similar to Realm.plan_type.
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
+    @override
     def __str__(self) -> str:
         return f"{self.hostname} {str(self.uuid)[0:12]}"
 
@@ -74,6 +79,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
             ("server", "user_uuid", "kind", "token"),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.user_id}"
 
@@ -90,6 +96,7 @@ class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
+    @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
 
@@ -104,6 +111,7 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     # The remote_id field lets us deduplicate data from the remote server
     remote_id = models.IntegerField()
 
+    @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
 
@@ -136,6 +144,7 @@ class RemoteInstallationCount(BaseCount):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.property} {self.subgroup} {self.value}"
 
@@ -160,6 +169,7 @@ class RemoteRealmCount(BaseCount):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.realm_id} {self.property} {self.subgroup} {self.value}"
 
@@ -178,8 +188,10 @@ class RateLimitedRemoteZulipServer(RateLimitedObject):
         self.domain = domain
         super().__init__()
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:<{self.uuid}>:{self.domain}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return rate_limiter_rules[self.domain]

@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -52,5 +54,6 @@ class SlackWebhookTests(WebhookTestCase):
         result = self.client_post(url, payload, content_type="application/x-www-form-urlencoded")
         self.assert_json_error(result, "Error: channels_map_to_topics parameter other than 0 or 1")
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("slack", fixture_name, file_type="txt")

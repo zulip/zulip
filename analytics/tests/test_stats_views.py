@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
@@ -68,6 +69,7 @@ class TestStatsEndpoint(ZulipTestCase):
 
 
 class TestGetChartData(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")
