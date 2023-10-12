@@ -4,6 +4,7 @@ from unittest import mock
 
 import orjson
 from django.db import transaction
+from django.db.models import Model
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
@@ -21,6 +22,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
+    find_references_from_permission_group_settings,
     get_direct_user_groups,
     get_recursive_group_members,
     get_recursive_membership_groups,
@@ -34,10 +36,12 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     GroupGroupMembership,
     Realm,
+    Stream,
     UserGroup,
     UserGroupMembership,
     UserProfile,
     get_realm,
+    get_stream,
 )
 
 
@@ -248,6 +252,47 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertTrue(has_user_group_access(zulip_group, iago, for_read=False, as_subgroup=True))
         self.assertTrue(
             has_user_group_access(moderators_group, iago, for_read=False, as_subgroup=True)
+        )
+
+    def test_find_user_group_references_from_settings(self) -> None:
+        iago = self.example_user("iago")
+        foo_group = check_add_user_group(iago.realm, "foo", [], acting_user=iago)
+
+        def assert_model_references(
+            setting_name: str, expected_referring_instances: Iterable[Model], total: int
+        ) -> None:
+            references = find_references_from_permission_group_settings(foo_group)
+            self.assert_length(references, total)
+            for reference in references:
+                if reference.setting_name == setting_name:
+                    self.assertCountEqual(
+                        reference.referring_instances, expected_referring_instances
+                    )
+
+        references = find_references_from_permission_group_settings(foo_group)
+        self.assert_length(references, 0)
+
+        scotland = get_stream("Scotland", iago.realm)
+        denmark = get_stream("Denmark", iago.realm)
+        scotland.can_remove_subscribers_group = foo_group
+        denmark.can_remove_subscribers_group = foo_group
+        Stream.objects.bulk_update([scotland, denmark], fields=["can_remove_subscribers_group"])
+        assert_model_references(
+            "can_remove_subscribers_group",
+            expected_referring_instances=[scotland, denmark],
+            total=1,
+        )
+
+        iago.realm.create_multiuse_invite_group = foo_group
+        iago.realm.save(update_fields=["create_multiuse_invite_group"])
+        assert_model_references(
+            "create_multiuse_invite_group", expected_referring_instances=[iago.realm], total=2
+        )
+
+        foo_group.can_mention_group = foo_group
+        foo_group.save(update_fields=["can_mention_group"])
+        assert_model_references(
+            "can_mention_group", expected_referring_instances=[foo_group], total=3
         )
 
 
@@ -596,7 +641,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_user_group.id}", info=params)
         self.assert_json_error(result, f"User group '{marketing_user_group.name}' already exists.")
 
-    def test_user_group_delete(self) -> None:
+    def test_user_group_deactivate(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
         params = {
@@ -607,14 +652,20 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.client_post("/json/user_groups/create", info=params)
         user_group = UserGroup.objects.get(name="support")
         # Test success
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 10)
-        self.assertEqual(UserGroupMembership.objects.count(), 45)
+        self.assertEqual(
+            UserGroup.objects.filter(realm=hamlet.realm, deactivated=False).count(), 10
+        )
+        self.assertEqual(
+            UserGroupMembership.objects.filter(user_group__deactivated=False).count(), 45
+        )
         self.assertTrue(UserGroup.objects.filter(id=user_group.id).exists())
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
         self.assert_json_success(result)
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
-        self.assertEqual(UserGroupMembership.objects.count(), 44)
-        self.assertFalse(UserGroup.objects.filter(id=user_group.id).exists())
+        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm, deactivated=False).count(), 9)
+        self.assertEqual(
+            UserGroupMembership.objects.filter(user_group__deactivated=False).count(), 44
+        )
+        self.assertFalse(UserGroup.objects.filter(id=user_group.id, deactivated=False).exists())
         # Test when invalid user group is supplied; transaction needed for
         # error handling
         with transaction.atomic():
@@ -838,14 +889,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
             else:
                 self.assert_json_error(result, error_msg)
 
-        def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
+        def check_deactivate_user_group_and_force_delete(
+            acting_user: str, error_msg: Optional[str] = None
+        ) -> None:
             self.login(acting_user)
             user_group = UserGroup.objects.get(name="support")
             with transaction.atomic():
                 result = self.client_delete(f"/json/user_groups/{user_group.id}")
             if error_msg is None:
                 self.assert_json_success(result)
-                self.assert_length(UserGroup.objects.filter(realm=realm), 9)
+                self.assert_length(UserGroup.objects.filter(realm=realm, deactivated=False), 9)
+                UserGroup.objects.get(name="support", deactivated=True).delete()
             else:
                 self.assert_json_error(result, error_msg)
 
@@ -860,8 +914,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_create_user_group("shiva", "Insufficient permission")
         check_create_user_group("iago")
 
-        check_delete_user_group("shiva", "Insufficient permission")
-        check_delete_user_group("iago")
+        check_deactivate_user_group_and_force_delete("shiva", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("iago")
 
         # Check moderators are allowed to create/delete user group but not members. Moderators are
         # allowed even if they are not a member of the group.
@@ -874,8 +928,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_create_user_group("cordelia", "Insufficient permission")
         check_create_user_group("shiva")
 
-        check_delete_user_group("hamlet", "Insufficient permission")
-        check_delete_user_group("shiva")
+        check_deactivate_user_group_and_force_delete("hamlet", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("shiva")
 
         # Check only members are allowed to create the user group and they are allowed to delete
         # a user group only if they are a member of that group.
@@ -888,9 +942,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_create_user_group("polonius", "Not allowed for guest users")
         check_create_user_group("cordelia")
 
-        check_delete_user_group("polonius", "Not allowed for guest users")
-        check_delete_user_group("cordelia", "Insufficient permission")
-        check_delete_user_group("hamlet")
+        check_deactivate_user_group_and_force_delete("polonius", "Not allowed for guest users")
+        check_deactivate_user_group_and_force_delete("cordelia", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("hamlet")
 
         # Check only full members are allowed to create the user group and they are allowed to delete
         # a user group only if they are a member of that group.
@@ -914,12 +968,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         hamlet.date_joined = timezone_now() - timedelta(days=9)
         hamlet.save()
 
-        check_delete_user_group("cordelia", "Insufficient permission")
-        check_delete_user_group("hamlet", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("cordelia", "Insufficient permission")
+        check_deactivate_user_group_and_force_delete("hamlet", "Insufficient permission")
 
         hamlet.date_joined = timezone_now() - timedelta(days=11)
         hamlet.save()
-        check_delete_user_group("hamlet")
+        check_deactivate_user_group_and_force_delete("hamlet")
 
     def test_user_group_edit_policy_for_updating_user_groups(self) -> None:
         othello = self.example_user("othello")

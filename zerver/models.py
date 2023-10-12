@@ -2283,6 +2283,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
 
     objects: CTEManager = CTEManager()
     name = models.CharField(max_length=MAX_NAME_LENGTH)
+    deactivated = models.BooleanField(default=False)
     direct_members = models.ManyToManyField(
         UserProfile, through="UserGroupMembership", related_name="direct_groups"
     )
