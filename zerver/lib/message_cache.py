@@ -73,8 +73,8 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24)
-def message_to_dict_json(message: Message, realm_id: Optional[int] = None) -> bytes:
-    return MessageDict.to_dict_uncached([message], realm_id)[message.id]
+def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -> bytes:
+    return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
 
 
 def update_message_cache(
@@ -84,7 +84,7 @@ def update_message_cache(
     messages)."""
     items_for_remote_cache = {}
     message_ids = []
-    changed_messages_to_dict = MessageDict.to_dict_uncached(changed_messages, realm_id)
+    changed_messages_to_dict = MessageDict.messages_to_encoded_cache(changed_messages, realm_id)
     for msg_id, msg in changed_messages_to_dict.items():
         message_ids.append(msg_id)
         key = to_dict_cache_key_id(msg_id)
@@ -157,8 +157,8 @@ class MessageDict:
         to our message object, with the side effect of
         populating the cache.
         """
-        json = message_to_dict_json(message, realm_id)
-        obj = extract_message_dict(json)
+        encoded_object_bytes = message_to_encoded_cache(message, realm_id)
+        obj = extract_message_dict(encoded_object_bytes)
 
         """
         The steps below are similar to what we do in
@@ -272,15 +272,15 @@ class MessageDict:
         return sew_messages_and_reactions(messages, reactions)
 
     @staticmethod
-    def to_dict_uncached(
+    def messages_to_encoded_cache(
         messages: Collection[Message], realm_id: Optional[int] = None
     ) -> Dict[int, bytes]:
-        messages_dict = MessageDict.to_dict_uncached_helper(messages, realm_id)
+        messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
         return encoded_messages
 
     @staticmethod
-    def to_dict_uncached_helper(
+    def messages_to_encoded_cache_helper(
         messages: Collection[Message], realm_id: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
