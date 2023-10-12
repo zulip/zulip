@@ -15,6 +15,7 @@ import orjson
 from dateutil.parser import parse as dateparser
 from django.utils.timezone import now as timezone_now
 from returns.curry import partial
+from typing_extensions import override
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.actions.bots import (
@@ -261,6 +262,7 @@ class BaseAction(ZulipTestCase):
     for extensive design details for this testing system.
     """
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")

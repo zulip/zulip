@@ -11,6 +11,7 @@ from typing import Any, Dict, Set, Tuple
 import orjson
 from django.core.management.base import CommandError
 from django.db.models import Q
+from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
@@ -40,6 +41,7 @@ senders/recipients.
 This is most often used for legal compliance.
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, required=True)
         parser.add_argument(
@@ -94,6 +96,7 @@ This is most often used for legal compliance.
             help="Limit to messages received by users with any of these emails (may be specified more than once).  This is a superset of --sender, since senders receive every message they send.",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         terms = set()
         if options["file"]:

@@ -1,5 +1,7 @@
 import urllib
 
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -9,6 +11,7 @@ class LibratoHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "librato"
     IS_ATTACHMENT = False
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         if self.IS_ATTACHMENT:
             return self.webhook_fixture_data("librato", fixture_name, file_type="json")

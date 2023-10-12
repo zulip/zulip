@@ -10,6 +10,7 @@ from django.core import validators
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db.models import Q, QuerySet
+from typing_extensions import override
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Client, Realm, UserProfile, get_client
@@ -45,6 +46,7 @@ class CreateUserParameters:
 
 class ZulipBaseCommand(BaseCommand):
     # Fix support for multi-line usage
+    @override
     def create_parser(self, prog_name: str, subcommand: str, **kwargs: Any) -> CommandParser:
         parser = super().create_parser(prog_name, subcommand, **kwargs)
         parser.formatter_class = RawTextHelpFormatter

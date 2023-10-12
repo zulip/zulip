@@ -3,6 +3,7 @@ from unittest import mock
 
 import orjson
 from django.db import connection, transaction
+from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.streams import do_change_stream_permission
@@ -166,6 +167,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
 
 
 class UnreadCountTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         with mock.patch(

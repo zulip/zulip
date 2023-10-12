@@ -3,12 +3,14 @@ from typing import List
 
 import orjson
 from django.core.exceptions import ValidationError
+from typing_extensions import override
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, RealmFilter, url_template_validator
 
 
 class RealmFilterTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         iago = self.example_user("iago")

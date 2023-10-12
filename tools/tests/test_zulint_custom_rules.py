@@ -3,6 +3,7 @@ from io import StringIO
 from unittest import TestCase
 from unittest.mock import patch
 
+from typing_extensions import override
 from zulint.custom_rules import RuleList
 
 from tools.linter_lib.custom_check import non_py_rules, python_rules
@@ -12,6 +13,7 @@ CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py
 
 
 class TestRuleList(TestCase):
+    @override
     def setUp(self) -> None:
         all_rules = list(python_rules.rules)
         for rule in non_py_rules:

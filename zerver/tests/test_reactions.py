@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Any, Dict, List
 from unittest import mock
 
 import orjson
+from typing_extensions import override
 
 from zerver.actions.reactions import notify_reaction_update
 from zerver.actions.streams import do_change_stream_permission
@@ -672,6 +673,7 @@ class EmojiReactionBase(ZulipTestCase):
 
 
 class DefaultEmojiReactionTests(EmojiReactionBase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         reaction_info = {
@@ -937,6 +939,7 @@ class ZulipExtraEmojiReactionTest(EmojiReactionBase):
 
 
 class RealmEmojiReactionTests(EmojiReactionBase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         green_tick_emoji = RealmEmoji.objects.get(name="green_tick")

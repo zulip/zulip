@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
+from typing_extensions import override
 
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_realm import do_create_realm
@@ -76,9 +77,11 @@ from zerver.models import (
 class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
     # Simulate code formatting.
 
+    @override
     def format_code(self, lang: Optional[str], code: str) -> str:
         return (lang or "") + ":" + code
 
+    @override
     def placeholder(self, s: str) -> str:
         return "**" + s.strip("\n") + "**"
 
@@ -387,10 +390,12 @@ Outside. Should convert:<>
 
 
 class MarkdownTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         clear_state_for_testing()
 
+    @override
     def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
         if isinstance(first, str) and isinstance(second, str):
             if first != second:

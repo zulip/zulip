@@ -6,6 +6,7 @@ from unittest import mock
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
+from typing_extensions import override
 
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_user import notify_new_user
@@ -127,6 +128,7 @@ class SendLoginEmailTest(ZulipTestCase):
 
 
 class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_agents = [

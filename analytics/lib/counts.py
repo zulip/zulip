@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import connection, models
 from django.db.models import F
 from psycopg2.sql import SQL, Composable, Identifier, Literal
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from analytics.models import (
     BaseCount,
@@ -63,6 +63,7 @@ class CountStat:
         else:
             self.interval = self.time_increment
 
+    @override
     def __repr__(self) -> str:
         return f"<CountStat: {self.property}>"
 

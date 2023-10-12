@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 from django.core.files.base import File
 from django.core.files.storage import FileSystemStorage
+from typing_extensions import override
 
 if settings.DEBUG:
     from django.contrib.staticfiles.finders import find
@@ -22,6 +23,7 @@ else:
 
 
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
+    @override
     def hashed_name(
         self, name: str, content: Optional["File[bytes]"] = None, filename: Optional[str] = None
     ) -> str:

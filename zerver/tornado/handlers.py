@@ -14,6 +14,7 @@ from django.urls import set_script_prefix
 from django.utils.cache import patch_vary_headers
 from tornado.iostream import StreamClosedError
 from tornado.wsgi import WSGIContainer
+from typing_extensions import override
 
 from zerver.lib.response import AsynchronousResponse, json_response
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
@@ -82,6 +83,7 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str
 class AsyncDjangoHandler(tornado.web.RequestHandler):
     handler_id: int
 
+    @override
     def initialize(self, django_handler: base.BaseHandler) -> None:
         self.django_handler = django_handler
 
@@ -94,6 +96,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
 
         self._request: Optional[HttpRequest] = None
 
+    @override
     def __repr__(self) -> str:
         descriptor = get_descriptor_by_handler_id(self.handler_id)
         return f"AsyncDjangoHandler<{self.handler_id}, {descriptor}>"
@@ -154,6 +157,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         with suppress(StreamClosedError):
             await self.finish()
 
+    @override
     async def get(self, *args: Any, **kwargs: Any) -> None:
         request = await self.convert_tornado_request_to_django_request()
         response = await sync_to_async(
@@ -191,15 +195,19 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
             # connections.
             await sync_to_async(response.close, thread_sensitive=True)()
 
+    @override
     async def head(self, *args: Any, **kwargs: Any) -> None:
         await self.get(*args, **kwargs)
 
+    @override
     async def post(self, *args: Any, **kwargs: Any) -> None:
         await self.get(*args, **kwargs)
 
+    @override
     async def delete(self, *args: Any, **kwargs: Any) -> None:
         await self.get(*args, **kwargs)
 
+    @override
     def on_connection_close(self) -> None:
         # Register a Tornado handler that runs when client-side
         # connections are closed to notify the events system.

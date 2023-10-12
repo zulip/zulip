@@ -1,5 +1,7 @@
 from typing import Callable, List, Optional
 
+from typing_extensions import override
+
 
 class FormattedError(Exception):
     pass
@@ -9,6 +11,7 @@ class TemplateParserError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
 
+    @override
     def __str__(self) -> str:
         return self.message
 

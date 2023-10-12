@@ -2,6 +2,8 @@ import argparse
 import os
 from typing import Any
 
+from typing_extensions import override
+
 """
 Example usage for testing purposes. For testing data see the mattermost_fixtures
 in zerver/tests/.
@@ -22,6 +24,7 @@ from zerver.data_import.mattermost import do_convert_data
 class Command(BaseCommand):
     help = """Convert the mattermost data into Zulip data format."""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         dir_help = (
             "Directory containing exported JSON file and exported_emoji (optional) directory."
@@ -43,6 +46,7 @@ class Command(BaseCommand):
 
         parser.formatter_class = argparse.RawTextHelpFormatter
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         output_dir = options["output_dir"]
         if output_dir is None:

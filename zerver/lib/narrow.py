@@ -43,7 +43,7 @@ from sqlalchemy.sql import (
 )
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -204,6 +204,7 @@ class BadNarrowOperatorError(JsonableError):
         self.desc: str = desc
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Invalid narrow operator: {desc}")
 

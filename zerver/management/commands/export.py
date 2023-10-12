@@ -5,6 +5,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
@@ -72,6 +73,7 @@ class Command(ZulipBaseCommand):
     minutes.  But this will vary a lot depending on the average number
     of recipients of messages in the realm, hardware, etc."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--output", dest="output_dir", help="Directory to write exported data to."
@@ -106,6 +108,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

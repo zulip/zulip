@@ -5,7 +5,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.test import override_settings
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import Concatenate, ParamSpec, override
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
@@ -171,6 +171,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
 
 class TestServiceBotStateHandler(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
@@ -348,6 +349,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
 
 class TestServiceBotConfigHandler(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
@@ -452,6 +454,7 @@ def patch_queue_publish(
 
 
 class TestServiceBotEventTriggers(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")

@@ -16,6 +16,7 @@ import markdown
 from django.conf import settings
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 import zerver.openapi.python_examples
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
@@ -404,6 +405,7 @@ class APIMarkdownExtension(Extension):
             ],
         }
 
+    @override
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             APICodeExamplesPreprocessor(md, self.getConfigs()),
@@ -435,6 +437,7 @@ class BasePreprocessor(Preprocessor):
         self.api_url = config["api_url"]
         self.REGEXP = regexp
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         done = False
         while not done:
@@ -472,6 +475,7 @@ class APICodeExamplesPreprocessor(BasePreprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(MACRO_REGEXP, md, config)
 
+    @override
     def generate_text(self, match: Match[str]) -> List[str]:
         language = match.group(1) or ""
         function = match.group(2)
@@ -491,6 +495,7 @@ class APICodeExamplesPreprocessor(BasePreprocessor):
             )
         return text
 
+    @override
     def render(self, function: str) -> List[str]:
         path, method = function.rsplit(":", 1)
         return generate_openapi_fixture(path, method)
@@ -500,6 +505,7 @@ class APIHeaderPreprocessor(BasePreprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(MACRO_REGEXP_HEADER, md, config)
 
+    @override
     def render(self, function: str) -> List[str]:
         path, method = function.rsplit(":", 1)
         raw_title = get_openapi_summary(path, method)
@@ -518,6 +524,7 @@ class ResponseDescriptionPreprocessor(BasePreprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(MACRO_REGEXP_RESPONSE_DESC, md, config)
 
+    @override
     def render(self, function: str) -> List[str]:
         path, method = function.rsplit(":", 1)
         raw_description = get_responses_description(path, method)
@@ -528,6 +535,7 @@ class ParameterDescriptionPreprocessor(BasePreprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(MACRO_REGEXP_PARAMETER_DESC, md, config)
 
+    @override
     def render(self, function: str) -> List[str]:
         path, method = function.rsplit(":", 1)
         raw_description = get_parameters_description(path, method)

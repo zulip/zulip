@@ -6,6 +6,7 @@ from email.message import EmailMessage
 from typing import Dict, List, Match, Optional, Tuple
 
 from django.conf import settings
+from typing_extensions import override
 
 from zerver.actions.message_send import (
     check_send_message,
@@ -527,9 +528,11 @@ class RateLimitedRealmMirror(RateLimitedObject):
         self.realm = realm
         super().__init__()
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:{self.realm.string_id}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_MIRROR_REALM_RULES
 

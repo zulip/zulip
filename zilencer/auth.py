@@ -8,7 +8,7 @@ from django.urls.resolvers import URLPattern
 from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import Concatenate, ParamSpec, override
 
 from zerver.decorator import get_basic_credentials, process_client
 from zerver.lib.exceptions import (
@@ -42,12 +42,14 @@ class InvalidZulipServerError(JsonableError):
         self.role: str = role
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return "Zulip server auth failure: {role} is not registered -- did you run `manage.py register_server`?"
 
 
 class InvalidZulipServerKeyError(InvalidZulipServerError):
     @staticmethod
+    @override
     def msg_format() -> str:
         return "Zulip server auth failure: key does not match role {role}"
 

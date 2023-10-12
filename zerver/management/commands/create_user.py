@@ -3,6 +3,7 @@ from typing import Any
 
 from django.core.management.base import CommandError
 from django.db.utils import IntegrityError
+from typing_extensions import override
 
 from zerver.actions.create_user import do_create_user
 from zerver.lib.management import ZulipBaseCommand
@@ -21,12 +22,14 @@ If the server has Terms of Service configured, the user will be
 prompted to accept the Terms of Service the first time they login.
 """
 
+    @override
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         self.add_create_user_args(parser)
         self.add_realm_args(
             parser, required=True, help="The name of the existing realm to which to add the user."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -231,6 +233,7 @@ Value without title
             expected_message,
         )
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         if "urlencoded" in fixture_name:
             file_type = "txt"
