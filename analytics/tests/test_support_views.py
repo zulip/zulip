@@ -34,12 +34,12 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-    # Set up some initial example data.
-    for i in range(20):
-        hostname = f"zulip-{i}.example.com"
-        RemoteZulipServer.objects.create(
-            hostname=hostname, contact_email=f"admin@{hostname}", plan_type=1, uuid=uuid.uuid4()
-        )
+        # Set up some initial example data.
+        for i in range(20):
+            hostname = f"zulip-{i}.example.com"
+            RemoteZulipServer.objects.create(
+                hostname=hostname, contact_email=f"admin@{hostname}", plan_type=1, uuid=uuid.uuid4()
+            )
 
     def test_search(self) -> None:
         self.login("cordelia")
