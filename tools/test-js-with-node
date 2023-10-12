@@ -98,6 +98,7 @@ EXEMPT_FILES = make_set(
         "web/src/drafts_overlay_ui.js",
         "web/src/dropdown_widget.js",
         "web/src/echo.js",
+        "web/src/electron_bridge.d.ts",
         "web/src/emoji_picker.js",
         "web/src/emojisets.ts",
         "web/src/favicon.ts",
