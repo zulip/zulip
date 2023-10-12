@@ -7,6 +7,10 @@ import sys
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
 from scripts.lib.supervisor import list_supervisor_processes
 from scripts.lib.zulip_tools import (
     ENDC,
