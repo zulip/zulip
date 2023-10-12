@@ -1,5 +1,7 @@
 import urllib
 
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -127,6 +129,7 @@ one or more new messages.
             )
         self.assertEqual(str(exc.exception), expected_error_message)
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         return urllib.parse.urlencode(
             {"payload": self.webhook_fixture_data("travis", fixture_name, file_type="json")}

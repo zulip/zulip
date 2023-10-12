@@ -6,6 +6,7 @@ import markdown
 from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 from zerver.openapi.openapi import (
@@ -49,6 +50,7 @@ OBJECT_CODE_TEMPLATE = "<code>{value}</code>".strip()
 
 
 class MarkdownArgumentsTableGenerator(Extension):
+    @override
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             APIArgumentsTablePreprocessor(md, self.getConfigs()),
@@ -61,6 +63,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         done = False
         while not done:

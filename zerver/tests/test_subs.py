@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.create_realm import do_create_realm
@@ -3932,6 +3933,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
 
 class SubscriptionAPITest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         """
         All tests will be logged in as hamlet. Also save various useful values
@@ -5821,6 +5823,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
 
 
 class GetSubscribersTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")

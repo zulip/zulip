@@ -1,6 +1,8 @@
 from typing import Dict
 from unittest.mock import MagicMock, patch
 
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 
@@ -169,5 +171,6 @@ class BeanstalkHookTests(WebhookTestCase):
             self.test_user, "svn_changefile", expected_topic, expected_message, content_type=None
         )
 
+    @override
     def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {"payload": self.webhook_fixture_data("beanstalk", fixture_name)}

@@ -1,5 +1,7 @@
 from typing import Dict
 
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -36,5 +38,6 @@ class TransifexHookTests(WebhookTestCase):
         )
         self.check_webhook("", expected_topic, expected_message)
 
+    @override
     def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {}

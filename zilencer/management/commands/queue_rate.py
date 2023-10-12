@@ -3,6 +3,7 @@ from timeit import timeit
 from typing import Any, Union
 
 from django.core.management.base import BaseCommand, CommandParser
+from typing_extensions import override
 
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.worker.queue_processors import BatchNoopWorker, NoopWorker
@@ -11,6 +12,7 @@ from zerver.worker.queue_processors import BatchNoopWorker, NoopWorker
 class Command(BaseCommand):
     help = """Times the overhead of enqueuing and dequeuing messages from RabbitMQ."""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--count", help="Number of messages to enqueue", default=10000, type=int
@@ -33,6 +35,7 @@ class Command(BaseCommand):
             default=[],
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         print("Purging queue...")
         queue = SimpleQueueClient()

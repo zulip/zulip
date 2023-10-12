@@ -1,5 +1,7 @@
 from typing import Dict
 
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -51,5 +53,6 @@ class HelloSignHookTests(WebhookTestCase):
             topic=expected_topic,
         )
 
+    @override
     def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {"json": self.webhook_fixture_data("hellosign", fixture_name, file_type="json")}

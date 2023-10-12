@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.lib.export import do_export_user
 from zerver.lib.management import ZulipBaseCommand
@@ -19,6 +20,7 @@ class Command(ZulipBaseCommand):
     realm-public metadata needed to understand it; it does nothing
     with (for example) any bots owned by the user."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("email", metavar="<email>", help="email of user to export")
         parser.add_argument(
@@ -26,6 +28,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         user_profile = self.get_user(options["email"], realm)

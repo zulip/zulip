@@ -1,12 +1,15 @@
 from typing import Any
 from unittest import mock
 
+from typing_extensions import override
+
 from zerver.lib.attachments import user_attachments
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Attachment
 
 
 class AttachmentsTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         user_profile = self.example_user("cordelia")

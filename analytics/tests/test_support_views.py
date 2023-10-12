@@ -4,6 +4,7 @@ from unittest import mock
 
 import orjson
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
@@ -31,6 +32,7 @@ from zilencer.models import RemoteZulipServer
 
 
 class TestRemoteServerSupportEndpoint(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
 

@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
 from scripts.lib.zulip_tools import ENDC, WARNING
@@ -21,6 +22,7 @@ class Command(BaseCommand):
 
     Run as a cron job that runs every hour."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--time",
@@ -37,6 +39,7 @@ class Command(BaseCommand):
             "--verbose", action="store_true", help="Print timing information to stdout."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             os.mkdir(settings.ANALYTICS_LOCK_DIR)

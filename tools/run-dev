@@ -20,6 +20,7 @@ sanity_check.check_venv(__file__)
 
 from tornado import httpclient, httputil, web
 from tornado.platform.asyncio import AsyncIOMainLoop
+from typing_extensions import override
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
@@ -218,27 +219,35 @@ class BaseHandler(web.RequestHandler):
                 headers.add(header, v)
         return headers
 
+    @override
     def get(self) -> None:
         pass
 
+    @override
     def head(self) -> None:
         pass
 
+    @override
     def post(self) -> None:
         pass
 
+    @override
     def put(self) -> None:
         pass
 
+    @override
     def patch(self) -> None:
         pass
 
+    @override
     def options(self) -> None:
         pass
 
+    @override
     def delete(self) -> None:
         pass
 
+    @override
     async def prepare(self) -> None:
         assert self.request.method is not None
         assert self.request.remote_ip is not None
@@ -307,6 +316,7 @@ class Application(web.Application):
             enable_logging=enable_logging,
         )
 
+    @override
     def log_request(self, handler: web.RequestHandler) -> None:
         if self.settings["enable_logging"]:
             super().log_request(handler)

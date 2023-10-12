@@ -2,6 +2,8 @@ import sys
 from argparse import ArgumentParser
 from typing import Any
 
+from typing_extensions import override
+
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm
 
@@ -14,11 +16,13 @@ Usage examples:
 ./manage.py list_realms
 ./manage.py list_realms --all"""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--all", action="store_true", help="Print all the configuration settings of the realms."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realms = Realm.objects.all()
 

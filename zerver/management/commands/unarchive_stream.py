@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from typing import Any, Optional
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.streams import deactivated_streams_by_old_name, do_unarchive_stream
 from zerver.lib.management import ZulipBaseCommand
@@ -11,6 +12,7 @@ from zerver.models import RealmAuditLog, Stream
 class Command(ZulipBaseCommand):
     help = """Reactivate a stream that was deactivated."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         specify_stream = parser.add_mutually_exclusive_group(required=True)
         specify_stream.add_argument(
@@ -30,6 +32,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: Optional[str]) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

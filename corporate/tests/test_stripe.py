@@ -33,7 +33,7 @@ from django.core import signing
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
-from typing_extensions import ParamSpec
+from typing_extensions import ParamSpec, override
 
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
@@ -383,6 +383,7 @@ def mock_stripe(
 
 
 class StripeTestCase(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         realm = get_realm("zulip")
@@ -4171,6 +4172,7 @@ class EventStatusTest(StripeTestCase):
 
 
 class RequiresBillingAccessTest(StripeTestCase):
+    @override
     def setUp(self, *mocks: Mock) -> None:
         super().setUp()
         hamlet = self.example_user("hamlet")

@@ -5,6 +5,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
+from typing_extensions import override
 
 from zerver.data_import.slack import do_convert_data
 
@@ -12,6 +13,7 @@ from zerver.data_import.slack import do_convert_data
 class Command(BaseCommand):
     help = """Convert the Slack data into Zulip data format."""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "slack_data_path",
@@ -42,6 +44,7 @@ class Command(BaseCommand):
 
         parser.formatter_class = argparse.RawTextHelpFormatter
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         output_dir = options["output_dir"]
         if output_dir is None:

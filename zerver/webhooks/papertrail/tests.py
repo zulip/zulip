@@ -1,5 +1,7 @@
 from urllib.parse import urlencode
 
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -69,6 +71,7 @@ message body 4
 
         self.assertIn("Events key is missing from payload", e.exception.args[0])
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         # Papertrail webhook sends a POST request with payload parameter
         # containing the JSON body. Documented here:

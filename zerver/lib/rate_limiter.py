@@ -9,6 +9,7 @@ import redis
 from circuitbreaker import CircuitBreakerError, circuit
 from django.conf import settings
 from django.http import HttpRequest
+from typing_extensions import override
 
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import RateLimitedError
@@ -122,9 +123,11 @@ class RateLimitedUser(RateLimitedObject):
             backend = None
         super().__init__(backend=backend)
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:{self.user_id}:{self.domain}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         # user.rate_limits are general limits, applicable to the domain 'api_by_user'
         if self.rate_limits != "" and self.domain == "api_by_user":
@@ -146,10 +149,12 @@ class RateLimitedIPAddr(RateLimitedObject):
             backend = None
         super().__init__(backend=backend)
 
+    @override
     def key(self) -> str:
         # The angle brackets are important since IPv6 addresses contain :.
         return f"{type(self).__name__}:<{self.ip_addr}>:{self.domain}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return rules[self.domain]
 
@@ -257,6 +262,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
         return False, 0.0
 
     @classmethod
+    @override
     def get_api_calls_left(
         cls, entity_key: str, range_seconds: int, max_calls: int
     ) -> Tuple[int, float]:
@@ -272,21 +278,25 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
         return int(calls_remaining), reset_time - now
 
     @classmethod
+    @override
     def block_access(cls, entity_key: str, seconds: int) -> None:
         now = time.time()
         cls.timestamps_blocked_until[entity_key] = now + seconds
 
     @classmethod
+    @override
     def unblock_access(cls, entity_key: str) -> None:
         del cls.timestamps_blocked_until[entity_key]
 
     @classmethod
+    @override
     def clear_history(cls, entity_key: str) -> None:
         for reset_times_for_rule in cls.reset_times.values():
             reset_times_for_rule.pop(entity_key, None)
         cls.timestamps_blocked_until.pop(entity_key, None)
 
     @classmethod
+    @override
     def rate_limit_entity(
         cls, entity_key: str, rules: List[Tuple[int, int]], max_api_calls: int, max_api_window: int
     ) -> Tuple[bool, float]:
@@ -317,6 +327,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         ]
 
     @classmethod
+    @override
     def block_access(cls, entity_key: str, seconds: int) -> None:
         """Manually blocks an entity for the desired number of seconds"""
         _, _, blocking_key = cls.get_keys(entity_key)
@@ -326,16 +337,19 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             pipe.execute()
 
     @classmethod
+    @override
     def unblock_access(cls, entity_key: str) -> None:
         _, _, blocking_key = cls.get_keys(entity_key)
         client.delete(blocking_key)
 
     @classmethod
+    @override
     def clear_history(cls, entity_key: str) -> None:
         for key in cls.get_keys(entity_key):
             client.delete(key)
 
     @classmethod
+    @override
     def get_api_calls_left(
         cls, entity_key: str, range_seconds: int, max_calls: int
     ) -> Tuple[int, float]:
@@ -467,6 +481,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                     continue
 
     @classmethod
+    @override
     def rate_limit_entity(
         cls, entity_key: str, rules: List[Tuple[int, int]], max_api_calls: int, max_api_window: int
     ) -> Tuple[bool, float]:
@@ -501,9 +516,11 @@ class RateLimitedSpectatorAttachmentAccessByFile(RateLimitedObject):
         self.path_id = path_id
         super().__init__()
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:{self.path_id}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_RULES["spectator_attachment_access_by_file"]
 

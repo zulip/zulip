@@ -3,6 +3,7 @@ from typing import Any, Dict
 from unittest import mock
 
 import requests
+from typing_extensions import override
 
 from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.exceptions import JsonableError
@@ -23,6 +24,7 @@ from zerver.openapi.openapi import validate_against_openapi_schema
 
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
 
@@ -156,6 +158,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
 
 class TestSlackOutgoingWebhookService(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))

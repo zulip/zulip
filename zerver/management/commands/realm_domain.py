@@ -5,6 +5,7 @@ from typing import Any, Union
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.utils import IntegrityError
+from typing_extensions import override
 
 from zerver.lib.domains import validate_domain
 from zerver.lib.management import ZulipBaseCommand
@@ -14,6 +15,7 @@ from zerver.models import RealmDomain, get_realm_domains
 class Command(ZulipBaseCommand):
     help = """Manage domains for the specified realm"""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--op", default="show", help="What operation to do (add, show, remove)."
@@ -24,6 +26,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument("domain", metavar="<domain>", nargs="?", help="domain to add or remove")
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: Union[str, bool]) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

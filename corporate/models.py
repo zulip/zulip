@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import CASCADE, Q
+from typing_extensions import override
 
 from zerver.models import Realm, UserProfile
 from zilencer.models import RemoteZulipServer
@@ -36,6 +37,7 @@ class Customer(models.Model):
             )
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm!r} {self.stripe_customer_id}"
 

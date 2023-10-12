@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from analytics.models import UserCount
 from zerver.actions.alert_words import do_add_alert_words
@@ -140,6 +141,7 @@ class ExportFile(ZulipTestCase):
     """This class is a container for shared helper functions
     used for both the realm-level and user-level export tests."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         assert settings.LOCAL_UPLOADS_DIR is not None
