@@ -743,10 +743,8 @@ function register_click_handlers() {
         const name = people.get_by_user_id(user_id).full_name;
 
         const is_active = people.is_active_user_for_popover(user_id)
-        console.log(is_active)
 
         const mention = people.get_mention_syntax(name, user_id, !is_active);
-        console.log(mention)
         
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();
