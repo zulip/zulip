@@ -40,7 +40,7 @@ from zerver.lib.message import (
     topic_wildcard_mention_allowed,
     truncate_topic,
 )
-from zerver.lib.message_cache import update_to_dict_cache
+from zerver.lib.message_cache import update_message_cache
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -353,7 +353,7 @@ def do_update_embedded_data(
 
     message.save(update_fields=["content", "rendered_content"])
 
-    event["message_ids"] = update_to_dict_cache(changed_messages)
+    event["message_ids"] = update_message_cache(changed_messages)
 
     def user_info(um: UserMessage) -> Dict[str, Any]:
         return {
@@ -758,7 +758,7 @@ def do_update_message(
     if stream_being_edited is not None:
         realm_id = stream_being_edited.realm_id
 
-    event["message_ids"] = update_to_dict_cache(changed_messages, realm_id)
+    event["message_ids"] = update_message_cache(changed_messages, realm_id)
 
     def user_info(um: UserMessage) -> Dict[str, Any]:
         return {
