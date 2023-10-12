@@ -56,17 +56,7 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         """
         sender = self.example_user("hamlet")
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": "2"})
-        self.assert_json_error(result, "Invalid data type for recipients")
-
-    def test_invalid_to_for_stream_messages(self) -> None:
-        """
-        Sending stream typing notifications without 'to' as an integer fails.
-        """
-        sender = self.example_user("hamlet")
-        result = self.api_post(
-            sender, "/api/v1/typing", {"type": "stream", "op": "start", "to": "invalid"}
-        )
-        self.assert_json_error(result, "Invalid data type for stream ID")
+        self.assert_json_error(result, "to is not a list")
 
     def test_invalid_user_id_for_direct_messages(self) -> None:
         """
@@ -75,7 +65,7 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         sender = self.example_user("hamlet")
         invalid_user_ids = orjson.dumps([2, "a", 4]).decode()
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": invalid_user_ids})
-        self.assert_json_error(result, "Recipient list may only contain user IDs")
+        self.assert_json_error(result, "to[1] is not an integer")
 
     def test_empty_to_array_direct_messages(self) -> None:
         """
@@ -102,6 +92,32 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": invalid})
         self.assert_json_error(result, "Invalid user ID 9999999")
 
+
+class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
+    def test_missing_stream_id(self) -> None:
+        """
+        Sending stream typing notifications without 'stream_id' fails.
+        """
+        sender = self.example_user("hamlet")
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {"type": "stream", "op": "start", "topic": "test"},
+        )
+        self.assert_json_error(result, "Missing stream_id")
+
+    def test_invalid_stream_id(self) -> None:
+        """
+        Sending stream typing notifications without 'stream_id' as an integer fails.
+        """
+        sender = self.example_user("hamlet")
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {"type": "stream", "op": "start", "stream_id": "invalid", "topic": "test"},
+        )
+        self.assert_json_error(result, 'Argument "stream_id" is not valid JSON.')
+
     def test_includes_stream_id_but_not_topic(self) -> None:
         sender = self.example_user("hamlet")
         stream_id = self.get_stream_id("general")
@@ -109,7 +125,7 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         result = self.api_post(
             sender,
             "/api/v1/typing",
-            {"type": "stream", "op": "start", "to": str(stream_id)},
+            {"type": "stream", "op": "start", "stream_id": str(stream_id)},
         )
         self.assert_json_error(result, "Missing topic")
 
@@ -124,7 +140,7 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
             {
                 "type": "stream",
                 "op": "start",
-                "to": str(stream_id),
+                "stream_id": str(stream_id),
                 "topic": topic,
             },
         )
@@ -364,7 +380,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         params = dict(
             type="stream",
             op="start",
-            to=str(stream_id),
+            stream_id=str(stream_id),
             topic=topic,
         )
 
@@ -398,7 +414,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         params = dict(
             type="stream",
             op="stop",
-            to=str(stream_id),
+            stream_id=str(stream_id),
             topic=topic,
         )
 
@@ -467,7 +483,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         params = dict(
             type="stream",
             op="start",
-            to=str(stream_id),
+            stream_id=str(stream_id),
             topic=topic,
         )
 
