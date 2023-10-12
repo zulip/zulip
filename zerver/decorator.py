@@ -33,7 +33,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
-from sentry_sdk import capture_exception
 from two_factor.utils import default_device
 from typing_extensions import Concatenate, ParamSpec
 
@@ -61,6 +60,7 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format
+from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
 from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
 
 if TYPE_CHECKING:
@@ -312,12 +312,15 @@ def log_unsupported_webhook_event(request: HttpRequest, summary: str) -> None:
 
 def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> None:
     extra = {"request": request}
+    # We intentionally omit the stack_info for these events, where
+    # they are intentionally raised, and the stack_info between that
+    # point and this one is not interesting.
     if isinstance(err, AnomalousWebhookPayloadError):
-        webhook_anomalous_payloads_logger.exception(str(err), stack_info=True, extra=extra)
+        webhook_anomalous_payloads_logger.exception(err, extra=extra)
     elif isinstance(err, UnsupportedWebhookEventTypeError):
-        webhook_unsupported_events_logger.exception(str(err), stack_info=True, extra=extra)
+        webhook_unsupported_events_logger.exception(err, extra=extra)
     else:
-        webhook_logger.exception(str(err), stack_info=True, extra=extra)
+        webhook_logger.exception(err, stack_info=True, extra=extra)
 
 
 def full_webhook_client_name(raw_client_name: Optional[str] = None) -> Optional[str]:
@@ -357,21 +360,20 @@ def webhook_view(
             try:
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
-                if isinstance(err, InvalidJSONError) and notify_bot_owner_on_invalid_json:
-                    # NOTE: importing this at the top of file leads to a
-                    # cyclic import; correct fix is probably to move
-                    # notify_bot_owner_about_invalid_json to a smaller file.
-                    from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
-
-                    notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
-                elif isinstance(err, JsonableError) and not isinstance(err, WebhookError):
-                    pass
-                else:
-                    if isinstance(err, WebhookError):
-                        err.webhook_name = webhook_client_name
-                    if isinstance(err, UnsupportedWebhookEventTypeError):
-                        capture_exception(err)
+                if not isinstance(err, JsonableError):
+                    # An unexpected exception of some form -- log it
                     log_exception_to_webhook_logger(request, err)
+                elif isinstance(err, WebhookError):
+                    # Anything explicitly a webhook error deserves to
+                    # go to the webhook logs.  The error middleware
+                    # skips logging these exceptions a second time.
+                    err.webhook_name = webhook_client_name
+                    log_exception_to_webhook_logger(request, err)
+                elif isinstance(err, InvalidJSONError) and notify_bot_owner_on_invalid_json:
+                    # Invalid JSON is not notable for the logs -- it's
+                    # the sender's fault, so tell the owner
+                    notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
+
                 raise err
 
         # Store the event types registered for this webhook as an attribute, which can be access
@@ -773,16 +775,17 @@ def authenticated_rest_api_view(
             except Exception as err:
                 if not webhook_client_name:
                     raise err
-                if isinstance(err, JsonableError) and not isinstance(
-                    err, WebhookError
-                ):  # nocoverage
-                    raise err
 
-                if isinstance(err, WebhookError):
+                if not isinstance(err, JsonableError):
+                    # An unexpected exception of some form -- log it
+                    log_exception_to_webhook_logger(request, err)
+                elif isinstance(err, WebhookError):
+                    # Anything explicitly a webhook error deserves to
+                    # go to the webhook logs.  The error middleware
+                    # skips logging these exceptions a second time.
                     err.webhook_name = webhook_client_name
-                if isinstance(err, UnsupportedWebhookEventTypeError):
-                    capture_exception(err)
-                log_exception_to_webhook_logger(request, err)
+                    log_exception_to_webhook_logger(request, err)
+
                 raise err
 
         return _wrapped_func_arguments

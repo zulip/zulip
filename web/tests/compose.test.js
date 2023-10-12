@@ -198,7 +198,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
                 sender_id: new_user.user_id,
                 queue_id: undefined,
                 resend: false,
-                stream_id: "",
+                stream_id: undefined,
                 topic: "",
                 to: `[${alice.user_id}]`,
                 reply_to: "alice@example.com",

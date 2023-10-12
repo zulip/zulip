@@ -15,7 +15,12 @@ from zerver.actions.message_send import (
     check_send_stream_message_by_id,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
+from zerver.lib.exceptions import (
+    AnomalousWebhookPayloadError,
+    ErrorCode,
+    JsonableError,
+    StreamDoesNotExistError,
+)
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -61,7 +66,7 @@ def notify_bot_owner_about_invalid_json(
     )
 
 
-class MissingHTTPEventHeaderError(JsonableError):
+class MissingHTTPEventHeaderError(AnomalousWebhookPayloadError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
     data_fields = ["header"]
 
@@ -166,12 +171,12 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 
 
 def validate_extract_webhook_http_header(
-    request: HttpRequest, header: str, integration_name: str, fatal: bool = True
-) -> Optional[str]:
+    request: HttpRequest, header: str, integration_name: str
+) -> str:
     assert request.user.is_authenticated
 
     extracted_header = request.headers.get(header)
-    if extracted_header is None and fatal:
+    if extracted_header is None:
         message_body = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=request.user.full_name,
             request_path=request.path,

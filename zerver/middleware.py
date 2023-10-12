@@ -28,7 +28,7 @@ from typing_extensions import Concatenate, ParamSpec
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
-from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
+from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
@@ -384,7 +384,10 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             response = json_response_from_error(exception)
-            if response.status_code < 500:
+            if response.status_code < 500 or isinstance(exception, WebhookError):
+                # Webhook errors are handled in
+                # authenticated_rest_api_view / webhook_view, so we
+                # just return the response without logging further.
                 return response
         elif RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
             response = json_response(res_type="error", msg=_("Internal server error"), status=500)

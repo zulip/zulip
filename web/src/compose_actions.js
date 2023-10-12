@@ -111,10 +111,12 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message();
     compose_fade.start_compose(msg_type);
-    stream_bar.decorate(
-        opts.stream_id,
-        $("#stream_message_recipient_topic .message_header_stream"),
-    );
+    if (msg_type === "stream") {
+        stream_bar.decorate(
+            opts.stream_id,
+            $("#stream_message_recipient_topic .message_header_stream"),
+        );
+    }
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -148,7 +150,7 @@ export function maybe_scroll_up_selected_message() {
 export function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     return {
         message_type: msg_type,
-        stream_id: "",
+        stream_id: undefined,
         topic: "",
         private_message_recipient: "",
         trigger: "unknown",
@@ -221,10 +223,12 @@ export function start(msg_type, opts) {
         clear_box();
     }
 
-    const $stream_header_colorblock = $(
-        "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
-    );
-    stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
+    if (msg_type === "stream") {
+        const $stream_header_colorblock = $(
+            "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
+        );
+        stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
+    }
 
     if (msg_type === "private") {
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
