@@ -3022,6 +3022,11 @@ select.invite-as {
     .fa-copy:hover {
         color: hsl(170deg 48% 54%);
     }
+
+    .overlay-body {
+        max-height: 60vh;
+        padding: 15px;
+    }
 }
 
 @media (width < $xl_min) {
