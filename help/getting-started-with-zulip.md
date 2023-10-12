@@ -18,29 +18,29 @@ it, you'll never want to use a different team chat app!
 
 ## Reading your messages
 
-Like your email inbox, Zulip works best if you read it topic-by-topic.
+{!conversation-definition.md!}
 
-### Finding a topic to read
+{!conversation-recommendation.md!}
+
+### Finding a conversation to read
 
 #### From the Inbox view
 
-{!inbox.md!}
+{!inbox-intro.md!}
+
+{!inbox-instructions.md!}
 
 #### From Recent conversations
 
 {!recent-conversations.md!}
 
-#### From the list of streams
+#### From the left sidebar
 
 {!left-sidebar-topics.md!}
 
-### Reading topics
+### Reading conversations
 
 {!reading-topics.md!}
-
-### Reading direct messages
-
-{!reading-dms.md!}
 
 ## Sending messages
 
