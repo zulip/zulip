@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import render_gear_menu from "../templates/gear_menu.hbs";
 
-import {$t} from "./i18n";
+import * as gear_menu_util from "./gear_menu_util";
 import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
 
@@ -79,37 +79,6 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
-export function version_display_string(): string {
-    const version = page_params.zulip_version;
-    const is_fork = page_params.zulip_merge_base && page_params.zulip_merge_base !== version;
-
-    if (page_params.zulip_version.endsWith("-dev+git")) {
-        // The development environment uses this version string format.
-        return $t({defaultMessage: "Zulip Server dev environment"});
-    }
-
-    if (is_fork) {
-        // For forks, we want to describe the Zulip version this was
-        // forked from, and that it was modified.
-        const display_version = page_params.zulip_merge_base
-            .replace(/\+git.*/, "")
-            .replace(/-dev.*/, "-dev");
-        return $t({defaultMessage: "Zulip Server {display_version} (modified)"}, {display_version});
-    }
-
-    // The below cases are all for official versions; either a
-    // release, or Git commit from one of Zulip's official branches.
-
-    if (version.includes("+git")) {
-        // A version from a Zulip official maintenance branch such as 5.x.
-        const display_version = version.replace(/\+git.*/, "");
-        return $t({defaultMessage: "Zulip Server {display_version} (patched)"}, {display_version});
-    }
-
-    const display_version = version.replace(/\+git.*/, "").replace(/-dev.*/, "-dev");
-    return $t({defaultMessage: "Zulip Server {display_version}"}, {display_version});
-}
-
 export function initialize(): void {
     const rendered_gear_menu = render_gear_menu({
         realm_name: page_params.realm_name,
@@ -124,7 +93,7 @@ export function initialize(): void {
         is_education_org: page_params.realm_org_type === 30 || page_params.realm_org_type === 35,
         standard_plan_name: "Zulip Cloud Standard",
         server_needs_upgrade: page_params.server_needs_upgrade,
-        version_display_string: version_display_string(),
+        version_display_string: gear_menu_util.version_display_string(),
         apps_page_url: page_params.apps_page_url,
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
