@@ -8,9 +8,9 @@
     <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
 
 ## Related articles
-* [Finding a topic to read](/help/finding-a-topic-to-read)
-* [Reading topics](/help/reading-topics)
+* [Finding a conversation to read](/help/finding-a-topic-to-read)
+* [Reading conversations](/help/reading-topics)
 * [Reading strategies](/help/reading-strategies)
-* [All messages](/help/all-messages)
 * [Inbox](/help/inbox)
+* [All messages](/help/all-messages)
 * [Configure default view](/help/configure-default-view)
