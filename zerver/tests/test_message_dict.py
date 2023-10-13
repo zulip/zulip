@@ -171,14 +171,12 @@ class MessageDictTest(ZulipTestCase):
         self.assertTrue(num_ids >= 600)
 
         with self.assert_database_query_count(7):
-            rows = list(MessageDict.get_raw_db_rows(ids))
-
-            objs = [MessageDict.build_dict_from_raw_db_row(row) for row in rows]
+            objs = MessageDict.ids_to_dict(ids)
             MessageDict.post_process_dicts(
                 objs, apply_markdown=False, client_gravatar=False, realm=realm
             )
 
-        self.assert_length(rows, num_ids)
+        self.assert_length(objs, num_ids)
 
     def test_applying_markdown(self) -> None:
         sender = self.example_user("othello")
@@ -200,8 +198,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row)
+        dct = MessageDict.ids_to_dict([message.id])[0]
         expected_content = "<p>hello <strong>world</strong></p>"
         self.assertEqual(dct["rendered_content"], expected_content)
         message = Message.objects.get(id=message.id)
@@ -231,8 +228,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row)
+        dct = MessageDict.ids_to_dict([message.id])[0]
         error_content = (
             "<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>"
         )
@@ -298,8 +294,7 @@ class MessageDictTest(ZulipTestCase):
         reaction = Reaction.objects.create(
             message=message, user_profile=sender, emoji_name="simple_smile"
         )
-        row = MessageDict.get_raw_db_rows([message.id])[0]
-        msg_dict = MessageDict.build_dict_from_raw_db_row(row)
+        msg_dict = MessageDict.ids_to_dict([message.id])[0]
         self.assertEqual(msg_dict["reactions"][0]["emoji_name"], reaction.emoji_name)
         self.assertEqual(msg_dict["reactions"][0]["user_id"], sender.id)
         self.assertEqual(msg_dict["reactions"][0]["user"]["id"], sender.id)
