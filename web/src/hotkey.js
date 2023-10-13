@@ -410,11 +410,13 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(".dropdown.open, .dropup.open").length > 0 && $(e.target).attr("role") === "menuitem") {
-        // on dropdown menu elements, force a click and prevent default.
-        // this is because these links do not have an href and so don't force a
-        // default action.
+    if (popovers.any_active() && $(e.target).attr("role") === "menuitem") {
+        // If a popover is open and we pressed Enter on a menu item,
+        // call click directly on the item to navigate to the `href`.
+        // trigger("click") doesn't work for them to navigate to `href`.
         e.target.click();
+        e.preventDefault();
+        popovers.hide_all();
         return true;
     }
 
