@@ -278,23 +278,24 @@ class MessageDict:
     def messages_to_encoded_cache(
         messages: QuerySet[Message], realm_id: Optional[int] = None
     ) -> Dict[int, bytes]:
-        messages_dict = MessageDict.messages_to_dicts(messages, realm_id)
+        messages_dict = MessageDict.messages_to_dicts(messages, realm_id=realm_id)
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
         return encoded_messages
 
     @staticmethod
     def messages_to_dicts(
-        messages: QuerySet[Message], realm_id: Optional[int] = None
+        messages: QuerySet[Message],
+        *,
+        realm_id: Optional[int] = None,
+        use_sender_realm: bool = False,
     ) -> List[Dict[str, Any]]:
-        # Near duplicate of the build_message_dict + get_raw_db_rows
-        # code path that accepts already fetched Message objects
-        # rather than message IDs.
-
         def get_rendering_realm_id(message: Message) -> int:
             # realm_id can differ among users, currently only possible
             # with cross realm bots.
             if realm_id is not None:
                 return realm_id
+            if use_sender_realm:
+                return message.sender.realm_id
             if message.recipient.type == Recipient.STREAM:
                 return Stream.objects.get(id=message.recipient.type_id).realm_id
             return message.realm_id
@@ -343,28 +344,9 @@ class MessageDict:
 
     @staticmethod
     def ids_to_dict(needed_ids: List[int]) -> List[Dict[str, Any]]:
-        # This is a special purpose function optimized for
-        # callers like get_messages_backend().
-        fields = [
-            "id",
-            DB_TOPIC_NAME,
-            "date_sent",
-            "last_edit_time",
-            "edit_history",
-            "content",
-            "rendered_content",
-            "rendered_content_version",
-            "recipient_id",
-            "recipient__type",
-            "recipient__type_id",
-            "sender_id",
-            "sending_client__name",
-            "sender__realm_id",
-        ]
-        # Uses index: zerver_message_pkey
-        messages = Message.objects.filter(id__in=needed_ids).values(*fields)
-        MessageDict.sew_submessages_and_reactions_to_msgs(messages)
-        return [MessageDict.build_dict_from_raw_db_row(row) for row in messages]
+        return MessageDict.messages_to_dicts(
+            Message.objects.filter(id__in=needed_ids), use_sender_realm=True
+        )
 
     @staticmethod
     def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -384,7 +366,7 @@ class MessageDict:
             sender_id=row["sender_id"],
             sender_realm_id=row["sender__realm_id"],
             sending_client_name=row["sending_client__name"],
-            rendering_realm_id=row.get("rendering_realm_id", row["sender__realm_id"]),
+            rendering_realm_id=row["rendering_realm_id"],
             recipient_id=row["recipient_id"],
             recipient_type=row["recipient__type"],
             recipient_type_id=row["recipient__type_id"],
