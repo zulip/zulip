@@ -247,9 +247,9 @@ export function compute_placeholder_text(opts) {
     }
 
     // For direct messages
-    if (opts.private_message_recipient) {
+       if (opts.private_message_recipient) {
         const recipient_list = opts.private_message_recipient.split(",");
-        const recipient_names = recipient_list
+        const recipient_names = new Intl.ListFormat(navigator.language||navigator.userLanguage).format(recipient_list
             .map((recipient) => {
                 const user = people.get_by_email(recipient);
                 if (people.should_add_guest_user_indicator(user.user_id)) {
@@ -257,8 +257,8 @@ export function compute_placeholder_text(opts) {
                 }
                 return user.full_name;
             })
-            .join(", ");
-
+           
+           ) 
         if (recipient_list.length === 1) {
             // If it's a single user, display status text if available
             const user = people.get_by_email(recipient_list[0]);
