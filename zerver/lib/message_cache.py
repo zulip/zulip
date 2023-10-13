@@ -50,8 +50,12 @@ def update_message_cache(
         message_ids.append(msg_id)
         key = to_dict_cache_key_id(msg_id)
         items_for_remote_cache[key] = (msg_bytes,)
+        if len(items_for_remote_cache) >= batch_size:
+            cache_set_many(items_for_remote_cache)
+            items_for_remote_cache = {}
 
-    cache_set_many(items_for_remote_cache)
+    if items_for_remote_cache:
+        cache_set_many(items_for_remote_cache)
     return message_ids
 
 
