@@ -1,8 +1,17 @@
 import $ from "jquery";
+import WinChan from "winchan";
 
-import render_gear_menu from "../templates/gear_menu.hbs";
+import render_gear_menu_popover from "../templates/gear_menu_popover.hbs";
 
+import * as blueslip from "./blueslip";
+import * as channel from "./channel";
+import * as dark_theme from "./dark_theme";
+import * as message_lists from "./message_lists";
+import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
+import * as popovers from "./popovers";
+import * as settings_display from "./settings_display";
+import {parse_html} from "./ui_util";
 
 /*
 For various historical reasons there isn't one
@@ -77,23 +86,132 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
+function render(instance) {
+    const rendered_gear_menu = render_gear_menu_popover(
+        popover_menus_data.get_gear_menu_content_context(),
+    );
+    instance.setContent(parse_html(rendered_gear_menu));
+}
+
 export function initialize() {
-    const rendered_gear_menu = render_gear_menu(popover_menus_data.get_gear_menu_content_context());
-    $("#navbar-buttons").html(rendered_gear_menu);
+    popover_menus.register_popover_menu("#gear-menu", {
+        placement: "bottom",
+        offset: [-50, 0],
+        popperOptions: {
+            strategy: "fixed",
+            modifiers: [
+                {
+                    name: "eventListeners",
+                    options: {
+                        scroll: false,
+                    },
+                },
+            ],
+        },
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("navbar-dropdown-tippy");
+            popover_menus.popover_instances.gear_menu = instance;
+            $(".focus-dropdown").on("focus", (e) => {
+                e.preventDefault();
+                $("#gear-menu-dropdown").find(".org-version a").trigger("focus");
+            });
+
+            $popper.on("click", ".webathena_login", (e) => {
+                $("#zephyr-mirror-error").removeClass("show");
+                const principal = ["zephyr", "zephyr"];
+                WinChan.open(
+                    {
+                        url: "https://webathena.mit.edu/#!request_ticket_v1",
+                        relay_url: "https://webathena.mit.edu/relay.html",
+                        params: {
+                            realm: "ATHENA.MIT.EDU",
+                            principal,
+                        },
+                    },
+                    (err, r) => {
+                        if (err) {
+                            blueslip.warn(err);
+                            return;
+                        }
+                        if (r.status !== "OK") {
+                            blueslip.warn(r);
+                            return;
+                        }
+
+                        channel.post({
+                            url: "/accounts/webathena_kerberos_login/",
+                            data: {cred: JSON.stringify(r.session)},
+                            success() {
+                                $("#zephyr-mirror-error").removeClass("show");
+                            },
+                            error() {
+                                $("#zephyr-mirror-error").addClass("show");
+                            },
+                        });
+                    },
+                );
+                instance.hide();
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            $popper.on("click", ".change-language-spectator", (e) => {
+                instance.hide();
+                e.preventDefault();
+                e.stopPropagation();
+                settings_display.launch_default_language_setting_modal();
+            });
+
+            // We cannot update recipient bar color using dark_theme.enable/disable due to
+            // it being called before message lists are initialized and the order cannot be changed.
+            // Also, since these buttons are only visible for spectators which doesn't have events,
+            // if theme is changed in a different tab, the theme of this tab remains the same.
+            $popper.on("click", "#gear-menu-dropdown .dark-theme", (e) => {
+                instance.hide();
+                e.preventDefault();
+                e.stopPropagation();
+                requestAnimationFrame(() => {
+                    dark_theme.enable();
+                    message_lists.update_recipient_bar_background_color();
+                });
+            });
+
+            $popper.on("click", "#gear-menu-dropdown .light-theme", (e) => {
+                instance.hide();
+                e.preventDefault();
+                e.stopPropagation();
+                requestAnimationFrame(() => {
+                    dark_theme.disable();
+                    message_lists.update_recipient_bar_background_color();
+                });
+            });
+        },
+        onShow: render,
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.gear_menu = undefined;
+        },
+    });
 }
 
-export function open() {
-    $("#settings-dropdown").trigger("click");
-    // there are invisible li tabs, which should not be clicked.
-    $("#gear-menu").find("li:not(.invisible) a").eq(0).trigger("focus");
+export function toggle() {
+    if (popover_menus.is_gear_menu_popover_displayed()) {
+        popovers.hide_all();
+        return;
+    }
+
+    // Since this can be called via hotkey, we need to
+    // hide any other popovers that may be open before.
+    if (popovers.any_active()) {
+        popovers.hide_all();
+    }
+
+    $("#gear-menu").trigger("click");
 }
 
-export function is_open() {
-    return $(".dropdown").hasClass("open");
-}
-
-export function close() {
-    if (is_open()) {
-        $(".dropdown").removeClass("open");
+export function rerender() {
+    if (popover_menus.is_gear_menu_popover_displayed()) {
+        render(popover_menus.get_gear_menu_instance());
     }
 }

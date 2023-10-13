@@ -289,11 +289,6 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (gear_menu.is_open()) {
-        gear_menu.close();
-        return true;
-    }
-
     if (processing_text()) {
         if (activity_ui.searching()) {
             activity_ui.escape_search();
@@ -736,12 +731,12 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (hotkey.message_view_only && gear_menu.is_open()) {
+    if (hotkey.message_view_only && popover_menus.is_gear_menu_popover_displayed()) {
         // Inside the gear menu, we don't process most hotkeys; the
         // exception is that the gear_menu hotkey should toggle the
         // menu closed again.
         if (event_name === "gear_menu") {
-            gear_menu.close();
+            gear_menu.toggle();
             return true;
         }
         return false;
@@ -897,7 +892,7 @@ export function process_hotkey(e, hotkey) {
             search.initiate_search();
             return true;
         case "gear_menu":
-            gear_menu.open();
+            gear_menu.toggle();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");

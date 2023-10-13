@@ -548,7 +548,8 @@ export async function manage_organization(page: Page): Promise<void> {
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
 
-    const organization_settings = '.dropdown-menu a[href="#organization"]';
+    const organization_settings = '.link-item a[href="#organization"]';
+    await page.waitForSelector(organization_settings, {visible: true});
     await page.click(organization_settings);
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 

@@ -275,11 +275,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.stopPropagation();
     e.preventDefault();
 
-    const $gear_menu = $("#gear-menu");
-    if ($gear_menu.hasClass("open")) {
-        $gear_menu.removeClass("open");
-    }
-
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({
         is_admin: page_params.is_admin,

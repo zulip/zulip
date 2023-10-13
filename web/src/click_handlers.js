@@ -1,22 +1,18 @@
 import $ from "jquery";
 import tippy from "tippy.js";
-import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity_ui from "./activity_ui";
-import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
-import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
-import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
@@ -760,48 +756,6 @@ export function initialize() {
         },
     );
 
-    // WEBATHENA
-
-    $("body").on("click", ".webathena_login", (e) => {
-        $("#zephyr-mirror-error").removeClass("show");
-        const principal = ["zephyr", "zephyr"];
-        WinChan.open(
-            {
-                url: "https://webathena.mit.edu/#!request_ticket_v1",
-                relay_url: "https://webathena.mit.edu/relay.html",
-                params: {
-                    realm: "ATHENA.MIT.EDU",
-                    principal,
-                },
-            },
-            (err, r) => {
-                if (err) {
-                    blueslip.warn(err);
-                    return;
-                }
-                if (r.status !== "OK") {
-                    blueslip.warn(r);
-                    return;
-                }
-
-                channel.post({
-                    url: "/accounts/webathena_kerberos_login/",
-                    data: {cred: JSON.stringify(r.session)},
-                    success() {
-                        $("#zephyr-mirror-error").removeClass("show");
-                    },
-                    error() {
-                        $("#zephyr-mirror-error").addClass("show");
-                    },
-                });
-            },
-        );
-        $("#settings-dropdown").dropdown("toggle");
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    // End Webathena code
-
     // disable the draggability for left-sidebar components
     $("#stream_filters, #left-sidebar-navigation-list").on("dragstart", (e) => {
         e.target.blur();
@@ -823,34 +777,10 @@ export function initialize() {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", (e) => e.target.blur());
 
-    // GEAR MENU
-
-    $("body").on("click", ".change-language-spectator, .language_selection_widget button", (e) => {
+    $("body").on("click", ".language_selection_widget button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         settings_display.launch_default_language_setting_modal();
-    });
-
-    // We cannot update recipient bar color using dark_theme.enable/disable due to
-    // it being called before message lists are initialized and the order cannot be changed.
-    // Also, since these buttons are only visible for spectators which doesn't have events,
-    // if theme is changed in a different tab, the theme of this tab remains the same.
-    $("body").on("click", "#gear-menu .dark-theme", (e) => {
-        // Allow propagation to close gear menu.
-        e.preventDefault();
-        requestAnimationFrame(() => {
-            dark_theme.enable();
-            message_lists.update_recipient_bar_background_color();
-        });
-    });
-
-    $("body").on("click", "#gear-menu .light-theme", (e) => {
-        // Allow propagation to close gear menu.
-        e.preventDefault();
-        requestAnimationFrame(() => {
-            dark_theme.disable();
-            message_lists.update_recipient_bar_background_color();
-        });
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
