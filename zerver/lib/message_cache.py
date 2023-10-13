@@ -2,9 +2,10 @@ import copy
 import zlib
 from datetime import datetime
 from email.headerregistry import Address
-from typing import Any, Collection, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict
 
 import orjson
+from django.db.models import QuerySet
 
 from zerver.lib.avatar import get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_set_many, cache_with_key, to_dict_cache_key, to_dict_cache_key_id
@@ -74,11 +75,13 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24)
 def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -> bytes:
-    return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
+    return MessageDict.messages_to_encoded_cache(Message.objects.filter(id=message.id), realm_id)[
+        message.id
+    ]
 
 
 def update_message_cache(
-    changed_messages: Collection[Message], realm_id: Optional[int] = None
+    changed_messages: QuerySet[Message], realm_id: Optional[int] = None
 ) -> List[int]:
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
@@ -273,7 +276,7 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache(
-        messages: Collection[Message], realm_id: Optional[int] = None
+        messages: QuerySet[Message], realm_id: Optional[int] = None
     ) -> Dict[int, bytes]:
         messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
@@ -281,7 +284,7 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache_helper(
-        messages: Collection[Message], realm_id: Optional[int] = None
+        messages: QuerySet[Message], realm_id: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects
@@ -295,6 +298,24 @@ class MessageDict:
             if message.recipient.type == Recipient.STREAM:
                 return Stream.objects.get(id=message.recipient.type_id).realm_id
             return message.realm_id
+
+        messages = messages.select_related("recipient", "sender", "sending_client").only(
+            "id",
+            DB_TOPIC_NAME,
+            "date_sent",
+            "last_edit_time",
+            "edit_history",
+            "content",
+            "rendered_content",
+            "rendered_content_version",
+            "recipient_id",
+            "recipient__type",
+            "recipient__type_id",
+            "realm_id",
+            "sender_id",
+            "sending_client__name",
+            "sender__realm_id",
+        )
 
         message_rows = [
             {

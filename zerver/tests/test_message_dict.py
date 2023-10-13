@@ -86,8 +86,10 @@ class MessageDictTest(ZulipTestCase):
         def get_fetch_payload(
             msg_id: int, apply_markdown: bool, client_gravatar: bool
         ) -> Dict[str, Any]:
-            msg = reload_message(msg_id)
-            unhydrated_dict = MessageDict.messages_to_encoded_cache_helper([msg])[0]
+            reload_message(msg_id)
+            unhydrated_dict = MessageDict.messages_to_encoded_cache_helper(
+                Message.objects.filter(id=msg_id)
+            )[0]
             # The next step mutates the dict in place
             # for performance reasons.
             MessageDict.post_process_dicts(
@@ -261,7 +263,7 @@ class MessageDictTest(ZulipTestCase):
             return Message.objects.get(id=msg_id)
 
         def assert_topic_links(links: List[Dict[str, str]], msg: Message) -> None:
-            dct = MessageDict.messages_to_encoded_cache_helper([msg])[0]
+            dct = MessageDict.messages_to_encoded_cache_helper(Message.objects.filter(id=msg.id))[0]
             self.assertEqual(dct[TOPIC_LINKS], links)
 
         # Send messages before and after saving the realm filter from each user.
