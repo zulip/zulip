@@ -933,7 +933,7 @@ def do_send_messages(
         if send_request.message.is_stream_message():
             if send_request.stream is None:
                 stream_id = send_request.message.recipient.type_id
-                send_request.stream = Stream.objects.select_related().get(id=stream_id)
+                send_request.stream = Stream.objects.get(id=stream_id)
             # assert needed because stubs for django are missing
             assert send_request.stream is not None
             realm_id = send_request.stream.realm_id
