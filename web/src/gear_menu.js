@@ -2,9 +2,7 @@ import $ from "jquery";
 
 import render_gear_menu from "../templates/gear_menu.hbs";
 
-import * as gear_menu_util from "./gear_menu_util";
-import {page_params} from "./page_params";
-import * as settings_data from "./settings_data";
+import * as popover_menus_data from "./popover_menus_data";
 
 /*
 For various historical reasons there isn't one
@@ -80,31 +78,7 @@ the selector and then calls browser_history.go_to_location.
 */
 
 export function initialize() {
-    const rendered_gear_menu = render_gear_menu({
-        realm_name: page_params.realm_name,
-        realm_url: new URL(page_params.realm_uri).hostname,
-        is_owner: page_params.is_owner,
-        is_admin: page_params.is_admin,
-        is_self_hosted: page_params.realm_plan_type === 1,
-        is_plan_limited: page_params.realm_plan_type === 2,
-        is_plan_standard: page_params.realm_plan_type === 3,
-        is_plan_standard_sponsored_for_free: page_params.realm_plan_type === 4,
-        is_business_org: page_params.realm_org_type === 10,
-        is_education_org: page_params.realm_org_type === 30 || page_params.realm_org_type === 35,
-        standard_plan_name: "Zulip Cloud Standard",
-        server_needs_upgrade: page_params.server_needs_upgrade,
-        version_display_string: gear_menu_util.version_display_string(),
-        apps_page_url: page_params.apps_page_url,
-        can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
-        can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
-        corporate_enabled: page_params.corporate_enabled,
-        is_guest: page_params.is_guest,
-        login_link: page_params.development_environment ? "/devlogin/" : "/login/",
-        promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
-        show_billing: page_params.show_billing,
-        show_plans: page_params.show_plans,
-        show_webathena: page_params.show_webathena,
-    });
+    const rendered_gear_menu = render_gear_menu(popover_menus_data.get_gear_menu_content_context());
     $("#navbar-buttons").html(rendered_gear_menu);
 }
 
