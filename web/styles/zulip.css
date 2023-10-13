@@ -3403,43 +3403,6 @@ select.invite-as {
     }
 }
 
-.navbar-dropdown-tippy {
-    .tippy-box {
-        border: 0;
-    }
-
-    .tippy-content {
-        padding: 0;
-    }
-
-    & > .tippy-box > .tippy-arrow {
-        position: absolute;
-        left: 50%;
-        top: -5.5px !important;
-        width: 16px;
-        height: 8px;
-        z-index: 1;
-        transform: translateX(-50%);
-        filter: drop-shadow(0 -1.25px 0 var(--color-border-dropdown-menu));
-
-        &::before {
-            display: none;
-        }
-
-        &::after {
-            border: 0 !important;
-            content: "";
-            top: 0;
-            width: 100%;
-            height: 100%;
-            mask-image: url("../shared/icons/popover-arrow.svg");
-            mask-size: contain;
-            mask-repeat: no-repeat;
-            background-color: var(--color-background-dropdown-menu);
-        }
-    }
-}
-
 .keyboard-shortcut-option {
     & span.tooltip-hotkey-hint {
         margin-left: auto;
