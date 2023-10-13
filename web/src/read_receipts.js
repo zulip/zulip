@@ -12,7 +12,6 @@ import * as modals from "./modals";
 import * as people from "./people";
 import * as ui_report from "./ui_report";
 
-
 function fetch_receipts(message_id, showLoader) {
     const message = message_store.get(message_id);
     if (message.sender_email === "notification-bot@zulip.com") {
