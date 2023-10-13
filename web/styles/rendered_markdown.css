@@ -676,9 +676,7 @@
         word-wrap: normal;
         margin: 5px 0;
         padding: 5px 7px 3px;
-        color: hsl(0deg 0% 20%);
         display: block;
-        border: 1px solid hsl(0deg 0% 0% / 15%);
         border-radius: 4px;
 
         &:hover .copy_codeblock,
