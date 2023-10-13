@@ -87,7 +87,7 @@ class MessageDictTest(ZulipTestCase):
             msg_id: int, apply_markdown: bool, client_gravatar: bool
         ) -> Dict[str, Any]:
             reload_message(msg_id)
-            unhydrated_dict = MessageDict.messages_to_dicts(Message.objects.filter(id=msg_id))[0]
+            unhydrated_dict = next(MessageDict.messages_to_dicts(Message.objects.filter(id=msg_id)))
             # The next step mutates the dict in place
             # for performance reasons.
             MessageDict.post_process_dicts(
@@ -171,7 +171,7 @@ class MessageDictTest(ZulipTestCase):
         self.assertTrue(num_ids >= 600)
 
         with self.assert_database_query_count(7):
-            objs = MessageDict.ids_to_dict(ids)
+            objs = list(MessageDict.ids_to_dict(ids))
             MessageDict.post_process_dicts(
                 objs, apply_markdown=False, client_gravatar=False, realm=realm
             )
@@ -198,7 +198,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        dct = MessageDict.ids_to_dict([message.id])[0]
+        dct = next(MessageDict.ids_to_dict([message.id]))
         expected_content = "<p>hello <strong>world</strong></p>"
         self.assertEqual(dct["rendered_content"], expected_content)
         message = Message.objects.get(id=message.id)
@@ -228,7 +228,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        dct = MessageDict.ids_to_dict([message.id])[0]
+        dct = next(MessageDict.ids_to_dict([message.id]))
         error_content = (
             "<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>"
         )
@@ -261,7 +261,7 @@ class MessageDictTest(ZulipTestCase):
             return Message.objects.get(id=msg_id)
 
         def assert_topic_links(links: List[Dict[str, str]], msg: Message) -> None:
-            dct = MessageDict.messages_to_dicts(Message.objects.filter(id=msg.id))[0]
+            dct = next(MessageDict.messages_to_dicts(Message.objects.filter(id=msg.id)))
             self.assertEqual(dct[TOPIC_LINKS], links)
 
         # Send messages before and after saving the realm filter from each user.
@@ -294,7 +294,7 @@ class MessageDictTest(ZulipTestCase):
         reaction = Reaction.objects.create(
             message=message, user_profile=sender, emoji_name="simple_smile"
         )
-        msg_dict = MessageDict.ids_to_dict([message.id])[0]
+        msg_dict = next(MessageDict.ids_to_dict([message.id]))
         self.assertEqual(msg_dict["reactions"][0]["emoji_name"], reaction.emoji_name)
         self.assertEqual(msg_dict["reactions"][0]["user_id"], sender.id)
         self.assertEqual(msg_dict["reactions"][0]["user"]["id"], sender.id)

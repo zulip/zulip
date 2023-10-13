@@ -1699,7 +1699,7 @@ class StreamMessagesTest(ZulipTestCase):
             self.example_user("hamlet"), "Denmark", content="whatever", topic_name="my topic"
         )
         message = most_recent_message(user_profile)
-        dct = MessageDict.ids_to_dict([message.id])[0]
+        dct = next(MessageDict.ids_to_dict([message.id]))
         MessageDict.post_process_dicts(
             [dct],
             apply_markdown=True,

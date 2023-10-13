@@ -286,13 +286,15 @@ class EditMessageTest(EditMessageTestCase):
         # 1 query for display recipients
         with self.assert_database_query_count(8):
             messages = Message.objects.filter(id__in=message_ids)
-            MessageDict.messages_to_encoded_cache(messages)
+            result = MessageDict.messages_to_encoded_cache(messages)
+            self.assertEqual(sorted(r[0] for r in result), message_ids)
 
         realm_id = 2  # Fetched from stream object
         # Check number of queries performed with realm_id
         with self.assert_database_query_count(4):
             messages = Message.objects.filter(id__in=message_ids)
-            MessageDict.messages_to_encoded_cache(messages, realm_id)
+            result = MessageDict.messages_to_encoded_cache(messages, realm_id)
+            self.assertEqual(sorted(r[0] for r in result), message_ids)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify

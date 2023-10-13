@@ -2,7 +2,7 @@ import copy
 import zlib
 from datetime import datetime
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, Iterator, List, Optional, Tuple, TypedDict
 
 import orjson
 from django.db.models import QuerySet
@@ -75,9 +75,10 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24)
 def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -> bytes:
-    return MessageDict.messages_to_encoded_cache(Message.objects.filter(id=message.id), realm_id)[
-        message.id
-    ]
+    (message_id, encoded) = next(
+        MessageDict.messages_to_encoded_cache(Message.objects.filter(id=message.id), realm_id)
+    )
+    return encoded
 
 
 def update_message_cache(
@@ -87,11 +88,10 @@ def update_message_cache(
     messages)."""
     items_for_remote_cache = {}
     message_ids = []
-    changed_messages_to_dict = MessageDict.messages_to_encoded_cache(changed_messages, realm_id)
-    for msg_id, msg in changed_messages_to_dict.items():
+    for msg_id, msg_bytes in MessageDict.messages_to_encoded_cache(changed_messages, realm_id):
         message_ids.append(msg_id)
         key = to_dict_cache_key_id(msg_id)
-        items_for_remote_cache[key] = (msg,)
+        items_for_remote_cache[key] = (msg_bytes,)
 
     cache_set_many(items_for_remote_cache)
     return message_ids
@@ -277,10 +277,9 @@ class MessageDict:
     @staticmethod
     def messages_to_encoded_cache(
         messages: QuerySet[Message], realm_id: Optional[int] = None
-    ) -> Dict[int, bytes]:
-        messages_dict = MessageDict.messages_to_dicts(messages, realm_id=realm_id)
-        encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
-        return encoded_messages
+    ) -> Iterator[Tuple[int, bytes]]:
+        for message_dict in MessageDict.messages_to_dicts(messages, realm_id=realm_id):
+            yield message_dict["id"], stringify_message_dict(message_dict)
 
     @staticmethod
     def messages_to_dicts(
@@ -288,7 +287,7 @@ class MessageDict:
         *,
         realm_id: Optional[int] = None,
         use_sender_realm: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> Iterator[Dict[str, Any]]:
         def get_rendering_realm_id(message: Message) -> int:
             # realm_id can differ among users, currently only possible
             # with cross realm bots.
@@ -340,10 +339,10 @@ class MessageDict:
         ]
 
         MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
-        return [MessageDict.build_dict_from_raw_db_row(row) for row in message_rows]
+        return iter(MessageDict.build_dict_from_raw_db_row(row) for row in message_rows)
 
     @staticmethod
-    def ids_to_dict(needed_ids: List[int]) -> List[Dict[str, Any]]:
+    def ids_to_dict(needed_ids: List[int]) -> Iterator[Dict[str, Any]]:
         return MessageDict.messages_to_dicts(
             Message.objects.filter(id__in=needed_ids), use_sender_realm=True
         )
