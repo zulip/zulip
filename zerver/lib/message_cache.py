@@ -278,12 +278,12 @@ class MessageDict:
     def messages_to_encoded_cache(
         messages: QuerySet[Message], realm_id: Optional[int] = None
     ) -> Dict[int, bytes]:
-        messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
+        messages_dict = MessageDict.messages_to_dicts(messages, realm_id)
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
         return encoded_messages
 
     @staticmethod
-    def messages_to_encoded_cache_helper(
+    def messages_to_dicts(
         messages: QuerySet[Message], realm_id: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
