@@ -674,12 +674,6 @@ div.overlay {
     }
 }
 
-.white_zulip_icon_without_text {
-    display: inline-block;
-    background-image: url("../images/logo/white-zulip-logo-without-text.svg");
-    background-size: cover;
-}
-
 .only-visible-for-spectators {
     display: none;
 }

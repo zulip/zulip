@@ -35,6 +35,7 @@ export const popover_instances = {
     send_later: null,
     change_visibility_policy: null,
     personal_menu: null,
+    gear_menu: null,
 };
 
 /* Keyboard UI functions */
@@ -95,6 +96,14 @@ export function get_starred_messages_popover() {
 
 export function is_compose_enter_sends_popover_displayed() {
     return popover_instances.compose_enter_sends?.state.isVisible;
+}
+
+export function is_gear_menu_popover_displayed() {
+    return popover_instances.gear_menu?.state.isVisible;
+}
+
+export function get_gear_menu_instance() {
+    return popover_instances.gear_menu;
 }
 
 function get_popover_items_for_instance(instance) {

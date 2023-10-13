@@ -308,6 +308,15 @@ body {
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
         0 41px 80px 0 hsl(0deg 0% 0% / 13%);
+    --box-shadow-gear-menu: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 20% 50%);
+    --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 50%);
 }
 
 %dark-theme {
@@ -448,6 +457,9 @@ body {
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
         0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 35% 60%);
+    --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 65%);
 }
 
 @media screen {
@@ -747,59 +759,6 @@ p.n-margin {
         .buttons .alert-link {
             margin: 0 5px;
         }
-    }
-}
-
-#gear-menu .dropdown-menu {
-    .org-name,
-    .org-url {
-        padding: 0 20px;
-    }
-
-    .org-info {
-        text-align: center;
-
-        & a {
-            white-space: normal;
-        }
-    }
-
-    .org-name {
-        font-size: large;
-        font-weight: bold;
-    }
-
-    .org-url {
-        line-height: 100%;
-        color: hsl(0deg 0% 52%);
-    }
-
-    .org-version {
-        padding-top: 3px;
-        white-space: normal;
-    }
-
-    .org-upgrade {
-        color: hsl(226deg 82% 60%);
-
-        & a {
-            padding: 0;
-        }
-    }
-
-    .org-plan,
-    .org-upgrade {
-        & a {
-            line-height: 16px;
-        }
-    }
-
-    .plan-separator {
-        line-height: 8px;
-    }
-
-    .small-font-size {
-        font-size: 12px;
     }
 }
 
@@ -1161,10 +1120,6 @@ strong {
     position: relative;
 }
 
-#gear-menu .light-theme {
-    display: none;
-}
-
 /* .dropdown-menu from v2.3.2
    + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
    basic idea of this fix is to remove decorations from :hover and apply them only
@@ -1248,29 +1203,6 @@ li.actual-dropdown-menu i {
     width: 14px;
     text-align: center;
     margin-right: 3px;
-}
-
-#gear_menu_about_zulip {
-    .white_zulip_icon_without_text {
-        position: relative;
-        top: 3px;
-        width: 14px;
-        height: 14px;
-        margin-right: 3px;
-        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
-            brightness(20%) contrast(95%);
-    }
-
-    .about_zulip_text {
-        position: relative;
-        top: 1.4px;
-    }
-
-    :hover {
-        .white_zulip_icon_without_text {
-            filter: none;
-        }
-    }
 }
 
 td.pointer {
@@ -2305,47 +2237,6 @@ div.focused-message-list {
     }
 }
 
-#navbar-buttons {
-    white-space: nowrap;
-    display: inline-block;
-    float: right;
-
-    & ul.nav {
-        margin: 0;
-
-        .dropdown-toggle,
-        li.active .dropdown-toggle {
-            font-size: 20px;
-            color: inherit;
-            opacity: 0.5;
-            text-shadow: none;
-            padding-left: 0 !important;
-            background-color: inherit;
-            box-shadow: inherit;
-            display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
-        }
-
-        .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
-            opacity: 1;
-        }
-
-        & li.dropdown.open .dropdown-toggle {
-            background: none;
-            opacity: 1;
-            text-shadow: none;
-        }
-
-        & li.dropdown li.divider {
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-    }
-}
-
 #streamlist-toggle {
     display: none;
     position: absolute;
@@ -2414,12 +2305,6 @@ div.focused-message-list {
         content: "";
         z-index: 10;
     }
-}
-
-#gear-menu .zulip-icon-language {
-    position: relative;
-    top: 2.5px;
-    left: -0.5px;
 }
 
 .nav .dropdown-menu a,
@@ -3066,9 +2951,9 @@ select.invite-as {
             margin-right: 85px;
         }
 
-        #navbar-buttons {
-            position: absolute;
-            right: 45px;
+        #gear-menu {
+            position: relative;
+            right: 40px;
         }
     }
 
@@ -3219,8 +3104,7 @@ select.invite-as {
             margin-right: 65px;
         }
 
-        #navbar-buttons {
-            position: absolute;
+        #gear-menu {
             right: 35px;
         }
     }
@@ -3240,7 +3124,6 @@ select.invite-as {
     }
 
     #streamlist-toggle,
-    #navbar-buttons,
     #message_view_header,
     #searchbox,
     .header {
@@ -3260,11 +3143,6 @@ select.invite-as {
         height: var(--header-height);
         padding-top: 0;
         padding-bottom: 0;
-    }
-
-    #navbar-buttons ul.nav .dropdown-toggle,
-    #navbar-buttons ul.nav li.active .dropdown-toggle {
-        top: -8px;
     }
 
     .column-right #personal-menu .header-button-avatar {
@@ -3486,8 +3364,7 @@ select.invite-as {
     }
 }
 
-.header-button,
-#navbar-buttons #settings-dropdown {
+.header-button {
     width: var(--header-height);
     height: var(--header-height);
     display: flex;
@@ -3496,6 +3373,23 @@ select.invite-as {
     position: relative;
     top: 0;
     right: 0;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    .zulip-icon {
+        color: var(--color-navbar-icon);
+    }
+
+    .zulip-icon-gear {
+        font-size: 18px;
+    }
+
+    .zulip-icon-triple-users {
+        font-size: 20px;
+    }
 }
 
 #personal-menu {
@@ -3509,7 +3403,7 @@ select.invite-as {
     }
 }
 
-.personal-menu-tippy {
+.navbar-dropdown-tippy {
     .tippy-box {
         border: 0;
     }

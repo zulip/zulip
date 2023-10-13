@@ -51,7 +51,11 @@
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
             </div>
-            <div id="navbar-buttons" class="no-auto-hide-sidebar-overlays header-button" {{#if embedded}}class="hide-navbar-buttons-visibility"{{/if}}>
+            <div id="gear-menu" class="{{#if embedded}}hide-navbar-buttons-visibility{{/if}}">
+                <a id="settings-dropdown" tabindex="0" role="button" class="header-button tippy-zulip-delayed-tooltip" data-tooltip-template-id="gear-menu-tooltip-template">
+                    <i class="zulip-icon zulip-icon-gear" aria-hidden="true"></i>
+                </a>
+                <span tabindex="0" class="focus-dropdown"></span>
             </div>
             <div id="personal-menu" class="hidden-for-spectators">
                 <a class="header-button tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-tippy-content="{{t 'Personal menu' }}">

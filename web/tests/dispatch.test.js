@@ -424,7 +424,7 @@ run_test("realm settings", ({override}) => {
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(settings_invites, "update_invite_user_panel", noop);
     override(sidebar_ui, "update_invite_user_option", noop);
-    override(gear_menu, "initialize", noop);
+    override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
 
     function test_electron_dispatch(event, fake_send_event) {

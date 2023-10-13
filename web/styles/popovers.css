@@ -1034,6 +1034,10 @@ ul {
     }
 }
 
+#personal-menu-dropdown {
+    padding-bottom: 5px;
+}
+
 .personal-menu-header {
     display: flex;
     flex-flow: row nowrap;
@@ -1192,6 +1196,92 @@ ul {
         width: 16px;
         height: 16px;
     }
+
+    .zulip-icon {
+        position: relative;
+        top: -1px;
+    }
+}
+
+#gear-menu-dropdown {
+    padding: 5px 0;
+    box-shadow: var(--box-shadow-gear-menu);
+
+    .org-info {
+        padding: 4px 0 5px;
+
+        & li {
+            display: flex;
+            justify-content: center;
+            font-size: 15px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 16px; /* 114.286% */
+            letter-spacing: 0.28px;
+
+            &:focus-within {
+                background: var(--color-background-hover-dropdown-menu);
+            }
+
+            & a {
+                padding: 2px 0;
+                flex-grow: 1;
+                text-align: center;
+                text-decoration: none;
+
+                &:hover {
+                    background: var(--color-background-hover-dropdown-menu);
+                    outline: none;
+                }
+
+                &:focus {
+                    border-radius: 4px;
+                    /* Override the default focus style */
+                    outline: 1px solid var(--color-outline-focus) !important;
+                    outline-offset: -1px;
+                }
+
+                &:active {
+                    background: var(--color-background-active-dropdown-menu);
+                }
+            }
+        }
+
+        .org-url {
+            margin-bottom: 7px;
+        }
+
+        .org-name,
+        .org-plan a {
+            color: var(--color-text-dropdown-menu);
+        }
+
+        .org-name {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 22px;
+        }
+
+        .org-plan,
+        .org-upgrade {
+            font-size: 14px;
+        }
+
+        .org-upgrade,
+        .org-url {
+            color: var(--color-gear-menu-lighter-text);
+        }
+
+        .org-upgrade a,
+        .org-version a {
+            color: var(--color-gear-menu-blue-text);
+        }
+    }
+
+    .light-theme,
+    .dark-theme {
+        display: none;
+    }
 }
 
 ul.navbar-dropdown-menu-outer-list {
@@ -1203,6 +1293,10 @@ ul.navbar-dropdown-menu-outer-list {
 
         &:last-child {
             border-bottom: none;
+
+            & > ul {
+                padding-bottom: 0;
+            }
         }
 
         & > ul {
@@ -1211,13 +1305,6 @@ ul.navbar-dropdown-menu-outer-list {
             list-style: none;
             background: none !important;
         }
-    }
-}
-
-#gear-menu-dropdown {
-    .light-theme,
-    .dark-theme {
-        display: none;
     }
 }
 
