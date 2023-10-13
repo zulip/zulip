@@ -300,6 +300,14 @@ body {
     --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
     --color-icons-inbox: hsl(0deg 0% 0%);
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
+        0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 13%);
 }
 
 %dark-theme {
@@ -432,6 +440,14 @@ body {
     --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
     --color-icons-inbox: hsl(0deg 0% 100%);
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
 }
 
 @media screen {

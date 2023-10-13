@@ -1110,6 +1110,7 @@ ul {
     overflow-x: hidden;
     user-select: none;
     border-radius: 6px;
+    box-shadow: var(--box-shadow-navbar-dropdown-menu);
 
     .simplebar-content {
         min-width: max-content;
