@@ -793,7 +793,9 @@ export function dispatch_normal_event(event) {
                 // reload.
             }
             if (event.property === "emojiset") {
-                settings_preferences.report_emojiset_change(settings_preferences.user_settings_panel);
+                settings_preferences.report_emojiset_change(
+                    settings_preferences.user_settings_panel,
+                );
 
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
