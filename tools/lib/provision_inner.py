@@ -9,6 +9,7 @@
 import argparse
 import glob
 import os
+import pwd
 import shutil
 import sys
 from typing import List
@@ -92,6 +93,16 @@ def configure_rabbitmq_paths() -> List[str]:
     return paths
 
 
+def check_environment() -> bool:
+    user_id = os.getuid()
+    user_name = pwd.getpwuid(user_id).pw_name
+    wsl_path = "/proc/sys/fs/binfmt_misc/WSLInterop"
+    if os.path.exists(wsl_path) or user_name == "vagrant":
+        return True
+    else:
+        return False
+
+
 def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
 
@@ -106,8 +117,13 @@ def setup_shell_profile(shell_profile: str) -> None:
             with open(shell_profile_path, "w") as shell_profile_file:
                 shell_profile_file.writelines(command + "\n")
 
-    source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
-    write_command(source_activate_command)
+    # check the environment, to be eligible for automatic activation
+    dedicated_container = check_environment()
+    # If the environment is a dedicated container, write the activation command to the user's bash profile
+    if dedicated_container:
+        source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
+        write_command(source_activate_command)
+
     if os.path.exists("/srv/zulip"):
         write_command("cd /srv/zulip")
 
