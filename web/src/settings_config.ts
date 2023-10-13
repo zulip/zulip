@@ -604,6 +604,12 @@ export const realm_user_settings_defaults_labels = {
     realm_presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
     realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
     realm_send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
+    realm_send_private_typing_notifications: $t({
+        defaultMessage: "Let recipients see when a user is typing direct messages",
+    }),
+    realm_send_stream_typing_notifications: $t({
+        defaultMessage: "Let recipients see when a user is typing stream messages",
+    }),
 };
 
 // NOTIFICATIONS
