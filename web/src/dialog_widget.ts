@@ -72,29 +72,11 @@ type RequestOpts = {
 };
 
 export function hide_dialog_spinner(): void {
-    $(".dialog_submit_button span").show();
-    $("#dialog_widget_modal .modal__btn").prop("disabled", false);
-
-    const $spinner = $("#dialog_widget_modal .modal__spinner");
-    loading.destroy_indicator($spinner);
+    loading.hide_button_spinner($("#dialog_widget_modal"));
 }
 
 export function show_dialog_spinner(): void {
-    // Disable both the buttons.
-    $("#dialog_widget_modal .modal__btn").prop("disabled", true);
-
-    const $spinner = $("#dialog_widget_modal .modal__spinner");
-    const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
-    const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
-
-    // Hide the submit button after computing its height, since submit
-    // buttons with long text might affect the size of the button.
-    $(".dialog_submit_button span").hide();
-
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
+    loading.show_button_spinner($("#dialog_widget_modal"));
 }
 
 // Supports a callback to be called once the modal finishes closing.

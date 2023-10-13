@@ -84,11 +84,27 @@ export function destroy_indicator($container: JQuery): void {
     $container.css({width: 0, height: 0});
 }
 
-export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): void {
+export function show_button_spinner($elt: JQuery, using_dark_theme?: boolean): void {
+    const elt_span_width = $elt.find("span").width();
+    const elt_span_height = $elt.find("span").height();
+    const $spinner = $elt.find(".modal__spinner");
     if (!using_dark_theme) {
         $elt.attr("src", loading_black_image);
     } else {
         $elt.attr("src", loading_white_image);
     }
     $elt.css("display", "inline-block");
+    $elt.prop("disabled", true);
+    $elt.find("span").hide();
+    make_indicator($spinner, {
+        width: elt_span_width,
+        height: elt_span_height,
+    });
+}
+
+export function hide_button_spinner($elt: JQuery): void {
+    const $spinner = $elt.find(".modal__spinner");
+    $elt.find("span").show();
+    $elt.prop("disabled", false);
+    destroy_indicator($spinner);
 }
