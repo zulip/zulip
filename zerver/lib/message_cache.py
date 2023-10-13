@@ -321,7 +321,7 @@ class MessageDict:
         return [MessageDict.build_dict_from_raw_db_row(row) for row in message_rows]
 
     @staticmethod
-    def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
+    def ids_to_dict(needed_ids: List[int]) -> List[Dict[str, Any]]:
         # This is a special purpose function optimized for
         # callers like get_messages_backend().
         fields = [
@@ -342,7 +342,8 @@ class MessageDict:
         ]
         # Uses index: zerver_message_pkey
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
-        return MessageDict.sew_submessages_and_reactions_to_msgs(messages)
+        MessageDict.sew_submessages_and_reactions_to_msgs(messages)
+        return [MessageDict.build_dict_from_raw_db_row(row) for row in messages]
 
     @staticmethod
     def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
