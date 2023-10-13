@@ -47,6 +47,34 @@
     }
 }
 
+.tippy-box[data-theme="navbar-dropdown-menu"] {
+    border: 0;
+    border-radius: 6px;
+
+    > .tippy-content {
+        padding: 0;
+    }
+
+    > .tippy-arrow {
+        top: -5.5px;
+        width: 16px;
+        height: 8px;
+        z-index: 1;
+        filter: drop-shadow(0 -1.25px 0 var(--color-border-dropdown-menu));
+
+        &::before {
+            content: "";
+            top: 0;
+            width: 100%;
+            height: 100%;
+            mask-image: url("../shared/icons/popover-arrow.svg");
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            color: var(--color-background-dropdown-menu);
+        }
+    }
+}
+
 .user_full_name,
 .bot_owner {
     text-overflow: ellipsis;
@@ -1103,10 +1131,7 @@ ul {
 }
 
 .navbar-dropdown-menu {
-    display: flex;
-    flex-flow: column nowrap;
     margin: 0;
-    padding: 0;
     border: solid 1px var(--color-border-dropdown-menu);
     background-color: var(--color-background-dropdown-menu);
     max-height: 85vh;
@@ -1117,6 +1142,7 @@ ul {
     box-shadow: var(--box-shadow-navbar-dropdown-menu);
 
     .simplebar-content {
+        /*  This is necessary to keep long menu items on a single line. */
         min-width: max-content;
     }
 

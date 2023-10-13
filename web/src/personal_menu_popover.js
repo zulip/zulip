@@ -19,6 +19,7 @@ function elem_to_user_id($elem) {
 
 export function initialize() {
     popover_menus.register_popover_menu("#personal-menu", {
+        theme: "navbar-dropdown-menu",
         placement: "bottom",
         offset: [-50, 0],
         // The strategy: "fixed"; and eventlisteners modifier option
@@ -37,7 +38,6 @@ export function initialize() {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            $popper.addClass("navbar-dropdown-tippy");
             popover_menus.popover_instances.personal_menu = instance;
 
             tippy(".clear_status", {

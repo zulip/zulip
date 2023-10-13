@@ -94,6 +94,7 @@ function render(instance) {
 
 export function initialize() {
     popover_menus.register_popover_menu("#gear-menu", {
+        theme: "navbar-dropdown-menu",
         placement: "bottom",
         offset: [-50, 0],
         popperOptions: {
@@ -109,7 +110,6 @@ export function initialize() {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            $popper.addClass("navbar-dropdown-tippy");
             popover_menus.popover_instances.gear_menu = instance;
             $(".focus-dropdown").on("focus", (e) => {
                 e.preventDefault();
