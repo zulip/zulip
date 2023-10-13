@@ -691,13 +691,6 @@
         opacity: 0.2;
     }
 
-    #gear_menu_about_zulip {
-        .white_zulip_icon_without_text {
-            filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)
-                brightness(99%) contrast(89%);
-        }
-    }
-
     .spectator-view #gear-menu-dropdown {
         .dark-theme {
             display: none;
@@ -705,11 +698,6 @@
 
         .light-theme {
             display: block;
-        }
-
-    #gear-menu {
-        .dropdown-menu a:hover {
-            color: hsl(0deg 0% 100%);
         }
     }
 

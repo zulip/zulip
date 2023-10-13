@@ -8,7 +8,11 @@ async function navigate_to_user_list(page: Page): Promise<void> {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
-    await page.click('.dropdown-menu a[href="#organization"]');
+
+    const organization_settings = '.link-item a[href="#organization"]';
+    await page.waitForSelector(organization_settings, {visible: true});
+    await page.click(organization_settings);
+
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
     await page.click("li[data-section='user-list-admin']");
 }

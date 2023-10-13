@@ -258,7 +258,7 @@ export function dispatch_normal_event(event) {
                         if (event.property === "invite_to_realm_policy") {
                             settings_invites.update_invite_user_panel();
                             sidebar_ui.update_invite_user_option();
-                            gear_menu.initialize();
+                            gear_menu.rerender();
                         }
 
                         const stream_creation_settings = [
@@ -289,7 +289,7 @@ export function dispatch_normal_event(event) {
                                 if (key === "create_multiuse_invite_group") {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
-                                    gear_menu.initialize();
+                                    gear_menu.rerender();
                                 }
 
                                 if (key === "edit_topic_policy") {
