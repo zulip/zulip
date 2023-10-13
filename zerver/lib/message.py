@@ -218,15 +218,14 @@ def messages_for_ids(
     user_profile: Optional[UserProfile],
     realm: Realm,
 ) -> List[Dict[str, Any]]:
-    cache_transformer = MessageDict.build_dict_from_raw_db_row
     id_fetcher = lambda row: row["id"]
 
     message_dicts = generic_bulk_cached_fetch(
         to_dict_cache_key_id,
-        MessageDict.get_raw_db_rows,
+        MessageDict.ids_to_dict,
         message_ids,
         id_fetcher=id_fetcher,
-        cache_transformer=cache_transformer,
+        cache_transformer=lambda obj: obj,
         extractor=extract_message_dict,
         setter=stringify_message_dict,
     )

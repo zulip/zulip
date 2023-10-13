@@ -1699,8 +1699,7 @@ class StreamMessagesTest(ZulipTestCase):
             self.example_user("hamlet"), "Denmark", content="whatever", topic_name="my topic"
         )
         message = most_recent_message(user_profile)
-        row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row)
+        dct = MessageDict.ids_to_dict([message.id])[0]
         MessageDict.post_process_dicts(
             [dct],
             apply_markdown=True,
