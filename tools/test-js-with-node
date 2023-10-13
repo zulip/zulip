@@ -104,7 +104,7 @@ EXEMPT_FILES = make_set(
         "web/src/favicon.ts",
         "web/src/feedback_widget.ts",
         "web/src/flatpickr.ts",
-        "web/src/gear_menu.ts",
+        "web/src/gear_menu.js",
         "web/src/giphy.js",
         "web/src/global.d.ts",
         "web/src/hash_util.ts",

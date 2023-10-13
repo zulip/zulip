@@ -79,7 +79,7 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
-export function initialize(): void {
+export function initialize() {
     const rendered_gear_menu = render_gear_menu({
         realm_name: page_params.realm_name,
         realm_url: new URL(page_params.realm_uri).hostname,
@@ -108,17 +108,17 @@ export function initialize(): void {
     $("#navbar-buttons").html(rendered_gear_menu);
 }
 
-export function open(): void {
+export function open() {
     $("#settings-dropdown").trigger("click");
     // there are invisible li tabs, which should not be clicked.
     $("#gear-menu").find("li:not(.invisible) a").eq(0).trigger("focus");
 }
 
-export function is_open(): boolean {
+export function is_open() {
     return $(".dropdown").hasClass("open");
 }
 
-export function close(): void {
+export function close() {
     if (is_open()) {
         $(".dropdown").removeClass("open");
     }
