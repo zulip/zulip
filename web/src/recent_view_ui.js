@@ -1321,7 +1321,6 @@ export function change_focused_element($elt, input_key) {
     return false;
 }
 
-
 export function initialize({
     on_click_participant,
     on_mark_pm_as_read,

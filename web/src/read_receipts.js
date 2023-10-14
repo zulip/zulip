@@ -5,21 +5,19 @@ import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
 
 import * as channel from "./channel";
-import { $t, $t_html } from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_store from "./message_store";
 import * as modals from "./modals";
 import * as people from "./people";
 import * as ui_report from "./ui_report";
 
-
 function fetch_receipts(message_id, showLoader) {
     const message = message_store.get(message_id);
     if (message.sender_email === "notification-bot@zulip.com") {
         $("#read_receipts_modal .read_receipts_info").text(
             $t({
-                defaultMessage:
-                    "Read receipts are not available for Notification Bot messages.",
+                defaultMessage: "Read receipts are not available for Notification Bot messages.",
             }),
         );
         $("#read_receipts_modal .modal__content").addClass("compact");
@@ -43,7 +41,7 @@ function fetch_receipts(message_id, showLoader) {
                 loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
                 if (users.length === 0) {
                     $("#read_receipts_modal .read_receipts_info").text(
-                        $t({ defaultMessage: "No one has read this message yet." }),
+                        $t({defaultMessage: "No one has read this message yet."}),
                     );
                 } else {
                     $("#read_receipts_modal .read_receipts_info").html(
@@ -65,7 +63,7 @@ function fetch_receipts(message_id, showLoader) {
                         "showing_read_receipts_list",
                     );
                     $("#read_receipts_modal .read_receipts_content").html(
-                        render_read_receipts({ users }),
+                        render_read_receipts({users}),
                     );
                     if ($("#read_receipts_modal .modal__content")[0] !== undefined) {
                         new SimpleBar($("#read_receipts_modal .modal__content")[0]);
@@ -94,6 +92,6 @@ export function show_user_list(message_id) {
         on_hide() {
             loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
             clearInterval(intervalFunc);
-        }
+        },
     });
 }

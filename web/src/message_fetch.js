@@ -60,7 +60,6 @@ function process_result(data, opts) {
         } else {
             opts.msg_list_data.add_messages(messages);
         }
-
     }
 
     if (messages.length > 0 && opts.msg_list === message_lists.home) {
@@ -425,7 +424,6 @@ export function maybe_load_older_messages(opts) {
         num_before: opts.recent_view
             ? consts.recent_view_fetch_more_batch_size
             : consts.narrowed_view_backward_batch_size,
-
     });
 }
 

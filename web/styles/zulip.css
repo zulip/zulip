@@ -196,7 +196,6 @@ body {
     --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
-
     --color-background-image-loader: hsl(0deg 0% 0% / 10%);
     --color-icon-purple: hsl(240deg 35% 60%);
     --color-background-dropdown-menu: hsl(0deg 0% 100%);
@@ -206,7 +205,6 @@ body {
     --color-background-active-dropdown-menu: hsl(220deg 12% 5% / 7%);
     --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
-
     --color-background-unread-counter: hsl(105deg 2% 50%);
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
 
@@ -325,7 +323,6 @@ body {
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
-
     --color-background-image-loader: hsl(0deg 0% 100% / 10%);
     --color-background-dropdown-menu: hsl(0deg 0% 17%);
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
@@ -334,7 +331,6 @@ body {
     --color-background-active-dropdown-menu: hsl(220deg 12% 95% / 7%);
     --color-border-dropdown-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
-
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
 
