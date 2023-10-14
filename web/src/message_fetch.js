@@ -61,9 +61,11 @@ function process_result(data, opts) {
         }
     }
 
-    if (messages.length > 0 && opts.msg_list === message_lists.home) {
-        // We keep track of how far back we've fetched messages for, for messaging in
-        // the recent view. This assumes `data.messages` is already sorted.
+    if (messages.length > 0 && (opts.msg_list === message_lists.home || opts.is_recent_view_data)) {
+        recent_view_ui.process_messages(messages);
+
+        // Update the recent view UI's understanding of which messages
+        // we have available for the recent view.
         const oldest_timestamp = all_messages_data.first().timestamp;
         recent_view_ui.set_oldest_message_date(
             oldest_timestamp,
@@ -73,7 +75,6 @@ function process_result(data, opts) {
     }
 
     huddle_data.process_loaded_messages(messages);
-    recent_view_ui.process_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view();
 
@@ -591,6 +592,7 @@ export function initialize(home_view_loaded) {
         num_before: consts.recent_view_initial_fetch_size,
         num_after: 0,
         msg_list_data: recent_view_message_list_data,
+        is_recent_view_data: true,
         cont: recent_view_ui.hide_loading_indicator,
     });
 }
