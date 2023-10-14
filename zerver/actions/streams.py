@@ -698,15 +698,22 @@ def send_peer_remove_events(
     realm: Realm,
     streams: List[Stream],
     altered_user_dict: Dict[int, Set[int]],
+    streams_and_unsubscribers: Dict[Stream, Set[UserProfile]],
 ) -> None:
     private_streams = [stream for stream in streams if stream.invite_only]
-
+    # Filtering out private streams and respective users who left
+    private_streams_and_unsubscribers = {
+        stream: streams_and_unsubscribers[stream] for stream in private_streams
+    }
     private_peer_dict = bulk_get_private_peers(
         realm=realm,
         private_streams=private_streams,
     )
     stream_dict = {stream.id: stream for stream in streams}
-
+    # sending out bot notifications to notify only existing subscribers in private streams
+    send_leave_notifications_to_private_streams(
+        private_streams_and_unsubscribers=private_streams_and_unsubscribers
+    )
     send_peer_subscriber_events(
         op="peer_remove",
         realm=realm,
@@ -737,9 +744,12 @@ def send_subscription_remove_events(
 ) -> None:
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
+    streams_and_unsubscribers: Dict[Stream, Set[UserProfile]] = defaultdict(set)
+
     for user, stream in removed_subs:
         streams_by_user[user.id].append(stream)
         altered_user_dict[stream.id].add(user.id)
+        streams_and_unsubscribers[stream].add(user)
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
@@ -759,6 +769,7 @@ def send_subscription_remove_events(
         realm=realm,
         streams=streams,
         altered_user_dict=altered_user_dict,
+        streams_and_unsubscribers=streams_and_unsubscribers,
     )
 
 
@@ -913,6 +924,22 @@ def do_change_subscription_property(
         stream_id=stream.id,
     )
     send_event(user_profile.realm, event, [user_profile.id])
+
+
+def send_leave_notifications_to_private_streams(
+    private_streams_and_unsubscribers: Dict[Stream, Set[UserProfile]]
+) -> None:
+    for private_stream in private_streams_and_unsubscribers:
+        unsubscribed_users = private_streams_and_unsubscribers[private_stream]
+        for unsubscribed_user in unsubscribed_users:
+            notification_stream = unsubscribed_user.realm.get_notifications_stream()
+            sender = get_system_bot(settings.NOTIFICATION_BOT, notification_stream.realm_id)
+            msg = _("{user} left {stream}.").format(
+                user=unsubscribed_user.full_name, stream=private_stream.name
+            )
+            internal_send_stream_message(
+                sender=sender, stream=private_stream, topic="hello", content=msg
+            )
 
 
 def send_change_stream_permission_notification(

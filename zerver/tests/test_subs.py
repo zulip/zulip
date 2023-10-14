@@ -4568,14 +4568,19 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
-        self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.topic_name(), "stream events")
-        self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
-        self.assertIn(
-            f"**{policy_name}** stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
-            "```` quote",
-            msg.content,
-        )
+        if invite_only:
+            previous_msg = self.get_second_to_last_message()
+            self.assertEqual(previous_msg.sender.email, settings.NOTIFICATION_BOT)
+            self.assertIn("added", previous_msg.content)
+        else:
+            self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
+            self.assertEqual(msg.topic_name(), "stream events")
+            self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
+            self.assertIn(
+                f"**{policy_name}** stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
+                "```` quote",
+                msg.content,
+            )
 
     def test_multi_user_subscription(self) -> None:
         user1 = self.example_user("cordelia")
@@ -4898,9 +4903,9 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user3, "private_stream")
 
         # Sends 3 peer-remove events and 2 unsubscribe events.
-        with self.assert_database_query_count(16):
-            with self.assert_memcached_count(3):
-                with self.capture_send_event_calls(expected_num_events=5) as events:
+        with self.assert_database_query_count(42):
+            with self.assert_memcached_count(16):
+                with self.capture_send_event_calls(expected_num_events=7) as events:
                     bulk_remove_subscriptions(
                         realm,
                         [user1, user2],
@@ -4930,6 +4935,11 @@ class SubscriptionAPITest(ZulipTestCase):
             notifications.append((",".join(stream_names), removed_user_ids, notified_user_ids))
 
         notifications.sort(key=lambda tup: tup[0])
+
+        msg = self.get_last_message()
+        expected_msg = f"{user1.full_name} left {private.name}."
+        self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
+        self.assertEqual(msg.content, expected_msg)
 
         self.assertEqual(
             notifications,
