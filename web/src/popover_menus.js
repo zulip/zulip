@@ -34,6 +34,7 @@ export const popover_instances = {
     topics_menu: null,
     send_later: null,
     change_visibility_policy: null,
+    personal_menu: null,
 };
 
 /* Keyboard UI functions */

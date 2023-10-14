@@ -274,8 +274,8 @@ export async function log_in(
 
 export async function log_out(page: Page): Promise<void> {
     await page.goto(realm_url);
-    const menu_selector = "#settings-dropdown";
-    const logout_selector = ".dropdown-menu a.logout_button";
+    const menu_selector = "#personal-menu";
+    const logout_selector = ".personal-menu-actions a.logout_button";
     console.log("Logging out");
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
@@ -535,6 +535,12 @@ export async function open_streams_modal(page: Page): Promise<void> {
     await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
     const url = await page_url_with_fragment(page);
     assert.ok(url.includes("#streams/all"));
+}
+
+export async function open_personal_menu(page: Page): Promise<void> {
+    const menu_selector = "#personal-menu";
+    await page.waitForSelector(menu_selector, {visible: true});
+    await page.click(menu_selector);
 }
 
 export async function manage_organization(page: Page): Promise<void> {

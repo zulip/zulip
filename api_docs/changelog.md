@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 217**
+
+* [`POST /mobile_push/test_notification`](/api/test-notify): Added new endpoint
+  to send a test push notification to a mobile device or devices.
+
 **Feature level 216**:
 
 * `PATCH /realm`, [`POST register`](/api/register-queue),

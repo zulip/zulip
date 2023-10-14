@@ -80,9 +80,7 @@
             );
         }
 
-        .table_fix_head table {
-            /* To keep border properties to the thead th. */
-            border-collapse: separate;
+        .recent-view-container {
             /*
             Add margin bottom equal to `#bottom-whitespace`. This helps us keep
             #compose visible at its max-height without overlapping with any visible
@@ -93,6 +91,31 @@
             user is at the bottom of scroll container when the compose box is open.
             */
             margin-bottom: var(--max-unexpanded-compose-height);
+        }
+
+        .recent-view-load-more-container {
+            margin: 20px 10px;
+            align-items: center;
+        }
+
+        .fetch-messages-button {
+            display: grid;
+            justify-items: center;
+
+            .loading_indicator_spinner {
+                height: 20px;
+                width: 20px;
+            }
+
+            path {
+                fill: var(--color-recent-view-loading-spinner);
+            }
+        }
+
+        .table_fix_head table {
+            /* To keep border properties to the thead th. */
+            border-collapse: separate;
+
             border-spacing: 0;
             width: 100%;
 

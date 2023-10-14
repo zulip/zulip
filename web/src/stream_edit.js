@@ -535,6 +535,11 @@ export function initialize() {
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.
     $("#streams_overlay_container").on("click", ".sub_unsub_button", (e) => {
+        if ($(e.currentTarget).hasClass("disabled")) {
+            // We do not allow users to subscribe themselves to private streams.
+            return;
+        }
+
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
         const $stream_row = $(

@@ -95,6 +95,7 @@ export function initialize() {
 
     delegate("body", {
         target: ".toggle-subscription-tooltip",
+        trigger: "mouseenter",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "bottom",
@@ -194,6 +195,7 @@ export function initialize() {
             "#add_streams_tooltip",
             "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
+            "#personal-menu-dropdown .status-circle",
         ],
         appendTo: () => document.body,
     });

@@ -79,6 +79,7 @@ import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as personal_menu_popover from "./personal_menu_popover";
 import * as playground_links_popover from "./playground_links_popover";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
@@ -203,6 +204,7 @@ function initialize_right_sidebar() {
 function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
+        user_avatar: page_params.avatar_url_medium,
     });
 
     $("#header-container").html(rendered_navbar);
@@ -602,6 +604,13 @@ export function initialize_everything() {
         },
         on_mark_pm_as_read: unread_ops.mark_pm_as_read,
         on_mark_topic_as_read: unread_ops.mark_topic_as_read,
+
+        maybe_load_older_messages() {
+            message_fetch.maybe_load_older_messages({
+                msg_list: message_lists.home,
+                recent_view: true,
+            });
+        },
     });
     inbox_ui.initialize();
     alert_words.initialize(alert_words_params);
@@ -708,6 +717,7 @@ export function initialize_everything() {
     user_group_popover.initialize();
     user_card_popover.initialize();
     playground_links_popover.initialize();
+    personal_menu_popover.initialize();
     pm_list.initialize();
     topic_list.initialize({
         on_topic_click(stream_id, topic) {

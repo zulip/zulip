@@ -92,6 +92,7 @@ from zerver.views.push_notifications import (
     add_apns_device_token,
     remove_android_reg_id,
     remove_apns_device_token,
+    send_test_push_notification_api,
 )
 from zerver.views.reactions import add_reaction, remove_reaction
 from zerver.views.read_receipts import read_receipts
@@ -380,6 +381,7 @@ v1_api_and_json_patterns = [
         "users/me/apns_device_token", POST=add_apns_device_token, DELETE=remove_apns_device_token
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
+    rest_path("mobile_push/test_notification", POST=send_test_push_notification_api),
     # users/*/presence => zerver.views.presence.
     rest_path("users/me/presence", POST=update_active_status_backend),
     # It's important that this sit after users/me/presence so that
