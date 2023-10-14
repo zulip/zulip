@@ -6,7 +6,7 @@ import render_actions_popover from "../templates/popovers/actions_popover.hbs";
 import * as blueslip from "./blueslip";
 import * as compose_reply from "./compose_reply";
 import * as condense from "./condense";
-import { show_copied_confirmation } from "./copied_tooltip";
+import {show_copied_confirmation} from "./copied_tooltip";
 import * as emoji_picker from "./emoji_picker";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
@@ -16,7 +16,7 @@ import * as popover_menus_data from "./popover_menus_data";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as stream_popover from "./stream_popover";
-import { parse_html } from "./ui_util";
+import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 
 let message_actions_popover_keyboard_toggle = false;
@@ -99,7 +99,7 @@ export function initialize() {
                 // message in the current message list (and
                 // compose_reply.respond_to_message doesn't take a message
                 // argument).
-                compose_reply.quote_and_reply({ trigger: "popover respond" });
+                compose_reply.quote_and_reply({trigger: "popover respond"});
                 e.preventDefault();
                 e.stopPropagation();
                 instance.hide();
