@@ -13,6 +13,7 @@ import * as flatpickr from "./flatpickr";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
+import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
@@ -394,6 +395,7 @@ export function initialize() {
         const $textarea = $compose_click_target.closest("form").find("textarea");
         const format_type = $(e.target).attr("data-format-type");
         compose_ui.format_text($textarea, format_type);
+        popovers.hide_all();
         $textarea.trigger("focus");
         e.preventDefault();
         e.stopPropagation();
