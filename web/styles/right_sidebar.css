@@ -85,7 +85,7 @@ $user_status_emoji_width: 24px;
         display: block;
     }
 
-    #empty-list-message {
+    .empty-list-message {
         font-size: 1.2em;
 
         &:hover {

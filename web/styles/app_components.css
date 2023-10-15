@@ -1172,12 +1172,12 @@ div.overlay {
     }
 }
 
-#empty-list-message,
-#empty-table-message {
+.empty-list-message,
+.empty-table-message {
     background-color: inherit;
     color: var(--color-text-default);
     font-size: 1.5em;
-    padding: 3em 1em;
+    padding: 3em 1em !important;
     text-align: center;
 }
 
