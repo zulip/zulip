@@ -210,7 +210,7 @@ function render_user_stream_list(streams, user) {
                 return item && item.name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                if ($container.find("#empty-table-message").length) {
+                if ($container.find(".empty-table-message").length) {
                     $container.parent().addClass("empty-list");
                 }
             },

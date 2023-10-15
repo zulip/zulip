@@ -53,7 +53,7 @@
             }
         }
 
-        #empty-table-message {
+        .empty-table-message {
             background-color: var(--color-background);
             padding: 3em 1em;
         }

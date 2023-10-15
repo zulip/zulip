@@ -663,7 +663,7 @@ ul {
     .empty-list {
         border: none;
 
-        #empty-table-message {
+        .empty-table-message {
             padding: 3em 1em;
         }
     }
