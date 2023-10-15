@@ -1116,7 +1116,6 @@ function page_up_navigation() {
         row_focus = 0;
     }
     $scroll_container.scrollTop(new_scrollTop);
-    set_table_focus(row_focus, col_focus);
 }
 
 function page_down_navigation() {
@@ -1130,7 +1129,6 @@ function page_down_navigation() {
         row_focus = topics_widget.get_current_list().length - 1;
     }
     $scroll_container.scrollTop(new_scrollTop);
-    set_table_focus(row_focus, col_focus);
 }
 
 function check_row_type_transition(row, col) {
