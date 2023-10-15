@@ -179,7 +179,7 @@ The relevant files are:
 
 - `analytics/views/stats.py`: All chart data requests from the /stats page call
   get_chart_data in this file.
-- `web/src/stats/stats.js`: The JavaScript and Plotly code.
+- `web/src/stats/stats.ts`: The JavaScript and Plotly code.
 - `templates/analytics/stats.html`
 - `web/styles/stats.css` and `web/styles/portico.css`: We are in the
   process of re-styling this page to use in-app css instead of portico css,
@@ -190,11 +190,11 @@ The relevant files are:
 Most of the code is self-explanatory, and for adding say a new graph, the
 answer to most questions is to copy what the other graphs do. It is easy
 when writing this sort of code to have a lot of semi-repeated code blocks
-(especially in `stats.js`); it's good to do what you can to reduce this.
+(especially in `stats.ts`); it's good to do what you can to reduce this.
 
 Tips and tricks:
 
-- Use `$.get` to fetch data from the backend. You can grep through `stats.js`
+- Use `$.get` to fetch data from the backend. You can grep through `stats.ts`
   to find examples of this.
 - The Plotly documentation is at
   <https://plot.ly/javascript/> (check out the full reference, event
