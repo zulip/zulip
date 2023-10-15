@@ -342,7 +342,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         email: user.delivery_email,
         profile_data,
         user_avatar: people.medium_avatar_url_for_person(user),
-        is_active_user: people.is_person_active(user.user_id),
+        active_user_id: people.is_person_active(user.user_id),
         is_me: people.is_current_user(user.email),
         is_bot: user.is_bot,
         date_joined: timerender.get_localized_date_or_time_for_format(
