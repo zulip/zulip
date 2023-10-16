@@ -227,7 +227,6 @@ class HomeTest(ZulipTestCase):
         "user_status",
         "user_topics",
         "warn_no_email",
-        "webpack_public_path",
         "zulip_feature_level",
         "zulip_merge_base",
         "zulip_plan_is_not_limited",
@@ -369,7 +368,6 @@ class HomeTest(ZulipTestCase):
             "two_fa_enabled",
             "two_fa_enabled_user",
             "warn_no_email",
-            "webpack_public_path",
         ]
         self.assertEqual(actual_keys, expected_keys)
 

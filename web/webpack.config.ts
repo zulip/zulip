@@ -163,7 +163,7 @@ export default (
         },
         output: {
             path: path.resolve(__dirname, "../static/webpack-bundles"),
-            publicPath: "",
+            publicPath: "auto",
             filename: production ? "[name].[contenthash].js" : "[name].js",
             assetModuleFilename: production
                 ? "files/[name].[hash][ext][query]"

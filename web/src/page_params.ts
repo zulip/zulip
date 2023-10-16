@@ -90,7 +90,6 @@ export const page_params: {
     show_webathena: boolean;
     translation_data: Record<string, string>;
     user_id: number | undefined;
-    webpack_public_path: string;
     zulip_merge_base: string;
     zulip_plan_is_not_limited: boolean;
     zulip_version: string;
