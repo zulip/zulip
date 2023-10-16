@@ -8,6 +8,7 @@ import render_success_message_scheduled_banner from "../templates/compose_banner
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -118,15 +119,29 @@ export function clear_compose_box() {
     scheduled_messages.reset_selected_schedule_timestamp();
 }
 
-export function send_message_success(local_id, message_id, locally_echoed) {
-    if (!locally_echoed) {
+export function send_message_success(request, data) {
+    if (!request.locally_echoed) {
         if ($("#compose-textarea").data("draft-id")) {
             drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
         }
         clear_compose_box();
     }
 
-    echo.reify_message_id(local_id, message_id);
+    echo.reify_message_id(request.local_id, data.id);
+
+    if (request.type === "stream") {
+        if (data.automatic_new_visibility_policy) {
+            // topic has been automatically unmuted or followed. No need to
+            // suggest the user to unmute. Show the banner and return.
+            compose_notifications.notify_automatic_new_visibility_policy(request, data);
+            return;
+        }
+
+        const muted_narrow = compose_notifications.get_muted_narrow(request);
+        if (muted_narrow) {
+            compose_notifications.notify_unmute(muted_narrow, request.stream_id, request.topic);
+        }
+    }
 }
 
 export function send_message(request = create_message_object()) {
@@ -161,7 +176,7 @@ export function send_message(request = create_message_object()) {
     request.resend = false;
 
     function success(data) {
-        send_message_success(local_id, data.id, locally_echoed);
+        send_message_success(request, data);
     }
 
     function error(response) {

@@ -1,0 +1,10 @@
+{{#> compose_banner }}
+    <p class="banner_message">
+        {{#if followed}}
+            {{#tr}}Now following {{/tr}}
+        {{else}}
+            {{#tr}}Unmuted {{/tr}}
+        {{/if}}
+        <a class="above_compose_banner_action_link" href="{{narrow_url}}" data-message-id="{{link_msg_id}}">{{stream_topic}}</a>.
+    </p>
+{{/compose_banner}}
