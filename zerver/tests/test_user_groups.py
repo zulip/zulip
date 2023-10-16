@@ -52,11 +52,9 @@ class UserGroupTestCase(ZulipTestCase):
         subgroup_ids = get_subgroup_ids(user_group, direct_subgroup_only=True)
         self.assertSetEqual(set(subgroup_ids), {member.id for member in members})
 
-    def create_user_group_for_test(
-        self, group_name: str, realm: Realm = get_realm("zulip")
-    ) -> UserGroup:
+    def create_user_group_for_test(self, group_name: str) -> UserGroup:
         members = [self.example_user("othello")]
-        return check_add_user_group(realm, group_name, members, acting_user=None)
+        return check_add_user_group(get_realm("zulip"), group_name, members, acting_user=None)
 
     def test_user_groups_in_realm_serialized(self) -> None:
         realm = get_realm("zulip")
