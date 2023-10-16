@@ -579,23 +579,24 @@ li.active-sub-filter {
         margin-top: 2px;
     }
 
-    .top_left_starred_messages .unread_count,
-    .top_left_drafts .unread_count,
-    .top_left_scheduled_messages .unread_count {
-        background-color: inherit;
-        color: inherit;
-        border: 0.5px solid hsl(105deg 2% 50%);
-        /* The border takes up space, so we need to
-           subtract 1px from the usual 2px margin-top */
-        margin-top: 1px !important;
-    }
-
     .zulip-icon-inbox,
     .zulip-icon-star-filled {
         font-size: 14px;
         top: 2px;
         position: relative;
     }
+}
+
+.top_left_starred_messages .unread_count,
+.top_left_drafts .unread_count,
+.top_left_scheduled_messages .unread_count,
+.condensed-views-popover-menu .unread_count {
+    background-color: unset;
+    color: inherit;
+    border: 0.5px solid var(--color-border-unread-counter);
+    /* The border takes up space, so we need to
+       subtract 1px from the usual 2px margin-top */
+    margin-top: 1px !important;
 }
 
 li.top_left_all_messages,
@@ -742,6 +743,28 @@ li.top_left_scheduled_messages {
            flexbox. */
         display: flex;
         align-items: center;
+        color: var(--color-left-sidebar-header-vdots-visible);
+
+        &:hover {
+            color: var(--color-vdots-hover);
+        }
+    }
+}
+
+.condensed-views-popover-menu {
+    .left-sidebar-popover-icon-label-count {
+        display: flex;
+        align-items: baseline;
+    }
+
+    .left-sidebar-navigation-label {
+        flex: 1 0 0;
+        margin-left: 3px;
+    }
+
+    .unread_count {
+        margin-left: 6px;
+        border-color: var(--color-border-unread-counter-popover-menu);
     }
 }
 

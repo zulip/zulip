@@ -210,6 +210,8 @@ body {
         --color-background-unread-counter
     );
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
+    --color-border-unread-counter: var(--color-background-unread-counter);
+    --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
@@ -258,6 +260,9 @@ body {
     --color-vdots-hint: hsl(0deg 0% 0% / 30%);
     --color-vdots-visible: hsl(0deg 0% 0% / 53%);
     --color-vdots-hover: hsl(0deg 0% 0%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
     --color-tab-picker-icon: hsl(200deg 100% 40%);
 
     /* Message feed loading indicator colors */
@@ -342,6 +347,10 @@ body {
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
+    --color-border-unread-counter: hsl(105deg 2% 50%);
+    --color-border-unread-counter-popover-menu: var(
+        --color-border-unread-counter
+    );
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
@@ -393,6 +402,9 @@ body {
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
     --color-vdots-hover: hsl(0deg 0% 100%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
 
     /* Message feed loading indicator colors */

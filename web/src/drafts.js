@@ -46,6 +46,11 @@ export const draft_model = (function () {
         return get()[id] || false;
     };
 
+    exports.getDraftCount = function () {
+        const drafts = get();
+        return Object.keys(drafts).length;
+    };
+
     function save(drafts, update_count = true) {
         ls.set(KEY, drafts);
         if (update_count) {
