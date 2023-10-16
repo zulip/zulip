@@ -112,10 +112,6 @@ function do_new_messages_animation($li) {
     setTimeout(end_animation, 6000);
 }
 
-export function initialize() {
-    update_scheduled_messages_row();
-}
-
 export function highlight_inbox_view() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
@@ -125,4 +121,8 @@ export function highlight_inbox_view() {
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
+}
+
+export function initialize() {
+    update_scheduled_messages_row();
 }
