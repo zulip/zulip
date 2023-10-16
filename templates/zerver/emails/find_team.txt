@@ -9,7 +9,8 @@ Your email address {{ email }} has accounts with the following Zulip organizatio
 * {{ realm.name }}: {{ realm.uri }}
 {% endfor %}
 
-{% trans %}If you have trouble logging in, please contact Zulip support by replying to this email.{% endtrans %}
-
+{% trans help_url="https://zulip.com/help/change-your-password#if-youve-forgotten-or-never-had-a-password" %}
+If you have trouble logging in, you can reset your password ({{ help_url }}).
+{% endtrans %}
 
 {{ _("Thanks for using Zulip!") }}
