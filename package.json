@@ -55,6 +55,7 @@
     "micromodal": "^0.4.6",
     "mini-css-extract-plugin": "^2.2.2",
     "minimalistic-assert": "^1.0.1",
+    "npm": "^10.2.0",
     "panzoom": "^9.4.2",
     "plotly.js": "^2.0.0",
     "postcss": "^8.0.3",
