@@ -15,9 +15,9 @@ export function update_scheduled_messages_row() {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
     if (count > 0) {
-        $scheduled_li.show();
+        $scheduled_li.addClass("show-with-scheduled-messages");
     } else {
-        $scheduled_li.hide();
+        $scheduled_li.removeClass("show-with-scheduled-messages");
     }
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }

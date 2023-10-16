@@ -615,6 +615,15 @@ li.top_left_scheduled_messages {
     }
 }
 
+/* Don't show the scheduled messages item... */
+li.top_left_scheduled_messages {
+    display: none;
+    /* ...unless there are scheduled messages to show. */
+    &.show-with-scheduled-messages {
+        display: list-item;
+    }
+}
+
 .top_left_row {
     padding-left: $far_left_gutter_size;
     padding-right: 10px;
