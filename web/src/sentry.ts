@@ -31,7 +31,12 @@ export function shouldCreateSpanForRequest(url: string): boolean {
 }
 
 if (page_params.server_sentry_dsn) {
-    const url_matches = [/^\//, new RegExp("^" + _.escapeRegExp(page_params.webpack_public_path))];
+    const url_matches = [/^\//];
+    if (document.currentScript instanceof HTMLScriptElement) {
+        url_matches.push(
+            new RegExp("^" + _.escapeRegExp(new URL(".", document.currentScript.src).href)),
+        );
+    }
     if (page_params.realm_uri !== undefined) {
         url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
     }
