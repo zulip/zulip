@@ -108,8 +108,17 @@ export function initialize() {
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
+            // Determine at show time whether there are scheduled messages,
+            // so that Tippy properly calculates the height of the popover
+            const scheduled_message_count = scheduled_messages.get_count();
+            let has_scheduled_messages = false;
+            if (scheduled_message_count > 0) {
+                has_scheduled_messages = true;
+            }
             popovers.hide_all();
-            instance.setContent(parse_html(render_left_sidebar_condensed_views_popover()));
+            instance.setContent(
+                parse_html(render_left_sidebar_condensed_views_popover({has_scheduled_messages})),
+            );
         },
         onMount() {
             update_unread_count_in_dom(

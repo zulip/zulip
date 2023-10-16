@@ -10,6 +10,7 @@
             <span class="unread_count"></span>
         </a>
     </li>
+    {{#if has_scheduled_messages }}
     <li class="condensed-views-popover-menu-scheduled-messages">
         <a tabindex="0" href="#scheduled" class="left-sidebar-popover-icon-label-count">
             <span class="filter-icon">
@@ -19,4 +20,5 @@
             <span class="unread_count"></span>
         </a>
     </li>
+    {{/if}}
 </ul>
