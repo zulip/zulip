@@ -143,14 +143,14 @@ body {
     --recent-topics-filters-height: 50px;
 
     /* Overlay heights for streams modal */
-    --modal-container-height: 95vh;
-    --modal-container-max-height: 1000px;
+    --overlay-container-height: 95vh;
+    --overlay-container-max-height: 1000px;
     /* .subscriptions-header */
-    --modal-container-subscriptions-header-height: 45px;
+    --subscriptions-overlay-header-height: 45px;
     /* .display-type */
-    --modal-container-subscriptions-display-type-height: 44px;
+    --subscriptions-overlay-display-type-height: 44px;
     /* .settings-sticky-footer */
-    --modal-container-subscriptions-modal-footer-height: 60px;
+    --subscriptions-overlay-sticky-footer-height: 60px;
 
     /*
     Maximum height of the compose box when it is not in expanded state. This
