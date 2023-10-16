@@ -674,6 +674,37 @@ li.top_left_scheduled_messages {
     margin-left: -3px;
     cursor: pointer;
 
+    &.showing-expanded-navigation {
+        /* When the expanded navigation is visible,
+           hide the condensed navigation's controls. */
+        #left-sidebar-navigation-list-condensed,
+        .left-sidebar-navigation-menu-icon {
+            display: none;
+        }
+        /* Give the sidebar title through the end of the markers
+           area, if needed. */
+        .sidebar-title {
+            grid-column: row-content-start / markers-and-controls-end;
+        }
+    }
+
+    /* Use a next-sibling combinator (+) to use CSS to show and hide
+       filter rows as needed, based on the narrow. */
+    &.showing-condensed-navigation {
+        + #left-sidebar-navigation-list {
+            /* When the navigation area is condensed, hide all
+               the rows in the full navigation list... */
+            & .top_left_row {
+                display: none;
+            }
+            /* ...except when there is an active filter in place:
+               that row should still be shown. */
+            & .top_left_row.active-filter {
+                display: block;
+            }
+        }
+    }
+
     #toggle-top-left-navigation-area-icon {
         grid-area: starting-anchor-element;
         /* Remove negative left margin. This should be cleaned

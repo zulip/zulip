@@ -81,6 +81,24 @@ export function handle_narrow_activated(filter) {
     }
 }
 
+function toggle_condensed_navigation_area() {
+    const $views_label_container = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    if ($views_label_container.hasClass("showing-expanded-navigation")) {
+        // Toggle into the condensed state
+        $views_label_container.addClass("showing-condensed-navigation");
+        $views_label_container.removeClass("showing-expanded-navigation");
+        $views_label_icon.addClass("fa-caret-right");
+        $views_label_icon.removeClass("fa-caret-down");
+    } else {
+        // Toggle into the expanded state
+        $views_label_container.addClass("showing-expanded-navigation");
+        $views_label_container.removeClass("showing-condensed-navigation");
+        $views_label_icon.addClass("fa-caret-down");
+        $views_label_icon.removeClass("fa-caret-right");
+    }
+}
+
 export function highlight_recent_view() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
@@ -125,4 +143,16 @@ export function highlight_inbox_view() {
 
 export function initialize() {
     update_scheduled_messages_row();
+
+    $("body").on("click", "#views-label-container", (e) => {
+        if (
+            $(e.currentTarget).hasClass("showing-condensed-navigation") &&
+            !($(e.target).hasClass("sidebar-title") || $(e.target).hasClass("fa-caret-right"))
+        ) {
+            // Ignore clicks on condensed nav items
+            return;
+        }
+        e.stopPropagation();
+        toggle_condensed_navigation_area();
+    });
 }
