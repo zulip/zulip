@@ -173,6 +173,8 @@ function format_user_stream_list_item_html(stream, user) {
         people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream);
     const show_private_stream_unsub_tooltip =
         people.is_my_user_id(user.user_id) && stream.invite_only;
+    const show_last_user_in_private_stream_unsub_tooltip =
+        stream.invite_only && peer_data.get_subscriber_count(stream.stream_id) === 1;
     return render_user_stream_list_item({
         name: stream.name,
         stream_id: stream.stream_id,
@@ -181,6 +183,7 @@ function format_user_stream_list_item_html(stream, user) {
         is_web_public: stream.is_web_public,
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
+        show_last_user_in_private_stream_unsub_tooltip,
         stream_edit_url: hash_util.stream_edit_url(stream),
     });
 }
