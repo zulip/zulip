@@ -295,7 +295,7 @@ h4.user_group_setting_subsection_title {
     width: 97%;
     overflow: hidden;
     max-width: 1200px;
-    max-height: var(--modal-container-max-height);
+    max-height: var(--overlay-container-max-height);
 
     .list-toggler-container .tab-switcher .ind-tab {
         width: auto;
@@ -698,16 +698,16 @@ h4.user_group_setting_subsection_title {
         .stream-creation-simplebar-container,
         .user-group-creation-simplebar-container {
             height: calc(
-                var(--modal-container-height) -
-                    var(--modal-container-subscriptions-header-height) -
-                    var(--modal-container-subscriptions-display-type-height) -
-                    var(--modal-container-subscriptions-modal-footer-height)
+                var(--overlay-container-height) -
+                    var(--subscriptions-overlay-header-height) -
+                    var(--subscriptions-overlay-display-type-height) -
+                    var(--subscriptions-overlay-sticky-footer-height)
             );
             max-height: calc(
-                var(--modal-container-max-height) -
-                    var(--modal-container-subscriptions-header-height) -
-                    var(--modal-container-subscriptions-display-type-height) -
-                    var(--modal-container-subscriptions-modal-footer-height)
+                var(--overlay-container-max-height) -
+                    var(--subscriptions-overlay-header-height) -
+                    var(--subscriptions-overlay-display-type-height) -
+                    var(--subscriptions-overlay-sticky-footer-height)
             );
         }
 
