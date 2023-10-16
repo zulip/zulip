@@ -653,8 +653,7 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
         const console_ready1 = console_ready;
         console_ready = (async () => {
             const frames = await Promise.all(
-                ErrorStackParser.parse(error).map(async (frame1) => {
-                    let frame = frame1 as unknown as StackFrame;
+                ErrorStackParser.parse(error).map(async (frame) => {
                     try {
                         frame = await gps.getMappedLocation(frame);
                     } catch {
