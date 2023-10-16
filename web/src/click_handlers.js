@@ -927,6 +927,25 @@ export function initialize() {
         settings_panel_menu.mobile_deactivate_section();
     });
 
+    // When tabbing through an overlay, and the tab gets to the last element to receive focus
+    // this code gets the last element in the overlay and calls an onfocus event on it which in turn
+    // returns the focus to the first element in the overlay (the overlay container) and starts the tab cycle
+    // over again prevent tabbing from going outside of the overlay and focusing on outside elements
+    // In order to make this reusable, a data attribute (data-top-focus-target) was attached to the
+    // element that returns focus to the top element in the overlay. All that is required to reuse this
+    // is to get the span with the class (return-tab-focus-to-modal-top) and drop it in an overlay
+    // then set the value of the "data-top-focus-target" to the id of the overlay container or a top element
+    // that can start the tab cycle
+
+    $(".return-tab-focus-to-modal-top").on("focus", () => {
+        const $top_focus_target_element = $("[data-top-focus-target]").data("top-focus-target");
+
+        $($top_focus_target_element).attr("aria-modal", "true");
+        $($top_focus_target_element).attr("role", "dialog");
+        $($top_focus_target_element).attr("tabindex", "-1");
+        $($top_focus_target_element).trigger("focus");
+    });
+
     $("body").on("click", ".trigger-natural-click", (e) => {
         // Jquery prevents default action on anchor for `trigger("click")`
         // so we need to use click on element to trigger the default action.
