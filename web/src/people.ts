@@ -33,16 +33,23 @@ export type User = {
     is_guest: boolean;
     is_moderator: boolean;
     is_billing_admin: boolean;
-    is_bot: boolean;
-    bot_type?: number | null;
-    bot_owner_id?: number | null;
     role: number;
     timezone: string;
     avatar_url?: string | null;
     avatar_version: number;
     profile_data: Record<number, ProfileData>;
     is_missing_server_data?: boolean; // used for fake user objects.
-};
+} & (
+    | {
+          is_bot: false;
+          bot_type: null;
+      }
+    | {
+          is_bot: true;
+          bot_type: number;
+          bot_owner_id: number | null;
+      }
+);
 
 export type SenderInfo = User & {
     avatar_url_small: string;
@@ -164,7 +171,7 @@ export function get_by_email(email: string): User | undefined {
     return person;
 }
 
-export function get_bot_owner_user(user: User): User | undefined {
+export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
     const owner_id = user.bot_owner_id;
 
     if (owner_id === undefined || owner_id === null) {
@@ -1448,7 +1455,6 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         date_joined: "",
         delivery_email: null,
         profile_data: {},
-        bot_owner_id: undefined,
         bot_type: null,
 
         // This property allows us to distinguish actual server person
