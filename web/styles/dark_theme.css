@@ -1536,26 +1536,6 @@
         }
     }
 
-    .tabs-container {
-        background-color: hsl(0deg 0% 0% / 30%);
-
-        & i {
-            color: hsl(0deg 0% 80%);
-        }
-
-        .selected-tab {
-            background-color: hsl(0deg 0% 17% / 50%);
-            outline: 1px solid hsl(0deg 0% 100% / 12%);
-        }
-
-        .tab-option {
-            &:hover:not(.selected-tab) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                outline: 1px solid hsl(0deg 0% 100% / 12%);
-            }
-        }
-    }
-
     .visibility_policy_popover {
         .visibility_policy_option {
             &:hover:not(.selected_visibility_policy) {
