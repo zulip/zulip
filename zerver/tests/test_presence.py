@@ -37,7 +37,7 @@ class UserPresenceModelTests(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         email = user_profile.email
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
 
         self.login_user(user_profile)
@@ -45,12 +45,12 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         slim_presence = False
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id, slim_presence)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm, slim_presence)
         self.assert_length(presence_dct, 1)
         self.assertEqual(presence_dct[email]["website"]["status"], "active")
 
         slim_presence = True
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id, slim_presence)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm, slim_presence)
         self.assert_length(presence_dct, 1)
         info = presence_dct[str(user_profile.id)]
         self.assertEqual(set(info.keys()), {"active_timestamp", "idle_timestamp"})
@@ -64,19 +64,19 @@ class UserPresenceModelTests(ZulipTestCase):
 
         # Simulate the presence being a week old first.  Nothing should change.
         back_date(num_weeks=1)
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 1)
 
         # If the UserPresence row is three weeks old, we ignore it.
         back_date(num_weeks=3)
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
 
         # If the values are set to "never", ignore it just like for sufficiently old presence rows.
         UserPresence.objects.filter(id=user_profile.id).update(
             last_active_time=None, last_connected_time=None
         )
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
 
     def test_pushable_always_false(self) -> None:
@@ -92,7 +92,7 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         def pushable() -> bool:
-            presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+            presence_dct = get_presence_dict_by_realm(user_profile.realm)
             self.assert_length(presence_dct, 1)
             return presence_dct[email]["website"]["pushable"]
 
@@ -491,6 +491,17 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get(f"/json/users/{othello.id}/presence", subdomain="zephyr")
         self.assert_json_error(result, "No such user")
 
+        self.set_up_db_for_testing_user_access()
+        self.login("polonius")
+        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
+            result = self.client_get(f"/json/users/{othello.id}/presence")
+        self.assert_json_error(result, "Insufficient permission")
+
+        result = self.client_get(f"/json/users/{othello.id}/presence")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
+
         # Then, we check everything works
         self.login("hamlet")
         result = self.client_get("/json/users/othello@zulip.com/presence")
@@ -658,6 +669,7 @@ class GetRealmStatusesTest(ZulipTestCase):
         # Set up the test by simulating users reporting their presence data.
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
+        self.example_user("cordelia")
 
         result = self.api_post(
             othello,
@@ -688,6 +700,40 @@ class GetRealmStatusesTest(ZulipTestCase):
         result = self.api_get(self.example_user("default_bot"), "/api/v1/realm/presence")
         json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {hamlet.email, othello.email})
+
+        # Check that polonius cannot fetch presence data for inaccessible user Othello
+        # if CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE is set to True.
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
+            result = self.api_get(polonius, "/api/v1/realm/presence")
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {hamlet.email})
+
+        result = self.api_get(polonius, "/api/v1/realm/presence")
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {hamlet.email, othello.email})
+
+        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
+            result = self.api_post(
+                polonius,
+                "/api/v1/users/me/presence",
+                dict(status="idle"),
+                HTTP_USER_AGENT="ZulipDesktop/1.0",
+            )
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {hamlet.email, polonius.email})
+
+        result = self.api_post(
+            polonius,
+            "/api/v1/users/me/presence",
+            dict(status="idle"),
+            HTTP_USER_AGENT="ZulipDesktop/1.0",
+        )
+        json = self.assert_json_success(result)
+        self.assertEqual(
+            set(json["presences"].keys()), {hamlet.email, polonius.email, othello.email}
+        )
 
     def test_presence_disabled(self) -> None:
         # Disable presence status and test whether the presence

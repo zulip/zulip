@@ -591,7 +591,8 @@ def check_can_access_user(
 
 def get_user_ids_who_can_access_user(target_user: UserProfile) -> List[int]:
     # We assume that caller only needs active users here, since
-    # this function is used to get users to send events.
+    # this function is used to get users to send events and to
+    # send presence update.
     realm = target_user.realm
     if not user_access_restricted_in_realm(target_user):
         return active_user_ids(realm.id)

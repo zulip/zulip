@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.users import check_user_can_access_all_users, get_accessible_user_ids
 from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, query_for_ids
 
 
@@ -151,24 +152,33 @@ def get_presence_for_user(
 
 
 def get_presence_dict_by_realm(
-    realm_id: int, slim_presence: bool = False
+    realm: Realm, slim_presence: bool = False, requesting_user_profile: Optional[UserProfile] = None
 ) -> Dict[str, Dict[str, Any]]:
     two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
     query = UserPresence.objects.filter(
-        realm_id=realm_id,
+        realm_id=realm.id,
         last_connected_time__gte=two_weeks_ago,
         user_profile__is_active=True,
         user_profile__is_bot=False,
-    ).values(
-        "last_active_time",
-        "last_connected_time",
-        "user_profile__email",
-        "user_profile_id",
-        "user_profile__enable_offline_push_notifications",
-        "user_profile__date_joined",
     )
 
-    presence_rows = list(query)
+    if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE and not check_user_can_access_all_users(
+        requesting_user_profile
+    ):
+        assert requesting_user_profile is not None
+        accessible_user_ids = get_accessible_user_ids(realm, requesting_user_profile)
+        query = query.filter(user_profile_id__in=accessible_user_ids)
+
+    presence_rows = list(
+        query.values(
+            "last_active_time",
+            "last_connected_time",
+            "user_profile__email",
+            "user_profile_id",
+            "user_profile__enable_offline_push_notifications",
+            "user_profile__date_joined",
+        )
+    )
 
     mobile_query = PushDeviceToken.objects.distinct("user_id").values_list(
         "user_id",
@@ -196,13 +206,13 @@ def get_presence_dict_by_realm(
 
 
 def get_presences_for_realm(
-    realm: Realm, slim_presence: bool
+    realm: Realm, slim_presence: bool, requesting_user_profile: UserProfile
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
     if realm.presence_disabled:
         # Return an empty dict if presence is disabled in this realm
         return defaultdict(dict)
 
-    return get_presence_dict_by_realm(realm.id, slim_presence)
+    return get_presence_dict_by_realm(realm, slim_presence, requesting_user_profile)
 
 
 def get_presence_response(
@@ -210,5 +220,5 @@ def get_presence_response(
 ) -> Dict[str, Any]:
     realm = requesting_user_profile.realm
     server_timestamp = time.time()
-    presences = get_presences_for_realm(realm, slim_presence)
+    presences = get_presences_for_realm(realm, slim_presence, requesting_user_profile)
     return dict(presences=presences, server_timestamp=server_timestamp)

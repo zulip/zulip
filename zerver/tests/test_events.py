@@ -1645,6 +1645,55 @@ class NormalActionsTest(BaseAction):
 
         check_user_status("events[0]", events[0], {"status_text"})
 
+        self.set_up_db_for_testing_user_access()
+        cordelia = self.example_user("cordelia")
+        self.user_profile = self.example_user("polonius")
+
+        # Set the date_joined for cordelia here like we did at
+        # the start of this test.
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=15)
+        cordelia.save()
+
+        away_val = False
+        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
+            events = self.verify_action(
+                lambda: do_update_user_status(
+                    user_profile=cordelia,
+                    away=away_val,
+                    status_text="out to lunch",
+                    emoji_name="car",
+                    emoji_code="1f697",
+                    reaction_type=UserStatus.UNICODE_EMOJI,
+                    client_id=client.id,
+                ),
+                num_events=0,
+                state_change_expected=False,
+            )
+
+        away_val = True
+        events = self.verify_action(
+            lambda: do_update_user_status(
+                user_profile=cordelia,
+                away=away_val,
+                status_text="at the beach",
+                emoji_name=None,
+                emoji_code=None,
+                reaction_type=None,
+                client_id=client.id,
+            ),
+            num_events=1,
+            state_change_expected=True,
+        )
+        check_presence(
+            "events[0]",
+            events[0],
+            has_email=True,
+            # We no longer store information about the client and we simply
+            # set the field to 'website' for backwards compatibility.
+            presence_key="website",
+            status="idle",
+        )
+
     def test_user_group_events(self) -> None:
         othello = self.example_user("othello")
         events = self.verify_action(
