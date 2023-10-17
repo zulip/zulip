@@ -601,3 +601,10 @@ TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000
 # notifications enabled. Default is set to avoid excessive Tornado
 # load in large organizations.
 MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
+
+# Limiting guest access to other users via the
+# can_access_all_users_group setting makes presence queries much more
+# expensive. This can be a significant performance problem for
+# installations with thousands of users with many guests limited in
+# this way, pending further optimization of the relevant code paths.
+CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False

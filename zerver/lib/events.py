@@ -231,7 +231,9 @@ def fetch_initial_state_data(
 
     if want("presence"):
         state["presences"] = (
-            {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
+            {}
+            if user_profile is None
+            else get_presences_for_realm(realm, slim_presence, user_profile)
         )
         # Send server_timestamp, to match the format of `GET /presence` requests.
         state["server_timestamp"] = time.time()
@@ -652,7 +654,9 @@ def fetch_initial_state_data(
     if want("user_status"):
         # We require creating an account to access statuses.
         state["user_status"] = (
-            {} if user_profile is None else get_user_status_dict(realm_id=realm.id)
+            {}
+            if user_profile is None
+            else get_user_status_dict(realm=realm, user_profile=user_profile)
         )
 
     if want("user_topic"):
