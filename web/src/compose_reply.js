@@ -32,7 +32,9 @@ export function respond_to_message(opts) {
     } else if (inbox_util.is_visible()) {
         const message_opts = inbox_ui.get_focused_row_message();
         if (message_opts.message === undefined) {
-            compose_actions.start(message_opts.msg_type, {
+            // If the user is not focused on inbox header, msg_type
+            // is not defined, so we open empty compose with nothing prefilled.
+            compose_actions.start(message_opts.msg_type ?? "stream", {
                 trigger: "inbox_nofocus",
                 ...message_opts,
             });
