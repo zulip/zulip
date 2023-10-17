@@ -19,6 +19,8 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
 
+let is_all_messages_data_loaded = false;
+
 const consts = {
     backfill_idle_time: 10 * 1000,
     backfill_batch_size: 1000,
@@ -59,21 +61,24 @@ function process_result(data, opts) {
         } else {
             opts.msg_list_data.add_messages(messages);
         }
-    }
 
-    if (messages.length > 0 && opts.msg_list === message_lists.home) {
-        // We keep track of how far back we've fetched messages for, for messaging in
-        // the recent view. This assumes `data.messages` is already sorted.
-        const oldest_timestamp = all_messages_data.first().timestamp;
-        recent_view_ui.set_oldest_message_date(
-            oldest_timestamp,
-            has_found_oldest,
-            has_found_newest,
-        );
+        // To avoid non-contiguous blocks of data in recent view from
+        // message_lists.home and recent_view_message_list_data, we
+        // only process data from message_lists.home if we have found
+        // the newest message in message_lists.home. We check this via
+        // is_all_messages_data_loaded, to avoid unnecessary
+        // double-processing of the last batch of messages;
+        // is_all_messages_data_loaded is set via opts.cont, below.
+        if (
+            opts.is_recent_view_data ||
+            (opts.msg_list === message_lists.home && is_all_messages_data_loaded)
+        ) {
+            const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+            recent_view_ui.process_messages(messages, msg_list_data);
+        }
     }
 
     huddle_data.process_loaded_messages(messages);
-    recent_view_ui.process_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view();
 
@@ -501,6 +506,13 @@ export function initialize(home_view_loaded) {
         }
 
         if (data.found_newest) {
+            // Mark that we've finishing loading all the way to the
+            // present in the all_messages_data data set. At this
+            // time, it's safe to call recent_view_ui.process_messages
+            // with all the messages in our cache.
+            is_all_messages_data_loaded = true;
+            recent_view_ui.process_messages(all_messages_data.all_messages(), all_messages_data);
+
             if (page_params.is_spectator) {
                 // Since for spectators, this is the main fetch, we
                 // hide the Recent Conversations loading indicator here.
@@ -509,6 +521,7 @@ export function initialize(home_view_loaded) {
 
             // See server_events.js for this callback.
             home_view_loaded();
+
             start_backfilling_messages();
             return;
         }
@@ -591,6 +604,7 @@ export function initialize(home_view_loaded) {
         num_before: consts.recent_view_initial_fetch_size,
         num_after: 0,
         msg_list_data: recent_view_message_list_data,
+        is_recent_view_data: true,
         cont: recent_view_ui.hide_loading_indicator,
     });
 }
