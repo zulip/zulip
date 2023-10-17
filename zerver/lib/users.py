@@ -34,6 +34,7 @@ from zerver.models import (
     Recipient,
     Service,
     Subscription,
+    SystemGroups,
     UserMessage,
     UserProfile,
     get_fake_email_domain,
@@ -249,7 +250,11 @@ def access_user_common(
     if not target.is_active and not allow_deactivated:
         raise JsonableError(_("User is deactivated"))
     if not for_admin:
-        # Administrative access is not required just to read a user.
+        # Administrative access is not required just to read a user
+        # but we need to check can_access_all_users_group setting.
+        if not check_can_access_user(target, user_profile):
+            raise JsonableError(_("Insufficient permission"))
+
         return target
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
@@ -510,6 +515,17 @@ def format_user_row(
     return result
 
 
+def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
+    if target_user.is_bot:
+        return False
+
+    realm = target_user.realm
+    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+        return False
+
+    return True
+
+
 def check_user_can_access_all_users(acting_user: Optional[UserProfile]) -> bool:
     if acting_user is None:
         # We allow spectators to access all users since they
@@ -521,6 +537,51 @@ def check_user_can_access_all_users(acting_user: Optional[UserProfile]) -> bool:
 
     realm = acting_user.realm
     if is_user_in_group(realm.can_access_all_users_group, acting_user):
+        return True
+
+    return False
+
+
+def check_can_access_user(
+    target_user: UserProfile, user_profile: Optional[UserProfile] = None
+) -> bool:
+    if not user_access_restricted_in_realm(target_user):
+        return True
+
+    if check_user_can_access_all_users(user_profile):
+        return True
+
+    assert user_profile is not None
+
+    if target_user.id == user_profile.id:
+        return True
+
+    # These include Subscription objects for streams as well as group DMs.
+    subscribed_recipient_ids = Subscription.objects.filter(
+        user_profile=user_profile,
+        active=True,
+        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+    ).values_list("recipient_id", flat=True)
+
+    if Subscription.objects.filter(
+        recipient_id__in=subscribed_recipient_ids,
+        user_profile=target_user,
+        active=True,
+        is_user_active=True,
+    ).exists():
+        return True
+
+    assert user_profile.recipient_id is not None
+    assert target_user.recipient_id is not None
+
+    # Querying the "Message" table is expensive so we do this last.
+    direct_message_query = Message.objects.filter(
+        recipient__type=Recipient.PERSONAL, realm=target_user.realm
+    )
+    if direct_message_query.filter(
+        Q(sender_id=target_user.id, recipient_id=user_profile.recipient_id)
+        | Q(recipient_id=target_user.recipient_id, sender_id=user_profile.id)
+    ).exists():
         return True
 
     return False
