@@ -19,6 +19,7 @@ import {user_settings} from "./user_settings";
 let next_timerender_id = 0;
 
 export let display_time_zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+const formatter_map = new Map<string, Intl.DateTimeFormat>();
 
 export function clear_for_testing(): void {
     next_timerender_id = 0;
@@ -27,6 +28,7 @@ export function clear_for_testing(): void {
 // Exported for testing only; we do not support live-updating the time zone.
 export function set_display_time_zone(time_zone: string): void {
     display_time_zone = time_zone;
+    formatter_map.clear();
 }
 
 type DateFormat = "weekday" | "dayofyear" | "weekday_dayofyear_year" | "dayofyear_year";
@@ -49,9 +51,10 @@ type DateOrTimeFormat = DateFormat | TimeFormat | DateWithTimeFormat;
 // for any formats that display the name for a month/weekday, but
 // possibly in more subtle ways for languages with different
 // punctuation schemes for date and times.
-export function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeFormatOptions {
-    const is_twenty_four_hour_time = user_settings.twenty_four_hour_time;
-
+export function get_format_options_for_type(
+    type: DateOrTimeFormat,
+    is_twenty_four_hour_time: boolean,
+): Intl.DateTimeFormatOptions {
     const time_format_options: Intl.DateTimeFormatOptions = is_twenty_four_hour_time
         ? {hourCycle: "h23", hour: "2-digit", minute: "2-digit"}
         : {
@@ -113,10 +116,19 @@ export function get_localized_date_or_time_for_format(
     date: Date | number,
     format: DateOrTimeFormat,
 ): string {
-    return new Intl.DateTimeFormat(user_settings.default_language, {
-        timeZone: display_time_zone,
-        ...get_format_options_for_type(format),
-    }).format(date);
+    const is_twenty_four_hour_time = user_settings.twenty_four_hour_time;
+    const format_key = `${user_settings.default_language}:${is_twenty_four_hour_time}:${format}`;
+
+    if (!formatter_map.has(format_key)) {
+        formatter_map.set(
+            format_key,
+            new Intl.DateTimeFormat(user_settings.default_language, {
+                timeZone: display_time_zone,
+                ...get_format_options_for_type(format, is_twenty_four_hour_time),
+            }),
+        );
+    }
+    return formatter_map.get(format_key)!.format(date);
 }
 
 // Exported for tests only.
