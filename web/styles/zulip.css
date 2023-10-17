@@ -1590,6 +1590,10 @@ td.pointer {
                 display: block;
             }
         }
+
+        .hide-recipient-bar-controls {
+            visibility: hidden;
+        }
     }
 }
 
