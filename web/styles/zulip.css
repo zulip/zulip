@@ -1589,6 +1589,10 @@ td.pointer {
             .recipient_row_date {
                 display: block;
             }
+
+            .hide-recipient-bar-controls {
+                visibility: visible;
+            }
         }
 
         .hide-recipient-bar-controls {
