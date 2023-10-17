@@ -475,6 +475,18 @@ export function initialize() {
         narrow.by_topic(row_id, {trigger: "message header"});
     });
 
+    // Hover on recipient bar to show the controls / options for the topic
+    // Options are visible by default on the sticky headers
+    $("body").on("mouseenter", ".message_header", (e) => {
+        const $bar_controls = $(e.target).find(".recipient_bar_controls");
+        $bar_controls.removeClass("hide-recipient-bar-controls");
+    });
+
+    $("body").on("mouseleave", ".message_header", (e) => {
+        const $bar_controls = $(e.target).find(".recipient_bar_controls");
+        $bar_controls.addClass("hide-recipient-bar-controls");
+    });
+
     // SIDEBARS
     $("#user_presences")
         .expectOne()
