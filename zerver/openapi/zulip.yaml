@@ -1133,6 +1133,13 @@ paths:
                                 confusing users when someone comes online and immediately sends
                                 a message (one wouldn't want them to still appear offline at
                                 that point!).
+
+                                If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
+                                setting is set to `true`, then the event is only sent to users
+                                who can access the user who came back online.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event
+                                was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1702,8 +1709,11 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the
-                                status of a user changes.
+                                Event sent to all users who can access the modified
+                                user when the status of a user changes.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228),
+                                this event was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -9760,6 +9770,10 @@ paths:
       tags: ["server_and_organizations"]
       description: |
         Get the presence information of all the users in an organization.
+
+        If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
+        setting is set to `true`, presence information of only accessible
+        users are returned.
 
         See [Zulip's developer documentation][subsystems-presence]
         for details on the data model for presence in Zulip.

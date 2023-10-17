@@ -25,6 +25,19 @@ format used by the Zulip server that they are interacting with.
 * [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`
   are now only sent to users who can access the modified user.
 
+* [`GET /events`](/api/get-events): `presence` events are now only sent to
+  users who can access the user who comes back online if the
+  `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server setting is set
+  to `true`.
+
+* [`GET /events`](/api/get-events): `user_status` events are now only
+  sent to users who can access the modified user.
+
+* [`GET /realm/presence`](/api/get-presence): The endpoint now returns
+  presence information of accessible users only if the
+  `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server setting is set
+  to `true`.
+
 **Feature level 227**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
