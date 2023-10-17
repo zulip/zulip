@@ -197,7 +197,7 @@ test("videos", ({override}) => {
         $("#compose-textarea").val("");
         const audio_handler = $("body").get_on_handler("click", ".audio_link");
         audio_handler(ev);
-        const audio_link_regex = /\[translated: Join audio call\.]\(example\.zoom\.com\)/;
+        const audio_link_regex = /\[translated: Join voice call\.]\(example\.zoom\.com\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, audio_link_regex);
     })();
