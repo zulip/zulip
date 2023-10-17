@@ -41,6 +41,7 @@ import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
+import * as read_receipts from "./read_receipts";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
@@ -87,6 +88,7 @@ const keydown_shift_mappings = {
     38: {name: "up_arrow", message_view_only: false}, // up arrow
     40: {name: "down_arrow", message_view_only: false}, // down arrow
     72: {name: "view_edit_history", message_view_only: true}, // 'H'
+    86: {name: "read_receipts", message_view_only: true}, // ','
 };
 
 const keydown_unshift_mappings = {
@@ -226,7 +228,6 @@ export function get_keypress_hotkey(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
         return undefined;
     }
-
     return keypress_mappings[e.which];
 }
 
@@ -546,6 +547,7 @@ export function process_enter_key(e) {
     }
 
     compose_reply.respond_to_message({trigger: "hotkey enter"});
+
     return true;
 }
 
@@ -1111,6 +1113,9 @@ export function process_hotkey(e, hotkey) {
             stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
             return true;
         }
+        case "read_receipts":
+            read_receipts.show_user_list(msg.id);
+            return true;
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`

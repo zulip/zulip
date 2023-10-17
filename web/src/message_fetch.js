@@ -31,6 +31,7 @@ const consts = {
     recent_view_initial_fetch_size: 400,
     narrowed_view_backward_batch_size: 100,
     narrowed_view_forward_batch_size: 100,
+
     recent_view_fetch_more_batch_size: 1000,
     catch_up_batch_size: 1000,
 };
@@ -424,6 +425,7 @@ export function maybe_load_older_messages(opts) {
 
     do_backfill({
         msg_list,
+
         num_before: opts.recent_view
             ? consts.recent_view_fetch_more_batch_size
             : consts.narrowed_view_backward_batch_size,
