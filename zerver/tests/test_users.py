@@ -1437,6 +1437,17 @@ class UserProfileTest(ZulipTestCase):
         )
         self.assertTrue(result["is_subscribed"])
 
+        # Test case when guest cannot access all users in the realm.
+        self.set_up_db_for_testing_user_access()
+        cordelia = self.example_user("cordelia")
+        result = self.client_get(f"/json/users/{cordelia.id}/subscriptions/{stream.id}")
+        self.assert_json_error(result, "Insufficient permission")
+
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertTrue(result["is_subscribed"])
+
         self.login("iago")
         stream = self.make_stream("private_stream", invite_only=True)
         # Unsubscribed admin can check subscription status in a private stream.
@@ -2580,6 +2591,45 @@ class GetProfileTest(ZulipTestCase):
         self.assertCountEqual(
             inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id, hamlet.id]
         )
+
+    def test_get_user_with_restricted_access(self) -> None:
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
+        zoe = self.example_user("ZOE")
+        shiva = self.example_user("shiva")
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        reset_email_visibility_to_everyone_in_zulip_realm()
+
+        self.set_up_db_for_testing_user_access()
+
+        self.login("polonius")
+
+        accessible_users = [polonius, iago, shiva, hamlet, aaron, zoe, shiva, prospero]
+        for user in accessible_users:
+            result = self.client_get(f"/json/users/{user.id}")
+            self.assert_json_success(result)
+            user_dict = orjson.loads(result.content)["user"]
+            self.assertEqual(user_dict["user_id"], user.id)
+            self.assertEqual(user_dict["full_name"], user.full_name)
+            self.assertEqual(user_dict["delivery_email"], user.delivery_email)
+
+        # Guest user cannot access -
+        # 1. othello, even though he sent a message to test_stream1
+        # because he is not subscribed to the stream now.
+        # 2. cordelia, because the guest user is not subscribed
+        # to Verona anymore to which cordelia is subscribed.
+        # 3. desdemona, because she is not subscribed to any
+        # streams that the guest is subscribed to and is not
+        # involved in any DMs with guest.
+        inaccessible_users = [othello, cordelia, desdemona]
+        for user in inaccessible_users:
+            result = self.client_get(f"/json/users/{user.id}")
+            self.assert_json_error(result, "Insufficient permission")
 
 
 class DeleteUserTest(ZulipTestCase):
