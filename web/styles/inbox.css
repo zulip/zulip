@@ -134,6 +134,10 @@
             }
         }
 
+        .inbox-empty-text {
+            display: none;
+        }
+
         #inbox-list {
             overflow: hidden;
             border-radius: 5px;
@@ -149,12 +153,6 @@
                 border-radius: 3px;
                 box-sizing: border-box;
                 justify-content: space-between;
-            }
-
-            .inbox-empty-text {
-                display: none;
-                font-style: italic;
-                opacity: 0.8;
             }
 
             .inbox-header {
