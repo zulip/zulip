@@ -279,7 +279,7 @@ body {
     --color-inbox-search-text: hsl(0deg 0% 0%);
     --color-border-inbox-search: hsl(229.09deg 21.57% 10% / 30%);
     --color-border-inbox-search-hover: hsl(229.09deg 21.57% 10% / 60%);
-    --color-background-inbox-search: hsl(0deg, 0%, 100%);
+    --color-background-inbox-search: hsl(0deg 0% 100%);
     --color-background-inbox-search-hover: hsl(0deg 0% 100%);
     --color-background-inbox-search-focus: hsl(0deg 0% 100%);
     --color-border-inbox-search-focus: hsl(229.09deg 21.57% 10% / 80%);

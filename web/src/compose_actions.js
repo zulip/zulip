@@ -3,6 +3,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -179,6 +180,15 @@ export function start(msg_type, opts) {
     if (page_params.is_spectator) {
         spectators.login_to_access();
         return;
+    }
+
+    if (!msg_type) {
+        // We prefer callers to be explicit about the message type, but
+        // we if we don't know, we open a stream compose box by default,
+        // which opens stream selection dropdown.
+        // Also, msg_type is used to check if compose box is open in compose_state.composing().
+        msg_type = "stream";
+        blueslip.warn("Empty message type in compose.start");
     }
 
     autosize_message_content();
