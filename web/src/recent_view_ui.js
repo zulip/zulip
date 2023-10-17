@@ -130,9 +130,14 @@ const SOME_MESSAGES_LOADED_INCLUDING_NEWEST = 2;
 const ALL_MESSAGES_LOADED = 3;
 
 let loading_state = NO_MESSAGES_LOADED;
-let oldest_message_timestamp;
+let oldest_message_timestamp = Number.POSITIVE_INFINITY;
 
-export function set_oldest_message_date(timestamp, has_found_oldest, has_found_newest) {
+export function set_oldest_message_date(msg_list_data) {
+    const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
+    const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+
+    oldest_message_timestamp = Math.min(msg_list_data.first().timestamp, oldest_message_timestamp);
+
     if (has_found_oldest) {
         loading_state = ALL_MESSAGES_LOADED;
     } else if (has_found_newest) {
@@ -140,7 +145,6 @@ export function set_oldest_message_date(timestamp, has_found_oldest, has_found_n
     } else {
         loading_state = SOME_MESSAGES_LOADED;
     }
-    oldest_message_timestamp = timestamp;
 
     // We might be loading messages in another narrow before the recent view
     // is shown, so we keep the state updated and update the banner only
@@ -369,11 +373,16 @@ export function hide_loading_indicator() {
     });
 }
 
-export function process_messages(messages) {
-    // While this is inexpensive and handles all the cases itself,
-    // the UX can be bad if user wants to scroll down the list as
-    // the UI will be returned to the beginning of the list on every
-    // update.
+export function process_messages(messages, msg_list_data) {
+    // This code path processes messages from 3 sources:
+    // 1. Newly sent messages from the server_events system. This is safe to
+    //    process because we always will have the latest previously sent messages.
+    // 2. Messages in all_messages_data, the main cache of contiguous
+    //    message history that the client maintains.
+    // 3. Latest messages fetched specifically for Recent view when
+    //    the browser first loads. We will be able to remove this once
+    //    all_messages_data is fetched in a better order.
+
     let conversation_data_updated = false;
     if (messages.length > 0) {
         for (const msg of messages) {
@@ -381,6 +390,12 @@ export function process_messages(messages) {
                 conversation_data_updated = true;
             }
         }
+    }
+
+    if (msg_list_data) {
+        // Update the recent view UI's understanding of which messages
+        // we have available for the recent view.
+        set_oldest_message_date(msg_list_data);
     }
 
     // Only rerender if conversation data actually changed.
