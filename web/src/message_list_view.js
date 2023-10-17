@@ -120,17 +120,13 @@ function render_group_display_date(group, message_container) {
 }
 
 function update_group_date(group, message_container, prev) {
-    const time = new Date(message_container.msg.timestamp * 1000);
-    const today = new Date();
-
-    // Show the date in the recipient bar if the previous message was from a different day.
+    // Mark whether we should display a date marker because this
+    // message has a different date than the previous one.
     group.date_unchanged = same_day(message_container, prev);
-    group.group_date_html = timerender.render_date(time, today)[0].outerHTML;
 }
 
 function clear_group_date(group) {
     group.date_unchanged = false;
-    group.group_date_html = undefined;
 }
 
 function clear_message_date_divider(msg) {
