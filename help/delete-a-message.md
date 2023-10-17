@@ -73,6 +73,11 @@ you also delete the message.
 
 {end_tabs}
 
+!!! tip ""
+
+    You can delete messages sent by [bots that you
+    own](/help/view-your-bots) just like messages you sent yourself.
+
 ## Restoring deleted messages
 
 For protection against accidental or immediately regretted
