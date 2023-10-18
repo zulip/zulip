@@ -15,4 +15,4 @@
 * [Reading strategies](/help/reading-strategies)
 * [Inbox](/help/inbox)
 * [All messages](/help/all-messages)
-* [Configure default view](/help/configure-default-view)
+* [Configure home view](/help/configure-home-view)
