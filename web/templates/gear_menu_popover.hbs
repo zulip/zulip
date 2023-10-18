@@ -6,12 +6,12 @@
             <a href="#about-zulip" role="menuitem">{{version_display_string}}</a>
         </li>
         {{#if server_needs_upgrade }}
-        <li class="org-info org-upgrade small-font-size">
+        <li class="org-info org-upgrade">
             <a href="https://zulip.readthedocs.io/en/stable/production/upgrade.html" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Upgrade to the latest release' }}</a>
         </li>
         {{/if}}
     {{else}}
-        <li class="org-info org-plan hidden-for-spectators small-font-size">
+        <li class="org-info org-plan hidden-for-spectators">
             {{#if is_plan_limited }}
                 <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
             {{else if is_plan_standard}}
@@ -22,17 +22,17 @@
         </li>
     {{/if}}
     {{#if (and is_plan_limited is_owner) }}
-    <li class="org-info org-upgrade small-font-size">
+    <li class="org-info org-upgrade">
         <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t "Upgrade to {standard_plan_name}" }}</a>
     </li>
     {{/if}}
     {{#if is_plan_limited }}
         {{#if is_education_org }}
-        <li class="org-info org-upgrade small-font-size">
+        <li class="org-info org-upgrade">
             <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request education pricing' }}</a>
         </li>
         {{else if (not is_business_org) }}
-        <li class="org-info org-upgrade small-font-size">
+        <li class="org-info org-upgrade">
             <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request sponsorship' }}</a>
         </li>
         {{/if}}
