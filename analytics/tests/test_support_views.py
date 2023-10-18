@@ -23,6 +23,7 @@ from zerver.models import (
     get_org_type_display_name,
     get_realm,
 )
+from zilencer.lib.remote_counts import MissingDataError
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -63,8 +64,20 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             result,
         )
 
-        result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
+        with mock.patch("analytics.views.support.compute_max_monthly_messages", return_value=1000):
+            result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
         self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+        self.assert_in_success_response(["<b>Max monthly messages</b>: 1000"], result)
+        self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+
+        with mock.patch(
+            "analytics.views.support.compute_max_monthly_messages", side_effect=MissingDataError
+        ):
+            result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
+        self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+        self.assert_in_success_response(
+            ["<b>Max monthly messages</b>: Recent data missing"], result
+        )
         self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
 
         result = self.client_get("/activity/remote/support", {"q": "example.com"})

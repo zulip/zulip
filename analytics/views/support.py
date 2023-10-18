@@ -3,7 +3,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -47,8 +47,10 @@ from zerver.models import (
     get_user_profile_by_id,
 )
 from zerver.views.invite import get_invitee_emails_set
+from zilencer.lib.remote_counts import MissingDataError
 
 if settings.ZILENCER_ENABLED:
+    from zilencer.lib.remote_counts import compute_max_monthly_messages
     from zilencer.models import RemoteZulipServer
 
 if settings.BILLING_ENABLED:
@@ -444,10 +446,20 @@ def remote_servers_support(
     remote_servers = get_remote_servers_for_support(
         email_to_search=email_to_search, hostname_to_search=hostname_to_search
     )
+    remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
+    for remote_server in remote_servers:
+        try:
+            remote_server_to_max_monthly_messages[remote_server.id] = compute_max_monthly_messages(
+                remote_server
+            )
+        except MissingDataError:
+            remote_server_to_max_monthly_messages[remote_server.id] = "Recent data missing"
+
     return render(
         request,
         "analytics/remote_server_support.html",
         context=dict(
             remote_servers=remote_servers,
+            remote_server_to_max_monthly_messages=remote_server_to_max_monthly_messages,
         ),
     )
