@@ -698,7 +698,7 @@
         }
     }
 
-    #gear-menu {
+    .spectator-view #gear-menu-dropdown {
         .dark-theme {
             display: none;
         }
@@ -707,6 +707,7 @@
             display: block;
         }
 
+    #gear-menu {
         .dropdown-menu a:hover {
             color: hsl(0deg 0% 100%);
         }
