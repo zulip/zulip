@@ -582,7 +582,7 @@
     }
 
     .compose-control-buttons-container .divider {
-        color: hsl(236deg 33% 90% / 50%);
+        color: hsl(236deg 33% 90% / 25%);
     }
 
     .compose_control_button:hover {
