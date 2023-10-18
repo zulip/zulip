@@ -17,7 +17,6 @@ from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from analytics.views.activity_common import remote_installation_stats_link
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
 from zerver.actions.create_realm import do_change_realm_subdomain
@@ -448,6 +447,5 @@ def remote_servers_support(
         "analytics/remote_server_support.html",
         context=dict(
             remote_servers=remote_servers,
-            remote_installation_stats_link=remote_installation_stats_link,
         ),
     )
