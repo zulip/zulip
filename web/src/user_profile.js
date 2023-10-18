@@ -151,8 +151,7 @@ export function get_user_unsub_streams() {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
     return stream_data
         .get_streams_for_user(target_user_id)
-        .can_subscribe.filter((stream) => stream_data.can_subscribe_others(stream))
-        .map((stream) => ({
+        .can_subscribe.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id.toString(),
             stream,
