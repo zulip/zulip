@@ -106,7 +106,7 @@ function get_popover_items_for_instance(instance) {
         return undefined;
     }
 
-    return $current_elem.find("li:not(.divider):visible a");
+    return $current_elem.find("a:visible");
 }
 
 export const default_popover_props = {
