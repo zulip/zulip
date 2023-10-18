@@ -1213,3 +1213,16 @@ ul.navbar-dropdown-menu-outer-list {
         }
     }
 }
+
+#gear-menu-dropdown {
+    .light-theme,
+    .dark-theme {
+        display: none;
+    }
+}
+
+.spectator-view {
+    #gear-menu-dropdown .dark-theme {
+        display: block;
+    }
+}
