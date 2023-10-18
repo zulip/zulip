@@ -14,6 +14,14 @@ type JQueryCaretRange = {
     text: string;
 };
 
+type JQueryIdleOptions = Partial<{
+    idle: number;
+    events: string;
+    onIdle: () => void;
+    onActive: () => void;
+    keepTracking: boolean;
+}>;
+
 declare namespace JQueryValidation {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface ValidationOptions {
@@ -37,6 +45,12 @@ interface JQuery {
     range(text: string): this;
     selectAll(): this;
     deselectAll(): this;
+
+    // Types for jquery-idle plugin
+    idle(opts: JQueryIdleOptions): {
+        cancel: () => void;
+        reset: () => void;
+    };
 }
 
 declare const ZULIP_VERSION: string;

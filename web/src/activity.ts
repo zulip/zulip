@@ -1,9 +1,33 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as channel from "./channel";
 import {page_params} from "./page_params";
 import * as presence from "./presence";
 import * as watchdog from "./watchdog";
+
+const post_presence_response_schema = z.object({
+    msg: z.string(),
+    result: z.string(),
+    server_timestamp: z.number().optional(),
+    zephyr_mirror_active: z.boolean().optional(),
+    presences: z
+        .record(
+            z.string(),
+            z.object({
+                active_timestamp: z.number(),
+                idle_timestamp: z.number(),
+            }),
+        )
+        .optional(),
+});
+
+/* Keep in sync with views.py:update_active_status_backend() */
+export enum ActivityState {
+    ACTIVE = "active",
+    IDLE = "idle",
+}
 
 /*
     Helpers for detecting user activity and managing user idle states
@@ -11,11 +35,6 @@ import * as watchdog from "./watchdog";
 
 /* Broadcast "idle" to server after 5 minutes of local inactivity */
 const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
-
-/* Keep in sync with views.py:update_active_status_backend() */
-export const ACTIVE = "active";
-
-export const IDLE = "idle";
 
 // When you open Zulip in a new browser window, client_is_active
 // should be true.  When a server-initiated reload happens, however,
@@ -30,22 +49,22 @@ export let client_is_active = document.hasFocus && document.hasFocus();
 // server-initiated reload as user activity.
 export let new_user_input = true;
 
-export function set_new_user_input(value) {
+export function set_new_user_input(value: boolean): void {
     new_user_input = value;
 }
 
-export function clear_for_testing() {
+export function clear_for_testing(): void {
     client_is_active = false;
 }
 
-export function mark_client_idle() {
+export function mark_client_idle(): void {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
     // this data is fundamentally not timely.
     client_is_active = false;
 }
 
-export function compute_active_status() {
+export function compute_active_status(): ActivityState {
     // The overall algorithm intent for the `status` field is to send
     // `ACTIVE` (aka green circle) if we know the user is at their
     // computer, and IDLE (aka orange circle) if the user might not
@@ -62,18 +81,18 @@ export function compute_active_status() {
         window.electron_bridge.get_idle_on_system !== undefined
     ) {
         if (window.electron_bridge.get_idle_on_system()) {
-            return IDLE;
+            return ActivityState.IDLE;
         }
-        return ACTIVE;
+        return ActivityState.ACTIVE;
     }
 
     if (client_is_active) {
-        return ACTIVE;
+        return ActivityState.ACTIVE;
     }
-    return IDLE;
+    return ActivityState.IDLE;
 }
 
-export function send_presence_to_server(redraw) {
+export function send_presence_to_server(redraw?: () => void): void {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -96,7 +115,7 @@ export function send_presence_to_server(redraw) {
 
     watchdog.check_for_unsuspend();
 
-    channel.post({
+    void channel.post({
         url: "/json/users/me/presence",
         data: {
             status: compute_active_status(),
@@ -104,7 +123,9 @@ export function send_presence_to_server(redraw) {
             new_user_input,
             slim_presence: true,
         },
-        success(data) {
+        success(response) {
+            const data = post_presence_response_schema.parse(response);
+
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
                 $("#zephyr-mirror-error").addClass("show");
@@ -115,6 +136,14 @@ export function send_presence_to_server(redraw) {
             new_user_input = false;
 
             if (redraw) {
+                assert(
+                    data.presences !== undefined,
+                    "Presences should be present if not a ping only presence request",
+                );
+                assert(
+                    data.server_timestamp !== undefined,
+                    "Server timestamp should be present if not a ping only presence request",
+                );
                 presence.set_info(data.presences, data.server_timestamp);
                 redraw();
             }
@@ -122,7 +151,7 @@ export function send_presence_to_server(redraw) {
     });
 }
 
-export function mark_client_active() {
+export function mark_client_active(): void {
     // exported for testing
     if (!client_is_active) {
         client_is_active = true;
@@ -130,7 +159,7 @@ export function mark_client_active() {
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     $("html").on("mousemove", () => {
         new_user_input = true;
     });
