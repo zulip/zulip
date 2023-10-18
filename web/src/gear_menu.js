@@ -50,9 +50,8 @@ misc:  Logout
 Depending on settings, there may also be choices
 like "Feedback" or "Debug".
 
-The menu items get built in a server-side template called
-templates/zerver/app/navbar.html.  Each item is
-an HTML anchor tag with a "role" of "menuitem".
+The menu items get built in a handlebars template
+called gear_menu_popover.hbs.
 
 The menu itself has the selector
 "settings-dropdown".
