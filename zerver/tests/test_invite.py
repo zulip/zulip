@@ -970,7 +970,7 @@ class InviteUserTest(InviteUserBase):
             )
         )
 
-        # Check when signup_notifications_include_referrer is False
+        # Check message when signup_notifications_include_referrer is False
         realm.signup_notifications_include_referrer = False
         realm.save()
         invitee = self.nonreg_email("bob")
