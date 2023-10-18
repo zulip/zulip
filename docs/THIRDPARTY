@@ -187,6 +187,46 @@ Files: web/shared/icons/user-plus.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 
+Files: web/shared/icons/clock.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/x-circle.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/play-circle.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/stop-circle.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/account.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/message-square.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/tool.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/power.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/unmute.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_up
 Copyright: Google, Inc.
