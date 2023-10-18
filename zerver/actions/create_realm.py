@@ -155,7 +155,7 @@ def do_create_realm(
     name: str,
     *,
     emails_restricted_to_domains: Optional[bool] = None,
-    description: Optional[str] = None,
+    description: Optional[str] = "The coolest place in the universe.",
     invite_required: Optional[bool] = None,
     plan_type: Optional[int] = None,
     org_type: Optional[int] = None,
