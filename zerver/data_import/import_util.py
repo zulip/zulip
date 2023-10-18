@@ -87,6 +87,10 @@ def build_zerver_realm(
     )
     realm_dict = model_to_dict(realm)
     realm_dict["date_created"] = time
+    # These fields are supposed to be generated upon import.
+    del realm_dict["uuid"]
+    del realm_dict["uuid_owner_secret"]
+
     return [realm_dict]
 
 
