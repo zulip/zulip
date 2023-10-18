@@ -63,17 +63,17 @@
     </li>
     {{/unless}}
     <li role="presentation" class="link-item only-visible-for-spectators">
-        <a class="change-language-spectator" role="menuitem">
+        <a tabindex="0" class="change-language-spectator" role="menuitem">
             <i class="zulip-icon zulip-icon-f-globe" aria-hidden="true"></i> {{t 'Select language' }}
         </a>
     </li>
     <li role="presentation" class="link-item dark-theme only-visible-for-spectators">
-        <a role="menuitem">
+        <a tabindex="0" role="menuitem">
             <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i> {{t 'Switch to dark theme' }}
         </a>
     </li>
     <li role="presentation" class="link-item light-theme only-visible-for-spectators">
-        <a role="menuitem">
+        <a tabindex="0" role="menuitem">
             <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i> {{t 'Switch to light theme' }}
         </a>
     </li>
@@ -152,7 +152,7 @@
     <li class="divider hidden-for-spectators" role="presentation"></li>
     {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
     <li class="link-item" role="presentation">
-        <a class="invite-user-link" role="menuitem">
+        <a tabindex="0" class="invite-user-link" role="menuitem">
             <i class="zulip-icon zulip-icon-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
         </a>
     </li>
