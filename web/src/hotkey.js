@@ -410,7 +410,7 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if (popovers.any_active() && $(e.target).attr("role") === "menuitem") {
+    if (popovers.any_active() && $(e.target).hasClass("navigate-link-on-enter")) {
         // If a popover is open and we pressed Enter on a menu item,
         // call click directly on the item to navigate to the `href`.
         // trigger("click") doesn't work for them to navigate to `href`.
