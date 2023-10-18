@@ -588,6 +588,7 @@
   "Include message content in message notification emails": "Inhalte von Nachrichten in Benachrichtigungs-E-Mails anzeigen",
   "Include muted": "Stummgeschaltete anzeigen",
   "Include organization name in subject of message notification emails": "Organisationsname im Betreff von Benachrichtigungs-E-Mails anzeigen",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Eingehende Webhooks können ausschließlich Nachrichten senden.",
   "Initiate a search": "Eine Suche starten",
   "Insert new line": "Zeilenumbruch einfügen",

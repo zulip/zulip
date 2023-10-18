@@ -588,6 +588,7 @@
   "Include message content in message notification emails": "",
   "Include muted": "Inclou els silenciats",
   "Include organization name in subject of message notification emails": "",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "",
   "Initiate a search": "Inicia una cerca",
   "Insert new line": "Insereix una nova línia",

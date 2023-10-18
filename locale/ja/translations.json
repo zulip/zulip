@@ -588,6 +588,7 @@
   "Include message content in message notification emails": "通知メールにメッセージ内容を含める",
   "Include muted": "ミュート済みのメッセージを含める",
   "Include organization name in subject of message notification emails": "新規メッセージ受信を知らせる通知メールのタイトルに組織名を含める",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Incoming webhook はメッセージだけ送信できます。",
   "Initiate a search": "検索開始",
   "Insert new line": "改行",

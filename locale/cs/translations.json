@@ -588,6 +588,7 @@
   "Include message content in message notification emails": "Zahrnout obsah zpráv v e-mailech s oznámeními o zprávách",
   "Include muted": "Zahrnout utlumené",
   "Include organization name in subject of message notification emails": "Zahrnout název organizace do předmětu e-mailů s oznámeními o zprávách",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Příchozí webhooky mohou pouze odesílat zprávy.",
   "Initiate a search": "Vyhledávání",
   "Insert new line": "Vložit nový řádek",

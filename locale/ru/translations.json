@@ -588,6 +588,7 @@
   "Include message content in message notification emails": "Включить содержимое сообщения в уведомление по электронной почте",
   "Include muted": "Включить заглушенные",
   "Include organization name in subject of message notification emails": "Включить название организации в тему почтовых оповещений",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Входящий вебхук может только отправлять сообщения.",
   "Initiate a search": "Начать поиск",
   "Insert new line": "Вставить новую строку",

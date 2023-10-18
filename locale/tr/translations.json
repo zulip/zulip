@@ -588,6 +588,7 @@
   "Include message content in message notification emails": "İleti bildirim e-postalarına ileti içeriğini dahil et",
   "Include muted": "Susturulmuşu dahil et",
   "Include organization name in subject of message notification emails": "İleti bildirim e-postalarının konusuna organizasyon adını dahil edin",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "Gelen webhooklar sadece ileti gönderebilir",
   "Initiate a search": "Bir arama başlat",
   "Insert new line": "Yeni satır ekle",

@@ -588,6 +588,7 @@
   "Include message content in message notification emails": "메세지 알림 이메일에 메세지 내용을 포함시키기",
   "Include muted": "음소건된 것을 포함시키기",
   "Include organization name in subject of message notification emails": "메세지 알림 이메일의 주제를 조직 이름에 포함시키기",
+  "Include referrer's name in new user signup notifications": "",
   "Incoming webhooks can only send messages.": "들어오는 웹후크는 메시지를 보낼 수 만 있습니다.",
   "Initiate a search": "검색 시작",
   "Insert new line": "새 라인 삽입",
