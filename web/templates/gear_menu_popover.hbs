@@ -1,172 +1,189 @@
-<ul class="navbar-dropdown-menu" id="gear-menu-dropdown" aria-labelledby="settings-dropdown" data-simplebar>
-    <li class="org-info org-name">{{realm_name}}</li>
-    <li class="org-info org-url">{{realm_url}}</li>
-    {{#if is_self_hosted }}
-        <li class="org-info org-version">
-            <a href="#about-zulip" class="navigate-link-on-enter">{{version_display_string}}</a>
+<div class="navbar-dropdown-menu" id="gear-menu-dropdown" aria-labelledby="settings-dropdown" data-simplebar>
+    <ul class="navbar-dropdown-menu-outer-list">
+        <li class="org-info">
+            <ul>
+                <li class="org-name">{{realm_name}}</li>
+                <li class="org-url">{{realm_url}}</li>
+                {{#if is_self_hosted }}
+                    <li class="org-version">
+                        <a href="#about-zulip" class="navigate-link-on-enter">{{version_display_string}}</a>
+                    </li>
+                    {{#if server_needs_upgrade }}
+                    <li class="org-upgrade">
+                        <a href="https://zulip.readthedocs.io/en/stable/production/upgrade.html" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">{{t 'Upgrade to the latest release' }}</a>
+                    </li>
+                    {{/if}}
+                {{else}}
+                    <li class="org-plan hidden-for-spectators">
+                        {{#if is_plan_limited }}
+                            <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">Zulip Cloud Free</a>
+                        {{else if is_plan_standard}}
+                            <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">Zulip Cloud Standard</a>
+                        {{else if is_plan_standard_sponsored_for_free}}
+                            <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">Zulip Cloud Standard (sponsored)</a>
+                        {{/if}}
+                    </li>
+                {{/if}}
+                {{#if (and is_plan_limited is_owner) }}
+                <li class="org-upgrade">
+                    <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">{{t "Upgrade to {standard_plan_name}" }}</a>
+                </li>
+                {{/if}}
+                {{#if is_plan_limited }}
+                    {{#if is_education_org }}
+                    <li class="org-upgrade">
+                        <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">{{t 'Request education pricing' }}</a>
+                    </li>
+                    {{else if (not is_business_org) }}
+                    <li class="org-upgrade">
+                        <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">{{t 'Request sponsorship' }}</a>
+                    </li>
+                    {{/if}}
+                {{/if}}
+            </ul>
         </li>
-        {{#if server_needs_upgrade }}
-        <li class="org-info org-upgrade">
-            <a href="https://zulip.readthedocs.io/en/stable/production/upgrade.html" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">{{t 'Upgrade to the latest release' }}</a>
+        <li>
+            <ul>
+                <li class="link-item hidden-for-spectators" role="presentation">
+                    <a href="#streams/subscribed" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-hash" aria-hidden="true"></i> {{t 'Manage streams' }}
+                    </a>
+                </li>
+                <li class="link-item hidden-for-spectators" role="presentation">
+                    <a href="#settings" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-tool" aria-hidden="true"></i> {{t 'Personal settings' }}
+                    </a>
+                </li>
+                <li class="link-item admin-menu-item hidden-for-spectators" role="presentation">
+                    <a href="#organization" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-building" aria-hidden="true"></i>
+                        <span>{{t 'Organization settings' }}</span>
+                    </a>
+                </li>
+                {{#unless is_guest}}
+                <li class="link-item hidden-for-spectators" role="presentation">
+                    <a href="/stats" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-bar-chart" aria-hidden="true"></i>
+                        <span>{{t 'Usage statistics' }}</span>
+                    </a>
+                </li>
+                {{/unless}}
+                <li role="presentation" class="link-item only-visible-for-spectators">
+                    <a tabindex="0" class="change-language-spectator">
+                        <i class="zulip-icon zulip-icon-f-globe" aria-hidden="true"></i> {{t 'Select language' }}
+                    </a>
+                </li>
+                <li role="presentation" class="link-item dark-theme only-visible-for-spectators">
+                    <a tabindex="0" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i> {{t 'Switch to dark theme' }}
+                    </a>
+                </li>
+                <li role="presentation" class="link-item light-theme only-visible-for-spectators">
+                    <a tabindex="0" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i> {{t 'Switch to light theme' }}
+                    </a>
+                </li>
+            </ul>
         </li>
-        {{/if}}
-    {{else}}
-        <li class="org-info org-plan hidden-for-spectators">
-            {{#if is_plan_limited }}
-                <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">Zulip Cloud Free</a>
-            {{else if is_plan_standard}}
-                <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">Zulip Cloud Standard</a>
-            {{else if is_plan_standard_sponsored_for_free}}
-                <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">Zulip Cloud Standard (sponsored)</a>
-            {{/if}}
+        <li>
+            <ul>
+                <li class="link-item" role="presentation">
+                    <a href="/help/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-help" aria-hidden="true"></i> {{t 'Help center' }}
+                    </a>
+                </li>
+                <li class="link-item" role="presentation">
+                    <a tabindex="0" class="navigate-link-on-enter" data-overlay-trigger="keyboard-shortcuts">
+                        <i class="zulip-icon zulip-icon-keyboard" aria-hidden="true"></i> {{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span>
+                    </a>
+                </li>
+                <li role="presentation" class="link-item hidden-for-spectators">
+                    <a tabindex="0" class="navigate-link-on-enter" data-overlay-trigger="message-formatting">
+                        <i class="zulip-icon zulip-icon-edit" aria-hidden="true"></i> {{t 'Message formatting' }}
+                    </a>
+                </li>
+                <li class="link-item" role="presentation">
+                    <a tabindex="0" class="navigate-link-on-enter" data-overlay-trigger="search-operators">
+                        <i class="zulip-icon zulip-icon-manage-search" aria-hidden="true"></i> {{t 'Search filters' }}
+                    </a>
+                </li>
+                <li class="link-item" role="presentation" id="gear_menu_about_zulip">
+                    <a href="#about-zulip" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-info"></i>
+                        {{t "About Zulip" }}
+                    </a>
+                </li>
+                {{#if corporate_enabled}}
+                <li class="link-item" role="presentation">
+                    <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-life-buoy" aria-hidden="true"></i> {{t 'Contact support' }}
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
         </li>
-    {{/if}}
-    {{#if (and is_plan_limited is_owner) }}
-    <li class="org-info org-upgrade">
-        <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">{{t "Upgrade to {standard_plan_name}" }}</a>
-    </li>
-    {{/if}}
-    {{#if is_plan_limited }}
-        {{#if is_education_org }}
-        <li class="org-info org-upgrade">
-            <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">{{t 'Request education pricing' }}</a>
+        <li>
+            <ul>
+                <li role="presentation" class="link-item hidden-for-spectators">
+                    <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
+                    </a>
+                </li>
+                <li role="presentation" class="link-item hidden-for-spectators">
+                    <a href="/integrations/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-git-pull-request" aria-hidden="true"></i> {{t 'Integrations' }}
+                    </a>
+                </li>
+                <li role="presentation" class="link-item hidden-for-spectators">
+                    <a href="/api" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-file-text" aria-hidden="true"></i> {{t 'API documentation' }}
+                    </a>
+                </li>
+                {{#if show_billing}}
+                <li role="presentation" class="link-item hidden-for-spectators">
+                    <a href="/billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if promote_sponsoring_zulip}}
+                <li role="presentation" class="link-item hidden-for-spectators">
+                    <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if show_plans}}
+                <li role="presentation" class="link-item hidden-for-spectators">
+                    <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
+                        <i class="fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
         </li>
-        {{else if (not is_business_org) }}
-        <li class="org-info org-upgrade">
-            <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">{{t 'Request sponsorship' }}</a>
+        <li>
+            <ul>
+                {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
+                <li class="link-item" role="presentation">
+                    <a tabindex="0" class="invite-user-link">
+                        <i class="zulip-icon zulip-icon-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if show_webathena}}
+                <li class="link-item" title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu" role="presentation">
+                    <a href="#webathena" class="webathena_login">
+                        <i class="fa fa-bolt" aria-hidden="true"></i>{{t 'Link with Webathena' }}
+                    </a>
+                </li>
+                {{/if}}
+                <li role="presentation" class="link-item only-visible-for-spectators">
+                    <a href="{{login_link}}" class="navigate-link-on-enter">
+                        <i class="zulip-icon zulip-icon-power" aria-hidden="true"></i> {{t 'Log in' }}
+                    </a>
+                </li>
+            </ul>
         </li>
-        {{/if}}
-    {{/if}}
-    <li class="divider" role="presentation"></li>
-    <li class="link-item hidden-for-spectators" role="presentation">
-        <a href="#streams/subscribed" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-hash" aria-hidden="true"></i> {{t 'Manage streams' }}
-        </a>
-    </li>
-    <li class="link-item hidden-for-spectators" role="presentation">
-        <a href="#settings" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-tool" aria-hidden="true"></i> {{t 'Personal settings' }}
-        </a>
-    </li>
-    <li class="link-item admin-menu-item hidden-for-spectators" role="presentation">
-        <a href="#organization" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-building" aria-hidden="true"></i>
-            <span>{{t 'Organization settings' }}</span>
-        </a>
-    </li>
-    {{#unless is_guest}}
-    <li class="link-item hidden-for-spectators" role="presentation">
-        <a href="/stats" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-bar-chart" aria-hidden="true"></i>
-            <span>{{t 'Usage statistics' }}</span>
-        </a>
-    </li>
-    {{/unless}}
-    <li role="presentation" class="link-item only-visible-for-spectators">
-        <a tabindex="0" class="change-language-spectator">
-            <i class="zulip-icon zulip-icon-f-globe" aria-hidden="true"></i> {{t 'Select language' }}
-        </a>
-    </li>
-    <li role="presentation" class="link-item dark-theme only-visible-for-spectators">
-        <a tabindex="0" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i> {{t 'Switch to dark theme' }}
-        </a>
-    </li>
-    <li role="presentation" class="link-item light-theme only-visible-for-spectators">
-        <a tabindex="0" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i> {{t 'Switch to light theme' }}
-        </a>
-    </li>
-    <li class="divider" role="presentation"></li>
-    <li class="link-item" role="presentation">
-        <a href="/help/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-help" aria-hidden="true"></i> {{t 'Help center' }}
-        </a>
-    </li>
-    <li class="link-item" role="presentation">
-        <a tabindex="0" class="navigate-link-on-enter" data-overlay-trigger="keyboard-shortcuts">
-            <i class="zulip-icon zulip-icon-keyboard" aria-hidden="true"></i> {{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span>
-        </a>
-    </li>
-    <li role="presentation" class="link-item hidden-for-spectators">
-        <a tabindex="0" class="navigate-link-on-enter" data-overlay-trigger="message-formatting">
-            <i class="zulip-icon zulip-icon-edit" aria-hidden="true"></i> {{t 'Message formatting' }}
-        </a>
-    </li>
-    <li class="link-item" role="presentation">
-        <a tabindex="0" class="navigate-link-on-enter" data-overlay-trigger="search-operators">
-            <i class="zulip-icon zulip-icon-manage-search" aria-hidden="true"></i> {{t 'Search filters' }}
-        </a>
-    </li>
-    <li class="divider only-visible-for-spectators" role="presentation"></li>
-    <li class="link-item" role="presentation" id="gear_menu_about_zulip">
-        <a href="#about-zulip" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-info"></i>
-            {{t "About Zulip" }}
-        </a>
-    </li>
-    {{#if corporate_enabled}}
-    <li class="link-item" role="presentation">
-        <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-life-buoy" aria-hidden="true"></i> {{t 'Contact support' }}
-        </a>
-    </li>
-    {{/if}}
-    <li class="divider" role="presentation"></li>
-    <li role="presentation" class="link-item hidden-for-spectators">
-        <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
-        </a>
-    </li>
-    <li role="presentation" class="link-item hidden-for-spectators">
-        <a href="/integrations/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-git-pull-request" aria-hidden="true"></i> {{t 'Integrations' }}
-        </a>
-    </li>
-    <li role="presentation" class="link-item hidden-for-spectators">
-        <a href="/api" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-file-text" aria-hidden="true"></i> {{t 'API documentation' }}
-        </a>
-    </li>
-    {{#if show_billing}}
-    <li role="presentation" class="link-item hidden-for-spectators">
-        <a href="/billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
-        </a>
-    </li>
-    {{/if}}
-    {{#if promote_sponsoring_zulip}}
-    <li role="presentation" class="link-item hidden-for-spectators">
-        <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
-        </a>
-    </li>
-    {{/if}}
-    {{#if show_plans}}
-    <li role="presentation" class="link-item hidden-for-spectators">
-        <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
-            <i class="fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
-        </a>
-    </li>
-    {{/if}}
-    <li class="divider hidden-for-spectators" role="presentation"></li>
-    {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
-    <li class="link-item" role="presentation">
-        <a tabindex="0" class="invite-user-link">
-            <i class="zulip-icon zulip-icon-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
-        </a>
-    </li>
-    {{/if}}
-    {{#if show_webathena}}
-    <li class="link-item" title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu" role="presentation">
-        <a href="#webathena" class="webathena_login">
-            <i class="fa fa-bolt" aria-hidden="true"></i>{{t 'Link with Webathena' }}
-        </a>
-    </li>
-    {{/if}}
-    <li role="presentation" class="link-item only-visible-for-spectators">
-        <a href="{{login_link}}" class="navigate-link-on-enter">
-            <i class="zulip-icon zulip-icon-power" aria-hidden="true"></i> {{t 'Log in' }}
-        </a>
-    </li>
-</ul>
+    </ul>
+</div>
