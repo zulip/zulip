@@ -122,39 +122,39 @@
                 {{/if}}
             </ul>
         </li>
-        <li>
+        <li class="hidden-for-spectators">
             <ul>
-                <li class="link-item hidden-for-spectators">
+                <li class="link-item">
                     <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
                         <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
                     </a>
                 </li>
-                <li class="link-item hidden-for-spectators">
+                <li class="link-item">
                     <a href="/integrations/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
                         <i class="zulip-icon zulip-icon-git-pull-request" aria-hidden="true"></i> {{t 'Integrations' }}
                     </a>
                 </li>
-                <li class="link-item hidden-for-spectators">
+                <li class="link-item">
                     <a href="/api" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
                         <i class="zulip-icon zulip-icon-file-text" aria-hidden="true"></i> {{t 'API documentation' }}
                     </a>
                 </li>
                 {{#if show_billing}}
-                <li class="link-item hidden-for-spectators">
+                <li class="link-item">
                     <a href="/billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
                         <i class="zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
                     </a>
                 </li>
                 {{/if}}
                 {{#if promote_sponsoring_zulip}}
-                <li class="link-item hidden-for-spectators">
+                <li class="link-item">
                     <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
                         <i class="zulip-icon zulip-icon-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
                     </a>
                 </li>
                 {{/if}}
                 {{#if show_plans}}
-                <li class="link-item hidden-for-spectators">
+                <li class="link-item">
                     <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter">
                         <i class="fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
                     </a>
