@@ -38,6 +38,9 @@ format used by the Zulip server that they are interacting with.
   `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server setting is set
   to `true`.
 
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "add"`
+  are now also sent when a guest user gains access to a user.
+
 **Feature level 227**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),

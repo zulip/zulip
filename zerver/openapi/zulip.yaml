@@ -1036,8 +1036,13 @@ paths:
                             - type: object
                               description: |
                                 Event sent to all users in a Zulip organization when a new
-                                user joins. Processing this event is important to being able
-                                to display basic details on other users given only their ID.
+                                user joins or when a guest user gains access to a user.
+                                Processing this event is important to being able to display
+                                basic details on other users given only their ID.
+
+                                **Changes**: Starting with Zulip 8.0 (feature level 228),
+                                this event is also sent when a guest user gains access to
+                                a user.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"

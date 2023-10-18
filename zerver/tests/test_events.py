@@ -4061,6 +4061,39 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
         check_subscription_remove("events[0]", events[0])
 
+    def test_user_access_events_on_changing_subscriptions(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        self.user_profile = self.example_user("polonius")
+        realm = self.user_profile.realm
+        stream = get_stream("test_stream1", realm)
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+
+        subscribe_action = lambda: bulk_add_subscriptions(
+            realm, [stream], [othello, iago], acting_user=None
+        )
+        events = self.verify_action(subscribe_action, num_events=2)
+        check_realm_user_add("events[0]", events[0])
+        self.assertEqual(events[0]["person"]["user_id"], othello.id)
+        check_subscription_peer_add("events[1]", events[1])
+        self.assertEqual(set(events[1]["user_ids"]), {iago.id, othello.id})
+
+    def test_user_access_events_on_changing_subscriptions_for_guests(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        othello = self.example_user("othello")
+        self.user_profile = polonius
+        realm = self.user_profile.realm
+        stream = self.subscribe(self.example_user("othello"), "new_stream")
+        subscribe_action = lambda: bulk_add_subscriptions(
+            realm, [stream], [polonius, self.example_user("iago")], acting_user=None
+        )
+        events = self.verify_action(subscribe_action, num_events=3)
+        check_stream_create("events[0]", events[0])
+        check_subscription_add("events[1]", events[1])
+        check_realm_user_add("events[2]", events[2])
+        self.assertEqual(events[2]["person"]["user_id"], othello.id)
+
 
 class DraftActionTest(BaseAction):
     def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:

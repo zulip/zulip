@@ -303,7 +303,7 @@ def process_new_human_user(
     send_initial_direct_message(user_profile)
 
 
-def notify_created_user(user_profile: UserProfile) -> None:
+def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -> None:
     user_row = user_profile_to_user_row(user_profile)
 
     format_user_row_kwargs: Dict[str, Any] = {
@@ -324,23 +324,32 @@ def notify_created_user(user_profile: UserProfile) -> None:
 
     user_ids_without_access_to_created_user: List[int] = []
     users_with_access_to_created_users: List[UserProfile] = []
-    active_realm_users = list(user_profile.realm.get_active_users())
 
-    # This call to user_access_restricted_in_realm results in
-    # one extra query in the user creation codepath to check
-    # "realm.can_access_all_users_group.name" because we do
-    # not prefetch realm and its related fields when fetching
-    # PreregistrationUser object.
-    if user_access_restricted_in_realm(user_profile):
-        for user in active_realm_users:
-            if user.is_guest:
-                # This logic assumes that can_access_all_users_group
-                # setting can only be set to EVERYONE or MEMBERS.
-                user_ids_without_access_to_created_user.append(user.id)
-            else:
-                users_with_access_to_created_users.append(user)
+    if notify_user_ids:
+        # This is currently used to send creation event when a guest
+        # gains access to a user, so we depend on the caller to make
+        # sure that only accessible users receive the user data.
+        users_with_access_to_created_users = list(
+            user_profile.realm.get_active_users().filter(id__in=notify_user_ids)
+        )
     else:
-        users_with_access_to_created_users = active_realm_users
+        active_realm_users = list(user_profile.realm.get_active_users())
+
+        # This call to user_access_restricted_in_realm results in
+        # one extra query in the user creation codepath to check
+        # "realm.can_access_all_users_group.name" because we do
+        # not prefetch realm and its related fields when fetching
+        # PreregistrationUser object.
+        if user_access_restricted_in_realm(user_profile):
+            for user in active_realm_users:
+                if user.is_guest:
+                    # This logic assumes that can_access_all_users_group
+                    # setting can only be set to EVERYONE or MEMBERS.
+                    user_ids_without_access_to_created_user.append(user.id)
+                else:
+                    users_with_access_to_created_users.append(user)
+        else:
+            users_with_access_to_created_users = active_realm_users
 
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
@@ -538,7 +547,7 @@ def do_create_user(
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
-    notify_created_user(user_profile)
+    notify_created_user(user_profile, [])
 
     do_send_user_group_members_update_event("add_members", system_user_group, [user_profile.id])
     if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
@@ -617,7 +626,7 @@ def do_activate_mirror_dummy_user(
         if settings.BILLING_ENABLED:
             update_license_ledger_if_needed(user_profile.realm, event_time)
 
-    notify_created_user(user_profile)
+    notify_created_user(user_profile, [])
 
 
 @transaction.atomic(savepoint=False)
