@@ -1102,18 +1102,6 @@ ul {
     display: flex;
     flex-flow: column nowrap;
 
-    .list {
-        margin: 0;
-        padding: 4px 0;
-        list-style: none;
-        border-bottom: solid 1px var(--color-border-popover-menu);
-        background: none !important;
-
-        &:last-child {
-            border-bottom: none;
-        }
-    }
-
     .text-item,
     .link-item a {
         display: flex;
@@ -1189,5 +1177,25 @@ ul {
     .status_emoji {
         width: 16px;
         height: 16px;
+    }
+}
+
+ul.navbar-dropdown-menu-outer-list {
+    list-style: none;
+    margin: 0;
+
+    & > li {
+        border-bottom: solid 1px var(--color-border-popover-menu);
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        & > ul {
+            margin: 0;
+            padding: 4px 0;
+            list-style: none;
+            background: none !important;
+        }
     }
 }
