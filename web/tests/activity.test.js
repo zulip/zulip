@@ -687,6 +687,9 @@ test("initialize", ({override, mock_template}) => {
     payload.success({
         zephyr_mirror_active: true,
         presences: {},
+        msg: "",
+        result: "success",
+        server_timestamp: 0,
     });
     $(window).trigger("focus");
     clear();
@@ -708,6 +711,9 @@ test("initialize", ({override, mock_template}) => {
     payload.success({
         zephyr_mirror_active: false,
         presences: {},
+        msg: "",
+        result: "success",
+        server_timestamp: 0,
     });
 
     assert.ok($("#zephyr-mirror-error").hasClass("show"));
