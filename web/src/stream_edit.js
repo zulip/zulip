@@ -301,7 +301,7 @@ function stream_is_muted_changed(e) {
         sub,
         "is_muted",
         e.target.checked,
-        `#stream_change_property_status${CSS.escape(sub.stream_id)}`,
+        $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
     );
 }
 
