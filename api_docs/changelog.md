@@ -973,7 +973,7 @@ No changes; feature level used for Zulip 5.0 release.
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `escape_navigates_to_default_view` to allow users to
-  [disable the keyboard shortcut](/help/configure-default-view) for the `Esc` key that
+  [disable the keyboard shortcut](/help/configure-home-view) for the `Esc` key that
   navigates the app to the default view.
 
 **Feature level 106**
@@ -1475,7 +1475,7 @@ field with an integer field `invite_to_realm_policy`.
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
-  the user to [set the default view](/help/configure-default-view).
+  the user to [set the default view](/help/configure-home-view).
 
 **Feature level 41**
 

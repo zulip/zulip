@@ -50,7 +50,7 @@
 * [Change your time zone](/help/change-your-timezone)
 * [Change the time format](/help/change-the-time-format)
 * [Configure emoticon translations](/help/configure-emoticon-translations)
-* [Configure default view](/help/configure-default-view)
+* [Configure home view](/help/configure-home-view)
 * [Enable full width display](/help/enable-full-width-display)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 

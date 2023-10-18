@@ -21,7 +21,7 @@ preference settings, including the following:
     * [Time format](/help/change-the-time-format)
     * [Light theme vs. dark theme](/help/dark-theme)
     * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
-    * [Default view](/help/configure-default-view)
+    * [Home view](/help/configure-home-view)
       ([Inbox](/help/inbox) vs.
       [Recent conversations](/help/recent-conversations) vs.
       [All messages](/help/reading-strategies#all-messages))

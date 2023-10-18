@@ -44,11 +44,11 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: <kbd>?</kbd>
 
-* **Go to default view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
+* **Go to home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
   <kbd>Esc</kbd>, [if enabled][disable-escape])
-  until you are in the [default view](/help/configure-default-view).
+  until you are in the [home view](/help/configure-home-view).
 
-[disable-escape]: /help/configure-default-view#configure-whether-esc-navigates-to-the-default-view
+[disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
 ## Navigation
 
 * **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>

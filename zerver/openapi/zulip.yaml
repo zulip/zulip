@@ -10007,7 +10007,7 @@ paths:
         - name: default_view
           in: query
           description: |
-            The [default view](/help/configure-default-view) used when opening a new
+            The [default view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
@@ -10020,7 +10020,7 @@ paths:
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-default-view).
+            [configured default view](/help/configure-home-view).
 
             **Changes**: New in Zulip 5.0 (feature level 107).
           schema:
@@ -12342,7 +12342,7 @@ paths:
                           default_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-default-view) used when opening a new
+                              The [default view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
@@ -12352,7 +12352,7 @@ paths:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-default-view).
+                              [configured default view](/help/configure-home-view).
 
                               **Changes**: New in Zulip 5.0 (feature level 107).
                           left_side_userlist:
@@ -13195,7 +13195,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          The [default view](/help/configure-default-view) in Zulip, represented
+                          The [default view](/help/configure-home-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
@@ -14535,7 +14535,7 @@ paths:
                           default_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-default-view) used when opening a new
+                              The [default view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
@@ -14545,7 +14545,7 @@ paths:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-default-view).
+                              [configured default view](/help/configure-home-view).
 
                               **Changes**: New in Zulip 5.0 (feature level 107).
                           left_side_userlist:
@@ -15600,7 +15600,7 @@ paths:
         - name: default_view
           in: query
           description: |
-            The [default view](/help/configure-default-view) used when opening a new
+            The [default view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
@@ -15618,7 +15618,7 @@ paths:
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-default-view).
+            [configured default view](/help/configure-home-view).
 
             **Changes**: New in Zulip 5.0 (feature level 107).
           schema:
