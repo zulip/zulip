@@ -54,11 +54,6 @@ $before_unread_count_padding: 3px;
     cursor: pointer;
 }
 
-#left-sidebar-navigation-list .filter-icon i {
-    padding-right: 3px;
-    color: var(--color-left-sidebar-navigation-icon);
-}
-
 #stream_filters,
 #left-sidebar-navigation-list {
     margin-right: 12px;
@@ -535,6 +530,10 @@ li.active-sub-filter {
             /* Unset inherited :focus outline. */
             outline: 0;
         }
+
+        .filter-icon i.fa-clock-o {
+            font-size: 15px;
+        }
     }
 
     .active-filter {
@@ -573,6 +572,16 @@ li.active-sub-filter {
         display: inline-block;
         min-width: $left_col_size;
         text-align: center;
+    }
+
+    .filter-icon i {
+        padding-right: 3px;
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+
+    i.fa-align-left {
+        position: relative;
+        font-size: 15px;
     }
 
     .top_left_row .unread_count {
@@ -640,11 +649,6 @@ li.top_left_scheduled_messages {
     /* Prevent status emoji from colliding
        with unread counts. */
     margin-right: 3px;
-}
-
-.top_left_all_messages i.fa-align-left {
-    position: relative;
-    font-size: 15px;
 }
 
 .top_left_mentions i.fa-at {
