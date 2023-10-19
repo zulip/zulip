@@ -287,10 +287,10 @@ body {
     --color-markdown-code-background: hsl(208deg 5% 88% / 88%);
     --color-markdown-code-background-mentions: hsl(0deg 0% 100%);
     --color-markdown-pre-text: var(--color-markdown-code-text);
-    --color-markdown-pre-background: hsl(208deg 5% 97% / 85%);
     --color-markdown-pre-border: hsl(208deg 10% 70% / 30%);
+    --color-markdown-pre-background: unset;
     --color-markdown-pre-background-mentions: var(
-        --color-markdown-code-background-mentions
+        --color-background-stream-message-content
     );
     --color-markdown-pre-border-mentions: hsl(208deg 10% 70% / 50%);
     --color-markdown-link: hsl(200deg 100% 40%);
@@ -591,10 +591,10 @@ body {
         --color-markdown-code-background
     );
     --color-markdown-pre-text: var(--color-markdown-code-text);
-    --color-markdown-pre-background: var(--color-markdown-code-background);
     --color-markdown-pre-border: hsl(0deg 0% 100% / 15%);
+    --color-markdown-pre-background: unset;
     --color-markdown-pre-background-mentions: var(
-        --color-markdown-code-background
+        --color-background-stream-message-content
     );
     --color-markdown-pre-border-mentions: var(--color-markdown-pre-border);
 
