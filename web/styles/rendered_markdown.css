@@ -822,6 +822,8 @@
 
     & pre {
         color: var(--color-markdown-pre-text);
+        /* This is necessary to remove the background color
+           set by Pygments. */
         background-color: var(--color-markdown-pre-background);
         border: 1px solid var(--color-markdown-pre-border);
     }
