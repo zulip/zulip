@@ -324,7 +324,7 @@ test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
-test_ui("test_wildcard_mention_allowed", () => {
+test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
     page_params.user_id = me.user_id;
     page_params.realm_mandatory_topics = false;
 
