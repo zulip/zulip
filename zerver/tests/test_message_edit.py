@@ -2128,7 +2128,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["read", "wildcard_mentioned"],
+                    "flags": ["read", "topic_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2235,7 +2235,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["read", "wildcard_mentioned"],
+                    "flags": ["read", "topic_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,

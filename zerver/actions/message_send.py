@@ -772,7 +772,7 @@ def create_user_messages(
             rendering_result.mentions_topic_wildcard
             and user_profile_id in topic_participant_user_ids
         ):
-            flags |= UserMessage.flags.wildcard_mentioned
+            flags |= UserMessage.flags.topic_wildcard_mentioned
 
         if (
             user_profile_id in long_term_idle_user_ids
