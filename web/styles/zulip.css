@@ -325,6 +325,8 @@ body {
     --color-navbar-icon: hsl(240deg 20% 50%);
     --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
     --color-gear-menu-blue-text: hsl(217deg 100% 50%);
+    --color-header-button-hover: hsl(0deg 0% 0% / 5%);
+    --color-header-button-focus: hsl(0deg 0% 0% / 8%);
 }
 
 %dark-theme {
@@ -476,6 +478,8 @@ body {
     --color-navbar-icon: hsl(240deg 35% 60%);
     --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
     --color-gear-menu-blue-text: hsl(217deg 100% 65%);
+    --color-header-button-hover: hsl(0deg 0% 100% / 4%);
+    --color-header-button-focus: hsl(0deg 0% 100% / 7%);
 }
 
 @media screen {
@@ -3402,6 +3406,19 @@ select.invite-as {
     &:hover,
     &:focus {
         text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
     }
 
     .zulip-icon {
