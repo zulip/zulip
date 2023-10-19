@@ -307,6 +307,17 @@ li.show-more-topics {
     &:hover {
         opacity: 1;
     }
+
+    &:focus {
+        outline: 0;
+    }
+
+    /* This renders an outline when the caret is reached
+       with the keyboard, although that is not at present
+       easily accomplished. */
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
 }
 
 .active_private_messages_section {
@@ -496,7 +507,11 @@ li.active-sub-filter {
             position: absolute;
         }
 
-        &:hover {
+        /* Show the same styles when each item is
+           hovered or, via the keyboard, the `<a>`
+           element within receives focus. */
+        &:hover,
+        &:focus-within {
             background: var(--color-background-hover-narrow-filter);
 
             .unread_count {
