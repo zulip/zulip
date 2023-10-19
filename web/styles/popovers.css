@@ -1147,7 +1147,7 @@ ul {
     }
 
     .text-item,
-    .link-item a {
+    .link-item .navbar-dropdown-menu-link {
         display: flex;
         flex-flow: row nowrap;
         align-items: center;
@@ -1156,7 +1156,7 @@ ul {
         font-size: 15px;
         line-height: 16px;
 
-        & i {
+        .navbar-dropdown-icon {
             width: 16px;
             height: 16px;
             font-size: 16px;
@@ -1177,11 +1177,11 @@ ul {
             background: var(--color-background-hover-dropdown-menu);
         }
 
-        & i {
+        .navbar-dropdown-icon {
             color: var(--color-icon-purple);
         }
 
-        & a {
+        .navbar-dropdown-menu-link {
             color: var(--color-text-dropdown-menu) !important;
             text-decoration: none;
             display: flex;
@@ -1249,7 +1249,7 @@ ul {
                 background: var(--color-background-hover-dropdown-menu);
             }
 
-            & a {
+            .navbar-dropdown-menu-link {
                 padding: 2px 0;
                 flex-grow: 1;
                 text-align: center;
@@ -1278,7 +1278,7 @@ ul {
         }
 
         .org-name,
-        .org-plan a {
+        .org-plan .navbar-dropdown-menu-link {
             color: var(--color-text-dropdown-menu);
         }
 
@@ -1314,18 +1314,18 @@ ul.navbar-dropdown-menu-outer-list {
     list-style: none;
     margin: 0;
 
-    & > li {
+    li.navbar-dropdown-menu-outer-list-item {
         border-bottom: solid 1px var(--color-border-popover-menu);
 
         &:last-child {
             border-bottom: none;
 
-            & > ul {
+            ul.navbar-dropdown-menu-inner-list {
                 padding-bottom: 0;
             }
         }
 
-        & > ul {
+        ul.navbar-dropdown-menu-inner-list {
             margin: 0;
             padding: 4px 0;
             list-style: none;
