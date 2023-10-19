@@ -341,67 +341,63 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
 }
 
 export function wildcard_mention_allowed() {
-
-    // Get the stream_id of the current compose state
     const stream_id = compose_state.stream_id();
-
-    // Use the stream_id to get the subscriber count
     const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
 
-    // If subscriber count is greater than the global large stream threshold variable
-    if (subscriber_count > wildcard_mention_large_stream_threshold) {
+    // For subscriber counts not greater than the large stream threshold
+    if (
+        subscriber_count <= 
+        wildcard_mention_large_stream_threshold
+    ) {
+        if (page_params.is_guest) {
+            return false;  // Guests may not use wildcard mentions
+        }
+        return true;  // Allow wildcard mention for non-guests
+    }
 
-        // check organization permission settings for appropriate permissions.
-        if (
-            page_params.realm_wildcard_mention_policy ===
-            settings_config.wildcard_mention_policy_values.by_everyone.code
-        ) {
+    // For subscriber count greater than the global large stream threshold,
+    // check organization settings for large stream permissions
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_everyone.code
+    ) {
+        return true;
+    }
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.nobody.code
+    ) {
+        return false;
+    }
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_admins_only.code
+    ) {
+        return page_params.is_admin;
+    }
+
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_moderators_only.code
+    ) {
+        return page_params.is_admin || page_params.is_moderator;
+    }
+
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_full_members.code
+    ) {
+        if (page_params.is_admin) {
             return true;
         }
-        if (
-            page_params.realm_wildcard_mention_policy ===
-            settings_config.wildcard_mention_policy_values.nobody.code
-        ) {
-            return false;
-        }
-        if (
-            page_params.realm_wildcard_mention_policy ===
-            settings_config.wildcard_mention_policy_values.by_admins_only.code
-        ) {
-            return page_params.is_admin;
-        }
+        const person = people.get_by_user_id(page_params.user_id);
+        const current_datetime = new Date(Date.now());
+        const person_date_joined = new Date(person.date_joined);
+        const days = (current_datetime - person_date_joined) / 1000 / 86400;
 
-        if (
-            page_params.realm_wildcard_mention_policy ===
-            settings_config.wildcard_mention_policy_values.by_moderators_only.code
-        ) {
-            return page_params.is_admin || page_params.is_moderator;
-        }
-
-        if (
-            page_params.realm_wildcard_mention_policy ===
-            settings_config.wildcard_mention_policy_values.by_full_members.code
-        ) {
-            if (page_params.is_admin) {
-                return true;
-            }
-            const person = people.get_by_user_id(page_params.user_id);
-            const current_datetime = new Date(Date.now());
-            const person_date_joined = new Date(person.date_joined);
-            const days = (current_datetime - person_date_joined) / 1000 / 86400;
-
-            return days >= page_params.realm_waiting_period_threshold && !page_params.is_guest;
-        }
-        return !page_params.is_guest;
-
+        return days >= page_params.realm_waiting_period_threshold && !page_params.is_guest;
     }
-
-    // For subscriber counts not greater than the threshold
-    if (page_params.is_guest) {
-        return false;  // Guests may not use wildcard mentions
-    }
-
-    return true;  // Allow wildcard mention for non-guests
+    return !page_params.is_guest;
 }
 
 export function set_wildcard_mention_large_stream_threshold(value) {
