@@ -166,7 +166,7 @@ export function initialize() {
             // it being called before message lists are initialized and the order cannot be changed.
             // Also, since these buttons are only visible for spectators which doesn't have events,
             // if theme is changed in a different tab, the theme of this tab remains the same.
-            $popper.on("click", "#gear-menu-dropdown .dark-theme", (e) => {
+            $popper.on("click", "#gear-menu-dropdown .gear-menu-select-dark-theme", (e) => {
                 instance.hide();
                 e.preventDefault();
                 e.stopPropagation();
@@ -176,7 +176,7 @@ export function initialize() {
                 });
             });
 
-            $popper.on("click", "#gear-menu-dropdown .light-theme", (e) => {
+            $popper.on("click", "#gear-menu-dropdown .gear-menu-select-light-theme", (e) => {
                 instance.hide();
                 e.preventDefault();
                 e.stopPropagation();
