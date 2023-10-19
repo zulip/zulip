@@ -4,10 +4,7 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
-from datetime import datetime, timezone
-from unittest import skip
-
-import orjson
+from django.db import connections
 from django.db.migrations.state import StateApps
 from typing_extensions import override
 
@@ -30,77 +27,26 @@ from zerver.lib.test_helpers import use_db_models
 # been tested for a migration being merged.
 
 
-@skip("Cannot be run because there is a non-atomic migration that has been merged after it")
-class ScheduledEmailData(MigrationsTestCase):
-    migrate_from = "0467_rename_extradata_realmauditlog_extra_data_json"
-    migrate_to = "0468_rename_followup_day_email_templates"
+class UserMessageIndex(MigrationsTestCase):
+    migrate_from = "0484_preregistrationrealm_default_language"
+    migrate_to = "0485_alter_usermessage_flags_and_add_index"
+
+    def index_exists(self, index_name: str) -> bool:
+        table_name = "zerver_usermessage"
+        connection = connections["default"]
+
+        with connection.cursor() as cursor:
+            # We use parameterized query to prevent SQL injection vulnerabilities
+            query = "SELECT indexname FROM pg_indexes WHERE tablename = %s AND indexname = %s"
+            cursor.execute(query, [table_name, index_name])
+            return cursor.fetchone() is not None
 
     @use_db_models
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        iago = self.example_user("iago")
-        ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
-        send_date = datetime(2025, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+        self.assertTrue(self.index_exists("zerver_usermessage_wildcard_mentioned_message_id"))
+        self.assertFalse(self.index_exists("zerver_usermessage_any_mentioned_message_id"))
 
-        templates = [
-            ["zerver/emails/followup_day1", "a", True, 10],
-            ["zerver/emails/followup_day2", "b", False, 20],
-            ["zerver/emails/onboarding_zulip_guide", "c", True, 30],
-        ]
-
-        for template in templates:
-            email_fields = {
-                "template_prefix": template[0],
-                "string_context": template[1],
-                "boolean_context": template[2],
-                "integer_context": template[3],
-            }
-
-            email = ScheduledEmail.objects.create(
-                type=1,
-                realm=iago.realm,
-                scheduled_timestamp=send_date,
-                data=orjson.dumps(email_fields).decode(),
-            )
-            email.users.add(iago.id)
-
-    def test_updated_email_templates(self) -> None:
-        ScheduledEmail = self.apps.get_model("zerver", "ScheduledEmail")
-        send_date = datetime(2025, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-
-        old_templates = [
-            "zerver/emails/followup_day1",
-            "zerver/emails/followup_day2",
-        ]
-
-        current_templates = [
-            "zerver/emails/account_registered",
-            "zerver/emails/onboarding_zulip_guide",
-            "zerver/emails/onboarding_zulip_topics",
-        ]
-
-        email_data = [
-            ["zerver/emails/account_registered", "a", True, 10],
-            ["zerver/emails/onboarding_zulip_topics", "b", False, 20],
-            ["zerver/emails/onboarding_zulip_guide", "c", True, 30],
-        ]
-
-        scheduled_emails = ScheduledEmail.objects.all()
-        self.assert_length(scheduled_emails, 3)
-
-        checked_emails = []
-        for email in scheduled_emails:
-            self.assertEqual(email.type, 1)
-            self.assertEqual(email.scheduled_timestamp, send_date)
-
-            updated_data = orjson.loads(email.data)
-            template_prefix = updated_data["template_prefix"]
-            self.assertFalse(template_prefix in old_templates)
-            for data in email_data:
-                if template_prefix == data[0]:
-                    self.assertEqual(updated_data["string_context"], data[1])
-                    self.assertEqual(updated_data["boolean_context"], data[2])
-                    self.assertEqual(updated_data["integer_context"], data[3])
-                    checked_emails.append(template_prefix)
-
-        self.assertEqual(current_templates, sorted(checked_emails))
+    def test_new_index_created_old_index_not_removed(self) -> None:
+        self.assertTrue(self.index_exists("zerver_usermessage_wildcard_mentioned_message_id"))
+        self.assertTrue(self.index_exists("zerver_usermessage_any_mentioned_message_id"))
