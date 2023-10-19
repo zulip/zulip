@@ -4,6 +4,7 @@ import orjson
 from django.db import transaction
 from django.utils.translation import gettext as _
 
+from zerver.actions.users import notify_users_on_updated_user_profile
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.streams import render_stream_description
@@ -145,7 +146,9 @@ def notify_user_update_custom_profile_data(
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: List[ProfileDataElementUpdateDict],
+    acting_user: Optional[UserProfile] = None,
 ) -> None:
+    old_profile_data = user_profile.profile_data()
     with transaction.atomic():
         for custom_profile_field in data:
             field_value, created = CustomProfileFieldValue.objects.get_or_create(
@@ -183,6 +186,13 @@ def do_update_user_custom_profile_data_if_changed(
                     "type": field_value.field.field_type,
                 },
             )
+    new_profile_data = user_profile.profile_data()
+    notify_users_on_updated_user_profile(
+        acting_user=acting_user,
+        recipient_user=user_profile,
+        old_profile_data=old_profile_data,
+        new_profile_data=new_profile_data,
+    )
 
 
 def check_remove_custom_profile_field_value(user_profile: UserProfile, field_id: int) -> None:

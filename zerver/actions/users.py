@@ -1,8 +1,9 @@
 import secrets
 from collections import defaultdict
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
+import orjson
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -26,9 +27,10 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
+from zerver.lib.types import ProfileDataElement
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import get_active_bots_owned_by_user
+from zerver.lib.users import access_user_by_id, get_active_bots_owned_by_user
 from zerver.models import (
     Message,
     Realm,
@@ -617,6 +619,74 @@ def get_owned_bot_dicts(
     ]
 
 
+def filter_changes_in_profile_data(
+    recipient_user: UserProfile,
+    old_profile_data: List[ProfileDataElement],
+    new_profile_data: List[ProfileDataElement],
+) -> Tuple[List[Any], List[Any]]:
+    clean_old_profile_data = []
+    clean_new_profile_data = []
+    for field in new_profile_data:
+        id = field["id"]
+        index = id - 1
+        new_value = field["value"] if field["value"] else None
+        old_value = old_profile_data[index]["value"] if old_profile_data[index]["value"] else None
+        if (new_value is None and old_value is None) or new_value == old_value:
+            continue
+        # For some fields, the value doesn't provide a useful
+        # data to display. So we should catch these fields and
+        # perform extra operations to fetch a more useful data
+        # for the users.
+        # This is the id for the field "Favourite code editor"
+        # The value will return "0" or "1" representing the data
+        # Thus, we should use the value and find the name of the
+        # text editor.
+        if id == 4:
+            if new_value is not None:
+                new_field_data = orjson.loads(field["field_data"])
+                new_value = str(new_field_data[new_value]["text"])
+            if old_value is not None:
+                old_field_data = orjson.loads(old_profile_data[index]["field_data"])
+                old_value = str(old_field_data[old_value]["text"])
+        # This is the id for the field "Mentors"
+        # The value will return a list of user ids.
+        # Thus, we should use the user id and fetch for the user
+        # profile and output them as silent mentions
+        elif id == 7:
+            if new_value is not None:
+                temp_mentor_string = ""
+                for mentor_user_id in new_value:
+                    assert isinstance(mentor_user_id, int)
+                    mentor_user_profile = access_user_by_id(
+                        recipient_user,
+                        mentor_user_id,
+                        allow_deactivated=True,
+                        allow_bots=True,
+                        for_admin=False,
+                    )
+                    temp_mentor_string += silent_mention_syntax_for_user(mentor_user_profile) + " "
+                new_value = temp_mentor_string
+            if old_value is not None:
+                temp_mentor_string = ""
+                for mentor_user_id in old_value:
+                    assert isinstance(mentor_user_id, int)
+                    mentor_user_profile = access_user_by_id(
+                        recipient_user,
+                        mentor_user_id,
+                        allow_deactivated=True,
+                        allow_bots=True,
+                        for_admin=False,
+                    )
+                    temp_mentor_string = silent_mention_syntax_for_user(mentor_user_profile) + " "
+                old_value = temp_mentor_string
+
+        clean_old_profile_data.append({"field_name": field["name"], "old_value": old_value})
+
+        clean_new_profile_data.append({"field_name": field["name"], "new_value": new_value})
+
+    return clean_old_profile_data, clean_new_profile_data
+
+
 def notify_users_on_updated_user_profile(
     acting_user: Optional[UserProfile],
     recipient_user: UserProfile,
@@ -625,6 +695,8 @@ def notify_users_on_updated_user_profile(
     new_full_name: Optional[str] = None,
     old_role: Optional[str] = None,
     new_role: Optional[str] = None,
+    old_profile_data: Optional[List[ProfileDataElement]] = None,
+    new_profile_data: Optional[List[ProfileDataElement]] = None,
 ) -> None:
     realm = recipient_user.realm
     mention_backend = MentionBackend(realm.id)
@@ -654,6 +726,19 @@ def notify_users_on_updated_user_profile(
                 new_role=new_role,
             )
 
+        if old_profile_data and new_profile_data:
+            clean_old_profile_data, clean_new_profile_data = filter_changes_in_profile_data(
+                recipient_user, old_profile_data, new_profile_data
+            )
+            for index in range(len(clean_new_profile_data)):
+                message += _(
+                    "\n- **Old `{old_field_name}`:** {old_field_value}\n- **New `{new_field_name}`:** {new_field_value}"
+                ).format(
+                    old_field_name=clean_old_profile_data[index]["field_name"],
+                    old_field_value=clean_old_profile_data[index]["old_value"],
+                    new_field_name=clean_new_profile_data[index]["field_name"],
+                    new_field_value=clean_new_profile_data[index]["new_value"],
+                )
     notification.append(
         internal_prep_private_message(
             sender=sender,

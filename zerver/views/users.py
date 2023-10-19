@@ -261,7 +261,7 @@ def update_user_backend(
                     }
                 )
         validate_user_custom_profile_data(target.realm.id, clean_profile_data)
-        do_update_user_custom_profile_data_if_changed(target, clean_profile_data)
+        do_update_user_custom_profile_data_if_changed(target, clean_profile_data, user_profile)
 
     return json_success(request)
 
