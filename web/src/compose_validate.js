@@ -346,7 +346,7 @@ export function wildcard_mention_allowed() {
 
     // For subscriber counts not greater than the large stream threshold
     if (
-        subscriber_count <= 
+        subscriber_count <=
         wildcard_mention_large_stream_threshold
     ) {
         if (page_params.is_guest) {
