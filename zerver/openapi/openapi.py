@@ -360,11 +360,7 @@ def fix_events(content: Dict[str, Any]) -> None:
 
 
 def validate_against_openapi_schema(
-    content: Dict[str, Any],
-    path: str,
-    method: str,
-    status_code: str,
-    display_brief_error: bool = False,
+    content: Dict[str, Any], path: str, method: str, status_code: str
 ) -> bool:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint. Return true if validated and false if skipped.
