@@ -350,7 +350,7 @@ export function wildcard_mention_allowed() {
 
     // If subscriber count is greater than the global large stream threshold variable
     if (subscriber_count > wildcard_mention_large_stream_threshold) {
-        
+
         // check organization permission settings for appropriate permissions.
         if (
             page_params.realm_wildcard_mention_policy ===
