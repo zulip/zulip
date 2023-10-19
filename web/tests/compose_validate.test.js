@@ -326,6 +326,21 @@ test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
 
 test_ui("test_wildcard_mention_allowed", () => {
     page_params.user_id = me.user_id;
+    page_params.realm_mandatory_topics = false;
+
+    const special_sub = {
+        stream_id: 101,
+        name: "special",
+        subscribed: true,
+    };
+    stream_data.add_sub(special_sub);
+
+    compose_state.set_stream_id(special_sub.stream_id);
+
+    override_rewire(peer_data, "get_subscriber_count", (stream_id) => {
+        assert.equal(stream_id, 101);
+        return 16;
+    });
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_everyone.code;
