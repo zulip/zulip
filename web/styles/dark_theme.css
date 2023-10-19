@@ -692,11 +692,11 @@
     }
 
     .spectator-view #gear-menu-dropdown {
-        .dark-theme {
+        .gear-menu-select-dark-theme {
             display: none;
         }
 
-        .light-theme {
+        .gear-menu-select-light-theme {
             display: block;
         }
     }
