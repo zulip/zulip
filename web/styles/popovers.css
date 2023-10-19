@@ -1304,8 +1304,8 @@ ul {
         }
     }
 
-    .light-theme,
-    .dark-theme {
+    .gear-menu-select-light-theme,
+    .gear-menu-select-dark-theme {
         display: none;
     }
 }
@@ -1335,7 +1335,7 @@ ul.navbar-dropdown-menu-outer-list {
 }
 
 .spectator-view {
-    #gear-menu-dropdown .dark-theme {
+    #gear-menu-dropdown .gear-menu-select-dark-theme {
         display: block;
     }
 }
