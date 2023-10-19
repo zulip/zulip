@@ -3476,9 +3476,9 @@ class AbstractUserMessage(models.Model):
         "collapsed",
         "mentioned",
         "wildcard_mentioned",
-        # These next 4 flags are from features that have since been removed.
-        "summarize_in_home",
-        "summarize_in_stream",
+        "topic_wildcard_mentioned",
+        "group_mentioned",
+        # These next 2 flags are from features that have since been removed.
         "force_expand",
         "force_collapse",
         # Whether the message contains any of the user's alert words.
@@ -3506,12 +3506,12 @@ class AbstractUserMessage(models.Model):
         "has_alert_word",
         "mentioned",
         "wildcard_mentioned",
+        "topic_wildcard_mentioned",
+        "group_mentioned",
         "historical",
         # Unused flags can't be edited.
         "force_expand",
         "force_collapse",
-        "summarize_in_home",
-        "summarize_in_stream",
     }
     flags: BitHandler = BitField(flags=ALL_FLAGS, default=0)
 
@@ -3606,6 +3606,17 @@ class UserMessage(AbstractUserMessage):
                 condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask)
                 | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
                 name="zerver_usermessage_wildcard_mentioned_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.mentioned.mask
+                    | AbstractUserMessage.flags.wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.topic_wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.group_mentioned.mask
+                ),
+                name="zerver_usermessage_any_mentioned_message_id",
             ),
             models.Index(
                 "user_profile",
