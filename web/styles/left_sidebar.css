@@ -766,6 +766,11 @@ li.top_left_scheduled_messages {
         align-items: baseline;
     }
 
+    .filter-icon {
+        align-self: center;
+        height: 15px;
+    }
+
     .left-sidebar-navigation-label {
         flex: 1 0 0;
         margin-left: 3px;
