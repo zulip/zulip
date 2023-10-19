@@ -1196,7 +1196,7 @@ ul {
                 outline: none;
             }
 
-            &:focus {
+            &:focus-visible {
                 border-radius: 4px;
                 /* Override the default focus style */
                 outline: 1px solid var(--color-outline-focus) !important;
@@ -1260,7 +1260,7 @@ ul {
                     outline: none;
                 }
 
-                &:focus {
+                &:focus-visible {
                     border-radius: 4px;
                     /* Override the default focus style */
                     outline: 1px solid var(--color-outline-focus) !important;
