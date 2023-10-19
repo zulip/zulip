@@ -530,10 +530,6 @@ li.active-sub-filter {
             /* Unset inherited :focus outline. */
             outline: 0;
         }
-
-        .filter-icon i.fa-clock-o {
-            font-size: 15px;
-        }
     }
 
     .active-filter {
