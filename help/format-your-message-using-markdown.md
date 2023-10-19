@@ -47,6 +47,12 @@ whenever you need a reminder of the formatting syntax below.
 
 {!bulleted-lists-examples.md!}
 
+!!! tip ""
+
+    You can also use the **Bulleted list** (<i class="fa fa-list-ul"></i>)
+    button in the compose box to insert bulleted list formatting.
+    [Learn more](/help/bulleted-lists).
+
 ## Numbered lists
 
 {!numbered-lists-intro.md!}
