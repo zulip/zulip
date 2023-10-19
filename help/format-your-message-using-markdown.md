@@ -59,6 +59,12 @@ whenever you need a reminder of the formatting syntax below.
 
 {!numbered-lists-examples.md!}
 
+!!! tip ""
+
+    You can also use the **Numbered list** (<i class="fa fa-list-ol"></i>)
+    button in the compose box to insert numbered list formatting.
+    [Learn more](/help/numbered-lists).
+
 ## Links
 
 {!links-intro.md!}
