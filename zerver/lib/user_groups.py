@@ -10,11 +10,12 @@ from django_cte import With
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.types import GroupPermissionSetting
+from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
 from zerver.models import (
     GroupGroupMembership,
     Realm,
     RealmAuditLog,
+    Stream,
     SystemGroups,
     UserGroup,
     UserGroupMembership,
@@ -540,3 +541,23 @@ def get_system_user_group_for_user(user_profile: UserProfile) -> UserGroup:
         name=system_user_group_name, realm=user_profile.realm, is_system_group=True
     )
     return system_user_group
+
+
+def get_server_supported_permission_settings() -> ServerSupportedPermissionSettings:
+    realm_permission_group_settings: Dict[str, GroupPermissionSetting] = {}
+    for permission_name, permission_config in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        realm_permission_group_settings[permission_name] = permission_config
+
+    stream_permission_group_settings: Dict[str, GroupPermissionSetting] = {}
+    for permission_name, permission_config in Stream.stream_permission_group_settings.items():
+        stream_permission_group_settings[permission_name] = permission_config
+
+    group_permission_settings: Dict[str, GroupPermissionSetting] = {}
+    for permission_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+        group_permission_settings[permission_name] = permission_config
+
+    return ServerSupportedPermissionSettings(
+        realm=realm_permission_group_settings,
+        stream=stream_permission_group_settings,
+        group=group_permission_settings,
+    )

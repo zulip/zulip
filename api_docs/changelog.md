@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 221**
+
+* [`POST /register`](/api/register-queue): Added `server_supported_permission_settings`
+  field in the response which contains configuration data for various permission
+  settings.
+
 **Feature level 220**
 
 * [`GET /events`](/api/get-events): Stream creation events for web-public

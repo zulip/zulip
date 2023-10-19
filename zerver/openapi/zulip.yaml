@@ -15154,6 +15154,37 @@ paths:
                                   nullable: true
                                 avatar_version: {}
                                 profile_data: {}
+                      server_supported_permission_settings:
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Configuration for various group permission settings.
+
+                          We consider this part of the Zulip API to be unstable
+                          and may change significantly in future versions.
+
+                          **Changes**: New in Zulip 8.0 (feature level 221).
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          realm:
+                            type: object
+                            description: |
+                              Configuration for realm level group permission settings.
+                            additionalProperties:
+                              $ref: "#/components/schemas/GroupPermissionSetting"
+                          stream:
+                            type: object
+                            description: |
+                              Configuration for stream level group permission settings.
+                            additionalProperties:
+                              $ref: "#/components/schemas/GroupPermissionSetting"
+                          group:
+                            type: object
+                            description: |
+                              Configuration for group level group permission settings.
+                            additionalProperties:
+                              $ref: "#/components/schemas/GroupPermissionSetting"
                     example:
                       {
                         "last_event_id": -1,
@@ -19250,6 +19281,49 @@ components:
         - rendered_content
         - scheduled_delivery_timestamp
         - failed
+    GroupPermissionSetting:
+      description: |
+        Configuration for a group permission setting specifying the groups
+        to which the setting can be set to and the default values for the
+        setting.
+      additionalProperties: false
+      type: object
+      properties:
+        require_system_group:
+          type: boolean
+          description: |
+            Whether the setting can only be set to a system user group.
+        allow_internet_group:
+          type: boolean
+          description: |
+            Whether the setting can be set to `role:internet` system group.
+        allow_owners_group:
+          type: boolean
+          description: |
+            Whether the setting can be set to `role:owners` system group.
+        allow_nobody_group:
+          type: boolean
+          description: |
+            Whether the setting can be set to `role:nobody` system group.
+        allow_everyone_group:
+          type: boolean
+          description: |
+            Whether the setting can be set to `role:everyone` system group.
+        default_group_name:
+          type: string
+          description: |
+            Name of the default group for the setting.
+        id_field_name:
+          type: string
+          description: |
+            Name for the field used to pass the group ID for the setting.
+        default_for_system_groups:
+          type: string
+          nullable: true
+          description: |
+            Name of the default group for the setting for system groups.
+
+            This is non-null only for group-level settings.
     User:
       allOf:
         - $ref: "#/components/schemas/UserBase"

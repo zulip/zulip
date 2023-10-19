@@ -202,6 +202,7 @@ class HomeTest(ZulipTestCase):
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
         "server_sentry_dsn",
+        "server_supported_permission_settings",
         "server_timestamp",
         "server_typing_started_expiry_period_milliseconds",
         "server_typing_started_wait_period_milliseconds",
