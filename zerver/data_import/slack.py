@@ -7,6 +7,7 @@ import secrets
 import shutil
 import zipfile
 from collections import defaultdict
+import subprocess
 from email.headerregistry import Address
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar
 from urllib.parse import urlsplit
@@ -823,10 +824,14 @@ def get_messages_iterator(
                     # skipping those messages is simpler.
                     continue
                 if message.get("mimetype") == "application/vnd.slack-docs":
-                    # This is a Slack "Post" which is HTML-formatted,
-                    # and we don't have a clean way to import at the
-                    # moment.  We skip them on import.
-                    continue
+                    # This is a Slack "Post" which is HTML-formatted
+                    file_url = message.get("url_private_download")
+                    response = requests.get(file_url)
+                    html_content = str(response.content, encoding='utf-8')
+                    # html2text is GPL licensed, so run it as a subprocess.
+                    text = subprocess.check_output(["html2text"], input=html_content, text=True)
+                    message["text"] = text
+                    message["ts"] = message.get("created")
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
