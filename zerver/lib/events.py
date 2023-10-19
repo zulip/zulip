@@ -51,7 +51,10 @@ from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_pu
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.user_groups import user_groups_in_realm_serialized
+from zerver.lib.user_groups import (
+    get_server_supported_permission_settings,
+    user_groups_in_realm_serialized,
+)
 from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
@@ -382,6 +385,8 @@ def fetch_initial_state_data(
         state[
             "server_typing_started_wait_period_milliseconds"
         ] = settings.TYPING_STARTED_WAIT_PERIOD_MILLISECONDS
+
+        state["server_supported_permission_settings"] = get_server_supported_permission_settings()
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
