@@ -1,32 +1,32 @@
 .informational-overlays {
+    display: grid;
+    place-items: center;
+
     .overlay-content {
-        /* because zoom breaks at 525px perhaps due to rounding errors, so add a
-           trivial amount of width so it doesn't break. */
-        width: 550px;
-        margin: 0 auto;
-        position: relative;
-        top: calc((30vh - 50px) / 2);
-        border-radius: 4px;
+        width: 90%;
+        max-width: 650px;
+        border-radius: 6px;
         overflow: hidden;
 
         background-color: var(--color-background-modal);
     }
 
     .overlay-tabs {
-        padding: 10px 0;
-        border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 0 5%;
+        height: 60px;
+        box-shadow: 0 3px 12px 1px hsl(207deg 100% 11% / 8%);
 
         .tab-switcher {
-            margin-left: 15px;
+            flex-grow: 1;
         }
 
         .exit {
-            float: right;
-            font-size: 1.5rem;
-            color: hsl(0deg 0% 67%);
-            font-weight: 600;
-            margin: 0 15px;
+            color: hsl(0deg 0% 60%);
             cursor: pointer;
+            order: 1;
         }
     }
 
@@ -34,90 +34,155 @@
         padding-bottom: 10px;
 
         .overlay-scroll-container {
-            height: 70vh;
-            text-align: center;
+            height: 75vh;
             outline: none;
+        }
 
-            .help-table {
-                table-layout: fixed;
-            }
+        .simplebar-content {
+            padding: 35px 30px 35px 25px !important;
+        }
 
-            & th {
-                font-weight: 400;
+        & a {
+            color: var(--color-text-link);
+
+            &:hover {
+                color: var(--color-text-link) !important;
             }
         }
-    }
 
-    & td.operator {
-        font-size: 0.9em;
-    }
-}
-
-.hotkeys_table {
-    table-layout: fixed;
-    width: 100%;
-    vertical-align: middle;
-    display: table;
-
-    & td.definition {
-        /* keeps dividing line at same width for all tables in model. */
-        width: calc(50% - 11px);
-        text-align: right;
-    }
-
-    .hotkey {
-        font-weight: normal;
-    }
-
-    .small_hotkey {
-        font-size: 0.9em !important;
-        line-height: 12px;
+        .documentation-link {
+            text-align: center;
+            margin-top: 35px;
+        }
 
         & kbd {
-            font-size: 0.9em;
+            font-family: "Source Sans 3 VF", sans-serif;
+
+            /* Contains stylistic variant of upper-case character "I" in Source Sans 3 VF. */
+            font-feature-settings: "ss01" on;
+            margin: 6px 6px 0;
+            padding: 1px 0.5em;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--color-keyboard);
+            background: none;
+            border: solid 1.5px var(--color-keyboard);
+            border-radius: 5px;
+            text-shadow: none;
+        }
+
+        .concurrent-hotkeys {
+            display: inline-flex;
+            white-space: nowrap;
+            padding: 6px 6px 0;
+            gap: 4px;
+
+            & kbd {
+                margin: 0;
+            }
         }
     }
 
-    .arrow-key {
-        font-size: 1.36em;
-        line-height: 1;
-        padding: 0 0.2em 0.2em;
-    }
+    .help-table {
+        width: 100%;
+        margin-bottom: 2rem;
+        color: var(--color-text);
+        border-collapse: collapse;
 
-    & th {
-        width: 245px;
-        text-align: center;
-        /* aligns table name with dividing line */
-    }
-
-    & td:not(.definition) {
-        text-align: left;
-        white-space: normal;
-        font-weight: bold;
-    }
-}
-
-#keyboard-shortcuts table {
-    margin-bottom: 10px !important;
-}
-
-@media only screen and (width < $md_min) {
-    .informational-overlays {
-        .overlay-content {
-            width: calc(100% - 20px);
+        .operator {
+            width: 50%;
         }
 
-        .tab-switcher {
-            display: flex;
+        & tbody {
+            & tr {
+                border-bottom: solid 1px var(--color-table-border);
 
-            &.large .ind-tab {
-                width: 100%;
+                &:first-child {
+                    border-top: solid 1px var(--color-table-border);
+                }
             }
         }
 
-        .hotkeys_table {
-            width: 100%;
-            display: table;
+        & thead {
+            background: none !important;
+        }
+
+        & th {
+            color: var(--color-title);
+            font-size: 1.3rem;
+            line-height: 125%;
+            text-align: left;
+            padding: 0 0 1rem;
+        }
+
+        & td {
+            padding: 0.75rem 1rem 0.75rem 0;
+            width: 50%;
+            color: var(--color-text);
+            text-align: left;
+            vertical-align: middle;
+
+            &[colspan] {
+                text-align: center;
+            }
+        }
+    }
+
+    #operators-instructions {
+        & .help-table tr:last-child td {
+            padding: 20px 0;
+        }
+    }
+
+    .hotkeys-table {
+        & th {
+            text-align: center;
+        }
+
+        & th,
+        & td {
+            padding: 0.5rem 0;
+        }
+
+        & td {
+            &:not(.definition) {
+                /* contradict top-margin of kbd tag */
+                padding-top: calc(0.5rem - 6px);
+
+                width: 47%;
+                color: var(--color-sub-text);
+                text-align: right;
+            }
+
+            &.definition {
+                padding-left: 0.4rem;
+
+                .emoji {
+                    width: 1.35em;
+                    height: 1.35em;
+                }
+            }
+        }
+    }
+
+    @media only screen and (width < $md_min) {
+        .informational-overlays {
+            .overlay-content {
+                width: calc(100% - 20px);
+            }
+
+            .tab-switcher {
+                display: flex;
+
+                &.large .ind-tab {
+                    width: 100%;
+                }
+            }
+
+            .hotkeys-table {
+                width: 100%;
+                display: table;
+            }
         }
     }
 }

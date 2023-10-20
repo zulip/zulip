@@ -21,7 +21,10 @@ import * as util from "./util";
 export let toggler;
 
 function format_usage_html(...keys) {
-    const get_formatted_keys = () => keys.map((key) => `<kbd>${key}</kbd>`).join("+");
+    const get_formatted_keys = () =>
+        `<span class="concurrent-hotkeys">${keys
+            .map((key) => `<kbd>${key}</kbd>`)
+            .join("")}</span>`;
     return $t_html(
         {
             defaultMessage: "(or <key-html></key-html>)",
@@ -298,7 +301,7 @@ export function set_up_toggler() {
         "notdisplayed",
         !user_settings.escape_navigates_to_default_view,
     );
-    common.adjust_mac_kbd_tags(".hotkeys_table .hotkey kbd");
+    common.adjust_mac_kbd_tags(".hotkeys-table kbd");
     common.adjust_mac_kbd_tags("#markdown-instructions kbd");
 }
 
