@@ -79,8 +79,8 @@
         }
     }
 
-    #subscription_overlay #stream-creation .modal-footer,
-    #groups_overlay #user-group-creation .modal-footer {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
@@ -788,6 +788,25 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
+    .stream-row,
+    .group-row {
+        /* This is for coluring the plus sign SVGs in stream-list UI */
+        /* public */
+        .check:not(.checked) svg {
+            fill: hsl(218deg 14% 33%);
+        }
+
+        /* private */
+        .disabled svg {
+            opacity: 0.5;
+        }
+
+        /* public :hover */
+        .check:not(.checked, .disabled):hover svg {
+            fill: hsl(230deg 11% 67%);
+        }
+    }
+
     .recent_view_participant_overflow {
         color: hsl(0deg 0% 100%) !important;
         background-color: hsl(211deg 18% 25%) !important;
@@ -877,8 +896,8 @@
     #settings_page .sidebar-wrapper .tab-container,
     .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
-    #subscription_overlay #stream-creation .modal-footer,
-    #groups_overlay #user-group-creation .modal-footer {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
     }
@@ -1513,26 +1532,6 @@
                 .save-discard-widget-button-text {
                     color: hsl(0deg 0% 100%);
                 }
-            }
-        }
-    }
-
-    .tabs-container {
-        background-color: hsl(0deg 0% 0% / 30%);
-
-        & i {
-            color: hsl(0deg 0% 80%);
-        }
-
-        .selected-tab {
-            background-color: hsl(0deg 0% 17% / 50%);
-            outline: 1px solid hsl(0deg 0% 100% / 12%);
-        }
-
-        .tab-option {
-            &:hover:not(.selected-tab) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                outline: 1px solid hsl(0deg 0% 100% / 12%);
             }
         }
     }

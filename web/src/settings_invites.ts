@@ -19,7 +19,7 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
-const invite_schema = z.intersection(
+export const invite_schema = z.intersection(
     z.object({
         invited_by_user_id: z.number(),
         invited: z.number(),

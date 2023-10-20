@@ -6,7 +6,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
-from analytics.models import FillState, RealmCount, UserCount
+from analytics.models import FillState, RealmCount, StreamCount, UserCount
 from analytics.views.stats import rewrite_client_arrays, sort_by_totals, sort_client_labels
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
@@ -74,6 +74,7 @@ class TestGetChartData(ZulipTestCase):
         super().setUp()
         self.realm = get_realm("zulip")
         self.user = self.example_user("hamlet")
+        self.stream_id = self.get_stream_id(self.get_streams(self.user)[0])
         self.login_user(self.user)
         self.end_times_hour = [
             ceiling_to_hour(self.realm.date_created) + timedelta(hours=i) for i in range(4)
@@ -115,6 +116,17 @@ class TestGetChartData(ZulipTestCase):
                 user=self.user,
             )
             for i, subgroup in enumerate(user_subgroups)
+        )
+        StreamCount.objects.bulk_create(
+            StreamCount(
+                property=stat.property,
+                subgroup=subgroup,
+                end_time=insert_time,
+                value=100 + i,
+                stream_id=self.stream_id,
+                realm=self.realm,
+            )
+            for i, subgroup in enumerate(realm_subgroups)
         )
         FillState.objects.create(property=stat.property, end_time=fill_time, state=FillState.DONE)
 
@@ -251,6 +263,49 @@ class TestGetChartData(ZulipTestCase):
                 "result": "success",
             },
         )
+
+    def test_messages_sent_by_stream(self) -> None:
+        stat = COUNT_STATS["messages_in_stream:is_bot:day"]
+        self.insert_data(stat, ["true", "false"], [])
+
+        result = self.client_get(
+            f"/json/analytics/chart_data/stream/{self.stream_id}",
+            {
+                "chart_name": "messages_sent_by_stream",
+            },
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(
+            data,
+            {
+                "msg": "",
+                "end_times": [datetime_to_timestamp(dt) for dt in self.end_times_day],
+                "frequency": CountStat.DAY,
+                "everyone": {"bot": self.data(100), "human": self.data(101)},
+                "display_order": None,
+                "result": "success",
+            },
+        )
+
+        result = self.api_get(
+            self.example_user("polonius"),
+            f"/api/v1/analytics/chart_data/stream/{self.stream_id}",
+            {
+                "chart_name": "messages_sent_by_stream",
+            },
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        # Verify we correctly forbid access to stats of streams in other realms.
+        result = self.api_get(
+            self.mit_user("sipbtest"),
+            f"/api/v1/analytics/chart_data/stream/{self.stream_id}",
+            {
+                "chart_name": "messages_sent_by_stream",
+            },
+            subdomain="zephyr",
+        )
+        self.assert_json_error(result, "Invalid stream ID")
 
     def test_include_empty_subgroups(self) -> None:
         FillState.objects.create(

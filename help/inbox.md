@@ -4,7 +4,7 @@
 
 {!inbox-intro.md!}
 
-Inbox is a convenient [default view](/help/configure-default-view) if you
+Inbox is a convenient [home view](/help/configure-home-view) if you
 regularly clear all unread messages in your subscribed streams.
 
 {!inbox-instructions.md!}

@@ -95,6 +95,7 @@ export function initialize() {
 
     delegate("body", {
         target: ".toggle-subscription-tooltip",
+        trigger: "mouseenter",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "bottom",

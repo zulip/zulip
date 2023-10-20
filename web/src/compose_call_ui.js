@@ -33,7 +33,7 @@ function insert_video_call_url(url, target_textarea) {
 }
 
 function insert_audio_call_url(url, target_textarea) {
-    const link_text = $t({defaultMessage: "Join audio call."});
+    const link_text = $t({defaultMessage: "Join voice call."});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
 }
 

@@ -26,7 +26,6 @@ interface JQuery {
     expectOne(): this;
     get_offset_to_window(): DOMRect;
     tab(action?: string): this; // From web/third/bootstrap
-    modal(action?: string): this; // From web/third/bootstrap
 
     // Types for jquery-caret-plugin
     caret(): number;

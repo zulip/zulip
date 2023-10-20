@@ -1,7 +1,6 @@
 # View your bots
 
-You can view the bots you have added to your Zulip organization, including
-deactivated bots.
+You can view the bots that you own, including deactivated bots.
 
 You can also [deactivate](/help/deactivate-or-reactivate-a-bot#deactivate-a-bot),
 [reactivate](/help/deactivate-or-reactivate-a-bot#reactivate-a-bot) or

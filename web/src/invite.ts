@@ -13,7 +13,6 @@ import * as channel from "./channel";
 import * as common from "./common";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
-import * as gear_menu from "./gear_menu";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
@@ -276,7 +275,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.stopPropagation();
     e.preventDefault();
 
-    gear_menu.close();
+    const $gear_menu = $("#gear-menu");
+    if ($gear_menu.hasClass("open")) {
+        $gear_menu.removeClass("open");
+    }
 
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({

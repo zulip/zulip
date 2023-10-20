@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 218**
+
+* [`POST /messages`](/api/send-message): Added an optional
+  `automatic_new_visibility_policy` enum field in the success response
+  to indicate the new visibility policy value due to the [visibility policy settings](/help/mute-a-topic)
+  during the send message action.
+
 **Feature level 217**
 
 * [`POST /mobile_push/test_notification`](/api/test-notify): Added new endpoint
@@ -966,7 +973,7 @@ No changes; feature level used for Zulip 5.0 release.
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `escape_navigates_to_default_view` to allow users to
-  [disable the keyboard shortcut](/help/configure-default-view) for the `Esc` key that
+  [disable the keyboard shortcut](/help/configure-home-view) for the `Esc` key that
   navigates the app to the default view.
 
 **Feature level 106**
@@ -1468,7 +1475,7 @@ field with an integer field `invite_to_realm_policy`.
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
-  the user to [set the default view](/help/configure-default-view).
+  the user to [set the default view](/help/configure-home-view).
 
 **Feature level 41**
 

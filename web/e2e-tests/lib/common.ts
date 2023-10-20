@@ -650,15 +650,10 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
     page.on("pageerror", (error: Error) => {
         page_errored = true;
 
-        // Puppeteer gives us the stack as the message for some reason.
-        const error1 = new Error("dummy");
-        error1.stack = error.message;
-
         const console_ready1 = console_ready;
         console_ready = (async () => {
             const frames = await Promise.all(
-                ErrorStackParser.parse(error1).map(async (frame1) => {
-                    let frame = frame1 as unknown as StackFrame;
+                ErrorStackParser.parse(error).map(async (frame) => {
                     try {
                         frame = await gps.getMappedLocation(frame);
                     } catch {
@@ -670,7 +665,7 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
                 }),
             );
             await console_ready1;
-            console.error("Page error:", error.message.split("\n", 1)[0] + frames.join(""));
+            console.error("Page error:", error.message + frames.join(""));
         })();
 
         const console_ready2 = console_ready;

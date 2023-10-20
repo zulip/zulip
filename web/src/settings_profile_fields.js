@@ -194,15 +194,15 @@ function set_up_create_field_form() {
 
     if (profile_field_type === field_types.EXTERNAL_ACCOUNT.id) {
         $field_elem.show();
-        const $profile_field_external_account_type = $(
+        const profile_field_external_account_type = $(
             "#profile_field_external_accounts_type",
         ).val();
-        if ($profile_field_external_account_type === "custom") {
+        if (profile_field_external_account_type === "custom") {
             $field_url_pattern_elem.show();
         } else {
             $field_url_pattern_elem.hide();
             const profile_field_name =
-                page_params.realm_default_external_accounts[$profile_field_external_account_type]
+                page_params.realm_default_external_accounts[profile_field_external_account_type]
                     .name;
             $("#profile_field_name").val(profile_field_name).prop("disabled", true);
             $("#profile_field_hint").val("").prop("disabled", true);

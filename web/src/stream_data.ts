@@ -347,7 +347,7 @@ export function get_streams_for_user(user_id: number): {
         }
         if (is_user_subscribed(sub.stream_id, user_id)) {
             subscribed_subs.push(sub);
-        } else if (can_subscribe_others(sub)) {
+        } else if (can_subscribe_user(sub, user_id)) {
             can_subscribe_subs.push(sub);
         }
     }
@@ -530,6 +530,14 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
         (!sub.invite_only || sub.subscribed) &&
         settings_data.user_can_subscribe_other_users()
     );
+}
+
+export function can_subscribe_user(sub: StreamSubscription, user_id: number): boolean {
+    if (people.is_my_user_id(user_id)) {
+        return can_toggle_subscription(sub);
+    }
+
+    return can_subscribe_others(sub);
 }
 
 export function can_unsubscribe_others(sub: StreamSubscription): boolean {

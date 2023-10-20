@@ -4,9 +4,6 @@
     background: var(--color-background-inbox);
     font-size: 15px;
     padding: 0;
-    border-radius: 4px;
-    border-right: 1px solid var(--color-border-inbox);
-    border-left: 1px solid var(--color-border-inbox);
     min-height: 100vh;
 
     #inbox-pane {
@@ -119,7 +116,7 @@
             font-weight: 400;
             line-height: 17px;
             border-radius: 4px;
-            background-color: var(--color-background-inbox);
+            background-color: var(--color-background-inbox-search);
             color: var(--color-inbox-search-text);
             border: 1px solid var(--color-border-inbox-search);
 
@@ -137,6 +134,10 @@
             }
         }
 
+        .inbox-empty-text {
+            display: none;
+        }
+
         #inbox-list {
             overflow: hidden;
             border-radius: 5px;
@@ -152,12 +153,6 @@
                 border-radius: 3px;
                 box-sizing: border-box;
                 justify-content: space-between;
-            }
-
-            .inbox-empty-text {
-                display: none;
-                font-style: italic;
-                opacity: 0.8;
             }
 
             .inbox-header {

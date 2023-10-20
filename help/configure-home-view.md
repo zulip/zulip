@@ -1,24 +1,24 @@
-# Configure default view
+# Configure home view
 
-The default view in Zulip is the view you reach after logging in
-to the Zulip web app. You can also navigate to the default view via
+The home view in Zulip is the view you reach after logging in
+to the Zulip web app. You can also navigate to the home view via
 keyboard shortcuts.
 
-The default views available in Zulip are
+The home views available in Zulip are
 [**Inbox**](/help/inbox),
 [Recent conversations](/help/recent-conversations), and
 [All messages](/help/all-messages). See
 [Reading strategies](/help/reading-strategies) for recommendations
 on how to use these views.
 
-You can configure which view is set as your default, and whether
-the <kbd>Esc</kbd> key navigates to the default view. Also, you can
-always reach the default view by using the <kbd>Ctrl</kbd> + <kbd>[</kbd>
+You can configure which view is set as your home view, and whether
+the <kbd>Esc</kbd> key navigates to the home view. Also, you can
+always reach the home view by using the <kbd>Ctrl</kbd> + <kbd>[</kbd>
 shortcut.
 
-## Change default view
+## Change home view
 
-Organization administrators can [configure the default view for their
+Organization administrators can [configure the home view for their
 organization](/help/configure-default-new-user-settings) to
 [**Inbox**](/help/inbox),
 [**Recent conversations**](/help/recent-conversations), or
@@ -32,41 +32,41 @@ streams you follow.
 - **All messages** is convenient for low-traffic organizations, or for skimming
   messages as they come in.
 
-You can customize your personal default view regardless of
+You can customize your personal home view regardless of
 organization settings:
 
 {start_tabs}
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, click on the **Default view** dropdown
+1. Under **Advanced**, click on the **Home view** dropdown
    and select a view.
 
 1. To see your changes in action, open a new Zulip tab, or use a keyboard
-   shortcut twice to exit the settings and navigate to your default view
+   shortcut twice to exit the settings and navigate to your home view
    (<kbd>Ctrl</kbd> + <kbd>[</kbd> or <kbd>Esc</kbd> if enabled).
 
 {end_tabs}
 
-## Configure whether <kbd>Esc</kbd> navigates to the default view
+## Configure whether <kbd>Esc</kbd> navigates to the home view
 
 Zulip has a number of [keyboard shortcuts](/help/keyboard-shortcuts)
 designed to enhance the user experience in the app.
 
 By default, the <kbd>Esc</kbd> key shortcut will ultimately navigate to
-your default view. You can disable this key binding if you would prefer.
+your home view. You can disable this key binding if you would prefer.
 This will not disable other <kbd>Esc</kbd> key shortcuts used in Zulip,
 and will not affect the behavior of the <kbd>Ctrl</kbd> + <kbd>[</kbd>
 shortcut.
 
-### Toggle whether <kbd>Esc</kbd> navigates to the default view
+### Toggle whether <kbd>Esc</kbd> navigates to the home view
 
 {start_tabs}
 
 {settings_tab|preferences}
 
 1. Under **Advanced**, toggle **Escape key navigates to
-   default view**, as desired.
+   home view**, as desired.
 
 {end_tabs}
 

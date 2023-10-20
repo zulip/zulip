@@ -118,7 +118,9 @@ From image editing program:
             for message in staged_messages
         ]
 
-        message_ids = do_send_messages(messages)
+        message_ids = [
+            sent_message_result.message_id for sent_message_result in do_send_messages(messages)
+        ]
 
         preview_message = Message.objects.get(
             id__in=message_ids, content__icontains="image previews"
