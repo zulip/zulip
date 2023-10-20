@@ -10,7 +10,7 @@
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Set up your account](/help/set-up-your-account)
 * [Streams and topics](/help/streams-and-topics)
-* [Finding a conversation to read](/help/finding-a-topic-to-read)
+* [Finding a conversation to read](/help/finding-a-conversation-to-read)
 * [Reading conversations](/help/reading-conversations)
 * [Starting a new topic](/help/starting-a-new-topic)
 * [Starting a new direct message](/help/starting-a-new-direct-message)
