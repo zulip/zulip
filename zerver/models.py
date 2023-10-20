@@ -1690,10 +1690,10 @@ class UserBaseSettings(models.Model):
         AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
     ]
     automatically_follow_topics_policy = models.PositiveSmallIntegerField(
-        default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+        default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
     )
     automatically_unmute_topics_in_muted_streams_policy = models.PositiveSmallIntegerField(
-        default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+        default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
     )
 
     # Whether or not the user wants to sync their drafts.
