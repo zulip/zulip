@@ -2,7 +2,7 @@
 
 {tab|desktop-web}
 
-1. [Find](/help/finding-a-topic-to-read) a conversation to read.
+1. [Find](/help/finding-a-conversation-to-read) a conversation to read.
 
 1. Read the conversation, scrolling down with the mouse or by pressing
    <kbd>PgDn</kbd>.
