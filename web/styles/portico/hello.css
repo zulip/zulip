@@ -165,10 +165,8 @@ ul {
         cursor: pointer;
     }
 
-    .cta-buttons svg {
-        vertical-align: middle;
+    .cta-buttons i {
         margin-right: 4px;
-        margin-top: -3px;
     }
 
     .cta-buttons a:hover {
