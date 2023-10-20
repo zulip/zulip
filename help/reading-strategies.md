@@ -32,7 +32,7 @@ in Zulip.
 
 ### Reading conversations
 
-{!reading-topics.md!}
+{!reading-conversations.md!}
 
 ## Combined views
 

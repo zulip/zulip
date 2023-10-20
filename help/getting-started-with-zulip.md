@@ -40,7 +40,7 @@ it, you'll never want to use a different team chat app!
 
 ### Reading conversations
 
-{!reading-topics.md!}
+{!reading-conversations.md!}
 
 ## Sending messages
 

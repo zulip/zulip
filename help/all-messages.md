@@ -14,4 +14,4 @@
 * [Inbox](/help/inbox)
 * [Recent conversations](/help/recent-conversations)
 * [Configure home view](/help/configure-home-view)
-* [Reading conversations](/help/reading-topics)
+* [Reading conversations](/help/reading-conversations)
