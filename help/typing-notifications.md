@@ -1,7 +1,7 @@
 # Typing notifications
 
 The Zulip web app displays typing notifications in [conversation
-views](/help/reading-topics) and [**All direct
+views](/help/reading-conversations) and [**All direct
 messages**](/help/direct-messages#access-all-dms). The mobile app displays
 typing notifications in direct message conversations.
 
