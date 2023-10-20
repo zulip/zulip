@@ -196,6 +196,7 @@ export function initialize() {
             "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
+            "#copy_generated_invite_link",
         ],
         appendTo: () => document.body,
     });
