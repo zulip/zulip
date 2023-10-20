@@ -532,12 +532,28 @@ Output:
         secure: bool = False,
         headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
+        content_type: Optional[str] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
+        encoded = info
+        if content_type is None:
+            if isinstance(info, dict) and not any(
+                hasattr(value, "read") and callable(value.read) for value in info.values()
+            ):
+                content_type = "application/x-www-form-urlencoded"
+                encoded = urlencode(info, doseq=True)
+            else:
+                content_type = MULTIPART_CONTENT
         result = django_client.post(
-            url, info, follow=follow, secure=secure, headers=headers, **extra
+            url,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            content_type=content_type,
+            **extra,
         )
         self.validate_api_response_openapi(
             url,
