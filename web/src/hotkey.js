@@ -733,15 +733,29 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (hotkey.message_view_only && popover_menus.is_gear_menu_popover_displayed()) {
-        // Inside the gear menu, we don't process most hotkeys; the
-        // exception is that the gear_menu hotkey should toggle the
-        // menu closed again.
+    // We don't need to process arrow keys in navbar menus for spectators
+    // since they only have gear menu present.
+    if (
+        popover_menus.is_personal_menu_popover_displayed() &&
+        event_name === "left_arrow" &&
+        !page_params.is_spectator
+    ) {
+        // Open gear menu popover on left arrow.
+        $("#personal-menu").trigger("click");
+        gear_menu.toggle();
+        return true;
+    }
+
+    if (popover_menus.is_gear_menu_popover_displayed()) {
         if (event_name === "gear_menu") {
             gear_menu.toggle();
             return true;
+        } else if (event_name === "right_arrow" && !page_params.is_spectator) {
+            // Open personal menu popover on g + right arrow.
+            gear_menu.toggle();
+            $("#personal-menu").trigger("click");
+            return true;
         }
-        return false;
     }
 
     if (overlays.settings_open() && !user_card_popover.user_card.is_open()) {
