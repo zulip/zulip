@@ -1012,6 +1012,7 @@ ul {
             transform: scale(0.6);
             grid-template-columns: repeat(3, 200px);
             grid-template-rows: 100px 100px;
+            margin: -29px -500px;
         }
     }
 
