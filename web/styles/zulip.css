@@ -1125,6 +1125,11 @@ td.pointer {
             visibility: hidden;
         }
 
+        /* When any of the actions are focused, don't hide them */
+        .recipient_bar_controls:focus-within {
+            visibility: visible;
+        }
+
         /* Show the bar controls on hover and when the bar is sticky */
         &:hover {
             .recipient_bar_controls {
@@ -1511,6 +1516,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .topic_edit {
     display: none;
     line-height: 22px;
+    visibility: visible;
 
     .alert {
         display: inline-block;
