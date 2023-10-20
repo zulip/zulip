@@ -28,7 +28,7 @@ in Zulip.
 
 #### From the left sidebar
 
-{!left-sidebar-topics.md!}
+{!left-sidebar-conversations.md!}
 
 ### Reading conversations
 

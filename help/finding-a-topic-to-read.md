@@ -16,7 +16,7 @@
 
 ## From the left sidebar
 
-{!left-sidebar-topics.md!}
+{!left-sidebar-conversations.md!}
 
 ## Related articles
 
