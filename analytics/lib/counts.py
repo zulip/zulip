@@ -315,8 +315,10 @@ def do_increment_logging_stat(
 
     if stat.frequency == CountStat.DAY:
         end_time = ceiling_to_day(event_time)
-    else:  # CountStat.HOUR:
+    elif stat.frequency == CountStat.HOUR:
         end_time = ceiling_to_hour(event_time)
+    else:
+        raise AssertionError("Unsupported CountStat frequency")
 
     row, created = table._default_manager.get_or_create(
         property=stat.property,
