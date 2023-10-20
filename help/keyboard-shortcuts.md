@@ -201,6 +201,8 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **Toggle gear menu**: <kbd>G</kbd>
 
+* **Open personal menu**: <kbd>G</kbd> + <kbd class="arrow-key">→</kbd>
+
 ### For a selected message (outlined in blue)
 
 * **Toggle emoji reactions menu**: <kbd>:</kbd>

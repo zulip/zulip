@@ -99,6 +99,10 @@ export function is_compose_enter_sends_popover_displayed() {
     return popover_instances.compose_enter_sends?.state.isVisible;
 }
 
+export function is_personal_menu_popover_displayed() {
+    return popover_instances.personal_menu?.state.isVisible;
+}
+
 export function is_gear_menu_popover_displayed() {
     return popover_instances.gear_menu?.state.isVisible;
 }
