@@ -514,7 +514,8 @@ function show_empty_inbox_text(has_visible_unreads) {
             $("#inbox-empty-without-search").hide();
         } else {
             $("#inbox-empty-with-search").hide();
-            $("#inbox-empty-without-search").show();
+            // Use display value specified in CSS.
+            $("#inbox-empty-without-search").css("display", "");
         }
     } else {
         $(".inbox-empty-text").hide();
