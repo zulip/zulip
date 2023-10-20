@@ -89,6 +89,20 @@
                     </button>
                 </p>
             </div>
+            <div class="stream-details-section">
+                <h3 class="stream_setting_subsection_title">{{t "Stream details" }}</h3>
+                <p>
+                    <strong>Email address:</strong> {{sub.email_address}}
+                </p>
+                <p>
+                    <!-- You'll need backend support to fetch Stream ID and creator details -->
+                    <strong>Stream ID:</strong> {{sub.stream_id}}
+                </p>
+                <p>
+                    Created by <span class="user-pill" data-user-id="{{sub.creator_id}}">@{{sub.creator_name}}</span> on {{sub.creation_date}}. <a href="{{sub.stream_events_link}}">Stream events</a>
+                </p>
+            </div>
+
         </div>
 
         <div id="personal-stream-settings" class="personal_settings stream_section">
