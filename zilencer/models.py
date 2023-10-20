@@ -132,7 +132,9 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
 
 class BaseRemoteCount(BaseCount):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    # The remote_id field lets us deduplicate data from the remote server
+    # The remote_id field is the id value of the corresponding *Count object
+    # on the remote server.
+    # It lets us deduplicate data from the remote server.
     remote_id = models.IntegerField()
 
     class Meta:
