@@ -662,10 +662,6 @@ li.top_left_scheduled_messages {
     margin-right: 3px;
 }
 
-.top_left_mentions i.fa-at {
-    font-size: 13px;
-}
-
 /* New .topic-box grid definitions here. */
 #views-label-container,
 .subscription_block,
