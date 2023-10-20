@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 from zerver.actions.create_user import create_historical_user_messages
@@ -15,6 +16,11 @@ from zerver.lib.stream_subscription import subscriber_ids_with_stream_history_ac
 from zerver.lib.streams import access_stream_by_id
 from zerver.models import Message, Reaction, Recipient, Stream, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
+
+
+@dataclass
+class AddReactionResult:
+    automatic_new_visibility_policy: Optional[int] = None
 
 
 def notify_reaction_update(
@@ -74,7 +80,7 @@ def do_add_reaction(
     emoji_name: str,
     emoji_code: str,
     reaction_type: str,
-) -> None:
+) -> AddReactionResult:
     """Should be called while holding a SELECT FOR UPDATE lock
     (e.g. via access_message(..., lock_message=True)) on the
     Message row, to prevent race conditions.
@@ -92,6 +98,7 @@ def do_add_reaction(
 
     # Determine and set the visibility_policy depending on 'automatically_follow_topics_policy'
     # and 'automatically_unmute_topics_in_muted_streams_policy'.
+    add_reaction_result = AddReactionResult()
     if set_visibility_policy_possible(
         user_profile, message
     ) and UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION in [
@@ -115,8 +122,11 @@ def do_add_reaction(
                     topic=message.topic_name(),
                     visibility_policy=new_visibility_policy,
                 )
+                add_reaction_result.automatic_new_visibility_policy = new_visibility_policy
 
     notify_reaction_update(user_profile, message, reaction, "add")
+
+    return add_reaction_result
 
 
 def check_add_reaction(
@@ -125,7 +135,7 @@ def check_add_reaction(
     emoji_name: str,
     emoji_code: Optional[str],
     reaction_type: Optional[str],
-) -> None:
+) -> AddReactionResult:
     message, user_message = access_message(user_profile, message_id, lock_message=True)
 
     if emoji_code is None or reaction_type is None:
@@ -183,7 +193,7 @@ def check_add_reaction(
         # See called function for more context.
         create_historical_user_messages(user_id=user_profile.id, message_ids=[message.id])
 
-    do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
+    return do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
 
 
 def do_remove_reaction(

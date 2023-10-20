@@ -6,13 +6,14 @@ from typing_extensions import override
 
 from zerver.actions.reactions import notify_reaction_update
 from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import extract_message_dict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
-from zerver.models import Message, Reaction, RealmEmoji, UserMessage, get_realm
+from zerver.models import Message, Reaction, RealmEmoji, UserMessage, UserProfile, get_realm
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -404,6 +405,36 @@ class ReactionTest(ZulipTestCase):
         emoji.save(update_fields=["deactivated"])
         result = self.api_delete(sender, "/api/v1/messages/1/reactions", reaction_info)
         self.assert_json_success(result)
+
+    def test_add_reaction_with_automatically_change_visibility_policy(self) -> None:
+        """
+        Adding reaction to a stream message with the automatic follow/unmute policy
+        enabled results in including an extra optional parameter in the response.
+        """
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_stream_message(hamlet, "Verona", "hello", "test")
+        do_change_user_setting(
+            hamlet,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            acting_user=None,
+        )
+
+        reaction_info = {
+            "emoji_name": "smile",
+        }
+        result = self.api_post(hamlet, f"/api/v1/messages/{msg_id}/reactions", reaction_info)
+        content = self.assert_json_success(result)
+        assert "automatic_new_visibility_policy" in content
+        self.assertEqual(content["automatic_new_visibility_policy"], 3)
+
+        # Iago with no automatic follow/unmute setting configured adds another reaction to
+        # the same message. There will be no change in the visibility policy, so the
+        # 'automatic_new_visibility_policy' parameter should be absent in the result.
+        iago = self.example_user("iago")
+        result = self.api_post(iago, f"/api/v1/messages/{msg_id}/reactions", reaction_info)
+        content = self.assert_json_success(result)
+        assert "automatic_new_visibility_policy" not in content
 
 
 class ReactionEventTest(ZulipTestCase):

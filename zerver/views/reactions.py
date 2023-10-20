@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Optional
 
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -24,9 +24,17 @@ def add_reaction(
     emoji_code: Optional[str] = REQ(default=None),
     reaction_type: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
-    check_add_reaction(user_profile, message_id, emoji_name, emoji_code, reaction_type)
+    add_reaction_result = check_add_reaction(
+        user_profile, message_id, emoji_name, emoji_code, reaction_type
+    )
 
-    return json_success(request)
+    data: Dict[str, int] = {}
+    if add_reaction_result.automatic_new_visibility_policy:
+        data[
+            "automatic_new_visibility_policy"
+        ] = add_reaction_result.automatic_new_visibility_policy
+
+    return json_success(request, data=data)
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message

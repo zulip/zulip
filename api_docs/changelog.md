@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 219**
+
+* [`POST /messages/{message_id}/reactions`](/api/add-reaction): Added an optional
+  `automatic_new_visibility_policy` enum field in the success response
+  to indicate the new visibility policy value due to the [visibility policy settings](/help/mute-a-topic)
+  during the add reaction, a participation action.
+
 **Feature level 218**
 
 * [`POST /messages`](/api/send-message): Added an optional

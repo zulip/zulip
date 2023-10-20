@@ -6790,7 +6790,42 @@ paths:
         - $ref: "#/components/parameters/ReactionType"
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      automatic_new_visibility_policy:
+                        type: integer
+                        enum:
+                          - 2
+                          - 3
+                        description: |
+                          If the message's sender had configured their [visibility policy settings](/help/mute-a-topic)
+                          to potentially automatically follow or unmute topics on participation,
+                          and one of these policies did in fact change the user's visibility policy
+                          for the topic where this reaction was added, the new value for that user's
+                          visibility policy for the recipient topic.
+
+                          Only present if the sender's visibility was in fact changed.
+
+                          Intended to be used by clients where it is important to explicitly display a
+                          notice that the topic's visibility policy has changed automatically due to
+                          the add reaction action.
+
+                          **Changes**: New in Zulip 8.0 (feature level 219).
+                    example:
+                      {
+                        "msg": "",
+                        "automatic_new_visibility_policy": 2,
+                        "result": "success",
+                      }
         "400":
           description: Bad request.
           content:
