@@ -42,7 +42,6 @@ export function show(opts) {
     compose_recipient.handle_middle_pane_transition();
     search.clear_search_form();
     opts.complete_rerender();
-    resize.update_recent_view_filters_height();
 
     // Misc.
     if (opts.is_recent_view) {
