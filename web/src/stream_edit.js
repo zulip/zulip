@@ -151,13 +151,17 @@ function show_subscription_settings(sub) {
     });
 }
 
-function is_notification_setting(setting_label) {
+function has_global_notification_setting(setting_label) {
     if (setting_label.includes("_notifications")) {
         return true;
     } else if (setting_label.includes("_notify")) {
         return true;
     }
     return false;
+}
+
+function is_notification_setting(setting_label) {
+    return has_global_notification_setting(setting_label) || setting_label === "is_muted";
 }
 
 export function stream_settings(sub) {
@@ -171,9 +175,9 @@ export function stream_settings(sub) {
             label: settings_labels[setting],
             disabled_realm_setting: check_realm_setting[setting],
             is_disabled: check_realm_setting[setting],
-            is_notification_setting: is_notification_setting(setting),
+            has_global_notification_setting: has_global_notification_setting(setting),
         };
-        if (is_notification_setting(setting)) {
+        if (has_global_notification_setting(setting)) {
             // This block ensures we correctly display to users the
             // current state of stream-level notification settings
             // with a value of `null`, which inherit the user's global
@@ -233,7 +237,7 @@ export function show_settings_for(node) {
 
     const other_settings = [];
     const notification_settings = all_settings.filter((setting) => {
-        if (setting.is_notification_setting) {
+        if (is_notification_setting(setting.name)) {
             return true;
         }
         other_settings.push(setting);
@@ -313,7 +317,7 @@ function stream_setting_changed(e) {
         blueslip.error("undefined sub in stream_setting_changed()");
         return;
     }
-    if (is_notification_setting(setting) && sub[setting] === null) {
+    if (has_global_notification_setting(setting) && sub[setting] === null) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
