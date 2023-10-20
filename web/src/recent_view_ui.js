@@ -871,21 +871,21 @@ function topic_offset_to_visible_area(topic_row) {
         return undefined;
     }
     const $scroll_container = $("#recent_view_table .table_fix_head");
-    const thead_height = 30;
-    const under_closed_compose_region_height = 50;
+    const thead_height = $scroll_container.find("thead").outerHeight(true);
+    const scroll_container_props = $scroll_container[0].getBoundingClientRect();
 
-    const scroll_container_top = $scroll_container.offset().top + thead_height;
-    const scroll_container_bottom =
-        scroll_container_top + $scroll_container.height() - under_closed_compose_region_height;
+    // Since user cannot see row under thead, exclude it as part of the scroll container.
+    const scroll_container_top = scroll_container_props.top + thead_height;
+    const compose_height = $("#compose").outerHeight(true);
+    const scroll_container_bottom = scroll_container_props.bottom - compose_height;
 
-    const topic_row_top = $topic_row.offset().top;
-    const topic_row_bottom = topic_row_top + $topic_row.height();
+    const topic_props = $topic_row[0].getBoundingClientRect();
 
     // Topic is above the visible scroll region.
-    if (topic_row_top < scroll_container_top) {
+    if (topic_props.top < scroll_container_top) {
         return "above";
         // Topic is below the visible scroll region.
-    } else if (topic_row_bottom > scroll_container_bottom) {
+    } else if (topic_props.bottom > scroll_container_bottom) {
         return "below";
     }
 
