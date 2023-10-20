@@ -18,13 +18,6 @@
     </label>
 
     {{!-- Tooltips for settings --}}
-    {{#if (eq setting_name "is_muted")}}
-    <p class="mute-note {{#unless is_muted}}hide-mute-note{{/unless}}">
-        {{#tr}}
-        Muted streams don't show up in "All messages" or generate notifications unless you are mentioned.
-        {{/tr}}
-    </p>
-    {{/if}}
     {{#if (eq setting_name "push_notifications")}}
     <i class="fa fa-question-circle settings-info-icon {{#unless disabled_realm_setting}}hide{{/unless}} tippy-zulip-tooltip"
       data-tippy-content="{{t 'Mobile push notifications are not configured on this server.' }}">
