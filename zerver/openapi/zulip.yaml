@@ -6166,6 +6166,8 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
+                    required:
+                      - id
                     properties:
                       result: {}
                       msg: {}
@@ -6174,7 +6176,36 @@ paths:
                         type: integer
                         description: |
                           The unique ID assigned to the sent message.
-                    example: {"msg": "", "id": 42, "result": "success"}
+                      automatic_new_visibility_policy:
+                        type: integer
+                        enum:
+                          - 2
+                          - 3
+                        description: |
+                          If the message's sender had configured their [visibility policy settings](/help/mute-a-topic)
+                          to potentially automatically follow or unmute topics when sending messages,
+                          and one of these policies did in fact change the user's visibility policy
+                          for the topic where this message was sent, the new value for that user's
+                          visibility policy for the recipient topic.
+
+                          Only present if the sender's visibility was in fact changed.
+
+                          Intended to be used by clients where it is important to explicitly display a
+                          notice that the topic's visibility policy has changed automatically due to
+                          the message sent. The information is also important to correctly decide whether to
+                          display a warning or notice suggesting to unmute the topic after sending a message
+                          to a muted stream. Such a notice might feel confusing in the event that the act of
+                          sending the message had already resulted in the user unmuting or following the topic
+                          in question.
+
+                          **Changes**: New in Zulip 8.0 (feature level 218).
+                    example:
+                      {
+                        "msg": "",
+                        "id": 42,
+                        "automatic_new_visibility_policy": 2,
+                        "result": "success",
+                      }
         "400":
           description: Bad request.
           content:
@@ -9976,7 +10007,7 @@ paths:
         - name: default_view
           in: query
           description: |
-            The [default view](/help/configure-default-view) used when opening a new
+            The [default view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
@@ -9989,7 +10020,7 @@ paths:
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-default-view).
+            [configured default view](/help/configure-home-view).
 
             **Changes**: New in Zulip 5.0 (feature level 107).
           schema:
@@ -12311,7 +12342,7 @@ paths:
                           default_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-default-view) used when opening a new
+                              The [default view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
@@ -12321,7 +12352,7 @@ paths:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-default-view).
+                              [configured default view](/help/configure-home-view).
 
                               **Changes**: New in Zulip 5.0 (feature level 107).
                           left_side_userlist:
@@ -13164,7 +13195,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          The [default view](/help/configure-default-view) in Zulip, represented
+                          The [default view](/help/configure-home-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
@@ -14504,7 +14535,7 @@ paths:
                           default_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-default-view) used when opening a new
+                              The [default view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
@@ -14514,7 +14545,7 @@ paths:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-default-view).
+                              [configured default view](/help/configure-home-view).
 
                               **Changes**: New in Zulip 5.0 (feature level 107).
                           left_side_userlist:
@@ -15569,7 +15600,7 @@ paths:
         - name: default_view
           in: query
           description: |
-            The [default view](/help/configure-default-view) used when opening a new
+            The [default view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
@@ -15587,7 +15618,7 @@ paths:
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-default-view).
+            [configured default view](/help/configure-home-view).
 
             **Changes**: New in Zulip 5.0 (feature level 107).
           schema:

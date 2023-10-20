@@ -237,7 +237,16 @@ test("get_streams_for_user", () => {
         history_public_to_subscribers: false,
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
-    const subs = [denmark, social, test, world];
+    const errors = {
+        color: "green",
+        name: "errors",
+        stream_id: 5,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
+    };
+    const subs = [denmark, social, test, world, errors];
     for (const sub of subs) {
         stream_data.add_sub(sub);
     }
@@ -246,6 +255,10 @@ test("get_streams_for_user", () => {
     peer_data.set_subscribers(social.stream_id, [test_user.user_id]);
     peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
     peer_data.set_subscribers(world.stream_id, [me.user_id]);
+
+    page_params.realm_invite_to_stream_policy =
+        settings_config.common_policy_values.by_admins_only.code;
+    assert.deepEqual(stream_data.get_streams_for_user(me.user_id).can_subscribe, [social, errors]);
 
     // test_user is subscribed to all three streams, but current user (me)
     // gets only two because of subscriber visibility policy of stream:
@@ -261,8 +274,18 @@ test("get_streams_for_user", () => {
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, []);
     // Verify can subscribe if we're an administrator.
     page_params.is_admin = true;
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [world]);
+    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
+        world,
+        errors,
+    ]);
     page_params.is_admin = false;
+
+    page_params.realm_invite_to_stream_policy =
+        settings_config.common_policy_values.by_members.code;
+    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
+        world,
+        errors,
+    ]);
 });
 
 test("renames", () => {

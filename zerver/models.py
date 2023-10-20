@@ -275,6 +275,14 @@ class RealmAuthenticationMethod(models.Model):
         unique_together = ("realm", "name")
 
 
+def generate_realm_uuid_owner_secret() -> str:
+    token = generate_api_key()
+
+    # We include a prefix to facilitate scanning for accidental
+    # disclosure of secrets e.g. in Github commit pushes.
+    return f"zuliprealm_{token}"
+
+
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -294,6 +302,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # e.g. on a server at example.com, an org with string_id `foo` is reached
     # at `foo.example.com`.
     string_id = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True)
+
+    # uuid and a secret for the sake of per-realm authentication with the push notification
+    # bouncer.
+    uuid = models.UUIDField(default=uuid4, unique=True)
+    uuid_owner_secret = models.TextField(default=generate_realm_uuid_owner_secret)
 
     date_created = models.DateTimeField(default=timezone_now)
     demo_organization_scheduled_deletion_date = models.DateTimeField(default=None, null=True)

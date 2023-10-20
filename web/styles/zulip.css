@@ -143,14 +143,14 @@ body {
     --recent-topics-filters-height: 50px;
 
     /* Overlay heights for streams modal */
-    --modal-container-height: 95vh;
-    --modal-container-max-height: 1000px;
+    --overlay-container-height: 95vh;
+    --overlay-container-max-height: 1000px;
     /* .subscriptions-header */
-    --modal-container-subscriptions-header-height: 45px;
+    --subscriptions-overlay-header-height: 45px;
     /* .display-type */
-    --modal-container-subscriptions-display-type-height: 44px;
-    /* .modal-footer */
-    --modal-container-subscriptions-modal-footer-height: 60px;
+    --subscriptions-overlay-display-type-height: 44px;
+    /* .settings-sticky-footer */
+    --subscriptions-overlay-sticky-footer-height: 60px;
 
     /*
     Maximum height of the compose box when it is not in expanded state. This
@@ -207,6 +207,10 @@ body {
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
+    --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
+    --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
 
     /* Compose box colors */
     --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
@@ -251,10 +255,12 @@ body {
     --color-vdots-hint: hsl(0deg 0% 0% / 30%);
     --color-vdots-visible: hsl(0deg 0% 0% / 53%);
     --color-vdots-hover: hsl(0deg 0% 0%);
+    --color-tab-picker-icon: hsl(200deg 100% 40%);
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
     --color-zulip-logo-loading: hsl(0deg 0% 27%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 27%);
     --color-zulip-logo-z: hsl(0deg 0% 100%);
 
     /* Message collapsing/condensing button colors */
@@ -273,13 +279,14 @@ body {
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
-    --color-background-inbox: hsl(0deg 0% 100%);
+    --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 0%);
     --color-inbox-search-text: hsl(0deg 0% 0%);
     --color-border-inbox-search: hsl(229.09deg 21.57% 10% / 30%);
     --color-border-inbox-search-hover: hsl(229.09deg 21.57% 10% / 60%);
-    --color-background-inbox-search-hover: var(--color-background-inbox);
-    --color-background-inbox-search-focus: var(--color-background-inbox);
+    --color-background-inbox-search: hsl(0deg 0% 100%);
+    --color-background-inbox-search-hover: hsl(0deg 0% 100%);
+    --color-background-inbox-search-focus: hsl(0deg 0% 100%);
     --color-border-inbox-search-focus: hsl(229.09deg 21.57% 10% / 80%);
     --color-box-shadow-inbox-search-focus: hsl(228deg 9.8% 20% / 30%);
     --color-background-inbox-row: hsl(0deg 0% 100%);
@@ -291,7 +298,6 @@ body {
         hsl(0deg 0% 100%);
     --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
-    --color-border-inbox: hsl(0deg 0% 84.31%);
     --color-icons-inbox: hsl(0deg 0% 0%);
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
 }
@@ -332,6 +338,10 @@ body {
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
+    --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
+    --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
 
     /* Compose box colors */
     --color-compose-collapsed-reply-button-area-background: hsl(
@@ -379,10 +389,12 @@ body {
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
     --color-vdots-hover: hsl(0deg 0% 100%);
+    --color-tab-picker-icon: hsl(0deg 0% 80%);
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
     --color-zulip-logo-loading: hsl(0deg 0% 100%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 100% / 60%);
     --color-zulip-logo-z: hsl(214deg 27% 18%);
 
     /* Message collapsing/condensing button colors */
@@ -399,11 +411,12 @@ body {
     --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
 
     /* Inbox view */
-    --color-background-inbox: hsl(225deg 6% 10%);
+    --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 100%);
     --color-inbox-search-text: hsl(0deg 0% 95%);
     --color-border-inbox-search: hsl(0deg 0% 100% / 20%);
     --color-border-inbox-search-hover: hsl(0deg 0% 100% / 40%);
+    --color-background-inbox-search: hsl(225deg 6% 10%);
     --color-background-inbox-search-hover: hsl(225deg 6% 8%);
     --color-background-inbox-search-focus: hsl(225deg 6% 7%);
     --color-border-inbox-search-focus: hsl(0deg 0% 100% / 50%);
@@ -417,7 +430,6 @@ body {
         hsl(0deg 0% 14.12%);
     --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
-    --color-border-inbox: hsl(0deg 0% 0% / 60%);
     --color-icons-inbox: hsl(0deg 0% 100%);
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
 }
@@ -3020,6 +3032,11 @@ select.invite-as {
     .fa-copy:hover {
         color: hsl(170deg 48% 54%);
     }
+
+    .overlay-body {
+        max-height: 60vh;
+        padding: 15px;
+    }
 }
 
 @media (width < $xl_min) {
@@ -3492,7 +3509,7 @@ select.invite-as {
         min-width: max-content;
     }
 
-    .inner {
+    .personal-menu-nav {
         border-radius: 6px;
         overflow: hidden;
     }

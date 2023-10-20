@@ -231,7 +231,7 @@ ul {
             margin-right: 3px;
         }
 
-        &.zulip-icon {
+        &.zulip-icon:not(.tab-option > .zulip-icon) {
             /* These icons are different from font awesome icons,
                 so they need to be aligned separately. */
             line-height: 14px;
@@ -663,7 +663,7 @@ ul {
     .empty-list {
         border: none;
 
-        #empty-table-message {
+        .empty-table-message {
             padding: 3em 1em;
         }
     }
@@ -1098,21 +1098,9 @@ ul {
     }
 }
 
-.personal-menu-actions {
+.navbar-dropdown-menu {
     display: flex;
     flex-flow: column nowrap;
-
-    .list {
-        margin: 0;
-        padding: 4px 0;
-        list-style: none;
-        border-bottom: solid 1px var(--color-border-popover-menu);
-        background: none !important;
-
-        &:last-child {
-            border-bottom: none;
-        }
-    }
 
     .text-item,
     .link-item a {
@@ -1189,5 +1177,25 @@ ul {
     .status_emoji {
         width: 16px;
         height: 16px;
+    }
+}
+
+ul.navbar-dropdown-menu-outer-list {
+    list-style: none;
+    margin: 0;
+
+    & > li {
+        border-bottom: solid 1px var(--color-border-popover-menu);
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        & > ul {
+            margin: 0;
+            padding: 4px 0;
+            list-style: none;
+            background: none !important;
+        }
     }
 }

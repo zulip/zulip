@@ -2,8 +2,16 @@
     <div class="tab-container"></div>
     {{#with sub}}
     <div class="button-group">
-        <div class="sub_unsub_button_wrapper inline-block">
-            <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}} data-tooltip-template-id="toggle-subscription-tooltip-template" {{else}}disabled="disabled"{{/if}}>
+        <div class="sub_unsub_button_wrapper inline-block {{#unless should_display_subscription_button }}cannot-subscribe-tooltip{{/unless}}" data-tooltip-template-id="cannot-subscribe-tooltip-template">
+            <template id="cannot-subscribe-tooltip-template">
+                <span>
+                    {{#tr}}
+                        Cannot subscribe to private stream <z-stream></z-stream>
+                        {{#*inline "z-stream"}}{{> ../inline_decorated_stream_name stream=../sub}}{{/inline}}
+                    {{/tr}}
+                </span>
+            </template>
+            <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
                 {{#if subscribed }}
                     {{t "Unsubscribe" }}
                 {{else}}

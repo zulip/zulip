@@ -118,20 +118,23 @@ export function update_private_stream_privacy_option_state($container, is_defaul
 }
 
 export function initialize_disable_btn_hint_popover($btn_wrapper, hint_text) {
-    tippy($btn_wrapper[0], {
-        content: hint_text,
+    const opts = {
         animation: false,
         hideOnClick: false,
         placement: "bottom",
-    });
+    };
+
+    // If hint_text is undefined, we use the HTML content of a
+    // <template> whose id is given by data-tooltip-template-id
+    if (hint_text !== undefined) {
+        opts.content = hint_text;
+    }
+    tippy($btn_wrapper[0], opts);
 }
 
 export function initialize_cant_subscribe_popover() {
     const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
-    initialize_disable_btn_hint_popover(
-        $button_wrapper,
-        $t({defaultMessage: "Only stream members can add users to a private stream"}),
-    );
+    initialize_disable_btn_hint_popover($button_wrapper);
 }
 
 export function update_toggler_for_sub(sub) {
@@ -193,10 +196,12 @@ export function update_settings_button_for_sub(sub) {
         $settings_button.prop("disabled", false);
         $settings_button.parent()[0]._tippy?.destroy();
         $settings_button.css("pointer-events", "");
+        $settings_button.addClass("toggle-subscription-tooltip");
     } else {
         $settings_button.attr("title", "");
         initialize_cant_subscribe_popover();
         $settings_button.prop("disabled", true);
+        $settings_button.removeClass("toggle-subscription-tooltip");
     }
 }
 

@@ -1,5 +1,4 @@
 import "../sentry";
-import "../webpack_public_path";
 import "../../debug-require";
 import "../alert_popup";
 import "../csrf";

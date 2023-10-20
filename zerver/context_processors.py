@@ -2,7 +2,6 @@ from typing import Any, Dict, Mapping, Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
-from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import HttpRequest
 from django.utils.html import escape
 from django.utils.safestring import SafeString
@@ -32,7 +31,6 @@ from zproject.config import get_config
 
 DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
     "development_environment": settings.DEVELOPMENT,
-    "webpack_public_path": staticfiles_storage.url(settings.WEBPACK_BUNDLES),
 }
 
 

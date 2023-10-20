@@ -302,10 +302,10 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     )
 
     scheduled_message_to_self = scheduled_message.recipient == scheduled_message.sender.recipient
-    message_id = do_send_messages(
+    sent_message_result = do_send_messages(
         [send_request], scheduled_message_to_self=scheduled_message_to_self
     )[0]
-    scheduled_message.delivered_message_id = message_id
+    scheduled_message.delivered_message_id = sent_message_result.message_id
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
     notify_remove_scheduled_message(scheduled_message.sender, scheduled_message.id)

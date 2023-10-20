@@ -25,7 +25,11 @@ export function clear_for_testing(): void {
 }
 
 type DateFormat = "weekday" | "dayofyear" | "weekday_dayofyear_year" | "dayofyear_year";
-type DateWithTimeFormat = "dayofyear_time" | "dayofyear_year_time" | "weekday_dayofyear_year_time";
+type DateWithTimeFormat =
+    | "dayofyear_time"
+    | "dayofyear_year_time"
+    | "weekday_dayofyear_year_time"
+    | "full_weekday_dayofyear_year_time";
 type TimeFormat = "time" | "time_sec";
 
 type DateOrTimeFormat = DateFormat | TimeFormat | DateWithTimeFormat;
@@ -83,6 +87,8 @@ function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeForma
             return full_format_options;
         case "weekday_dayofyear_year_time": // Wed, Jul 27, 2016, 13:30
             return {...long_format_options, ...time_format_options};
+        case "full_weekday_dayofyear_year_time": // Wednesday, July 27, 2016, 13:30
+            return {...long_format_options, ...time_format_options, weekday: "long", month: "long"};
         default:
             throw new Error("Wrong format provided.");
     }
