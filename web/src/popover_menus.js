@@ -111,6 +111,10 @@ export function get_gear_menu_instance() {
     return popover_instances.gear_menu;
 }
 
+export function is_message_actions_popover_displayed() {
+    return popover_instances.message_actions?.state.isVisible;
+}
+
 function get_popover_items_for_instance(instance) {
     const $current_elem = $(instance.popper);
     const class_name = $current_elem.attr("class");
