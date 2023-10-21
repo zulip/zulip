@@ -1452,7 +1452,7 @@ def format_unread_message_details(
             message_details["mentioned"] = True
             if message_id in raw_unread_data["mentions_me_directly"]:
                 message_details["mentioned_me_directly"] = True
-            elif message_id in raw_unread_data["wildcard_mentions"]:
+            if message_id in raw_unread_data["wildcard_mentions"]:
                 message_details["wildcard_mentioned"] = True
         unread_data[str(message_id)] = message_details
 
