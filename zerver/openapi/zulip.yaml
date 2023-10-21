@@ -5994,7 +5994,7 @@ paths:
             2.1.x and older in the `found_newest` return value).
           schema:
             $ref: "#/components/schemas/Anchor"
-          example: 43
+          example: "43"
         - name: include_anchor
           in: query
           description: |
@@ -6863,7 +6863,7 @@ paths:
               query, if any; otherwise, the most recent message.
           schema:
             $ref: "#/components/schemas/Anchor"
-          example: 43
+          example: "43"
           required: true
         - name: include_anchor
           in: query
@@ -18147,13 +18147,7 @@ components:
         The event's type, relevant both for client-side dispatch and server-side
         filtering by event type in [POST /register](/api/register-queue).
     Anchor:
-      oneOf:
-        - type: string
-          enum:
-            - newest
-            - oldest
-            - first_unread
-        - type: integer
+      type: string
     Attachments:
       type: object
       description: |
