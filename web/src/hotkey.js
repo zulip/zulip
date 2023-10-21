@@ -34,6 +34,7 @@ import * as message_scroll_state from "./message_scroll_state";
 import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as navbar_menus from "./navbar_menus";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -733,31 +734,6 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    // We don't need to process arrow keys in navbar menus for spectators
-    // since they only have gear menu present.
-    if (
-        popover_menus.is_personal_menu_popover_displayed() &&
-        event_name === "left_arrow" &&
-        !page_params.is_spectator
-    ) {
-        // Open gear menu popover on left arrow.
-        $("#personal-menu").trigger("click");
-        gear_menu.toggle();
-        return true;
-    }
-
-    if (popover_menus.is_gear_menu_popover_displayed()) {
-        if (event_name === "gear_menu") {
-            gear_menu.toggle();
-            return true;
-        } else if (event_name === "right_arrow" && !page_params.is_spectator) {
-            // Open personal menu popover on g + right arrow.
-            gear_menu.toggle();
-            $("#personal-menu").trigger("click");
-            return true;
-        }
-    }
-
     if (overlays.settings_open() && !user_card_popover.user_card.is_open()) {
         return false;
     }
@@ -789,6 +765,14 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
+        return true;
+    }
+
+    // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
+    if (
+        navbar_menus.is_navbar_menus_displayed() &&
+        navbar_menus.handle_keyboard_events(event_name)
+    ) {
         return true;
     }
 
