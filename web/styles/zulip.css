@@ -3468,12 +3468,3 @@ select.invite-as {
         border: 1px solid var(--color-border-personal-menu-avatar);
     }
 }
-
-.keyboard-shortcut-option {
-    & span.tooltip-hotkey-hint {
-        margin-left: auto;
-        padding: 0 4px;
-        color: var(--color-hotkey-hint);
-        border-color: var(--color-hotkey-hint);
-    }
-}
