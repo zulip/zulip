@@ -837,10 +837,11 @@ body.has-overlay-scrollbar {
         display: flex;
         justify-content: space-evenly;
         position: absolute;
-        top: 10px;
-        right: 40px;
-        /* width of right column - width of gear icon - right margin of column-right (250px - 40px -7px) */
-        width: 203px;
+        top: 8px;
+        /* gear menu + help menu width (40px * 2) */
+        right: 80px;
+        /* width of right column - width of gear icon - right margin of column-right (250px - 40px - 40px -7px) */
+        width: 163px;
 
         & a {
             font-size: calc(16em / 14);
@@ -2990,9 +2991,11 @@ select.invite-as {
 
     .spectator-view {
         #navbar-middle {
-            margin-right: 85px;
+            /* = 40px (width of button) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: 130px;
         }
 
+        #help-menu,
         #gear-menu {
             position: relative;
             right: 40px;
@@ -3039,7 +3042,8 @@ select.invite-as {
     }
 
     #navbar-middle {
-        margin-right: 127px;
+        /* = 40px (width of button) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: 170px;
     }
 }
 
@@ -3143,16 +3147,19 @@ select.invite-as {
 
     .spectator-view {
         #navbar-middle {
-            margin-right: 65px;
+            /* = 30px (width of button) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: 100px;
         }
 
+        #help-menu,
         #gear-menu {
-            right: 35px;
+            right: 30px;
         }
     }
 
     #navbar-middle {
-        margin-right: 97px;
+        /* = 30px (width of button) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: 130px;
     }
 
     .nav .dropdown-menu {
@@ -3412,9 +3419,6 @@ select.invite-as {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
-    top: 0;
-    right: 0;
 
     &:hover,
     &:focus {
@@ -3442,8 +3446,15 @@ select.invite-as {
         font-size: 18px;
     }
 
+    .zulip-icon-help,
     .zulip-icon-triple-users {
         font-size: 20px;
+    }
+
+    .zulip-icon-help {
+        position: relative;
+        top: 0.5px;
+        right: -0.5px;
     }
 }
 

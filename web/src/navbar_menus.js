@@ -1,4 +1,5 @@
 import * as gear_menu from "./gear_menu";
+import * as navbar_help_menu from "./navbar_help_menu";
 import {page_params} from "./page_params";
 import * as personal_menu_popover from "./personal_menu_popover";
 import * as popover_menus from "./popover_menus";
@@ -6,7 +7,8 @@ import * as popover_menus from "./popover_menus";
 export function is_navbar_menus_displayed() {
     return (
         popover_menus.is_personal_menu_popover_displayed() ||
-        popover_menus.is_gear_menu_popover_displayed()
+        popover_menus.is_gear_menu_popover_displayed() ||
+        popover_menus.is_help_menu_popover_displayed()
     );
 }
 
@@ -24,6 +26,16 @@ export function handle_keyboard_events(event_name) {
         return true;
     }
 
+    if (
+        popover_menus.is_help_menu_popover_displayed() &&
+        (event_name === "right_arrow" || event_name === "gear_menu")
+    ) {
+        // Open gear menu popover on right arrow.
+        navbar_help_menu.toggle();
+        gear_menu.toggle();
+        return true;
+    }
+
     if (popover_menus.is_gear_menu_popover_displayed()) {
         if (event_name === "gear_menu") {
             gear_menu.toggle();
@@ -32,6 +44,11 @@ export function handle_keyboard_events(event_name) {
             // Open personal menu popover on g + right arrow.
             gear_menu.toggle();
             personal_menu_popover.toggle();
+            return true;
+        } else if (event_name === "left_arrow") {
+            // Open help menu popover on g + left arrow.
+            gear_menu.toggle();
+            navbar_help_menu.toggle();
             return true;
         }
     }
