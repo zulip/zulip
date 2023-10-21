@@ -203,6 +203,8 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **Open personal menu**: <kbd>G</kbd> + <kbd class="arrow-key">→</kbd>
 
+* **Open help menu**: <kbd>G</kbd> + <kbd class="arrow-key">←</kbd>
+
 ### For a selected message (outlined in blue)
 
 * **Toggle emoji reactions menu**: <kbd>:</kbd>

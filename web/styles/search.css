@@ -185,14 +185,6 @@
         height: var(--search-box-height);
     }
 
-    @media ($md_min <= width < $xl_min) {
-        /* Add some space between the search input and the userlist toggle
-           in this width range so that hover state of userlist-toggle looks good. */
-        .navbar-search:not(.expanded) {
-            right: 2px;
-        }
-    }
-
     @media (width >= $md_min) {
         .navbar-search {
             background: var(--color-background-search);

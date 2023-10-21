@@ -37,6 +37,7 @@ export const popover_instances = {
     change_visibility_policy: null,
     personal_menu: null,
     gear_menu: null,
+    help_menu: null,
 };
 
 /* Keyboard UI functions */
@@ -109,6 +110,10 @@ export function is_gear_menu_popover_displayed() {
 
 export function get_gear_menu_instance() {
     return popover_instances.gear_menu;
+}
+
+export function is_help_menu_popover_displayed() {
+    return popover_instances.help_menu?.state.isVisible;
 }
 
 export function is_message_actions_popover_displayed() {

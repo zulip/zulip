@@ -75,6 +75,7 @@ import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
+import * as navbar_help_menu from "./navbar_help_menu";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -696,6 +697,7 @@ export function initialize_everything() {
     });
     unread_ops.initialize();
     gear_menu.initialize();
+    navbar_help_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
     settings_display.initialize();
