@@ -71,6 +71,21 @@ Files: web/images/icons/search.svg
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+Files: web/shared/icons/all-messages.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/at-sign.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/drafts.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/edit.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -102,6 +117,11 @@ Copyright: Google, Inc.
 License: Apache-2.0
 Comment: Material volume icon (rounded) with custom cross symbol
 
+Files: web/shared/icons/scheduled-messages.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/smart-toy.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:smart_toy
 Copyright: Google, Inc.
@@ -126,6 +146,111 @@ Files: web/shared/icons/star-filled.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/bar-chart.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/building.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/credit-card.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/f-globe.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/file-text.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/gear.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/git-pull-request.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/hash.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/heart.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/info.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/monitor.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/moon.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/sun.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/triple-users.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/user-plus.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/clock.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/x-circle.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/play-circle.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/stop-circle.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/account.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/message-square.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/tool.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/power.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/images/empty-view-illustrations/inbox-done.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Custom made out of feather icons by Vlad Koborov
 
 Files: web/shared/icons/unmute.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_up

@@ -10,6 +10,10 @@
             {{t 'Include muted' }}
         </button>
     </div>
+    <div id="inbox-empty-with-search" class="inbox-empty-text empty-list-message">
+        {{t "No conversations match your filters."}}
+    </div>
+    {{> inbox_no_unreads}}
     <div id="inbox-list">
         {{> inbox_list}}
     </div>

@@ -54,11 +54,6 @@ $before_unread_count_padding: 3px;
     cursor: pointer;
 }
 
-#left-sidebar-navigation-list .filter-icon i {
-    padding-right: 3px;
-    color: var(--color-left-sidebar-navigation-icon);
-}
-
 #stream_filters,
 #left-sidebar-navigation-list {
     margin-right: 12px;
@@ -227,21 +222,6 @@ li.show-more-topics {
     margin-left: 6px;
     z-index: 1;
 
-    #toggle_private_messages_section_icon {
-        opacity: 0.7;
-        margin-left: -15px;
-        min-width: 12px;
-
-        &.fa-caret-right {
-            position: relative;
-            left: 3px;
-        }
-
-        &:hover {
-            opacity: 1;
-        }
-    }
-
     #private_messages_section_header {
         cursor: pointer;
         padding: 0 10px 1px 6px;
@@ -310,6 +290,33 @@ li.show-more-topics {
                 margin-top: 2px;
             }
         }
+    }
+}
+
+#toggle_private_messages_section_icon,
+#toggle-top-left-navigation-area-icon {
+    opacity: 0.7;
+    margin-left: -15px;
+    min-width: 12px;
+
+    &.fa-caret-right {
+        position: relative;
+        left: 3px;
+    }
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    /* This renders an outline when the caret is reached
+       with the keyboard, although that is not at present
+       easily accomplished. */
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
     }
 }
 
@@ -485,6 +492,77 @@ li.active-sub-filter {
     }
 }
 
+#left-sidebar-navigation-list-condensed {
+    display: flex;
+    justify-content: center;
+
+    .left-sidebar-navigation-condensed-item {
+        /* 24px minimum width from Vlad's design. */
+        flex: 1 0 24px;
+        /* Unset padding from individual top_left items */
+        padding: 0;
+        border-radius: 4px;
+
+        .unread_count {
+            position: absolute;
+        }
+
+        /* Show the same styles when each item is
+           hovered or, via the keyboard, the `<a>`
+           element within receives focus. */
+        &:hover,
+        &:focus-within {
+            background: var(--color-background-hover-narrow-filter);
+
+            .unread_count {
+                top: -6px;
+                right: -6px;
+            }
+        }
+
+        &:not(:hover) .unread_count {
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            font-size: 0;
+            padding: 0;
+            background-color: var(--color-background-unread-counter-dot);
+        }
+
+        &.top_left_starred_messages .unread_count {
+            display: none;
+        }
+    }
+
+    .left-sidebar-navigation-icon-container {
+        /* Unset margin from full nav list anchor elements. */
+        margin: 0;
+        /* Horizontally center icons within their boxes. */
+        text-align: center;
+
+        &:focus {
+            /* Unset inherited :focus outline. */
+            outline: 0;
+        }
+    }
+
+    .active-filter {
+        /* Don't display a background on condensed icons. */
+        background: unset;
+    }
+
+    .filter-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* TODO: Set this 24px height value as a variable.
+           Keep filter-icon height the full height of the box. */
+        height: 24px;
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+}
+
 #left-sidebar-navigation-list {
     margin-bottom: $sections_vertical_gutter;
 
@@ -507,19 +585,18 @@ li.active-sub-filter {
         text-align: center;
     }
 
-    .top_left_row .unread_count {
-        margin-top: 2px;
+    .filter-icon i {
+        padding-right: 3px;
+        color: var(--color-left-sidebar-navigation-icon);
     }
 
-    .top_left_starred_messages .unread_count,
-    .top_left_drafts .unread_count,
-    .top_left_scheduled_messages .unread_count {
-        background-color: inherit;
-        color: inherit;
-        border: 0.5px solid hsl(105deg 2% 50%);
-        /* The border takes up space, so we need to
-           subtract 1px from the usual 2px margin-top */
-        margin-top: 1px !important;
+    i.fa-align-left {
+        position: relative;
+        font-size: 15px;
+    }
+
+    .top_left_row .unread_count {
+        margin-top: 2px;
     }
 
     .zulip-icon-inbox,
@@ -528,6 +605,18 @@ li.active-sub-filter {
         top: 2px;
         position: relative;
     }
+}
+
+.top_left_starred_messages .unread_count,
+.top_left_drafts .unread_count,
+.top_left_scheduled_messages .unread_count,
+.condensed-views-popover-menu .unread_count {
+    background-color: unset;
+    color: inherit;
+    border: 0.5px solid var(--color-border-unread-counter);
+    /* The border takes up space, so we need to
+       subtract 1px from the usual 2px margin-top */
+    margin-top: 1px !important;
 }
 
 li.top_left_all_messages,
@@ -543,6 +632,15 @@ li.top_left_scheduled_messages {
 
     & a {
         display: block;
+    }
+}
+
+/* Don't show the scheduled messages item... */
+li.top_left_scheduled_messages {
+    display: none;
+    /* ...unless there are scheduled messages to show. */
+    &.show-with-scheduled-messages {
+        display: list-item;
     }
 }
 
@@ -564,16 +662,12 @@ li.top_left_scheduled_messages {
     margin-right: 3px;
 }
 
-.top_left_all_messages i.fa-align-left {
-    position: relative;
-    font-size: 15px;
-}
-
 .top_left_mentions i.fa-at {
     font-size: 13px;
 }
 
 /* New .topic-box grid definitions here. */
+#views-label-container,
 .subscription_block,
 .topic-box {
     display: grid;
@@ -591,6 +685,116 @@ li.top_left_scheduled_messages {
        (which alters the box size) or `margin` (which notoriously bleeds outside
        of the element it's defined on). */
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+}
+
+#views-label-container {
+    grid-template-columns:
+        0 15px minmax(0, 0.5fr) minmax(0, 1fr)
+        20px 20px;
+    /* Base height on 24px icon-target area from Vlad's design. */
+    grid-template-rows: 24px;
+    /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
+       value and the styles dependent on it so that this kind of
+       1990s layout shenanigans is made unnecessary. */
+    margin-left: -3px;
+    cursor: pointer;
+
+    &.showing-expanded-navigation {
+        /* When the expanded navigation is visible,
+           hide the condensed navigation's controls. */
+        #left-sidebar-navigation-list-condensed,
+        .left-sidebar-navigation-menu-icon {
+            display: none;
+        }
+        /* Give the sidebar title through the end of the markers
+           area, if needed. */
+        .sidebar-title {
+            grid-column: row-content-start / markers-and-controls-end;
+        }
+    }
+
+    /* Use a next-sibling combinator (+) to use CSS to show and hide
+       filter rows as needed, based on the narrow. */
+    &.showing-condensed-navigation {
+        + #left-sidebar-navigation-list {
+            /* When the navigation area is condensed, hide all
+               the rows in the full navigation list... */
+            & .top_left_row {
+                display: none;
+            }
+            /* ...except when there is an active filter in place:
+               that row should still be shown. */
+            & .top_left_row.active-filter {
+                display: block;
+            }
+        }
+    }
+
+    #toggle-top-left-navigation-area-icon {
+        grid-area: starting-anchor-element;
+        /* Remove negative left margin. This should be cleaned
+           up along with the `--left-sidebar-collapse-widget-gutter`
+           matters above. */
+        margin-left: 0;
+    }
+
+    .sidebar-title {
+        grid-area: row-content;
+        /* Override heading margin from Bootstrap. */
+        margin: 0;
+        /* Show an ellipsis on the VIEWS header when
+           it won't sit adjacent the icons in their
+           most condensed presentation. */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #left-sidebar-navigation-list-condensed {
+        margin: 0;
+        grid-area: markers-and-controls;
+    }
+
+    .left-sidebar-navigation-menu-icon {
+        grid-area: ending-anchor-element;
+        /* Horizontally center vdots. */
+        justify-self: center;
+        /* Properly size vdots. */
+        font-size: 17px;
+        /* Occupy same clickable height as
+           other condensed-view icons */
+        height: 24px;
+        /* Vertically center dots with
+           flexbox. */
+        display: flex;
+        align-items: center;
+        color: var(--color-left-sidebar-header-vdots-visible);
+
+        &:hover {
+            color: var(--color-vdots-hover);
+        }
+    }
+}
+
+.condensed-views-popover-menu {
+    .left-sidebar-popover-icon-label-count {
+        display: flex;
+        align-items: baseline;
+    }
+
+    .filter-icon {
+        align-self: center;
+        height: 15px;
+    }
+
+    .left-sidebar-navigation-label {
+        flex: 1 0 0;
+        margin-left: 3px;
+    }
+
+    .unread_count {
+        margin-left: 6px;
+        border-color: var(--color-border-unread-counter-popover-menu);
+    }
 }
 
 .subscription_block {

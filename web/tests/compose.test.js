@@ -39,6 +39,7 @@ const compose_actions = mock_esm("../src/compose_actions", {
     register_compose_box_clear_hook: noop,
 });
 const compose_fade = mock_esm("../src/compose_fade");
+const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
@@ -128,11 +129,16 @@ function initialize_handlers({override}) {
     compose_setup.initialize();
 }
 
-test_ui("send_message_success", ({override_rewire}) => {
+test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
-    $("#compose-textarea").val("foobarfoobar");
-    $("#compose-textarea").trigger("blur");
-    $(".compose-submit-button .loader").show();
+
+    function reset() {
+        $("#compose-textarea").val("foobarfoobar");
+        $("#compose-textarea").trigger("blur");
+        $(".compose-submit-button .loader").show();
+    }
+
+    reset();
 
     let reify_message_id_checked;
     override_rewire(echo, "reify_message_id", (local_id, message_id) => {
@@ -141,12 +147,51 @@ test_ui("send_message_success", ({override_rewire}) => {
         reify_message_id_checked = true;
     });
 
-    compose.send_message_success("1001", 12, false);
+    override(compose_notifications, "notify_automatic_new_visibility_policy", (message, data) => {
+        assert.equal(message.type, "stream");
+        assert.equal(message.stream_id, 1);
+        assert.equal(message.topic, "test");
+        assert.equal(data.id, 12);
+        assert.equal(data.automatic_new_visibility_policy, 2);
+    });
+
+    let request = {
+        locally_echoed: false,
+        local_id: "1001",
+        type: "stream",
+        stream_id: 1,
+        topic: "test",
+    };
+    let data = {id: 12, automatic_new_visibility_policy: 2};
+    compose.send_message_success(request, data);
 
     assert.equal($("#compose-textarea").val(), "");
     assert.ok($("#compose-textarea").is_focused());
     assert.ok(!$(".compose-submit-button .loader").visible());
+    assert.ok(reify_message_id_checked);
 
+    reset();
+
+    reify_message_id_checked = false;
+    override(compose_notifications, "get_muted_narrow", (message) => {
+        assert.equal(message.type, "stream");
+        assert.equal(message.stream_id, 2);
+        assert.equal(message.topic, "test");
+    });
+
+    request = {
+        locally_echoed: false,
+        local_id: "1001",
+        type: "stream",
+        stream_id: 2,
+        topic: "test",
+    };
+    data = {id: 12};
+    compose.send_message_success(request, data);
+
+    assert.equal($("#compose-textarea").val(), "");
+    assert.ok($("#compose-textarea").is_focused());
+    assert.ok(!$(".compose-submit-button .loader").visible());
     assert.ok(reify_message_id_checked);
 });
 

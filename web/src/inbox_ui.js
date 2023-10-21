@@ -514,7 +514,8 @@ function show_empty_inbox_text(has_visible_unreads) {
             $("#inbox-empty-without-search").hide();
         } else {
             $("#inbox-empty-with-search").hide();
-            $("#inbox-empty-without-search").show();
+            // Use display value specified in CSS.
+            $("#inbox-empty-without-search").css("display", "");
         }
     } else {
         $(".inbox-empty-text").hide();
@@ -1020,7 +1021,10 @@ export function update() {
         if (stream_unread_count > 0) {
             // Stream isn't rendered.
             if (topics_dict.get(stream_key) === undefined) {
-                has_topics_post_filter = insert_stream(stream_id, topic_dict);
+                const is_stream_visible = insert_stream(stream_id, topic_dict);
+                if (is_stream_visible) {
+                    has_topics_post_filter = true;
+                }
                 continue;
             }
 

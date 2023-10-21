@@ -680,6 +680,9 @@ test("highlight_with_escaping", () => {
 
 test("render_person when emails hidden", ({mock_template}) => {
     // Test render_person with regular person, under hidden email visibility case
+    page_params.custom_profile_field_types = {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    };
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, b_user_1.full_name);
@@ -694,6 +697,9 @@ test("render_person when emails hidden", ({mock_template}) => {
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
+    page_params.custom_profile_field_types = {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    };
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, a_user.full_name);
@@ -774,6 +780,7 @@ test("render_emoji", ({mock_template}) => {
         emoji_code: "1f44d",
         is_emoji: true,
         has_image: false,
+        has_pronouns: false,
         has_secondary: false,
         has_status: false,
     };
@@ -800,6 +807,7 @@ test("render_emoji", ({mock_template}) => {
         img_src: "TBD",
         is_emoji: true,
         has_image: true,
+        has_pronouns: false,
         has_secondary: false,
         has_status: false,
     };

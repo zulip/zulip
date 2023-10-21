@@ -241,6 +241,17 @@ const all2 = {
     full_name: "all",
 };
 
+const stewie = {
+    email: "stewie@example.com",
+    user_id: 1204,
+    full_name: "Stewart Gilligan",
+    profile_data: {
+        1: "(888) 888-8888",
+        2: "(555) 555-5555",
+        3: "he/him",
+    },
+};
+
 // This is for error checking--never actually
 // tell people.js about this user.
 const invalid_user = {
@@ -523,6 +534,45 @@ test_people("my_custom_profile_data", () => {
     person.profile_data = {3: "My address", 4: "My phone number"};
     assert.equal(people.my_custom_profile_data(3), "My address");
     assert.equal(people.my_custom_profile_data(4), "My phone number");
+});
+
+test_people("get_custom_fields_by_type", () => {
+    people.add_active_user(stewie);
+    const person = people.get_by_user_id(stewie.user_id);
+    page_params.custom_profile_field_types = {
+        SHORT_TEXT: {
+            id: 1,
+            name: "Short text",
+        },
+        PRONOUNS: {
+            id: 8,
+            name: "Pronouns",
+        },
+    };
+    page_params.custom_profile_fields = [
+        {
+            id: 1,
+            name: "Phone number (mobile)",
+            type: 1,
+        },
+        {
+            id: 2,
+            name: "Phone number (office)",
+            type: 1,
+        },
+        {
+            id: 3,
+            name: "Pronouns",
+            type: 8,
+        },
+    ];
+    const SHORT_TEXT_ID = 1;
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, SHORT_TEXT_ID), [
+        "(888) 888-8888",
+        "(555) 555-5555",
+    ]);
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 8), ["he/him"]);
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 100), []);
 });
 
 test_people("bot_custom_profile_data", () => {

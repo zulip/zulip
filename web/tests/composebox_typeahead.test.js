@@ -723,6 +723,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     let expected_value;
+    page_params.custom_profile_field_types = {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    };
 
     mock_template("typeahead_list_item.hbs", true, (data, html) => {
         assert.equal(typeof data.primary, "string");

@@ -143,14 +143,14 @@ body {
     --recent-topics-filters-height: 50px;
 
     /* Overlay heights for streams modal */
-    --modal-container-height: 95vh;
-    --modal-container-max-height: 1000px;
+    --overlay-container-height: 95vh;
+    --overlay-container-max-height: 1000px;
     /* .subscriptions-header */
-    --modal-container-subscriptions-header-height: 45px;
+    --subscriptions-overlay-header-height: 45px;
     /* .display-type */
-    --modal-container-subscriptions-display-type-height: 44px;
-    /* .modal-footer */
-    --modal-container-subscriptions-modal-footer-height: 60px;
+    --subscriptions-overlay-display-type-height: 44px;
+    /* .settings-sticky-footer */
+    --subscriptions-overlay-sticky-footer-height: 60px;
 
     /*
     Maximum height of the compose box when it is not in expanded state. This
@@ -206,7 +206,16 @@ body {
     --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-dot: var(
+        --color-background-unread-counter
+    );
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
+    --color-border-unread-counter: var(--color-background-unread-counter);
+    --color-border-unread-counter-popover-menu: inherit;
+    --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
+    --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
 
     /* Compose box colors */
     --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
@@ -251,10 +260,15 @@ body {
     --color-vdots-hint: hsl(0deg 0% 0% / 30%);
     --color-vdots-visible: hsl(0deg 0% 0% / 53%);
     --color-vdots-hover: hsl(0deg 0% 0%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
+    --color-tab-picker-icon: hsl(200deg 100% 40%);
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
     --color-zulip-logo-loading: hsl(0deg 0% 27%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 27%);
     --color-zulip-logo-z: hsl(0deg 0% 100%);
 
     /* Message collapsing/condensing button colors */
@@ -273,13 +287,15 @@ body {
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
-    --color-background-inbox: hsl(0deg 0% 100%);
+    --color-background-inbox-no-unreads-illustration: hsl(147deg 57% 25%);
+    --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 0%);
     --color-inbox-search-text: hsl(0deg 0% 0%);
     --color-border-inbox-search: hsl(229.09deg 21.57% 10% / 30%);
     --color-border-inbox-search-hover: hsl(229.09deg 21.57% 10% / 60%);
-    --color-background-inbox-search-hover: var(--color-background-inbox);
-    --color-background-inbox-search-focus: var(--color-background-inbox);
+    --color-background-inbox-search: hsl(0deg 0% 100%);
+    --color-background-inbox-search-hover: hsl(0deg 0% 100%);
+    --color-background-inbox-search-focus: hsl(0deg 0% 100%);
     --color-border-inbox-search-focus: hsl(229.09deg 21.57% 10% / 80%);
     --color-box-shadow-inbox-search-focus: hsl(228deg 9.8% 20% / 30%);
     --color-background-inbox-row: hsl(0deg 0% 100%);
@@ -291,9 +307,27 @@ body {
         hsl(0deg 0% 100%);
     --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
-    --color-border-inbox: hsl(0deg 0% 84.31%);
     --color-icons-inbox: hsl(0deg 0% 0%);
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
+        0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 13%);
+    --box-shadow-gear-menu: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 20% 50%);
+    --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 50%);
+    --color-header-button-hover: hsl(0deg 0% 0% / 5%);
+    --color-header-button-focus: hsl(0deg 0% 0% / 8%);
 }
 
 %dark-theme {
@@ -331,7 +365,16 @@ body {
     --color-border-dropdown-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
+    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
+    --color-border-unread-counter: hsl(105deg 2% 50%);
+    --color-border-unread-counter-popover-menu: var(
+        --color-border-unread-counter
+    );
+    --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
+    --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
 
     /* Compose box colors */
     --color-compose-collapsed-reply-button-area-background: hsl(
@@ -379,10 +422,15 @@ body {
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
     --color-vdots-hover: hsl(0deg 0% 100%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
+    --color-tab-picker-icon: hsl(0deg 0% 80%);
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
     --color-zulip-logo-loading: hsl(0deg 0% 100%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 100% / 60%);
     --color-zulip-logo-z: hsl(214deg 27% 18%);
 
     /* Message collapsing/condensing button colors */
@@ -399,11 +447,13 @@ body {
     --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
 
     /* Inbox view */
-    --color-background-inbox: hsl(225deg 6% 10%);
+    --color-background-inbox: var(--color-background);
+    --color-background-inbox-no-unreads-illustration: hsl(147deg 40% 55%);
     --color-icon-search-inbox: hsl(0deg 0% 100%);
     --color-inbox-search-text: hsl(0deg 0% 95%);
     --color-border-inbox-search: hsl(0deg 0% 100% / 20%);
     --color-border-inbox-search-hover: hsl(0deg 0% 100% / 40%);
+    --color-background-inbox-search: hsl(225deg 6% 10%);
     --color-background-inbox-search-hover: hsl(225deg 6% 8%);
     --color-background-inbox-search-focus: hsl(225deg 6% 7%);
     --color-border-inbox-search-focus: hsl(0deg 0% 100% / 50%);
@@ -417,9 +467,21 @@ body {
         hsl(0deg 0% 14.12%);
     --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
-    --color-border-inbox: hsl(0deg 0% 0% / 60%);
     --color-icons-inbox: hsl(0deg 0% 100%);
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 35% 60%);
+    --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 65%);
+    --color-header-button-hover: hsl(0deg 0% 100% / 4%);
+    --color-header-button-focus: hsl(0deg 0% 100% / 7%);
 }
 
 @media screen {
@@ -719,59 +781,6 @@ p.n-margin {
         .buttons .alert-link {
             margin: 0 5px;
         }
-    }
-}
-
-#gear-menu .dropdown-menu {
-    .org-name,
-    .org-url {
-        padding: 0 20px;
-    }
-
-    .org-info {
-        text-align: center;
-
-        & a {
-            white-space: normal;
-        }
-    }
-
-    .org-name {
-        font-size: large;
-        font-weight: bold;
-    }
-
-    .org-url {
-        line-height: 100%;
-        color: hsl(0deg 0% 52%);
-    }
-
-    .org-version {
-        padding-top: 3px;
-        white-space: normal;
-    }
-
-    .org-upgrade {
-        color: hsl(226deg 82% 60%);
-
-        & a {
-            padding: 0;
-        }
-    }
-
-    .org-plan,
-    .org-upgrade {
-        & a {
-            line-height: 16px;
-        }
-    }
-
-    .plan-separator {
-        line-height: 8px;
-    }
-
-    .small-font-size {
-        font-size: 12px;
     }
 }
 
@@ -1133,10 +1142,6 @@ strong {
     position: relative;
 }
 
-#gear-menu .light-theme {
-    display: none;
-}
-
 /* .dropdown-menu from v2.3.2
    + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
    basic idea of this fix is to remove decorations from :hover and apply them only
@@ -1220,29 +1225,6 @@ li.actual-dropdown-menu i {
     width: 14px;
     text-align: center;
     margin-right: 3px;
-}
-
-#gear_menu_about_zulip {
-    .white_zulip_icon_without_text {
-        position: relative;
-        top: 3px;
-        width: 14px;
-        height: 14px;
-        margin-right: 3px;
-        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
-            brightness(20%) contrast(95%);
-    }
-
-    .about_zulip_text {
-        position: relative;
-        top: 1.4px;
-    }
-
-    :hover {
-        .white_zulip_icon_without_text {
-            filter: none;
-        }
-    }
 }
 
 td.pointer {
@@ -2277,47 +2259,6 @@ div.focused-message-list {
     }
 }
 
-#navbar-buttons {
-    white-space: nowrap;
-    display: inline-block;
-    float: right;
-
-    & ul.nav {
-        margin: 0;
-
-        .dropdown-toggle,
-        li.active .dropdown-toggle {
-            font-size: 20px;
-            color: inherit;
-            opacity: 0.5;
-            text-shadow: none;
-            padding-left: 0 !important;
-            background-color: inherit;
-            box-shadow: inherit;
-            display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
-        }
-
-        .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
-            opacity: 1;
-        }
-
-        & li.dropdown.open .dropdown-toggle {
-            background: none;
-            opacity: 1;
-            text-shadow: none;
-        }
-
-        & li.dropdown li.divider {
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-    }
-}
-
 #streamlist-toggle {
     display: none;
     position: absolute;
@@ -2386,12 +2327,6 @@ div.focused-message-list {
         content: "";
         z-index: 10;
     }
-}
-
-#gear-menu .zulip-icon-language {
-    position: relative;
-    top: 2.5px;
-    left: -0.5px;
 }
 
 .nav .dropdown-menu a,
@@ -2710,6 +2645,15 @@ select.invite-as {
     text-align: center;
 }
 
+.empty-feed-notice-title {
+    font-size: 1.5em;
+    font-weight: 400;
+}
+
+.empty-feed-notice-description {
+    font-size: 1.1em;
+}
+
 .message-fade,
 .user_sidebar_entry.user-fade {
     opacity: 0.4;
@@ -3020,6 +2964,11 @@ select.invite-as {
     .fa-copy:hover {
         color: hsl(170deg 48% 54%);
     }
+
+    .overlay-body {
+        max-height: 60vh;
+        padding: 15px;
+    }
 }
 
 @media (width < $xl_min) {
@@ -3033,9 +2982,9 @@ select.invite-as {
             margin-right: 85px;
         }
 
-        #navbar-buttons {
-            position: absolute;
-            right: 45px;
+        #gear-menu {
+            position: relative;
+            right: 40px;
         }
     }
 
@@ -3186,8 +3135,7 @@ select.invite-as {
             margin-right: 65px;
         }
 
-        #navbar-buttons {
-            position: absolute;
+        #gear-menu {
             right: 35px;
         }
     }
@@ -3207,7 +3155,6 @@ select.invite-as {
     }
 
     #streamlist-toggle,
-    #navbar-buttons,
     #message_view_header,
     #searchbox,
     .header {
@@ -3227,11 +3174,6 @@ select.invite-as {
         height: var(--header-height);
         padding-top: 0;
         padding-bottom: 0;
-    }
-
-    #navbar-buttons ul.nav .dropdown-toggle,
-    #navbar-buttons ul.nav li.active .dropdown-toggle {
-        top: -8px;
     }
 
     .column-right #personal-menu .header-button-avatar {
@@ -3453,8 +3395,7 @@ select.invite-as {
     }
 }
 
-.header-button,
-#navbar-buttons #settings-dropdown {
+.header-button {
     width: var(--header-height);
     height: var(--header-height);
     display: flex;
@@ -3463,6 +3404,36 @@ select.invite-as {
     position: relative;
     top: 0;
     right: 0;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    .zulip-icon {
+        color: var(--color-navbar-icon);
+    }
+
+    .zulip-icon-gear {
+        font-size: 18px;
+    }
+
+    .zulip-icon-triple-users {
+        font-size: 20px;
+    }
 }
 
 #personal-menu {
@@ -3473,65 +3444,6 @@ select.invite-as {
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
-    }
-}
-
-#personal-menu-dropdown {
-    display: block;
-    margin: 0;
-    position: relative;
-    padding: 0;
-    border: solid 1px var(--color-border-dropdown-menu);
-    background-color: var(--color-background-dropdown-menu);
-    max-height: 85vh;
-    min-width: 230px;
-    overflow-x: hidden;
-    user-select: none;
-
-    .simplebar-content {
-        min-width: max-content;
-    }
-
-    .inner {
-        border-radius: 6px;
-        overflow: hidden;
-    }
-}
-
-.personal-menu-tippy {
-    .tippy-box {
-        border: 0;
-    }
-
-    .tippy-content {
-        padding: 0;
-    }
-
-    & > .tippy-box > .tippy-arrow {
-        position: absolute;
-        left: 50%;
-        top: -5.5px !important;
-        width: 16px;
-        height: 8px;
-        z-index: 1;
-        transform: translateX(-50%);
-        filter: drop-shadow(0 -1.25px 0 var(--color-border-dropdown-menu));
-
-        &::before {
-            display: none;
-        }
-
-        &::after {
-            border: 0 !important;
-            content: "";
-            top: 0;
-            width: 100%;
-            height: 100%;
-            mask-image: url("../shared/icons/popover-arrow.svg");
-            mask-size: contain;
-            mask-repeat: no-repeat;
-            background-color: var(--color-background-dropdown-menu);
-        }
     }
 }
 

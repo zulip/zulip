@@ -79,8 +79,8 @@
         }
     }
 
-    #subscription_overlay #stream-creation .modal-footer,
-    #groups_overlay #user-group-creation .modal-footer {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
@@ -691,24 +691,13 @@
         opacity: 0.2;
     }
 
-    #gear_menu_about_zulip {
-        .white_zulip_icon_without_text {
-            filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)
-                brightness(99%) contrast(89%);
-        }
-    }
-
-    #gear-menu {
-        .dark-theme {
+    .spectator-view #gear-menu-dropdown {
+        .gear-menu-select-dark-theme {
             display: none;
         }
 
-        .light-theme {
+        .gear-menu-select-light-theme {
             display: block;
-        }
-
-        .dropdown-menu a:hover {
-            color: hsl(0deg 0% 100%);
         }
     }
 
@@ -786,6 +775,25 @@
     .emoji-picker-popover .emoji-popover .emoji-popover-category-tabs,
     .emoji-picker-popover .emoji-popover .emoji-popover-top {
         background-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    .stream-row,
+    .group-row {
+        /* This is for coluring the plus sign SVGs in stream-list UI */
+        /* public */
+        .check:not(.checked) svg {
+            fill: hsl(218deg 14% 33%);
+        }
+
+        /* private */
+        .disabled svg {
+            opacity: 0.5;
+        }
+
+        /* public :hover */
+        .check:not(.checked, .disabled):hover svg {
+            fill: hsl(230deg 11% 67%);
+        }
     }
 
     .recent_view_participant_overflow {
@@ -877,8 +885,8 @@
     #settings_page .sidebar-wrapper .tab-container,
     .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
-    #subscription_overlay #stream-creation .modal-footer,
-    #groups_overlay #user-group-creation .modal-footer {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
     }
@@ -1513,26 +1521,6 @@
                 .save-discard-widget-button-text {
                     color: hsl(0deg 0% 100%);
                 }
-            }
-        }
-    }
-
-    .tabs-container {
-        background-color: hsl(0deg 0% 0% / 30%);
-
-        & i {
-            color: hsl(0deg 0% 80%);
-        }
-
-        .selected-tab {
-            background-color: hsl(0deg 0% 17% / 50%);
-            outline: 1px solid hsl(0deg 0% 100% / 12%);
-        }
-
-        .tab-option {
-            &:hover:not(.selected-tab) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                outline: 1px solid hsl(0deg 0% 100% / 12%);
             }
         }
     }

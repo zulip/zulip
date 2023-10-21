@@ -65,7 +65,7 @@ supported by zulip are:
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings** select appropriate provider from **Video call provider** dropdown.
+1. Under **Other settings** select appropriate provider from **Call provider** dropdown.
 
 1. Click **Save changes**.
 

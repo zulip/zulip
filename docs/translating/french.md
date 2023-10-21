@@ -1,5 +1,15 @@
 # French translation style guide
 
+## Community
+
+In addition to the topic [#translation > French translations][]
+in the main "#translation" stream, there is a dedicated stream
+[#translation/fr][] for discussing the French translations.
+Please join there too and say hello.
+
+[#translation > French translations]: https://chat.zulip.org/#narrow/stream/58-translation/topic/French.20translations
+[#translation/fr]: https://chat.zulip.org/#narrow/stream/371-translation.2Ffr
+
 ## Rules
 
 - Use of _vous_ instead of _tu_,

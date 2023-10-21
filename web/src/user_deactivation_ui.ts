@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
@@ -12,15 +13,22 @@ import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import {invite_schema} from "./settings_invites";
 
-export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
+export function confirm_deactivation(
+    user_id: number,
+    handle_confirm: () => void,
+    loading_spinner: boolean,
+): void {
     // Knowing the number of invites requires making this request. If the request fails,
     // we won't have the accurate number of invites. So, we don't show the modal if the
     // request fails.
-    channel.get({
+    void channel.get({
         url: "/json/invites",
         timeout: 10 * 1000,
-        success(data) {
+        success(raw_data) {
+            const data = z.object({invites: z.array(invite_schema)}).parse(raw_data);
+
             let number_of_invites_by_user = 0;
             for (const invite of data.invites) {
                 if (invite.invited_by_user_id === user_id) {
@@ -43,7 +51,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
-            function set_email_field_visibility() {
+            function set_email_field_visibility(): void {
                 const $send_email_checkbox = $("#dialog_widget_modal").find(".send_email");
                 const $email_field = $("#dialog_widget_modal").find(".email_field");
 
@@ -74,7 +82,11 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     });
 }
 
-export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner) {
+export function confirm_bot_deactivation(
+    bot_id: number,
+    handle_confirm: () => void,
+    loading_spinner: boolean,
+): void {
     const bot = people.get_by_user_id(bot_id);
     const html_body = render_settings_deactivation_bot_modal();
 
@@ -88,19 +100,28 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
     });
 }
 
-export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
+export function confirm_reactivation(
+    user_id: number,
+    handle_confirm: () => void,
+    loading_spinner: boolean,
+): void {
     const user = people.get_by_user_id(user_id);
-    const opts = {
+    const opts: {
+        username: string;
+        original_owner_deactivated?: boolean;
+        owner_name?: string;
+    } = {
         username: user.full_name,
     };
 
     let html_body;
     // check if bot or human
     if (user.is_bot) {
-        opts.original_owner_deactivated =
-            user.is_bot && user.bot_owner_id && !people.is_person_active(user.bot_owner_id);
-        if (opts.original_owner_deactivated) {
+        if (user.bot_owner_id !== null && !people.is_person_active(user.bot_owner_id)) {
+            opts.original_owner_deactivated = true;
             opts.owner_name = people.get_by_user_id(user.bot_owner_id).full_name;
+        } else {
+            opts.original_owner_deactivated = false;
         }
         html_body = render_settings_reactivation_bot_modal(opts);
     } else {

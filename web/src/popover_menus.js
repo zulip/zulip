@@ -27,6 +27,7 @@ export const popover_instances = {
     starred_messages: null,
     drafts: null,
     left_sidebar_inbox_popover: null,
+    top_left_sidebar: null,
     message_actions: null,
     stream_settings: null,
     compose_mobile_button: null,
@@ -35,6 +36,7 @@ export const popover_instances = {
     send_later: null,
     change_visibility_policy: null,
     personal_menu: null,
+    gear_menu: null,
 };
 
 /* Keyboard UI functions */
@@ -97,6 +99,14 @@ export function is_compose_enter_sends_popover_displayed() {
     return popover_instances.compose_enter_sends?.state.isVisible;
 }
 
+export function is_gear_menu_popover_displayed() {
+    return popover_instances.gear_menu?.state.isVisible;
+}
+
+export function get_gear_menu_instance() {
+    return popover_instances.gear_menu;
+}
+
 function get_popover_items_for_instance(instance) {
     const $current_elem = $(instance.popper);
     const class_name = $current_elem.attr("class");
@@ -106,7 +116,7 @@ function get_popover_items_for_instance(instance) {
         return undefined;
     }
 
-    return $current_elem.find("li:not(.divider):visible a");
+    return $current_elem.find("a:visible");
 }
 
 export const default_popover_props = {

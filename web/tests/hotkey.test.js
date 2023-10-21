@@ -41,9 +41,7 @@ const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
     toggle_emoji_popover() {},
 });
-const gear_menu = mock_esm("../src/gear_menu", {
-    is_open: () => false,
-});
+const gear_menu = mock_esm("../src/gear_menu");
 const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
 const message_actions_popover = mock_esm("../src/message_actions_popover");
@@ -329,7 +327,7 @@ run_test("basic mappings", () => {
     assert_mapping("c", compose_actions, "start");
     assert_mapping("x", compose_actions, "start");
     assert_mapping("P", narrow, "by");
-    assert_mapping("g", gear_menu, "open");
+    assert_mapping("g", gear_menu, "toggle");
 });
 
 run_test("drafts open", ({override}) => {

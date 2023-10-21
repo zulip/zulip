@@ -1207,7 +1207,7 @@ $option_title_width: 180px;
     font-size: 1.2em;
 }
 
-.invite-user-link i {
+.invite-user-link .fa-user-plus {
     text-decoration: none;
     margin-right: 5px;
 }

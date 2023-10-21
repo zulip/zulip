@@ -196,6 +196,12 @@ class ActiveUserDict(TypedDict):
     bot_type: Optional[int]
 
 
+@dataclass
+class SentMessageResult:
+    message_id: int
+    automatic_new_visibility_policy: Optional[int] = None
+
+
 def get_recipient_info(
     *,
     realm_id: int,
@@ -843,7 +849,7 @@ def do_send_messages(
     email_gateway: bool = False,
     scheduled_message_to_self: bool = False,
     mark_as_read: Sequence[int] = [],
-) -> List[int]:
+) -> List[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -964,6 +970,7 @@ def do_send_messages(
                         topic=send_request.message.topic_name(),
                         visibility_policy=new_visibility_policy,
                     )
+                    send_request.automatic_new_visibility_policy = new_visibility_policy
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
@@ -1123,7 +1130,14 @@ def do_send_messages(
                     },
                 )
 
-    return [send_request.message.id for send_request in send_message_requests]
+    sent_message_results = [
+        SentMessageResult(
+            message_id=send_request.message.id,
+            automatic_new_visibility_policy=send_request.automatic_new_visibility_policy,
+        )
+        for send_request in send_message_requests
+    ]
+    return sent_message_results
 
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
@@ -1236,8 +1250,8 @@ def check_send_stream_message(
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic)
     message = check_message(sender, client, addressee, body, realm)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def check_send_stream_message_by_id(
@@ -1250,8 +1264,8 @@ def check_send_stream_message_by_id(
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic)
     message = check_message(sender, client, addressee, body, realm)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def check_send_private_message(
@@ -1259,8 +1273,8 @@ def check_send_private_message(
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
     message = check_message(sender, client, addressee, body)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 # check_send_message:
@@ -1281,7 +1295,7 @@ def check_send_message(
     widget_content: Optional[str] = None,
     *,
     skip_stream_access_check: bool = False,
-) -> int:
+) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
         message = check_message(
@@ -1299,7 +1313,7 @@ def check_send_message(
             skip_stream_access_check=skip_stream_access_check,
         )
     except ZephyrMessageAlreadySentError as e:
-        return e.message_id
+        return SentMessageResult(message_id=e.message_id)
     return do_send_messages([message])[0]
 
 
@@ -1745,8 +1759,8 @@ def internal_send_private_message(
     )
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_stream_message(
@@ -1769,8 +1783,9 @@ def internal_send_stream_message(
 
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_stream_message_by_name(
@@ -1790,8 +1805,8 @@ def internal_send_stream_message_by_name(
 
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_huddle_message(
@@ -1806,5 +1821,5 @@ def internal_send_huddle_message(
     )
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id

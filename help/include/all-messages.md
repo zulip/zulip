@@ -2,8 +2,8 @@ The **All messages** view is a feed of all the unmuted messages you have
 received, which combines stream messages and direct messages. It's a great way
 to see new messages as they come in.
 
-You can configure **All messages** to be the [default
-view](/help/configure-default-view#configure-default-view) for the Zulip web app.
+You can configure **All messages** to be the [home
+view](/help/configure-home-view#configure-home-view) for the Zulip web app.
 
 {start_tabs}
 

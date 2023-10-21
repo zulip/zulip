@@ -289,11 +289,6 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (gear_menu.is_open()) {
-        gear_menu.close();
-        return true;
-    }
-
     if (processing_text()) {
         if (activity_ui.searching()) {
             activity_ui.escape_search();
@@ -415,11 +410,13 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(".dropdown.open, .dropup.open").length > 0 && $(e.target).attr("role") === "menuitem") {
-        // on dropdown menu elements, force a click and prevent default.
-        // this is because these links do not have an href and so don't force a
-        // default action.
+    if (popovers.any_active() && $(e.target).hasClass("navigate-link-on-enter")) {
+        // If a popover is open and we pressed Enter on a menu item,
+        // call click directly on the item to navigate to the `href`.
+        // trigger("click") doesn't work for them to navigate to `href`.
         e.target.click();
+        e.preventDefault();
+        popovers.hide_all();
         return true;
     }
 
@@ -736,12 +733,12 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (hotkey.message_view_only && gear_menu.is_open()) {
+    if (hotkey.message_view_only && popover_menus.is_gear_menu_popover_displayed()) {
         // Inside the gear menu, we don't process most hotkeys; the
         // exception is that the gear_menu hotkey should toggle the
         // menu closed again.
         if (event_name === "gear_menu") {
-            gear_menu.close();
+            gear_menu.toggle();
             return true;
         }
         return false;
@@ -897,7 +894,7 @@ export function process_hotkey(e, hotkey) {
             search.initiate_search();
             return true;
         case "gear_menu":
-            gear_menu.open();
+            gear_menu.toggle();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");

@@ -1,0 +1,24 @@
+{{! Contents of the condensed nav vdots popup }}
+<ul class="nav nav-list condensed-views-popover-menu">
+    <li class="condensed-views-popover-menu-drafts">
+        {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
+        <a tabindex="0" href="#drafts" class="left-sidebar-popover-icon-label-count tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template">
+            <span class="filter-icon">
+                <i class="zulip-icon zulip-icon-drafts" aria-hidden="true"></i>
+            </span>
+            <span class="left-sidebar-navigation-label">{{t 'Drafts' }}</span>
+            <span class="unread_count"></span>
+        </a>
+    </li>
+    {{#if has_scheduled_messages }}
+    <li class="condensed-views-popover-menu-scheduled-messages">
+        <a tabindex="0" href="#scheduled" class="left-sidebar-popover-icon-label-count">
+            <span class="filter-icon">
+                <i class="zulip-icon zulip-icon-scheduled-messages" aria-hidden="true"></i>
+            </span>
+            <span class="left-sidebar-navigation-label">{{t 'Scheduled messages' }}</span>
+            <span class="unread_count"></span>
+        </a>
+    </li>
+    {{/if}}
+</ul>

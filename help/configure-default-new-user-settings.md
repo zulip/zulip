@@ -12,30 +12,51 @@ users will be able to customize their own settings once they
 join. Administrators can customize defaults for all personal
 preference settings, including the following:
 
-* Privacy settings, including:
+* Privacy settings:
     * [Displaying availability to other users](/help/status-and-availability)
     * [Allowing others to see when the user has read messages](/help/read-receipts)
-* Preferences, including:
-    * [Default view](/help/configure-default-view)
+
+* Preferences:
+    * [Language](/help/change-your-language)
+    * [Time format](/help/change-the-time-format)
+    * [Light theme vs. dark theme](/help/dark-theme)
+    * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
+    * [Home view](/help/configure-home-view)
       ([Inbox](/help/inbox) vs.
       [Recent conversations](/help/recent-conversations) vs.
       [All messages](/help/reading-strategies#all-messages))
-    * [Light theme vs. dark theme](/help/dark-theme)
-    * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
-    * [Time format](/help/change-the-time-format)
-* Notification settings, including:
+
+* Notification settings:
     * [What types of messages trigger notifications][default-notifications]
     * [Configurations for email notifications](/help/email-notifications)
 
 [default-notifications]: /help/stream-notifications#configure-default-notifications-for-all-streams
 
-## How to configure default settings for new users
+## Configure default settings for new users
 
 {start_tabs}
 
 {settings_tab|default-user-settings}
 
 1. Review all settings and adjust as needed.
+
+{end_tabs}
+
+## Configure default language for new users
+
+Your organization's [language](/help/configure-organization-language) will be
+the default language for new users when Zulip cannot detect their language
+preferences from their browser, including all users [created via the Zulip
+API](/api/create-user).
+
+{start_tabs}
+
+{settings_tab|organization-settings}
+
+1. Under **Automated messages and emails**, change the **Language for
+   automated messages and invitation emails**.
+
+{!save-changes.md!}
 
 {end_tabs}
 

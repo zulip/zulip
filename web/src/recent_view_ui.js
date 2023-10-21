@@ -118,6 +118,84 @@ export function set_default_focus() {
     compose_closed_ui.set_standard_text_for_reply_button();
 }
 
+// When there are no messages loaded, we don't show a banner yet.
+const NO_MESSAGES_LOADED = 0;
+// When some messages are loaded, but we're still loading newer messages,
+// we show a simple loading banner.
+const SOME_MESSAGES_LOADED = 1;
+// Once we've found the newest message, we allow the user to load
+// more messages further back in time.
+const SOME_MESSAGES_LOADED_INCLUDING_NEWEST = 2;
+// Once all messages are loaded, we hide the banner.
+const ALL_MESSAGES_LOADED = 3;
+
+let loading_state = NO_MESSAGES_LOADED;
+let oldest_message_timestamp = Number.POSITIVE_INFINITY;
+
+export function set_oldest_message_date(msg_list_data) {
+    const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
+    const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+
+    oldest_message_timestamp = Math.min(msg_list_data.first().timestamp, oldest_message_timestamp);
+
+    if (has_found_oldest) {
+        loading_state = ALL_MESSAGES_LOADED;
+    } else if (has_found_newest) {
+        loading_state = SOME_MESSAGES_LOADED_INCLUDING_NEWEST;
+    } else {
+        loading_state = SOME_MESSAGES_LOADED;
+    }
+
+    // We might be loading messages in another narrow before the recent view
+    // is shown, so we keep the state updated and update the banner only
+    // once it's actually rendered.
+    if ($("#recent_view_table table tbody").length) {
+        update_load_more_banner();
+    }
+}
+
+function update_load_more_banner() {
+    if (loading_state === NO_MESSAGES_LOADED) {
+        return;
+    }
+
+    if (loading_state === ALL_MESSAGES_LOADED) {
+        $(".recent-view-load-more-container").toggleClass("notvisible", true);
+        return;
+    }
+
+    // There are some messages loaded, but not all messages yet. The banner was
+    // hidden on page load, and we make sure to show it now that there are messages
+    // we can display.
+    $(".recent-view-load-more-container").toggleClass("notvisible", false);
+
+    // Until we've found the newest message, we only show the banner with a messages
+    // explaining we're still fetching messages. We don't allow the user to fetch
+    // more messages.
+    if (loading_state === SOME_MESSAGES_LOADED) {
+        return;
+    }
+
+    const $button = $(".recent-view-load-more-container .fetch-messages-button");
+    const $button_label = $(".recent-view-load-more-container .button-label");
+    const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
+
+    $button.toggleClass("notvisible", false);
+
+    const time_obj = new Date(oldest_message_timestamp * 1000);
+    const time_string = timerender.get_localized_date_or_time_for_format(
+        time_obj,
+        "full_weekday_dayofyear_year_time",
+    );
+    $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
+
+    $button_label.toggleClass("invisible", false);
+    $button.prop("disabled", false);
+    loading.destroy_indicator(
+        $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
+    );
+}
+
 function get_min_load_count(already_rendered_count, load_count) {
     const extra_rows_for_viewing_pleasure = 15;
     if (row_focus > already_rendered_count + load_count) {
@@ -295,11 +373,16 @@ export function hide_loading_indicator() {
     });
 }
 
-export function process_messages(messages) {
-    // While this is inexpensive and handles all the cases itself,
-    // the UX can be bad if user wants to scroll down the list as
-    // the UI will be returned to the beginning of the list on every
-    // update.
+export function process_messages(messages, msg_list_data) {
+    // This code path processes messages from 3 sources:
+    // 1. Newly sent messages from the server_events system. This is safe to
+    //    process because we always will have the latest previously sent messages.
+    // 2. Messages in all_messages_data, the main cache of contiguous
+    //    message history that the client maintains.
+    // 3. Latest messages fetched specifically for Recent view when
+    //    the browser first loads. We will be able to remove this once
+    //    all_messages_data is fetched in a better order.
+
     let conversation_data_updated = false;
     if (messages.length > 0) {
         for (const msg of messages) {
@@ -307,6 +390,12 @@ export function process_messages(messages) {
                 conversation_data_updated = true;
             }
         }
+    }
+
+    if (msg_list_data) {
+        // Update the recent view UI's understanding of which messages
+        // we have available for the recent view.
+        set_oldest_message_date(msg_list_data);
     }
 
     // Only rerender if conversation data actually changed.
@@ -782,21 +871,21 @@ function topic_offset_to_visible_area(topic_row) {
         return undefined;
     }
     const $scroll_container = $("#recent_view_table .table_fix_head");
-    const thead_height = 30;
-    const under_closed_compose_region_height = 50;
+    const thead_height = $scroll_container.find("thead").outerHeight(true);
+    const scroll_container_props = $scroll_container[0].getBoundingClientRect();
 
-    const scroll_container_top = $scroll_container.offset().top + thead_height;
-    const scroll_container_bottom =
-        scroll_container_top + $scroll_container.height() - under_closed_compose_region_height;
+    // Since user cannot see row under thead, exclude it as part of the scroll container.
+    const scroll_container_top = scroll_container_props.top + thead_height;
+    const compose_height = $("#compose").outerHeight(true);
+    const scroll_container_bottom = scroll_container_props.bottom - compose_height;
 
-    const topic_row_top = $topic_row.offset().top;
-    const topic_row_bottom = topic_row_top + $topic_row.height();
+    const topic_props = $topic_row[0].getBoundingClientRect();
 
     // Topic is above the visible scroll region.
-    if (topic_row_top < scroll_container_top) {
+    if (topic_props.top < scroll_container_top) {
         return "above";
         // Topic is below the visible scroll region.
-    } else if (topic_row_bottom > scroll_container_bottom) {
+    } else if (topic_props.bottom > scroll_container_bottom) {
         return "below";
     }
 
@@ -873,6 +962,9 @@ export function complete_rerender() {
     // have the correct classes (checked or not) if Recent Conversations
     // was not the first view loaded in the app.
     show_selected_filters();
+
+    // Update the banner now that it's rendered.
+    update_load_more_banner();
 
     const $container = $("#recent_view_table table tbody");
     $container.empty();
@@ -1034,7 +1126,6 @@ function page_up_navigation() {
         row_focus = 0;
     }
     $scroll_container.scrollTop(new_scrollTop);
-    set_table_focus(row_focus, col_focus);
 }
 
 function page_down_navigation() {
@@ -1048,7 +1139,6 @@ function page_down_navigation() {
         row_focus = topics_widget.get_current_list().length - 1;
     }
     $scroll_container.scrollTop(new_scrollTop);
-    set_table_focus(row_focus, col_focus);
 }
 
 function check_row_type_transition(row, col) {
@@ -1244,7 +1334,12 @@ export function change_focused_element($elt, input_key) {
     return false;
 }
 
-export function initialize({on_click_participant, on_mark_pm_as_read, on_mark_topic_as_read}) {
+export function initialize({
+    on_click_participant,
+    on_mark_pm_as_read,
+    on_mark_topic_as_read,
+    maybe_load_older_messages,
+}) {
     // load filters from local storage.
     if (!page_params.is_spectator) {
         // A user may have a stored filter and can log out
@@ -1387,5 +1482,15 @@ export function initialize({on_click_participant, on_mark_pm_as_read, on_mark_to
         e.stopPropagation();
         $("#recent_view_search").val("");
         update_filters_view();
+    });
+
+    $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
+        maybe_load_older_messages();
+        $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
+        $(".recent-view-load-more-container .fetch-messages-button").prop("disabled", true);
+        loading.make_indicator(
+            $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
+            {width: 20},
+        );
     });
 }

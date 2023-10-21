@@ -130,11 +130,18 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
         ]
 
 
-class RemoteInstallationCount(BaseCount):
+class BaseRemoteCount(BaseCount):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField(db_index=True)
+    # The remote_id field is the id value of the corresponding *Count object
+    # on the remote server.
+    # It lets us deduplicate data from the remote server.
+    remote_id = models.IntegerField()
 
+    class Meta:
+        abstract = True
+
+
+class RemoteInstallationCount(BaseRemoteCount):
     class Meta:
         unique_together = ("server", "property", "subgroup", "end_time")
         indexes = [
@@ -150,11 +157,8 @@ class RemoteInstallationCount(BaseCount):
 
 
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
-class RemoteRealmCount(BaseCount):
-    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+class RemoteRealmCount(BaseRemoteCount):
     realm_id = models.IntegerField()
-    # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField()
 
     class Meta:
         unique_together = ("server", "realm_id", "property", "subgroup", "end_time")

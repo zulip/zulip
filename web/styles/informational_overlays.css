@@ -33,7 +33,7 @@
     .overlay-modal {
         padding-bottom: 10px;
 
-        .modal-body {
+        .overlay-scroll-container {
             height: 70vh;
             text-align: center;
             outline: none;

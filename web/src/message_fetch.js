@@ -19,6 +19,8 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
 
+let is_all_messages_data_loaded = false;
+
 const consts = {
     backfill_idle_time: 10 * 1000,
     backfill_batch_size: 1000,
@@ -29,6 +31,7 @@ const consts = {
     recent_view_initial_fetch_size: 400,
     narrowed_view_backward_batch_size: 100,
     narrowed_view_forward_batch_size: 100,
+    recent_view_fetch_more_batch_size: 1000,
     catch_up_batch_size: 1000,
 };
 
@@ -36,6 +39,8 @@ function process_result(data, opts) {
     let messages = data.messages;
 
     messages = messages.map((message) => message_helper.process_new_message(message));
+    const has_found_oldest = opts.msg_list?.data.fetch_status.has_found_oldest() ?? false;
+    const has_found_newest = opts.msg_list?.data.fetch_status.has_found_newest() ?? false;
 
     // In some rare situations, we expect to discover new unread
     // messages not tracked in unread.js during this fetching process.
@@ -56,10 +61,24 @@ function process_result(data, opts) {
         } else {
             opts.msg_list_data.add_messages(messages);
         }
+
+        // To avoid non-contiguous blocks of data in recent view from
+        // message_lists.home and recent_view_message_list_data, we
+        // only process data from message_lists.home if we have found
+        // the newest message in message_lists.home. We check this via
+        // is_all_messages_data_loaded, to avoid unnecessary
+        // double-processing of the last batch of messages;
+        // is_all_messages_data_loaded is set via opts.cont, below.
+        if (
+            opts.is_recent_view_data ||
+            (opts.msg_list === message_lists.home && is_all_messages_data_loaded)
+        ) {
+            const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+            recent_view_ui.process_messages(messages, msg_list_data);
+        }
     }
 
     huddle_data.process_loaded_messages(messages);
-    recent_view_ui.process_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view();
 
@@ -74,8 +93,6 @@ function process_result(data, opts) {
         // the messages we requested, and all of them are in muted
         // topics, but there are older messages for this stream that
         // we need to ask the server for.
-        const has_found_oldest = opts.msg_list.data.fetch_status.has_found_oldest();
-        const has_found_newest = opts.msg_list.data.fetch_status.has_found_newest();
         if (has_found_oldest && has_found_newest) {
             // Even after loading more messages, we have
             // no messages to display in this narrow.
@@ -407,7 +424,9 @@ export function maybe_load_older_messages(opts) {
 
     do_backfill({
         msg_list,
-        num_before: consts.narrowed_view_backward_batch_size,
+        num_before: opts.recent_view
+            ? consts.recent_view_fetch_more_batch_size
+            : consts.narrowed_view_backward_batch_size,
     });
 }
 
@@ -487,6 +506,13 @@ export function initialize(home_view_loaded) {
         }
 
         if (data.found_newest) {
+            // Mark that we've finishing loading all the way to the
+            // present in the all_messages_data data set. At this
+            // time, it's safe to call recent_view_ui.process_messages
+            // with all the messages in our cache.
+            is_all_messages_data_loaded = true;
+            recent_view_ui.process_messages(all_messages_data.all_messages(), all_messages_data);
+
             if (page_params.is_spectator) {
                 // Since for spectators, this is the main fetch, we
                 // hide the Recent Conversations loading indicator here.
@@ -495,6 +521,7 @@ export function initialize(home_view_loaded) {
 
             // See server_events.js for this callback.
             home_view_loaded();
+
             start_backfilling_messages();
             return;
         }
@@ -577,6 +604,7 @@ export function initialize(home_view_loaded) {
         num_before: consts.recent_view_initial_fetch_size,
         num_after: 0,
         msg_list_data: recent_view_message_list_data,
+        is_recent_view_data: true,
         cont: recent_view_ui.hide_loading_indicator,
     });
 }
