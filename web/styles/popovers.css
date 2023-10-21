@@ -1152,9 +1152,10 @@ ul {
         flex-flow: row nowrap;
         align-items: center;
         gap: 5px;
-        padding: 5px 10px;
+        padding: 0 10px;
         font-size: 15px;
         line-height: 16px;
+        height: 26px;
 
         .navbar-dropdown-icon {
             width: 16px;
@@ -1184,12 +1185,7 @@ ul {
         .navbar-dropdown-menu-link {
             color: var(--color-text-dropdown-menu) !important;
             text-decoration: none;
-            display: flex;
-            flex-flow: row nowrap;
             flex-grow: 1;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
 
             &:hover {
                 background: var(--color-background-hover-dropdown-menu);
