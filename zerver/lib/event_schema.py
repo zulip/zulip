@@ -1730,6 +1730,8 @@ update_message_flags_remove_event = event_dict_type(
                         ("user_ids", ListType(int)),
                         ("stream_id", int),
                         ("topic", str),
+                        ("mentioned_me_directly", bool),
+                        ("wildcard_mentioned", bool),
                         ("unmuted_stream_msg", bool),
                     ],
                 )
