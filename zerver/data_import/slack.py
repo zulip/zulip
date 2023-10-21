@@ -827,10 +827,12 @@ def get_messages_iterator(
                     # This is a Slack "Post" which is HTML-formatted
                     file_url = message.get("url_private_download")
                     response = requests.get(file_url)
-                    html_content = str(response.content, encoding="utf-8")
+                                       
+                    response.encoding = "utf-8"
+                    # response encoding to "utf-8" is required to specify encoding for response.text
                     # html2text is GPL licensed, so run it as a subprocess.
-                    text = subprocess.check_output(["html2text"], input=html_content, text=True)
-                    message["text"] = text
+                    text = subprocess.check_output(["html2text"], input=response.text, text=True)
+                    message["text"] = "*Imported from Slack Canvas*\n" + text
                     message["ts"] = message.get("created")
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
