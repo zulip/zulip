@@ -18,14 +18,11 @@ In muted streams, topics you follow are automatically treated as
 
 ## Configure notifications for followed topics
 
-{start_tabs}
+{!configure-notifications-for-followed-topics.md!}
 
-{settings_tab|notifications}
+## Automatically follow topics
 
-1. In the **Notification triggers** table,
-   toggle the settings for **Followed topics**.
-
-{end_tabs}
+{!automatically-follow-topics.md!}
 
 ## Manage configured topics
 
@@ -39,6 +36,7 @@ In muted streams, topics you follow are automatically treated as
 
 ## Related articles
 
+* [Topic notifications](/help/topic-notifications)
 * [Stream notifications](/help/stream-notifications)
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Mute or unmute a stream](/help/mute-a-stream)
