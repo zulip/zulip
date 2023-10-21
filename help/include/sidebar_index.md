@@ -137,6 +137,7 @@
 
 ## Notifications
 * [Stream notifications](/help/stream-notifications)
+* [Topic notifications](/help/topic-notifications)
 * [Follow a topic](/help/follow-a-topic)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Mute or unmute a stream](/help/mute-a-stream)
