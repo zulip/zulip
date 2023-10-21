@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
+const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 const message_live_update = mock_esm("../src/message_live_update");
@@ -14,10 +15,10 @@ const settings_account = mock_esm("../src/settings_account", {
     update_account_settings_display() {},
 });
 
-mock_esm("../src/activity", {
+mock_esm("../src/activity_ui", {
     redraw() {},
 });
-mock_esm("../src/compose", {
+mock_esm("../src/compose_state", {
     update_email() {},
 });
 mock_esm("../src/narrow_state", {
@@ -205,6 +206,8 @@ run_test("updates", () => {
     assert.equal(person.full_name, "Sir Isaac");
     assert.equal(user_id, isaac.user_id);
     assert.equal(person.avatar_url, avatar_url);
+
+    $("#personal-menu .header-button-avatar").css = () => {};
 
     user_events.update_person({user_id: me.user_id, avatar_url: "http://gravatar.com/789456"});
     person = people.get_by_email(me.email);

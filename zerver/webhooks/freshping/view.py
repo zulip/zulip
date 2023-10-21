@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
@@ -26,13 +26,13 @@ def api_freshping_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    body = get_body_for_http_request(payload)
-    topic = get_topic_for_http_request(payload)
     check_state_name = payload["webhook_event_data"]["check_state_name"].tame(check_string)
     if check_state_name not in CHECK_STATE_NAME_TO_EVENT_TYPE:
         raise UnsupportedWebhookEventTypeError(check_state_name)
+    body = get_body_for_http_request(payload)
+    topic = get_topic_for_http_request(payload)
 
     check_send_webhook_message(
         request,

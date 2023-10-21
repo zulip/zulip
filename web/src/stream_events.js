@@ -4,7 +4,6 @@ import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import * as compose_fade from "./compose_fade";
 import * as compose_recipient from "./compose_recipient";
-import * as inbox_ui from "./inbox_ui";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
@@ -13,10 +12,11 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_notifications from "./settings_notifications";
-import * as stream_color from "./stream_color";
+import * as stream_color_events from "./stream_color_events";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
+import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
@@ -46,7 +46,7 @@ export function update_property(stream_id, property, value, other_values) {
 
     switch (property) {
         case "color":
-            stream_color.update_stream_color(sub, value);
+            stream_color_events.update_stream_color(sub, value);
             break;
         case "in_home_view":
             // Legacy in_home_view events are only sent as duplicates of
@@ -56,7 +56,6 @@ export function update_property(stream_id, property, value, other_values) {
             stream_muting.update_is_muted(sub, value);
             stream_list.refresh_muted_or_unmuted_stream(sub);
             recent_view_ui.complete_rerender();
-            inbox_ui.update();
             break;
         case "desktop_notifications":
         case "audible_notifications":
@@ -125,14 +124,14 @@ export function mark_subscribed(sub, subscribers, color) {
     // If the backend sent us a color, use that
     if (color !== undefined && sub.color !== color) {
         sub.color = color;
-        stream_color.update_stream_color(sub, color);
+        stream_color_events.update_stream_color(sub, color);
     } else if (sub.color === undefined) {
         // If the backend didn't, and we have a color already, send
         // the backend that color.  It's not clear this code path is
         // needed.
         blueslip.warn("Frontend needed to pick a color in mark_subscribed");
         color = color_data.pick_color();
-        stream_settings_ui.set_color(sub.stream_id, color);
+        stream_settings_api.set_color(sub.stream_id, color);
     }
     stream_data.subscribe_myself(sub);
     if (subscribers) {

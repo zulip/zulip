@@ -13,7 +13,7 @@ const noop = () => {};
 
 let autosize_called;
 
-mock_esm("../src/compose_ui", {
+const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea() {
         autosize_called = true;
     },
@@ -703,7 +703,6 @@ const sweden_topics_to_show = ["<&>", "even more ice", "furniture", "ice", "kron
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_stream_header_colorblock();
     mock_banners();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     let pill_items = [];
     let cleared = false;
@@ -724,6 +723,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     let expected_value;
+    page_params.custom_profile_field_types = {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    };
 
     mock_template("typeahead_list_item.hbs", true, (data, html) => {
         assert.equal(typeof data.primary, "string");
@@ -791,11 +793,10 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         expected_value = ["e", "furniture", "ice"];
         assert.deepEqual(actual_value, expected_value);
 
-        // Don't make any suggestions if this query doesn't match any
-        // existing topic.
+        // Suggest the query if this query doesn't match any existing topic.
         options.query = "non-existing-topic";
         actual_value = options.sorter([]);
-        expected_value = [];
+        expected_value = ["non-existing-topic"];
         assert.deepEqual(actual_value, expected_value);
 
         topic_typeahead_called = true;
@@ -1157,16 +1158,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.target.id = "some_non_existing_id";
     $("form#send_message_form").trigger(event);
 
-    // Set up jquery functions used in compose_textarea Enter
-    // handler.
-    let range_length = 0;
-    $("#compose-textarea").range = () => ({
-        length: range_length,
-        range: noop,
-        start: 0,
-        end: 0 + range_length,
+    $("#compose-textarea")[0] = {
+        selectionStart: 0,
+        selectionEnd: 0,
+    };
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n");
     });
-    $("#compose-textarea").caret = noop;
+    $("#compose-textarea").caret = () => $("#compose-textarea")[0].selectionStart;
 
     event.key = "Enter";
     event.target.id = "stream_message_recipient_topic";
@@ -1185,10 +1184,58 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.altKey = true;
     $("form#send_message_form").trigger(event);
 
-    // Cover case where there's a least one character there.
-    range_length = 2;
+    // Cover cases where there's at least one character there.
+
+    // Test automatic bulleting.
+    $("#compose-textarea").val("- List item 1\n- List item 2");
+    $("#compose-textarea")[0].selectionStart = 27;
+    $("#compose-textarea")[0].selectionEnd = 27;
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n- ");
+    });
     $("form#send_message_form").trigger(event);
 
+    // Test removal of bullet.
+    $("#compose-textarea").val("- List item 1\n- List item 2\n- ");
+    $("#compose-textarea")[0].selectionStart = 30;
+    $("#compose-textarea")[0].selectionEnd = 30;
+    $("#compose-textarea")[0].setSelectionRange = (start, end) => {
+        assert.equal(start, 28);
+        assert.equal(end, 30);
+    };
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test automatic numbering.
+    $("#compose-textarea").val("1. List item 1\n2. List item 2");
+    $("#compose-textarea")[0].selectionStart = 29;
+    $("#compose-textarea")[0].selectionEnd = 29;
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n3. ");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test removal of numbering.
+    $("#compose-textarea").val("1. List item 1\n2. List item 2\n3. ");
+    $("#compose-textarea")[0].selectionStart = 33;
+    $("#compose-textarea")[0].selectionEnd = 33;
+    $("#compose-textarea")[0].setSelectionRange = (start, end) => {
+        assert.equal(start, 30);
+        assert.equal(end, 33);
+    };
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "");
+    });
+    $("form#send_message_form").trigger(event);
+
+    $("#compose-textarea").val("A");
+    $("#compose-textarea")[0].selectionStart = 4;
+    $("#compose-textarea")[0].selectionEnd = 4;
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n");
+    });
     event.altKey = false;
     event.metaKey = true;
     $("form#send_message_form").trigger(event);
@@ -1815,7 +1862,6 @@ test("direct message recipients sorted according to stream / topic being viewed"
     );
     mock_stream_header_colorblock();
     mock_banners();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_id("");

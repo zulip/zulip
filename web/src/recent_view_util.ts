@@ -14,7 +14,7 @@ export function get_topic_key(stream_id: number, topic: string): string {
     return stream_id + ":" + topic.toLowerCase();
 }
 
-export function get_key_from_message(msg: Message): string | undefined {
+export function get_key_from_message(msg: Message): string {
     if (msg.type === "private") {
         // The to_user_ids field on a direct message object is a
         // string containing the user IDs involved in the message in
@@ -23,5 +23,5 @@ export function get_key_from_message(msg: Message): string | undefined {
     }
 
     // For messages with type = "stream".
-    return get_topic_key(msg.stream_id!, msg.topic);
+    return get_topic_key(msg.stream_id, msg.topic);
 }

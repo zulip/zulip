@@ -2,6 +2,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
 from unittest import mock
 
 import orjson
+from typing_extensions import override
 
 from zerver.actions.custom_profile_fields import (
     do_remove_realm_custom_profile_field,
@@ -24,6 +25,7 @@ from zerver.models import (
 
 
 class CustomProfileFieldTestCase(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")

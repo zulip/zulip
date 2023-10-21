@@ -2,6 +2,7 @@
 
 import asyncio
 import base64
+import copy
 import logging
 import re
 from dataclasses import dataclass
@@ -29,11 +30,11 @@ from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
@@ -115,6 +116,7 @@ class UserPushIdentityCompat:
             assert self.user_id is not None and self.user_uuid is not None
             return Q(user_uuid=self.user_uuid) | Q(user_id=self.user_id)
 
+    @override
     def __str__(self) -> str:
         result = ""
         if self.user_id is not None:
@@ -124,6 +126,7 @@ class UserPushIdentityCompat:
 
         return result
 
+    @override
     def __eq__(self, other: object) -> bool:
         if isinstance(other, UserPushIdentityCompat):
             return self.user_id == other.user_id and self.user_uuid == other.user_uuid
@@ -804,6 +807,7 @@ def get_message_payload(
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data["sender_id"] = message.sender.id
     data["sender_email"] = message.sender.email
+    data["time"] = datetime_to_timestamp(message.date_sent)
     if mentioned_user_group_id is not None:
         assert mentioned_user_group_name is not None
         data["mentioned_user_group_id"] = mentioned_user_group_id
@@ -942,7 +946,6 @@ def get_message_payload_gcm(
         data.update(
             event="message",
             zulip_message_id=message.id,  # message_id is reserved for CCS
-            time=datetime_to_timestamp(message.date_sent),
             content=content,
             content_truncated=truncated,
             sender_full_name=message.sender.full_name,
@@ -1188,3 +1191,87 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     user_identity = UserPushIdentityCompat(user_id=user_profile.id)
     send_apple_push_notification(user_identity, apple_devices, apns_payload)
     send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
+
+
+def send_test_push_notification_directly_to_devices(
+    user_identity: UserPushIdentityCompat,
+    devices: Sequence[DeviceToken],
+    base_payload: Dict[str, Any],
+    remote: Optional["RemoteZulipServer"] = None,
+) -> None:
+    payload = copy.deepcopy(base_payload)
+    payload["event"] = "test-by-device-token"
+
+    apple_devices = [device for device in devices if device.kind == PushDeviceToken.APNS]
+    android_devices = [device for device in devices if device.kind == PushDeviceToken.GCM]
+    # Let's make the payloads separate objects to make sure mutating to make e.g. Android
+    # adjustments doesn't affect the Apple payload and vice versa.
+    apple_payload = copy.deepcopy(payload)
+    android_payload = copy.deepcopy(payload)
+
+    realm_uri = base_payload["realm_uri"]
+    apns_data = {
+        "alert": {
+            "title": _("Test notification"),
+            "body": _("This is a test notification from {realm_uri}.").format(realm_uri=realm_uri),
+        },
+        "sound": "default",
+        "custom": {"zulip": apple_payload},
+    }
+    send_apple_push_notification(user_identity, apple_devices, apns_data, remote=remote)
+
+    android_payload["time"] = datetime_to_timestamp(timezone_now())
+    gcm_options = {"priority": "high"}
+    send_android_push_notification(
+        user_identity, android_devices, android_payload, gcm_options, remote=remote
+    )
+
+
+def send_test_push_notification(user_profile: UserProfile, devices: List[PushDeviceToken]) -> None:
+    base_payload = get_base_payload(user_profile)
+    if uses_notification_bouncer():
+        for device in devices:
+            post_data = {
+                "user_uuid": str(user_profile.uuid),
+                "user_id": user_profile.id,
+                "token": device.token,
+                "token_kind": device.kind,
+                "base_payload": base_payload,
+            }
+
+            logger.info("Sending test push notification to bouncer: %r", post_data)
+            send_json_to_push_bouncer("POST", "push/test_notification", post_data)
+
+        return
+
+    # This server doesn't need the bouncer, so we send directly to the device.
+    user_identity = UserPushIdentityCompat(
+        user_id=user_profile.id, user_uuid=str(user_profile.uuid)
+    )
+    send_test_push_notification_directly_to_devices(
+        user_identity, devices, base_payload, remote=None
+    )
+
+
+class InvalidPushDeviceTokenError(JsonableError):
+    code = ErrorCode.INVALID_PUSH_DEVICE_TOKEN
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Device not recognized")
+
+
+class InvalidRemotePushDeviceTokenError(JsonableError):
+    code = ErrorCode.INVALID_REMOTE_PUSH_DEVICE_TOKEN
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Device not recognized by the push bouncer")

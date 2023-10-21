@@ -1,1 +1,1 @@
-{{ _("Verify your new email address") }}
+{% trans %}Verify your new email address for {{ organization_host }}{% endtrans %}

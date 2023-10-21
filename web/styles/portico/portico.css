@@ -250,7 +250,7 @@ html {
 .help .markdown {
     background-color: hsl(0deg 0% 100%);
     width: calc(100vw - 300px);
-    height: calc(100vh - 59px);
+    height: calc(100% - 59px);
     margin-left: 300px;
 
     & :target {
@@ -258,13 +258,13 @@ html {
     }
     /* Highlight the headings as well as the first child
       of any targeted div, as in the API documentation. */
-    & h1.scroll-target,
-    & h2.scroll-target,
-    & h3.scroll-target,
-    & h4.scroll-target,
-    & h5.scroll-target,
-    & h6.scroll-target,
-    & div.scroll-target > :first-child {
+    & h1:target,
+    & h2:target,
+    & h3:target,
+    & h4:target,
+    & h5:target,
+    & h6:target,
+    & div:target > :first-child {
         /* Increase the highlighted space around the text... */
         padding: 6px 8px;
         border-radius: 7px 7px 0 0;

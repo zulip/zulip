@@ -16,15 +16,14 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 const narrow = zrequire("narrow");
+const narrow_title = zrequire("narrow_title");
 const settings_config = zrequire("settings_config");
-const compose_recipient = zrequire("compose_recipient");
+const recent_view_util = zrequire("recent_view_util");
+const inbox_util = zrequire("inbox_util");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/spectators", {
     login_to_access() {},
-});
-const recent_view_util = mock_esm("../src/recent_view_util", {
-    is_visible() {},
 });
 
 function empty_narrow_html(title, html, search_data) {
@@ -76,8 +75,10 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4> This is a title </h4>
-    <h1> This is the html </h1>
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <div class="empty-feed-notice-description">
+            <h1> This is the html </h1>
+    </div>
 </div>
 `,
     );
@@ -99,13 +100,13 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4> This is a title </h4>
-    <div>
-        Some common words were excluded from your search. <br/>You searched for:
-        <span>stream: new</span>
-        <span>topic: test</span>
-            <span>search</span>
-            <del>a</del>
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <div class="empty-feed-notice-description">
+            Some common words were excluded from your search. <br/>You searched for:
+            <span>stream: new</span>
+            <span>topic: test</span>
+                <span>search</span>
+                <del>a</del>
     </div>
 </div>
 `,
@@ -124,11 +125,11 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4> This is a title </h4>
-    <div>
-        You searched for:
-        <span>stream: hello world</span>
-            <span>searchA</span>
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <div class="empty-feed-notice-description">
+            You searched for:
+            <span>stream: hello world</span>
+                <span>searchA</span>
     </div>
 </div>
 `,
@@ -147,11 +148,11 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4> This is a title </h4>
-    <div>
-        You searched for:
-        <span>topic: hello</span>
-            <span>searchB</span>
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <div class="empty-feed-notice-description">
+            You searched for:
+            <span>topic: hello</span>
+                <span>searchB</span>
     </div>
 </div>
 `,
@@ -263,7 +264,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", ""),
+        empty_narrow_html("translated: There are no messages here."),
     );
     page_params.is_spectator = false;
 
@@ -652,8 +653,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     );
 });
 
-run_test("narrow_to_compose_target errors", ({override_rewire, disallow_rewire}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
+run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
     disallow_rewire(narrow, "activate");
 
     // No-op when not composing.
@@ -667,7 +667,6 @@ run_test("narrow_to_compose_target errors", ({override_rewire, disallow_rewire})
 });
 
 run_test("narrow_to_compose_target streams", ({override_rewire}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     const args = {called: false};
     override_rewire(narrow, "activate", (operators, opts) => {
         args.operators = operators;
@@ -769,24 +768,30 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
 });
 
-run_test("narrow_compute_title", ({override}) => {
+run_test("narrow_compute_title", () => {
     // Only tests cases where the narrow title is different from the filter title.
     let filter;
 
-    // Recent conversations & All messages have `undefined` filter.
+    // Recent conversations & Inbox have `undefined` filter.
     filter = undefined;
-    override(recent_view_util, "is_visible", () => true);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Recent conversations");
+    recent_view_util.set_visible(true);
+    inbox_util.set_visible(false);
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Recent conversations");
 
-    override(recent_view_util, "is_visible", () => false);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: All messages");
+    recent_view_util.set_visible(false);
+    inbox_util.set_visible(true);
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Inbox");
+
+    inbox_util.set_visible(false);
+    filter = new Filter([{operator: "in", operand: "home"}]);
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: All messages");
 
     // Search & uncommon narrows
     filter = new Filter([{operator: "search", operand: "potato"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Search results");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Search results");
 
     filter = new Filter([{operator: "sender", operand: "me"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Messages sent by you");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Messages sent by you");
 
     // Stream narrows
     const sub = {
@@ -799,13 +804,13 @@ run_test("narrow_compute_title", ({override}) => {
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "bar"},
     ]);
-    assert.equal(narrow.compute_narrow_title(filter), "#Foo > bar");
+    assert.equal(narrow_title.compute_narrow_title(filter), "#Foo > bar");
 
     filter = new Filter([{operator: "stream", operand: "foo"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "#Foo");
+    assert.equal(narrow_title.compute_narrow_title(filter), "#Foo");
 
     filter = new Filter([{operator: "stream", operand: "Elephant"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
 
     // Direct messages with narrows
     const joe = {
@@ -816,14 +821,14 @@ run_test("narrow_compute_title", ({override}) => {
     people.add_active_user(joe);
 
     filter = new Filter([{operator: "dm", operand: "joe@example.com"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "joe");
+    assert.equal(narrow_title.compute_narrow_title(filter), "joe");
 
     filter = new Filter([{operator: "dm", operand: "joe@example.com,sally@doesnotexist.com"}]);
     blueslip.expect("warn", "Unknown emails");
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid users");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid users");
 
     blueslip.reset();
     filter = new Filter([{operator: "dm", operand: "sally@doesnotexist.com"}]);
     blueslip.expect("warn", "Unknown emails");
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid user");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid user");
 });

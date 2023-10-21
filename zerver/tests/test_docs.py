@@ -253,7 +253,7 @@ class DocPageTest(ZulipTestCase):
         # Test the i18n version of one of these pages.
         self._test("/en/history/", ["Zulip released as open source!"])
         self._test("/values/", ["designed our company"])
-        self._test("/hello/", ["Chat for distributed teams"])
+        self._test("/hello/", ["your mission-critical communications with Zulip"])
         self._test("/communities/", ["Open communities directory"])
         self._test("/development-community/", ["Zulip development community"])
         self._test("/features/", ["Beautiful messaging"])
@@ -295,7 +295,26 @@ class DocPageTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm.want_advertise_in_communities_directory = True
         realm.save()
-        self._test("/communities/", ["Open communities directory", *zulip_dev_info])
+
+        realm.description = ""
+        realm.save()
+        result = self.client_get("/communities/")
+        # Not shown because the realm has default description set.
+        self.assert_not_in_success_response(["Zulip Dev"], result)
+
+        realm.description = "Some description"
+        realm.save()
+        self._test("/communities/", ["Open communities directory", "Zulip Dev", "Some description"])
+
+        # No org with research type so research category not displayed.
+        result = self.client_get("/communities/")
+        self.assert_not_in_success_response(['data-category="research"'], result)
+
+        realm.org_type = Realm.ORG_TYPES["research"]["id"]
+        realm.save()
+        self._test(
+            "/communities/", ["Open communities directory", "Zulip Dev", 'data-category="research"']
+        )
 
     def test_integration_doc_endpoints(self) -> None:
         self._test(
@@ -468,9 +487,14 @@ class AboutPageTest(ZulipTestCase):
 
 class SmtpConfigErrorTest(ZulipTestCase):
     def test_smtp_error(self) -> None:
-        result = self.client_get("/config-error/smtp")
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["email configuration"], result)
+        with self.assertLogs("django.request", level="ERROR") as m:
+            result = self.client_get("/config-error/smtp")
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response("email configuration", result)
+            self.assertEqual(
+                m.output,
+                ["ERROR:django.request:Internal Server Error: /config-error/smtp"],
+            )
 
 
 class PlansPageTest(ZulipTestCase):

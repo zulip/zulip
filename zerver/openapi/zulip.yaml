@@ -1695,6 +1695,10 @@ paths:
                                     **Changes**: New in Zulip 5.0 (feature level 86).
                                 reaction_type:
                                   type: string
+                                  enum:
+                                    - unicode_emoji
+                                    - realm_emoji
+                                    - zulip_extra_emoji
                                   description: |
                                     The [emoji type](/api/update-status#parameter-reaction_type) for
                                     the emoji the user selected for their new status.
@@ -2519,12 +2523,15 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be `"stream"` or `"private"`.
+                                    Type of message being composed. Must be `"stream"` or `"direct"`.
 
-                                    **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly direct messages.
+                                    **Changes**: In Zulip 8.0 (feature level 215), replaced the
+                                    value `"private"` with `"direct"`.
+
+                                    New in Zulip 4.0 (feature level 58). Previously, all typing
+                                    notifications were implicitly direct messages.
                                   enum:
-                                    - private
+                                    - direct
                                     - stream
                                 sender:
                                   additionalProperties: false
@@ -2543,7 +2550,7 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `"private"`.
+                                    Only present if `message_type` is `"direct"`.
 
                                     Array of dictionaries describing the set of users who would be
                                     recipients of the message being typed. Each dictionary contains
@@ -2585,7 +2592,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "start",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -2637,12 +2644,15 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be `"stream"` or `"private"`.
+                                    Type of message being composed. Must be `"stream"` or `"direct"`.
 
-                                    **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly direct messages.
+                                    **Changes**: In Zulip 8.0 (feature level 215), replaced the
+                                    value `"private"` with `"direct"`.
+
+                                    New in Zulip 4.0 (feature level 58). Previously all typing
+                                    notifications were implicitly direct messages.
                                   enum:
-                                    - private
+                                    - direct
                                     - stream
                                 sender:
                                   additionalProperties: false
@@ -2661,7 +2671,7 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `"private"`.
+                                    Only present if `message_type` is `"direct"`.
 
                                     Array of dictionaries describing the set of users who would be
                                     recipients of the message that was previously being typed. Each
@@ -2703,7 +2713,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "stop",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -2726,7 +2736,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to a user when [message flags][message-flags] are added
-                                to a message.
+                                to messages.
 
                                 [message-flags]: /api/update-message-flags#available-flags
                               properties:
@@ -2744,17 +2754,17 @@ paths:
                                 operation:
                                   deprecated: true
                                   description: |
-                                    Old name for `op` for this event type.
+                                    Old name for the `op` field in this event type.
 
-                                    **Deprecated**: This is deprecated; please use `op` instead
-                                    starting with Zulip 4.0 (feature level 32).
+                                    **Deprecated** in Zulip 4.0 (feature level 32), and
+                                    replaced by the `op` field.
                                   type: string
                                   enum:
                                     - add
                                 flag:
                                   type: string
                                   description: |
-                                    The flag that was added.
+                                    The [flag][message-flags] that was added.
                                 messages:
                                   type: array
                                   description: |
@@ -2765,9 +2775,12 @@ paths:
                                 all:
                                   type: boolean
                                   description: |
-                                    Whether the flag was added to all messages (E.g. all messages
-                                    were marked as read).
-                                    If this is true, then the `messages` array will be empty.
+                                    Whether the specified flag was added to all messages.
+                                    This field is only relevant for the `"read"` flag, and
+                                    will be `false` for all other flags.
+
+                                    When `true` for the `"read"` flag, then the `messages`
+                                    array will be empty.
                               example:
                                 {
                                   "type": "update_message_flags",
@@ -2782,19 +2795,9 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to a user when [message flags][message-flags] are
-                                removed from a message.
+                                removed from messages.
 
                                 [message-flags]: /api/update-message-flags#available-flags
-                              required:
-                                [
-                                  "id",
-                                  "type",
-                                  "op",
-                                  "operation",
-                                  "flag",
-                                  "messages",
-                                  "all",
-                                ]
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2811,19 +2814,16 @@ paths:
                                   deprecated: true
                                   type: string
                                   description: |
-                                    Old name for `op` for this event type.
+                                    Old name for the `op` field in this event type.
 
-                                    **Deprecated**: This is deprecated; please use `op` instead
-                                    starting with Zulip 4.0 (feature level 32).
+                                    **Deprecated** in Zulip 4.0 (feature level 32), and
+                                    replaced by the `op` field.
                                   enum:
                                     - remove
                                 flag:
                                   type: string
                                   description: |
-                                    The flag to be removed.
-                                  enum:
-                                    - starred
-                                    - read
+                                    The [flag][message-flags] to be removed.
                                 messages:
                                   type: array
                                   description: |
@@ -2832,18 +2832,19 @@ paths:
                                   items:
                                     type: integer
                                 all:
+                                  deprecated: true
                                   type: boolean
                                   description: |
-                                    Whether the flag was removed from all messages.
-                                    If this is true then the `messages` array will be empty.
+                                    Will be `false` for all specified flags.
+
+                                    **Deprecated** and will be removed in a future release.
                                 message_details:
                                   description: |
-                                    Present if `message` and `update_message_flags` are both present in
-                                    `event_types` and the `flag` is `read` and the `op` is `remove`.
+                                    Only present if the specified `flag` is `"read"`.
 
                                     A set of data structures describing the messages that
                                     are being marked as unread with additional details to
-                                    allow a client to update the `unread_msgs` data
+                                    allow clients to update the `unread_msgs` data
                                     structure for these messages (which may not be
                                     otherwise known to the client).
 
@@ -2898,8 +2899,7 @@ paths:
                                         type: boolean
                                         deprecated: true
                                         description: |
-                                          **Deprecated**
-                                          Internal implementation detail. Clients should
+                                          **Deprecated** internal implementation detail. Clients should
                                           ignore this field as it will be removed in the future.
                               example:
                                 {
@@ -3967,7 +3967,7 @@ paths:
                                       type: object
                                       additionalProperties:
                                         description: |
-                                          Boolean describing whether the authentication method (i.e its key)
+                                          Boolean describing whether the authentication method (i.e. its key)
                                           is enabled in this organization.
                                         type: boolean
                                       description: |
@@ -4365,6 +4365,19 @@ paths:
 
                                         **Changes**: None added as an option in Zulip 3.0 (feature level 1)
                                         to disable video call UI.
+                                    jitsi_server_url:
+                                      type: string
+                                      nullable: true
+                                      description: |
+                                        The URL of the custom Jitsi Meet server configured in this organization's
+                                        settings.
+
+                                        `null`, the default, means that the organization is using the should use the
+                                        server-level configuration, `server_jitsi_server_url`.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                                        available as a server-level configuration, and required a server restart to
+                                        change.
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -4412,6 +4425,13 @@ paths:
                                         `send_read_receipts` setting within `realm_user_settings_defaults`.
 
                                         **Changes**: New in Zulip 6.0 (feature level 137).
+                                    enable_guest_user_indicator:
+                                      type: boolean
+                                      description: |
+                                        Whether clients should display "(guest)" after the names of
+                                        guest users to prominently highlight their status.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 216).
                                   additionalProperties: false
                               example:
                                 {
@@ -4829,38 +4849,50 @@ paths:
       description: |
         Marks all of the current user's unread messages as read.
 
-        **Changes**: Before Zulip 6.0 (feature level 153), this
-        request did a single atomic operation, which could time out
-        with 10,000s of unread messages to mark as read.
+        Because this endpoint marks messages as read in batches, it is possible
+        for the request to time out after only marking some messages as read.
+        When this happens, the `complete` boolean field in the success response
+        will be `false`. Clients should repeat the request when handling such a
+        response. If all messages were marked as read, then the success response
+        will return `"complete": true`.
 
-        It now marks messages as read in batches, starting with the
-        newest messages, so that progress will be made even if the
-        request times out.
+        **Changes**: Before Zulip 8.0 (feature level 211), if the server's
+        processing was interrupted by a timeout, but some messages were marked
+        as read, then it would return `"result": "partially_completed"`, along
+        with a `code` field for an error string, in the success response to
+        indicate that there was a timeout and that the client should repeat the
+        request.
 
-        If the server's processing is interrupted by a timeout, it
-        will return an HTTP 200 success response with result
-        "partially_completed". A correct client should repeat the
-        request when handling such a response.
+        Before Zulip 6.0 (feature level 153), this request did a single atomic
+        operation, which could time out with 10,000s of unread messages to mark
+        as read. As of this feature level, messages are marked as read in
+        batches, starting with the newest messages, so that progress is made
+        even if the request times out. And, instead of returning an error when
+        the request times out and some messages have been marked as read, a
+        success response with `"result": "partially_completed"` is returned.
       responses:
         "200":
-          description: Success or partial success.
+          description: Success.
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - allOf:
-                      - $ref: "#/components/schemas/PartiallyCompleted"
-                      - example:
-                          {
-                            "code": "REQUEST_TIMEOUT",
-                            "msg": "",
-                            "result": "partially_completed",
-                          }
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    required:
+                      - complete
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      complete:
+                        type: boolean
                         description: |
-                          If the request exceeds its processing time limit after having
-                          successfully marked some messages as read, response code 200
-                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
+                          Whether all unread messages were marked as read.
+
+                          Will be `false` if the request successfully marked
+                          some, but not all, messages as read.
+                    example: {"msg": "", "result": "success", "complete": true}
   /mark_stream_as_read:
     post:
       operationId: mark-stream-as-read
@@ -5011,14 +5043,15 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "UNAUTHORIZED",
                         "result": "error",
                         "msg": "Not logged in: API authentication or user session required",
                       }
                     description: |
-                      A typical failed JSON response for when the user is not logged in
+                      A typical failed JSON response for when the user is not logged in:
   /drafts:
     get:
       operationId: get-drafts
@@ -5065,7 +5098,7 @@ paths:
                               "to": [3],
                               "topic": "sync drafts",
                               "content": "Let's add backend support for syncing drafts.",
-                              "timestamp": 1595479019.43915,
+                              "timestamp": 1595479019,
                             },
                             {
                               "id": 2,
@@ -5073,7 +5106,7 @@ paths:
                               "to": [4],
                               "topic": "",
                               "content": "What if we made it possible to sync drafts in Zulip?",
-                              "timestamp": 1595479020.43916,
+                              "timestamp": 1595479019,
                             },
                             {
                               "id": 3,
@@ -5081,7 +5114,7 @@ paths:
                               "to": [4, 10],
                               "topic": "",
                               "content": "What if we made it possible to sync drafts in Zulip?",
-                              "timestamp": 1595479021.43916,
+                              "timestamp": 1595479019,
                             },
                           ],
                       }
@@ -5193,10 +5226,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no draft exists with the provided ID.
-                    example: {"result": "error", "msg": "Draft does not exist"}
+                      A typical failed JSON response for when no draft exists with
+                      the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Draft does not exist",
+                      }
     delete:
       operationId: delete-draft
       tags: ["drafts"]
@@ -5222,10 +5261,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no draft exists with the provided ID.
-                    example: {"result": "error", "msg": "Draft does not exist"}
+                      A typical failed JSON response for when no draft exists with
+                      the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Draft does not exist",
+                      }
   /scheduled_messages:
     get:
       operationId: get-scheduled-messages
@@ -5529,16 +5574,22 @@ paths:
                         description: |
                           A typical failed JSON response for when a direct message is scheduled
                           to be sent to a user that does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - description: |
-                          Example response for when no scheduled message exists with the provided ID.
-                        example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "result": "error",
-                            "msg": "Scheduled message does not exist",
-                          }
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no scheduled message exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Scheduled message does not exist",
+                      }
     delete:
       operationId: delete-scheduled-message
       tags: ["scheduled_messages"]
@@ -5569,9 +5620,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      Example response for when no scheduled message exists with the provided ID.
+                      A typical failed JSON response for when no scheduled message exists
+                      with the provided ID:
                     example:
                       {
                         "code": "BAD_REQUEST",
@@ -5608,14 +5660,8 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid stream ID",
-                            "result": "error",
-                          }
-                        description: |
+                      - $ref: "#/components/schemas/InvalidStreamError"
+                      - description: |
                           A typical failed JSON response for when an invalid stream ID is passed:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
@@ -5656,15 +5702,9 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/CodedError"
+                  - $ref: "#/components/schemas/InvalidStreamError"
                   - description: |
                       A typical failed JSON response for when an invalid stream ID is passed:
-                    example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
   /messages:
     get:
       operationId: get-messages
@@ -6126,6 +6166,8 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
+                    required:
+                      - id
                     properties:
                       result: {}
                       msg: {}
@@ -6134,7 +6176,36 @@ paths:
                         type: integer
                         description: |
                           The unique ID assigned to the sent message.
-                    example: {"msg": "", "id": 42, "result": "success"}
+                      automatic_new_visibility_policy:
+                        type: integer
+                        enum:
+                          - 2
+                          - 3
+                        description: |
+                          If the message's sender had configured their [visibility policy settings](/help/mute-a-topic)
+                          to potentially automatically follow or unmute topics when sending messages,
+                          and one of these policies did in fact change the user's visibility policy
+                          for the topic where this message was sent, the new value for that user's
+                          visibility policy for the recipient topic.
+
+                          Only present if the sender's visibility was in fact changed.
+
+                          Intended to be used by clients where it is important to explicitly display a
+                          notice that the topic's visibility policy has changed automatically due to
+                          the message sent. The information is also important to correctly decide whether to
+                          display a warning or notice suggesting to unmute the topic after sending a message
+                          to a muted stream. Such a notice might feel confusing in the event that the act of
+                          sending the message had already resulted in the user unmuting or following the topic
+                          in question.
+
+                          **Changes**: New in Zulip 8.0 (feature level 218).
+                    example:
+                      {
+                        "msg": "",
+                        "id": 42,
+                        "automatic_new_visibility_policy": 2,
+                        "result": "success",
+                      }
         "400":
           description: Bad request.
           content:
@@ -6875,14 +6946,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example: {"msg": "Invalid message(s)", "result": "error"}
-                    description: |
-                      A typical JSON response when attempting to
-                      access read receipts for a message ID that
-                      either does not exist or is not accessible to
-                      the current user.
-
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      A typical JSON response when attempting to access read receipts for
+                      a message ID that either does not exist or is not accessible to the
+                      current user:
   /messages/matches_narrow:
     get:
       operationId: check-messages-match-narrow
@@ -7744,9 +7812,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "BAD_REQUEST",
                         "msg": "Email 'newbie@zulip.com' already in use",
                         "result": "error",
                       }
@@ -8054,7 +8123,7 @@ paths:
       summary: Deactivate own user
       tags: ["users"]
       description: |
-        Deactivates the user's account. See also the administrative endpoint for
+        Deactivates the current user's account. See also the administrative endpoint for
         [deactivating another user](/api/deactivate-user).
 
         This endpoint is primarily useful to Zulip clients providing a user settings UI.
@@ -8067,15 +8136,45 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
+                  - $ref: "#/components/schemas/CodedErrorBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      code: {}
+                      entity:
+                        type: string
+                        description: |
+                          An internationalized string that notes if the current user is the only
+                          organization owner or the only user in the organization.
+                      is_last_owner:
+                        type: boolean
+                        description: |
+                          Whether the current user is the only organization owner (meaning there
+                          are other active users in the organization) or the only active user in the
+                          organzation.
+                    required:
+                      - entity
+                      - is_last_owner
+                    example:
                       {
+                        "code": "CANNOT_DEACTIVATE_LAST_USER",
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
+                        "entity": "organization owner",
+                        "is_last_owner": true,
                       }
                     description: |
-                      An example JSON error response when attempting to deactivate the only
-                      organization owner in an organization:
+                      If the current user is the only organization owner or only user in the
+                      organization, their account cannot be deactivated and an error response
+                      will be returned. The `is_last_owner` field in the error response
+                      indicates whether the user is the only owner (`true`) or the only user
+                      (`false`). The `entity` field in the error response is a internationalized
+                      string that notes if the current user is the only organization owner or
+                      the only user.
+
+                      An example JSON error response when the current user is the only
+                      organization owner in the organization:
   /users/me/alert_words:
     get:
       operationId: get-alert-words
@@ -8453,14 +8552,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the user is attempting to fetch the topics
                       of a non-existing stream (or also a private stream they don't have access to):
   /users/me/subscriptions:
@@ -8713,8 +8806,46 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/AddSubscriptionsResponse"
-                  - example:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      subscribed:
+                        type: object
+                        description: |
+                          A dictionary where the key is the Zulip API email address of the user/bot
+                          and the value is a list of the names of the streams that were subscribed
+                          to as a result of the query.
+                        additionalProperties:
+                          description: |
+                            `{email_address}`: List of the names of the streams that were subscribed
+                            to as a result of the query.
+                          type: array
+                          items:
+                            type: string
+                      already_subscribed:
+                        type: object
+                        description: |
+                          A dictionary where the key is the Zulip API email address of the user/bot
+                          and the value is a list of the names of the streams that the user/bot is
+                          already subscribed to.
+                        additionalProperties:
+                          description: |
+                            `{email_address}`: List of the names of the streams that the user is
+                            already subscribed to.
+                          type: array
+                          items:
+                            type: string
+                      unauthorized:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          A list of names of streams that the requesting user/bot was not
+                          authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
+                    example:
                       {
                         "already_subscribed":
                           {"iago@zulip.com": ["new stream"]},
@@ -9042,6 +9173,47 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /mobile_push/test_notification:
+    post:
+      operationId: test-notify
+      summary: Sends a test notifications to the user's mobile device(s)
+      tags: ["mobile"]
+      description: |
+        This endpoint allows a user to trigger a test push notification to their
+        selected mobile devices, or all their mobile devices.
+
+        **Changes**: New in Zulip 8.0 (feature level 217).
+      parameters:
+        - name: token
+          in: query
+          description: |
+            The push token for the device to send the test notification to.
+
+            If this parameter is not submitted, the test notification will be sent to all of the
+            user's devices registered on the server.
+
+            Mobile device clients should pass this parameter in order to trigger a notification
+            that is only delivered to this client.
+          schema:
+            type: string
+          example: "111222"
+          required: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/InvalidPushDeviceTokenError"
+                  - $ref: "#/components/schemas/InvalidRemotePushDeviceTokenError"
   /user_topics:
     post:
       operationId: update-user-topic
@@ -9147,19 +9319,34 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "Cannot mute self", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Cannot mute self",
+                            "result": "error",
+                          }
                         description: |
-                          An example JSON response for when the user is yourself:
+                          An example JSON response for when the user ID is the current
+                          user's ID:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "No such user", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such user",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is nonexistent or inaccessible:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
+                      - $ref: "#/components/schemas/CodedError"
                       - example:
-                          {"msg": "User already muted", "result": "error"}
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "User already muted",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is already muted:
     delete:
@@ -9183,13 +9370,23 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "No such user", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such user",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is nonexistent or inaccessible:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example: {"msg": "User is not muted", "result": "error"}
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "User is not muted",
+                            "result": "error",
+                          }
                         description: |
                           An example JSON response for when the user is not previously muted:
 
@@ -9305,15 +9502,15 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when no emoji exists with the provided name.
+                      An example JSON response for when no emoji exists with the provided name:
                     example:
                       {
+                        "code": "BAD_REQUEST",
                         "result": "error",
                         "msg": "Emoji 'green_tick' does not exist",
                       }
-
   /realm/emoji:
     get:
       operationId: get-custom-emoji
@@ -9810,10 +10007,11 @@ paths:
         - name: default_view
           in: query
           description: |
-            The [default view](/help/configure-default-view) used when opening a new
+            The [default view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
+            - "inbox" - Inbox view
             - "all_messages" - All messages view
           schema:
             type: string
@@ -9822,7 +10020,7 @@ paths:
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-default-view).
+            [configured default view](/help/configure-home-view).
 
             **Changes**: New in Zulip 5.0 (feature level 107).
           schema:
@@ -9890,7 +10088,7 @@ paths:
             unread messages.
 
             - 1 - All streams
-            - 2 - Unmuted streams
+            - 2 - Unmuted streams and topics
             - 3 - No streams
 
             **Changes**: New in Zulip 8.0 (feature level 210).
@@ -10092,6 +10290,44 @@ paths:
               - 1
               - 2
               - 3
+          example: 1
+        - name: automatically_follow_topics_policy
+          in: query
+          description: |
+            Which [topics to follow automatically](/help/mute-a-topic).
+
+            - 1 - Topics the user participates in
+            - 2 - Topics the user sends a message to
+            - 3 - Topics the user starts
+            - 4 - Never
+
+            **Changes**: New in Zulip 8.0 (feature level 214).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+          example: 1
+        - name: automatically_unmute_topics_in_muted_streams_policy
+          in: query
+          description: |
+            Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+
+            - 1 - Topics the user participates in
+            - 2 - Topics the user sends a message to
+            - 3 - Topics the user starts
+            - 4 - Never
+
+            **Changes**: New in Zulip 8.0 (feature level 214).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
           example: 1
         - name: presence_enabled
           in: query
@@ -10593,9 +10829,10 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
+                        "code": "BAD_REQUEST",
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
@@ -11603,7 +11840,7 @@ paths:
                         description: |
                           Present if `realm_incoming_webhook_bots` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary describes an type of incoming webhook
+                          An array of dictionaries where each dictionary describes a type of incoming webhook
                           integration that is available to be configured on this Zulip server.
 
                           Clients only need these data if they contain UI for creating or administering bots.
@@ -11770,9 +12007,11 @@ paths:
                           count:
                             type: integer
                             description: |
-                              The total number of unread messages to display; this includes one-on-one
-                              and group direct messages, as well as all messages to unmuted topics
-                              on unmuted streams.
+                              The total number of unread messages to display. This includes one-on-one and group
+                              direct messages, as well as stream messages that are not [muted](/help/mute-a-topic).
+
+                              **Changes**: Before Zulip 8.0 (feature level 213), the unmute and follow
+                              topic features were not handled correctly in calculating this field.
                           pms:
                             type: array
                             description: |
@@ -11816,8 +12055,9 @@ paths:
                           streams:
                             type: array
                             description: |
-                              An array of objects where each object contains details of unread
-                              messages of a single subscribed stream, including muted streams.
+                              An array of dictionaries where each dictionary contains details of all
+                              unread messages of a single subscribed stream. This includes muted streams
+                              and muted topics, even though those messages are excluded from `count`.
 
                               **Changes**: Prior to Zulip 5.0 (feature level 90), these objects
                               included a `sender_ids` property, which listed the set of IDs of
@@ -11866,9 +12106,12 @@ paths:
                           mentions:
                             type: array
                             description: |
-                              Array containing the IDs of all unread messages in which the user has been
-                              mentioned. For muted streams, wildcard mentions will not be considered for
-                              this array.
+                              Array containing the IDs of all unread messages in which the user was
+                              mentioned directly, and unread [non-muted](/help/mute-a-topic) messages
+                              in which the user was mentioned through a wildcard.
+
+                              **Changes**: Before Zulip 8.0 (feature level 213), the unmute and follow
+                              topic features were not handled correctly in calculating this field.
                             items:
                               type: integer
                           old_unreads_missing:
@@ -11986,6 +12229,10 @@ paths:
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             reaction_type:
                               type: string
+                              enum:
+                                - unicode_emoji
+                                - realm_emoji
+                                - zulip_extra_emoji
                               description: |
                                 If present, a string indicating the type of emoji. Each emoji
                                 `reaction_type` has an independent namespace for values of `emoji_code`.
@@ -12095,16 +12342,17 @@ paths:
                           default_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-default-view) used when opening a new
+                              The [default view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
+                              - "inbox" - Inbox view
                               - "all_messages" - All messages view
                           escape_navigates_to_default_view:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-default-view).
+                              [configured default view](/help/configure-home-view).
 
                               **Changes**: New in Zulip 5.0 (feature level 107).
                           left_side_userlist:
@@ -12149,7 +12397,7 @@ paths:
                               unread messages.
 
                               - 1 - All streams
-                              - 2 - Unmuted streams
+                              - 2 - Unmuted streams and topics
                               - 3 - No streams
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
@@ -12297,6 +12545,28 @@ paths:
                               **Changes**: New in Zulip 7.0 (feature level 168), replacing the
                               previous `realm_name_in_notifications` boolean;
                               `true` corresponded to `Always`, and `false` to `Never`.
+                          automatically_follow_topics_policy:
+                            type: integer
+                            description: |
+                              Which [topics to follow automatically](/help/mute-a-topic).
+
+                              - 1 - Topics the user participates in
+                              - 2 - Topics the user sends a message to
+                              - 3 - Topics the user starts
+                              - 4 - Never
+
+                              **Changes**: New in Zulip 8.0 (feature level 214).
+                          automatically_unmute_topics_in_muted_streams_policy:
+                            type: integer
+                            description: |
+                              Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+
+                              - 1 - Topics the user participates in
+                              - 2 - Topics the user sends a message to
+                              - 3 - Topics the user starts
+                              - 4 - Never
+
+                              **Changes**: New in Zulip 8.0 (feature level 214).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -12925,7 +13195,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          The [default view](/help/configure-default-view) in Zulip, represented
+                          The [default view](/help/configure-home-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
@@ -13474,6 +13744,21 @@ paths:
 
                           **Changes**: None added as an option in Zulip 3.0 (feature level 1)
                           to disable video call UI.
+                      realm_jitsi_server_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          The URL of the custom Jitsi Meet server configured in this organization's
+                          settings.
+
+                          `null`, the default, means that the organization is using the should use the
+                          server-level configuration, `server_jitsi_server_url`. A correct client
+                          supporting only the modern API should use `realm_jitsi_server_url ||
+                          server_jitsi_server_url` to create calls.
+
+                          **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                          available as a server-level configuration, which was available via the
+                          `jitsi_server_url` field.
                       realm_giphy_rating:
                         type: integer
                         description: |
@@ -13559,7 +13844,7 @@ paths:
                         type: object
                         additionalProperties:
                           description: |
-                            Boolean describing whether the authentication method (i.e its key)
+                            Boolean describing whether the authentication method (i.e. its key)
                             is enabled in this organization.
                           type: boolean
                         description: |
@@ -13874,6 +14159,15 @@ paths:
                           - 2 = Zulip Cloud free plan (LIMITED)
                           - 3 = Zulip Cloud Standard plan (STANDARD)
                           - 4 = Zulip Cloud Standard plan, sponsored for free (STANDARD_FREE)
+                      realm_enable_guest_user_indicator:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether clients should display "(guest)" after the names of
+                          guest users to prominently highlight their status.
+
+                          **Changes**: New in Zulip 8.0 (feature level 216).
                       zulip_plan_is_not_limited:
                         type: boolean
                         description: |
@@ -13930,10 +14224,21 @@ paths:
                                 on the external site.
                       jitsi_server_url:
                         type: string
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The base URL the organization uses to create Jitsi video calls.
+                          The base URL to be used to create Jitsi video calls. Equals
+                          `realm_jitsi_server_url || server_jitsi_server_url`.
+
+                          **Changes**: Deprecated in Zulip 8.0 (feature level 212) and will
+                          eventually be removed. Previously, the Jitsi server to use was not
+                          configurable on a per-realm basis, and this field contained the server's
+                          configured Jitsi server. (Which is now provided as
+                          `server_jitsi_server_url`). Clients supporting older versions should fall
+                          back to this field when creating calls: using `realm_jitsi_server_url ||
+                          server_jitsi_server_url` with newer servers and using `jitsi_server_url`
+                          with servers below feature level 212.
                       development_environment:
                         type: boolean
                         description: |
@@ -14085,6 +14390,16 @@ paths:
                           since the last request.
 
                           **Changes**: New in Zulip 6.0 (feature level 140).
+                      server_jitsi_server_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          The URL of the Jitsi server that the Zulip server is configured to use by
+                          default; the organization-level setting `realm_jitsi_server_url` takes
+                          precedence over this setting when both are set.
+
+                          **Changes**: New in Zulip 8.0 (feature level 212). Previously, this value
+                          was available as the now-deprecated `jitsi_server_url`.
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |
@@ -14220,16 +14535,17 @@ paths:
                           default_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-default-view) used when opening a new
+                              The [default view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
+                              - "inbox" - Inbox view
                               - "all_messages" - All messages view
                           escape_navigates_to_default_view:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-default-view).
+                              [configured default view](/help/configure-home-view).
 
                               **Changes**: New in Zulip 5.0 (feature level 107).
                           left_side_userlist:
@@ -14274,7 +14590,7 @@ paths:
                               unread messages.
 
                               - 1 - All streams
-                              - 2 - Unmuted streams
+                              - 2 - Unmuted streams and topics
                               - 3 - No streams
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
@@ -14399,6 +14715,28 @@ paths:
                               **Changes**: New in Zulip 7.0 (feature level 168), replacing the
                               previous `realm_name_in_notifications` boolean;
                               `true` corresponded to `Always`, and `false` to `Never`.
+                          automatically_follow_topics_policy:
+                            type: integer
+                            description: |
+                              Which [topics to follow automatically](/help/mute-a-topic).
+
+                              - 1 - Topics the user participates in
+                              - 2 - Topics the user sends a message to
+                              - 3 - Topics the user starts
+                              - 4 - Never
+
+                              **Changes**: New in Zulip 8.0 (feature level 214).
+                          automatically_unmute_topics_in_muted_streams_policy:
+                            type: integer
+                            description: |
+                              Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+
+                              - 1 - Topics the user participates in
+                              - 2 - Topics the user sends a message to
+                              - 3 - Topics the user starts
+                              - 4 - Never
+
+                              **Changes**: New in Zulip 8.0 (feature level 214).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -15262,10 +15600,11 @@ paths:
         - name: default_view
           in: query
           description: |
-            The [default view](/help/configure-default-view) used when opening a new
+            The [default view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
+            - "inbox" - Inbox view
             - "all_messages" - All messages view
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
@@ -15279,7 +15618,7 @@ paths:
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-default-view).
+            [configured default view](/help/configure-home-view).
 
             **Changes**: New in Zulip 5.0 (feature level 107).
           schema:
@@ -15358,7 +15697,7 @@ paths:
             unread messages.
 
             - 1 - All streams
-            - 2 - Unmuted streams
+            - 2 - Unmuted streams and topics
             - 3 - No streams
 
             **Changes**: New in Zulip 8.0 (feature level 210).
@@ -15645,6 +15984,44 @@ paths:
               - 2
               - 3
           example: 1
+        - name: automatically_follow_topics_policy
+          in: query
+          description: |
+            Which [topics to follow automatically](/help/mute-a-topic).
+
+            - 1 - Topics the user participates in
+            - 2 - Topics the user sends a message to
+            - 3 - Topics the user starts
+            - 4 - Never
+
+            **Changes**: New in Zulip 8.0 (feature level 214).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+          example: 1
+        - name: automatically_unmute_topics_in_muted_streams_policy
+          in: query
+          description: |
+            Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+
+            - 1 - Topics the user participates in
+            - 2 - Topics the user sends a message to
+            - 3 - Topics the user starts
+            - 4 - Never
+
+            **Changes**: New in Zulip 8.0 (feature level 214).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+          example: 1
         - name: presence_enabled
           in: query
           description: |
@@ -15763,14 +16140,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the requested stream does not exist,
                       or where the user does not have permission to access the target stream:
   /streams:
@@ -16034,15 +16405,9 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON response for when the stream ID is not valid.
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
+                      An example JSON response for when the stream ID is not valid:
     delete:
       operationId: archive-stream
       summary: Archive a stream
@@ -16061,14 +16426,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
+                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - description: |
                       An example JSON response for when the supplied stream does not exist:
     patch:
       operationId: update-stream
@@ -16215,17 +16574,11 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid stream ID",
-                            "result": "error",
-                          }
-                        description: |
+                      - $ref: "#/components/schemas/InvalidStreamError"
+                      - description: |
                           An example JSON response for when the supplied stream does not exist:
                   - allOf:
-                      - $ref: "#/components/schemas/JsonError"
+                      - $ref: "#/components/schemas/CodedError"
                       - example:
                           {
                             "code": "BAD_REQUEST",
@@ -16234,7 +16587,7 @@ paths:
                           }
                         description: |
                           An example JSON response for when invalid combination of stream permission
-                          parameters are passed.
+                          parameters are passed:
   /streams/{stream_id}/delete_topic:
     post:
       operationId: delete-topic
@@ -16243,19 +16596,34 @@ paths:
       description: |
         Delete all messages in a topic.
 
-        Topics are a field on messages (not an independent
-        data structure), so deleting all the messages in the topic
-        deletes the topic from Zulip.
+        Topics are a field on messages (not an independent data structure), so
+        deleting all the messages in the topic deletes the topic from Zulip.
 
-        **Changes**: As of Zulip 6.0 (feature level 154), in case
-        of timeout, a success response with "partially_completed"
-        result will now be returned.
+        Because this endpoint deletes messages in batches, it is possible for
+        the request to time out after only deleting some messages in the topic.
+        When this happens, the `complete` boolean field in the success response
+        will be `false`. Clients should repeat the request when handling such a
+        response. If all messages in the topic were deleted, then the success
+        response will return `"complete": true`.
 
-        Before Zulip 6.0 (feature level 147), this request did a
-        single atomic operation, which could time out for very large
-        topics. It now deletes messages in batches, starting with
-        the newest messages, so that progress will be made even if
-        the request times out.
+        **Changes**: Before Zulip 8.0 (feature level 211), if the server's
+        processing was interrupted by a timeout, but some messages in the topic
+        were deleted, then it would return `"result": "partially_completed"`,
+        along with a `code` field for an error string, in the success response
+        to indicate that there was a timeout and that the client should repeat
+        the request.
+
+        As of Zulip 6.0 (feature level 154), instead of returning an error
+        response when a request times out after successfully deleting some of
+        the messages in the topic, a success response is returned with
+        `"result": "partially_completed"` to indicate that some messages were
+        deleted.
+
+        Before Zulip 6.0 (feature level 147), this request did a single atomic
+        operation, which could time out for very large topics. As of this
+        feature level, messages are deleted in batches, starting with the newest
+        messages, so that progress is made even if the request times out and
+        returns an error.
       x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
@@ -16269,31 +16637,34 @@ paths:
           required: true
       responses:
         "200":
-          description: Success or partial success.
+          description: Success.
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - allOf:
-                      - $ref: "#/components/schemas/PartiallyCompleted"
-                      - example:
-                          {
-                            "code": "REQUEST_TIMEOUT",
-                            "msg": "",
-                            "result": "partially_completed",
-                          }
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    required:
+                      - complete
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      complete:
+                        type: boolean
                         description: |
-                          If the request exceeds its processing time limit after having
-                          successfully marked some messages as read, response code 200
-                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
+                          Whether all unread messages were marked as read.
+
+                          Will be `false` if the request successfully marked
+                          some, but not all, messages as read.
+                    example: {"msg": "", "result": "success", "complete": true}
         "400":
           description: Bad request.
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "result": "error",
@@ -16347,7 +16718,11 @@ paths:
         See the subsystems documentation on [typing indicators][typing-protocol-docs]
         for additional design details on Zulip's typing notifications protocol.
 
-        **Changes**: Support for displaying stream typing notifications was new
+        **Changes**: Clients shouldn't care about the APIs prior to Zulip 8.0 (feature level 215)
+        for stream typing notifications, as no client actually implemented
+        the previous API for those.
+
+        Support for displaying stream typing notifications was new
         in Zulip 4.0 (feature level 58). Clients should indicate they support
         processing stream typing notifications via the `stream_typing_notifications`
         value in the `client_capabilities` parameter of the
@@ -16371,7 +16746,10 @@ paths:
           description: |
             Type of the message being composed.
 
-            **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added
+            **Changes**: In Zulip 8.0 (feature level 215), stopped supporting
+            `"private"` as a valid value for this parameter.
+
+            In Zulip 7.0 (feature level 174), `"direct"` was added
             as the preferred way to indicate a direct message is being composed,
             becoming the default value for this parameter and deprecating the
             original `"private"`.
@@ -16383,7 +16761,6 @@ paths:
             enum:
               - direct
               - stream
-              - private
             default: direct
           example: direct
         - name: op
@@ -16400,14 +16777,16 @@ paths:
         - name: to
           in: query
           description: |
-            For `"direct"` type it is the user IDs of the recipients of the message
-            being typed. Send a JSON-encoded list of user IDs. (Use a list even if
-            there is only one recipient.)
+            User IDs of the recipients of the message being typed. Required for the
+            `"direct"` type. Ignored in the case of `"stream"` type. Send a JSON-encoded
+            list of user IDs. (Use a list even if there is only one recipient.)
 
-            For `"stream"` type it is a single element list containing ID of stream in
-            which the message is being typed.
+            **Changes**: In Zulip 8.0 (feature level 215), stopped using this parameter
+            for the `"stream"` type. Previously, in the case of the `"stream"` type, it
+            accepted a single-element list containing the ID of the stream. A new parameter,
+            `stream_id`, is now used for this.
 
-            **Changes**: Support for typing notifications for stream messages
+            Support for typing notifications for stream messages
             is new in Zulip 4.0 (feature level 58). Previously, typing
             notifications were only for direct messages.
 
@@ -16420,8 +16799,19 @@ paths:
                 type: array
                 items:
                   type: integer
+                minLength: 1
               example: [9, 10]
-          required: true
+        - name: stream_id
+          in: query
+          description: |
+            ID of the stream in which the message is being typed. Required for the `"stream"`
+            type. Ignored in the case of `"direct"` type.
+
+            **Changes**: New in Zulip 8.0 (feature level 215). Previously, a single-element
+            list containing the ID of the stream was passed in `to` parameter.
+          schema:
+            type: integer
+          example: 7
         - name: topic
           in: query
           description: |
@@ -16442,7 +16832,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -16451,7 +16841,6 @@ paths:
                       }
                     description: |
                       An example JSON error response for when user sends to multiple streams:
-
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -16516,7 +16905,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "result": "error",
@@ -16656,7 +17045,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -16683,7 +17072,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonError"
+                  - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -18157,6 +18546,10 @@ components:
             within the namespace of the `reaction_type`.
         reaction_type:
           type: string
+          enum:
+            - unicode_emoji
+            - realm_emoji
+            - zulip_extra_emoji
           description: |
             A string indicating the type of emoji. Each emoji `reaction_type`
             has an independent namespace for values of `emoji_code`.
@@ -18625,7 +19018,7 @@ components:
           description: |
             The body of the draft. Should not contain null bytes.
         timestamp:
-          type: number
+          type: integer
           description: |
             A Unix timestamp (seconds only) representing when the draft was
             last edited. When creating a draft, this key need not be present
@@ -18920,6 +19313,7 @@ components:
             result: {}
             msg: {}
             ignored_parameters_unsupported: {}
+          example: {"msg": "", "result": "success"}
     JsonSuccessBase:
       description: |
         **Changes**: As of Zulip 7.0 (feature level 167), if any
@@ -18943,7 +19337,6 @@ components:
               type: string
             ignored_parameters_unsupported:
               $ref: "#/components/schemas/IgnoredParametersUnsupported"
-          example: {"msg": "", "result": "success"}
     IgnoredParametersSuccess:
       allOf:
         - $ref: "#/components/schemas/IgnoredParametersBase"
@@ -18968,6 +19361,13 @@ components:
         A typical successful JSON response with ignored parameters may look like:
 
         [ignored_params]: /api/rest-error-handling#ignored-parameters
+      example:
+        {
+          "ignored_parameters_unsupported":
+            ["invalid_param_1", "invalid_param_2"],
+          "msg": "",
+          "result": "success",
+        }
     IgnoredParametersBase:
       allOf:
         - $ref: "#/components/schemas/JsonResponseBase"
@@ -18982,49 +19382,6 @@ components:
               type: string
             ignored_parameters_unsupported:
               $ref: "#/components/schemas/IgnoredParametersUnsupported"
-          example:
-            {
-              "ignored_parameters_unsupported":
-                ["invalid_param_1", "invalid_param_2"],
-              "msg": "",
-              "result": "success",
-            }
-    JsonError:
-      allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
-        - additionalProperties: false
-          properties:
-            result: {}
-            msg: {}
-    JsonErrorBase:
-      allOf:
-        - $ref: "#/components/schemas/JsonResponseBase"
-        - required:
-            - result
-            - msg
-          properties:
-            result:
-              enum:
-                - error
-            msg:
-              type: string
-    PartiallyCompleted:
-      allOf:
-        - $ref: "#/components/schemas/JsonResponseBase"
-        - required:
-            - result
-            - code
-          additionalProperties: false
-          properties:
-            result:
-              enum:
-                - partially_completed
-            code:
-              type: string
-              description: |
-                A string that identifies the cause of the partial completion of the request.
-            msg:
-              type: string
     ApiKeyResponse:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -19068,10 +19425,17 @@ components:
             code: {}
     CodedErrorBase:
       allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
-        - properties:
-            result: {}
-            msg: {}
+        - $ref: "#/components/schemas/JsonResponseBase"
+        - required:
+            - result
+            - msg
+            - code
+          properties:
+            result:
+              enum:
+                - error
+            msg:
+              type: string
             code:
               type: string
               description: |
@@ -19097,14 +19461,29 @@ components:
             }
     InvalidMessageError:
       allOf:
-        - $ref: "#/components/schemas/JsonErrorBase"
+        - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           properties:
             result: {}
             msg: {}
+            code: {}
           example:
             {
               "msg": "Invalid message(s)",
+              "code": "BAD_REQUEST",
+              "result": "error",
+            }
+    InvalidStreamError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+          example:
+            {
+              "msg": "Invalid stream ID",
               "code": "BAD_REQUEST",
               "result": "error",
             }
@@ -19146,51 +19525,15 @@ components:
               "result": "error",
               "stream_id": 9,
             }
-    AddSubscriptionsResponse:
-      allOf:
-        - $ref: "#/components/schemas/JsonSuccessBase"
-        - additionalProperties: false
-          properties:
-            result: {}
-            msg: {}
-            ignored_parameters_unsupported: {}
-            subscribed:
-              type: object
-              description: |
-                A dictionary where the key is the Zulip API email address of the user/bot
-                and the value is a list of the names of the streams that were subscribed
-                to as a result of the query.
-              additionalProperties:
-                description: |
-                  `{email_address}`: List of the names of the streams that were subscribed
-                  to as a result of the query.
-                type: array
-                items:
-                  type: string
-            already_subscribed:
-              type: object
-              description: |
-                A dictionary where the key is the Zulip API email address of the user/bot
-                and the value is a list of the names of the streams that the user/bot is
-                already subscribed to.
-              additionalProperties:
-                description: |
-                  `{email_address}`: List of the names of the streams that the user is
-                  already subscribed to.
-                type: array
-                items:
-                  type: string
-            unauthorized:
-              type: array
-              items:
-                type: string
-              description: |
-                A list of names of streams that the requesting user/bot was not
-                authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
     InvalidApiKeyError:
       allOf:
-        - $ref: "#/components/schemas/JsonError"
-        - example: {"msg": "Invalid API key", "result": "error"}
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INVALID_API_KEY",
+              "msg": "Invalid API key",
+              "result": "error",
+            }
           description: |
             ## Invalid API key
 
@@ -19251,14 +19594,8 @@ components:
             A typical failed json response for when user's account is deactivated:
     RateLimitedError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - example:
-            {
-              "code": "RATE_LIMIT_HIT",
-              "msg": "API usage exceeded rate limit",
-              "result": "error",
-              "retry-after": 28.706807374954224,
-            }
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
           description: |
             ## Rate limit exceeded
 
@@ -19274,6 +19611,22 @@ components:
             A typical failed JSON response for when a rate limit is exceeded:
 
             [rate-limit-headers]: /api/http-headers#rate-limiting-response-headers
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            retry-after:
+              type: integer
+              description: |
+                How many seconds the client must wait before making
+                additional requests.
+          example:
+            {
+              "code": "RATE_LIMIT_HIT",
+              "msg": "API usage exceeded rate limit",
+              "result": "error",
+              "retry-after": 28.706807374954224,
+            }
     RealmDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -19290,6 +19643,33 @@ components:
             before Zulip 5.0 (feature level 76).
 
             A typical failed json response for when user's organization is deactivated:
+    InvalidPushDeviceTokenError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INVALID_PUSH_DEVICE_TOKEN",
+              "msg": "Device not recognized",
+              "result": "error",
+            }
+          description: |
+            ## Invalid push device token
+
+            A typical failed JSON response for when the push device token is invalid:
+    InvalidRemotePushDeviceTokenError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INVALID_REMOTE_PUSH_DEVICE_TOKEN",
+              "msg": "Device not recognized by the push bouncer",
+              "result": "error",
+            }
+          description: |
+            ## Invalid push device token
+
+            A typical failed JSON response for when the push device token is not recognized
+            by the push notification bouncer:
 
   ###################
   # Shared responses

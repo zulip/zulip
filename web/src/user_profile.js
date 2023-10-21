@@ -1,32 +1,43 @@
 import {parseISO} from "date-fns";
 import $ from "jquery";
 
+import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
+import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
+import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
+import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
 import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
 
+import * as avatar from "./avatar";
+import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as components from "./components";
+import {csrf_token} from "./csrf";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
+import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as integration_url_modal from "./integration_url_modal";
 import * as ListWidget from "./list_widget";
-import * as overlays from "./overlays";
+import * as loading from "./loading";
+import * as modals from "./modals";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as people from "./people";
-import * as popovers from "./popovers";
-import * as settings_account from "./settings_account";
-import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
-import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
+import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 import * as util from "./util";
@@ -34,13 +45,37 @@ import * as util from "./util";
 let user_streams_list_widget;
 let user_profile_subscribe_widget;
 let toggler;
+let bot_owner_dropdown_widget;
+
+const INCOMING_WEBHOOK_BOT_TYPE = 2;
+const OUTGOING_WEBHOOK_BOT_TYPE = "3";
+const EMBEDDED_BOT_TYPE = "4";
+
+export function show_button_spinner($button) {
+    const $spinner = $button.find(".modal__spinner");
+    const dialog_submit_button_span_width = $button.find("span").width();
+    const dialog_submit_button_span_height = $button.find("span").height();
+    $button.prop("disabled", true);
+    $button.find("span").hide();
+    loading.make_indicator($spinner, {
+        width: dialog_submit_button_span_width,
+        height: dialog_submit_button_span_height,
+    });
+}
+
+export function hide_button_spinner($button) {
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", false);
+    $button.find("span").show();
+    loading.destroy_indicator($spinner);
+}
 
 function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
 }
 
 export function get_user_id_if_user_profile_modal_open() {
-    if (overlays.is_modal_open() && overlays.active_modal() === "#user-profile-modal") {
+    if (modals.any_active() && modals.active_modal() === "#user-profile-modal") {
         const user_id = $("#user-profile-modal").data("user-id");
         return user_id;
     }
@@ -116,8 +151,7 @@ export function get_user_unsub_streams() {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
     return stream_data
         .get_streams_for_user(target_user_id)
-        .can_subscribe.filter((stream) => stream_data.can_subscribe_others(stream))
-        .map((stream) => ({
+        .can_subscribe.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id.toString(),
             stream,
@@ -138,6 +172,8 @@ function format_user_stream_list_item_html(stream, user) {
         people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream);
     const show_private_stream_unsub_tooltip =
         people.is_my_user_id(user.user_id) && stream.invite_only;
+    const show_last_user_in_private_stream_unsub_tooltip =
+        stream.invite_only && peer_data.get_subscriber_count(stream.stream_id) === 1;
     return render_user_stream_list_item({
         name: stream.name,
         stream_id: stream.stream_id,
@@ -146,6 +182,7 @@ function format_user_stream_list_item_html(stream, user) {
         is_web_public: stream.is_web_public,
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
+        show_last_user_in_private_stream_unsub_tooltip,
         stream_edit_url: hash_util.stream_edit_url(stream),
     });
 }
@@ -167,10 +204,18 @@ function render_user_stream_list(streams, user) {
         modifier_html(item) {
             return format_user_stream_list_item_html(item, user);
         },
+        callback_after_render() {
+            $container.parent().removeClass("empty-list");
+        },
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item && item.name.toLocaleLowerCase().includes(value);
+            },
+            onupdate() {
+                if ($container.find(".empty-table-message").length) {
+                    $container.parent().addClass("empty-list");
+                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -184,6 +229,9 @@ function render_user_group_list(groups, user) {
     ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
+        callback_after_render() {
+            $container.parent().removeClass("empty-list");
+        },
         modifier_html(item) {
             return format_user_group_list_item_html(item);
         },
@@ -200,9 +248,9 @@ function render_manage_profile_content(user) {
     const $container = $("#manage-profile-tab");
     $container.empty();
     if (user.is_bot) {
-        settings_bots.show_edit_bot_info_modal(user.user_id, $container);
+        show_edit_bot_info_modal(user.user_id, $container);
     } else {
-        settings_users.show_edit_user_info_modal(user.user_id, $container);
+        show_edit_user_info_modal(user.user_id, $container);
     }
 }
 
@@ -260,7 +308,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
 
 export function hide_user_profile() {
     user_streams_list_widget = undefined;
-    overlays.close_modal_if_open("user-profile-modal");
+    modals.close_if_open("user-profile-modal");
 }
 
 function show_manage_user_tab(target) {
@@ -271,10 +319,9 @@ function initialize_user_type_fields(user) {
     // Avoid duplicate pill fields, by removing existing ones.
     $("#user-profile-modal .pill").remove();
     if (!user.is_bot) {
-        settings_account.initialize_custom_user_type_fields(
+        custom_profile_fields_ui.initialize_custom_user_type_fields(
             "#user-profile-modal #content",
             user.user_id,
-            false,
             false,
         );
     } else {
@@ -283,8 +330,6 @@ function initialize_user_type_fields(user) {
 }
 
 export function show_user_profile(user, default_tab_key = "profile-tab") {
-    popovers.hide_all();
-
     const field_types = page_params.custom_profile_field_types;
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types))
@@ -295,7 +340,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
     // Therefore, we also check for that condition.
     const show_user_subscribe_widget =
-        (people.can_admin_user(user) || page_params.is_admin) &&
+        (people.can_admin_user(user) || settings_data.user_can_subscribe_other_users()) &&
         !user.is_system_bot &&
         people.is_person_active(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
@@ -324,6 +369,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         user_is_guest: user.is_guest,
         show_user_subscribe_widget,
         can_manage_profile,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
     };
 
     if (user.is_bot) {
@@ -335,11 +381,11 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
             const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;
         }
-        args.bot_type = settings_bots.type_id_to_string(user.bot_type);
+        args.bot_type = settings_data.bot_type_id_to_string(user.bot_type);
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    overlays.open_modal("user-profile-modal", {autoremove: true});
+    modals.open("user-profile-modal", {autoremove: true});
     $(".tabcontent").hide();
 
     let default_tab = 0;
@@ -421,7 +467,341 @@ function handle_remove_stream_subscription(target_user_id, sub, success, failure
     }
 }
 
-export function register_click_handlers() {
+export function show_edit_bot_info_modal(user_id, $container) {
+    const bot = people.maybe_get_user_by_id(user_id);
+    const owner_id = bot_data.get(user_id).owner_id;
+    const owner_full_name = people.get_full_name(owner_id);
+    const is_active = people.is_person_active(user_id);
+
+    if (!bot || !bot_data.get(user_id)) {
+        return;
+    }
+
+    const html_body = render_edit_bot_form({
+        user_id,
+        is_active,
+        email: bot.email,
+        full_name: bot.full_name,
+        user_role_values: settings_config.user_role_values,
+        disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
+        bot_avatar_url: bot.avatar_url,
+        owner_full_name,
+        current_bot_owner: bot.bot_owner_id,
+        is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+    });
+    $container.append(html_body);
+    let avatar_widget;
+
+    const bot_type = bot.bot_type.toString();
+    const service = bot_data.get_services(bot.user_id)[0];
+    edit_bot_post_render();
+    $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
+        const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
+        const $full_name = $("#bot-edit-form").find("input[name='full_name']");
+        const url = "/json/bots/" + encodeURIComponent(bot.user_id);
+
+        const formData = new FormData();
+        formData.append("csrfmiddlewaretoken", csrf_token);
+        formData.append("full_name", $full_name.val());
+        formData.append("role", JSON.stringify(role));
+        const new_bot_owner_id = bot_owner_dropdown_widget.value();
+        if (new_bot_owner_id) {
+            formData.append("bot_owner_id", new_bot_owner_id);
+        }
+
+        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            const service_payload_url = $("#edit_service_base_url").val();
+            const service_interface = $("#edit_service_interface").val();
+            formData.append("service_payload_url", JSON.stringify(service_payload_url));
+            formData.append("service_interface", service_interface);
+        } else if (bot_type === EMBEDDED_BOT_TYPE && service !== undefined) {
+            const config_data = {};
+            $("#config_edit_inputbox input").each(function () {
+                config_data[$(this).attr("name")] = $(this).val();
+            });
+            formData.append("config_data", JSON.stringify(config_data));
+        }
+
+        const $file_input = $("#bot-edit-form").find(".edit_bot_avatar_file_input");
+        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
+            formData.append("file-" + i, file);
+        }
+
+        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
+        show_button_spinner($submit_btn);
+        $cancel_btn.prop("disabled", true);
+
+        channel.patch({
+            url,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success() {
+                avatar_widget.clear();
+                hide_user_profile();
+            },
+            error(xhr) {
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed"}),
+                    xhr,
+                    $("#bot-edit-form-error"),
+                );
+                // Scrolling modal to top, to make error visible to user.
+                $("#bot-edit-form")
+                    .closest(".simplebar-content-wrapper")
+                    .animate({scrollTop: 0}, "fast");
+                hide_button_spinner($submit_btn);
+                $cancel_btn.prop("disabled", false);
+            },
+        });
+    });
+
+    function edit_bot_post_render() {
+        $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
+
+        function get_options() {
+            const user_ids = people.get_realm_active_human_user_ids();
+            return user_ids.map((user_id) => ({
+                name: people.get_full_name(user_id),
+                unique_id: user_id,
+            }));
+        }
+
+        function item_click_callback(event, dropdown) {
+            bot_owner_dropdown_widget.render();
+            // Let dialog_widget know that there was a change in value.
+            $(bot_owner_dropdown_widget.widget_id).trigger("input");
+            dropdown.hide();
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        bot_owner_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: "edit_bot_owner",
+            get_options,
+            item_click_callback,
+            $events_container: $("#bot-edit-form"),
+            tippy_props: {
+                placement: "bottom-start",
+            },
+            default_id: owner_id,
+            unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        });
+        bot_owner_dropdown_widget.setup();
+
+        $("#bot-role-select").val(bot.role);
+        if (!page_params.is_owner) {
+            $("#bot-role-select")
+                .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
+                .hide();
+        }
+
+        avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
+
+        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            $("#service_data").append(
+                render_settings_edit_outgoing_webhook_service({
+                    service,
+                }),
+            );
+            $("#edit_service_interface").val(service.interface);
+        }
+        if (bot_type === EMBEDDED_BOT_TYPE) {
+            $("#service_data").append(
+                render_settings_edit_embedded_bot_service({
+                    service,
+                }),
+            );
+        }
+
+        // Hide the avatar if the user has uploaded an image
+        $("#bot-edit-form").on("input", ".edit_bot_avatar_file_input", () => {
+            $("#current_bot_avatar_image").hide();
+        });
+
+        // Show the avatar if the user has cleared the image
+        $("#bot-edit-form").on("click", ".edit_bot_avatar_clear_button", () => {
+            $("#current_bot_avatar_image").show();
+            $(".edit_bot_avatar_file_input").trigger("input");
+        });
+
+        $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const bot_id = $("#bot-edit-form").data("user-id");
+            function handle_confirm() {
+                const url = "/json/bots/" + encodeURIComponent(bot_id);
+                dialog_widget.submit_api_request(channel.del, url);
+            }
+            user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
+        });
+
+        // Handle reactivation
+        $("#bot-edit-form").on("click", ".reactivate_user_button", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const user_id = $("#bot-edit-form").data("user-id");
+            function handle_confirm() {
+                const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+                dialog_widget.submit_api_request(channel.post, url);
+            }
+            user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
+        });
+
+        $("#bot-edit-form").on("click", ".generate_url_for_integration", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const current_bot_data = bot_data.get(bot.user_id);
+            integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
+        });
+    }
+}
+
+function get_human_profile_data(fields_user_pills) {
+    /*
+        This formats custom profile field data to send to the server.
+        See render_admin_human_form and open_human_form
+        to see how the form is built.
+
+        TODO: Ideally, this logic would be cleaned up or deduplicated with
+        the settings_account.js logic.
+    */
+    const new_profile_data = [];
+    $("#edit-user-form .custom_user_field_value").each(function () {
+        // Remove duplicate datepicker input element generated flatpickr library
+        if (!$(this).hasClass("form-control")) {
+            new_profile_data.push({
+                id: Number.parseInt(
+                    $(this).closest(".custom_user_field").attr("data-field-id"),
+                    10,
+                ),
+                value: $(this).val(),
+            });
+        }
+    });
+    // Append user type field values also
+    for (const [field_id, field_pills] of fields_user_pills) {
+        if (field_pills) {
+            const user_ids = user_pill.get_user_ids(field_pills);
+            new_profile_data.push({
+                id: field_id,
+                value: user_ids,
+            });
+        }
+    }
+
+    return new_profile_data;
+}
+
+export function show_edit_user_info_modal(user_id, $container) {
+    const person = people.maybe_get_user_by_id(user_id);
+    const is_active = people.is_person_active(user_id);
+
+    if (!person) {
+        return;
+    }
+
+    const html_body = render_admin_human_form({
+        user_id,
+        email: person.delivery_email,
+        full_name: person.full_name,
+        user_role_values: settings_config.user_role_values,
+        disable_role_dropdown: person.is_owner && !page_params.is_owner,
+        owner_is_only_user_in_organization: people.get_active_human_count() === 1,
+        is_active,
+    });
+
+    $container.append(html_body);
+    // Set role dropdown and fields user pills
+    $("#user-role-select").val(person.role);
+    if (!page_params.is_owner) {
+        $("#user-role-select")
+            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
+            .hide();
+    }
+
+    const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
+    $(custom_profile_field_form_selector).empty();
+    custom_profile_fields_ui.append_custom_profile_fields(
+        custom_profile_field_form_selector,
+        user_id,
+    );
+    custom_profile_fields_ui.initialize_custom_date_type_fields(custom_profile_field_form_selector);
+    custom_profile_fields_ui.initialize_custom_pronouns_type_fields(
+        custom_profile_field_form_selector,
+    );
+    const fields_user_pills = custom_profile_fields_ui.initialize_custom_user_type_fields(
+        custom_profile_field_form_selector,
+        user_id,
+        true,
+    );
+
+    // Handle deactivation
+    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const user_id = $("#edit-user-form").data("user-id");
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            dialog_widget.submit_api_request(channel.del, url);
+        }
+        user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
+    });
+
+    // Handle reactivation
+    $("#edit-user-form").on("click", ".reactivate_user_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const user_id = $("#edit-user-form").data("user-id");
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+            dialog_widget.submit_api_request(channel.post, url);
+        }
+        user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
+    });
+
+    $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
+        const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+        const $full_name = $("#edit-user-form").find("input[name='full_name']");
+        const profile_data = get_human_profile_data(fields_user_pills);
+
+        const url = "/json/users/" + encodeURIComponent(user_id);
+        const data = {
+            full_name: $full_name.val(),
+            role: JSON.stringify(role),
+            profile_data: JSON.stringify(profile_data),
+        };
+
+        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
+        show_button_spinner($submit_btn);
+        $cancel_btn.prop("disabled", true);
+
+        channel.patch({
+            url,
+            data,
+            success() {
+                hide_user_profile();
+            },
+            error(xhr) {
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed"}),
+                    xhr,
+                    $("#edit-user-form-error"),
+                );
+                // Scrolling modal to top, to make error visible to user.
+                $("#edit-user-form")
+                    .closest(".simplebar-content-wrapper")
+                    .animate({scrollTop: 0}, "fast");
+                hide_button_spinner($submit_btn);
+                $cancel_btn.prop("disabled", false);
+            },
+        });
+    });
+}
+
+export function initialize() {
     $("body").on("click", "#user-profile-modal .add-subscription-button", (e) => {
         e.preventDefault();
         const stream_id = Number.parseInt(user_profile_subscribe_widget.value(), 10);
@@ -496,7 +876,11 @@ export function register_click_handlers() {
             ui_report.client_error(error_message, $alert_box, 1200);
         }
 
-        if (sub.invite_only && people.is_my_user_id(target_user_id)) {
+        if (
+            sub.invite_only &&
+            (people.is_my_user_id(target_user_id) ||
+                peer_data.get_subscriber_count(stream_id) === 1)
+        ) {
             const new_hash = hash_util.stream_edit_url(sub);
             hide_user_profile();
             browser_history.go_to_location(new_hash);

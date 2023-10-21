@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.http import HttpResponse, HttpResponseBase
 from django.template.response import TemplateResponse
 from django.test import Client, override_settings
@@ -336,7 +337,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(
                 repr(user_message),
-                f"<UserMessage: recip / {user_profile.email} ([])>",
+                f"<UserMessage: recip / {user_profile.email} (['read'])>",
             )
 
 
@@ -754,13 +755,17 @@ class PasswordResetTest(ZulipTestCase):
     def test_password_reset_for_soft_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        with self.soft_deactivate_and_check_long_term_idle(user_profile, False):
+
+        def reset_password() -> None:
             # start the password reset process by supplying an email address
             result = self.client_post("/accounts/password/reset/", {"email": email})
 
             # check the redirect link telling you to check mail for password reset link
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result["Location"].endswith("/accounts/password/reset/done/"))
+
+        self.soft_deactivate_user(user_profile)
+        self.expect_soft_reactivation(user_profile, reset_password)
 
 
 class LoginTest(ZulipTestCase):
@@ -1841,11 +1846,11 @@ class RealmCreationTest(ZulipTestCase):
             "-id": "cannot start or end with a",
             "string-ID": "lowercase letters",
             "string_id": "lowercase letters",
-            "stream": "unavailable",
-            "streams": "unavailable",
-            "about": "unavailable",
-            "abouts": "unavailable",
-            "zephyr": "unavailable",
+            "stream": "reserved",
+            "streams": "reserved",
+            "about": "reserved",
+            "abouts": "reserved",
+            "zephyr": "already in use",
         }
         for string_id, error_msg in errors.items():
             result = self.submit_realm_creation_form(
@@ -1877,7 +1882,7 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
 
         result = self.submit_realm_creation_form(email, realm_subdomain="test", realm_name="Test")
-        self.assert_in_response("Subdomain unavailable. Please choose a different one.", result)
+        self.assert_in_response("Subdomain reserved. Please choose a different one.", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions_root_domain(self) -> None:
@@ -1890,7 +1895,7 @@ class RealmCreationTest(ZulipTestCase):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="", realm_name=realm_name
             )
-            self.assert_in_response("unavailable", result)
+            self.assert_in_response("already in use", result)
 
         # test valid use of root domain
         result = self.submit_realm_creation_form(email, realm_subdomain="", realm_name=realm_name)
@@ -1917,7 +1922,7 @@ class RealmCreationTest(ZulipTestCase):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="abcdef", realm_name=realm_name, realm_in_root_domain="true"
             )
-            self.assert_in_response("unavailable", result)
+            self.assert_in_response("already in use", result)
 
         # test valid use of root domain
         result = self.submit_realm_creation_form(
@@ -1952,7 +1957,7 @@ class RealmCreationTest(ZulipTestCase):
     def test_subdomain_check_api(self) -> None:
         result = self.client_get("/json/realm/subdomain/zulip")
         self.assert_in_success_response(
-            ["Subdomain unavailable. Please choose a different one."], result
+            ["Subdomain already in use. Please choose a different one."], result
         )
 
         result = self.client_get("/json/realm/subdomain/zu_lip")
@@ -1963,12 +1968,13 @@ class RealmCreationTest(ZulipTestCase):
         with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"):
             result = self.client_get("/json/realm/subdomain/zulipauth")
             self.assert_in_success_response(
-                ["Subdomain unavailable. Please choose a different one."], result
+                ["Subdomain reserved. Please choose a different one."], result
             )
 
         result = self.client_get("/json/realm/subdomain/hufflepuff")
         self.assert_in_success_response(["available"], result)
-        self.assert_not_in_success_response(["unavailable"], result)
+        self.assert_not_in_success_response(["already in use"], result)
+        self.assert_not_in_success_response(["reserved"], result)
 
     def test_subdomain_check_management_command(self) -> None:
         # Short names should not work, even with the flag
@@ -2005,10 +2011,6 @@ class RealmCreationTest(ZulipTestCase):
 
 
 class UserSignUpTest(ZulipTestCase):
-    def _assert_redirected_to(self, result: "TestHttpResponse", url: str) -> None:
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["LOCATION"], url)
-
     def verify_signup(
         self,
         *,
@@ -2066,9 +2068,10 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_logged_in_user_id(user_profile.id)
         return user_profile
 
+    @override_settings(CORPORATE_ENABLED=False)
     def test_bad_email_configuration_for_accounts_home(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredError.
+        Make sure we show an error page for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
@@ -2080,12 +2083,42 @@ class UserSignUpTest(ZulipTestCase):
         with smtp_mock, self.assertLogs(level="ERROR") as m:
             result = self.client_post("/accounts/home/", {"email": email})
 
-        self._assert_redirected_to(result, "/config-error/smtp")
-        self.assertEqual(m.output, ["ERROR:root:Error in accounts_home"])
+        self.assertEqual(result.status_code, 500)
+        self.assert_in_response(
+            "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
+        )
+        self.assertTrue(
+            "ERROR:root:Failed to deliver email during user registration" in m.output[0]
+        )
 
+    @override_settings(CORPORATE_ENABLED=True)
+    def test_bad_email_configuration_for_corporate_accounts_home(self) -> None:
+        """
+        This should show a generic 500.
+        """
+        email = self.nonreg_email("newguy")
+
+        smtp_mock = patch(
+            "zerver.views.registration.send_confirm_registration_email",
+            side_effect=EmailNotDeliveredError,
+        )
+
+        with smtp_mock, self.assertLogs(level="ERROR") as m:
+            result = self.client_post("/accounts/home/", {"email": email})
+
+        self.assertEqual(result.status_code, 500)
+        self.assertNotIn(
+            "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
+        )
+        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assertTrue(
+            "ERROR:root:Failed to deliver email during user registration" in m.output[0]
+        )
+
+    @override_settings(CORPORATE_ENABLED=False)
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredError.
+        Make sure we show an error page for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
@@ -2099,8 +2132,35 @@ class UserSignUpTest(ZulipTestCase):
                 email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
 
-        self._assert_redirected_to(result, "/config-error/smtp")
-        self.assertEqual(m.output, ["ERROR:root:Error in create_realm"])
+        self.assertEqual(result.status_code, 500)
+        self.assert_in_response(
+            "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
+        )
+        self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
+
+    @override_settings(CORPORATE_ENABLED=True)
+    def test_bad_email_configuration_for_corporate_create_realm(self) -> None:
+        """
+        This should show a generic 500.
+        """
+        email = self.nonreg_email("newguy")
+
+        smtp_mock = patch(
+            "zerver.views.registration.send_confirm_registration_email",
+            side_effect=EmailNotDeliveredError,
+        )
+
+        with smtp_mock, self.assertLogs(level="ERROR") as m:
+            result = self.submit_realm_creation_form(
+                email, realm_subdomain="custom-test", realm_name="Zulip test"
+            )
+
+        self.assertEqual(result.status_code, 500)
+        self.assertNotIn(
+            "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
+        )
+        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
 
     def test_user_default_language_and_timezone(self) -> None:
         """
@@ -2337,30 +2397,30 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
 
-    def test_signup_with_full_name(self) -> None:
+    def test_correct_signup(self) -> None:
         """
-        Check if signing up without a full name redirects to a registration
-        form.
+        Verify the happy path of signing up with name and email address.
         """
         email = "newguy@zulip.com"
         password = "newpassword"
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
+        result = self.verify_signup(email=email, password=password)
+        assert isinstance(result, UserProfile)
 
-        # Visit the confirmation link.
+    def test_signup_with_email_address_race(self) -> None:
+        """
+        The check for if an email is in use can race with other user
+        creation; it is caught by database uniqueness rules.  Verify
+        that that is transformed into a redirect to log into the
+        account.
+        """
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        self.client_post("/accounts/home/", {"email": email})
         confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        result = self.client_post(
+        self.client_get(confirmation_url)
+        self.client_post(
             "/accounts/register/",
             {
                 "password": password,
@@ -2370,48 +2430,25 @@ class UserSignUpTest(ZulipTestCase):
                 "from_confirmation": "1",
             },
         )
-        self.assert_in_success_response(
-            ["Enter your account details to complete registration."], result
+        with patch("zerver.actions.create_user.create_user", side_effect=IntegrityError):
+            result = self.submit_reg_form_for_user(email, "easy", full_name="New Guy")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/login/?email={urllib.parse.quote(email)}&already_registered=1"
+            )
         )
 
     def test_signup_with_weak_password(self) -> None:
         """
-        Check if signing up without a full name redirects to a registration
-        form.
+        Check if signing up with a weak password fails.
         """
         email = "newguy@zulip.com"
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
         with self.settings(PASSWORD_MIN_LENGTH=6, PASSWORD_MIN_GUESSES=1000):
-            result = self.client_post(
-                "/accounts/register/",
-                {
-                    "password": "easy",
-                    "key": find_key_by_email(email),
-                    "terms": True,
-                    "full_name": "New Guy",
-                    "from_confirmation": "1",
-                },
-            )
-            self.assert_in_success_response(
-                ["Enter your account details to complete registration."], result
-            )
-
-            result = self.submit_reg_form_for_user(email, "easy", full_name="New Guy")
+            result = self.verify_signup(email=email, password="easy")
+            # _WSGIPatchedWSGIResponse does not exist in Django, thus the inverted isinstance check.
+            assert not isinstance(result, UserProfile)
             self.assert_in_success_response(["The password is too weak."], result)
             with self.assertRaises(UserProfile.DoesNotExist):
                 # Account wasn't created.
@@ -2715,7 +2752,7 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assert_in_success_response(
             [
-                "Subdomain unavailable. Please choose a different one.",
+                "Subdomain already in use. Please choose a different one.",
                 'value="Test"',
                 'name="realm_name"',
             ],
@@ -3979,17 +4016,20 @@ class UserSignUpTest(ZulipTestCase):
         realm = get_realm("zulip")
         req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
-        self.assertEqual(get_default_language_for_new_user(req, realm), "de")
+        self.assertEqual(get_default_language_for_new_user(realm, request=req), "de")
 
         do_set_realm_property(realm, "default_language", "hi", acting_user=None)
         realm.refresh_from_db()
         req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
-        self.assertEqual(get_default_language_for_new_user(req, realm), "de")
+        self.assertEqual(get_default_language_for_new_user(realm, request=req), "de")
 
         req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = ""
-        self.assertEqual(get_default_language_for_new_user(req, realm), "hi")
+        self.assertEqual(get_default_language_for_new_user(realm, request=req), "hi")
+
+        # Test code path for users created via the API or LDAP
+        self.assertEqual(get_default_language_for_new_user(realm, request=None), "hi")
 
 
 class DeactivateUserTest(ZulipTestCase):

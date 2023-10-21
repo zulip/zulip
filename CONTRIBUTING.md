@@ -154,6 +154,10 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 
 - We especially recommend browsing recently opened issues, as there are more
   likely to be easy ones for you to find.
+- Take a look at issues with the ["good first issue"
+  label](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22),
+  as they are especially accessible to new contributors. However, you will
+  likely find issues without this label that are accessible as well.
 - All issues are partitioned into areas like
   admin, compose, emoji, hotkeys, i18n, onboarding, search, etc. Look
   through our [list of labels](https://github.com/zulip/zulip/labels), and
@@ -245,6 +249,12 @@ labels.
   use the existing pull request (PR) as a starting point for your contribution. If
   you think a different approach is needed, you can post a new PR, with a comment that clearly
   explains _why_ you decided to start from scratch.
+- **What if I ask if someone is still working on an issue, and they don't
+  respond?** If you don't get a reply within 2-3 days, go ahead and post a comment
+  that you are working on the issue, and submit a pull request. If the original
+  assignee ends up submitting a pull request first, no worries! You can help by
+  providing feedback on their work, or submit your own PR if you think a
+  different approach is needed (as described above).
 - **Can I come up with my own feature idea and work on it?** We welcome
   suggestions of features or other improvements that you feel would be valuable. If you
   have a new feature you'd like to add, you can start a conversation [in our

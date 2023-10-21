@@ -34,6 +34,8 @@ export type RealmDefaultSettings = {
     notification_sound: string;
     pm_content_in_desktop_notifications: boolean;
     presence_enabled: boolean;
+    send_private_typing_notifications: boolean;
+    send_stream_typing_notifications: boolean;
     realm_name_in_email_notifications_policy: number;
     starred_message_counts: boolean;
     translate_emoticons: boolean;
@@ -42,6 +44,8 @@ export type RealmDefaultSettings = {
     web_stream_unreads_count_display_policy: number;
     web_mark_read_on_scroll_policy: number;
     wildcard_mentions_notify: boolean;
+    automatically_follow_topics_policy: number;
+    automatically_unmute_topics_in_muted_streams_policy: number;
 };
 
 export let realm_user_settings_defaults: RealmDefaultSettings;

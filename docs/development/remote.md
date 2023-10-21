@@ -211,11 +211,11 @@ well; contributions of precise documentation for them are welcome!
    ```
 3. Make sure the remote server is running in VS Code (you can
    force-start through the Command Palette).
-4. SSH to your remote machine using
+4. SSH to your remote machine using:
    ```console
    $ ssh -R 52698:localhost:52698 user@example.org
    ```
-5. On your remote machine, run
+5. On your remote machine, run:
    ```console
    $ rmate [options] file
    ```
@@ -314,11 +314,7 @@ different.
    service nginx reload  # Actually enabled your nginx configuration
    ```
 
-1. Edit `zproject/dev_settings.py` to set
-   `EXTERNAL_URI_SCHEME = "https://"`, so that URLs served by the
-   development environment will be HTTPS.
-
-1. Start the Zulip development environment with the following command:
+1. Start the Zulip development environment in HTTPS mode with the following command:
    ```bash
-   env EXTERNAL_HOST="hostname.example.com" ./tools/run-dev --interface=''
+   env EXTERNAL_HOST="hostname.example.com" ./tools/run-dev --behind-https-proxy --interface=''
    ```

@@ -1,5 +1,7 @@
 # Recent conversations
 
+{!conversation-definition.md!}
+
 {!recent-conversations.md!}
 
 !!! keyboard_tip ""
@@ -8,9 +10,9 @@
     <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
 
 ## Related articles
-* [Finding a topic to read](/help/finding-a-topic-to-read)
-* [Reading topics](/help/reading-topics)
+* [Finding a conversation to read](/help/finding-a-topic-to-read)
+* [Reading conversations](/help/reading-topics)
 * [Reading strategies](/help/reading-strategies)
-* [All messages](/help/all-messages)
 * [Inbox](/help/inbox)
-* [Configure default view](/help/configure-default-view)
+* [All messages](/help/all-messages)
+* [Configure home view](/help/configure-home-view)

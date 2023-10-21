@@ -45,12 +45,6 @@ $user_status_emoji_width: 24px;
                 vertical-align: middle;
             }
 
-            &:hover {
-                display: inline;
-                cursor: pointer;
-                color: hsl(0deg 0% 0%) !important;
-            }
-
             /*
             Hover does not work for touch-based devices like mobile phones.
             Hence the the icons does not appear, making the user unaware of its
@@ -60,6 +54,9 @@ $user_status_emoji_width: 24px;
 
             @media (hover: none) {
                 display: inline;
+                /* Show dots on touchscreens in a less distracting,
+                   lighter shade. */
+                color: var(--color-vdots-hint);
             }
         }
 
@@ -67,7 +64,11 @@ $user_status_emoji_width: 24px;
             .user-list-sidebar-menu-icon {
                 display: inline;
                 cursor: pointer;
-                color: hsl(0deg 0% 53%);
+                color: var(--color-vdots-visible);
+
+                &:hover {
+                    color: var(--color-vdots-hover);
+                }
             }
         }
 
@@ -82,6 +83,14 @@ $user_status_emoji_width: 24px;
         height: 8px;
         margin: 0 5px;
         display: block;
+    }
+
+    .empty-list-message {
+        font-size: 1.2em;
+
+        &:hover {
+            background-color: inherit;
+        }
     }
 
     & a {
@@ -130,9 +139,9 @@ $user_status_emoji_width: 24px;
 
 .user_list_style_values {
     .user-name-and-status-emoji {
-        display: block;
+        display: flex;
+        align-items: center;
         width: 100%;
-        height: 20px;
 
         .user-name {
             display: inline-block;
@@ -143,7 +152,7 @@ $user_status_emoji_width: 24px;
 
         .status-emoji {
             line-height: 20px;
-            top: -2px;
+            margin-left: 6px;
         }
     }
 
@@ -184,14 +193,18 @@ $user_status_emoji_width: 24px;
     &.user-with-count .unread_count {
         display: block;
         margin-left: 4px;
+
+        &:empty {
+            /* Hide otherwise empty unread count pill
+               after DMs have been read, but before the
+               count has been removed from the DOM. */
+            display: none;
+        }
     }
 }
 
 #userlist-toggle {
     display: none;
-    position: absolute;
-    top: 0;
-    right: 0;
     text-align: center;
     vertical-align: middle;
 }
@@ -199,11 +212,6 @@ $user_status_emoji_width: 24px;
 #userlist-toggle-button {
     text-decoration: none;
     color: hsl(0deg 0% 60%);
-    display: block;
-    width: 45px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
 
     &:hover {
         color: inherit;

@@ -7,7 +7,7 @@ from returns.curry import partial
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
@@ -795,7 +795,7 @@ def api_github_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
     branches: Optional[str] = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
@@ -806,8 +806,6 @@ def api_github_webhook(
     refine it based on the payload.
     """
     header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
-    if header_event is None:
-        raise UnsupportedWebhookEventTypeError("no header provided")
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:

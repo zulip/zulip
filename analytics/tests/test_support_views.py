@@ -4,6 +4,7 @@ from unittest import mock
 
 import orjson
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
@@ -24,6 +25,55 @@ from zerver.models import (
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
+import uuid
+
+from zilencer.models import RemoteZulipServer
+
+
+class TestRemoteServerSupportEndpoint(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+
+        # Set up some initial example data.
+        for i in range(20):
+            hostname = f"zulip-{i}.example.com"
+            RemoteZulipServer.objects.create(
+                hostname=hostname, contact_email=f"admin@{hostname}", plan_type=1, uuid=uuid.uuid4()
+            )
+
+    def test_search(self) -> None:
+        self.login("cordelia")
+
+        result = self.client_get("/activity/remote/support")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        # Iago is the user with the appropriate permissions to access this page.
+        self.login("iago")
+        assert self.example_user("iago").is_staff
+
+        result = self.client_get("/activity/remote/support")
+        self.assert_in_success_response(
+            [
+                'input type="text" name="q" class="input-xxlarge search-query" placeholder="hostname or contact email"'
+            ],
+            result,
+        )
+
+        result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
+        self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+        self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+
+        result = self.client_get("/activity/remote/support", {"q": "example.com"})
+        for i in range(20):
+            self.assert_in_success_response([f"<h3>zulip-{i}.example.com</h3>"], result)
+
+        result = self.client_get("/activity/remote/support", {"q": "admin@zulip-2.example.com"})
+        self.assert_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+        self.assert_in_success_response(["<b>Contact email</b>: admin@zulip-2.example.com"], result)
+        self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
 
 
 class TestSupportEndpoint(ZulipTestCase):
@@ -599,21 +649,29 @@ class TestSupportEndpoint(ZulipTestCase):
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-name"}
         )
         self.assert_in_success_response(
-            ["Subdomain unavailable. Please choose a different one."], result
+            ["Subdomain already in use. Please choose a different one."], result
         )
 
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "zulip"}
         )
         self.assert_in_success_response(
-            ["Subdomain unavailable. Please choose a different one."], result
+            ["Subdomain already in use. Please choose a different one."], result
         )
 
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "lear"}
         )
         self.assert_in_success_response(
-            ["Subdomain unavailable. Please choose a different one."], result
+            ["Subdomain already in use. Please choose a different one."], result
+        )
+
+        # Test renaming to a "reserved" subdomain
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "your-org"}
+        )
+        self.assert_in_success_response(
+            ["Subdomain reserved. Please choose a different one."], result
         )
 
     def test_downgrade_realm(self) -> None:

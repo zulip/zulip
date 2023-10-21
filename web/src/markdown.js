@@ -16,11 +16,10 @@ import marked from "../third/marked/lib/marked";
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
 const preview_regexes = [
-    // Inline image previews, check for contiguous chars ending in image suffix
+    // Inline image and video previews, check for contiguous chars ending in image and video suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?\s+/m,
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?$/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm)\)?(\s+|$)/m,
 
     // Twitter and youtube links are given previews
 
@@ -575,7 +574,7 @@ export function parse({raw_content, helper_config}) {
 
     // Disable _emphasis_ (keeping *emphasis*)
     // Text inside ** must start and end with a word character
-    // to prevent mis-parsing things like "char **x = (char **)y"
+    // to prevent misparsing things like "char **x = (char **)y"
     marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\S\s])+?)(\S)\*(?!\*)/;
 
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions

@@ -5,7 +5,7 @@ from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Sequence, S
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Max, QuerySet
+from django.db.models import Exists, Max, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
@@ -208,9 +208,18 @@ def add_missing_messages(user_profile: UserProfile) -> None:
                 continue
         recipient_ids.append(sub["recipient_id"])
 
-    all_stream_msgs = list(
-        Message.objects.filter(
+    new_stream_msgs = (
+        Message.objects.annotate(
+            has_user_message=Exists(
+                UserMessage.objects.filter(
+                    user_profile_id=user_profile,
+                    message_id=OuterRef("id"),
+                )
+            )
+        )
+        .filter(
             # Uses index: zerver_message_realm_recipient_id
+            has_user_message=0,
             realm_id=user_profile.realm_id,
             recipient_id__in=recipient_ids,
             id__gt=user_profile.last_active_message_id,
@@ -218,20 +227,12 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         .order_by("id")
         .values("id", "recipient__type_id")
     )
-    already_created_ums = set(
-        UserMessage.objects.filter(
-            user_profile=user_profile,
-            message__recipient__type=Recipient.STREAM,
-            message_id__gt=user_profile.last_active_message_id,
-        ).values_list("message_id", flat=True)
-    )
-
-    # Filter those messages for which UserMessage rows have been already created
-    all_stream_msgs = [msg for msg in all_stream_msgs if msg["id"] not in already_created_ums]
 
     stream_messages: DefaultDict[int, List[MissingMessageDict]] = defaultdict(list)
-    for msg in all_stream_msgs:
-        stream_messages[msg["recipient__type_id"]].append(msg)
+    for msg in new_stream_msgs:
+        stream_messages[msg["recipient__type_id"]].append(
+            MissingMessageDict(id=msg["id"], recipient__type_id=msg["recipient__type_id"])
+        )
 
     # Calling this function to filter out stream messages based upon
     # subscription logs and then store all UserMessage objects for bulk insert

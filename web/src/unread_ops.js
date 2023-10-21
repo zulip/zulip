@@ -5,16 +5,16 @@ import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as desktop_notifications from "./desktop_notifications";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
-import * as inbox_ui from "./inbox_ui";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
+import * as modals from "./modals";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
@@ -140,7 +140,7 @@ export function mark_all_as_read(args = {}) {
                     blueslip.log("Cleared old_unreads_missing after bankruptcy.");
                 }
             }
-            dialog_widget.close_modal();
+            dialog_widget.close();
         },
         error(xhr) {
             if (xhr.readyState === 0) {
@@ -166,9 +166,8 @@ function process_newly_read_message(message, options) {
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.view.show_message_as_read(message, options);
     }
-    notifications.close_notification(message);
+    desktop_notifications.close_notification(message);
     recent_view_ui.update_topic_unread_count(message);
-    inbox_ui.update();
 }
 
 export function mark_as_unread_from_here(
@@ -312,7 +311,6 @@ export function process_read_messages_event(message_ids) {
     }
 
     unread_ui.update_unread_counts();
-    inbox_ui.update();
 }
 
 export function process_unread_messages_event({message_ids, message_details}) {
@@ -389,7 +387,6 @@ export function process_unread_messages_event({message_ids, message_details}) {
     }
 
     unread_ui.update_unread_counts();
-    inbox_ui.update();
 }
 
 // Takes a list of messages and marks them as read.
@@ -475,7 +472,8 @@ export function mark_pm_as_read(user_ids_string) {
 
 export function viewport_is_visible_and_focused() {
     if (
-        overlays.is_overlay_or_modal_open() ||
+        overlays.any_active() ||
+        modals.any_active() ||
         !is_window_focused() ||
         !$("#message_feed_container").is(":visible")
     ) {

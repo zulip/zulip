@@ -38,6 +38,7 @@ automated messages and invitation emails. This setting:
 
 * [Change your language][user-lang]
 * [Configure multi-language search](/help/configure-multi-language-search)
+* [Configure default settings for new users](/help/configure-default-new-user-settings)
 
 [api-create-user]: https://zulip.com/api/create-user
 [user-lang]: /help/change-your-language

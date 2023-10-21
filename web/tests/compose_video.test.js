@@ -27,7 +27,8 @@ set_global(
 );
 
 const server_events_dispatch = zrequire("server_events_dispatch");
-const compose = zrequire("compose");
+const compose_setup = zrequire("compose_setup");
+
 function stub_out_video_calls() {
     const $elem = $("#below-compose-content .video_link");
     $elem.toggle = (show) => {
@@ -69,12 +70,11 @@ function test(label, f) {
 test("videos", ({override}) => {
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
 
-    override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
     stub_out_video_calls();
 
-    compose.initialize();
+    compose_setup.initialize();
 
     (function test_no_provider_video_link_compose_clicked() {
         const $textarea = $.create("target-stub");
@@ -119,15 +119,33 @@ test("videos", ({override}) => {
 
         page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
 
-        page_params.jitsi_server_url = null;
+        page_params.realm_jitsi_server_url = null;
+        page_params.server_jitsi_server_url = null;
         handler(ev);
         assert.ok(!called);
 
-        page_params.jitsi_server_url = "https://meet.jit.si";
+        page_params.realm_jitsi_server_url = null;
+        page_params.server_jitsi_server_url = "https://server.example.com";
         handler(ev);
         // video link ids consist of 15 random digits
-        const video_link_regex =
-            /\[translated: Join video call\.]\(https:\/\/meet.jit.si\/\d{15}#config.startWithVideoMuted=false\)/;
+        let video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/server.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+
+        page_params.realm_jitsi_server_url = "https://realm.example.com";
+        page_params.server_jitsi_server_url = null;
+        handler(ev);
+        video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+
+        page_params.realm_jitsi_server_url = "https://realm.example.com";
+        page_params.server_jitsi_server_url = "https://server.example.com";
+        handler(ev);
+        video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
@@ -179,7 +197,7 @@ test("videos", ({override}) => {
         $("#compose-textarea").val("");
         const audio_handler = $("body").get_on_handler("click", ".audio_link");
         audio_handler(ev);
-        const audio_link_regex = /\[translated: Join audio call\.]\(example\.zoom\.com\)/;
+        const audio_link_regex = /\[translated: Join voice call\.]\(example\.zoom\.com\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, audio_link_regex);
     })();
@@ -229,30 +247,27 @@ test("videos", ({override}) => {
 });
 
 test("test_video_chat_button_toggle disabled", ({override}) => {
-    override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
-    compose.initialize();
+    compose_setup.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), false);
 });
 
 test("test_video_chat_button_toggle no url", ({override}) => {
-    override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = null;
-    compose.initialize();
+    compose_setup.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), false);
 });
 
 test("test_video_chat_button_toggle enabled", ({override}) => {
-    override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
-    page_params.jitsi_server_url = "https://meet.jit.si";
-    compose.initialize();
+    page_params.realm_jitsi_server_url = "https://meet.jit.si";
+    compose_setup.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);
 });

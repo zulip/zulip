@@ -7,7 +7,7 @@ import render_default_stream_choice from "../templates/settings/default_stream_c
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -132,7 +132,7 @@ export function build_default_stream_table() {
 }
 
 export function update_default_streams_table() {
-    if (["organization", "settings"].includes(hash_util.get_current_hash_category())) {
+    if (["organization", "settings"].includes(hash_parser.get_current_hash_category())) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         build_default_stream_table();
     }
@@ -182,7 +182,7 @@ function show_add_default_streams_modal() {
                     successful_requests = successful_requests + 1;
 
                     if (successful_requests === chosen_streams.size) {
-                        dialog_widget.close_modal();
+                        dialog_widget.close();
                     }
                 },
                 error(xhr) {

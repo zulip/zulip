@@ -183,6 +183,25 @@ export function user_can_edit_user_groups(): boolean {
     return user_has_permission(page_params.realm_user_group_edit_policy);
 }
 
+export function can_edit_user_group(group_id: number): boolean {
+    if (!page_params.user_id) {
+        return false;
+    }
+
+    if (!user_can_edit_user_groups()) {
+        return false;
+    }
+
+    // Admins and moderators are allowed to edit user groups even if they
+    // are not a member of that user group. Members can edit user groups
+    // only if they belong to that group.
+    if (page_params.is_admin || page_params.is_moderator) {
+        return true;
+    }
+
+    return user_groups.is_direct_member_of(page_params.user_id, group_id);
+}
+
 export function user_can_add_custom_emoji(): boolean {
     return user_has_permission(page_params.realm_add_custom_emoji_policy);
 }
@@ -233,4 +252,52 @@ export function user_email_not_configured(): boolean {
     // under which we expect this condition to be possible:
     // page_params.demo_organization_scheduled_deletion_date
     return page_params.is_owner && page_params.delivery_email === "";
+}
+
+export function bot_type_id_to_string(type_id: number): string | undefined {
+    const bot_type = page_params.bot_types.find((bot_type) => bot_type.type_id === type_id);
+
+    if (bot_type === undefined) {
+        return undefined;
+    }
+
+    return bot_type.name;
+}
+
+/* istanbul ignore next */
+export function get_request_data_for_stream_privacy(selected_val: string): {
+    is_private: boolean;
+    history_public_to_subscribers: boolean;
+    is_web_public: boolean;
+} {
+    switch (selected_val) {
+        case settings_config.stream_privacy_policy_values.public.code: {
+            return {
+                is_private: false,
+                history_public_to_subscribers: true,
+                is_web_public: false,
+            };
+        }
+        case settings_config.stream_privacy_policy_values.private.code: {
+            return {
+                is_private: true,
+                history_public_to_subscribers: false,
+                is_web_public: false,
+            };
+        }
+        case settings_config.stream_privacy_policy_values.web_public.code: {
+            return {
+                is_private: false,
+                history_public_to_subscribers: true,
+                is_web_public: true,
+            };
+        }
+        default: {
+            return {
+                is_private: true,
+                history_public_to_subscribers: true,
+                is_web_public: false,
+            };
+        }
+    }
 }

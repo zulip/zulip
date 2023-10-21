@@ -53,7 +53,7 @@ function open_linkifier_edit_form(linkifier_id) {
         const opts = {
             success_continuation() {
                 $change_linkifier_button.prop("disabled", false);
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error_continuation(xhr) {
                 $change_linkifier_button.prop("disabled", false);
@@ -163,6 +163,7 @@ export function populate_linkifiers(linkifiers_data) {
     if (page_params.is_admin) {
         Sortable.create($linkifiers_table[0], {
             onUpdate: update_linkifiers_order,
+            handle: ".move-handle",
             filter: "input",
             preventOnFilter: false,
         });

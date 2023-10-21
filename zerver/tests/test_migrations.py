@@ -9,6 +9,7 @@ from unittest import skip
 
 import orjson
 from django.db.migrations.state import StateApps
+from typing_extensions import override
 
 from zerver.lib.test_classes import MigrationsTestCase
 from zerver.lib.test_helpers import use_db_models
@@ -35,6 +36,7 @@ class ScheduledEmailData(MigrationsTestCase):
     migrate_to = "0468_rename_followup_day_email_templates"
 
     @use_db_models
+    @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
         iago = self.example_user("iago")
         ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")

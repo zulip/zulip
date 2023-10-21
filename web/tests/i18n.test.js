@@ -77,12 +77,12 @@ run_test("t_tag", ({mock_template}) => {
             "http://zulip.zulipdev.com/#narrow/stream/101-devel/topic/testing/near/99",
     };
 
-    mock_template("actions_popover_content.hbs", true, (data, html) => {
+    mock_template("popovers/actions_popover.hbs", true, (data, html) => {
         assert.equal(data, args);
         assert.ok(html.indexOf("Citer et répondre") > 0);
     });
 
-    require("../templates/actions_popover_content.hbs")(args);
+    require("../templates/popovers/actions_popover.hbs")(args);
 });
 
 run_test("tr_tag", ({mock_template}) => {
@@ -104,6 +104,9 @@ run_test("tr_tag", ({mock_template}) => {
             realm_name_in_email_notifications_policy:
                 "Include organization name in subject of message notification emails",
             twenty_four_hour_time: "Time format",
+            automatically_follow_topics_policy: "Automatically follow topics",
+            automatically_unmute_topics_in_muted_streams_policy:
+                "Automatically unmute topics in muted streams",
         },
         show_push_notifications_tooltip: false,
         user_role_text: "Member",

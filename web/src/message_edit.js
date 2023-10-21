@@ -10,14 +10,16 @@ import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_call from "./compose_call";
+import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
+import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
@@ -30,12 +32,12 @@ import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
-import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -44,8 +46,6 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
-const upload_objects_by_row = new Map();
-
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
 // move several topics in a row with the same settings.
@@ -154,12 +154,23 @@ export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
     return false;
 }
 
+export function is_message_sent_by_my_bot(message) {
+    const user = people.get_by_user_id(message.sender_id);
+    if (user.bot_owner_id === undefined || user.bot_owner_id === null) {
+        // The message was not sent by a bot or the message was sent
+        // by a cross-realm bot which does not have an owner.
+        return false;
+    }
+
+    return people.is_my_user_id(user.bot_owner_id);
+}
+
 export function get_deletability(message) {
     if (page_params.is_admin) {
         return true;
     }
 
-    if (!message.sent_by_me) {
+    if (!message.sent_by_me && !is_message_sent_by_my_bot(message)) {
         return false;
     }
     if (message.locally_echoed) {
@@ -460,10 +471,10 @@ function edit_message($row, raw_content) {
 
     $form
         .find(".message-edit-feature-group .video_link")
-        .toggle(compose.compute_show_video_chat_button());
+        .toggle(compose_call.compute_show_video_chat_button());
     $form
         .find(".message-edit-feature-group .audio_link")
-        .toggle(compose.compute_show_audio_chat_button());
+        .toggle(compose_call.compute_show_audio_chat_button());
     upload.feature_check($(`#edit_form_${CSS.escape(rows.id($row))} .compose_upload_file`));
 
     const $message_edit_content = $row.find("textarea.message_edit_content");
@@ -567,7 +578,7 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
         mode: "edit",
         row: row_id,
     });
-    upload_objects_by_row.set(row_id, upload_object);
+    upload.upload_objects_by_message_edit_row.set(row_id, upload_object);
 }
 
 export function start($row, edit_box_open_callback) {
@@ -596,6 +607,14 @@ export function start($row, edit_box_open_callback) {
             }
         },
     });
+}
+
+function show_toggle_resolve_topic_spinner($row) {
+    const $spinner = $row.find(".toggle_resolve_topic_spinner");
+    loading.make_indicator($spinner);
+    $spinner.css({width: "18px"});
+    $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").hide();
+    $row.find(".toggle_resolve_topic_spinner").show();
 }
 
 function get_resolve_topic_time_limit_error_string(time_limit, time_limit_unit, topic_is_resolved) {
@@ -682,13 +701,22 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved) {
     });
 }
 
-export function toggle_resolve_topic(message_id, old_topic_name, report_errors_in_global_banner) {
+export function toggle_resolve_topic(
+    message_id,
+    old_topic_name,
+    report_errors_in_global_banner,
+    $row,
+) {
     let new_topic_name;
     const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
     if (topic_is_resolved) {
         new_topic_name = resolved_topic.unresolve_name(old_topic_name);
     } else {
         new_topic_name = resolved_topic.resolve_name(old_topic_name);
+    }
+
+    if ($row) {
+        show_toggle_resolve_topic_spinner($row);
     }
 
     const request = {
@@ -701,7 +729,18 @@ export function toggle_resolve_topic(message_id, old_topic_name, report_errors_i
     channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
+        success() {
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
+        },
         error(xhr) {
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
+
             if (xhr.responseJSON) {
                 if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                     handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
@@ -728,7 +767,7 @@ export function start_inline_topic_edit($recipient_row) {
     const msg_id = rows.id_for_recipient_row($recipient_row);
     const message = message_lists.current.get(msg_id);
     let topic = message.topic;
-    if (topic === compose.empty_topic_placeholder()) {
+    if (topic === compose_state.empty_topic_placeholder()) {
         topic = "";
     }
     const $inline_topic_edit_input = $form.find(".inline_topic_edit");
@@ -749,18 +788,14 @@ export function end_inline_topic_edit($row) {
     message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
-export function get_upload_object_from_row(row_id) {
-    return upload_objects_by_row.get(row_id);
-}
-
 function remove_uploads_from_row(row_id) {
-    const uploads_for_row = upload_objects_by_row.get(row_id);
+    const uploads_for_row = upload.upload_objects_by_message_edit_row.get(row_id);
     // We need to cancel all uploads, reset their progress,
     // and clear the files upon ending the edit.
     uploads_for_row?.cancelAll();
     // Since we removed all the uploads from the row, we should
     // now remove the corresponding upload object from the store.
-    upload_objects_by_row.delete(row_id);
+    upload.upload_objects_by_message_edit_row.delete(row_id);
 }
 
 export function end_message_row_edit($row) {
@@ -787,7 +822,7 @@ export function end_message_row_edit($row) {
         message_lists.current.hide_edit_message($row);
         message_viewport.scrollTop(original_scrollTop - scroll_by);
 
-        compose.abort_video_callbacks(message.id);
+        compose_call.abort_video_callbacks(message.id);
     }
     if ($row.find(".condensed").length !== 0) {
         condense.show_message_expander($row);
@@ -1100,7 +1135,7 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
                 dialog_widget.hide_dialog_spinner();
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error(xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
@@ -1133,7 +1168,7 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
             topic_name,
         },
         success(data) {
-            if (data.result === "partially_completed") {
+            if (data.complete === false) {
                 if (failures >= 9) {
                     // Don't keep retrying indefinitely to avoid DoSing the server.
                     return;
@@ -1235,7 +1270,7 @@ export function move_topic_containing_message_to_stream(
             // The main UI will update via receiving the event
             // from server_events.js.
             reset_modal_ui();
-            dialog_widget.close_modal();
+            dialog_widget.close();
         },
         error(xhr) {
             reset_modal_ui();
@@ -1254,7 +1289,7 @@ export function move_topic_containing_message_to_stream(
 
                 const partial_move_confirmation_modal_callback = () =>
                     handle_message_move_failure_due_to_time_limit(xhr, handle_confirm);
-                dialog_widget.close_modal(partial_move_confirmation_modal_callback);
+                dialog_widget.close(partial_move_confirmation_modal_callback);
                 return;
             }
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));

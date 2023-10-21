@@ -4,6 +4,7 @@ from unittest import mock
 
 import orjson
 from django.http import HttpRequest, HttpResponse
+from typing_extensions import override
 
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.muted_users import do_mute_user
@@ -182,7 +183,9 @@ class MissedMessageHookTest(ZulipTestCase):
                 self.user_profile, sub, stream, property_name, value, acting_user=None
             )
 
+    @override
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user("hamlet")
         self.cordelia = self.example_user("cordelia")
         do_change_user_setting(
@@ -194,8 +197,10 @@ class MissedMessageHookTest(ZulipTestCase):
 
         self.login_user(self.user_profile)
 
+    @override
     def tearDown(self) -> None:
         self.destroy_event_queue(self.user_profile, self.client_descriptor.event_queue.id)
+        super().tearDown()
 
     def test_basic(self) -> None:
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:

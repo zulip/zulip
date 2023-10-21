@@ -7,6 +7,7 @@ import * as people from "./people";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
+import * as server_events from "./server_events";
 import * as stream_data from "./stream_data";
 
 export function send_message(request, on_success, error) {
@@ -25,10 +26,36 @@ export function send_message(request, on_success, error) {
             data: request,
             success: function success(data) {
                 // Call back to our callers to do things like closing the compose
-                // box and turning off spinners and reifying locally echoed messages.
+                // box, turning off spinners, reifying locally echoed messages and
+                // displaying visibility policy related compose banners.
                 on_success(data);
                 // Once everything is done, get ready to report times to the server.
-                sent_messages.report_server_ack(request.local_id);
+                const state = sent_messages.get_message_state(request.local_id);
+                /* istanbul ignore if */
+                if (!state) {
+                    return;
+                }
+                state.report_server_ack();
+
+                // We only start our timer for events coming in here,
+                // since it's plausible the server rejected our message,
+                // or took a while to process it, but there is nothing
+                // wrong with our event loop.
+                /* istanbul ignore if */
+                if (!state.saw_event) {
+                    setTimeout(() => {
+                        if (state.saw_event) {
+                            // We got our event, no need to do anything
+                            return;
+                        }
+
+                        blueslip.log(
+                            `Restarting get_events due to delayed receipt of sent message ${request.local_id}`,
+                        );
+
+                        server_events.restart_get_events();
+                    }, 5000);
+                }
             },
             error(xhr, error_type) {
                 if (error_type !== "timeout" && reload_state.is_pending()) {

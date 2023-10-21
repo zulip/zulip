@@ -3,7 +3,7 @@ import _ from "lodash";
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_search_description from "../templates/search_description.hbs";
 
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
@@ -706,10 +706,15 @@ export class Filter {
         ) {
             const emails = this.operands("dm")[0].split(",");
             const names = emails.map((email) => {
-                if (!people.get_by_email(email)) {
+                const person = people.get_by_email(email);
+                if (!person) {
                     return email;
                 }
-                return people.get_by_email(email).full_name;
+
+                if (people.should_add_guest_user_indicator(person.user_id)) {
+                    return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
+                }
+                return person.full_name;
             });
 
             // We use join to handle the addition of a comma and space after every name
@@ -725,8 +730,14 @@ export class Filter {
                 if (people.is_my_user_id(user.user_id)) {
                     return $t({defaultMessage: "Messages sent by you"});
                 }
-                sender = user.full_name;
+
+                if (people.should_add_guest_user_indicator(user.user_id)) {
+                    sender = $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+                } else {
+                    sender = user.full_name;
+                }
             }
+
             return $t(
                 {defaultMessage: "Messages sent by {sender}"},
                 {
@@ -747,7 +758,7 @@ export class Filter {
                 case "is-mentioned":
                     return $t({defaultMessage: "Mentions"});
                 case "is-dm":
-                    return $t({defaultMessage: "Direct messages"});
+                    return $t({defaultMessage: "All direct messages"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
                 // These cases return false for is_common_narrow, and therefore are not
@@ -1125,7 +1136,7 @@ export class Filter {
             if (op.operand === undefined) {
                 return false;
             }
-            if (!hash_util.allowed_web_public_narrows.includes(op.operator)) {
+            if (!hash_parser.allowed_web_public_narrows.includes(op.operator)) {
                 return false;
             }
         }

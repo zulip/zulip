@@ -11,6 +11,7 @@ from zilencer.views import (
     remote_server_check_analytics,
     remote_server_notify_push,
     remote_server_post_analytics,
+    remote_server_send_test_notification,
     unregister_all_remote_push_devices,
     unregister_remote_push_device,
 )
@@ -18,11 +19,12 @@ from zilencer.views import (
 i18n_urlpatterns: Any = []
 
 # Zilencer views following the REST API style
-v1_api_and_json_patterns = [
+push_bouncer_patterns = [
     remote_server_path("remotes/push/register", POST=register_remote_push_device),
     remote_server_path("remotes/push/unregister", POST=unregister_remote_push_device),
     remote_server_path("remotes/push/unregister/all", POST=unregister_all_remote_push_devices),
     remote_server_path("remotes/push/notify", POST=remote_server_notify_push),
+    remote_server_path("remotes/push/test_notification", POST=remote_server_send_test_notification),
     # Push signup doesn't use the REST API, since there's no auth.
     path("remotes/server/register", register_remote_server),
     remote_server_path("remotes/server/deactivate", POST=deactivate_remote_server),
@@ -32,6 +34,5 @@ v1_api_and_json_patterns = [
 ]
 
 urlpatterns = [
-    path("api/v1/", include(v1_api_and_json_patterns)),
-    path("json/", include(v1_api_and_json_patterns)),
+    path("api/v1/", include(push_bouncer_patterns)),
 ]

@@ -469,7 +469,7 @@ We can see in the traceback that a `SchemaError` was raised in
     raise SchemaError(message) from None
 ```
 
-The next line in the output, let's us know how many errors were found
+The next line in the output, lets us know how many errors were found
 and for what endpoint.
 
 ```console

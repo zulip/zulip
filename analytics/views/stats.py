@@ -33,9 +33,10 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.i18n import get_and_set_request_language, get_language_translation_data
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.validator import to_non_negative_int
-from zerver.models import Client, Realm, UserProfile, get_realm
+from zerver.models import Client, Realm, Stream, UserProfile, get_realm
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, RemoteZulipServer
@@ -156,6 +157,21 @@ def get_chart_data_for_realm(
     return get_chart_data(request, user_profile, realm=realm, **kwargs)
 
 
+@require_non_guest_user
+@has_request_variables
+def get_chart_data_for_stream(
+    request: HttpRequest, /, user_profile: UserProfile, stream_id: int
+) -> HttpResponse:
+    stream, ignored_sub = access_stream_by_id(
+        user_profile,
+        stream_id,
+        require_active=True,
+        allow_realm_admin=True,
+    )
+
+    return get_chart_data(request, user_profile, stream=stream)
+
+
 @require_server_admin_api
 @has_request_variables
 def get_chart_data_for_remote_realm(
@@ -237,11 +253,15 @@ def get_chart_data(
     min_length: Optional[int] = REQ(converter=to_non_negative_int, default=None),
     start: Optional[datetime] = REQ(converter=to_utc_datetime, default=None),
     end: Optional[datetime] = REQ(converter=to_utc_datetime, default=None),
+    # These last several parameters are only used by functions
+    # wrapping get_chart_data; the callers are responsible for
+    # parsing/validation/authorization for them.
     realm: Optional[Realm] = None,
     for_installation: bool = False,
     remote: bool = False,
     remote_realm_id: Optional[int] = None,
     server: Optional["RemoteZulipServer"] = None,
+    stream: Optional[Stream] = None,
 ) -> HttpResponse:
     TableType: TypeAlias = Union[
         Type["RemoteInstallationCount"],
@@ -265,7 +285,9 @@ def get_chart_data(
         else:
             aggregate_table = RealmCount
 
-    tables: Union[Tuple[TableType], Tuple[TableType, Type[UserCount]]]
+    tables: Union[
+        Tuple[TableType], Tuple[TableType, Type[UserCount]], Tuple[TableType, Type[StreamCount]]
+    ]
 
     if chart_name == "number_of_humans":
         stats = [
@@ -313,6 +335,16 @@ def get_chart_data(
         stats = [COUNT_STATS["messages_read::hour"]]
         tables = (aggregate_table, UserCount)
         subgroup_to_label = {stats[0]: {None: "read"}}
+        labels_sort_function = None
+        include_empty_subgroups = True
+    elif chart_name == "messages_sent_by_stream":
+        if stream is None:
+            raise JsonableError(
+                _("Missing stream for chart: {chart_name}").format(chart_name=chart_name)
+            )
+        stats = [COUNT_STATS["messages_in_stream:is_bot:day"]]
+        tables = (aggregate_table, StreamCount)
+        subgroup_to_label = {stats[0]: {"false": "human", "true": "bot"}}
         labels_sort_function = None
         include_empty_subgroups = True
     else:
@@ -397,6 +429,7 @@ def get_chart_data(
         InstallationCount: "everyone",
         RealmCount: "everyone",
         UserCount: "user",
+        StreamCount: "everyone",
     }
     if settings.ZILENCER_ENABLED:
         aggregation_level[RemoteInstallationCount] = "everyone"
@@ -408,6 +441,9 @@ def get_chart_data(
         RealmCount: realm.id,
         UserCount: user_profile.id,
     }
+    if stream is not None:
+        id_value[StreamCount] = stream.id
+
     if settings.ZILENCER_ENABLED:
         if server is not None:
             id_value[RemoteInstallationCount] = server.id

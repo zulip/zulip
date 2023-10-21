@@ -335,7 +335,7 @@ class EditMessageTest(EditMessageTestCase):
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["raw_content"], "Personal message")
         self.assertEqual(response_dict["message"]["id"], msg_id)
-        self.assertEqual(response_dict["message"]["flags"], [])
+        self.assertEqual(response_dict["message"]["flags"], ["read"])
 
         # Send message to web-public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access
@@ -2127,7 +2127,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["read", "wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2181,13 +2181,19 @@ class EditMessageTest(EditMessageTestCase):
         )
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
-        def notify(user_id: int) -> Dict[str, Any]:
-            return {
-                "id": user_id,
-                "flags": ["wildcard_mentioned"],
-            }
-
-        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read", "wildcard_mentioned"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": ["wildcard_mentioned"],
+                },
+            ],
+            key=itemgetter("id"),
+        )
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
@@ -2228,7 +2234,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["read", "wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2319,13 +2325,19 @@ class EditMessageTest(EditMessageTestCase):
         self.login_user(hamlet)
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
-        def notify(user_id: int) -> Dict[str, Any]:
-            return {
-                "id": user_id,
-                "flags": ["wildcard_mentioned"],
-            }
-
-        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read", "wildcard_mentioned"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": ["wildcard_mentioned"],
+                },
+            ],
+            key=itemgetter("id"),
+        )
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
@@ -4566,7 +4578,6 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_can_move_messages_between_streams(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_move_messages_between_streams()
 
         self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
@@ -4829,6 +4840,98 @@ class DeleteMessageTest(ZulipTestCase):
             m.side_effect = Message.DoesNotExist()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
+
+    def test_delete_message_sent_by_bots(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        def set_message_deleting_params(
+            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
+        ) -> None:
+            result = self.api_patch(
+                iago,
+                "/api/v1/realm",
+                {
+                    "delete_own_message_policy": delete_own_message_policy,
+                    "message_content_delete_limit_seconds": orjson.dumps(
+                        message_content_delete_limit_seconds
+                    ).decode(),
+                },
+            )
+            self.assert_json_success(result)
+
+        def test_delete_message_by_admin(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(iago, f"/api/v1/messages/{msg_id}")
+            return result
+
+        def test_delete_message_by_bot_owner(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(hamlet, f"/api/v1/messages/{msg_id}")
+            return result
+
+        def test_delete_message_by_other_user(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(cordelia, f"/api/v1/messages/{msg_id}")
+            return result
+
+        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
+
+        hamlet = self.example_user("hamlet")
+        test_bot = self.create_test_bot("test-bot", hamlet)
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_admin(msg_id)
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
+
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = timezone_now() - datetime.timedelta(seconds=700)
+        message.save()
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_error(result, "The time limit for deleting this message has passed")
+
+        result = test_delete_message_by_admin(msg_id)
+        self.assert_json_success(result)
+
+        # Check that the bot can also delete the messages sent by them
+        # depending on the realm permissions for message deletion.
+        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, 600)
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = timezone_now() - datetime.timedelta(seconds=700)
+        message.save()
+
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_error(result, "The time limit for deleting this message has passed")
+
+        message.date_sent = timezone_now() - datetime.timedelta(seconds=400)
+        message.save()
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_success(result)
 
     def test_delete_message_according_to_delete_own_message_policy(self) -> None:
         def check_delete_message_by_sender(

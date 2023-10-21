@@ -13,11 +13,13 @@ export function set_scroll_to_message_banner_message_id(val: number | null): voi
 // banner types
 export const WARNING = "warning";
 export const ERROR = "error";
+export const SUCCESS = "success";
 
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
     narrow_to_recipient: "narrow_to_recipient",
     message_scheduled_success_compose_banner: "message_scheduled_success_compose_banner",
+    automatic_new_visibility_policy: "automatic_new_visibility_policy",
 };
 // Technically, unmute_topic_notification is a message sent banner, but
 // it has distinct behavior / look - it has an associated action button,

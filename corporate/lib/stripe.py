@@ -55,6 +55,8 @@ DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 # The version of Stripe API the billing system supports.
 STRIPE_API_VERSION = "2020-08-27"
 
+stripe.api_version = STRIPE_API_VERSION
+
 
 def get_latest_seat_count(realm: Realm) -> int:
     return get_seat_count(realm, extra_non_guests_count=0, extra_guests_count=0)
@@ -700,9 +702,12 @@ def process_initial_upgrade(
     # TODO: The correctness of this relies on user creation, deactivation, etc being
     # in a transaction.atomic() with the relevant RealmAuditLog entries
     with transaction.atomic():
-        # billed_licenses can greater than licenses if users are added between the start of
-        # this function (process_initial_upgrade) and now
-        billed_licenses = max(get_latest_seat_count(realm), licenses)
+        if customer.exempt_from_license_number_check:
+            billed_licenses = licenses
+        else:
+            # billed_licenses can be greater than licenses if users are added between the start of
+            # this function (process_initial_upgrade) and now
+            billed_licenses = max(get_latest_seat_count(realm), licenses)
         plan_params = {
             "automanage_licenses": automanage_licenses,
             "charge_automatically": charge_automatically,
@@ -777,14 +782,16 @@ def update_license_ledger_for_manual_plan(
 ) -> None:
     if licenses is not None:
         assert plan.customer.realm is not None
-        assert get_latest_seat_count(plan.customer.realm) <= licenses
+        if not plan.customer.exempt_from_license_number_check:
+            assert get_latest_seat_count(plan.customer.realm) <= licenses
         assert licenses > plan.licenses()
         LicenseLedger.objects.create(
             plan=plan, event_time=event_time, licenses=licenses, licenses_at_next_renewal=licenses
         )
     elif licenses_at_next_renewal is not None:
         assert plan.customer.realm is not None
-        assert get_latest_seat_count(plan.customer.realm) <= licenses_at_next_renewal
+        if not plan.customer.exempt_from_license_number_check:
+            assert get_latest_seat_count(plan.customer.realm) <= licenses_at_next_renewal
         LicenseLedger.objects.create(
             plan=plan,
             event_time=event_time,

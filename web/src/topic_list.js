@@ -305,21 +305,25 @@ export function get_topic_search_term() {
 }
 
 export function initialize({on_topic_click}) {
-    $("#stream_filters").on("click", ".topic-box", (e) => {
-        if (e.metaKey || e.ctrlKey) {
-            return;
-        }
-        if ($(e.target).closest(".show-more-topics").length > 0) {
-            return;
-        }
+    $("#stream_filters").on(
+        "click",
+        ".sidebar-topic-check, .topic-name, .topic-markers-and-controls",
+        (e) => {
+            if (e.metaKey || e.ctrlKey) {
+                return;
+            }
+            if ($(e.target).closest(".show-more-topics").length > 0) {
+                return;
+            }
 
-        const $stream_row = $(e.target).parents(".narrow-filter");
-        const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
-        const topic = $(e.target).parents("li").attr("data-topic-name");
-        on_topic_click(stream_id, topic);
+            const $stream_row = $(e.target).parents(".narrow-filter");
+            const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
+            const topic = $(e.target).parents("li").attr("data-topic-name");
+            on_topic_click(stream_id, topic);
 
-        e.preventDefault();
-    });
+            e.preventDefault();
+        },
+    );
 
     $("body").on("input", "#filter-topic-input", () => {
         active_widgets.get(active_stream_id()).build();

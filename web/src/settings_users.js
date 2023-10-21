@@ -1,33 +1,24 @@
 import $ from "jquery";
 
-import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
-import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
-import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
-import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 
 import * as blueslip from "./blueslip";
-import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
-import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
-import * as settings_config from "./settings_config";
-import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_data from "./settings_data";
 import * as timerender from "./timerender";
-import * as ui_report from "./ui_report";
-import * as user_pill from "./user_pill";
+import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
+import * as user_sort from "./user_sort";
 
 const section = {
     active: {},
@@ -35,64 +26,12 @@ const section = {
     bots: {},
 };
 
-export function show_button_spinner($button) {
-    const $spinner = $button.find(".modal__spinner");
-    const dialog_submit_button_span_width = $button.find("span").width();
-    const dialog_submit_button_span_height = $button.find("span").height();
-    $button.prop("disabled", true);
-    $button.find("span").hide();
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
-}
-
-export function hide_button_spinner($button) {
-    const $spinner = $button.find(".modal__spinner");
-    $button.prop("disabled", false);
-    $button.find("span").show();
-    loading.destroy_indicator($spinner);
-}
-
-function compare_a_b(a, b) {
-    if (a > b) {
-        return 1;
-    } else if (a === b) {
-        return 0;
-    }
-    return -1;
-}
-
-export function sort_email(a, b) {
-    const email_a = a.delivery_email;
-    const email_b = b.delivery_email;
-
-    if (email_a === null && email_b === null) {
-        // If both the emails are hidden, we sort the list by name.
-        return compare_a_b(a.full_name.toLowerCase(), b.full_name.toLowerCase());
-    }
-
-    if (email_a === null) {
-        // User with hidden should be at last.
-        return 1;
-    }
-    if (email_b === null) {
-        // User with hidden should be at last.
-        return -1;
-    }
-    return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
-}
-
 function sort_bot_email(a, b) {
     function email(bot) {
         return (bot.display_email || "").toLowerCase();
     }
 
-    return compare_a_b(email(a), email(b));
-}
-
-function sort_role(a, b) {
-    return compare_a_b(a.role, b.role);
+    return user_sort.compare_a_b(email(a), email(b));
 }
 
 function sort_bot_owner(a, b) {
@@ -100,18 +39,14 @@ function sort_bot_owner(a, b) {
         return (bot.bot_owner_full_name || "").toLowerCase();
     }
 
-    return compare_a_b(owner_name(a), owner_name(b));
+    return user_sort.compare_a_b(owner_name(a), owner_name(b));
 }
 
 function sort_last_active(a, b) {
-    return compare_a_b(
+    return user_sort.compare_a_b(
         presence.last_active_date(a.user_id) || 0,
         presence.last_active_date(b.user_id) || 0,
     );
-}
-
-export function sort_user_id(a, b) {
-    return compare_a_b(a.user_id, b.user_id);
 }
 
 function get_user_info_row(user_id) {
@@ -134,60 +69,31 @@ export function update_view_on_deactivate(user_id) {
     }
 
     const $button = $row.find("button.deactivate");
-    const $user_role = $row.find(".user_role");
     $button.prop("disabled", false);
     $row.find("button.open-user-form").hide();
     $row.find("i.deactivated-user-icon").show();
     $button.addClass("btn-warning reactivate");
     $button.removeClass("deactivate btn-danger");
     $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
-    $button.attr("title", "Reactivate");
+    $row.removeClass("reactivated_user");
     $row.addClass("deactivated_user");
-
-    if ($user_role) {
-        const user_id = $row.data("user-id");
-        $user_role.text(
-            `${$t({defaultMessage: "Deactivated"})} (${people.get_user_type(user_id)})`,
-        );
-    }
 }
 
 function update_view_on_reactivate($row) {
     const $button = $row.find("button.reactivate");
-    const $user_role = $row.find(".user_role");
     $row.find("button.open-user-form").show();
     $row.find("i.deactivated-user-icon").hide();
     $button.addClass("btn-danger deactivate");
     $button.removeClass("btn-warning reactivate");
-    $button.attr("title", "Deactivate");
     $button.empty().append($("<i>").addClass(["fa", "fa-user-times"]).attr("aria-hidden", "true"));
     $row.removeClass("deactivated_user");
-
-    if ($user_role) {
-        const user_id = $row.data("user-id");
-        $user_role.text(people.get_user_type(user_id));
-    }
-}
-
-function get_status_field() {
-    const current_tab = settings_panel_menu.org_settings.current_tab();
-    switch (current_tab) {
-        case "deactivated-users-admin":
-            return $("#deactivated-user-field-status").expectOne();
-        case "user-list-admin":
-            return $("#user-field-status").expectOne();
-        case "bot-list-admin":
-            return $("#bot-field-status").expectOne();
-        default:
-            throw new Error("Invalid admin settings page");
-    }
+    $row.addClass("reactivated_user");
 }
 
 function failed_listing_users() {
     loading.destroy_indicator($("#subs_page_loading_indicator"));
-    const status = get_status_field();
     const user_id = people.my_current_user_id();
-    blueslip.error("Error while listing users for user_id", {user_id, status});
+    blueslip.error("Error while listing users for user_id", {user_id});
 }
 
 function populate_users() {
@@ -241,7 +147,7 @@ function bot_info(bot_user_id) {
     info.user_role_text = people.get_user_type(bot_user_id);
 
     // Convert bot type id to string for viewing to the users.
-    info.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
+    info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
 
     info.bot_owner_full_name = bot_owner_full_name(owner_id);
 
@@ -328,7 +234,7 @@ section.bots.create_table = () => {
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
-            role: sort_role,
+            role: user_sort.sort_role,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
         },
         $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
@@ -355,10 +261,10 @@ section.active.create_table = (active_users) => {
         $parent_container: $("#admin-user-list").expectOne(),
         init_sort: "full_name_alphabetic",
         sort_fields: {
-            email: sort_email,
+            email: user_sort.sort_email,
             last_active: sort_last_active,
-            role: sort_role,
-            id: sort_user_id,
+            role: user_sort.sort_role,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
@@ -385,9 +291,9 @@ section.deactivated.create_table = (deactivated_users) => {
         $parent_container: $("#admin-deactivated-users-list").expectOne(),
         init_sort: "full_name_alphabetic",
         sort_fields: {
-            email: sort_email,
-            role: sort_role,
-            id: sort_user_id,
+            email: user_sort.sort_email,
+            role: user_sort.sort_role,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
@@ -414,7 +320,7 @@ export function update_user_data(user_id, new_data) {
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
-        $user_row.find(".user_name").text(new_data.full_name);
+        $user_row.find(".user_name .view_user_profile").text(new_data.full_name);
     }
 
     if (new_data.role !== undefined) {
@@ -448,110 +354,12 @@ function start_data_load() {
     populate_users();
 }
 
-function get_human_profile_data(fields_user_pills) {
-    /*
-        This formats custom profile field data to send to the server.
-        See render_admin_human_form and open_human_form
-        to see how the form is built.
-
-        TODO: Ideally, this logic would be cleaned up or deduplicated with
-        the settings_account.js logic.
-    */
-    const new_profile_data = [];
-    $("#edit-user-form .custom_user_field_value").each(function () {
-        // Remove duplicate datepicker input element generated flatpickr library
-        if (!$(this).hasClass("form-control")) {
-            new_profile_data.push({
-                id: Number.parseInt(
-                    $(this).closest(".custom_user_field").attr("data-field-id"),
-                    10,
-                ),
-                value: $(this).val(),
-            });
-        }
-    });
-    // Append user type field values also
-    for (const [field_id, field_pills] of fields_user_pills) {
-        if (field_pills) {
-            const user_ids = user_pill.get_user_ids(field_pills);
-            new_profile_data.push({
-                id: field_id,
-                value: user_ids,
-            });
-        }
-    }
-
-    return new_profile_data;
-}
-
-export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
-    // Knowing the number of invites requires making this request. If the request fails,
-    // we won't have the accurate number of invites. So, we don't show the modal if the
-    // request fails.
-    channel.get({
-        url: "/json/invites",
-        timeout: 10 * 1000,
-        success(data) {
-            let number_of_invites_by_user = 0;
-            for (const invite of data.invites) {
-                if (invite.invited_by_user_id === user_id) {
-                    number_of_invites_by_user = number_of_invites_by_user + 1;
-                }
-            }
-
-            const bots_owned_by_user = bot_data.get_all_bots_owned_by_user(user_id);
-            const user = people.get_by_user_id(user_id);
-            const realm_url = page_params.realm_uri;
-            const realm_name = page_params.realm_name;
-            const opts = {
-                username: user.full_name,
-                email: user.delivery_email,
-                bots_owned_by_user,
-                number_of_invites_by_user,
-                admin_email: people.my_current_email(),
-                realm_url,
-                realm_name,
-            };
-            const html_body = render_settings_deactivation_user_modal(opts);
-
-            function set_email_field_visibility() {
-                const $send_email_checkbox = $("#dialog_widget_modal").find(".send_email");
-                const $email_field = $("#dialog_widget_modal").find(".email_field");
-
-                $email_field.hide();
-                $send_email_checkbox.on("change", () => {
-                    if ($send_email_checkbox.is(":checked")) {
-                        $email_field.show();
-                    } else {
-                        $email_field.hide();
-                    }
-                });
-            }
-
-            dialog_widget.launch({
-                html_heading: $t_html(
-                    {defaultMessage: "Deactivate {name}?"},
-                    {name: user.full_name},
-                ),
-                help_link: "/help/deactivate-or-reactivate-a-user#deactivating-a-user",
-                html_body,
-                html_submit_button: $t_html({defaultMessage: "Deactivate"}),
-                id: "deactivate-user-modal",
-                on_click: handle_confirm,
-                post_render: set_email_field_visibility,
-                loading_spinner,
-            });
-        },
-    });
-}
-
 function handle_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
-        popovers.hide_all();
 
         const $row = $(e.target).closest(".user_row");
         const user_id = $row.data("user-id");
@@ -568,7 +376,7 @@ function handle_deactivation($tbody) {
             dialog_widget.submit_api_request(channel.del, url, data);
         }
 
-        confirm_deactivation(user_id, handle_confirm, true);
+        user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
 }
 
@@ -576,7 +384,6 @@ function handle_bot_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        popovers.hide_all();
 
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
@@ -587,35 +394,7 @@ function handle_bot_deactivation($tbody) {
             dialog_widget.submit_api_request(channel.del, url);
         }
 
-        settings_bots.confirm_bot_deactivation(bot_id, handle_confirm, true);
-    });
-}
-
-export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
-    const user = people.get_by_user_id(user_id);
-    const opts = {
-        username: user.full_name,
-    };
-
-    let html_body;
-    // check if bot or human
-    if (user.is_bot) {
-        opts.original_owner_deactivated =
-            user.is_bot && user.bot_owner_id && !people.is_person_active(user.bot_owner_id);
-        if (opts.original_owner_deactivated) {
-            opts.owner_name = people.get_by_user_id(user.bot_owner_id).full_name;
-        }
-        html_body = render_settings_reactivation_bot_modal(opts);
-    } else {
-        html_body = render_settings_reactivation_user_modal(opts);
-    }
-
-    confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
-        help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
-        html_body,
-        on_click: handle_confirm,
-        loading_spinner,
+        user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
     });
 }
 
@@ -623,7 +402,6 @@ function handle_reactivation($tbody) {
     $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        popovers.hide_all();
 
         // Go up the tree until we find the user row, then grab the email element
         const $button_elem = $(e.target);
@@ -641,96 +419,7 @@ function handle_reactivation($tbody) {
             dialog_widget.submit_api_request(channel.post, url, {}, opts);
         }
 
-        confirm_reactivation(user_id, handle_confirm, true);
-    });
-}
-
-export function show_edit_user_info_modal(user_id, $container) {
-    const person = people.maybe_get_user_by_id(user_id);
-
-    if (!person) {
-        return;
-    }
-
-    const html_body = render_admin_human_form({
-        user_id,
-        email: person.delivery_email,
-        full_name: person.full_name,
-        user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: person.is_owner && !page_params.is_owner,
-        owner_is_only_user_in_organization: people.get_active_human_count() === 1,
-    });
-
-    $container.append(html_body);
-    // Set role dropdown and fields user pills
-    $("#user-role-select").val(person.role);
-    if (!page_params.is_owner) {
-        $("#user-role-select")
-            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
-            .hide();
-    }
-
-    const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
-    $(custom_profile_field_form_selector).empty();
-    settings_account.append_custom_profile_fields(custom_profile_field_form_selector, user_id);
-    settings_account.initialize_custom_date_type_fields(custom_profile_field_form_selector);
-    settings_account.initialize_custom_pronouns_type_fields(custom_profile_field_form_selector);
-    const fields_user_pills = settings_account.initialize_custom_user_type_fields(
-        custom_profile_field_form_selector,
-        user_id,
-        true,
-        false,
-    );
-
-    // Handle deactivation
-    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const user_id = $("#edit-user-form").data("user-id");
-        function handle_confirm() {
-            const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url);
-        }
-        confirm_deactivation(user_id, handle_confirm, true);
-    });
-
-    $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
-        const role = Number.parseInt($("#user-role-select").val().trim(), 10);
-        const $full_name = $("#edit-user-form").find("input[name='full_name']");
-        const profile_data = get_human_profile_data(fields_user_pills);
-
-        const url = "/json/users/" + encodeURIComponent(user_id);
-        const data = {
-            full_name: $full_name.val(),
-            role: JSON.stringify(role),
-            profile_data: JSON.stringify(profile_data),
-        };
-
-        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
-        $cancel_btn.prop("disabled", true);
-
-        channel.patch({
-            url,
-            data,
-            success() {
-                user_profile.hide_user_profile();
-            },
-            error(xhr) {
-                ui_report.error(
-                    $t_html({defaultMessage: "Failed"}),
-                    xhr,
-                    $("#edit-user-form-error"),
-                );
-                // Scrolling modal to top, to make error visible to user.
-                $("#edit-user-form")
-                    .closest(".simplebar-content-wrapper")
-                    .animate({scrollTop: 0}, "fast");
-                hide_button_spinner($submit_btn);
-                $cancel_btn.prop("disabled", false);
-            },
-        });
+        user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 }
 
@@ -738,7 +427,6 @@ function handle_edit_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        popovers.hide_all();
 
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         if (people.is_my_user_id(user_id)) {

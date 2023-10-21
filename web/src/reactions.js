@@ -109,7 +109,7 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
 
 export function toggle_emoji_reaction(message_id, emoji_name) {
     // This codepath doesn't support toggling a deactivated realm emoji.
-    // Since an user can interact with a deactivated realm emoji only by
+    // Since a user can interact with a deactivated realm emoji only by
     // clicking on a reaction and that is handled by `process_reaction_click()`
     // method. This codepath is to be used only where there is no chance of an
     // user interacting with a deactivated realm emoji like emoji picker.

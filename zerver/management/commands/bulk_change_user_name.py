@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.management import ZulipBaseCommand
@@ -10,6 +11,7 @@ from zerver.lib.management import ZulipBaseCommand
 class Command(ZulipBaseCommand):
     help = """Change the names for many users."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "data_file",
@@ -18,6 +20,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         data_file = options["data_file"]
         realm = self.get_realm(options)

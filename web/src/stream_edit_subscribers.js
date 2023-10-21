@@ -9,18 +9,18 @@ import render_stream_subscription_request_result from "../templates/stream_setti
 import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as blueslip from "./blueslip";
 import * as confirm_dialog from "./confirm_dialog";
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
-import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
+import * as user_sort from "./user_sort";
 
 export let pill_widget;
 let current_stream_id;
@@ -127,8 +127,8 @@ function make_list_widget({$parent_container, name, user_ids, user_can_remove_su
         },
         $parent_container: $("#stream_members_list").expectOne(),
         sort_fields: {
-            email: settings_users.sort_email,
-            id: settings_users.sort_user_id,
+            email: user_sort.sort_email,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container,
@@ -256,24 +256,45 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
         );
     }
 
-    if (sub.invite_only && people.is_my_user_id(target_user_id)) {
+    if (sub.invite_only) {
         const sub_count = peer_data.get_subscriber_count(stream_id);
+        const unsubscribing_other_user = !people.is_my_user_id(target_user_id);
+
+        if (!people.is_my_user_id(target_user_id) && sub_count !== 1) {
+            // We do not show any confirmation modal if any other user is
+            // being unsubscribed and that user is not the last subscriber
+            // of that stream.
+            remove_user_from_private_stream();
+            return;
+        }
+
         const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({
             stream: sub,
         });
 
         const html_body = render_unsubscribe_private_stream_modal({
-            message: $t({
-                defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
-            }),
+            unsubscribing_other_user,
             display_stream_archive_warning: sub_count === 1,
         });
 
-        confirm_dialog.launch({
-            html_heading: $t_html(
-                {defaultMessage: "Unsubscribe from <z-link></z-link>"},
+        let html_heading;
+        if (unsubscribing_other_user) {
+            html_heading = $t_html(
+                {defaultMessage: "Unsubscribe {full_name} from <z-link></z-link>?"},
+                {
+                    full_name: people.get_full_name(target_user_id),
+                    "z-link": () => stream_name_with_privacy_symbol_html,
+                },
+            );
+        } else {
+            html_heading = $t_html(
+                {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
-            ),
+            );
+        }
+
+        confirm_dialog.launch({
+            html_heading,
             html_body,
             on_click: remove_user_from_private_stream,
         });
@@ -291,7 +312,7 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
 export function update_subscribers_list(sub) {
     // This is for the "Subscribers" tab of the right panel.
     // Render subscriptions only if stream settings is open
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         blueslip.info("ignoring subscription for stream that is no longer being edited");
         return;
     }
@@ -324,7 +345,7 @@ function update_subscribers_list_widget(subscriber_ids) {
 }
 
 export function rerender_subscribers_list(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
         blueslip.info("ignoring subscription for stream that is no longer being edited");
         return;
     }

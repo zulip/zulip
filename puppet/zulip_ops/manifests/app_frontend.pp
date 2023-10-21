@@ -34,6 +34,16 @@ class zulip_ops::app_frontend {
     content => zulipsecret('secrets', 'redis_password', ''),
   }
 
+  # Mount /etc/zulip/well-known/ as /.well-known/
+  file { '/etc/nginx/zulip-include/app.d/well-known.conf':
+    require => File['/etc/nginx/zulip-include/app.d'],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip_ops/nginx/zulip-include-app.d/well-known.conf',
+    notify  => Service['nginx'],
+  }
+
   # Each server does its own fetching of contributor data, since
   # we don't have a way to synchronize that among several servers.
   file { '/etc/cron.d/fetch-contributor-data':

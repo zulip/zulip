@@ -15,6 +15,7 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from returns.curry import partial
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
@@ -335,7 +336,7 @@ class InviteUserTest(InviteUserBase):
 
         # We've sent 40 invites "today".  Fast-forward 48 hours
         # and ensure that we can invite more people
-        with time_machine.travel(timezone_now() + datetime.timedelta(hours=48)):
+        with time_machine.travel(timezone_now() + datetime.timedelta(hours=48), tick=False):
             result = try_invite(5, default_realm_max=30, new_realm_max=20, realm_max=10)
             self.assert_json_success(result)
             self.check_sent_emails([f"zulip-{i:02}@zulip.com" for i in range(5)], clear=True)
@@ -801,7 +802,6 @@ class InviteUserTest(InviteUserBase):
 
     def test_can_invite_others_to_realm(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_invite_users_by_email()
 
         realm = get_realm("zulip")
@@ -1637,7 +1637,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         prereg_user.refresh_from_db()
         self.assertIsNotNone(prereg_user.created_user)
 
-        # Now attempt to re-use the same key.
+        # Now attempt to reuse the same key.
         result = self.client_post("/accounts/register/", {"key": registration_key})
         self.assertEqual(result.status_code, 404)
         self.assert_in_response(
@@ -2240,6 +2240,7 @@ class InvitationsTestCase(InviteUserBase):
 
 
 class InviteeEmailsParserTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.email1 = "email1@zulip.com"
@@ -2270,6 +2271,7 @@ class InviteeEmailsParserTests(ZulipTestCase):
 
 
 class MultiuseInviteTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")

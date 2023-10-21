@@ -4,6 +4,7 @@ from typing import Any, Set
 
 import orjson
 from django.conf import settings
+from typing_extensions import override
 from urllib3.util import Retry
 
 from zerver.lib.management import ZulipBaseCommand
@@ -33,6 +34,7 @@ to a file for access from Django for rate-limiting purposes.
 Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--max-retries",
@@ -41,6 +43,7 @@ Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
             help="Number of times to retry fetching data from TOR",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         if not settings.RATE_LIMIT_TOR_TOGETHER:
             return

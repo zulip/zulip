@@ -41,8 +41,8 @@ async function expect_verona_stream_test_topic(page: Page): Promise<void> {
         ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
     ]);
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
-        "New topic",
+        await common.get_text_from_selector(page, "#new_conversation_button"),
+        "Start new conversation",
     );
 }
 
@@ -87,7 +87,7 @@ async function un_narrow(page: Page): Promise<void> {
     if ((await (await page.$(".message_comp"))!.boundingBox())?.height) {
         await page.keyboard.press("Escape");
     }
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
     assert.strictEqual(await page.title(), "All messages - Zulip Dev - Zulip");
 }
@@ -143,7 +143,7 @@ async function search_and_check(
     expected_narrow_title: string,
 ): Promise<void> {
     await page.click(".search_icon");
-    await page.waitForSelector("#search_query", {visible: true});
+    await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", search_str, item_to_select);
     await check(page);
     assert.strictEqual(await page.title(), expected_narrow_title);
@@ -153,7 +153,7 @@ async function search_and_check(
 
 async function search_silent_user(page: Page, str: string, item: string): Promise<void> {
     await page.click(".search_icon");
-    await page.waitForSelector("#search_query", {visible: true});
+    await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await page.waitForSelector(".empty_feed_notice", {visible: true});
     const expect_message = "You haven't received any messages sent by Email Gateway yet.";
@@ -162,6 +162,7 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
         expect_message,
     );
     await un_narrow(page);
+    await expect_home(page);
 }
 
 async function expect_non_existing_user(page: Page): Promise<void> {
@@ -184,10 +185,11 @@ async function expect_non_existing_users(page: Page): Promise<void> {
 
 async function search_non_existing_user(page: Page, str: string, item: string): Promise<void> {
     await page.click(".search_icon");
-    await page.waitForSelector("#search_query", {visible: true});
+    await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await expect_non_existing_user(page);
     await un_narrow(page);
+    await expect_home(page);
 }
 
 async function search_tests(page: Page): Promise<void> {
@@ -272,10 +274,10 @@ async function expect_all_direct_messages(page: Page): Promise<void> {
         ["You and Cordelia, Lear's daughter", ["direct message e"]],
     ]);
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
-        "New stream message",
+        await common.get_text_from_selector(page, "#new_conversation_button"),
+        "Start new conversation",
     );
-    assert.strictEqual(await page.title(), "Direct messages - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "All direct messages - Zulip Dev - Zulip");
 }
 
 async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {
@@ -284,7 +286,7 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await page.click((await get_stream_li(page, "Verona")) + " a");
     await expect_verona_stream(page);
 
-    await page.click(".top_left_all_messages a");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
 
     const all_private_messages_icon = "#show_all_private_messages";
@@ -477,7 +479,7 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
 
 async function message_basic_tests(page: Page): Promise<void> {
     await common.log_in(page);
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
 
     console.log("Sending messages");

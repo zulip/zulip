@@ -4,18 +4,17 @@ import * as about_zulip from "./about_zulip";
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as drafts from "./drafts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui";
+import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
-import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
-import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
@@ -25,65 +24,15 @@ import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui"
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
-import * as user_groups_settings_ui from "./user_groups_settings_ui";
+import * as user_group_edit from "./user_group_edit";
 import {user_settings} from "./user_settings";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
-
-function get_full_url(hash) {
-    const location = window.location;
-
-    if (hash.charAt(0) !== "#" && hash !== "") {
-        hash = "#" + hash;
-    }
-
-    // IE returns pathname as undefined and missing the leading /
-    let pathname = location.pathname;
-    if (pathname === undefined) {
-        pathname = "/";
-    } else if (pathname === "" || pathname.charAt(0) !== "/") {
-        pathname = "/" + pathname;
-    }
-
-    // Build a full URL to not have same origin problems
-    const url = location.protocol + "//" + location.host + pathname + hash;
-    return url;
-}
-
-function set_hash(hash) {
-    if (hash === window.location.hash) {
-        // Avoid adding duplicate entries in browser history.
-        return;
-    }
-    if (history.pushState) {
-        const url = get_full_url(hash);
-        try {
-            history.pushState(null, null, url);
-            browser_history.update_web_public_hash(hash);
-        } catch (error) {
-            if (error instanceof TypeError) {
-                // The window has been destroyed and the history object has been marked dead, so cannot
-                // be updated.  Silently do nothing, since there's nothing we can do.
-            } else {
-                throw error;
-            }
-        }
-    } else {
-        // pushState has 97% global support according to caniuse. So, we will ideally never reach here.
-        // TODO: Delete this case if we don't see any error reports in a while.
-        if (hash === "" || hash === "#") {
-            // Setting empty hash here would scroll to the top.
-            hash = user_settings.default_view;
-        }
-
-        blueslip.error("browser does not support pushState");
-        window.location.hash = hash;
-    }
-}
 
 function maybe_hide_recent_view() {
     if (recent_view_util.is_visible()) {
@@ -101,31 +50,14 @@ function maybe_hide_inbox() {
     return false;
 }
 
-export function changehash(newhash) {
-    if (browser_history.state.changing_hash) {
-        return;
-    }
-    message_viewport.stop_auto_scrolling();
-    set_hash(newhash);
-}
-
-export function save_narrow(operators) {
-    if (browser_history.state.changing_hash) {
-        return;
-    }
-    const new_hash = hash_util.operators_to_hash(operators);
-    changehash(new_hash);
-}
-
 function show_all_message_view() {
     const coming_from_recent_view = maybe_hide_recent_view();
     const coming_from_inbox = maybe_hide_inbox();
     const is_actively_scrolling = message_scroll.is_actively_scrolling();
     narrow.deactivate(!(coming_from_recent_view || coming_from_inbox), is_actively_scrolling);
-    left_sidebar_navigation_area.handle_narrow_deactivated();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
-    setTimeout(navigate.maybe_scroll_to_selected, 0);
+    setTimeout(message_viewport.maybe_scroll_to_selected, 0);
 }
 
 export function set_hash_to_default_view() {
@@ -140,29 +72,45 @@ export function set_hash_to_default_view() {
         // hash. So, we use `pushState` which simply updates the current URL
         // but doesn't trigger `hashchange`. So, we trigger hashchange directly
         // here to let it handle the whole rendering process for us.
-        set_hash("");
+        browser_history.set_hash("");
         hashchanged(false);
     }
 }
 
+function hide_non_message_list_views() {
+    maybe_hide_inbox();
+    maybe_hide_recent_view();
+}
+
 function show_default_view() {
+    hide_non_message_list_views();
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
-    // We only allow all_messages and recent_topics
-    // to be rendered without a hash.
-    if (user_settings.default_view === "recent_topics") {
-        recent_view_ui.show();
-    } else if (user_settings.default_view === "all_messages") {
-        show_all_message_view();
-    } else {
-        // NOTE: Setting a hash which is not rendered on
-        // empty hash (like a stream narrow) will
-        // introduce a bug that user will not be able to
-        // go back in browser history. See
-        // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
-        // for detailed description of the issue.
-        window.location.hash = user_settings.default_view;
+    // We only allow the primary recommended options for default views
+    // rendered without a hash.
+    switch (user_settings.default_view) {
+        case "recent_topics": {
+            recent_view_ui.show();
+            break;
+        }
+        case "all_messages": {
+            show_all_message_view();
+            break;
+        }
+        case "inbox": {
+            inbox_ui.show();
+            break;
+        }
+        default: {
+            // NOTE: Setting a hash which is not rendered on
+            // empty hash (like a stream narrow) will
+            // introduce a bug that user will not be able to
+            // go back in browser history. See
+            // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
+            // for detailed description of the issue.
+            window.location.hash = user_settings.default_view;
+        }
     }
 }
 
@@ -177,8 +125,7 @@ function do_hashchange_normal(from_reload) {
 
     switch (hash[0]) {
         case "#narrow": {
-            maybe_hide_recent_view();
-            maybe_hide_inbox();
+            hide_non_message_list_views();
             let operators;
             try {
                 // TODO: Show possible valid URLs to the user.
@@ -271,9 +218,9 @@ function do_hashchange_overlay(old_hash) {
         // show the user's default view behind it.
         show_default_view();
     }
-    const base = hash_util.get_current_hash_category();
-    const old_base = hash_util.get_hash_category(old_hash);
-    let section = hash_util.get_current_hash_section();
+    const base = hash_parser.get_current_hash_category();
+    const old_base = hash_parser.get_hash_category(old_hash);
+    let section = hash_parser.get_current_hash_section();
 
     if (base === "groups" && (!page_params.development_environment || page_params.is_guest)) {
         // The #groups settings page is unfinished, and disabled in production.
@@ -281,7 +228,7 @@ function do_hashchange_overlay(old_hash) {
         return;
     }
 
-    const coming_from_overlay = hash_util.is_overlay_hash(old_hash);
+    const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
     if (section === "display-settings") {
         // Since display-settings was deprecated and replaced with preferences
         // #settings/display-settings is being redirected to #settings/preferences.
@@ -295,12 +242,12 @@ function do_hashchange_overlay(old_hash) {
         history.replaceState(
             null,
             "",
-            get_full_url(base + "/" + settings_panel_object.current_tab()),
+            browser_history.get_full_url(base + "/" + settings_panel_object.current_tab()),
         );
     }
 
     if (base === "streams" && !section) {
-        history.replaceState(null, "", get_full_url("streams/subscribed"));
+        history.replaceState(null, "", browser_history.get_full_url("streams/subscribed"));
     }
 
     // Start by handling the specific case of going
@@ -315,7 +262,7 @@ function do_hashchange_overlay(old_hash) {
         }
 
         if (base === "groups") {
-            user_groups_settings_ui.change_state(section);
+            user_group_edit.change_state(section);
         }
 
         if (base === "settings") {
@@ -380,12 +327,12 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "groups") {
-        user_groups_settings_ui.launch(section);
+        user_group_edit.launch(section);
         return;
     }
 
     if (base === "drafts") {
-        drafts.launch();
+        drafts_overlay_ui.launch();
         return;
     }
 
@@ -449,7 +396,7 @@ function hashchanged(from_reload, e) {
         return undefined;
     }
 
-    if (hash_util.is_overlay_hash(current_hash)) {
+    if (hash_parser.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
         do_hashchange_overlay(old_hash);
         browser_history.state.changing_hash = false;
@@ -458,6 +405,7 @@ function hashchanged(from_reload, e) {
 
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
+    sidebar_ui.hide_all();
     popovers.hide_all();
     browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);

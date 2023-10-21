@@ -1,5 +1,4 @@
 import _ from "lodash";
-import assert from "minimalistic-assert";
 
 // How to determine the direction of a paragraph (P1-P3): https://www.unicode.org/reports/tr9/tr9-35.html#The_Paragraph_Level
 // Embedding level: https://www.unicode.org/reports/tr9/tr9-35.html#BD2
@@ -142,8 +141,7 @@ export function get_direction(str: string): "ltr" | "rtl" {
 
 export function set_rtl_class_for_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
-    let text = $textarea.val();
-    assert(typeof text === "string", "Passed HTML element must be a textarea.");
+    let text = $textarea.val()!;
     if (text.startsWith("```quote")) {
         text = text.slice(8);
     }

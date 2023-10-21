@@ -1,0 +1,15 @@
+{{#if is_demo_organization }}
+<div class="demo-organization-warning">
+    {{#if is_owner }}
+    {{#tr}}
+        This demo organization will be automatically deleted in {days_remaining} days, unless it's <z-link>converted into a permanent organization</z-link>.
+        {{#*inline "z-link"}}<a class="convert-demo-organization-button" role="button" tabindex=0>{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+    {{else}}
+    {{#tr}}
+        This demo organization will be automatically deleted in {days_remaining} days, unless it's <z-link>converted into a permanent organization</z-link>.
+        {{#*inline "z-link"}}<a href="/help/demo-organizations" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+    {{/tr}}
+    {{/if}}
+</div>
+{{/if}}

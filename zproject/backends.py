@@ -51,7 +51,7 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2 import compat as onelogin_saml2_compat
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
-from onelogin.saml2.errors import OneLogin_Saml2_Error
+from onelogin.saml2.errors import OneLogin_Saml2_Error, OneLogin_Saml2_ValidationError
 from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
 from onelogin.saml2.logout_response import OneLogin_Saml2_Logout_Response
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -76,10 +76,15 @@ from social_core.exceptions import (
 )
 from social_core.pipeline.partial import partial
 from social_django.utils import load_backend, load_strategy
+from typing_extensions import override
 from zxcvbn import zxcvbn
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_groups,
+    bulk_remove_members_from_user_groups,
+)
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url, is_avatar_new
@@ -105,6 +110,8 @@ from zerver.models import (
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
+    UserGroup,
+    UserGroupMembership,
     UserProfile,
     custom_profile_fields_for_realm,
     get_realm,
@@ -300,9 +307,11 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         self.username = username
         super().__init__()
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:{self.username}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_RULES["authenticate_by_username"]
 
@@ -910,6 +919,78 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         except SyncUserError as e:
             raise ZulipLDAPError(str(e)) from e
 
+    def sync_groups_from_ldap(self, user_profile: UserProfile, ldap_user: _LDAPUser) -> None:
+        """
+        For the groups set up for syncing for the realm in LDAP_SYNCHRONIZED_GROUPS_BY_REALM:
+
+        (1) Makes sure the user has membership in the Zulip UserGroups corresponding
+            to the LDAP groups ldap_user belongs to.
+        (2) Makes sure the user doesn't have membership in the Zulip UserGroups corresponding
+            to the LDAP groups ldap_user doesn't belong to.
+        """
+
+        if user_profile.realm.string_id not in settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM:
+            # no groups to sync for this realm
+            return
+
+        configured_ldap_group_names_for_sync = set(
+            settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
+        )
+
+        try:
+            ldap_logger.debug("Syncing groups for user: %s", user_profile.id)
+            intended_group_name_set_for_user = set(ldap_user.group_names).intersection(
+                configured_ldap_group_names_for_sync
+            )
+
+            existing_group_name_set_for_user = set(
+                UserGroupMembership.objects.filter(
+                    user_group__realm=user_profile.realm,
+                    user_group__name__in=set(
+                        settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
+                    ),
+                    user_profile=user_profile,
+                ).values_list("user_group__name", flat=True)
+            )
+
+            ldap_logger.debug(
+                "intended groups: %s; zulip groups: %s",
+                repr(intended_group_name_set_for_user),
+                repr(existing_group_name_set_for_user),
+            )
+
+            new_groups = UserGroup.objects.filter(
+                name__in=intended_group_name_set_for_user.difference(
+                    existing_group_name_set_for_user
+                ),
+                realm=user_profile.realm,
+            )
+            if new_groups:
+                ldap_logger.debug(
+                    "add %s to %s", user_profile.id, [group.name for group in new_groups]
+                )
+                bulk_add_members_to_user_groups(new_groups, [user_profile.id], acting_user=None)
+
+            group_names_for_membership_deletion = existing_group_name_set_for_user.difference(
+                intended_group_name_set_for_user
+            )
+            groups_for_membership_deletion = UserGroup.objects.filter(
+                name__in=group_names_for_membership_deletion, realm=user_profile.realm
+            )
+
+            if group_names_for_membership_deletion:
+                ldap_logger.debug(
+                    "removing groups %s from %s",
+                    group_names_for_membership_deletion,
+                    user_profile.id,
+                )
+                bulk_remove_members_from_user_groups(
+                    groups_for_membership_deletion, [user_profile.id], acting_user=None
+                )
+
+        except Exception as e:
+            raise ZulipLDAPError(str(e)) from e
+
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
@@ -1136,6 +1217,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
         self.sync_avatar_from_ldap(user, ldap_user)
         self.sync_full_name_from_ldap(user, ldap_user)
         self.sync_custom_profile_fields_from_ldap(user, ldap_user)
+        self.sync_groups_from_ldap(user, ldap_user)
         return (user, built)
 
 
@@ -1457,6 +1539,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
 
     create_unknown_user = False
 
+    @override
     def authenticate(  # type: ignore[override] # authenticate has an incompatible signature with ModelBackend and BaseBackend
         self,
         request: Optional[HttpRequest] = None,
@@ -1472,6 +1555,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
         return common_get_active_user(email, realm, return_data=return_data)
 
     @classmethod
+    @override
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         return [
             dict(
@@ -1897,6 +1981,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
         return {"social_auth_backend": self.name}
 
     @classmethod
+    @override
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         return [
             dict(
@@ -2178,6 +2263,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
         return user_details
 
+    @override
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         if not self.is_native_flow():
             # The default implementation in python-social-auth is the browser flow.
@@ -2250,7 +2336,12 @@ class SAMLDocument:
     for wrapping the fiddly logic of handling these SAML XML documents.
     """
 
-    SAML_PARSING_EXCEPTIONS = (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError)
+    SAML_PARSING_EXCEPTIONS = (
+        OneLogin_Saml2_Error,
+        OneLogin_Saml2_ValidationError,
+        binascii.Error,
+        XMLSyntaxError,
+    )
 
     def __init__(self, encoded_saml_message: str, backend: "SAMLAuthBackend") -> None:
         """
@@ -2321,6 +2412,7 @@ class SAMLDocument:
 
 
 class SAMLRequest(SAMLDocument):
+    @override
     def get_issuers(self) -> List[str]:
         config = self.backend.generate_saml_config()
         saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
@@ -2338,6 +2430,7 @@ class SAMLRequest(SAMLDocument):
 
 
 class SAMLResponse(SAMLDocument):
+    @override
     def get_issuers(self) -> List[str]:
         config = self.backend.generate_saml_config()
         saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
@@ -2628,6 +2721,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return HttpResponseRedirect(url)
 
+    @override
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
         Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
@@ -2778,6 +2872,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         return True
 
     @classmethod
+    @override
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         result: List[ExternalAuthMethodDictT] = []
         for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
@@ -2798,6 +2893,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return result
 
+    @override
     def should_auto_signup(self) -> bool:
         """
         This function is meant to be called in the social pipeline or later,
@@ -2810,6 +2906,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         assert isinstance(auto_signup, bool)
         return auto_signup
 
+    @override
     def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
         idp_name = self.strategy.session_get("saml_idp_name")
         saml_session_index = self.strategy.session_get("saml_session_index")
@@ -2877,6 +2974,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         return True
 
     @classmethod
+    @override
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         return [
             dict(
@@ -2888,6 +2986,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
             )
         ]
 
+    @override
     def should_auto_signup(self) -> bool:
         result = self.settings_dict.get("auto_signup", False)
         assert isinstance(result, bool)

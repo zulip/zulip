@@ -26,10 +26,13 @@ warn_return_any = false
 
 # Enable optional errors.
 enable_error_code = [
+    "redundant-self",
     "redundant-expr",
     "truthy-bool",
+    "truthy-iterable",
     "ignore-without-code",
     "unused-awaitable",
+    "explicit-override",
 ]
 
 # Display the codes needed for # type: ignore[code] annotations.

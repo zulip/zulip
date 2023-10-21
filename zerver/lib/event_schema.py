@@ -259,6 +259,47 @@ def check_delete_message(
     assert set(event.keys()) == keys
 
 
+draft_fields = DictType(
+    required_keys=[
+        ("id", int),
+        ("type", EnumType(["", "stream", "private"])),
+        ("to", ListType(int)),
+        ("topic", str),
+        ("content", str),
+    ],
+    optional_keys=[
+        ("timestamp", int),
+    ],
+)
+
+drafts_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("drafts")),
+        ("op", Equals("add")),
+        ("drafts", ListType(draft_fields)),
+    ]
+)
+check_draft_add = make_checker(drafts_add_event)
+
+drafts_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("drafts")),
+        ("op", Equals("update")),
+        ("draft", draft_fields),
+    ]
+)
+check_draft_update = make_checker(drafts_update_event)
+
+drafts_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("drafts")),
+        ("op", Equals("remove")),
+        ("draft_id", int),
+    ]
+)
+check_draft_remove = make_checker(drafts_remove_event)
+
+
 has_zoom_token_event = event_dict_type(
     required_keys=[
         ("type", Equals("has_zoom_token")),
@@ -468,7 +509,7 @@ reaction_add_event = event_dict_type(
         ("message_id", int),
         ("emoji_name", str),
         ("emoji_code", str),
-        ("reaction_type", str),
+        ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
         ("user_id", int),
         ("user", reaction_legacy_user_type),
     ]
@@ -483,7 +524,7 @@ reaction_remove_event = event_dict_type(
         ("message_id", int),
         ("emoji_name", str),
         ("emoji_code", str),
-        ("reaction_type", str),
+        ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
         ("user_id", int),
         ("user", reaction_legacy_user_type),
     ]
@@ -866,6 +907,8 @@ def check_realm_update(
         assert isinstance(value, property_type)
     elif property_type == (int, type(None)):
         assert isinstance(value, int)
+    elif property_type == (str, type(None)):
+        assert isinstance(value, str)
     else:
         raise AssertionError(f"Unexpected property type {property_type}")
 
@@ -1186,6 +1229,48 @@ restart_event = event_dict_type(
 )
 check_restart_event = make_checker(restart_event)
 
+scheduled_message_fields = DictType(
+    required_keys=[
+        ("scheduled_message_id", int),
+        ("type", EnumType(["stream", "private"])),
+        ("to", UnionType([ListType(int), int])),
+        ("content", str),
+        ("rendered_content", str),
+        ("scheduled_delivery_timestamp", int),
+        ("failed", bool),
+    ],
+    optional_keys=[
+        ("topic", str),
+    ],
+)
+
+scheduled_messages_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("scheduled_messages")),
+        ("op", Equals("add")),
+        ("scheduled_messages", ListType(scheduled_message_fields)),
+    ]
+)
+check_scheduled_message_add = make_checker(scheduled_messages_add_event)
+
+scheduled_messages_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("scheduled_messages")),
+        ("op", Equals("update")),
+        ("scheduled_message", scheduled_message_fields),
+    ]
+)
+check_scheduled_message_update = make_checker(scheduled_messages_update_event)
+
+scheduled_messages_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("scheduled_messages")),
+        ("op", Equals("remove")),
+        ("scheduled_message_id", int),
+    ]
+)
+check_scheduled_message_remove = make_checker(scheduled_messages_remove_event)
+
 stream_create_event = event_dict_type(
     required_keys=[
         ("type", Equals("stream")),
@@ -1358,9 +1443,9 @@ typing_person_type = DictType(
     ]
 )
 
-equals_private_or_stream = EnumType(
+equals_direct_or_stream = EnumType(
     [
-        "private",
+        "direct",
         "stream",
     ]
 )
@@ -1369,7 +1454,7 @@ typing_start_event = event_dict_type(
     required_keys=[
         ("type", Equals("typing")),
         ("op", Equals("start")),
-        ("message_type", equals_private_or_stream),
+        ("message_type", equals_direct_or_stream),
         ("sender", typing_person_type),
     ],
     optional_keys=[
@@ -1384,7 +1469,7 @@ typing_stop_event = event_dict_type(
     required_keys=[
         ("type", Equals("typing")),
         ("op", Equals("stop")),
-        ("message_type", equals_private_or_stream),
+        ("message_type", equals_direct_or_stream),
         ("sender", typing_person_type),
     ],
     optional_keys=[
@@ -1628,7 +1713,7 @@ update_message_flags_remove_event = event_dict_type(
         ("type", Equals("update_message_flags")),
         ("op", Equals("remove")),
         ("operation", Equals("remove")),
-        ("flag", EnumType(["read", "starred"])),
+        ("flag", str),
         ("messages", ListType(int)),
         ("all", bool),
     ],
@@ -1765,7 +1850,7 @@ user_status_event = event_dict_type(
         ("status_text", str),
         ("emoji_name", str),
         ("emoji_code", str),
-        ("reaction_type", str),
+        ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
     ],
 )
 _check_user_status = make_checker(user_status_event)

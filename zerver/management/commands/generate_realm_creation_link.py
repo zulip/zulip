@@ -2,6 +2,7 @@ from typing import Any
 
 from django.core.management.base import CommandError
 from django.db import ProgrammingError
+from typing_extensions import override
 
 from confirmation.models import generate_realm_creation_url
 from zerver.lib.management import ZulipBaseCommand
@@ -17,6 +18,7 @@ class Command(ZulipBaseCommand):
 
     Usage: ./manage.py generate_realm_creation_link """
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             # first check if the db has been initialized

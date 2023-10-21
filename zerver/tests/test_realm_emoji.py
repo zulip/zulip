@@ -161,7 +161,6 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_can_add_custom_emoji(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_add_custom_emoji()
 
         self.check_has_permission_policies("add_custom_emoji_policy", validation_func)
@@ -347,7 +346,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_error(result, "Broken")
 
     def test_check_admin_realm_emoji(self) -> None:
-        # Test that an user A is able to remove a realm emoji uploaded by him
+        # Test that a user A is able to remove a realm emoji uploaded by him
         # and having same name as a deactivated realm emoji uploaded by some
         # other user B.
         emoji_author_1 = self.example_user("cordelia")

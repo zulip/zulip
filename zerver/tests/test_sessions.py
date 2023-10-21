@@ -3,6 +3,7 @@ from typing import Any, Callable
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.users import change_user_is_active
@@ -126,6 +127,7 @@ class TestSessions(ZulipTestCase):
 
 
 class TestExpirableSessionVars(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         self.session = self.client.session
         super().setUp()

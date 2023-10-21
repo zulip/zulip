@@ -79,7 +79,7 @@ function get_stream_id_for_textarea($textarea) {
         return Number.parseInt(stream_id_str, 10);
     }
 
-    return compose_state.stream_id() || undefined;
+    return compose_state.stream_id();
 }
 
 export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
@@ -173,6 +173,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
                 can_subscribe_other_users,
                 name: mentioned.full_name,
                 classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
+                should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             };
 
             const new_row = render_not_subscribed_warning(context);
@@ -480,7 +481,7 @@ export function validate_stream_message_address_info(stream_name) {
 function validate_stream_message(scheduling_message) {
     const stream_id = compose_state.stream_id();
     const $banner_container = $("#compose_banners");
-    if (stream_id === "") {
+    if (stream_id === undefined) {
         compose_banner.show_error_message(
             $t({defaultMessage: "Please specify a stream."}),
             compose_banner.CLASSNAMES.missing_stream,

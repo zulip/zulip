@@ -9,8 +9,9 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError, CommandParser
+from typing_extensions import override
 
-from zerver.forms import check_subdomain_available
+from zerver.forms import OverridableValidationError, check_subdomain_available
 from zerver.lib.import_realm import do_import_realm
 
 
@@ -20,6 +21,7 @@ class Command(BaseCommand):
 This command should be used only on a newly created, empty Zulip instance to
 import a database dump from one or more JSON files."""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--destroy-rebuild-database",
@@ -58,6 +60,7 @@ import a database dump from one or more JSON files."""
         call_command("flush", verbosity=0, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         num_processes = int(options["processes"])
         if num_processes < 1:
@@ -79,11 +82,13 @@ import a database dump from one or more JSON files."""
 
         try:
             check_subdomain_available(subdomain, allow_reserved_subdomain)
-        except ValidationError as e:
+        except OverridableValidationError as e:
             raise CommandError(
                 e.messages[0]
                 + "\nPass --allow-reserved-subdomain to override subdomain restrictions."
             )
+        except ValidationError as e:
+            raise CommandError(e.messages[0])
 
         paths = []
         for path in options["export_paths"]:

@@ -8,10 +8,9 @@ from zerver.actions.scheduled_messages import (
     check_schedule_message,
     delete_scheduled_message,
     edit_scheduled_message,
-    extract_direct_message_recipient_ids,
-    extract_stream_id,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
@@ -133,7 +132,8 @@ def create_scheduled_message_backend(
     assert client is not None
 
     if recipient_type_name == "stream":
-        message_to = extract_stream_id(req_to)
+        stream_id = extract_stream_id(req_to)
+        message_to = [stream_id]
     else:
         message_to = extract_direct_message_recipient_ids(req_to)
 

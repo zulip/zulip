@@ -114,6 +114,19 @@
     justify-content: space-between;
     width: 92%;
     margin-right: 2%;
+
+    button {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(208deg 56% 53%);
+        border-color: hsl(208deg 56% 47%);
+
+        &:hover,
+        &:active,
+        &:focus {
+            background-color: hsl(208deg 56% 45%);
+            border-color: hsl(208deg 56% 36%);
+        }
+    }
 }
 
 .centerpiece {

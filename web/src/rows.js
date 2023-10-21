@@ -163,14 +163,6 @@ export function recipient_from_group(message_group) {
 }
 
 export function id_for_recipient_row($recipient_row) {
-    // A recipient row can be either a normal recipient row, or
-    // the FRB, which is a fake recipient row. If it's a FRB, it has
-    // a 'zid' property that stores the message id it is directly over
     const $msg_row = first_message_in_group($recipient_row);
-    if ($msg_row.length === 0) {
-        // If we're narrowing from the FRB, take the msg id
-        // directly from it
-        return id($recipient_row);
-    }
     return id($msg_row);
 }

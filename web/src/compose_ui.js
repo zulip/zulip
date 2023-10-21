@@ -5,6 +5,7 @@ import autosize from "autosize";
 import $ from "jquery";
 import {insert, replace, set, wrapSelection} from "text-field-edit";
 
+import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as common from "./common";
 import {$t} from "./i18n";
 import * as loading from "./loading";
@@ -34,15 +35,24 @@ export function autosize_textarea($textarea) {
     }
 }
 
+export function insert_and_scroll_into_view(content, $textarea) {
+    insert($textarea[0], content);
+    // Blurring and refocusing ensures the cursor / selection is in view.
+    $textarea.trigger("blur");
+    $textarea.trigger("focus");
+    autosize_textarea($textarea);
+}
+
 function get_focus_area(msg_type, opts) {
-    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
+    // Set focus to "Topic" when narrowed to a stream+topic
+    // and "Start new conversation" button clicked.
     if (msg_type === "stream" && opts.stream_id && !opts.topic) {
         return "#stream_message_recipient_topic";
     } else if (
         (msg_type === "stream" && opts.stream_id) ||
         (msg_type === "private" && opts.private_message_recipient)
     ) {
-        if (opts.trigger === "new topic button") {
+        if (opts.trigger === "clear topic button") {
             return "#stream_message_recipient_topic";
         }
         return "#compose-textarea";
@@ -98,8 +108,7 @@ export function smart_insert_inline($textarea, syntax) {
         syntax += " ";
     }
 
-    insert($textarea[0], syntax);
-    autosize_textarea($textarea);
+    insert_and_scroll_into_view(syntax, $textarea);
 }
 
 export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
@@ -145,8 +154,7 @@ export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
     const new_lines_needed_after_count = padding_newlines - new_lines_after_count;
     syntax = syntax + "\n".repeat(new_lines_needed_after_count);
 
-    insert($textarea[0], syntax);
-    autosize_textarea($textarea);
+    insert_and_scroll_into_view(syntax, $textarea);
 }
 
 export function insert_syntax_and_focus(
@@ -244,6 +252,9 @@ export function compute_placeholder_text(opts) {
         const recipient_names = recipient_list
             .map((recipient) => {
                 const user = people.get_by_email(recipient);
+                if (people.should_add_guest_user_indicator(user.user_id)) {
+                    return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+                }
                 return user.full_name;
             })
             .join(", ");
@@ -352,60 +363,197 @@ export function format_text($textarea, type, inserted_content) {
     const field = $textarea.get(0);
     let range = $textarea.range();
     let text = $textarea.val();
+
+    // Remove new line and space around selected text, except list formatting,
+    // where we want to especially preserve any selected new line character
+    // before the selected text, as it is conventionally depicted with a highlight
+    // at the end of the previous line, which we would like to format.
+    const TRIM_ONLY_END_TYPES = ["bulleted", "numbered"];
+
+    let start_trim_length;
+    if (TRIM_ONLY_END_TYPES.includes(type)) {
+        start_trim_length = 0;
+    } else {
+        start_trim_length = range.text.length - range.text.trimStart().length;
+    }
+    const end_trim_length = range.text.length - range.text.trimEnd().length;
+    field.setSelectionRange(range.start + start_trim_length, range.end - end_trim_length);
+    range = $textarea.range();
     const selected_text = range.text;
 
-    // Remove new line and space around selected text.
-    const left_trim_length = range.text.length - range.text.trimStart().length;
-    const right_trim_length = range.text.length - range.text.trimEnd().length;
+    // Check if the selection is already surrounded by syntax
+    const is_selection_formatted = (syntax_start, syntax_end = syntax_start) =>
+        range.start >= syntax_start.length &&
+        text.length - range.end >= syntax_end.length &&
+        text.slice(range.start - syntax_start.length, range.start) === syntax_start &&
+        text.slice(range.end, range.end + syntax_end.length) === syntax_end;
 
-    field.setSelectionRange(range.start + left_trim_length, range.end - right_trim_length);
-    range = $textarea.range();
+    // Check if selected text itself has syntax inside it.
+    const is_inner_text_formatted = (syntax_start, syntax_end = syntax_start) =>
+        range.length >= syntax_start.length + syntax_end.length &&
+        selected_text.slice(0, syntax_start.length) === syntax_start &&
+        selected_text.slice(-syntax_end.length) === syntax_end;
 
-    const is_selection_bold = () =>
-        // First check if there are enough characters before/after selection.
-        range.start >= bold_syntax.length &&
-        text.length - range.end >= bold_syntax.length &&
-        // And then if the characters have bold_syntax around them.
-        text.slice(range.start - bold_syntax.length, range.start) === bold_syntax &&
-        text.slice(range.end, range.end + bold_syntax.length) === bold_syntax;
+    const section_off_selected_lines = () => {
+        // Divide all lines of text (separated by `\n`) into those entirely or
+        // partially selected, and those before and after these selected lines.
+        const before = text.slice(0, range.start);
+        const after = text.slice(range.end);
+        let separating_new_line_before = false;
+        let closest_new_line_beginning_before_index;
+        if (before.includes("\n")) {
+            separating_new_line_before = true;
+            closest_new_line_beginning_before_index = before.lastIndexOf("\n");
+        } else {
+            separating_new_line_before = false;
+            // The beginning of the entire text acts as a new line.
+            closest_new_line_beginning_before_index = -1;
+        }
+        let separating_new_line_after = false;
+        let closest_new_line_char_after_index;
+        if (after.includes("\n")) {
+            separating_new_line_after = true;
+            closest_new_line_char_after_index =
+                after.indexOf("\n") + before.length + selected_text.length;
+        } else {
+            separating_new_line_after = false;
+            // The end of the entire text acts as a new line.
+            closest_new_line_char_after_index = text.length;
+        }
+        // selected_lines neither includes the `\n` character that marks its
+        // beginning (which exists if there are before_lines) nor the one
+        // that marks its end (which exists if there are after_lines).
+        const selected_lines = text.slice(
+            closest_new_line_beginning_before_index + 1,
+            closest_new_line_char_after_index,
+        );
+        // before_lines excludes the `\n` character that separates it from selected_lines.
+        const before_lines = text.slice(0, Math.max(0, closest_new_line_beginning_before_index));
+        // after_lines excludes the `\n` character that separates it from selected_lines.
+        const after_lines = text.slice(closest_new_line_char_after_index + 1);
+        return {
+            before_lines,
+            separating_new_line_before,
+            selected_lines,
+            separating_new_line_after,
+            after_lines,
+        };
+    };
 
-    const is_inner_text_bold = () =>
-        // Check if selected text itself has bold_syntax inside it.
-        range.length > 4 &&
-        selected_text.slice(0, bold_syntax.length) === bold_syntax &&
-        selected_text.slice(-bold_syntax.length) === bold_syntax;
+    const format_list = (type) => {
+        let is_marked;
+        let mark;
+        let strip_marking;
+        if (type === "bulleted") {
+            is_marked = bulleted_numbered_list_util.is_bulleted;
+            mark = (line) => "- " + line;
+            strip_marking = bulleted_numbered_list_util.strip_bullet;
+        } else {
+            is_marked = bulleted_numbered_list_util.is_numbered;
+            mark = (line, i) => i + 1 + ". " + line;
+            strip_marking = bulleted_numbered_list_util.strip_numbering;
+        }
+        // We toggle complete lines even when they are partially selected (and just selecting the
+        // newline character after a line counts as partial selection too).
+        const sections = section_off_selected_lines();
+        let {before_lines, selected_lines, after_lines} = sections;
+        const {separating_new_line_before, separating_new_line_after} = sections;
+        // If there is even a single unmarked line selected, we mark all.
+        const should_mark = selected_lines.split("\n").some((line) => !is_marked(line));
+        if (should_mark) {
+            selected_lines = selected_lines
+                .split("\n")
+                .map((line, i) => mark(line, i))
+                .join("\n");
+            // We always ensure a blank line before and after the list, as we want
+            // a clean separation between the list and the rest of the text, especially
+            // when the markdown is rendered.
+
+            // Add blank line between text before and list if not already present.
+            if (before_lines.length && before_lines.at(-1) !== "\n") {
+                before_lines += "\n";
+            }
+            // Add blank line between list and rest of text if not already present.
+            if (after_lines.length && after_lines.at(0) !== "\n") {
+                after_lines = "\n" + after_lines;
+            }
+        } else {
+            // Unmark all marked lines by removing the marking syntax characters.
+            selected_lines = selected_lines
+                .split("\n")
+                .map((line) => strip_marking(line))
+                .join("\n");
+        }
+        // Restore the separating newlines that were removed by section_off_selected_lines.
+        if (separating_new_line_before) {
+            before_lines += "\n";
+        }
+        if (separating_new_line_after) {
+            after_lines = "\n" + after_lines;
+        }
+        text = before_lines + selected_lines + after_lines;
+        set(field, text);
+        // If no text was selected, that is, marking was added to the line with the
+        // cursor, nothing will be selected and the cursor will remain as it was.
+        if (selected_text === "") {
+            field.setSelectionRange(
+                before_lines.length + selected_lines.length,
+                before_lines.length + selected_lines.length,
+            );
+        } else {
+            field.setSelectionRange(
+                before_lines.length,
+                before_lines.length + selected_lines.length,
+            );
+        }
+    };
+
+    const format = (syntax_start, syntax_end = syntax_start) => {
+        let linebreak_start = "";
+        let linebreak_end = "";
+        if (syntax_start[0] === "\n") {
+            linebreak_start = "\n";
+        }
+        if (syntax_end.at(-1) === "\n") {
+            linebreak_end = "\n";
+        }
+        if (is_selection_formatted(syntax_start, syntax_end)) {
+            text =
+                text.slice(0, range.start - syntax_start.length) +
+                linebreak_start +
+                text.slice(range.start, range.end) +
+                linebreak_end +
+                text.slice(range.end + syntax_end.length);
+            set(field, text);
+            field.setSelectionRange(
+                range.start - syntax_start.length,
+                range.end - syntax_start.length,
+            );
+            return;
+        } else if (is_inner_text_formatted(syntax_start, syntax_end)) {
+            // Remove syntax inside the selection, if present.
+            text =
+                text.slice(0, range.start) +
+                linebreak_start +
+                text.slice(range.start + syntax_start.length, range.end - syntax_end.length) +
+                linebreak_end +
+                text.slice(range.end);
+            set(field, text);
+            field.setSelectionRange(
+                range.start,
+                range.end - syntax_start.length - syntax_end.length,
+            );
+            return;
+        }
+
+        // Otherwise, we don't have syntax within or around, so we add it.
+        wrapSelection(field, syntax_start, syntax_end);
+    };
 
     switch (type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
-
-            // If the selection is already surrounded by bold syntax,
-            // remove it rather than adding another copy.
-            if (is_selection_bold()) {
-                // Remove the bold_syntax from text.
-                text =
-                    text.slice(0, range.start - bold_syntax.length) +
-                    text.slice(range.start, range.end) +
-                    text.slice(range.end + bold_syntax.length);
-                set(field, text);
-                field.setSelectionRange(
-                    range.start - bold_syntax.length,
-                    range.end - bold_syntax.length,
-                );
-                break;
-            } else if (is_inner_text_bold()) {
-                // Remove bold syntax inside the selection, if present.
-                text =
-                    text.slice(0, range.start) +
-                    text.slice(range.start + bold_syntax.length, range.end - bold_syntax.length) +
-                    text.slice(range.end);
-                set(field, text);
-                field.setSelectionRange(range.start, range.end - bold_syntax.length * 2);
-                break;
-            }
-
-            // Otherwise, we don't have bold syntax, so we add it.
-            wrapSelection(field, bold_syntax);
+            format(bold_syntax);
             break;
         case "italic":
             // Ctrl + I: Toggle italic syntax on selection. This is
@@ -422,10 +570,10 @@ export function format_text($textarea, type, inserted_content) {
                     text.slice(range.start - italic_syntax.length, range.start) === italic_syntax &&
                     text.slice(range.end, range.end + italic_syntax.length) === italic_syntax;
 
-                if (is_selection_bold()) {
+                if (is_selection_formatted(bold_syntax)) {
                     // If text has bold_syntax around it.
                     if (
-                        range.start >= 3 &&
+                        range.start > bold_syntax.length &&
                         text.length - range.end >= bold_and_italic_syntax.length
                     ) {
                         // If text is both bold and italic.
@@ -462,7 +610,7 @@ export function format_text($textarea, type, inserted_content) {
                 selected_text.slice(0, italic_syntax.length) === italic_syntax &&
                 selected_text.slice(-italic_syntax.length) === italic_syntax
             ) {
-                if (is_inner_text_bold()) {
+                if (is_inner_text_formatted(bold_syntax)) {
                     if (
                         selected_text.length > bold_and_italic_syntax.length * 2 &&
                         selected_text.slice(0, bold_and_italic_syntax.length) ===
@@ -494,6 +642,10 @@ export function format_text($textarea, type, inserted_content) {
             }
 
             wrapSelection(field, italic_syntax);
+            break;
+        case "bulleted":
+        case "numbered":
+            format_list(type);
             break;
         case "link": {
             // Ctrl + L: Insert a link to selected text

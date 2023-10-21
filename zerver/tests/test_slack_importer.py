@@ -181,6 +181,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_zerver_realm_dict["string_id"], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict["name"], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict["date_created"], time)
+        self.assertNotIn("uuid", test_zerver_realm_dict)
+        self.assertNotIn("uuid_owner_secret", test_zerver_realm_dict)
 
     @responses.activate
     def test_check_token_access(self) -> None:

@@ -573,20 +573,6 @@ def do_send_missedmessage_events_reply_in_zulip(
     with override_language(user_profile.default_language):
         from_name: str = _("Zulip notifications")
     from_address = FromAddress.NOREPLY
-    if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
-        # If this setting is enabled, you can reply to the Zulip
-        # message notification emails directly back to the original sender.
-        # However, one must ensure the Zulip server is in the SPF
-        # record for the domain, or there will be spam/deliverability
-        # problems.
-        #
-        # Also, this setting is not really compatible with
-        # EMAIL_ADDRESS_VISIBILITY_ADMINS.
-        sender = senders[0]
-        from_name, from_address = (sender.full_name, sender.email)
-        context.update(
-            reply_to_zulip=False,
-        )
 
     email_dict = {
         "template_prefix": "zerver/emails/missed_message",

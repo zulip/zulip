@@ -7,9 +7,6 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
-const compose_state = zrequire("compose_state");
-const rows = zrequire("rows");
-
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
@@ -24,7 +21,10 @@ mock_esm("@uppy/core", {
 mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
 
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_reply = mock_esm("../src/compose_reply");
+const compose_state = mock_esm("../src/compose_state");
 mock_esm("../src/csrf", {csrf_token: "csrf_token"});
+const rows = mock_esm("../src/rows");
 
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
@@ -389,7 +389,7 @@ test("uppy_config", () => {
 test("file_input", ({override_rewire}) => {
     upload.setup_upload({mode: "compose"});
 
-    const change_handler = $("body").get_on_handler("change", "#compose .file_input");
+    const change_handler = $("#compose .file_input").get_on_handler("change");
     const files = ["file1", "file2"];
     const event = {
         target: {
@@ -408,6 +408,7 @@ test("file_input", ({override_rewire}) => {
 });
 
 test("file_drop", ({override, override_rewire}) => {
+    override(compose_state, "composing", () => false);
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -445,7 +446,7 @@ test("file_drop", ({override, override_rewire}) => {
         upload_files_called = true;
     });
     let compose_actions_start_called = false;
-    override(compose_actions, "respond_to_message", () => {
+    override(compose_reply, "respond_to_message", () => {
         compose_actions_start_called = true;
     });
     drop_handler(drop_event);
@@ -456,6 +457,7 @@ test("file_drop", ({override, override_rewire}) => {
 });
 
 test("copy_paste", ({override, override_rewire}) => {
+    override(compose_state, "composing", () => false);
     upload.setup_upload({mode: "compose"});
 
     const paste_handler = $("#compose").get_on_handler("paste");
@@ -483,7 +485,7 @@ test("copy_paste", ({override, override_rewire}) => {
         upload_files_called = true;
     });
     let compose_actions_start_called = false;
-    override(compose_actions, "respond_to_message", () => {
+    override(compose_reply, "respond_to_message", () => {
         compose_actions_start_called = true;
     });
 
@@ -610,6 +612,12 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     };
     on_info_visible_callback();
 
+    let hide_upload_banner_called = false;
+    override_rewire(upload, "hide_upload_banner", (_uppy, config) => {
+        hide_upload_banner_called = true;
+        assert.equal(config.mode, "compose");
+    });
+
     const on_upload_error_callback = callbacks["upload-error"];
     $("#compose_banners .upload_banner .upload_msg").text("");
     compose_ui_replace_syntax_called = false;
@@ -626,13 +634,14 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     assert.ok(compose_ui_replace_syntax_called);
 
     $("#compose_banners .upload_banner .upload_msg").text("");
+    assert.ok(hide_upload_banner_called);
     $("#compose-textarea").val("user modified text");
     on_upload_error_callback(file, null);
     assert.ok(compose_ui_replace_syntax_called);
     assert.equal($("#compose-textarea").val(), "user modified text");
 });
 
-test("main_file_drop_compose_mode", ({override_rewire}) => {
+test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     uppy_stub = function () {
         return {
             setMeta() {},
@@ -643,7 +652,6 @@ test("main_file_drop_compose_mode", ({override_rewire}) => {
             removeFile() {},
         };
     };
-    upload.setup_upload({mode: "compose"});
     upload.initialize();
 
     let prevent_default_counter = 0;
@@ -685,14 +693,14 @@ test("main_file_drop_compose_mode", ({override_rewire}) => {
     override_rewire(upload, "upload_files", () => {
         upload_files_called = true;
     });
-    compose_state.composing = () => true;
+    override(compose_state, "composing", () => true);
     drop_handler(drop_event);
     assert.equal(upload_files_called, true);
     assert.equal(prevent_default_counter, 3);
 
     // Test reply to message if no edit and compose box open
     upload_files_called = false;
-    compose_state.composing = () => false;
+    override(compose_state, "composing", () => false);
     const msg = {
         type: "stream",
         stream: "Denmark",
@@ -710,7 +718,7 @@ test("main_file_drop_compose_mode", ({override_rewire}) => {
     compose_actions.start = () => {
         compose_actions_start_called = true;
     };
-    compose_actions.respond_to_message = () => {
+    compose_reply.respond_to_message = () => {
         compose_actions_respond_to_message_called = true;
     };
     drop_handler(drop_event);
@@ -732,7 +740,7 @@ test("main_file_drop_compose_mode", ({override_rewire}) => {
     assert.equal(compose_actions_respond_to_message_called, false);
 });
 
-test("main_file_drop_edit_mode", ({override_rewire}) => {
+test("main_file_drop_edit_mode", ({override, override_rewire}) => {
     uppy_stub = function () {
         return {
             setMeta() {},
@@ -746,7 +754,7 @@ test("main_file_drop_edit_mode", ({override_rewire}) => {
 
     upload.setup_upload({mode: "edit", row: 40});
     upload.initialize();
-    compose_state.composing = () => false;
+    override(compose_state, "composing", () => false);
     let prevent_default_counter = 0;
     const drag_event = {
         preventDefault() {
@@ -784,7 +792,7 @@ test("main_file_drop_edit_mode", ({override_rewire}) => {
         upload_files_called = true;
     });
     $(".message_edit_form form").last = () => ({length: 1});
-    rows.get_message_id = () => 40;
+    override(rows, "get_message_id", () => 40);
 
     // Edit box which registered the event handler no longer exists.
     $drag_drop_container.closest = (element) => {
@@ -803,7 +811,7 @@ test("main_file_drop_edit_mode", ({override_rewire}) => {
     // Drag and dropped in one of the edit boxes. The event would be taken care of by
     // drag_drop_container event handlers.
 
-    rows.get_message_id = () => 40;
+    override(rows, "get_message_id", () => 40);
     // Edit box open
     $(".message_edit_form form").last = () => ({length: 1});
     drop_handler(drop_event);

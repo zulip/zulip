@@ -137,6 +137,7 @@ class HomeTest(ZulipTestCase):
         "realm_emails_restricted_to_domains",
         "realm_embedded_bots",
         "realm_emoji",
+        "realm_enable_guest_user_indicator",
         "realm_enable_read_receipts",
         "realm_enable_spectator_access",
         "realm_filters",
@@ -150,6 +151,7 @@ class HomeTest(ZulipTestCase):
         "realm_invite_to_realm_policy",
         "realm_invite_to_stream_policy",
         "realm_is_zephyr_mirror_realm",
+        "realm_jitsi_server_url",
         "realm_linkifiers",
         "realm_logo_source",
         "realm_logo_url",
@@ -194,6 +196,7 @@ class HomeTest(ZulipTestCase):
         "server_generation",
         "server_inline_image_preview",
         "server_inline_url_embed_preview",
+        "server_jitsi_server_url",
         "server_name_changes_disabled",
         "server_needs_upgrade",
         "server_presence_offline_threshold_seconds",
@@ -223,7 +226,6 @@ class HomeTest(ZulipTestCase):
         "user_status",
         "user_topics",
         "warn_no_email",
-        "webpack_public_path",
         "zulip_feature_level",
         "zulip_merge_base",
         "zulip_plan_is_not_limited",
@@ -365,7 +367,6 @@ class HomeTest(ZulipTestCase):
             "two_fa_enabled",
             "two_fa_enabled_user",
             "warn_no_email",
-            "webpack_public_path",
         ]
         self.assertEqual(actual_keys, expected_keys)
 
@@ -542,7 +543,7 @@ class HomeTest(ZulipTestCase):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
-            self.assert_in_response("Chat for distributed teams", result)
+            self.assert_in_response("your mission-critical communications with Zulip", result)
 
     def test_accept_terms_of_service(self) -> None:
         self.login("hamlet")
@@ -735,7 +736,7 @@ class HomeTest(ZulipTestCase):
         self.assertIn(bots[2].id, bot_ids)
         self.assertIn(bots[2].id, active_ids)
 
-        # Make sure nobody got mis-bucketed.
+        # Make sure nobody got misbucketed.
         self.assertNotIn(hamlet.id, non_active_ids)
         self.assertNotIn(defunct_user.id, active_ids)
 
@@ -1043,7 +1044,7 @@ class HomeTest(ZulipTestCase):
             with patch("zerver.views.home.get_subdomain", return_value=""):
                 result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response("Chat for distributed teams", result)
+            self.assert_in_response("your mission-critical communications with Zulip", result)
 
             with patch("zerver.views.home.get_subdomain", return_value="subdomain"):
                 result = self._get_home_page()
@@ -1122,7 +1123,7 @@ class HomeTest(ZulipTestCase):
         self.send_test_message(message)
         self.login_user(long_term_idle_user)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
         query_count = len(queries)
         long_term_idle_user.refresh_from_db()
         self.assertFalse(long_term_idle_user.long_term_idle)
@@ -1132,7 +1133,7 @@ class HomeTest(ZulipTestCase):
         message = "Test message 2"
         self.send_test_message(message)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
         # Test here for query count to be at least 5 less than previous count.
         # This will assure add_missing_messages() isn't repeatedly called.
         self.assertGreaterEqual(query_count - len(queries), 5)
@@ -1154,7 +1155,7 @@ class HomeTest(ZulipTestCase):
         self.send_test_message(message)
         self.login_user(long_term_idle_user)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
         query_count = len(queries)
         long_term_idle_user.refresh_from_db()
         self.assertFalse(long_term_idle_user.long_term_idle)
@@ -1164,7 +1165,7 @@ class HomeTest(ZulipTestCase):
         message = "Test message 4"
         self.send_test_message(message)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 5)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
         self.assertGreaterEqual(query_count - len(queries), 5)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)

@@ -96,12 +96,6 @@
     }
 }
 
-.create_user_group_button {
-    position: relative;
-    top: 7px;
-    margin: 0 7px 0 0;
-}
-
 #create_user_group_description,
 #create_stream_description {
     width: calc(100% - 15px);
@@ -141,8 +135,7 @@ h4.user_group_setting_subsection_title {
     .member_list_container,
     .subscriber_list_container {
         position: relative;
-        /* 2*45px (settings header) + 38px(tab-container row) + 20px (margin for .inner-box) + 134px (add user input and search widget area) = 282px */
-        max-height: calc(95vh - 282px);
+        max-height: var(--stream-subscriber-list-max-height);
         overflow: auto;
         text-align: left;
         -webkit-overflow-scrolling: touch;
@@ -246,14 +239,16 @@ h4.user_group_setting_subsection_title {
     margin-bottom: 0;
 }
 
-.add_subscribers_container {
+.add_subscribers_container,
+.add_members_container {
     display: inline-flex;
     width: 100%;
     align-items: center;
+}
 
-    .add_subscriber_btn_wrapper {
-        padding-left: 5px;
-    }
+.add_subscribers_container .add_subscriber_btn_wrapper,
+.add_members_container .add_member_btn_wrapper {
+    padding-left: 5px;
 }
 
 .remove-subscriber-form {
@@ -300,9 +295,9 @@ h4.user_group_setting_subsection_title {
     width: 97%;
     overflow: hidden;
     max-width: 1200px;
-    max-height: var(--modal-container-max-height);
+    max-height: var(--overlay-container-max-height);
 
-    .search-container .tab-switcher .ind-tab {
+    .list-toggler-container .tab-switcher .ind-tab {
         width: auto;
     }
 
@@ -372,7 +367,7 @@ h4.user_group_setting_subsection_title {
     .left {
         border-right: 1px solid hsl(0deg 0% 87%);
 
-        .search-container {
+        .list-toggler-container {
             padding: 6px 8px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
             display: flex;
@@ -485,15 +480,6 @@ h4.user_group_setting_subsection_title {
     width: 100%;
 }
 
-.user-groups-list {
-    /*
-        This height rule is temporary for this preparatory commit and
-        will be removed as we add other components widgets in groups list
-        and its styling similar to streams list.
-    */
-    height: calc(100% - 42px) !important;
-}
-
 #clear_search_stream_name,
 #clear_search_group_name {
     right: 5px !important;
@@ -538,18 +524,18 @@ h4.user_group_setting_subsection_title {
         background-position: center center;
 
         & svg {
-            fill: transparent;
+            fill: hsl(0deg 0% 72%);
             width: 70%;
             margin: 0% 15%;
         }
 
         &.checked:hover svg {
-            opacity: 0.5;
+            fill: hsl(240deg 41% 50%);
         }
 
-        &.disabled {
-            pointer-events: none;
-            visibility: hidden;
+        &.disabled svg {
+            fill: hsl(0deg 0% 87%);
+            cursor: not-allowed;
         }
 
         .sub_unsub_status {
@@ -570,7 +556,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .checked svg {
-        fill: hsl(170deg 48% 54%);
+        fill: hsl(240deg 96% 68%);
     }
 
     .icon {
@@ -655,19 +641,26 @@ h4.user_group_setting_subsection_title {
         vertical-align: top;
     }
 
-    &:hover .check:not(.checked) svg,
-    &.active:hover .check:not(.checked) svg {
-        fill: hsl(0deg 0% 87%);
-    }
-
-    .check:not(.checked):hover svg,
-    &.active .check:not(.checked):hover svg {
-        fill: hsl(0deg 0% 72%);
+    .check:not(.checked, .disabled):hover svg,
+    &.active .check:not(.checked, .disabled):hover svg {
+        fill: hsl(0deg 0% 27%);
     }
 
     &::selection,
     .icon .hashtag::selection {
         background-color: transparent;
+    }
+}
+
+.group-row {
+    /*
+        These are temporary rules and would get removed with
+        the completion of https://github.com/zulip/zulip/issues/25538
+        as these check buttons become functional for user groups.
+    */
+    .check.disabled {
+        pointer-events: none !important;
+        visibility: hidden !important;
     }
 }
 
@@ -678,15 +671,17 @@ h4.user_group_setting_subsection_title {
     color: hsl(0deg 0% 67%);
 }
 
-.subscriber_list_settings {
-    .add_subscribers_disabled {
+.subscriber_list_settings .add_subscribers_disabled,
+.member_list_settings .add_members_disabled {
+    cursor: not-allowed;
+
+    .pill-container {
         cursor: not-allowed;
-
-        .pill-container {
-            cursor: not-allowed;
-        }
     }
+}
 
+.subscriber_list_settings,
+.member_list_settings {
     & button[disabled] {
         pointer-events: none;
     }
@@ -700,18 +695,19 @@ h4.user_group_setting_subsection_title {
         outline: none;
         -webkit-overflow-scrolling: touch;
 
-        .stream-creation-simplebar-container {
+        .stream-creation-simplebar-container,
+        .user-group-creation-simplebar-container {
             height: calc(
-                var(--modal-container-height) -
-                    var(--modal-container-subscriptions-header-height) -
-                    var(--modal-container-subscriptions-display-type-height) -
-                    var(--modal-container-subscriptions-modal-footer-height)
+                var(--overlay-container-height) -
+                    var(--subscriptions-overlay-header-height) -
+                    var(--subscriptions-overlay-display-type-height) -
+                    var(--subscriptions-overlay-sticky-footer-height)
             );
             max-height: calc(
-                var(--modal-container-max-height) -
-                    var(--modal-container-subscriptions-header-height) -
-                    var(--modal-container-subscriptions-display-type-height) -
-                    var(--modal-container-subscriptions-modal-footer-height)
+                var(--overlay-container-max-height) -
+                    var(--subscriptions-overlay-header-height) -
+                    var(--subscriptions-overlay-display-type-height) -
+                    var(--subscriptions-overlay-sticky-footer-height)
             );
         }
 
@@ -720,15 +716,19 @@ h4.user_group_setting_subsection_title {
             padding: 15px 15px 0;
         }
 
-        .modal-footer {
+        .settings-sticky-footer {
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
-            padding-top: 9px;
+            padding: 9px 15px 15px;
+            text-align: right;
+            background-color: hsl(0deg 0% 96%);
+            border-top: 1px solid hsl(0deg 0% 87%);
+            box-shadow: inset 0 1px 0 hsl(0deg 0% 100%);
         }
 
         @media (width > $md_min) {
-            .modal-footer {
+            .settings-sticky-footer {
                 border-radius: 0 0 6px;
             }
         }
@@ -1092,11 +1092,11 @@ div.settings-radio-input-parent {
 }
 
 @media (width < $lg_min) {
-    .subscriptions-container .left .search-container {
+    .subscriptions-container .left .list-toggler-container {
         flex-wrap: wrap;
     }
 
-    .search-container {
+    .list-toggler-container {
         text-align: center;
     }
 
@@ -1117,7 +1117,7 @@ div.settings-radio-input-parent {
         position: relative;
         overflow: hidden;
 
-        .search-container {
+        .list-toggler-container {
             text-align: left;
         }
 

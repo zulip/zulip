@@ -1,21 +1,18 @@
 import $ from "jquery";
 import tippy from "tippy.js";
-import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
-import * as activity from "./activity";
-import * as blueslip from "./blueslip";
+import * as activity_ui from "./activity_ui";
 import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
-import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
-import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
@@ -27,7 +24,6 @@ import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as rows from "./rows";
@@ -35,6 +31,7 @@ import * as server_events from "./server_events";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
@@ -42,7 +39,6 @@ import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
-import * as user_profile from "./user_profile";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
@@ -118,8 +114,13 @@ export function initialize() {
             return true;
         }
 
-        // Inline image and twitter previews.
-        if ($target.is("img.message_inline_image") || $target.is("img.twitter-avatar")) {
+        // Inline image, video and twitter previews.
+        if (
+            $target.is("img.message_inline_image") ||
+            $target.is("video") ||
+            $target.is(".message_inline_video") ||
+            $target.is("img.twitter-avatar")
+        ) {
             return true;
         }
 
@@ -203,9 +204,8 @@ export function initialize() {
         if (page_params.is_spectator) {
             return;
         }
-        compose_actions.respond_to_message({trigger: "message click"});
+        compose_reply.respond_to_message({trigger: "message click"});
         e.stopPropagation();
-        popovers.hide_all();
     };
 
     // if on normal non-mobile experience, a `click` event should run the message
@@ -232,7 +232,6 @@ export function initialize() {
 
     $("#main_div").on("click", ".star_container", function (e) {
         e.stopPropagation();
-        popovers.hide_all();
 
         if (page_params.is_spectator) {
             spectators.login_to_access();
@@ -292,7 +291,6 @@ export function initialize() {
         message_lists.current.select_id(rows.id($row));
         message_edit.start($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".move_message_button", function (e) {
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
@@ -306,43 +304,36 @@ export function initialize() {
             message,
         );
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.start_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.save_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.end_inline_topic_edit($recipient_row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.save_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_close", function (e) {
         const $row = $(this).closest(".message_row");
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
-        popovers.hide_all();
     });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {
@@ -401,7 +392,7 @@ export function initialize() {
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
-        message_edit.toggle_resolve_topic(message_id, topic_name);
+        message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 
     $("body").on("click", ".message_header .on_hover_topic_unresolve", (e) => {
@@ -409,7 +400,7 @@ export function initialize() {
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
-        message_edit.toggle_resolve_topic(message_id, topic_name);
+        message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 
     // Mute topic in a unmuted stream
@@ -481,45 +472,16 @@ export function initialize() {
     });
 
     // SIDEBARS
-
-    $("body").on("click", ".login_button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.location.href = hash_util.build_login_link();
-    });
-
-    $("#userlist-toggle-button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const sidebarHidden = !$(".app-main .column-right").hasClass("expanded");
-        popovers.hide_all();
-        if (sidebarHidden) {
-            popovers.show_userlist_sidebar();
-        }
-    });
-
-    $("#streamlist-toggle-button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
-        popovers.hide_all();
-        if (sidebarHidden) {
-            stream_popover.show_streamlist_sidebar();
-        }
-    });
-
     $("#user_presences")
         .expectOne()
         .on("click", ".selectable_sidebar_block", (e) => {
             const $li = $(e.target).parents("li");
 
-            activity.narrow_for_user({$li});
+            activity_ui.narrow_for_user({$li});
 
             e.preventDefault();
             e.stopPropagation();
-            popovers.hide_all();
+            sidebar_ui.hide_userlist_sidebar();
             $(".tooltip").remove();
         });
 
@@ -661,16 +623,14 @@ export function initialize() {
     // MISC
 
     {
-        const sel = ["#stream_filters", "#global_filters", "#user_presences"].join(", ");
+        const sel = ["#stream_filters", "#left-sidebar-navigation-list", "#user_presences"].join(
+            ", ",
+        );
 
         $(sel).on("click", "a", function () {
             this.blur();
         });
     }
-
-    popovers.register_click_handlers();
-    user_profile.register_click_handlers();
-    stream_popover.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");
@@ -734,9 +694,6 @@ export function initialize() {
             e.preventDefault();
             return;
         }
-
-        // Still hide the popovers, however
-        popovers.hide_all();
     }
 
     $("body").on("click", "#compose-content", handle_compose_click);
@@ -758,7 +715,7 @@ export function initialize() {
         "click",
         ".private_messages_container.zoom-out #private_messages_section_header",
         (e) => {
-            if (e.target.classList.value === "fa fa-align-right") {
+            if ($(e.target).closest("#show_all_private_messages").length === 1) {
                 // Let the browser handle the "all direct messages" widget.
                 return;
             }
@@ -769,6 +726,10 @@ export function initialize() {
                 "#left_sidebar_scroll_container .simplebar-content-wrapper",
             );
             const scroll_position = $left_sidebar_scrollbar.scrollTop();
+
+            if (stream_list.is_zoomed_in()) {
+                stream_list.zoom_out();
+            }
 
             // This next bit of logic is a bit subtle; this header
             // button scrolls to the top of the direct messages
@@ -795,50 +756,8 @@ export function initialize() {
         },
     );
 
-    // WEBATHENA
-
-    $("body").on("click", ".webathena_login", (e) => {
-        $("#zephyr-mirror-error").removeClass("show");
-        const principal = ["zephyr", "zephyr"];
-        WinChan.open(
-            {
-                url: "https://webathena.mit.edu/#!request_ticket_v1",
-                relay_url: "https://webathena.mit.edu/relay.html",
-                params: {
-                    realm: "ATHENA.MIT.EDU",
-                    principal,
-                },
-            },
-            (err, r) => {
-                if (err) {
-                    blueslip.warn(err);
-                    return;
-                }
-                if (r.status !== "OK") {
-                    blueslip.warn(r);
-                    return;
-                }
-
-                channel.post({
-                    url: "/accounts/webathena_kerberos_login/",
-                    data: {cred: JSON.stringify(r.session)},
-                    success() {
-                        $("#zephyr-mirror-error").removeClass("show");
-                    },
-                    error() {
-                        $("#zephyr-mirror-error").addClass("show");
-                    },
-                });
-            },
-        );
-        $("#settings-dropdown").dropdown("toggle");
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    // End Webathena code
-
     // disable the draggability for left-sidebar components
-    $("#stream_filters, #global_filters").on("dragstart", (e) => {
+    $("#stream_filters, #left-sidebar-navigation-list").on("dragstart", (e) => {
         e.target.blur();
         return false;
     });
@@ -858,34 +777,10 @@ export function initialize() {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", (e) => e.target.blur());
 
-    // GEAR MENU
-
-    $("body").on("click", ".change-language-spectator, .language_selection_widget button", (e) => {
+    $("body").on("click", ".language_selection_widget button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         settings_display.launch_default_language_setting_modal();
-    });
-
-    // We cannot update recipient bar color using dark_theme.enable/disable due to
-    // it being called before message lists are initialized and the order cannot be changed.
-    // Also, since these buttons are only visible for spectators which doesn't have events,
-    // if theme is changed in a different tab, the theme of this tab remains the same.
-    $("body").on("click", "#gear-menu .dark-theme", (e) => {
-        // Allow propagation to close gear menu.
-        e.preventDefault();
-        requestAnimationFrame(() => {
-            dark_theme.enable();
-            message_lists.update_recipient_bar_background_color();
-        });
-    });
-
-    $("body").on("click", "#gear-menu .light-theme", (e) => {
-        // Allow propagation to close gear menu.
-        e.preventDefault();
-        requestAnimationFrame(() => {
-            dark_theme.disable();
-            message_lists.update_recipient_bar_background_color();
-        });
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
@@ -903,21 +798,6 @@ export function initialize() {
             // the child nodes, so the #compose stopPropagation doesn't get a
             // chance to capture right clicks.
             return;
-        }
-
-        // Dismiss popovers if the user has clicked outside them
-        if (
-            $(
-                '.popover-inner, #user-profile-modal, .emoji-picker-popover, .app-main [class^="column-"].expanded',
-            ).has(e.target).length === 0
-        ) {
-            // Since tippy instance can handle outside clicks on their own,
-            // we don't need to trigger them from here.
-            // This fixes the bug of `hideAll` being called
-            // after a tippy popover has been triggered which hides
-            // the popover without being displayed.
-            const not_hide_tippy_instances = true;
-            popovers.hide_all(not_hide_tippy_instances);
         }
 
         if (compose_state.composing() && !$(e.target).parents("#compose").length) {
@@ -954,6 +834,7 @@ export function initialize() {
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".typeahead").length &&
                 !$(e.target).closest(".enter_sends").length &&
+                !$(e.target).closest(".flatpickr-calendar").length &&
                 $(e.target).closest("body").length
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
@@ -974,5 +855,11 @@ export function initialize() {
 
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
+    });
+
+    $("body").on("click", ".trigger-natural-click", (e) => {
+        // Jquery prevents default action on anchor for `trigger("click")`
+        // so we need to use click on element to trigger the default action.
+        e.currentTarget.click();
     });
 }

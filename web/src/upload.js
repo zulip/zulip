@@ -4,17 +4,20 @@ import $ from "jquery";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
-import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
+
+export let compose_upload_object;
+export const upload_objects_by_message_edit_row = new Map();
+
 // Show the upload button only if the browser supports it.
 export function feature_check($upload_button) {
     if (window.XMLHttpRequest && new window.XMLHttpRequest().upload) {
@@ -284,7 +287,7 @@ export function setup_upload(config) {
         });
     });
 
-    $("body").on("change", get_item("file_input_identifier", config), (event) => {
+    $(get_item("file_input_identifier", config)).on("change", (event) => {
         const files = event.target.files;
         upload_files(uppy, config, files);
         get_item("textarea", config).trigger("focus");
@@ -310,7 +313,7 @@ export function setup_upload(config) {
         event.stopPropagation();
         const files = event.originalEvent.dataTransfer.files;
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_actions.respond_to_message({trigger: "file drop or paste"});
+            compose_reply.respond_to_message({trigger: "file drop or paste"});
         }
         upload_files(uppy, config, files);
     });
@@ -337,7 +340,7 @@ export function setup_upload(config) {
         // present a plain-text version of the file name.
         event.preventDefault();
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_actions.respond_to_message({trigger: "file drop or paste"});
+            compose_reply.respond_to_message({trigger: "file drop or paste"});
         }
         upload_files(uppy, config, files);
     });
@@ -403,6 +406,8 @@ export function setup_upload(config) {
 
     uppy.on("upload-error", (file, _error, response) => {
         const message = response ? response.body.msg : undefined;
+        // Hide the upload status banner on error so only the error banner shows
+        hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
         compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
         compose_ui.autosize_textarea(get_item("textarea", config));
@@ -417,6 +422,10 @@ export function setup_upload(config) {
 }
 
 export function initialize() {
+    compose_upload_object = setup_upload({
+        mode: "compose",
+    });
+
     // Allow the main panel to receive drag/drop events.
     $(".app-main").on("dragover", (event) => event.preventDefault());
 
@@ -428,7 +437,6 @@ export function initialize() {
 
         const $drag_drop_edit_containers = $(".message_edit_form form");
         const files = event.originalEvent.dataTransfer.files;
-        const compose_upload_object = compose.get_compose_upload_object();
         const $last_drag_drop_edit_container = $drag_drop_edit_containers.last();
 
         // Handlers registered on individual inputs will ensure that
@@ -449,12 +457,12 @@ export function initialize() {
             if (!$drag_drop_container.closest("html").length) {
                 return;
             }
-            const edit_upload_object = message_edit.get_upload_object_from_row(row_id);
+            const edit_upload_object = upload_objects_by_message_edit_row.get(row_id);
 
             upload_files(edit_upload_object, {mode: "edit", row: row_id}, files);
         } else if (message_lists.current.selected_message()) {
             // Start a reply to selected message, if viewing a message feed.
-            compose_actions.respond_to_message({trigger: "drag_drop_file"});
+            compose_reply.respond_to_message({trigger: "drag_drop_file"});
             upload_files(compose_upload_object, {mode: "compose"}, files);
         } else {
             // Start a new message in other views.

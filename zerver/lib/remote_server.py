@@ -92,6 +92,17 @@ def send_to_push_bouncer(
             raise PushNotificationBouncerError(
                 _("Push notifications bouncer error: {error}").format(error=msg)
             )
+        elif (
+            endpoint == "push/test_notification"
+            and "code" in result_dict
+            and result_dict["code"] == "INVALID_REMOTE_PUSH_DEVICE_TOKEN"
+        ):
+            # This error from the notification debugging endpoint should just be directly
+            # communicated to the device.
+            # TODO: Extend this to use a more general mechanism when we add more such error responses.
+            from zerver.lib.push_notifications import InvalidRemotePushDeviceTokenError
+
+            raise InvalidRemotePushDeviceTokenError
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)

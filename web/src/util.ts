@@ -71,7 +71,9 @@ export function extract_pm_recipients(recipients: string): string[] {
 
 // When the type is "private", properties from to_user_ids might be undefined.
 // See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
-type Recipient = {to_user_ids?: string; type: "private"} | (StreamTopic & {type: "stream"});
+export type Recipient =
+    | {type: "private"; to_user_ids?: string; reply_to: string}
+    | ({type: "stream"} & StreamTopic);
 
 export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {
     if (a === undefined || b === undefined) {
@@ -191,7 +193,7 @@ export class CachedValue<T> {
 }
 
 export function find_wildcard_mentions(message_content: string): string | null {
-    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
+    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream|topic)\*{2})($|\s)/);
     if (mention === null) {
         return null;
     }
@@ -213,8 +215,16 @@ export const move_array_elements_to_front = function util_move_array_elements_to
 
 // check by the userAgent string if a user's client is likely mobile.
 export function is_mobile(): boolean {
-    const regex = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
-    return new RegExp(regex, "i").test(window.navigator.userAgent);
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+        window.navigator.userAgent,
+    );
+}
+
+export function is_client_safari(): boolean {
+    // Since GestureEvent is only supported on Safari, we can use it
+    // to detect if the browser is Safari including Safari on iOS.
+    // https://developer.mozilla.org/en-US/docs/Web/API/GestureEvent
+    return "GestureEvent" in window;
 }
 
 export function sorted_ids(ids: number[]): number[] {
@@ -253,7 +263,7 @@ export function is_topic_synonym(operator: string): boolean {
 }
 
 export function convert_message_topic(message: Message): void {
-    if (message.topic === undefined) {
+    if (message.type === "stream" && message.topic === undefined) {
         message.topic = message.subject;
     }
 }
@@ -459,4 +469,22 @@ export function try_parse_as_truthy<T>(val: (T | undefined)[]): T[] | undefined 
         result.push(x);
     }
     return result;
+}
+
+export function is_valid_url(url: string, require_absolute: boolean = false): boolean {
+    try {
+        let base_url;
+        if (!require_absolute) {
+            base_url = window.location.origin;
+        }
+
+        // JavaScript only requires the base element if we provide a relative URL.
+        // If we don’t provide one, it defaults to undefined. Alternatively, if we
+        // provide a base element with an absolute URL, JavaScript ignores the base element.
+        new URL(url, base_url);
+    } catch (error) {
+        blueslip.log(`Invalid URL: ${url}.`, error);
+        return false;
+    }
+    return true;
 }

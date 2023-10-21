@@ -58,6 +58,9 @@ IGNORED_PHRASES = [
     r"I understand",
     r"I'm",
     r"I've",
+    r"Topics I participate in",
+    r"Topics I send a message to",
+    r"Topics I start",
     # Specific short words
     r"beta",
     r"and",
@@ -69,6 +72,7 @@ IGNORED_PHRASES = [
     r"keyword",
     r"streamname",
     r"user@example\.com",
+    r"acme",
     # Fragments of larger strings
     r"your subscriptions on your Streams page",
     r"Add global time<br />Everyone sees global times in their own time zone\.",
@@ -136,6 +140,10 @@ IGNORED_PHRASES = [
     r"does not apply to moderators and administrators",
     # Used in message-delete-time-limit setting label
     r"does not apply to administrators",
+    # Used as indicator with names for guest users.
+    r"guest",
+    # Used in pills for deactivated users.
+    r"deactivated",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
@@ -225,7 +233,7 @@ def check_banned_words(text: str) -> List[str]:
         if word in lower_cased_text:
             # Hack: Should move this into BANNED_WORDS framework; for
             # now, just hand-code the skips:
-            if "realm_name" in lower_cased_text:
+            if "realm_name" in lower_cased_text or "realm_uri" in lower_cased_text:
                 continue
             kwargs = dict(word=word, text=text, reason=reason)
             msg = "{word} found in '{text}'. {reason}".format(**kwargs)

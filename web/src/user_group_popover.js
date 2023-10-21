@@ -1,15 +1,12 @@
 import $ from "jquery";
 
-import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
+import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
-import {media_breakpoints_num} from "./css_variables";
 import * as message_lists from "./message_lists";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
-import {popover_items_handle_keyboard} from "./popovers";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 import * as user_groups from "./user_groups";
@@ -45,7 +42,7 @@ function get_user_group_popover_items() {
 
 export function handle_keyboard(key) {
     const $items = get_user_group_popover_items();
-    popover_items_handle_keyboard(key, $items);
+    popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
 // element is the target element to pop off of;
@@ -58,14 +55,6 @@ export function toggle_user_group_info_popover(element, message_id) {
     const $elt = $(element);
     const user_group_id = Number.parseInt($elt.attr("data-user-group-id"), 10);
     const group = user_groups.get_user_group_from_id(user_group_id);
-
-    let show_as_overlay = false;
-
-    // If the window is mobile-sized, we will render the
-    // user group popover centered on the screen with the overlay.
-    if (window.innerWidth <= media_breakpoints_num.md) {
-        show_as_overlay = true;
-    }
 
     popover_menus.toggle_popover_menu(
         element,
@@ -83,7 +72,6 @@ export function toggle_user_group_info_popover(element, message_id) {
                 ],
             },
             onCreate(instance) {
-                popovers.hide_all_except_sidebars();
                 if (message_id) {
                     message_lists.current.select_id(message_id);
                 }
@@ -101,7 +89,9 @@ export function toggle_user_group_info_popover(element, message_id) {
                 hide();
             },
         },
-        {show_as_overlay},
+        {
+            show_as_overlay_on_mobile: true,
+        },
     );
 }
 
@@ -135,7 +125,7 @@ function fetch_group_members(member_ids) {
 }
 
 function sort_group_members(members) {
-    return members.sort((a, b) => util.strcmp(a.full_name, b.fullname));
+    return members.sort((a, b) => util.strcmp(a.full_name, b.full_name));
 }
 
 // exporting these functions for testing purposes

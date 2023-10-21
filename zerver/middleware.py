@@ -7,6 +7,7 @@ from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
+from django.core import signals
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.response import HttpResponseBase
@@ -22,12 +23,12 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
 from sentry_sdk import set_tag
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import Concatenate, ParamSpec, override
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
-from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
+from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
@@ -383,35 +384,38 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             response = json_response_from_error(exception)
-            if response.status_code >= 500:
-                # Here we use Django's log_response the way Django uses
-                # it normally to log error responses. However, we make the small
-                # modification of including the traceback to make the log message
-                # more helpful. log_response takes care of knowing not to duplicate
-                # the logging, so Django won't generate a second log message.
-                log_response(
-                    "%s: %s",
-                    response.reason_phrase,
-                    request.path,
-                    response=response,
-                    request=request,
-                    exception=exception,
-                )
-            return response
-
-        if RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
+            if response.status_code < 500 or isinstance(exception, WebhookError):
+                # Webhook errors are handled in
+                # authenticated_rest_api_view / webhook_view, so we
+                # just return the response without logging further.
+                return response
+        elif RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
             response = json_response(res_type="error", msg=_("Internal server error"), status=500)
-            log_response(
-                "%s: %s",
-                response.reason_phrase,
-                request.path,
-                response=response,
-                request=request,
-                exception=exception,
-            )
-            return response
+        else:
+            return None
 
-        return None
+        # Send the same signal that Django sends for an unhandled exception.
+        # This is received by Sentry to log exceptions, and also by the Django
+        # test HTTP client to show better error messages.
+        try:
+            raise exception  # Ensure correct sys.exc_info().
+        except BaseException:
+            signals.got_request_exception.send(sender=None, request=request)
+
+        # Here we use Django's log_response the way Django uses
+        # it normally to log error responses. However, we make the small
+        # modification of including the traceback to make the log message
+        # more helpful. log_response takes care of knowing not to duplicate
+        # the logging, so Django won't generate a second log message.
+        log_response(
+            "%s: %s",
+            response.reason_phrase,
+            request.path,
+            response=response,
+            request=request,
+            exception=exception,
+        )
+        return response
 
 
 class TagRequests(MiddlewareMixin):
@@ -440,6 +444,7 @@ class CsrfFailureError(JsonableError):
         self.reason: str = reason
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("CSRF error: {reason}")
 
@@ -452,6 +457,7 @@ def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
 
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
+    @override
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
     ) -> HttpResponseBase:
@@ -539,7 +545,7 @@ class HostDomainMiddleware(MiddlewareMixin):
         #
         # API authentication will end up checking for an invalid
         # realm, and throw a JSON-format error if appropriate.
-        if request.path.startswith(("/static/", "/api/", "/json/")):
+        if request.path.startswith(("/static/", "/api/", "/json/")) or request.path == "/health":
             return None
 
         subdomain = get_subdomain(request)
@@ -606,6 +612,7 @@ class ProxyMisconfigurationError(JsonableError):
         self.proxy_reason = proxy_reason
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Reverse proxy misconfiguration: {proxy_reason}")
 

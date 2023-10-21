@@ -4,6 +4,7 @@ from typing import Any, List, Match
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
@@ -88,12 +89,12 @@ scheduled_instructions = """
 
 recent_instructions = """
 1. Click on <i class="fa fa-clock-o"></i> **Recent conversations** in the left
-   sidebar.
+   sidebar, or use the <kbd>T</kbd> keyboard shortcut..
 """
 
 all_instructions = """
 1. Click on <i class="fa fa-align-left"></i> **All messages** in the left
-   sidebar or use the <kbd>A</kbd> keyboard shortcut.
+   sidebar, or use the <kbd>A</kbd> keyboard shortcut.
 """
 
 starred_instructions = """
@@ -108,6 +109,11 @@ direct_instructions = """
    keyboard shortcut.
 """
 
+inbox_instructions = """
+1. Click on <i class="zulip-icon zulip-icon-inbox"></i> **Inbox** in the left
+   sidebar, or use the <kbd>Shift</kbd> + <kbd>I</kbd> keyboard shortcut.
+"""
+
 message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
@@ -115,6 +121,7 @@ message_info = {
     "all": ["All messages", "/#all_messages", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
     "direct": ["All direct messages", "/#narrow/is/dm", direct_instructions],
+    "inbox": ["Inbox", "/#inbox", inbox_instructions],
 }
 
 
@@ -133,6 +140,7 @@ LINK_TYPE_HANDLERS = {
 
 
 class RelativeLinksHelpExtension(Extension):
+    @override
     def extendMarkdown(self, md: Markdown) -> None:
         """Add RelativeLinksHelpExtension to the Markdown instance."""
         md.registerExtension(self)
@@ -150,6 +158,7 @@ def set_relative_help_links(value: bool) -> None:
 
 
 class RelativeLinks(Preprocessor):
+    @override
     def run(self, lines: List[str]) -> List[str]:
         done = False
         while not done:

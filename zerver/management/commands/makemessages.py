@@ -43,6 +43,7 @@ from django.core.management.base import CommandParser
 from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
+from typing_extensions import override
 
 strip_whitespace_right = re.compile(
     f"({BLOCK_TAG_START}-?\\s*(trans|pluralize).*?-{BLOCK_TAG_END})\\s+"
@@ -79,6 +80,7 @@ class Command(makemessages.Command):
     for func, tag in tags:
         xgettext_options += [f'--keyword={func}:1,"{tag}"']
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         super().add_arguments(parser)
         parser.add_argument(
@@ -97,6 +99,7 @@ class Command(makemessages.Command):
             help="Namespace of the frontend locale file",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         self.handle_django_locales(*args, **options)
         self.handle_frontend_locales(**options)

@@ -54,6 +54,7 @@ from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, i
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
 from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
+from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, home
 from zerver.views.hotspots import mark_hotspot_as_read
 from zerver.views.invite import (
@@ -91,6 +92,7 @@ from zerver.views.push_notifications import (
     add_apns_device_token,
     remove_android_reg_id,
     remove_apns_device_token,
+    send_test_push_notification_api,
 )
 from zerver.views.reactions import add_reaction, remove_reaction
 from zerver.views.read_receipts import read_receipts
@@ -379,6 +381,7 @@ v1_api_and_json_patterns = [
         "users/me/apns_device_token", POST=add_apns_device_token, DELETE=remove_apns_device_token
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
+    rest_path("mobile_push/test_notification", POST=send_test_push_notification_api),
     # users/*/presence => zerver.views.presence.
     rest_path("users/me/presence", POST=update_active_status_backend),
     # It's important that this sit after users/me/presence so that
@@ -835,6 +838,9 @@ if settings.DEVELOPMENT:
 urls += [
     path("api/v1/", include(v1_api_mobile_patterns)),
 ]
+
+# Healthcheck URL
+urls += [path("health", health)]
 
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend

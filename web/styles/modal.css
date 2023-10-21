@@ -1,11 +1,3 @@
-.modal-body {
-    max-height: 60vh;
-}
-
-.modal-bg {
-    background-color: var(--color-background-modal);
-}
-
 /* Styles for the Micromodal-based modals */
 .modal__overlay {
     position: fixed;

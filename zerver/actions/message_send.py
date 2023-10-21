@@ -30,6 +30,7 @@ from django.utils.translation import override as override_language
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.uploads import do_claim_attachments
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
@@ -50,7 +51,9 @@ from zerver.lib.message import (
     check_user_group_mention_allowed,
     normalize_body,
     render_markdown,
+    set_visibility_policy_possible,
     truncate_topic,
+    visibility_policy_for_send_message,
     wildcard_mention_allowed,
 )
 from zerver.lib.muted_users import get_muting_users
@@ -180,6 +183,7 @@ class RecipientInfoResult:
     service_bot_tuples: List[Tuple[int, int]]
     all_bot_user_ids: Set[int]
     topic_participant_user_ids: Set[int]
+    sender_muted_stream: Optional[bool]
 
 
 class ActiveUserDict(TypedDict):
@@ -190,6 +194,12 @@ class ActiveUserDict(TypedDict):
     long_term_idle: bool
     is_bot: bool
     bot_type: Optional[int]
+
+
+@dataclass
+class SentMessageResult:
+    message_id: int
+    automatic_new_visibility_policy: Optional[int] = None
 
 
 def get_recipient_info(
@@ -212,6 +222,7 @@ def get_recipient_info(
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
     topic_participant_user_ids: Set[int] = set()
+    sender_muted_stream: Optional[bool] = None
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -234,6 +245,11 @@ def get_recipient_info(
             topic_participant_user_ids = participants_for_topic(
                 realm_id, recipient.id, stream_topic.topic_name
             )
+            # We explicitly include the sender as a topic participant because the message will
+            # be actually sent at a later stage in this codepath, so `participants_for_topic`
+            # misses this sender. This is useful when the sender is sending their first message
+            # in the topic.
+            topic_participant_user_ids.add(sender_id)
         subscription_rows = (
             get_subscriptions_for_send_message(
                 realm_id=realm_id,
@@ -275,7 +291,14 @@ def get_recipient_info(
             .order_by("user_profile_id")
         )
 
-        message_to_user_ids = [row["user_profile_id"] for row in subscription_rows]
+        message_to_user_ids = list()
+        for row in subscription_rows:
+            message_to_user_ids.append(row["user_profile_id"])
+            # We store the 'sender_muted_stream' information here to avoid db query at
+            # a later stage when we perform automatically unmute topic in muted stream operation.
+            if row["user_profile_id"] == sender_id:
+                sender_muted_stream = row["is_muted"]
+
         user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
         def notification_recipients(setting: str) -> Set[int]:
@@ -466,6 +489,7 @@ def get_recipient_info(
         service_bot_tuples=service_bot_tuples,
         all_bot_user_ids=all_bot_user_ids,
         topic_participant_user_ids=topic_participant_user_ids,
+        sender_muted_stream=sender_muted_stream,
     )
 
 
@@ -541,7 +565,6 @@ def build_message_send_dict(
     stream: Optional[Stream] = None,
     local_id: Optional[str] = None,
     sender_queue_id: Optional[str] = None,
-    realm: Optional[Realm] = None,
     widget_content_dict: Optional[Dict[str, Any]] = None,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
@@ -552,9 +575,7 @@ def build_message_send_dict(
     production, this is always called by check_message, but some
     testing code paths call it directly.
     """
-    if realm is None:
-        realm = message.realm
-    assert realm == message.realm
+    realm = message.realm
 
     if mention_backend is None:
         mention_backend = MentionBackend(realm.id)
@@ -645,6 +666,7 @@ def build_message_send_dict(
 
     message_send_dict = SendMessageRequest(
         stream=stream,
+        sender_muted_stream=info.sender_muted_stream,
         local_id=local_id,
         sender_queue_id=sender_queue_id,
         realm=realm,
@@ -827,7 +849,7 @@ def do_send_messages(
     email_gateway: bool = False,
     scheduled_message_to_self: bool = False,
     mark_as_read: Sequence[int] = [],
-) -> List[int]:
+) -> List[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -899,6 +921,8 @@ def do_send_messages(
 
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
+    # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
+    #   and 'automatically_unmute_topics_in_muted_streams_policy' user settings.
     # * Notifying clients via send_event
     # * Triggering outgoing webhooks via the service event queue.
     # * Updating the `first_message_id` field for streams without any message history.
@@ -913,6 +937,40 @@ def do_send_messages(
             # assert needed because stubs for django are missing
             assert send_request.stream is not None
             realm_id = send_request.stream.realm_id
+            sender = send_request.message.sender
+
+            # Determine and set the visibility_policy depending on 'automatically_follow_topics_policy'
+            # and 'automatically_unmute_topics_in_muted_streams_policy'.
+            if set_visibility_policy_possible(sender, send_request.message) and not (
+                sender.automatically_follow_topics_policy
+                == sender.automatically_unmute_topics_in_muted_streams_policy
+                == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+            ):
+                try:
+                    user_topic = UserTopic.objects.get(
+                        user_profile=sender,
+                        stream_id=send_request.stream.id,
+                        topic_name__iexact=send_request.message.topic_name(),
+                    )
+                    visibility_policy = user_topic.visibility_policy
+                except UserTopic.DoesNotExist:
+                    visibility_policy = UserTopic.VisibilityPolicy.INHERIT
+
+                new_visibility_policy = visibility_policy_for_send_message(
+                    sender,
+                    send_request.message,
+                    send_request.stream,
+                    send_request.sender_muted_stream,
+                    visibility_policy,
+                )
+                if new_visibility_policy:
+                    do_set_user_topic_visibility_policy(
+                        user_profile=sender,
+                        stream=send_request.stream,
+                        topic=send_request.message.topic_name(),
+                        visibility_policy=new_visibility_policy,
+                    )
+                    send_request.automatic_new_visibility_policy = new_visibility_policy
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
@@ -1072,7 +1130,14 @@ def do_send_messages(
                     },
                 )
 
-    return [send_request.message.id for send_request in send_message_requests]
+    sent_message_results = [
+        SentMessageResult(
+            message_id=send_request.message.id,
+            automatic_new_visibility_policy=send_request.automatic_new_visibility_policy,
+        )
+        for send_request in send_message_requests
+    ]
+    return sent_message_results
 
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
@@ -1185,8 +1250,8 @@ def check_send_stream_message(
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic)
     message = check_message(sender, client, addressee, body, realm)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def check_send_stream_message_by_id(
@@ -1199,8 +1264,8 @@ def check_send_stream_message_by_id(
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic)
     message = check_message(sender, client, addressee, body, realm)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def check_send_private_message(
@@ -1208,8 +1273,8 @@ def check_send_private_message(
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
     message = check_message(sender, client, addressee, body)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 # check_send_message:
@@ -1230,7 +1295,7 @@ def check_send_message(
     widget_content: Optional[str] = None,
     *,
     skip_stream_access_check: bool = False,
-) -> int:
+) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
         message = check_message(
@@ -1248,7 +1313,7 @@ def check_send_message(
             skip_stream_access_check=skip_stream_access_check,
         )
     except ZephyrMessageAlreadySentError as e:
-        return e.message_id
+        return SentMessageResult(message_id=e.message_id)
     return do_send_messages([message])[0]
 
 
@@ -1534,7 +1599,6 @@ def check_message(
         stream=stream,
         local_id=local_id,
         sender_queue_id=sender_queue_id,
-        realm=realm,
         widget_content_dict=widget_content_dict,
         email_gateway=email_gateway,
         mention_backend=mention_backend,
@@ -1695,8 +1759,8 @@ def internal_send_private_message(
     )
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_stream_message(
@@ -1719,8 +1783,9 @@ def internal_send_stream_message(
 
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_stream_message_by_name(
@@ -1740,8 +1805,8 @@ def internal_send_stream_message_by_name(
 
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_huddle_message(
@@ -1756,5 +1821,5 @@ def internal_send_huddle_message(
     )
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id

@@ -132,7 +132,7 @@ export function copy_handler() {
     // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
     // entirely by the browser, our HTML layout, and our use of the
-    // no-select/auto-select CSS classes).  We put considerable effort
+    // no-select CSS classes).  We put considerable effort
     // into producing a nice result that pastes well into other tools.
     // Our user-facing specification is the following:
     //
@@ -273,7 +273,7 @@ function get_end_tr_from_endc($endc) {
     // We can tell this is the case because the selection isn't inside a
     // `messagebox-content` div, which is where the message text itself is.
     // TODO: Ideally make it so that the selection cannot end there.
-    // For now, we find find the message row directly above wherever the
+    // For now, we find the message row directly above wherever the
     // selection ended.
     if ($endc.closest(".messagebox-content").length === 0) {
         // If the selection ends within the message following the selected

@@ -20,6 +20,7 @@ from django.utils.translation import gettext as _
 from markupsafe import Markup
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
+from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_password
 from zerver.lib.email_validation import (
@@ -81,12 +82,17 @@ def email_is_not_mit_mailing_list(email: str) -> None:
                 raise AssertionError("Unexpected DNS error")
 
 
+class OverridableValidationError(ValidationError):
+    pass
+
+
 def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = False) -> None:
     error_strings = {
         "too short": _("Subdomain needs to have length 3 or greater."),
         "extremal dash": _("Subdomain cannot start or end with a '-'."),
         "bad character": _("Subdomain can only have lowercase letters, numbers, and '-'s."),
-        "unavailable": _("Subdomain unavailable. Please choose a different one."),
+        "unavailable": _("Subdomain already in use. Please choose a different one."),
+        "reserved": _("Subdomain reserved. Please choose a different one."),
     }
 
     if subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
@@ -102,7 +108,10 @@ def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = F
     if Realm.objects.filter(string_id=subdomain).exists():
         raise ValidationError(error_strings["unavailable"])
     if is_reserved_subdomain(subdomain) and not allow_reserved_subdomain:
-        raise ValidationError(error_strings["unavailable"])
+        raise OverridableValidationError(
+            error_strings["reserved"],
+            "Pass --allow-reserved-subdomain to override",
+        )
 
 
 def email_not_system_bot(email: str) -> None:
@@ -164,10 +173,7 @@ class RegistrationForm(RealmDetailsForm):
         required=False,
         coerce=int,
         empty_value=None,
-        choices=[
-            (value, name)
-            for value, name in UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()
-        ],
+        choices=list(UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()),
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -209,10 +215,7 @@ class ToSForm(forms.Form):
         required=False,
         coerce=int,
         empty_value=None,
-        choices=[
-            (value, name)
-            for value, name in UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()
-        ],
+        choices=list(UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()),
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -322,6 +325,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
 
         return new_password
 
+    @override
     def save(self, commit: bool = True) -> UserProfile:
         assert isinstance(self.user, UserProfile)
         do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
@@ -338,6 +342,7 @@ def generate_password_reset_url(
 
 
 class ZulipPasswordResetForm(PasswordResetForm):
+    @override
     def save(
         self,
         domain_override: Optional[str] = None,
@@ -450,9 +455,11 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
         self.email = email
         super().__init__()
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:{self.email}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_RULES["password_reset_form_by_email"]
 
@@ -471,6 +478,7 @@ class CreateUserForm(forms.Form):
 class OurAuthenticationForm(AuthenticationForm):
     logger = logging.getLogger("zulip.auth.OurAuthenticationForm")
 
+    @override
     def clean(self) -> Dict[str, Any]:
         username = self.cleaned_data.get("username")
         password = self.cleaned_data.get("password")
@@ -538,6 +546,7 @@ class OurAuthenticationForm(AuthenticationForm):
 
         return self.cleaned_data
 
+    @override
     def add_prefix(self, field_name: str) -> str:
         """Disable prefix, since Zulip doesn't use this Django forms feature
         (and django-two-factor does use it), and we'd like both to be
@@ -559,6 +568,7 @@ class AuthenticationTokenForm(TwoFactorAuthenticationTokenForm):
 
 
 class MultiEmailField(forms.Field):
+    @override
     def to_python(self, emails: Optional[str]) -> List[str]:
         """Normalize data to a list of strings."""
         if not emails:
@@ -566,6 +576,7 @@ class MultiEmailField(forms.Field):
 
         return [email.strip() for email in emails.split(",")]
 
+    @override
     def validate(self, emails: List[str]) -> None:
         """Check if value consists only of valid emails."""
         super().validate(emails)

@@ -56,6 +56,8 @@ export type UserSettings = (StreamNotificationSettings &
     send_stream_typing_notifications: boolean;
     send_private_typing_notifications: boolean;
     send_read_receipts: boolean;
+    automatically_follow_topics_policy: number;
+    automatically_unmute_topics_in_muted_streams_policy: number;
 };
 
 export let user_settings: UserSettings;

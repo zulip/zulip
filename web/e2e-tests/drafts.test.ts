@@ -54,9 +54,9 @@ async function create_private_message_draft(page: Page): Promise<void> {
 }
 
 async function open_compose_markdown_preview(page: Page): Promise<void> {
-    const new_topic_button = "#left_bar_compose_stream_button_big";
-    await page.waitForSelector(new_topic_button, {visible: true});
-    await page.click(new_topic_button);
+    const new_conversation_button = "#new_conversation_button";
+    await page.waitForSelector(new_conversation_button, {visible: true});
+    await page.click(new_conversation_button);
 
     const markdown_preview_button = "#compose .markdown_preview"; // eye icon.
     await page.waitForSelector(markdown_preview_button, {visible: true});
@@ -238,7 +238,7 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
 
 async function drafts_test(page: Page): Promise<void> {
     await common.log_in(page);
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
 
     await test_empty_drafts(page);

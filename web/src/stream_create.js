@@ -14,7 +14,7 @@ import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
-import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_settings_components from "./stream_settings_components";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import {parse_html} from "./ui_util";
@@ -259,7 +259,7 @@ function create_stream() {
     data.principals = JSON.stringify(user_ids);
 
     const can_remove_subscribers_group_id = Number.parseInt(
-        stream_settings_ui.new_stream_can_remove_subscribers_group_widget.value(),
+        stream_settings_components.new_stream_can_remove_subscribers_group_widget.value(),
         10,
     );
     data.can_remove_subscribers_group = can_remove_subscribers_group_id;
@@ -309,7 +309,7 @@ function create_stream() {
 export function new_stream_clicked(stream_name) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
-    stream_settings_ui.show_subs_pane.create_stream();
+    stream_settings_components.show_subs_pane.create_stream();
     $(".stream-row.active").removeClass("active");
 
     if (stream_name !== "") {
@@ -328,7 +328,9 @@ function clear_error_display() {
 export function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
-    stream_settings_ui.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
+    stream_settings_components.hide_or_disable_stream_privacy_options_if_required(
+        $("#stream-creation"),
+    );
 
     stream_create_subscribers.build_widgets();
 
@@ -458,5 +460,5 @@ export function set_up_handlers() {
         }
     });
 
-    stream_settings_ui.new_stream_can_remove_subscribers_group_widget.setup();
+    stream_settings_components.new_stream_can_remove_subscribers_group_widget.setup();
 }

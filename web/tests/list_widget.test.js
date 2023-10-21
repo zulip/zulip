@@ -46,6 +46,7 @@ const ListWidget = zrequire("list_widget");
 function make_container() {
     const $container = {};
     $container.empty = () => {};
+    $container.data = () => {};
 
     // Make our append function just set a field we can
     // check in our tests.

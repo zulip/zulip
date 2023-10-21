@@ -1,5 +1,4 @@
 import "../sentry";
-import "../webpack_public_path";
 import "../../debug-require";
 import "../alert_popup";
 import "../csrf";
@@ -12,6 +11,7 @@ import "font-awesome/css/font-awesome.css";
 import "../../images/icons/zulip-icons.font";
 import "source-sans/source-sans-3VF.css";
 import "source-code-pro/source-code-pro.css";
+import "@fontsource-variable/open-sans";
 import "../../styles/alerts.css";
 import "../../styles/modal.css";
 import "../../styles/progress_bar.css";

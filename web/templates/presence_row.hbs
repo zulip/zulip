@@ -8,17 +8,17 @@
             {{#if user_list_style.WITH_STATUS}}
                 <div class="user-name-and-status-wrapper">
                     <div class="user-name-and-status-emoji">
-                        <span class="user-name">{{name}}</span>
+                        {{> user_full_name}}
                         {{> status_emoji status_emoji_info}}
                     </div>
                     <span class="status-text">{{status_text}}</span>
                 </div>
             {{else}}
-                <span class="user-name">{{name}}</span>
+                {{> user_full_name}}
                 {{> status_emoji status_emoji_info}}
             {{/if}}
         </a>
         <span class="unread_count">{{#if num_unread}}{{num_unread}}{{/if}}</span>
     </div>
-    <span class="user-list-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+    <span class="sidebar-menu-icon user-list-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
 </li>

@@ -10,7 +10,7 @@ const {page_params} = require("./lib/zpage_params");
 
 page_params.is_spectator = false;
 
-const notifications = mock_esm("../src/notifications");
+const desktop_notifications = mock_esm("../src/desktop_notifications");
 const util = mock_esm("../src/util");
 const timerender = mock_esm("../src/timerender");
 
@@ -30,8 +30,8 @@ test("allow_notification_alert", ({disallow, override}) => {
     // Show alert.
     assert.equal(ls.get("dontAskForNotifications"), undefined);
     override(util, "is_mobile", () => false);
-    override(notifications, "granted_desktop_notifications_permission", () => false);
-    override(notifications, "permission_state", () => "granted");
+    override(desktop_notifications, "granted_desktop_notifications_permission", () => false);
+    override(desktop_notifications, "permission_state", () => "granted");
     assert.equal(navbar_alerts.should_show_notifications(ls), true);
 
     // Avoid showing if the user said to never show alert on this computer again.
@@ -47,18 +47,18 @@ test("allow_notification_alert", ({disallow, override}) => {
     // Avoid showing if notification permission is denied.
     override(util, "is_mobile", () => false);
     assert.equal(navbar_alerts.should_show_notifications(ls), true);
-    override(notifications, "permission_state", () => "denied");
+    override(desktop_notifications, "permission_state", () => "denied");
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Avoid showing if notification is already granted.
-    disallow(notifications, "permission_state");
-    override(notifications, "granted_desktop_notifications_permission", () => "granted");
+    disallow(desktop_notifications, "permission_state");
+    override(desktop_notifications, "granted_desktop_notifications_permission", () => "granted");
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Don't ask for permission to spectator.
     disallow(util, "is_mobile");
-    disallow(notifications, "granted_desktop_notifications_permission");
-    disallow(notifications, "permission_state");
+    disallow(desktop_notifications, "granted_desktop_notifications_permission");
+    disallow(desktop_notifications, "permission_state");
     page_params.is_spectator = true;
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 });

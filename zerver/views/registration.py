@@ -11,11 +11,13 @@ from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
+from django.views.defaults import server_error
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 from confirmation.models import (
@@ -93,6 +95,7 @@ from zerver.views.auth import (
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
 )
+from zerver.views.errors import config_error
 from zproject.backends import (
     ExternalAuthResult,
     NoMatchingLDAPUserError,
@@ -172,12 +175,12 @@ def check_prereg_key(
 
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
-        # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+        # Defensive assert to make sure no mix-up in how .status is set leading to reuse
         # of a PreregistrationRealm object.
         assert prereg_object.created_realm is None
     else:
         assert isinstance(prereg_object, PreregistrationUser)
-        # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+        # Defensive assert to make sure no mix-up in how .status is set leading to reuse
         # of a PreregistrationUser object.
         assert prereg_object.created_user is None
 
@@ -566,31 +569,37 @@ def registration_helper(
             do_change_user_setting(
                 user_profile,
                 "default_language",
-                get_default_language_for_new_user(request, realm),
+                get_default_language_for_new_user(realm, request=request),
                 acting_user=None,
             )
             # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:
-            user_profile = do_create_user(
-                email,
-                password,
-                realm,
-                full_name,
-                prereg_user=prereg_user,
-                prereg_realm=prereg_realm,
-                role=role,
-                tos_version=settings.TERMS_OF_SERVICE_VERSION,
-                timezone=timezone,
-                default_language=get_default_language_for_new_user(request, realm),
-                default_stream_groups=default_stream_groups,
-                source_profile=source_profile,
-                realm_creation=realm_creation,
-                acting_user=None,
-                enable_marketing_emails=enable_marketing_emails,
-                email_address_visibility=email_address_visibility,
-            )
+            try:
+                user_profile = do_create_user(
+                    email,
+                    password,
+                    realm,
+                    full_name,
+                    prereg_user=prereg_user,
+                    prereg_realm=prereg_realm,
+                    role=role,
+                    tos_version=settings.TERMS_OF_SERVICE_VERSION,
+                    timezone=timezone,
+                    default_language=get_default_language_for_new_user(realm, request=request),
+                    default_stream_groups=default_stream_groups,
+                    source_profile=source_profile,
+                    realm_creation=realm_creation,
+                    acting_user=None,
+                    enable_marketing_emails=enable_marketing_emails,
+                    email_address_visibility=email_address_visibility,
+                )
+            except IntegrityError:
+                # Race condition making the user, leading to a
+                # duplicate email address.  Redirect them to the login
+                # form.
+                return redirect_to_email_login_url(email)
 
         if realm_creation:
             # Because for realm creation, registration happens on the
@@ -808,8 +817,10 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             try:
                 send_confirm_registration_email(email, activation_url, request=request)
             except EmailNotDeliveredError:
-                logging.error("Error in create_realm")
-                return HttpResponseRedirect("/config-error/smtp")
+                logging.exception("Failed to deliver email during realm creation")
+                if settings.CORPORATE_ENABLED:
+                    return server_error(request)
+                return config_error(request, "smtp")
 
             if key_record is not None:
                 key_record.delete()
@@ -938,8 +949,10 @@ def accounts_home(
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredError:
-                logging.error("Error in accounts_home")
-                return HttpResponseRedirect("/config-error/smtp")
+                logging.exception("Failed to deliver email during user registration")
+                if settings.CORPORATE_ENABLED:
+                    return server_error(request)
+                return config_error(request, "smtp")
             signup_send_confirm_url = reverse("signup_send_confirm")
             query = urlencode({"email": email})
             url = append_url_query_string(signup_send_confirm_url, query)

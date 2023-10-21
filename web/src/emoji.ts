@@ -32,7 +32,7 @@ type EmojiParams = {
     emoji_codes: ServerUnicodeEmojiData;
 };
 
-type EmoticonTranslation = {
+export type EmoticonTranslation = {
     regex: RegExp;
     replacement_text: string;
 };

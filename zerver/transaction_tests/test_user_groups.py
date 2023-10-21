@@ -5,6 +5,7 @@ from unittest import mock
 import orjson
 from django.db import OperationalError, connections, transaction
 from django.http import HttpRequest
+from typing_extensions import override
 
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.lib.exceptions import JsonableError
@@ -65,6 +66,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
     counter = 0
     CHAIN_LENGTH = 3
 
+    @override
     def tearDown(self) -> None:
         # Clean up the user groups created to minimize leakage
         with transaction.atomic():
@@ -106,6 +108,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
                 self.subgroup_ids = subgroup_ids
                 self.supergroup_id = supergroup_id
 
+            @override
             def run(self) -> None:
                 try:
                     self.response = dev_update_subgroups(

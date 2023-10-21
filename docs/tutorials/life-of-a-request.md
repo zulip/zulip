@@ -132,14 +132,14 @@ The OPTIONS method will yield the allowed methods.
 This request:
 `OPTIONS https://chat.zulip.org/api/v1/users`
 yields a response with this HTTP header:
-`Allow: PUT, GET`
+`Allow: GET, HEAD, POST`
 
 We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/main/zproject/urls.py):
 
 ```python
 rest_path('users',
           GET=get_members_backend,
-          PUT=create_user_backend),
+          POST=create_user_backend),
 ```
 
 In this way, the API is partially self-documenting.

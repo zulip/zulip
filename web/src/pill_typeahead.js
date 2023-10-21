@@ -112,7 +112,7 @@ export function set_up($input, pills, opts) {
             return typeahead_helper.sort_recipients({
                 users,
                 query,
-                current_stream_id: "",
+                current_stream_id: undefined,
                 current_topic: undefined,
                 groups,
                 max_num_items: undefined,

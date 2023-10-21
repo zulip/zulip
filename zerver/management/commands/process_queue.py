@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import autoreload
 from sentry_sdk import configure_scope
+from typing_extensions import override
 
 from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 
@@ -33,6 +34,7 @@ def log_and_exit_if_exception(
 
 
 class Command(BaseCommand):
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--queue_name", metavar="<queue name>", help="queue to process")
         parser.add_argument(
@@ -49,6 +51,7 @@ class Command(BaseCommand):
 
     help = "Runs a queue processing worker"
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         logging.basicConfig()
         logger = logging.getLogger("process_queue")
@@ -119,6 +122,7 @@ class ThreadedWorker(threading.Thread):
         with log_and_exit_if_exception(logger, queue_name, threaded=True):
             self.worker = get_worker(queue_name, threaded=True)
 
+    @override
     def run(self) -> None:
         with configure_scope() as scope, log_and_exit_if_exception(
             self.logger, self.queue_name, threaded=True

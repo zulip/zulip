@@ -2,8 +2,8 @@ import itertools
 import time
 from collections import defaultdict
 from contextlib import suppress
-from datetime import datetime, timedelta
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+from datetime import timedelta
+from typing import Dict, Optional, Tuple
 
 from django.conf import settings
 from django.db import connection
@@ -12,18 +12,16 @@ from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from markupsafe import Markup
-from psycopg2.sql import SQL, Composable, Literal
+from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.views.activity_common import (
     dictfetchall,
-    format_date_for_activity_reports,
-    make_table,
+    get_page,
     realm_activity_link,
     realm_stats_link,
     realm_support_link,
     realm_url_link,
-    remote_installation_stats_link,
 )
 from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
@@ -355,161 +353,27 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
     return content, realm_minutes
 
 
-def ad_hoc_queries() -> List[Dict[str, str]]:
-    def get_page(
-        query: Composable, cols: Sequence[str], title: str, totals_columns: Sequence[int] = []
-    ) -> Dict[str, str]:
-        cursor = connection.cursor()
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        rows = list(map(list, rows))
-        cursor.close()
-
-        def fix_rows(
-            i: int, fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str]]
-        ) -> None:
-            for row in rows:
-                row[i] = fixup_func(row[i])
-
-        total_row = []
-        for i, col in enumerate(cols):
-            if col == "Realm":
-                fix_rows(i, realm_activity_link)
-            elif col in ["Last time", "Last visit"]:
-                fix_rows(i, format_date_for_activity_reports)
-            elif col == "Hostname":
-                for row in rows:
-                    row[i] = remote_installation_stats_link(row[0], row[i])
-            if len(totals_columns) > 0:
-                if i == 0:
-                    total_row.append("Total")
-                elif i in totals_columns:
-                    total_row.append(str(sum(row[i] for row in rows if row[i] is not None)))
-                else:
-                    total_row.append("")
-        if len(totals_columns) > 0:
-            rows.insert(0, total_row)
-
-        content = make_table(title, cols, rows)
-
-        return dict(
-            content=content,
-            title=title,
-        )
-
-    pages = []
-
-    ###
-
-    for mobile_type in ["Android", "ZulipiOS"]:
-        title = f"{mobile_type} usage"
-
-        query: Composable = SQL(
-            """
-            select
-                realm.string_id,
-                up.id user_id,
-                client.name,
-                sum(count) as hits,
-                max(last_visit) as last_time
-            from zerver_useractivity ua
-            join zerver_client client on client.id = ua.client_id
-            join zerver_userprofile up on up.id = ua.user_profile_id
-            join zerver_realm realm on realm.id = up.realm_id
-            where
-                client.name like {mobile_type}
-            group by string_id, up.id, client.name
-            having max(last_visit) > now() - interval '2 week'
-            order by string_id, up.id, client.name
-        """
-        ).format(
-            mobile_type=Literal(mobile_type),
-        )
-
-        cols = [
-            "Realm",
-            "User id",
-            "Name",
-            "Hits",
-            "Last time",
-        ]
-
-        pages.append(get_page(query, cols, title))
-
-    ###
-
-    title = "Desktop users"
-
-    query = SQL(
-        """
-        select
-            realm.string_id,
-            client.name,
-            sum(count) as hits,
-            max(last_visit) as last_time
-        from zerver_useractivity ua
-        join zerver_client client on client.id = ua.client_id
-        join zerver_userprofile up on up.id = ua.user_profile_id
-        join zerver_realm realm on realm.id = up.realm_id
-        where
-            client.name like 'desktop%%'
-        group by string_id, client.name
-        having max(last_visit) > now() - interval '2 week'
-        order by string_id, client.name
-    """
-    )
-
-    cols = [
-        "Realm",
-        "Client",
-        "Hits",
-        "Last time",
+@require_server_admin
+@has_request_variables
+def get_installation_activity(request: HttpRequest) -> HttpResponse:
+    duration_content, realm_minutes = user_activity_intervals()
+    counts_content: str = realm_summary_table(realm_minutes)
+    data = [
+        ("Counts", counts_content),
+        ("Durations", duration_content),
     ]
 
-    pages.append(get_page(query, cols, title))
+    title = "Activity"
 
-    ###
-
-    title = "Integrations by realm"
-
-    query = SQL(
-        """
-        select
-            realm.string_id,
-            case
-                when query like '%%external%%' then split_part(query, '/', 5)
-                else client.name
-            end client_name,
-            sum(count) as hits,
-            max(last_visit) as last_time
-        from zerver_useractivity ua
-        join zerver_client client on client.id = ua.client_id
-        join zerver_userprofile up on up.id = ua.user_profile_id
-        join zerver_realm realm on realm.id = up.realm_id
-        where
-            (query in ('send_message_backend', '/api/v1/send_message')
-            and client.name not in ('Android', 'ZulipiOS')
-            and client.name not like 'test: Zulip%%'
-            )
-        or
-            query like '%%external%%'
-        group by string_id, client_name
-        having max(last_visit) > now() - interval '2 week'
-        order by string_id, client_name
-    """
+    return render(
+        request,
+        "analytics/activity.html",
+        context=dict(data=data, title=title, is_home=True),
     )
 
-    cols = [
-        "Realm",
-        "Client",
-        "Hits",
-        "Last time",
-    ]
 
-    pages.append(get_page(query, cols, title))
-
-    ###
-
+@require_server_admin
+def get_integrations_activity(request: HttpRequest) -> HttpResponse:
     title = "Integrations by client"
 
     query = SQL(
@@ -546,70 +410,14 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         "Last time",
     ]
 
-    pages.append(get_page(query, cols, title))
-
-    title = "Remote Zulip servers"
-
-    query = SQL(
-        """
-        with icount as (
-            select
-                server_id,
-                max(value) as max_value,
-                max(end_time) as max_end_time
-            from zilencer_remoteinstallationcount
-            where
-                property='active_users:is_bot:day'
-                and subgroup='false'
-            group by server_id
-            ),
-        remote_push_devices as (
-            select server_id, count(distinct(user_id)) as push_user_count from zilencer_remotepushdevicetoken
-            group by server_id
-        )
-        select
-            rserver.id,
-            rserver.hostname,
-            rserver.contact_email,
-            max_value,
-            push_user_count,
-            max_end_time
-        from zilencer_remotezulipserver rserver
-        left join icount on icount.server_id = rserver.id
-        left join remote_push_devices on remote_push_devices.server_id = rserver.id
-        order by max_value DESC NULLS LAST, push_user_count DESC NULLS LAST
-    """
-    )
-
-    cols = [
-        "ID",
-        "Hostname",
-        "Contact email",
-        "Analytics users",
-        "Mobile users",
-        "Last update time",
-    ]
-
-    pages.append(get_page(query, cols, title, totals_columns=[3, 4]))
-
-    return pages
-
-
-@require_server_admin
-@has_request_variables
-def get_installation_activity(request: HttpRequest) -> HttpResponse:
-    duration_content, realm_minutes = user_activity_intervals()
-    counts_content: str = realm_summary_table(realm_minutes)
-    data = [
-        ("Counts", counts_content),
-        ("Durations", duration_content),
-        *((page["title"], page["content"]) for page in ad_hoc_queries()),
-    ]
-
-    title = "Activity"
+    integrations_activity = get_page(query, cols, title)
 
     return render(
         request,
-        "analytics/activity.html",
-        context=dict(data=data, title=title, is_home=True),
+        "analytics/activity_details_template.html",
+        context=dict(
+            data=integrations_activity["content"],
+            title=integrations_activity["title"],
+            is_home=False,
+        ),
     )

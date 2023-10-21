@@ -5,10 +5,8 @@ import render_giphy_picker from "../templates/giphy_picker.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
-import {media_breakpoints_num} from "./css_variables";
 import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 
@@ -159,12 +157,6 @@ async function update_grid_with_search_term() {
 export function hide_giphy_popover() {
     // Returns `true` if the popover was open.
     if (giphy_popover_instance) {
-        // We need to destroy the popover because when
-        // we hide it, bootstrap popover
-        // library removes `giphy-content` element
-        // as part of cleaning up everything inside
-        // `popover-content`, so we need to reinitialize
-        // the popover by destroying it.
         giphy_popover_instance.destroy();
         giphy_popover_instance = undefined;
         edit_message_id = undefined;
@@ -175,14 +167,6 @@ export function hide_giphy_popover() {
 }
 
 function toggle_giphy_popover(target) {
-    let show_as_overlay = false;
-
-    // If the window is mobile-sized, we will render the
-    // giphy popover centered on the screen with the overlay.
-    if (window.innerWidth <= media_breakpoints_num.md) {
-        show_as_overlay = true;
-    }
-
     popover_menus.toggle_popover_menu(
         target,
         {
@@ -195,7 +179,6 @@ function toggle_giphy_popover(target) {
                 giphy_popover_instance = instance;
                 const $popper = $(giphy_popover_instance.popper).trigger("focus");
                 gifs_grid = await renderGIPHYGrid($popper.find(".giphy-content")[0]);
-                popovers.hide_all(true);
 
                 const $click_target = $(instance.reference);
                 if ($click_target.parents(".message_edit_form").length === 1) {
@@ -238,7 +221,9 @@ function toggle_giphy_popover(target) {
                 hide_giphy_popover();
             },
         },
-        {show_as_overlay},
+        {
+            show_as_overlay_on_mobile: true,
+        },
     );
 }
 

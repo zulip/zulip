@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from typing_extensions import override
+
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.streams import ensure_stream
 from zerver.models import DefaultStreamGroup
@@ -13,6 +15,7 @@ Create default stream groups which the users can choose during sign up.
 ./manage.py create_default_stream_groups -s gsoc-1,gsoc-2,gsoc-3 -d "Google summer of code"  -r zulip
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, required=True)
 
@@ -34,6 +37,7 @@ Create default stream groups which the users can choose during sign up.
             "-s", "--streams", required=True, help="A comma-separated list of stream names."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

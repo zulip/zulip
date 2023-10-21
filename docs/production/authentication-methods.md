@@ -184,6 +184,7 @@ All of these data synchronization options have the same model:
   Zulip server with
   `/home/zulip/deployments/current/scripts/restart-server` so that
   your configuration changes take effect.
+- Logs are available in `/var/log/zulip/ldap.log`.
 
 When using this feature, you may also want to
 [prevent users from changing their display name in the Zulip UI][restrict-name-changes],
@@ -211,6 +212,61 @@ if you have a custom profile field `LinkedIn Profile` and the
 corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
+
+#### Synchronizing groups
+
+Zulip supports syncing [Zulip groups][zulip-groups] with LDAP
+groups. To configure this feature:
+
+1. Review the [django-auth-ldap
+   documentation](https://django-auth-ldap.readthedocs.io/en/latest/groups.html)
+   to determine which of its supported group type configurations
+   matches how your LDAP directory stores groups.
+
+1. Set `AUTH_LDAP_GROUP_TYPE` to the appropriate class instance for
+   that LDAP group type:
+
+   ```python
+   from django_auth_ldap.config import ActiveDirectoryGroupType
+   AUTH_LDAP_GROUP_TYPE = ActiveDirectoryGroupType()
+   ```
+
+   The default is `GroupOfUniqueNamesType`.
+
+1. Configure `AUTH_LDAP_GROUP_SEARCH` to specify how to find groups in
+   your LDAP directory:
+
+   ```python
+   AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+       "ou=groups,dc=www,dc=example,dc=com", ldap.SCOPE_SUBTREE,
+       "(objectClass=groupOfUniqueNames)"
+   )
+   ```
+
+1. Configure which LDAP groups you want to sync into
+   Zulip. `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` is a map where the keys
+   are subdomains of the realms being configured (use `""` for the
+   root domain), and the value corresponding to the key being a list
+   the names of groups to sync:
+
+   ```python
+   LDAP_SYNCHRONIZED_GROUPS_BY_REALM = {
+     "subdomain1" : [
+         "group1",
+         "group2",
+     ]
+   }
+   ```
+
+   In this example configuration, for the Zulip realm with subdomain
+   `subdomain1`, user membership in the Zulip groups named `group1`
+   and `group2` will match their membership in LDAP groups with those
+   names.
+
+1. Test your configuration and restart the server into the new
+   configuration as [documented above](#synchronizing-data).
+
+[zulip-groups]: https://zulip.com/help/user-groups
 
 #### Synchronizing email addresses
 
@@ -328,7 +384,7 @@ You can restrict access to your Zulip server to a set of LDAP groups
 using the `AUTH_LDAP_REQUIRE_GROUP` and `AUTH_LDAP_DENY_GROUP`
 settings in `/etc/zulip/settings.py`.
 
-An example configation for Active Directory group restriction can be:
+An example configuration for Active Directory group restriction can be:
 
 ```python
 import django_auth_ldap
@@ -374,10 +430,35 @@ More complex access control rules are possible via the
 2. If `org_membership` is not set or does not allow access,
    `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` will control access.
 
-This contains a map keyed by the organization's subdomain. The
-organization list with multiple maps, that contain a map with an attribute, and a required
-value for that attribute. If for any of the attribute maps, all user's
-LDAP attributes match what is configured, access is granted.
+`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` is a dictionary keyed by the
+organization's subdomain. The corresponding value is a list of
+`attribute: value` pair sets such that a user is permitted to access
+the organization if and only if the `attribute: value` pairs in at
+least one of these sets match the user's LDAP attributes. If this
+setting is enabled, organizations not explicitly configured in this
+setting will not be accessible via ldap authentication at all.
+
+This is better illustrated with an example:
+
+```
+AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = {
+    "zulip": [
+        {
+            "department": "main",
+            "employeeType": "staff"
+        },
+        {
+            "office": "Dallas"
+        }
+    ]
+}
+```
+
+This means that the organization `"zulip"` will be accessible via ldap
+authentication only for users whose ldap attributes either contain
+both `department: main` `employeeType: staff` or just `office:
+Dallas`. LDAP authentication will always fail for all other
+organizations in this configuration.
 
 :::{warning}
 Restricting access using these mechanisms only affects authentication via LDAP,
@@ -653,6 +734,44 @@ integration](../production/scim.md).
          importing, only the certificate will be displayed (not the private
          key).
 
+### Using Authentik as a SAML IdP
+
+1. Make sure you reviewed [this article](https://goauthentik.io/integrations/services/zulip/), which
+   details how to integrate Zulip with Authentik.
+1. Verify that `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['entity_id']` and
+   `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['url']` are correct in your Zulip
+   configuration. Specifically, if `entity_id` is
+   `https://authentik.example.com/`, then `url`
+   should be
+   `https://authentik.company/application/saml/<application slug>/sso/binding/redirect/` where `<application slug>`
+   is the application slug you've assigned to this application in Authentik settings (e.g `zulip`).
+1. Update the attribute mapping in your new entry in `SOCIAL_AUTH_SAML_ENABLED_IDPS` to match how
+   Authentik specifies attributes in its`SAMLResponse`:
+
+   ```
+   "attr_user_permanent_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   "attr_first_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+   "attr_last_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+   "attr_username": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   ```
+
+1. Your Authentik public certificate must be saved on the Zulip server
+   as `/etc/zulip/saml/idps/{idp_name}.crt`. You can obtain the
+   certificate from the Authentik UI in the `Certificates` section or directly
+   from the provider's page.
+
+   (Alternatively, open the settings page of the provider you created and copy the certificate embedded in the
+   SAML Metadata's `<ds:X509Certificate>` field.).
+
+   Save the certificate in a new `{idp_name}.crt` file constructed as follows:
+
+   ```
+   -----BEGIN CERTIFICATE-----
+   {Paste the content here}
+   -----END CERTIFICATE-----
+   ```
+
 ### SAML Single Logout
 
 Zulip supports both IdP-initiated and SP-initiated SAML Single
@@ -661,7 +780,7 @@ these instructions are for that provider; please [contact
 us](https://zulip.com/help/contact-support) if you need help using
 this with another IdP.
 
-#### IdP-initated Single Logout
+#### IdP-initiated Single Logout
 
 1. In the KeyCloak configuration for Zulip, enable `Force Name ID Format`
    and set `Name ID Format` to `email`. Zulip needs to receive

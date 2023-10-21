@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+import uuid
 from collections import defaultdict
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 from unittest.mock import patch
@@ -10,6 +11,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from analytics.models import UserCount
 from zerver.actions.alert_words import do_add_alert_words
@@ -140,6 +142,7 @@ class ExportFile(ZulipTestCase):
     """This class is a container for shared helper functions
     used for both the realm-level and user-level export tests."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         assert settings.LOCAL_UPLOADS_DIR is not None
@@ -327,6 +330,13 @@ class RealmImportExportTest(ExportFile):
                 consent_message_id=consent_message_id,
                 public_only=public_only,
             )
+
+            # This is a unique field and thus the cycle of export->import
+            # within the same server (which is what happens in our tests)
+            # will cause a conflict - so rotate it.
+            realm.uuid = uuid.uuid4()
+            realm.save()
+
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, "messages-000001.json.partial"),
                 output_path=os.path.join(output_dir, "messages-000001.json"),
@@ -1048,8 +1058,8 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_group_names_for_group_settings(r: Realm) -> Set[str]:
             return {
-                getattr(r, permmission_name).name
-                for permmission_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+                getattr(r, permission_name).name
+                for permission_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
             }
 
         # test recipients
@@ -1536,25 +1546,31 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
-            realm = do_import_realm(get_output_dir(), "test-zulip-1")
-            self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
-            self.assertEqual(realm.max_invites, 100)
-            self.assertEqual(realm.upload_quota_gb, 5)
-            self.assertEqual(realm.message_visibility_limit, 10000)
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
+            self.assertEqual(imported_realm.plan_type, Realm.PLAN_TYPE_LIMITED)
+            self.assertEqual(imported_realm.max_invites, 100)
+            self.assertEqual(imported_realm.upload_quota_gb, 5)
+            self.assertEqual(imported_realm.message_visibility_limit, 10000)
             self.assertTrue(
                 RealmAuditLog.objects.filter(
-                    realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                    realm=imported_realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
+
+        # Importing the same export data twice would cause conflict on unique fields,
+        # so instead re-export the original realm via self.export_realm, which handles
+        # this issue.
+        self.export_realm(realm)
+
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            realm = do_import_realm(get_output_dir(), "test-zulip-2")
-            self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
-            self.assertEqual(realm.max_invites, 100)
-            self.assertEqual(realm.upload_quota_gb, None)
-            self.assertEqual(realm.message_visibility_limit, None)
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip-2")
+            self.assertEqual(imported_realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+            self.assertEqual(imported_realm.max_invites, 100)
+            self.assertEqual(imported_realm.upload_quota_gb, None)
+            self.assertEqual(imported_realm.message_visibility_limit, None)
             self.assertTrue(
                 RealmAuditLog.objects.filter(
-                    realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                    realm=imported_realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
 

@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.create_realm import do_create_realm
@@ -32,7 +33,7 @@ from zerver.actions.streams import (
     do_change_stream_group_based_setting,
     do_change_stream_post_policy,
     do_deactivate_stream,
-    do_reactivate_stream,
+    do_unarchive_stream,
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
@@ -1444,19 +1445,19 @@ class StreamAdminTest(ZulipTestCase):
         old_style.save()
         self.assertEqual(set(deactivated_streams_by_old_name(realm, "old_style")), {old_style})
 
-    def test_reactivate_stream_active_stream(self) -> None:
+    def test_unarchive_stream_active_stream(self) -> None:
         stream = self.make_stream("new_stream")
         with self.assertRaisesRegex(JsonableError, "Stream is not currently deactivated"):
-            do_reactivate_stream(stream, new_name="new_stream", acting_user=None)
+            do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
 
-    def test_reactivate_stream_existing_name(self) -> None:
+    def test_unarchive_stream_existing_name(self) -> None:
         stream = self.make_stream("new_stream")
         self.make_stream("existing")
         do_deactivate_stream(stream, acting_user=None)
         with self.assertRaisesRegex(JsonableError, "Stream named existing already exists"):
-            do_reactivate_stream(stream, new_name="existing", acting_user=None)
+            do_unarchive_stream(stream, new_name="existing", acting_user=None)
 
-    def test_reactivate_stream(self) -> None:
+    def test_unarchive_stream(self) -> None:
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
@@ -1467,7 +1468,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(cordelia, stream.name)
         do_deactivate_stream(stream, acting_user=None)
         with self.capture_send_event_calls(expected_num_events=4) as events:
-            do_reactivate_stream(stream, new_name="new_stream", acting_user=None)
+            do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
 
         # Tell all admins and owners that the stream exists
         self.assertEqual(events[0]["event"]["op"], "create")
@@ -3932,6 +3933,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
 
 class SubscriptionAPITest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         """
         All tests will be logged in as hamlet. Also save various useful values
@@ -4397,30 +4399,20 @@ class SubscriptionAPITest(ZulipTestCase):
             "create_web_public_stream_policy", invite_only=False, is_web_public=True
         )
 
-    def _test_can_create_streams(self, stream_policy: str, invite_only: bool) -> None:
-        if invite_only:
-
-            def validation_func(user_profile: UserProfile) -> bool:
-                user_profile.refresh_from_db()
-                return user_profile.can_create_private_streams()
-
-        else:
-
-            def validation_func(user_profile: UserProfile) -> bool:
-                user_profile.refresh_from_db()
-                return user_profile.can_create_public_streams()
-
-        self.check_has_permission_policies(stream_policy, validation_func)
-
-    def test_can_create_private_streams(self) -> None:
-        self._test_can_create_streams("create_private_stream_policy", invite_only=True)
-
-    def test_can_create_public_streams(self) -> None:
-        self._test_can_create_streams("create_public_stream_policy", invite_only=False)
-
-    def test_can_create_web_public_streams(self) -> None:
+    def test_private_stream_policies(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
+            return user_profile.can_create_private_streams()
+
+        self.check_has_permission_policies("create_private_stream_policy", validation_func)
+
+    def test_public_stream_policies(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            return user_profile.can_create_public_streams()
+
+        self.check_has_permission_policies("create_public_stream_policy", validation_func)
+
+    def test_web_public_stream_policies(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
             return user_profile.can_create_web_public_streams()
 
         self.check_has_permission_policies("create_web_public_stream_policy", validation_func)
@@ -4522,7 +4514,6 @@ class SubscriptionAPITest(ZulipTestCase):
         """
 
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_subscribe_other_users()
 
         self.check_has_permission_policies("invite_to_stream_policy", validation_func)
@@ -4745,7 +4736,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_subscribe_to_stream_post_policy_restrict_new_members_stream(self) -> None:
         """
-        New members can subscribe to streams where they can not post
+        New members can subscribe to streams where they cannot post
         """
         new_member_email = self.nonreg_email("test")
         self.register(new_member_email, "test")
@@ -5832,6 +5823,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
 
 
 class GetSubscribersTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")

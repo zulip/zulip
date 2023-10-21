@@ -33,16 +33,23 @@ export type User = {
     is_guest: boolean;
     is_moderator: boolean;
     is_billing_admin: boolean;
-    is_bot: boolean;
-    bot_type?: number | null;
-    bot_owner_id?: number | null;
     role: number;
     timezone: string;
     avatar_url?: string | null;
     avatar_version: number;
     profile_data: Record<number, ProfileData>;
     is_missing_server_data?: boolean; // used for fake user objects.
-};
+} & (
+    | {
+          is_bot: false;
+          bot_type: null;
+      }
+    | {
+          is_bot: true;
+          bot_type: number;
+          bot_owner_id: number | null;
+      }
+);
 
 export type SenderInfo = User & {
     avatar_url_small: string;
@@ -164,7 +171,7 @@ export function get_by_email(email: string): User | undefined {
     return person;
 }
 
-export function get_bot_owner_user(user: User): User | undefined {
+export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
     const owner_id = user.bot_owner_id;
 
     if (owner_id === undefined || owner_id === null) {
@@ -295,7 +302,7 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
-    const user_ids = user_ids_string.split(",");
+    const user_ids = user_ids_string.length === 0 ? [] : user_ids_string.split(",");
     const ids = user_ids.map(Number);
     return ids;
 }
@@ -421,7 +428,15 @@ export function get_display_full_name(user_id: number): string {
     }
 
     if (muted_users.is_user_muted(user_id)) {
+        if (should_add_guest_user_indicator(user_id)) {
+            return $t({defaultMessage: "Muted user (guest)"});
+        }
+
         return $t({defaultMessage: "Muted user"});
+    }
+
+    if (should_add_guest_user_indicator(user_id)) {
+        return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
     }
 
     return person.full_name;
@@ -707,7 +722,7 @@ export function slug_to_emails(slug: string): string | undefined {
     /*
         It's not super important to be flexible about
         direct message related slugs, since you would
-        rarely post them to the web, but we we do want
+        rarely post them to the web, but we do want
         to support reasonable variations:
 
             99-alice@example.com
@@ -768,6 +783,15 @@ export function sender_is_guest(message: Message): boolean {
 export function user_is_bot(user_id: number): boolean {
     const user = get_by_user_id(user_id);
     return user.is_bot;
+}
+
+export function should_add_guest_user_indicator(user_id: number): boolean {
+    if (!page_params.realm_enable_guest_user_indicator) {
+        return false;
+    }
+
+    const user = get_by_user_id(user_id);
+    return user.is_guest;
 }
 
 export function user_can_direct_message(recipient_ids_string: string): boolean {
@@ -1399,7 +1423,7 @@ export function report_late_add(user_id: number, email: string): void {
     }
 }
 
-function make_user(user_id: number, email: string, full_name: string): User {
+export function make_user(user_id: number, email: string, full_name: string): User {
     // Used to create fake user objects for users who we see via some
     // API call, such as fetching a message sent by the user, before
     // we receive a full user object for the user via the events
@@ -1431,7 +1455,6 @@ function make_user(user_id: number, email: string, full_name: string): User {
         date_joined: "",
         delivery_email: null,
         profile_data: {},
-        bot_owner_id: undefined,
         bot_type: null,
 
         // This property allows us to distinguish actual server person
@@ -1611,6 +1634,24 @@ export function get_custom_profile_data(user_id: number, field_id: number): Prof
         return null;
     }
     return profile_data[field_id];
+}
+
+export function get_custom_fields_by_type(
+    user_id: number,
+    field_type: number,
+): ProfileData[] | null {
+    const person = get_by_user_id(user_id);
+    const profile_data = person.profile_data;
+    if (profile_data === undefined) {
+        return null;
+    }
+    const filteredProfileData: ProfileData[] = [];
+    for (const field of page_params.custom_profile_fields) {
+        if (field.type === field_type) {
+            filteredProfileData.push(profile_data[field.id]);
+        }
+    }
+    return filteredProfileData;
 }
 
 export function is_my_user_id(user_id: number | string): boolean {

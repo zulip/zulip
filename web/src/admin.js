@@ -4,11 +4,13 @@ import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
 import * as bot_data from "./bot_data";
+import * as demo_organizations_ui from "./demo_organizations_ui";
 import {$t, get_language_name, language_list} from "./i18n";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_invites from "./settings_invites";
@@ -59,6 +61,9 @@ const admin_settings_label = {
     realm_enable_read_receipts_parens_text: $t({
         defaultMessage: "Users can always disable their personal read receipts.",
     }),
+    realm_enable_guest_user_indicator: $t({
+        defaultMessage: "Display “(guest)” after names of guest users",
+    }),
 };
 
 function insert_tip_box() {
@@ -99,6 +104,7 @@ export function build_page() {
         realm_name: page_params.realm_name,
         realm_org_type: page_params.realm_org_type,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
+        server_jitsi_server_url: page_params.server_jitsi_server_url,
         giphy_rating_options: page_params.giphy_rating_options,
         giphy_api_key_empty: page_params.giphy_api_key === "",
         realm_description: page_params.realm_description,
@@ -114,12 +120,14 @@ export function build_page() {
         realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
-        realm_message_content_edit_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
-            "realm_message_content_edit_limit_seconds",
-        ),
-        realm_message_content_delete_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
-            "realm_message_content_delete_limit_seconds",
-        ),
+        realm_message_content_edit_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_message_content_edit_limit_seconds",
+            ),
+        realm_message_content_delete_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_message_content_delete_limit_seconds",
+            ),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
@@ -207,6 +215,11 @@ export function build_page() {
             settings_users.allow_sorting_deactivated_users_list_by_email(),
         has_bots: bot_data.get_all_bots_for_current_user().length > 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
+        automatically_follow_topics_policy_values:
+            settings_config.automatically_follow_or_unmute_topics_policy_values,
+        automatically_unmute_topics_in_muted_streams_policy_values:
+            settings_config.automatically_follow_or_unmute_topics_policy_values,
+        realm_enable_guest_user_indicator: page_params.realm_enable_guest_user_indicator,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -230,6 +243,11 @@ export function build_page() {
     settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"), true);
     settings_invites.update_invite_user_panel();
     insert_tip_box();
+
+    if (page_params.demo_organization_scheduled_deletion_date && page_params.is_admin) {
+        demo_organizations_ui.insert_demo_organization_warning();
+        demo_organizations_ui.handle_demo_organization_conversion();
+    }
 
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
 

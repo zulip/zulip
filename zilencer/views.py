@@ -1,7 +1,7 @@
 import datetime
 import logging
 from collections import Counter
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
 import orjson
@@ -10,23 +10,27 @@ from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Model
 from django.http import HttpRequest, HttpResponse
-from django.utils import timezone
 from django.utils.crypto import constant_time_compare
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
+from pydantic import BaseModel, ConfigDict
 
 from analytics.lib.counts import COUNT_STATS
 from corporate.lib.stripe import do_deactivate_remote_server
 from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
+    InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
     send_android_push_notification,
     send_apple_push_notification,
+    send_test_push_notification_directly_to_devices,
 )
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
@@ -179,7 +183,7 @@ def register_remote_push_device(
                 token=token,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
-                last_updated=timezone.now(),
+                last_updated=timezone_now(),
                 **kwargs,
             )
     except IntegrityError:
@@ -281,6 +285,52 @@ def delete_duplicate_registrations(
     return deduplicated_registrations_to_return
 
 
+class TestNotificationPayload(BaseModel):
+    token: str
+    token_kind: int
+    user_id: int
+    user_uuid: str
+    base_payload: Dict[str, Any]
+
+    model_config = ConfigDict(extra="forbid")
+
+
+@typed_endpoint
+def remote_server_send_test_notification(
+    request: HttpRequest,
+    server: RemoteZulipServer,
+    *,
+    payload: JsonBodyPayload[TestNotificationPayload],
+) -> HttpResponse:
+    token = payload.token
+    token_kind = payload.token_kind
+
+    user_id = payload.user_id
+    user_uuid = payload.user_uuid
+
+    # The remote server only sends the base payload with basic user and server info,
+    # and the actual format of the test notification is defined on the bouncer, as that
+    # gives us the flexibility to modify it freely, without relying on other servers
+    # upgrading.
+    base_payload = payload.base_payload
+
+    # This is a new endpoint, so it can assume it will only be used by newer
+    # servers that will send user both UUID and ID.
+    user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
+
+    try:
+        device = RemotePushDeviceToken.objects.get(
+            user_identity.filter_q(), token=token, kind=token_kind, server=server
+        )
+    except RemotePushDeviceToken.DoesNotExist:
+        raise InvalidRemotePushDeviceTokenError
+
+    send_test_push_notification_directly_to_devices(
+        user_identity, [device], base_payload, remote=server
+    )
+    return json_success(request)
+
+
 @has_request_variables
 def remote_server_notify_push(
     request: HttpRequest,
@@ -316,6 +366,29 @@ def remote_server_notify_push(
     )
     if apple_devices and user_id is not None and user_uuid is not None:
         apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
+
+    remote_queue_latency: Optional[str] = None
+    sent_time: Optional[Union[float, int]] = gcm_payload.get(
+        # TODO/compatibility: This could be a lot simpler if not for pre-5.0 Zulip servers
+        # that had an older format. Future implementation:
+        #     "time", apns_payload["custom"]["zulip"].get("time")
+        "time",
+        apns_payload.get("custom", {}).get("zulip", {}).get("time"),
+    )
+    if sent_time is not None:
+        if isinstance(sent_time, int):
+            # The 'time' field only used to have whole-integer
+            # granularity, so if so we only report with
+            # whole-second granularity
+            remote_queue_latency = str(int(timezone_now().timestamp()) - sent_time)
+        else:
+            remote_queue_latency = f"{timezone_now().timestamp() - sent_time:.3f}"
+        logger.info(
+            "Remote queuing latency for %s:%s is %s seconds",
+            server.uuid,
+            user_identity,
+            remote_queue_latency,
+        )
 
     logger.info(
         "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",

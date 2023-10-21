@@ -3,18 +3,18 @@ import $ from "jquery";
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
-import * as notifications from "./notifications";
+import * as message_notifications from "./message_notifications";
 import {page_params} from "./page_params";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
-import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
-import * as stream_edit from "./stream_edit";
+import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_data from "./stream_settings_data";
-import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
 import * as unread_ui from "./unread_ui";
@@ -57,10 +57,10 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, value, status_element) {
+function change_notification_setting(setting, value, $status_element) {
     const data = {};
     data[setting] = value;
-    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element);
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_element);
 }
 
 function update_desktop_icon_count_display(settings_panel) {
@@ -88,12 +88,13 @@ export function set_notification_batching_ui($container, setting_seconds, force_
 
     $container.find(".setting_email_notifications_batching_period_seconds").val(select_elem_val);
     $edit_elem.val(setting_seconds / 60);
-    settings_org.change_element_block_display_property($edit_elem.attr("id"), show_edit_elem);
+    settings_components.change_element_block_display_property(
+        $edit_elem.attr("id"),
+        show_edit_elem,
+    );
 }
 
-export function set_enable_digest_emails_visibility(settings_panel) {
-    const $container = $(settings_panel.container);
-    const for_realm_settings = settings_panel.for_realm_settings;
+export function set_enable_digest_emails_visibility($container, for_realm_settings) {
     if (page_params.realm_digest_emails_enabled) {
         if (for_realm_settings) {
             $container.find(".other_email_notifications").show();
@@ -116,6 +117,29 @@ export function set_enable_marketing_emails_visibility() {
     } else {
         $container.find(".enable_marketing_emails_label").parent().hide();
     }
+}
+
+function stream_notification_setting_changed(e) {
+    const $row = $(e.target).closest(".stream-notifications-row");
+    const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
+    if (!stream_id) {
+        blueslip.error("Cannot find stream id for target");
+        return;
+    }
+
+    const sub = sub_store.get(stream_id);
+    if (!sub) {
+        blueslip.error("stream_notification_setting_changed() failed id lookup", {stream_id});
+        return;
+    }
+
+    const $status_element = $(e.target).closest(".subsection-parent").find(".alert-notification");
+    const setting = e.target.name;
+    if (sub[setting] === null) {
+        sub[setting] =
+            user_settings[settings_config.generalize_stream_notification_setting[setting]];
+    }
+    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
 }
 
 export function set_up(settings_panel) {
@@ -160,7 +184,21 @@ export function set_up(settings_panel) {
         settings_object.realm_name_in_email_notifications_policy,
     );
 
-    set_enable_digest_emails_visibility(settings_panel);
+    const $automatically_follow_topics_policy_dropdown = $container.find(
+        ".setting_automatically_follow_topics_policy",
+    );
+    $automatically_follow_topics_policy_dropdown.val(
+        settings_object.automatically_follow_topics_policy,
+    );
+
+    const $automatically_unmute_topics_in_muted_streams_policy_dropdown = $container.find(
+        ".setting_automatically_unmute_topics_in_muted_streams_policy",
+    );
+    $automatically_unmute_topics_in_muted_streams_policy_dropdown.val(
+        settings_object.automatically_unmute_topics_in_muted_streams_policy,
+    );
+
+    set_enable_digest_emails_visibility($container, for_realm_settings);
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
@@ -175,11 +213,11 @@ export function set_up(settings_panel) {
         e.stopPropagation();
         const $input_elem = $(e.currentTarget);
         if ($input_elem.parents("#stream-specific-notify-table").length) {
-            stream_edit.stream_setting_changed(e, true);
+            stream_notification_setting_changed(e);
             return;
         }
         let setting_name = $input_elem.attr("name");
-        let setting_value = settings_org.get_input_element_value(this);
+        let setting_value = settings_components.get_input_element_value(this);
 
         if (setting_name === "email_notifications_batching_period_seconds") {
             if ($input_elem.val() === "custom_period") {
@@ -243,7 +281,7 @@ export function set_up(settings_panel) {
     // intentionally don't let organization administrators set
     // organization-level defaults.
     $container.find(".send_test_notification").on("click", () => {
-        notifications.send_test_notification(
+        message_notifications.send_test_notification(
             $t({defaultMessage: "This is what a Zulip notification looks like."}),
         );
     });
@@ -277,7 +315,9 @@ export function update_page(settings_panel) {
                 break;
             }
             case "notification_sound":
-            case "realm_name_in_email_notifications_policy": {
+            case "realm_name_in_email_notifications_policy":
+            case "automatically_follow_topics_policy":
+            case "automatically_unmute_topics_in_muted_streams_policy": {
                 $container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
                 break;
             }
@@ -326,8 +366,9 @@ export function initialize() {
         const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
 
-        stream_settings_ui.set_muted(
+        stream_settings_api.set_stream_property(
             sub,
+            "is_muted",
             !sub.is_muted,
             $row.closest(".subsection-parent").find(".alert-notification"),
         );

@@ -95,6 +95,7 @@ export function initialize() {
 
     delegate("body", {
         target: ".toggle-subscription-tooltip",
+        trigger: "mouseenter",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "bottom",
@@ -194,6 +195,7 @@ export function initialize() {
             "#add_streams_tooltip",
             "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
+            "#personal-menu-dropdown .status-circle",
         ],
         appendTo: () => document.body,
     });
@@ -225,7 +227,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ".image-info-wrapper > .image-description > .title",
+        target: ".media-info-wrapper > .media-description > .title",
         appendTo: () => document.body,
         onShow(instance) {
             const title = $(instance.reference).attr("aria-label");
@@ -430,31 +432,39 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: [".user_row .actions button"],
+        trigger: "mouseenter",
+        onShow(instance) {
+            if ($(instance.reference).hasClass("deactivate")) {
+                instance.setContent($t({defaultMessage: "Deactivate"}));
+                return true;
+            } else if ($(instance.reference).hasClass("reactivate")) {
+                instance.setContent($t({defaultMessage: "Reactivate"}));
+                return true;
+            }
+            return false;
+        },
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
         target: "#user_info_popover .status-emoji",
         appendTo: () => document.body,
     });
-}
 
-export function show_copied_confirmation($copy_button, on_hide_callback, timeout_in_ms = 1000) {
-    // Display a tooltip to notify the user the message or code was copied.
-    const instance = tippy($copy_button, {
-        placement: "top",
+    delegate("body", {
+        /*
+            The tooltip for new user group button (+) icon button on #groups
+            overlay was not mounted correctly as its sibling element (search bar)
+            is inserted dynamically after handlebar got rendered. So we append the
+            tooltip element to the body itself with target as the + button.
+        */
+        target: "#groups_overlay .create_user_group_plus_button",
+        content: $t({
+            defaultMessage: "Create new user group",
+        }),
+        placement: "bottom",
         appendTo: () => document.body,
-        onUntrigger() {
-            remove_instance();
-        },
-        onHide() {
-            if (on_hide_callback) {
-                on_hide_callback();
-            }
-        },
     });
-    instance.setContent($t({defaultMessage: "Copied!"}));
-    instance.show();
-    function remove_instance() {
-        if (!instance.state.isDestroyed) {
-            instance.destroy();
-        }
-    }
-    setTimeout(remove_instance, timeout_in_ms);
 }

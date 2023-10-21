@@ -1,7 +1,7 @@
 // TODO: Rewrite this module to use history.pushState.
 
 import * as blueslip from "./blueslip";
-import * as hash_util from "./hash_util";
+import * as hash_parser from "./hash_parser";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -20,7 +20,7 @@ export const state: {
     // so that we can take user back to the allowed hash.
     // TODO: Store #narrow old hashes. Currently they are not stored here since, the #narrow
     // hashes are changed without calling `hashchanged` in many ways.
-    spectator_old_hash: hash_util.is_spectator_compatible(window.location.hash)
+    spectator_old_hash: hash_parser.is_spectator_compatible(window.location.hash)
         ? window.location.hash
         : null,
 };
@@ -41,7 +41,7 @@ export function set_hash_before_overlay(hash: string): void {
 
 export function update_web_public_hash(hash: string): boolean {
     // Returns true if hash is web-public compatible.
-    if (hash_util.is_spectator_compatible(hash)) {
+    if (hash_parser.is_spectator_compatible(hash)) {
         state.spectator_old_hash = hash;
         return true;
     }
@@ -80,7 +80,7 @@ export function update(new_hash: string): void {
 }
 
 export function exit_overlay(): void {
-    if (hash_util.is_overlay_hash(window.location.hash) && !state.changing_hash) {
+    if (hash_parser.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
         const new_hash = state.hash_before_overlay || `#${user_settings.default_view}`;
         update(new_hash);
@@ -101,4 +101,55 @@ export function update_hash_internally_if_required(hash: string): void {
 
 export function return_to_web_public_hash(): void {
     window.location.hash = state.spectator_old_hash ?? `#${user_settings.default_view}`;
+}
+
+export function get_full_url(hash: string): string {
+    const location = window.location;
+
+    if (hash.charAt(0) !== "#" && hash !== "") {
+        hash = "#" + hash;
+    }
+
+    // IE returns pathname as undefined and missing the leading /
+    let pathname = location.pathname;
+    if (pathname === undefined) {
+        pathname = "/";
+    } else if (pathname === "" || pathname.charAt(0) !== "/") {
+        pathname = "/" + pathname;
+    }
+
+    // Build a full URL to not have same origin problems
+    const url = location.protocol + "//" + location.host + pathname + hash;
+    return url;
+}
+
+export function set_hash(hash: string): void {
+    if (hash === window.location.hash) {
+        // Avoid adding duplicate entries in browser history.
+        return;
+    }
+    if (history.pushState) {
+        const url = get_full_url(hash);
+        try {
+            history.pushState(null, "", url);
+            update_web_public_hash(hash);
+        } catch (error) {
+            if (error instanceof TypeError) {
+                // The window has been destroyed and the history object has been marked dead, so cannot
+                // be updated.  Silently do nothing, since there's nothing we can do.
+            } else {
+                throw error;
+            }
+        }
+    } else {
+        // pushState has 97% global support according to caniuse. So, we will ideally never reach here.
+        // TODO: Delete this case if we don't see any error reports in a while.
+        if (hash === "" || hash === "#") {
+            // Setting empty hash here would scroll to the top.
+            hash = user_settings.default_view;
+        }
+
+        blueslip.error("browser does not support pushState");
+        window.location.hash = hash;
+    }
 }

@@ -13,6 +13,19 @@
         @extend .placeholder;
     }
 
+    .demo-organization-warning {
+        background-color: hsl(0deg 60% 19%);
+        border-color: hsl(3deg 73% 74% / 40%);
+        color: hsl(3deg 73% 80%);
+
+        .convert-demo-organization-button {
+            &:focus {
+                color: hsl(200deg 79% 66%);
+                outline-color: hsl(200deg 79% 66%);
+            }
+        }
+    }
+
     & a:hover {
         color: hsl(200deg 79% 66%);
 
@@ -66,7 +79,8 @@
         }
     }
 
-    .modal-footer {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
@@ -191,7 +205,6 @@
     }
 
     #navbar-middle .column-middle-inner,
-    #userlist-toggle-button,
     .header,
     #message_view_header {
         background-color: var(--color-background-navbar);
@@ -476,8 +489,8 @@
     .pill-container,
     .user-status-content-wrapper,
     #custom-expiration-time-input,
-    #searchbox #search_query,
-    #org-join-settings .dropdown-widget-button {
+    #org-join-settings .dropdown-widget-button,
+    #compose_recipient_box {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
@@ -499,13 +512,6 @@
         color: hsl(236deg 33% 90%);
     }
 
-    .unread_count,
-    /* The actions_popover unread_count object has its own variable CSS,
-       and thus needs to be repeated here with all three classes for precedence) */
-    .actions_popover .mark_as_unread .unread_count {
-        background-color: hsl(105deg 2% 50% / 50%);
-    }
-
     .pill-container {
         border-style: solid;
         border-width: 1px;
@@ -519,19 +525,21 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
-    #searchbox-input-container .pill,
-    #compose-direct-recipient.pill-container .pill {
-        color: inherit;
-        border: 1px solid hsl(0deg 0% 0% / 50%);
-        background-color: hsl(0deg 0% 0% / 25%);
-        font-weight: 600;
-    }
+    #searchbox {
+        /* Light theme shows hover mostly through box-shadow,
+          and dark theme shows it mostly through changing color
+          of the search button. */
+        .navbar-search:not(.expanded)
+            #searchbox-input-container:hover
+            .search_icon {
+            opacity: 0.75;
+        }
 
-    #searchbox-input-container .pill:focus,
-    #compose-direct-recipient.pill-container .pill:focus {
-        color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(176deg 78% 28% / 60%);
-        background-color: hsl(176deg 49% 42% / 40%);
+        /* Colors are inherited in light theme */
+        .navbar-search .search_icon,
+        .navbar-search .search_close_button {
+            color: hsl(0deg 0% 78%);
+        }
     }
 
     .new-style .button.no-style {
@@ -589,7 +597,7 @@
     input[type="number"]:focus,
     textarea:focus,
     textarea.new_message_textarea:focus,
-    .compose_table .recipient_box:focus {
+    #compose_recipient_box:focus {
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
@@ -663,11 +671,13 @@
 
     .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
-    .dropdown .dropdown-menu,
-    .popover,
-    .popover-title,
-    .popover-content {
+    .dropdown .dropdown-menu {
         background-color: hsl(212deg 32% 14%);
+    }
+
+    /* Undo default dropdown background color for dark mode. */
+    #searchbox_form .dropdown-menu ul {
+        background-color: unset;
     }
 
     .dropdown-menu a {
@@ -681,64 +691,32 @@
         opacity: 0.2;
     }
 
-    #gear_menu_about_zulip {
-        .white_zulip_icon_without_text {
-            filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)
-                brightness(99%) contrast(89%);
-        }
-    }
-
-    #gear-menu {
-        .dark-theme {
+    .spectator-view #gear-menu-dropdown {
+        .gear-menu-select-dark-theme {
             display: none;
         }
 
-        .light-theme {
+        .gear-menu-select-light-theme {
             display: block;
         }
-
-        .dropdown-menu a:hover {
-            color: hsl(0deg 0% 100%);
-        }
     }
 
-    .nav .dropdown-menu::after,
-    .popover.bottom .arrow {
+    .nav .dropdown-menu::after {
         border-bottom-color: hsl(235deg 18% 7%);
-    }
-
-    .popover.left .arrow {
-        border-left-color: hsl(235deg 18% 7%);
-    }
-
-    .popover.top .arrow {
-        border-top-color: hsl(235deg 18% 7%);
-    }
-
-    .popover.right .arrow {
-        border-right-color: hsl(235deg 18% 7%);
     }
 
     .narrow_to_compose_recipients,
     .expand_composebox_button,
     .collapse_composebox_button,
-    #message_edit_tooltip,
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
     .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
-    .close,
-    #user_presences li:hover .user-list-sidebar-menu-icon,
-    li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
-    li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
-    li.top_left_drafts:hover .drafts-sidebar-menu-icon,
-    #stream_filters li:hover .stream-sidebar-menu-icon,
-    li.topic-list-item:hover .topic-sidebar-menu-icon {
+    .close {
         color: hsl(236deg 33% 80%);
     }
 
-    #message_edit_tooltip:hover,
     .clear_search_button:hover {
         color: hsl(0deg 0% 100%);
     }
@@ -753,15 +731,6 @@
 
     .spectator_narrow_login_button .login_button i {
         color: hsl(236deg 33% 90%);
-    }
-
-    #user_presences li .user-list-sidebar-menu-icon:hover,
-    .all-messages-sidebar-menu-icon:hover,
-    .starred-messages-sidebar-menu-icon:hover,
-    .drafts-sidebar-menu-icon:hover,
-    .stream-sidebar-menu-icon:hover,
-    .topic-sidebar-menu-icon:hover {
-        color: hsl(0deg 0% 100%) !important;
     }
 
     #streamlist-toggle,
@@ -790,7 +759,7 @@
 
     #topics_header {
         .show-all-streams {
-            color: hsl(236deg 33% 90%);
+            color: hsl(0deg 0% 100% / 75%);
             opacity: 0.75;
         }
     }
@@ -806,6 +775,25 @@
     .emoji-picker-popover .emoji-popover .emoji-popover-category-tabs,
     .emoji-picker-popover .emoji-popover .emoji-popover-top {
         background-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    .stream-row,
+    .group-row {
+        /* This is for coluring the plus sign SVGs in stream-list UI */
+        /* public */
+        .check:not(.checked) svg {
+            fill: hsl(218deg 14% 33%);
+        }
+
+        /* private */
+        .disabled svg {
+            opacity: 0.5;
+        }
+
+        /* public :hover */
+        .check:not(.checked, .disabled):hover svg {
+            fill: hsl(230deg 11% 67%);
+        }
     }
 
     .recent_view_participant_overflow {
@@ -891,13 +879,14 @@
     .grey-box,
     .white-box,
     .stream-email,
+    #generate-integration-url-modal .integration-url,
     #settings_page .settings-header,
     #settings_page .sidebar li.active,
     #settings_page .sidebar-wrapper .tab-container,
     .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
-    .modal-footer,
-    .modal-bg .modal-header {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
     }
@@ -910,7 +899,8 @@
     .subscriptions-container .right .display-type,
     .stream-row,
     .group-row,
-    .subscriptions-container .left .search-container,
+    .subscriptions-container .left .list-toggler-container,
+    .user-groups-container .left .list-toggler-container,
     .subscriptions-container .left,
     .user-groups-container .left,
     .subscriber-list-box,
@@ -1428,7 +1418,6 @@
     .new-style label.checkbox input[type="checkbox"]:focus ~ span,
     i.fa:focus,
     i.zulip-icon:focus,
-    .auto-select:focus,
     [role="button"]:focus {
         outline-color: hsl(0deg 0% 67%);
     }
@@ -1532,26 +1521,6 @@
                 .save-discard-widget-button-text {
                     color: hsl(0deg 0% 100%);
                 }
-            }
-        }
-    }
-
-    .tabs-container {
-        background-color: hsl(0deg 0% 0% / 30%);
-
-        & i {
-            color: hsl(0deg 0% 80%);
-        }
-
-        .selected-tab {
-            background-color: hsl(0deg 0% 17% / 50%);
-            border: 1px solid hsl(0deg 0% 100% / 12%);
-        }
-
-        .tab-option {
-            &:hover:not(.selected-tab) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                border: 1px solid hsl(0deg 0% 100% / 12%);
             }
         }
     }

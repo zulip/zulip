@@ -9,6 +9,8 @@ import * as unread from "./unread";
 
 let current_filter;
 
+export let has_shown_message_list_view = false;
+
 export function reset_current_filter() {
     current_filter = undefined;
 }
@@ -139,6 +141,14 @@ export function stream_sub() {
     const sub = stream_data.get_sub_by_name(name);
 
     return sub;
+}
+
+export function stream_id() {
+    const sub = stream_sub();
+    if (sub === undefined) {
+        return undefined;
+    }
+    return sub.stream_id;
 }
 
 export function topic() {
@@ -368,4 +378,8 @@ export function is_for_stream_id(stream_id) {
     }
 
     return stream_id === narrow_sub.stream_id;
+}
+
+export function set_has_shown_message_list_view() {
+    has_shown_message_list_view = true;
 }

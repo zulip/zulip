@@ -6,7 +6,7 @@ const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {user_settings} = require("./lib/zpage_params");
+const {page_params, user_settings} = require("./lib/zpage_params");
 
 let clipboard_args;
 class Clipboard {
@@ -21,7 +21,7 @@ class Clipboard {
 mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
-const tippyjs = mock_esm("../src/tippyjs");
+const copied_tooltip = mock_esm("../src/copied_tooltip");
 user_settings.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
@@ -40,9 +40,17 @@ const cordelia = {
     user_id: 31,
     full_name: "Cordelia Lear",
 };
+
+const polonius = {
+    email: "polonius@zulip.com",
+    user_id: 32,
+    full_name: "Polonius",
+    is_guest: true,
+};
 people.init();
 people.add_active_user(iago);
 people.add_active_user(cordelia);
+people.add_active_user(polonius);
 people.initialize_current_user(iago.user_id);
 
 const group_me = {
@@ -100,6 +108,7 @@ const get_content_element = () => {
     $content.set_find_results(".emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
+    $content.set_find_results(".message_inline_video video", $array([]));
     set_closest_dot_find_result($content, []);
 
     // Fend off dumb security bugs by forcing devs to be
@@ -127,6 +136,30 @@ run_test("misc_helpers", () => {
     $elem.addClass("silent");
     rm.set_name_in_mention_element($elem, "Aaron, but silent");
     assert.equal($elem.text(), "Aaron, but silent");
+
+    page_params.realm_enable_guest_user_indicator = true;
+    rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
+    assert.equal($elem.text(), "translated: Polonius (guest)");
+
+    page_params.realm_enable_guest_user_indicator = false;
+    rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
+    assert.equal($elem.text(), "Polonius");
+});
+
+run_test("message_inline_video", () => {
+    const $content = get_content_element();
+    const $elem = $.create("message_inline_video");
+
+    let load_called = false;
+    $elem.load = () => {
+        load_called = true;
+    };
+
+    $content.set_find_results(".message_inline_video video", $array([$elem]));
+    window.GestureEvent = true;
+    rm.update_elements($content);
+    assert.equal(load_called, true);
+    window.GestureEvent = false;
 });
 
 run_test("user-mention", () => {
@@ -138,12 +171,16 @@ run_test("user-mention", () => {
     const $cordelia = $.create("user-mention(cordelia)");
     $cordelia.set_find_results(".highlight", false);
     $cordelia.attr("data-user-id", cordelia.user_id);
-    $content.set_find_results(".user-mention", $array([$iago, $cordelia]));
-
+    const $polonius = $.create("user-mention(polonius)");
+    $polonius.set_find_results(".highlight", false);
+    $polonius.attr("data-user-id", polonius.user_id);
+    $content.set_find_results(".user-mention", $array([$iago, $cordelia, $polonius]));
+    page_params.realm_enable_guest_user_indicator = true;
     // Initial asserts
     assert.ok(!$iago.hasClass("user-mention-me"));
     assert.equal($iago.text(), "never-been-set");
     assert.equal($cordelia.text(), "never-been-set");
+    assert.equal($polonius.text(), "never-been-set");
 
     rm.update_elements($content);
 
@@ -151,6 +188,19 @@ run_test("user-mention", () => {
     assert.ok($iago.hasClass("user-mention-me"));
     assert.equal($iago.text(), `@${iago.full_name}`);
     assert.equal($cordelia.text(), `@${cordelia.full_name}`);
+    assert.equal($polonius.text(), `translated: @${polonius.full_name} (guest)`);
+});
+
+run_test("user-mention without guest indicator", () => {
+    const $content = get_content_element();
+    const $polonius = $.create("user-mention(polonius-again)");
+    $polonius.set_find_results(".highlight", false);
+    $polonius.attr("data-user-id", polonius.user_id);
+    $content.set_find_results(".user-mention", $array([$polonius]));
+
+    page_params.realm_enable_guest_user_indicator = false;
+    rm.update_elements($content);
+    assert.equal($polonius.text(), `@${polonius.full_name}`);
 });
 
 run_test("user-mention PM (wildcard)", () => {
@@ -475,7 +525,7 @@ run_test("code playground none", ({override, mock_template}) => {
         return undefined;
     });
 
-    override(tippyjs, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", () => {});
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, false);
     assert.deepEqual(prepends, [$copy_code]);
@@ -491,7 +541,7 @@ run_test("code playground single", ({override, mock_template}) => {
         return [{name: "Some Javascript Playground"}];
     });
 
-    override(tippyjs, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", () => {});
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$view_code, $copy_code]);
@@ -511,7 +561,7 @@ run_test("code playground multiple", ({override, mock_template}) => {
         return ["whatever", "whatever"];
     });
 
-    override(tippyjs, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", () => {});
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$view_code, $copy_code]);

@@ -34,17 +34,17 @@ set_global("document", "document-stub");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_reply = mock_esm("../src/compose_reply");
 const condense = mock_esm("../src/condense");
-const drafts = mock_esm("../src/drafts");
+const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
     toggle_emoji_popover() {},
 });
-const gear_menu = mock_esm("../src/gear_menu", {
-    is_open: () => false,
-});
+const gear_menu = mock_esm("../src/gear_menu");
 const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
+const message_actions_popover = mock_esm("../src/message_actions_popover");
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
@@ -53,26 +53,32 @@ const narrow_state = mock_esm("../src/narrow_state", {
     is_message_feed_visible: () => true,
 });
 const navigate = mock_esm("../src/navigate");
+const modals = mock_esm("../src/modals", {
+    any_active: () => false,
+    active_modal: () => undefined,
+});
 const overlays = mock_esm("../src/overlays", {
-    is_active: () => false,
+    any_active: () => false,
     settings_open: () => false,
     streams_open: () => false,
     lightbox_open: () => false,
     drafts_open: () => false,
     scheduled_messages_open: () => false,
     info_overlay_open: () => false,
-    is_modal_open: () => false,
-    active_modal: () => undefined,
-    is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
 const popovers = mock_esm("../src/user_card_popover", {
-    is_user_card_manage_menu_open: () => false,
-    is_message_user_card_open: () => false,
-    user_sidebar_popped: () => false,
-    is_user_card_open: () => false,
-});
-const popover_menus = mock_esm("../src/popover_menus", {
-    get_visible_instance: () => undefined,
+    manage_menu: {
+        is_open: () => false,
+    },
+    user_sidebar: {
+        is_open: () => false,
+    },
+    message_user_card: {
+        is_open: () => false,
+    },
+    user_card: {
+        is_open: () => false,
+    },
 });
 const reactions = mock_esm("../src/reactions");
 const search = mock_esm("../src/search");
@@ -115,7 +121,7 @@ message_lists.current = {
     },
 };
 
-const activity = zrequire("activity");
+const activity_ui = zrequire("activity_ui");
 const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const hotkey = zrequire("hotkey");
@@ -279,14 +285,14 @@ run_test("allow normal typing when processing text", ({override, override_rewire
     override_rewire(hotkey, "processing_text", () => true);
 
     let settings_open;
-    let is_active;
+    let any_active;
     let info_overlay_open;
-    override(overlays, "is_active", () => is_active);
+    override(overlays, "any_active", () => any_active);
     override(overlays, "settings_open", () => settings_open);
     override(overlays, "info_overlay_open", () => info_overlay_open);
 
     for (settings_open of [true, false]) {
-        for (is_active of [true, false]) {
+        for (any_active of [true, false]) {
             for (info_overlay_open of [true, false]) {
                 test_normal_typing();
             }
@@ -299,7 +305,7 @@ run_test("streams", ({override}) => {
     delete settings_data.user_can_create_public_streams;
     delete settings_data.user_can_create_web_public_streams;
     override(overlays, "streams_open", () => true);
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     assert_mapping("S", stream_settings_ui, "keyboard_sub");
     assert_mapping("V", stream_settings_ui, "view_stream");
     assert_mapping("n", stream_settings_ui, "open_create_stream");
@@ -312,7 +318,7 @@ run_test("streams", ({override}) => {
 run_test("basic mappings", () => {
     assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
-    assert_mapping_rewire("w", activity, "initiate_search");
+    assert_mapping_rewire("w", activity_ui, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
     assert_mapping("A", narrow, "stream_cycle_backward");
@@ -321,28 +327,28 @@ run_test("basic mappings", () => {
     assert_mapping("c", compose_actions, "start");
     assert_mapping("x", compose_actions, "start");
     assert_mapping("P", narrow, "by");
-    assert_mapping("g", gear_menu, "open");
+    assert_mapping("g", gear_menu, "toggle");
 });
 
 run_test("drafts open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
 run_test("drafts closed w/other overlay", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => false);
     test_normal_typing();
 });
 
 run_test("drafts closed launch", ({override}) => {
-    override(overlays, "is_active", () => false);
+    override(overlays, "any_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
 });
 
 run_test("modal open", ({override}) => {
-    override(overlays, "is_modal_open", () => true);
+    override(modals, "any_active", () => true);
     test_normal_typing();
 });
 
@@ -364,22 +370,22 @@ run_test("misc", ({override}) => {
 
     // TODO: Similar check for being in the subs page
 
-    assert_mapping("@", compose_actions, "reply_with_mention");
+    assert_mapping("@", compose_reply, "reply_with_mention");
     assert_mapping("+", reactions, "toggle_emoji_reaction");
     // Without an existing emoji reaction, this next one will only
     // call get_message_reactions, so we verify just that.
     assert_mapping("=", reactions, "get_message_reactions");
     assert_mapping("-", condense, "toggle_collapse");
-    assert_mapping("r", compose_actions, "respond_to_message");
-    assert_mapping("R", compose_actions, "respond_to_message", true);
+    assert_mapping("r", compose_reply, "respond_to_message");
+    assert_mapping("R", compose_reply, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
     assert_mapping("J", navigate, "page_down");
     assert_mapping("k", navigate, "up");
     assert_mapping("K", navigate, "page_up");
     assert_mapping("u", popovers, "toggle_sender_info");
-    assert_mapping("i", popover_menus, "toggle_message_actions_menu");
+    assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
-    assert_mapping(">", compose_actions, "quote_and_reply");
+    assert_mapping(">", compose_reply, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
@@ -401,19 +407,19 @@ run_test("misc", ({override}) => {
 });
 
 run_test("lightbox overlay open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
 });
 
 run_test("lightbox closed w/other overlay open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => false);
     test_normal_typing();
 });
 
 run_test("v w/no overlays", ({override}) => {
-    override(overlays, "is_active", () => false);
+    override(overlays, "any_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
 
@@ -531,10 +537,10 @@ run_test("motion_keys", () => {
     assert_unmapped("spacebar");
     delete overlays.settings_open;
 
-    delete overlays.is_active;
+    delete overlays.any_active;
     overlays.drafts_open = () => true;
-    assert_mapping("up_arrow", drafts, "handle_keyboard_events");
-    assert_mapping("down_arrow", drafts, "handle_keyboard_events");
-    delete overlays.is_active;
+    assert_mapping("up_arrow", drafts_overlay_ui, "handle_keyboard_events");
+    assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
+    delete overlays.any_active;
     delete overlays.drafts_open;
 });

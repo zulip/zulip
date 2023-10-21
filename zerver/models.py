@@ -1,3 +1,6 @@
+# https://github.com/typeddjango/django-stubs/issues/1698
+# mypy: disable-error-code="explicit-override"
+
 import datetime
 import hashlib
 import secrets
@@ -51,6 +54,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
 from django_stubs_ext import StrPromise, ValuesQuerySet
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -137,6 +141,7 @@ class EmojiInfo(TypedDict):
 class AndZero(models.Lookup[int]):
     lookup_name = "andz"
 
+    @override
     def as_sql(
         self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
     ) -> Tuple[str, List[Union[str, int]]]:  # nocoverage # currently only used in migrations
@@ -149,6 +154,7 @@ class AndZero(models.Lookup[int]):
 class AndNonZero(models.Lookup[int]):
     lookup_name = "andnz"
 
+    @override
     def as_sql(
         self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
     ) -> Tuple[str, List[Union[str, int]]]:  # nocoverage # currently only used in migrations
@@ -269,6 +275,14 @@ class RealmAuthenticationMethod(models.Model):
         unique_together = ("realm", "name")
 
 
+def generate_realm_uuid_owner_secret() -> str:
+    token = generate_api_key()
+
+    # We include a prefix to facilitate scanning for accidental
+    # disclosure of secrets e.g. in Github commit pushes.
+    return f"zuliprealm_{token}"
+
+
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -288,6 +302,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # e.g. on a server at example.com, an org with string_id `foo` is reached
     # at `foo.example.com`.
     string_id = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True)
+
+    # uuid and a secret for the sake of per-realm authentication with the push notification
+    # bouncer.
+    uuid = models.UUIDField(default=uuid4, unique=True)
+    uuid_owner_secret = models.TextField(default=generate_realm_uuid_owner_secret)
 
     date_created = models.DateTimeField(default=timezone_now)
     demo_organization_scheduled_deletion_date = models.DateTimeField(default=None, null=True)
@@ -671,6 +690,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
     )
 
+    JITSI_SERVER_SPECIAL_VALUES_MAP = {"default": None}
+    jitsi_server_url = models.URLField(null=True, default=None)
+
     # Please access this via get_giphy_rating_options.
     GIPHY_RATING_OPTIONS = {
         "disabled": {
@@ -709,6 +731,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # they will not be available regardless of users' personal settings.
     enable_read_receipts = models.BooleanField(default=False)
 
+    # Whether clients should display "(guest)" after names of guest users.
+    enable_guest_user_indicator = models.BooleanField(default=True)
+
     # Duplicates of names for system group; TODO: Clean this up.
     ADMINISTRATORS_GROUP_NAME = "role:administrators"
 
@@ -732,6 +757,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         edit_topic_policy=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
+        enable_guest_user_indicator=bool,
         enable_read_receipts=bool,
         enable_spectator_access=bool,
         giphy_rating=int,
@@ -740,6 +766,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         invite_required=bool,
         invite_to_realm_policy=int,
         invite_to_stream_policy=int,
+        jitsi_server_url=(str, type(None)),
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=(int, type(None)),
@@ -808,6 +835,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
     night_logo_version = models.PositiveSmallIntegerField(default=1)
 
+    @override
     def __str__(self) -> str:
         return f"{self.string_id} {self.id}"
 
@@ -1153,6 +1181,7 @@ class RealmEmoji(models.Model):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
@@ -1271,9 +1300,11 @@ class RealmFilter(models.Model):
     class Meta:
         unique_together = ("realm", "pattern")
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm.string_id}: {self.pattern} {self.url_template}"
 
+    @override
     def clean(self) -> None:
         """Validate whether the set of parameters in the URL template
         match the set of parameters in the regular expression.
@@ -1374,9 +1405,11 @@ class RealmPlayground(models.Model):
     class Meta:
         unique_together = (("realm", "pygments_language", "name"),)
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm.string_id}: {self.pygments_language} {self.name}"
 
+    @override
     def clean(self) -> None:
         """Validate whether the URL template is valid for the playground,
         ensuring that "code" is the sole variable present in it.
@@ -1460,6 +1493,7 @@ class Recipient(models.Model):
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _type_names = {PERSONAL: "personal", STREAM: "stream", HUDDLE: "huddle"}
 
+    @override
     def __str__(self) -> str:
         return f"{self.label()} ({self.type_id}, {self.type})"
 
@@ -1492,7 +1526,7 @@ class UserBaseSettings(models.Model):
     ### Generic UI settings
     enter_sends = models.BooleanField(default=False)
 
-    ### Display settings. ###
+    ### Preferences. ###
     # left_side_userlist was removed from the UI in Zulip 6.0; the
     # database model is being temporarily preserved in case we want to
     # restore a version of the setting, preserving who had it enabled.
@@ -1638,6 +1672,30 @@ class UserBaseSettings(models.Model):
         default=REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC
     )
 
+    # The following two settings control which topics to automatically
+    # 'follow' or 'unmute in a muted stream', respectively.
+    # Follow or unmute a topic automatically on:
+    # - PARTICIPATION: Send a message, React to a message, Participate in a poll or Edit a TO-DO list.
+    # - SEND: Send a message.
+    # - INITIATION: Send the first message in the topic.
+    # - NEVER: Never automatically follow or unmute a topic.
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION = 1
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND = 2
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION = 3
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER = 4
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES = [
+        AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+        AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+        AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+        AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+    ]
+    automatically_follow_topics_policy = models.PositiveSmallIntegerField(
+        default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+    )
+    automatically_unmute_topics_in_muted_streams_policy = models.PositiveSmallIntegerField(
+        default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+    )
+
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
@@ -1733,6 +1791,8 @@ class UserBaseSettings(models.Model):
         enable_followed_topic_push_notifications=bool,
         enable_followed_topic_audible_notifications=bool,
         enable_followed_topic_wildcard_mentions_notify=bool,
+        automatically_follow_topics_policy=int,
+        automatically_unmute_topics_in_muted_streams_policy=int,
     )
 
     notification_setting_types = {
@@ -2028,6 +2088,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         else:
             return False
 
+    @override
     def __str__(self) -> str:
         return f"{self.email} {self.realm!r}"
 
@@ -2225,6 +2286,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     def format_requester_for_logs(self) -> str:
         return "{}@{}".format(self.id, self.realm.string_id or "root")
 
+    @override
     def set_password(self, password: Optional[str]) -> None:
         if password is None:
             self.set_unusable_password()
@@ -2657,7 +2719,7 @@ class Stream(models.Model):
     message_retention_days = models.IntegerField(null=True, default=None)
 
     # on_delete field here is set to RESTRICT because we don't want to allow
-    # deleting a user group in case it is referenced by this settig.
+    # deleting a user group in case it is referenced by this setting.
     # We are not using PROTECT since we want to allow deletion of user groups
     # when realm itself is deleted.
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
@@ -2684,6 +2746,7 @@ class Stream(models.Model):
             models.Index(Upper("name"), name="upper_stream_name_idx"),
         ]
 
+    @override
     def __str__(self) -> str:
         return self.name
 
@@ -2803,6 +2866,7 @@ class UserTopic(models.Model):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.last_updated})"
 
@@ -2815,6 +2879,7 @@ class MutedUser(models.Model):
     class Meta:
         unique_together = ("user_profile", "muted_user")
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile.email} -> {self.muted_user.email}"
 
@@ -2827,6 +2892,7 @@ class Client(models.Model):
     MAX_NAME_LENGTH = 30
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True, unique=True)
 
+    @override
     def __str__(self) -> str:
         return self.name
 
@@ -2956,6 +3022,11 @@ class AbstractMessage(models.Model):
     # See the Recipient class for details.
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
 
+    # The realm containing the message. Usually this will be the same
+    # as the realm of the messages's sender; the exception to that is
+    # cross-realm bot users.
+    #
+    # Important for efficient indexes and sharding in multi-realm servers.
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
     # The message's topic.
@@ -2968,26 +3039,40 @@ class AbstractMessage(models.Model):
     # See also the `topic_name` method on `Message`.
     subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)
 
+    # The raw Markdown-format text (E.g., what the user typed into the compose box).
     content = models.TextField()
+
+    # The HTML rendered content resulting from rendering the content
+    # with the Markdown processor.
     rendered_content = models.TextField(null=True)
+    # A rarely-incremented version number, theoretically useful for
+    # tracking which messages have been already rerendered when making
+    # major changes to the markup rendering process.
     rendered_content_version = models.IntegerField(null=True)
 
     date_sent = models.DateTimeField("date sent", db_index=True)
+
+    # A Client object indicating what type of Zulip client sent this message.
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)
 
+    # The last time the message was modified by message editing or moving.
     last_edit_time = models.DateTimeField(null=True)
 
     # A JSON-encoded list of objects describing any past edits to this
     # message, oldest first.
     edit_history = models.TextField(null=True)
 
+    # Whether the message contains a (link to) an uploaded file.
     has_attachment = models.BooleanField(default=False, db_index=True)
+    # Whether the message contains a visible image element.
     has_image = models.BooleanField(default=False, db_index=True)
+    # Whether the message contains a link.
     has_link = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         abstract = True
 
+    @override
     def __str__(self) -> str:
         return f"{self.recipient.label()} / {self.subject} / {self.sender!r}"
 
@@ -3006,6 +3091,7 @@ class ArchiveTransaction(models.Model):
     # If type is set to MANUAL, this should be null.
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
+    @override
     def __str__(self) -> str:
         return "id: {id}, type: {type}, realm: {realm}, timestamp: {timestamp}".format(
             id=self.id,
@@ -3089,20 +3175,26 @@ class Message(AbstractMessage):
         sending_client = self.sending_client.name.lower()
 
         return (
-            sending_client
-            in (
-                "zulipandroid",
-                "zulipios",
-                "zulipdesktop",
-                "zulipmobile",
-                "zulipelectron",
-                "zulipterminal",
-                "snipe",
-                "website",
-                "ios",
-                "android",
+            (
+                sending_client
+                in (
+                    "zulipandroid",
+                    "zulipios",
+                    "zulipdesktop",
+                    "zulipmobile",
+                    "zulipelectron",
+                    "zulipterminal",
+                    "snipe",
+                    "website",
+                    "ios",
+                    "android",
+                )
             )
-        ) or ("desktop app" in sending_client)
+            or ("desktop app" in sending_client)
+            # Since the vast majority of messages are sent by humans
+            # in Zulip, treat test suite messages as such.
+            or (sending_client == "test suite" and settings.TEST_SUITE)
+        )
 
     @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
@@ -3171,7 +3263,9 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_recipient_upper_subject",
             ),
             models.Index(
-                # Only used by already_sent_mirrored_message_id
+                # Used by already_sent_mirrored_message_id, and when
+                # determining recent topics (we post-process to merge
+                # and show the most recent case)
                 "realm_id",
                 "recipient_id",
                 "subject",
@@ -3244,6 +3338,7 @@ class Draft(models.Model):
     content = models.TextField()  # Length should not exceed MAX_MESSAGE_LENGTH
     last_edit_time = models.DateTimeField(db_index=True)
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.id} / {self.last_edit_time}"
 
@@ -3335,6 +3430,7 @@ class Reaction(AbstractReaction):
         # client-side sorting code.
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields).order_by("id")
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
 
@@ -3525,6 +3621,7 @@ class UserMessage(AbstractUserMessage):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         recipient_string = self.message.recipient.label()
         return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
@@ -3563,6 +3660,7 @@ class ArchivedUserMessage(AbstractUserMessage):
 
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
 
+    @override
     def __str__(self) -> str:
         recipient_string = self.message.recipient.label()
         return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
@@ -3606,6 +3704,7 @@ class AbstractAttachment(models.Model):
     class Meta:
         abstract = True
 
+    @override
     def __str__(self) -> str:
         return self.file_name
 
@@ -3866,6 +3965,7 @@ class Subscription(models.Model):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile!r} -> {self.recipient!r}"
 
@@ -4334,6 +4434,7 @@ class ScheduledEmail(AbstractScheduledJob):
     INVITATION_REMINDER = 3
     type = models.PositiveSmallIntegerField()
 
+    @override
     def __str__(self) -> str:
         return f"{self.type} {self.address or list(self.users.all())} {self.scheduled_timestamp}"
 
@@ -4348,6 +4449,7 @@ class MissedMessageEmailAddress(models.Model):
     # Number of times the missed message address has been used.
     times_used = models.PositiveIntegerField(default=0, db_index=True)
 
+    @override
     def __str__(self) -> str:
         return settings.EMAIL_GATEWAY_PATTERN % (self.email_token,)
 
@@ -4484,6 +4586,7 @@ class ScheduledMessage(models.Model):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.recipient.label()} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
 
@@ -4720,6 +4823,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
     )
     event_last_message_id = models.IntegerField(null=True)
 
+    @override
     def __str__(self) -> str:
         if self.modified_user is not None:
             return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
@@ -4873,6 +4977,7 @@ class CustomProfileField(models.Model):
     class Meta:
         unique_together = ("realm", "name")
 
+    @override
     def __str__(self) -> str:
         return f"{self.realm!r} {self.name} {self.field_type} {self.order}"
 
@@ -4909,6 +5014,7 @@ class CustomProfileFieldValue(models.Model):
     class Meta:
         unique_together = ("user_profile", "field")
 
+    @override
     def __str__(self) -> str:
         return f"{self.user_profile!r} {self.field!r} {self.value}"
 

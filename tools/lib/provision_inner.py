@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+############################## NOTE ################################
+# This script is used to provision a development environment ONLY.
+# For production, extend update-prod-static to generate new static
+# assets, and puppet to install other software.
+####################################################################
+
 import argparse
 import glob
 import os
@@ -62,6 +69,12 @@ def build_timezones_data_paths() -> List[str]:
     paths = [
         "tools/setup/build_timezone_values",
     ]
+    return paths
+
+
+def build_landing_page_images_paths() -> List[str]:
+    paths = ["tools/setup/generate_landing_page_images.py"]
+    paths += glob.glob("static/images/landing-page/hello/original/*")
     return paths
 
 
@@ -159,6 +172,16 @@ def need_to_run_build_timezone_data() -> bool:
     )
 
 
+def need_to_regenerate_landing_page_images() -> bool:
+    if not os.path.exists("static/images/landing-page/hello/generated"):
+        return True
+
+    return is_digest_obsolete(
+        "landing_page_images_hash",
+        build_landing_page_images_paths(),
+    )
+
+
 def need_to_run_compilemessages() -> bool:
     if not os.path.exists("locale/language_name_map.json"):
         # User may have cleaned their Git checkout.
@@ -226,6 +249,13 @@ def main(options: argparse.Namespace) -> int:
         )
     else:
         print("No need to run `tools/setup/build_timezone_values`.")
+
+    if options.is_force or need_to_regenerate_landing_page_images():
+        run(["tools/setup/generate_landing_page_images.py"])
+        write_new_digest(
+            "landing_page_images_hash",
+            build_landing_page_images_paths(),
+        )
 
     if not options.is_build_release_tarball_only:
         # The following block is skipped when we just need the development

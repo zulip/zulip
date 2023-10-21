@@ -20,7 +20,7 @@ import ahocorasick
 import orjson
 from django.conf import settings
 from django.db import connection
-from django.db.models import Max, Sum
+from django.db.models import Max, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_stubs_ext import ValuesQuerySet
@@ -47,13 +47,19 @@ from zerver.lib.stream_subscription import (
     get_subscribed_stream_recipient_ids_for_user,
     num_subscribers_for_stream_id,
 )
-from zerver.lib.streams import get_web_public_streams_queryset
+from zerver.lib.streams import can_access_stream_history, get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.topic import (
+    DB_TOPIC_NAME,
+    MESSAGE__TOPIC,
+    TOPIC_LINKS,
+    TOPIC_NAME,
+    messages_for_topic,
+)
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.user_topics import build_topic_mute_checker, topic_has_visibility_policy
+from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -110,7 +116,7 @@ class RawUnreadMessagesResult(TypedDict):
     stream_dict: Dict[int, RawUnreadStreamDict]
     huddle_dict: Dict[int, RawUnreadHuddleDict]
     mentions: Set[int]
-    muted_stream_ids: List[int]
+    muted_stream_ids: Set[int]
     unmuted_stream_msgs: Set[int]
     old_unreads_missing: bool
 
@@ -147,6 +153,7 @@ class SendMessageRequest:
     message: Message
     rendering_result: MessageRenderingResult
     stream: Optional[Stream]
+    sender_muted_stream: Optional[bool]
     local_id: Optional[str]
     sender_queue_id: Optional[str]
     realm: Realm
@@ -201,6 +208,7 @@ class SendMessageRequest:
     limit_unread_user_ids: Optional[Set[int]] = None
     service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
     disable_external_notifications: bool = False
+    automatic_new_visibility_policy: Optional[int] = None
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -1014,7 +1022,7 @@ def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
     return inactive_recipient_ids
 
 
-def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
+def get_muted_stream_ids(user_profile: UserProfile) -> Set[int]:
     rows = (
         get_stream_subscriptions_for_user(user_profile)
         .filter(
@@ -1025,7 +1033,7 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
             "recipient__type_id",
         )
     )
-    muted_stream_ids = [row["recipient__type_id"] for row in rows]
+    muted_stream_ids = {row["recipient__type_id"] for row in rows}
     return muted_stream_ids
 
 
@@ -1090,6 +1098,7 @@ def extract_unread_data_from_um_rows(
 ) -> RawUnreadMessagesResult:
     pm_dict: Dict[int, RawUnreadDirectMessageDict] = {}
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
+    muted_stream_ids: Set[int] = set()
     unmuted_stream_msgs: Set[int] = set()
     huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
     mentions: Set[int] = set()
@@ -1098,7 +1107,7 @@ def extract_unread_data_from_um_rows(
     raw_unread_messages: RawUnreadMessagesResult = dict(
         pm_dict=pm_dict,
         stream_dict=stream_dict,
-        muted_stream_ids=[],
+        muted_stream_ids=muted_stream_ids,
         unmuted_stream_msgs=unmuted_stream_msgs,
         huddle_dict=huddle_dict,
         mentions=mentions,
@@ -1111,13 +1120,23 @@ def extract_unread_data_from_um_rows(
     muted_stream_ids = get_muted_stream_ids(user_profile)
     raw_unread_messages["muted_stream_ids"] = muted_stream_ids
 
-    topic_mute_checker = build_topic_mute_checker(user_profile)
+    get_topic_visibility_policy = build_get_topic_visibility_policy(user_profile)
 
     def is_row_muted(stream_id: int, recipient_id: int, topic: str) -> bool:
-        if stream_id in muted_stream_ids:
+        stream_muted = stream_id in muted_stream_ids
+        visibility_policy = get_topic_visibility_policy(recipient_id, topic)
+
+        if stream_muted and visibility_policy in [
+            UserTopic.VisibilityPolicy.UNMUTED,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+        ]:
+            return False
+
+        if stream_muted:
             return True
 
-        if topic_mute_checker(recipient_id, topic):
+        # muted topic in unmuted stream
+        if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
             return True
 
         # Messages sent by muted users are never unread, so we don't
@@ -1316,12 +1335,15 @@ def apply_unread_message_event(
             topic=topic,
         )
 
-        if (
-            stream_id not in state["muted_stream_ids"]
-            # This next check hits the database.
-            and not topic_has_visibility_policy(
-                user_profile, stream_id, topic, UserTopic.VisibilityPolicy.MUTED
-            )
+        stream_muted = stream_id in state["muted_stream_ids"]
+        visibility_policy = get_topic_visibility_policy(user_profile, stream_id, topic)
+        # A stream message is unmuted if it belongs to:
+        # * a not muted topic in a normal stream
+        # * an unmuted or followed topic in a muted stream
+        if (not stream_muted and visibility_policy != UserTopic.VisibilityPolicy.MUTED) or (
+            stream_muted
+            and visibility_policy
+            in [UserTopic.VisibilityPolicy.UNMUTED, UserTopic.VisibilityPolicy.FOLLOWED]
         ):
             state["unmuted_stream_msgs"].add(message_id)
 
@@ -1580,6 +1602,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         ON
             m.sender_id = sender_profile.id
         WHERE
+            m.realm_id=%(realm_id)s AND
             m.recipient_id=%(my_recipient_id)s
         ORDER BY message_id DESC
         LIMIT %(conversation_limit)s)
@@ -1595,6 +1618,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
                 "user_profile_id": user_profile.id,
                 "conversation_limit": RECENT_CONVERSATIONS_LIMIT,
                 "my_recipient_id": my_recipient_id,
+                "realm_id": user_profile.realm_id,
             },
         )
         rows = cursor.fetchall()
@@ -1697,3 +1721,180 @@ def update_to_dict_cache(
 
     cache_set_many(items_for_remote_cache)
     return message_ids
+
+
+def visibility_policy_for_participation(
+    sender: UserProfile,
+    is_stream_muted: Optional[bool],
+) -> Optional[int]:
+    """
+    This function determines the visibility policy to set when a user
+    participates in a topic, depending on the 'automatically_follow_topics_policy'
+    and 'automatically_unmute_topics_in_muted_streams_policy' settings.
+    """
+    if (
+        sender.automatically_follow_topics_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION
+    ):
+        return UserTopic.VisibilityPolicy.FOLLOWED
+
+    if (
+        is_stream_muted
+        and sender.automatically_unmute_topics_in_muted_streams_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION
+    ):
+        return UserTopic.VisibilityPolicy.UNMUTED
+
+    return None
+
+
+def visibility_policy_for_send(
+    sender: UserProfile,
+    is_stream_muted: Optional[bool],
+) -> Optional[int]:
+    if (
+        sender.automatically_follow_topics_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND
+    ):
+        return UserTopic.VisibilityPolicy.FOLLOWED
+
+    if (
+        is_stream_muted
+        and sender.automatically_unmute_topics_in_muted_streams_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND
+    ):
+        return UserTopic.VisibilityPolicy.UNMUTED
+
+    return None
+
+
+def visibility_policy_for_send_message(
+    sender: UserProfile,
+    message: Message,
+    stream: Stream,
+    is_stream_muted: Optional[bool],
+    current_visibility_policy: int,
+) -> Optional[int]:
+    """
+    This function determines the visibility policy to set when a message
+    is sent to a topic, depending on the 'automatically_follow_topics_policy'
+    and 'automatically_unmute_topics_in_muted_streams_policy' settings.
+
+    It returns None when the policies can't make it more visible than the
+    current visibility policy.
+    """
+    # We prioritize 'FOLLOW' over 'UNMUTE' in muted streams.
+    # We need to carefully handle the following two cases:
+    #
+    # 1. When an action qualifies for multiple values. Example:
+    #    - starting a topic is INITIATION, PARTICIPATION as well as SEND
+    #    - sending a non-first message is PARTICIPATION as well as SEND
+    # action | 'automatically_follow_topics_policy' | 'automatically_unmute_topics_in_muted_streams_policy' | visibility_policy
+    #  start |    ON_PARTICIPATION / ON_SEND        |                   ON_INITIATION                       |     FOLLOWED
+    #  send  |    ON_SEND / ON_PARTICIPATION        |              ON_PARTICIPATION / ON_SEND               |     FOLLOWED
+    #
+    # 2. When both the policies have the same values.
+    # action | 'automatically_follow_topics_policy' | 'automatically_unmute_topics_in_muted_streams_policy' | visibility_policy
+    #  start |         ON_INITIATION                |                   ON_INITIATION                       |     FOLLOWED
+    #  partc |       ON_PARTICIPATION               |                 ON_PARTICIPATION                      |     FOLLOWED
+    #  send  |           ON_SEND                    |                     ON_SEND                           |     FOLLOWED
+    visibility_policy = None
+
+    if current_visibility_policy == UserTopic.VisibilityPolicy.FOLLOWED:
+        return visibility_policy
+
+    visibility_policy_participation = visibility_policy_for_participation(sender, is_stream_muted)
+    visibility_policy_send = visibility_policy_for_send(sender, is_stream_muted)
+
+    if UserTopic.VisibilityPolicy.FOLLOWED in (
+        visibility_policy_participation,
+        visibility_policy_send,
+    ):
+        return UserTopic.VisibilityPolicy.FOLLOWED
+
+    if UserTopic.VisibilityPolicy.UNMUTED in (
+        visibility_policy_participation,
+        visibility_policy_send,
+    ):
+        visibility_policy = UserTopic.VisibilityPolicy.UNMUTED
+
+    # If a topic has a visibility policy set, it can't be the case
+    # of initiation. We return early, thus saving a DB query.
+    if current_visibility_policy != UserTopic.VisibilityPolicy.INHERIT:
+        if visibility_policy and current_visibility_policy == visibility_policy:
+            return None
+        return visibility_policy
+
+    # Now we need to check if the user initiated the topic.
+    old_accessible_messages_in_topic: Union[QuerySet[Message], QuerySet[UserMessage]]
+    if can_access_stream_history(sender, stream):
+        old_accessible_messages_in_topic = messages_for_topic(
+            realm_id=sender.realm_id,
+            stream_recipient_id=message.recipient_id,
+            topic_name=message.topic_name(),
+        ).exclude(id=message.id)
+    else:
+        # We use the user's own message access to avoid leaking information in
+        # private streams with protected history.
+        old_accessible_messages_in_topic = UserMessage.objects.filter(
+            user_profile=sender,
+            message__recipient_id=message.recipient_id,
+            message__subject__iexact=message.topic_name(),
+        ).exclude(message_id=message.id)
+
+    if (
+        sender.automatically_follow_topics_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
+        and not old_accessible_messages_in_topic.exists()
+    ):
+        return UserTopic.VisibilityPolicy.FOLLOWED
+
+    if (
+        is_stream_muted
+        and sender.automatically_unmute_topics_in_muted_streams_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
+        and not old_accessible_messages_in_topic.exists()
+    ):
+        visibility_policy = UserTopic.VisibilityPolicy.UNMUTED
+
+    return visibility_policy
+
+
+def should_change_visibility_policy(
+    new_visibility_policy: int,
+    sender: UserProfile,
+    stream_id: int,
+    topic_name: str,
+) -> bool:
+    try:
+        user_topic = UserTopic.objects.get(
+            user_profile=sender, stream_id=stream_id, topic_name__iexact=topic_name
+        )
+    except UserTopic.DoesNotExist:
+        return True
+    current_visibility_policy = user_topic.visibility_policy
+
+    if new_visibility_policy == current_visibility_policy:
+        return False
+
+    # The intent of these "automatically follow or unmute" policies is that they
+    # can only increase the user's visibility policy for the topic. If a topic is
+    # already FOLLOWED, we don't change the state to UNMUTED due to these policies.
+    if current_visibility_policy == UserTopic.VisibilityPolicy.FOLLOWED:
+        return False
+
+    return True
+
+
+def set_visibility_policy_possible(user_profile: UserProfile, message: Message) -> bool:
+    """If the user can set a visibility policy."""
+    if not message.is_stream_message():
+        return False
+
+    if user_profile.is_bot:
+        return False
+
+    if user_profile.realm != message.get_realm():
+        return False
+
+    return True

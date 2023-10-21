@@ -1,8 +1,7 @@
 import $ from "jquery";
 
-import {Filter} from "./filter";
+import * as blueslip from "./blueslip";
 import * as inbox_util from "./inbox_util";
-import * as message_list from "./message_list";
 import * as recent_view_util from "./recent_view_util";
 import * as ui_util from "./ui_util";
 
@@ -11,6 +10,10 @@ export let current;
 
 export function set_current(msg_list) {
     current = msg_list;
+}
+
+export function set_home(msg_list) {
+    home = msg_list;
 }
 
 export function all_rendered_message_lists() {
@@ -32,14 +35,24 @@ export function update_recipient_bar_background_color() {
     inbox_util.update_stream_colors();
 }
 
-export function initialize() {
-    home = new message_list.MessageList({
-        table_name: "zhome",
-        filter: new Filter([{operator: "in", operand: "home"}]),
-        excludes_muted_topics: true,
-    });
-    current = home;
+export function save_pre_narrow_offset_for_reload() {
+    if (current.selected_id() !== -1) {
+        if (current.selected_row().length === 0) {
+            blueslip.debug("narrow.activate missing selected row", {
+                selected_id: current.selected_id(),
+                selected_idx: current.selected_idx(),
+                selected_idx_exact: current
+                    .all_messages()
+                    .indexOf(current.get(current.selected_id())),
+                render_start: current.view._render_win_start,
+                render_end: current.view._render_win_end,
+            });
+        }
+        current.pre_narrow_offset = current.selected_row().get_offset_to_window().top;
+    }
+}
 
+export function initialize() {
     // For users with automatic color scheme, we need to detect change
     // in `prefers-color-scheme`as it changes based on time.
     ui_util.listener_for_preferred_color_scheme_change(update_recipient_bar_background_color);

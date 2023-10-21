@@ -309,7 +309,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
         )
     ).format(
         default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-        start_topic_help_url="/help/start-a-new-topic",
+        start_topic_help_url="/help/starting-a-new-topic",
     )
 
     welcome_messages: List[Dict[str, str]] = [
@@ -345,7 +345,9 @@ def send_initial_realm_messages(realm: Realm) -> None:
         )
         for message in welcome_messages
     ]
-    message_ids = do_send_messages(messages)
+    message_ids = [
+        sent_message_result.message_id for sent_message_result in do_send_messages(messages)
+    ]
 
     # We find the one of our just-sent messages with turtle.png in it,
     # and react to it.  This is a bit hacky, but works and is kinda a

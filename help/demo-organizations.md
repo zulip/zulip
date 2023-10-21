@@ -62,15 +62,35 @@ and set a password for their account.
 
 ## Convert a demo organization to a permanent organization
 
+{!owner-only.md!}
+
+If you'd like to keep your demo organization user and message history,
+you can convert it to a permanent Zulip organization. You'll need to
+choose a new subdomain for your new permanent organization URL.
+
+Also, as part of the process of converting a demo organization to a
+permanent organization:
+
+* Users will be logged out of existing sessions on the web, mobile and
+  desktop apps and need to log in again.
+* Any [API clients](/api) or [integrations](/integrations/) will need
+  to be updated to point to the new organization URL.
+
 {start_tabs}
 
 {settings_tab|organization-profile}
 
-1. Click the **Convert organization** link at the end of the red
-   "This is a demo organization" notice on top.
+1. Click the **Convert to make it permanent** link at the end of the
+   "This demo organization will be automatically deleted ..." notice.
 
-1. Enter the URL you would like to use for the organization and click
-   **Convert**.
+1. Enter the subdomain you would like to use for the new organization
+   URL and click  **Convert**.
+
+!!! warn ""
+
+    **Note:** You will be logged out when the demo organization is
+    successfully converted to a permanent Zulip organization and be
+    redirected to new organization URL log-in page.
 
 {end_tabs}
 

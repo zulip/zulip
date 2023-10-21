@@ -822,6 +822,11 @@ def get_messages_iterator(
                     # change this to point to slackbot instead, but
                     # skipping those messages is simpler.
                     continue
+                if message.get("mimetype") == "application/vnd.slack-docs":
+                    # This is a Slack "Post" which is HTML-formatted,
+                    # and we don't have a clean way to import at the
+                    # moment.  We skip them on import.
+                    continue
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
@@ -1363,7 +1368,7 @@ def do_convert_data(
             # Slack's export doesn't set the UTF-8 flag on each
             # filename entry, despite encoding them as such, so
             # zipfile mojibake's the output.  Explicitly re-interpret
-            # it as UTF-8 mis-decoded as cp437, the default.
+            # it as UTF-8 misdecoded as cp437, the default.
             for fileinfo in zipObj.infolist():
                 fileinfo.flag_bits |= 0x800
                 fileinfo.filename = fileinfo.filename.encode("cp437").decode("utf-8")

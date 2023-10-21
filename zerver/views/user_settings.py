@@ -127,7 +127,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
 
 emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
-default_view_options = ["recent_topics", "all_messages"]
+default_view_options = ["recent_topics", "inbox", "all_messages"]
 
 
 def check_settings_values(
@@ -256,6 +256,14 @@ def json_change_settings(
     ),
     realm_name_in_email_notifications_policy: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
+        default=None,
+    ),
+    automatically_follow_topics_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
+        default=None,
+    ),
+    automatically_unmute_topics_in_muted_streams_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         default=None,
     ),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),

@@ -18,33 +18,25 @@ import * as loading from "./loading";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
-import * as message_view_header from "./message_view_header";
+import * as modals from "./modals";
 import * as muted_users from "./muted_users";
-import * as narrow from "./narrow";
-import * as narrow_state from "./narrow_state";
-import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_view_data";
 import {get_key_from_message, get_topic_key, is_visible, set_visible} from "./recent_view_util";
-import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
-import * as search from "./search";
+import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
-import * as user_card_popover from "./user_card_popover";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
+import * as views_util from "./views_util";
 
 let topics_widget;
 // Sets the number of avatars to display.
@@ -111,7 +103,9 @@ export function is_in_focus() {
         is_visible() &&
         !compose_state.composing() &&
         !popovers.any_active() &&
-        !overlays.is_overlay_or_modal_open() &&
+        !sidebar_ui.any_sidebar_expanded_as_overlay() &&
+        !overlays.any_active() &&
+        !modals.any_active() &&
         !$(".home-page-input").is(":focus")
     );
 }
@@ -122,6 +116,84 @@ export function set_default_focus() {
     $current_focus_elem = $("#recent_view_search");
     $current_focus_elem.trigger("focus");
     compose_closed_ui.set_standard_text_for_reply_button();
+}
+
+// When there are no messages loaded, we don't show a banner yet.
+const NO_MESSAGES_LOADED = 0;
+// When some messages are loaded, but we're still loading newer messages,
+// we show a simple loading banner.
+const SOME_MESSAGES_LOADED = 1;
+// Once we've found the newest message, we allow the user to load
+// more messages further back in time.
+const SOME_MESSAGES_LOADED_INCLUDING_NEWEST = 2;
+// Once all messages are loaded, we hide the banner.
+const ALL_MESSAGES_LOADED = 3;
+
+let loading_state = NO_MESSAGES_LOADED;
+let oldest_message_timestamp = Number.POSITIVE_INFINITY;
+
+export function set_oldest_message_date(msg_list_data) {
+    const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
+    const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+
+    oldest_message_timestamp = Math.min(msg_list_data.first().timestamp, oldest_message_timestamp);
+
+    if (has_found_oldest) {
+        loading_state = ALL_MESSAGES_LOADED;
+    } else if (has_found_newest) {
+        loading_state = SOME_MESSAGES_LOADED_INCLUDING_NEWEST;
+    } else {
+        loading_state = SOME_MESSAGES_LOADED;
+    }
+
+    // We might be loading messages in another narrow before the recent view
+    // is shown, so we keep the state updated and update the banner only
+    // once it's actually rendered.
+    if ($("#recent_view_table table tbody").length) {
+        update_load_more_banner();
+    }
+}
+
+function update_load_more_banner() {
+    if (loading_state === NO_MESSAGES_LOADED) {
+        return;
+    }
+
+    if (loading_state === ALL_MESSAGES_LOADED) {
+        $(".recent-view-load-more-container").toggleClass("notvisible", true);
+        return;
+    }
+
+    // There are some messages loaded, but not all messages yet. The banner was
+    // hidden on page load, and we make sure to show it now that there are messages
+    // we can display.
+    $(".recent-view-load-more-container").toggleClass("notvisible", false);
+
+    // Until we've found the newest message, we only show the banner with a messages
+    // explaining we're still fetching messages. We don't allow the user to fetch
+    // more messages.
+    if (loading_state === SOME_MESSAGES_LOADED) {
+        return;
+    }
+
+    const $button = $(".recent-view-load-more-container .fetch-messages-button");
+    const $button_label = $(".recent-view-load-more-container .button-label");
+    const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
+
+    $button.toggleClass("notvisible", false);
+
+    const time_obj = new Date(oldest_message_timestamp * 1000);
+    const time_string = timerender.get_localized_date_or_time_for_format(
+        time_obj,
+        "full_weekday_dayofyear_year_time",
+    );
+    $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
+
+    $button_label.toggleClass("invisible", false);
+    $button.prop("disabled", false);
+    loading.destroy_indicator(
+        $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
+    );
 }
 
 function get_min_load_count(already_rendered_count, load_count) {
@@ -208,6 +280,7 @@ function set_table_focus(row, col, using_keyboard) {
     // TODO: This fake "message" object is designed to allow using the
     // get_recipient_label helper inside compose_closed_ui. Surely
     // there's a more readable way to write this code.
+    // Similar code is present in Inbox.
     let message;
     if (type === "private") {
         message = {
@@ -290,6 +363,7 @@ export function revive_current_focus() {
 
 export function show_loading_indicator() {
     loading.make_indicator($("#recent_view_loading_messages_indicator"));
+    $("#recent_view_table tbody").removeClass("required-text");
 }
 
 export function hide_loading_indicator() {
@@ -297,15 +371,18 @@ export function hide_loading_indicator() {
     loading.destroy_indicator($("#recent_view_loading_messages_indicator"), {
         abs_positioned: false,
     });
-    // Show empty table text if there are no messages fetched.
-    $("#recent_view_table tbody").addClass("required-text");
 }
 
-export function process_messages(messages) {
-    // While this is inexpensive and handles all the cases itself,
-    // the UX can be bad if user wants to scroll down the list as
-    // the UI will be returned to the beginning of the list on every
-    // update.
+export function process_messages(messages, msg_list_data) {
+    // This code path processes messages from 3 sources:
+    // 1. Newly sent messages from the server_events system. This is safe to
+    //    process because we always will have the latest previously sent messages.
+    // 2. Messages in all_messages_data, the main cache of contiguous
+    //    message history that the client maintains.
+    // 3. Latest messages fetched specifically for Recent view when
+    //    the browser first loads. We will be able to remove this once
+    //    all_messages_data is fetched in a better order.
+
     let conversation_data_updated = false;
     if (messages.length > 0) {
         for (const msg of messages) {
@@ -313,6 +390,12 @@ export function process_messages(messages) {
                 conversation_data_updated = true;
             }
         }
+    }
+
+    if (msg_list_data) {
+        // Update the recent view UI's understanding of which messages
+        // we have available for the recent view.
+        set_oldest_message_date(msg_list_data);
     }
 
     // Only rerender if conversation data actually changed.
@@ -566,11 +649,14 @@ export function filters_should_hide_topic(topic_data) {
     }
 
     if (!filters.has("include_muted") && topic_data.type === "stream") {
-        // We want to show the unmuted topics within muted streams in Recent Conversations.
-        const topic_unmuted = Boolean(user_topics.is_topic_unmuted(msg.stream_id, msg.topic));
+        // We want to show the unmuted or followed topics within muted
+        // streams in Recent Conversations.
+        const topic_unmuted_or_followed = Boolean(
+            user_topics.is_topic_unmuted_or_followed(msg.stream_id, msg.topic),
+        );
         const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
         const stream_muted = stream_data.is_muted(msg.stream_id);
-        if (topic_muted || (stream_muted && !topic_unmuted)) {
+        if (topic_muted || (stream_muted && !topic_unmuted_or_followed)) {
             return true;
         }
     }
@@ -785,21 +871,21 @@ function topic_offset_to_visible_area(topic_row) {
         return undefined;
     }
     const $scroll_container = $("#recent_view_table .table_fix_head");
-    const thead_height = 30;
-    const under_closed_compose_region_height = 50;
+    const thead_height = $scroll_container.find("thead").outerHeight(true);
+    const scroll_container_props = $scroll_container[0].getBoundingClientRect();
 
-    const scroll_container_top = $scroll_container.offset().top + thead_height;
-    const scroll_container_bottom =
-        scroll_container_top + $scroll_container.height() - under_closed_compose_region_height;
+    // Since user cannot see row under thead, exclude it as part of the scroll container.
+    const scroll_container_top = scroll_container_props.top + thead_height;
+    const compose_height = $("#compose").outerHeight(true);
+    const scroll_container_bottom = scroll_container_props.bottom - compose_height;
 
-    const topic_row_top = $topic_row.offset().top;
-    const topic_row_bottom = topic_row_top + $topic_row.height();
+    const topic_props = $topic_row[0].getBoundingClientRect();
 
     // Topic is above the visible scroll region.
-    if (topic_row_top < scroll_container_top) {
+    if (topic_props.top < scroll_container_top) {
         return "above";
         // Topic is below the visible scroll region.
-    } else if (topic_row_bottom > scroll_container_bottom) {
+    } else if (topic_props.bottom > scroll_container_bottom) {
         return "below";
     }
 
@@ -877,6 +963,9 @@ export function complete_rerender() {
     // was not the first view loaded in the app.
     show_selected_filters();
 
+    // Update the banner now that it's rendered.
+    update_load_more_banner();
+
     const $container = $("#recent_view_table table tbody");
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
@@ -915,40 +1004,18 @@ export function complete_rerender() {
 }
 
 export function show() {
-    if (narrow.has_shown_message_list_view) {
-        narrow.save_pre_narrow_offset_for_reload();
-    }
-
-    if (is_visible()) {
-        // If we're already visible, E.g. because the user hit Esc
-        // while already in the Recent Conversations view, do nothing.
-        return;
-    }
-    // Hide selected elements in the left sidebar.
-    left_sidebar_navigation_area.highlight_recent_view();
-    stream_list.handle_narrow_deactivated();
-
-    // Hide "middle-column" which has html for rendering
-    // a messages narrow. We hide it and show Recent Conversations.
-    $("#message_feed_container").hide();
-    $("#recent_view").show();
-    set_visible(true);
-
-    unread_ui.hide_unread_banner();
-
-    // We want to show `new stream message` instead of
-    // `new topic`, which we are already doing in this
-    // function. So, we reuse it here.
-    compose_closed_ui.update_buttons_for_recent_view();
-
-    narrow_state.reset_current_filter();
-    narrow.update_narrow_title(narrow_state.filter());
-    message_view_header.render_title_area();
-    narrow.handle_middle_pane_transition();
-    pm_list.handle_narrow_deactivated();
-    search.clear_search_form();
-    complete_rerender();
-    resize.update_recent_view_filters_height();
+    views_util.show({
+        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_recent_view,
+        $view: $("#recent_view"),
+        // We want to show `new stream message` instead of
+        // `new topic`, which we are already doing in this
+        // function. So, we reuse it here.
+        update_compose: compose_closed_ui.update_buttons_for_non_stream_views,
+        is_recent_view: true,
+        is_visible,
+        set_visible,
+        complete_rerender,
+    });
 }
 
 function filter_buttons() {
@@ -956,28 +1023,10 @@ function filter_buttons() {
 }
 
 export function hide() {
-    // On firefox (and flaky on other browsers), focus
-    // remains on the focused element even after it is hidden. We
-    // forcefully blur it so that focus returns to the visible
-    // focused element.
-    const $focused_element = $(document.activeElement);
-    if ($("#recent_view").has($focused_element)) {
-        $focused_element.trigger("blur");
-    }
-
-    $("#message_feed_container").show();
-    $("#recent_view").hide();
-    set_visible(false);
-
-    // This solves a bug with message_view_header
-    // being broken sometimes when we narrow
-    // to a filter and back to Recent Conversations
-    // before it completely re-rerenders.
-    message_view_header.render_title_area();
-
-    // This makes sure user lands on the selected message
-    // and not always at the top of the narrow.
-    navigate.plan_scroll_to_selected();
+    views_util.hide({
+        $view: $("#recent_view"),
+        set_visible,
+    });
 }
 
 function is_focus_at_last_table_row() {
@@ -1077,7 +1126,6 @@ function page_up_navigation() {
         row_focus = 0;
     }
     $scroll_container.scrollTop(new_scrollTop);
-    set_table_focus(row_focus, col_focus);
 }
 
 function page_down_navigation() {
@@ -1091,7 +1139,6 @@ function page_down_navigation() {
         row_focus = topics_widget.get_current_list().length - 1;
     }
     $scroll_container.scrollTop(new_scrollTop);
-    set_table_focus(row_focus, col_focus);
 }
 
 function check_row_type_transition(row, col) {
@@ -1287,7 +1334,12 @@ export function change_focused_element($elt, input_key) {
     return false;
 }
 
-export function initialize() {
+export function initialize({
+    on_click_participant,
+    on_mark_pm_as_read,
+    on_mark_topic_as_read,
+    maybe_load_older_messages,
+}) {
     // load filters from local storage.
     if (!page_params.is_spectator) {
         // A user may have a stored filter and can log out
@@ -1296,11 +1348,10 @@ export function initialize() {
         filters = new Set(ls.get(ls_key));
     }
 
-    $("body").on("click", "#recent_view_table .participant_profile", function (e) {
-        const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
+    $("body").on("click", "#recent_view_table .recent_view_participant_avatar", function (e) {
+        const participant_user_id = Number.parseInt($(this).parent().attr("data-user-id"), 10);
         e.stopPropagation();
-        const user = people.get_by_user_id(participant_user_id);
-        user_card_popover.toggle_user_card_popover(this, user);
+        on_click_participant(this, participant_user_id);
     });
 
     $("body").on(
@@ -1370,12 +1421,12 @@ export function initialize() {
         const user_ids_string = $elt.attr("data-user-ids-string");
         if (user_ids_string) {
             // direct message row
-            unread_ops.mark_pm_as_read(user_ids_string);
+            on_mark_pm_as_read(user_ids_string);
         } else {
             // Stream row
             const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
             const topic = $elt.attr("data-topic-name");
-            unread_ops.mark_topic_as_read(stream_id, topic);
+            on_mark_topic_as_read(stream_id, topic);
         }
         // If `unread` filter is selected, the focused topic row gets removed
         // and we automatically move one row down.
@@ -1431,5 +1482,15 @@ export function initialize() {
         e.stopPropagation();
         $("#recent_view_search").val("");
         update_filters_view();
+    });
+
+    $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
+        maybe_load_older_messages();
+        $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
+        $(".recent-view-load-more-container .fetch-messages-button").prop("disabled", true);
+        loading.make_indicator(
+            $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
+            {width: 20},
+        );
     });
 }

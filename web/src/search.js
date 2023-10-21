@@ -4,13 +4,18 @@ import render_search_list_item from "../templates/search_list_item.hbs";
 
 import {Filter} from "./filter";
 import * as keydown_util from "./keydown_util";
-import * as message_view_header from "./message_view_header";
+import * as narrow_state from "./narrow_state";
+import * as popovers from "./popovers";
 import * as search_suggestion from "./search_suggestion";
 
 // Exported for unit testing
 export let is_using_input_method = false;
 
 export function narrow_or_search_for_term(search_string, {on_narrow_search}) {
+    if (search_string === "") {
+        exit_search({keep_search_narrow_open: true});
+        return "";
+    }
     const $search_query_box = $("#search_query");
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -50,7 +55,7 @@ export function initialize({on_narrow_search}) {
             search_map = suggestions.lookup_table;
             return suggestions.strings;
         },
-        parentElement: "#searchbox",
+        parentElement: "#searchbox_form",
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
@@ -71,7 +76,25 @@ export function initialize({on_narrow_search}) {
 
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
-        on_escape: message_view_header.exit_search,
+        on_escape: () => exit_search({keep_search_narrow_open: false}),
+        tabIsEnter: false,
+        openInputFieldOnKeyUp() {
+            if ($(".navbar-search.expanded").length === 0) {
+                open_search_bar_and_close_narrow_description();
+            }
+        },
+        closeInputFieldOnHide() {
+            // Don't close the search bar if the user has changed
+            // the text from the default, they might accidentally
+            // click away and not want to lose it.
+            if (get_initial_search_string() !== $("#search_query").val()) {
+                return;
+            }
+            const filter = narrow_state.filter();
+            if (!filter || filter.is_common_narrow()) {
+                close_search_bar_and_open_narrow_description();
+            }
+        },
     });
 
     $searchbox_form.on("compositionend", () => {
@@ -111,14 +134,119 @@ export function initialize({on_narrow_search}) {
                 $search_query_box.trigger("blur");
             }
         });
+
+    // We don't want to make this a focus handler because selecting the
+    // typehead seems to trigger this (and we don't want to open search
+    // when an option is selected and we're closing search).
+    // Instead we explicitly initiate search on click and on specific keyboard
+    // shortcuts.
+    $search_query_box.on("click", (e) => {
+        if ($(e.target).parents(".navbar-search.expanded").length === 0) {
+            initiate_search();
+        }
+    });
+
+    $(".search_icon").on("mousedown", (e) => {
+        e.preventDefault();
+        // Clicking on the collapsed search box's icon opens search, but
+        // clicking on the expanded search box's search icon does nothing.
+        if ($(e.target).parents(".navbar-search.expanded").length === 0) {
+            initiate_search();
+        }
+    });
+
+    // register searchbar click handler
+    $("#search_exit").on("click", (e) => {
+        exit_search({keep_search_narrow_open: false});
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    $("#search_exit").on("blur", (e) => {
+        // Blurs that move focus to elsewhere within the search input shouldn't
+        // close search.
+        if ($(e.relatedTarget).parents("#searchbox-input-container").length > 0) {
+            return;
+        }
+        // But otherwise, it should behave like the input blurring.
+        $("#search_query").trigger("blur");
+    });
+    // This prevents a bug where tab shows a visual change before the blur handler kicks in
+    $("#search_exit").on("keydown", (e) => {
+        if (e.key === "tab") {
+            popovers.hide_all();
+            exit_search({keep_search_narrow_open: false});
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
 }
 
 export function initiate_search() {
-    message_view_header.open_search_bar_and_close_narrow_description();
+    open_search_bar_and_close_narrow_description();
+
+    // Open the typeahead after opening the search bar, so that we don't
+    // get a weird visual jump where the typeahead results are narrow
+    // before the search bar expands and then wider it expands.
     $("#search_query").typeahead("lookup").trigger("select");
 }
 
 export function clear_search_form() {
     $("#search_query").val("");
     $("#search_query").trigger("blur");
+}
+
+// This is what the default searchbox text would be for this narrow,
+// NOT what might be currently displayed there. We can use this both
+// to set the initial text and to see if the user has changed it.
+function get_initial_search_string() {
+    let search_string = narrow_state.search_string();
+    if (search_string !== "" && !narrow_state.filter().is_search()) {
+        // saves the user a keystroke for quick searches
+        search_string = search_string + " ";
+    }
+    return search_string;
+}
+
+// we rely entirely on this function to ensure
+// the searchbar has the right text.
+function reset_searchbox_text() {
+    $("#search_query").val(get_initial_search_string());
+}
+
+function exit_search(opts) {
+    const filter = narrow_state.filter();
+    if (!filter || filter.is_common_narrow()) {
+        // for common narrows, we change the UI (and don't redirect)
+        close_search_bar_and_open_narrow_description();
+    } else if (opts.keep_search_narrow_open) {
+        // If the user is in a search narrow and we don't want to redirect,
+        // we just keep the search bar open and don't do anything.
+        return;
+    } else {
+        window.location.href = filter.generate_redirect_url();
+    }
+    $("#search_query").trigger("blur");
+    $(".app").trigger("focus");
+}
+
+export function open_search_bar_and_close_narrow_description() {
+    // Preserve user input if they've already started typing, but
+    // otherwise fill the input field with the text operators for
+    // the current narrow.
+    if ($("#search_query").val() === "") {
+        reset_searchbox_text();
+    }
+    $(".navbar-search").addClass("expanded");
+    $("#message_view_header").addClass("hidden");
+}
+
+export function close_search_bar_and_open_narrow_description() {
+    // Hide the dropdown before closing the search bar. We do this
+    // to avoid being in a situation where the typeahead gets narrow
+    // in width as the search bar closes, which doesn't look great.
+    $("#searchbox_form .dropdown-menu").hide();
+
+    $("#search_query").val("");
+    $(".navbar-search").removeClass("expanded");
+    $("#message_view_header").removeClass("hidden");
 }

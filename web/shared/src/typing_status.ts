@@ -1,17 +1,55 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+type StreamTopic = {
+    stream_id: number;
+    topic: string;
+};
+type Recipient = number[] | StreamTopic;
 type TypingStatusWorker = {
     get_current_time: () => number;
-    notify_server_start: (recipient_ids: number[]) => void;
-    notify_server_stop: (recipient_ids: number[]) => void;
+    notify_server_start: (recipient: Recipient) => void;
+    notify_server_stop: (recipient: Recipient) => void;
 };
 
 type TypingStatusState = {
-    current_recipient_ids: number[];
+    current_recipient: Recipient;
     next_send_start_time: number;
     idle_timer: ReturnType<typeof setTimeout>;
 };
+
+function message_type(recipient: Recipient): "direct" | "stream" {
+    if (Array.isArray(recipient)) {
+        return "direct";
+    }
+    return "stream";
+}
+
+function lower_same(a: string, b: string): boolean {
+    return a.toLowerCase() === b.toLowerCase();
+}
+
+function same_stream_and_topic(a: StreamTopic, b: StreamTopic): boolean {
+    // Streams and topics are case-insensitive.
+    return a.stream_id === b.stream_id && lower_same(a.topic, b.topic);
+}
+
+function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
+    if (a === null || b === null) {
+        return false;
+    }
+
+    if (message_type(a) === "direct" && message_type(b) === "direct") {
+        return _.isEqual(a, b);
+    } else if (message_type(a) === "stream" && message_type(b) === "stream") {
+        // type assertions to avoid linter error
+        const aStreamTopic = a as StreamTopic;
+        const bStreamTopic = b as StreamTopic;
+        return same_stream_and_topic(aStreamTopic, bStreamTopic);
+    }
+
+    return false;
+}
 
 /** Exported only for tests. */
 export let state: TypingStatusState | null = null;
@@ -20,7 +58,7 @@ export let state: TypingStatusState | null = null;
 export function stop_last_notification(worker: TypingStatusWorker): void {
     assert(state !== null, "State object should not be null here.");
     clearTimeout(state.idle_timer);
-    worker.notify_server_stop(state.current_recipient_ids);
+    worker.notify_server_stop(state.current_recipient);
     state = null;
 }
 
@@ -50,24 +88,24 @@ function set_next_start_time(current_time: number, typing_started_wait_period: n
 
 function actually_ping_server(
     worker: TypingStatusWorker,
-    recipient_ids: number[],
+    recipient: Recipient,
     current_time: number,
     typing_started_wait_period: number,
 ): void {
-    worker.notify_server_start(recipient_ids);
+    worker.notify_server_start(recipient);
     set_next_start_time(current_time, typing_started_wait_period);
 }
 
 /** Exported only for tests. */
 export function maybe_ping_server(
     worker: TypingStatusWorker,
-    recipient_ids: number[],
+    recipient: Recipient,
     typing_started_wait_period: number,
 ): void {
     assert(state !== null, "State object should not be null here.");
     const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
-        actually_ping_server(worker, recipient_ids, current_time, typing_started_wait_period);
+        actually_ping_server(worker, recipient, current_time, typing_started_wait_period);
     }
 }
 
@@ -79,11 +117,7 @@ export function maybe_ping_server(
  * rate, and keeps a timer to send a "stopped typing" notice when the user
  * hasn't typed for a few seconds.
  *
- * Zulip supports typing notifications only for both 1:1 and group direct messages;
- * so composing a stream message should be treated like composing no message at
- * all.
- *
- * Call with `new_recipient_ids` of `null` when the user actively stops
+ * Call with `new_recipient` as `null` when the user actively stops
  * composing a message.  If the user switches from one set of recipients to
  * another, there's no need to call with `null` in between; the
  * implementation tracks the change and behaves appropriately.
@@ -93,23 +127,23 @@ export function maybe_ping_server(
  *
  * @param {*} worker Callbacks for reaching the real world. See typing.js
  *   for implementations.
- * @param {*} new_recipient_ids The users the direct message being composed is
- *   addressed to, as a sorted array of user IDs; or `null` if no direct message
- *   is being composed anymore.
+ * @param {*} new_recipient Depends on type of message being composed. If
+ *   * Direct message: The users the DM being composed is addressed to,
+ *     as a sorted array of user IDs
+ *   * Stream message: An Object containing the stream_id and topic
+ *   * No message is being composed: `null`
  */
 export function update(
     worker: TypingStatusWorker,
-    new_recipient_ids: number[] | null,
+    new_recipient: Recipient | null,
     typing_started_wait_period: number,
     typing_stopped_wait_period: number,
 ): void {
     if (state !== null) {
-        // We need to use _.isEqual for comparisons; === doesn't work
-        // on arrays.
-        if (_.isEqual(new_recipient_ids, state.current_recipient_ids)) {
+        if (same_recipient(new_recipient, state.current_recipient)) {
             // Nothing has really changed, except we may need
             // to send a ping to the server.
-            maybe_ping_server(worker, new_recipient_ids!, typing_started_wait_period);
+            maybe_ping_server(worker, new_recipient!, typing_started_wait_period);
 
             // We can also extend out our idle time.
             state.idle_timer = start_or_extend_idle_timer(worker, typing_stopped_wait_period);
@@ -123,7 +157,7 @@ export function update(
         stop_last_notification(worker);
     }
 
-    if (new_recipient_ids === null) {
+    if (new_recipient === null) {
         // If we are not talking to somebody we care about,
         // then there is no more action to take.
         return;
@@ -132,10 +166,10 @@ export function update(
     // We just started talking to these recipients, so notify
     // the server.
     state = {
-        current_recipient_ids: new_recipient_ids,
+        current_recipient: new_recipient,
         next_send_start_time: 0,
         idle_timer: start_or_extend_idle_timer(worker, typing_stopped_wait_period),
     };
     const current_time = worker.get_current_time();
-    actually_ping_server(worker, new_recipient_ids, current_time, typing_started_wait_period);
+    actually_ping_server(worker, new_recipient, current_time, typing_started_wait_period);
 }

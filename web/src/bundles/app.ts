@@ -2,18 +2,16 @@ import "./common";
 
 // Import third party jQuery plugins
 import "../../third/bootstrap-typeahead/typeahead";
-import "../../third/bootstrap-tooltip/tooltip";
 import "jquery-caret-plugin/dist/jquery.caret";
 import "../../third/jquery-idle/jquery.idle";
 import "spectrum-colorpicker";
 import "jquery-validation";
-import "flatpickr";
 
 // Import app JS
 import "../setup";
 import "../reload";
 import "../hotkey";
-import "../notifications";
+import "../desktop_notifications";
 import "../server_events";
 import "../templates";
 import "../settings";
@@ -23,7 +21,6 @@ import "../zulip_test";
 // Import styles
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
-import "../../third/bootstrap-tooltip/tooltip.css";
 import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";

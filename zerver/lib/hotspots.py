@@ -27,7 +27,7 @@ INTRO_HOTSPOTS: Dict[str, Dict[str, StrPromise]] = {
     "intro_gear": {
         "title": gettext_lazy("Settings"),
         "description": gettext_lazy(
-            "Go to Settings to configure your notifications and display settings."
+            "Go to Settings to configure your notifications and preferences."
         ),
     },
     "intro_compose": {

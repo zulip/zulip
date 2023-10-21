@@ -1,22 +1,22 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
-import render_user_group_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
+import render_user_group_membership_request_result from "../templates/user_group_settings/user_group_membership_request_result.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
-import * as settings_users from "./settings_users";
-import * as user_group_edit from "./user_group_edit";
+import * as settings_data from "./settings_data";
 import * as user_groups from "./user_groups";
+import * as user_sort from "./user_sort";
 
 export let pill_widget;
 let current_group_id;
@@ -37,9 +37,7 @@ function get_potential_members() {
 }
 
 export function update_member_list_widget(group_id, member_ids) {
-    if (!hash_util.is_editing_group(group_id)) {
-        return;
-    }
+    assert(group_id === current_group_id, "Unexpected group rerendering members list");
     const users = people.get_users_from_ids(member_ids);
     people.sort_but_pin_current_user_on_top(users);
     member_list_widget.replace_list_data(users);
@@ -51,7 +49,7 @@ function format_member_list_elem(person) {
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
         email: person.delivery_email,
-        can_edit_subscribers: user_group_edit.can_edit(current_group_id),
+        can_remove_subscribers: settings_data.can_edit_user_group(current_group_id),
     });
 }
 
@@ -69,8 +67,8 @@ function make_list_widget({$parent_container, name, user_ids}) {
         get_item: ListWidget.default_get_item,
         $parent_container,
         sort_fields: {
-            email: settings_users.sort_email,
-            id: settings_users.sort_user_id,
+            email: user_sort.sort_email,
+            id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         modifier_html(item) {
@@ -113,17 +111,15 @@ function show_user_group_membership_request_result({
     message,
     add_class,
     remove_class,
-    subscribed_users,
-    already_subscribed_users,
+    already_added_users,
     ignored_deactivated_users,
 }) {
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
     ).expectOne();
-    const html = render_user_group_subscription_request_result({
+    const html = render_user_group_membership_request_result({
         message,
-        subscribed_users,
-        already_subscribed_users,
+        already_added_users,
         ignored_deactivated_users,
     });
     scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
@@ -162,9 +158,9 @@ function add_new_members({pill_user_ids}) {
             return false;
         }
         if (user_groups.is_user_in_group(group.id, user_id)) {
-            // we filter out already subscribed users before sending
+            // we filter out already added users before sending
             // add member request as the endpoint is not so robust and
-            // fails complete request if any already subscribed member
+            // fails complete request if any already added member
             // is present in the request.
             already_added_users.add(user_id);
             return false;
@@ -201,10 +197,10 @@ function add_new_members({pill_user_ids}) {
 
     if (user_id_set.size === 0) {
         show_user_group_membership_request_result({
-            message: $t({defaultMessage: "No user to subscribe."}),
+            message: $t({defaultMessage: "No users to add."}),
             add_class: "text-error",
             remove_class: "text-success",
-            already_subscribed_users: ignored_already_added_users,
+            already_added_users: ignored_already_added_users,
             ignored_deactivated_users,
         });
         return;
@@ -217,13 +213,13 @@ function add_new_members({pill_user_ids}) {
             message: $t({defaultMessage: "Added successfully."}),
             add_class: "text-success",
             remove_class: "text-error",
-            already_subscribed_users: ignored_already_added_users,
+            already_added_users: ignored_already_added_users,
             ignored_deactivated_users,
         });
     }
 
     function invite_failure(xhr) {
-        let message = "Failed to subscribe user!";
+        let message = "Failed to add user!";
         if (xhr.responseJSON?.msg) {
             message = xhr.responseJSON.msg;
         }
@@ -303,7 +299,7 @@ export function initialize() {
         get_pill_widget: () => pill_widget,
         $parent_container: $("#groups_overlay_container"),
         pill_selector: ".edit_members_for_user_group .pill-container",
-        button_selector: ".edit_members_for_user_group .add-subscriber-button",
+        button_selector: ".edit_members_for_user_group .add-member-button",
         action: add_new_members,
     });
 

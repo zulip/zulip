@@ -20,6 +20,7 @@ sanity_check.check_venv(__file__)
 
 from tornado import httpclient, httputil, web
 from tornado.platform.asyncio import AsyncIOMainLoop
+from typing_extensions import override
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
@@ -58,6 +59,11 @@ parser.add_argument(
     action="store_true",
     help="Enable access logs from tornado proxy server.",
 )
+parser.add_argument(
+    "--behind-https-proxy",
+    action="store_true",
+    help="Start app server in HTTPS mode, using reverse proxy",
+)
 add_provision_check_override_param(parser)
 options = parser.parse_args()
 
@@ -93,6 +99,9 @@ else:
 
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
+
+if options.behind_https_proxy:
+    os.environ["BEHIND_HTTPS_PROXY"] = "1"
 
 from scripts.lib.zulip_tools import CYAN, ENDC
 
@@ -218,27 +227,35 @@ class BaseHandler(web.RequestHandler):
                 headers.add(header, v)
         return headers
 
+    @override
     def get(self) -> None:
         pass
 
+    @override
     def head(self) -> None:
         pass
 
+    @override
     def post(self) -> None:
         pass
 
+    @override
     def put(self) -> None:
         pass
 
+    @override
     def patch(self) -> None:
         pass
 
+    @override
     def options(self) -> None:
         pass
 
+    @override
     def delete(self) -> None:
         pass
 
+    @override
     async def prepare(self) -> None:
         assert self.request.method is not None
         assert self.request.remote_ip is not None
@@ -307,6 +324,7 @@ class Application(web.Application):
             enable_logging=enable_logging,
         )
 
+    @override
     def log_request(self, handler: web.RequestHandler) -> None:
         if self.settings["enable_logging"]:
             super().log_request(handler)
@@ -324,7 +342,10 @@ def print_listeners() -> None:
     else:
         default_hostname = "localhost"
     external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
-    print(f"\nStarting Zulip on:\n\n\t{CYAN}http://{external_host}/{ENDC}\n\nInternal ports:")
+    http_protocol = "https" if options.behind_https_proxy else "http"
+    print(
+        f"\nStarting Zulip on:\n\n\t{CYAN}{http_protocol}://{external_host}/{ENDC}\n\nInternal ports:"
+    )
     ports = [
         (proxy_port, "Development server proxy (connect here)"),
         (django_port, "Django"),

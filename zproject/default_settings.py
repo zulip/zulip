@@ -2,6 +2,8 @@ import os
 from email.headerregistry import Address
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
 
+from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
+
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
 
@@ -69,6 +71,8 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 FAKE_LDAP_MODE: Optional[str] = None
 FAKE_LDAP_NUM_USERS = 8
 AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL: Optional[Dict[str, Any]] = None
+LDAP_SYNCHRONIZED_GROUPS_BY_REALM: Dict[str, List[str]] = {}
+AUTH_LDAP_GROUP_TYPE: LDAPGroupType = GroupOfUniqueNamesType()
 
 # Social auth; we support providing values for some of these
 # settings in zulip-secrets.conf instead of settings.py in development.
@@ -466,11 +470,7 @@ ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
 
 # From address for welcome emails.
 WELCOME_EMAIL_SENDER: Optional[Dict[str, str]] = None
-# Whether we should use users' own email addresses as the from
-# address when sending missed-message emails.  Off by default
-# because some transactional email providers reject sending such
-# emails since they can look like spam.
-SEND_MISSED_MESSAGE_EMAILS_AS_USER = False
+
 # Whether to send periodic digests of activity.
 SEND_DIGEST_EMAILS = True
 

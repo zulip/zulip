@@ -1,0 +1,34 @@
+<div class="new-style">
+    <div class="input-group">
+        <div class="integration-url-name-wrapper integration-url-parameter">
+            {{> ../dropdown_widget_with_label
+              widget_name="integration-name"
+              label=(t "Integration")}}
+        </div>
+    </div>
+    <div class="input-group">
+        <div class="integration-url-stream-wrapper integration-url-parameter">
+            {{> ../dropdown_widget_with_label
+              widget_name="integration-url-stream"
+              label=(t "Where to send notifications")}}
+        </div>
+    </div>
+    <div class="input-group control-label-disabled">
+        <label class="checkbox">
+            <input type="checkbox" id="integration-url-override-topic" class="integration-url-parameter" disabled/>
+            <span></span>
+        </label>
+        <label class="inline" for="integration-url-override-topic">
+            {{t "Send all notifications to a single topic"}}
+        </label>
+    </div>
+    <div class="input-group hide">
+        <label for="integration-url-topic-input">{{t "Topic"}}</label>
+        <input type="text" id="integration-url-topic-input" class="modal_text_input integration-url-parameter" maxlength="{{ max_topic_length }}" />
+    </div>
+    <hr />
+    <p class="integration-url-header">{{t "URL for your integration"}}</p>
+    <div class="integration-url">
+        {{default_url_message}}
+    </div>
+</div>

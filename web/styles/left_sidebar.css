@@ -26,47 +26,42 @@ $before_unread_count_padding: 3px;
     }
 }
 
-.stream-privacy {
-    font-size: 15px;
+#streams_list .stream-privacy {
+    height: 16px;
     font-weight: 700;
-    min-width: $left_col_size;
     text-align: center;
 
     .zulip-icon.zulip-icon-globe {
         font-size: 12px;
-        position: relative;
-        top: 1px;
     }
 
     .zulip-icon.zulip-icon-hashtag {
         font-size: 13px;
-        position: relative;
-        top: 1.5px;
     }
 
     .zulip-icon.zulip-icon-lock {
         font-size: 13px;
+        /* Slight vertical adjustment so the lock
+           doesn't sit too high, relative to the
+           other stream icons. */
+        padding-top: 2px;
     }
 }
 
-#left-sidebar .filter-icon i {
-    padding-right: 3px;
-
-    &.zulip-icon-lock {
-        position: relative;
-        top: 2px;
-    }
+.sidebar-topic-check,
+.topic-name,
+.topic-markers-and-controls {
+    cursor: pointer;
 }
 
 #stream_filters,
-#global_filters {
+#left-sidebar-navigation-list {
     margin-right: 12px;
 }
 
 li.show-more-topics {
     & a {
         font-size: 12px;
-        margin-left: $topic_resolve_width;
     }
 }
 
@@ -85,14 +80,11 @@ li.show-more-topics {
 
 .streams_inline_icon_wrapper {
     float: right;
+    margin-right: 8px;
 }
 
 .streams_filter_icon.web_public {
     margin-right: 10px;
-}
-
-#streams_inline_icon {
-    margin-right: 8px;
 }
 
 .tooltip {
@@ -129,7 +121,7 @@ li.show-more-topics {
             margin-left: 0;
 
             &.topic-list li {
-                padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
+                padding: 2px 0;
 
                 &.filter-topics {
                     padding-bottom: 0;
@@ -141,33 +133,16 @@ li.show-more-topics {
         }
     }
 
-    .subscription_block {
-        margin-right: 25px;
-        margin-left: $far_left_gutter_size;
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-
-        & .unread_count {
-            margin-right: 15px;
-        }
-
-        & .masked_unread_count {
-            /* TODO: In theory this should be 19, to make it center aligned with
-               unread_count span which has a padding of 4px
-               horizontally in addition to 15px margin. But 18px looks
-               better centered. */
-            margin-right: 18px;
-        }
-
-        &.stream-with-count {
-            margin-right: 15px;
-        }
-    }
-
     .stream-with-count.hide_unread_counts {
         .masked_unread_count {
-            display: inline;
+            display: block;
+            /* Shift masked dot to align with
+               the least-significant digit on
+               unreads in other rows.
+               We have to do this with margin,
+               because width or padding will
+               distort the CSS-created dot. */
+            margin-right: 3px;
         }
 
         .unread_count {
@@ -223,7 +198,7 @@ li.show-more-topics {
     }
 }
 
-.narrows_panel {
+.left-sidebar-navigation-area {
     & li a {
         margin-top: 1px;
 
@@ -246,21 +221,6 @@ li.show-more-topics {
     margin-right: 16px;
     margin-left: 6px;
     z-index: 1;
-
-    #toggle_private_messages_section_icon {
-        opacity: 0.7;
-        margin-left: -15px;
-        min-width: 12px;
-
-        &.fa-caret-right {
-            position: relative;
-            left: 3px;
-        }
-
-        &:hover {
-            opacity: 1;
-        }
-    }
 
     #private_messages_section_header {
         cursor: pointer;
@@ -330,6 +290,33 @@ li.show-more-topics {
                 margin-top: 2px;
             }
         }
+    }
+}
+
+#toggle_private_messages_section_icon,
+#toggle-top-left-navigation-area-icon {
+    opacity: 0.7;
+    margin-left: -15px;
+    min-width: 12px;
+
+    &.fa-caret-right {
+        position: relative;
+        left: 3px;
+    }
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    /* This renders an outline when the caret is reached
+       with the keyboard, although that is not at present
+       easily accomplished. */
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
     }
 }
 
@@ -505,14 +492,85 @@ li.active-sub-filter {
     }
 }
 
-#global_filters {
+#left-sidebar-navigation-list-condensed {
+    display: flex;
+    justify-content: center;
+
+    .left-sidebar-navigation-condensed-item {
+        /* 24px minimum width from Vlad's design. */
+        flex: 1 0 24px;
+        /* Unset padding from individual top_left items */
+        padding: 0;
+        border-radius: 4px;
+
+        .unread_count {
+            position: absolute;
+        }
+
+        /* Show the same styles when each item is
+           hovered or, via the keyboard, the `<a>`
+           element within receives focus. */
+        &:hover,
+        &:focus-within {
+            background: var(--color-background-hover-narrow-filter);
+
+            .unread_count {
+                top: -6px;
+                right: -6px;
+            }
+        }
+
+        &:not(:hover) .unread_count {
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            font-size: 0;
+            padding: 0;
+            background-color: var(--color-background-unread-counter-dot);
+        }
+
+        &.top_left_starred_messages .unread_count {
+            display: none;
+        }
+    }
+
+    .left-sidebar-navigation-icon-container {
+        /* Unset margin from full nav list anchor elements. */
+        margin: 0;
+        /* Horizontally center icons within their boxes. */
+        text-align: center;
+
+        &:focus {
+            /* Unset inherited :focus outline. */
+            outline: 0;
+        }
+    }
+
+    .active-filter {
+        /* Don't display a background on condensed icons. */
+        background: unset;
+    }
+
+    .filter-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* TODO: Set this 24px height value as a variable.
+           Keep filter-icon height the full height of the box. */
+        height: 24px;
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+}
+
+#left-sidebar-navigation-list {
     margin-bottom: $sections_vertical_gutter;
 
-    .global-filter-container {
+    .left-sidebar-navigation-label-container {
         display: flex;
         padding-right: 20px;
 
-        .global-filter-name {
+        .left-sidebar-navigation-label {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -527,30 +585,38 @@ li.active-sub-filter {
         text-align: center;
     }
 
+    .filter-icon i {
+        padding-right: 3px;
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+
+    i.fa-align-left {
+        position: relative;
+        font-size: 15px;
+    }
+
     .top_left_row .unread_count {
         margin-top: 2px;
     }
 
-    .top_left_starred_messages .unread_count,
-    .top_left_drafts .unread_count,
-    .top_left_scheduled_messages .unread_count {
-        background-color: inherit;
-        color: inherit;
-        border: 0.5px solid hsl(105deg 2% 50%);
-        /* The border takes up space, so we need to
-           subtract 1px from the usual 2px margin-top */
-        margin-top: 1px !important;
-    }
-
-    & i {
-        opacity: 0.7;
-    }
-
-    .zulip-icon-inbox {
+    .zulip-icon-inbox,
+    .zulip-icon-star-filled {
         font-size: 14px;
         top: 2px;
         position: relative;
     }
+}
+
+.top_left_starred_messages .unread_count,
+.top_left_drafts .unread_count,
+.top_left_scheduled_messages .unread_count,
+.condensed-views-popover-menu .unread_count {
+    background-color: unset;
+    color: inherit;
+    border: 0.5px solid var(--color-border-unread-counter);
+    /* The border takes up space, so we need to
+       subtract 1px from the usual 2px margin-top */
+    margin-top: 1px !important;
 }
 
 li.top_left_all_messages,
@@ -569,6 +635,15 @@ li.top_left_scheduled_messages {
     }
 }
 
+/* Don't show the scheduled messages item... */
+li.top_left_scheduled_messages {
+    display: none;
+    /* ...unless there are scheduled messages to show. */
+    &.show-with-scheduled-messages {
+        display: list-item;
+    }
+}
+
 .top_left_row {
     padding-left: $far_left_gutter_size;
     padding-right: 10px;
@@ -576,33 +651,235 @@ li.top_left_scheduled_messages {
 
 .conversation-partners {
     line-height: 1.25;
+    display: flex;
+    width: 100%;
+    overflow: hidden;
 }
 
-.top_left_all_messages i.fa-align-left {
-    position: relative;
-    font-size: 15px;
+.conversation-partners .status-emoji {
+    /* Prevent status emoji from colliding
+       with unread counts. */
+    margin-right: 3px;
 }
 
-.top_left_mentions i.fa-at,
-.top_left_starred_messages i.fa-star {
+.top_left_mentions i.fa-at {
     font-size: 13px;
 }
 
+/* New .topic-box grid definitions here. */
+#views-label-container,
+.subscription_block,
 .topic-box {
-    padding-left: 5px;
-    margin-right: 30px;
+    display: grid;
+    align-items: center;
+    /* This general pattern of elements applies to every single row in the left
+       sidebar, to some degree or another. Eventually, these template areas
+       could be applied to all rows, with different `grid-template-column`
+       values applied as needed (and shared as needed). For example, an element
+       with no "starting-offset" sets that area to `0`; so too with other non-
+       existent elements.
+
+       The offsets themselves are meant to greedily assign all of the available
+       horizontal space to the content area of the row. That space can then be
+       modified or reassigned as needed, without running up against `padding`
+       (which alters the box size) or `margin` (which notoriously bleeds outside
+       of the element it's defined on). */
+    grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+}
+
+#views-label-container {
+    grid-template-columns:
+        0 15px minmax(0, 0.5fr) minmax(0, 1fr)
+        20px 20px;
+    /* Base height on 24px icon-target area from Vlad's design. */
+    grid-template-rows: 24px;
+    /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
+       value and the styles dependent on it so that this kind of
+       1990s layout shenanigans is made unnecessary. */
+    margin-left: -3px;
+    cursor: pointer;
+
+    &.showing-expanded-navigation {
+        /* When the expanded navigation is visible,
+           hide the condensed navigation's controls. */
+        #left-sidebar-navigation-list-condensed,
+        .left-sidebar-navigation-menu-icon {
+            display: none;
+        }
+        /* Give the sidebar title through the end of the markers
+           area, if needed. */
+        .sidebar-title {
+            grid-column: row-content-start / markers-and-controls-end;
+        }
+    }
+
+    /* Use a next-sibling combinator (+) to use CSS to show and hide
+       filter rows as needed, based on the narrow. */
+    &.showing-condensed-navigation {
+        + #left-sidebar-navigation-list {
+            /* When the navigation area is condensed, hide all
+               the rows in the full navigation list... */
+            & .top_left_row {
+                display: none;
+            }
+            /* ...except when there is an active filter in place:
+               that row should still be shown. */
+            & .top_left_row.active-filter {
+                display: block;
+            }
+        }
+    }
+
+    #toggle-top-left-navigation-area-icon {
+        grid-area: starting-anchor-element;
+        /* Remove negative left margin. This should be cleaned
+           up along with the `--left-sidebar-collapse-widget-gutter`
+           matters above. */
+        margin-left: 0;
+    }
+
+    .sidebar-title {
+        grid-area: row-content;
+        /* Override heading margin from Bootstrap. */
+        margin: 0;
+        /* Show an ellipsis on the VIEWS header when
+           it won't sit adjacent the icons in their
+           most condensed presentation. */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #left-sidebar-navigation-list-condensed {
+        margin: 0;
+        grid-area: markers-and-controls;
+    }
+
+    .left-sidebar-navigation-menu-icon {
+        grid-area: ending-anchor-element;
+        /* Horizontally center vdots. */
+        justify-self: center;
+        /* Properly size vdots. */
+        font-size: 17px;
+        /* Occupy same clickable height as
+           other condensed-view icons */
+        height: 24px;
+        /* Vertically center dots with
+           flexbox. */
+        display: flex;
+        align-items: center;
+        color: var(--color-left-sidebar-header-vdots-visible);
+
+        &:hover {
+            color: var(--color-vdots-hover);
+        }
+    }
+}
+
+.condensed-views-popover-menu {
+    .left-sidebar-popover-icon-label-count {
+        display: flex;
+        align-items: baseline;
+    }
+
+    .filter-icon {
+        align-self: center;
+        height: 15px;
+    }
+
+    .left-sidebar-navigation-label {
+        flex: 1 0 0;
+        margin-left: 3px;
+    }
+
+    .unread_count {
+        margin-left: 6px;
+        border-color: var(--color-border-unread-counter-popover-menu);
+    }
+}
+
+.subscription_block {
+    grid-template-columns:
+        7px 22px minmax(0, 1fr) minmax(0, max-content)
+        30px 0;
+    white-space: nowrap;
+
+    .stream-privacy {
+        grid-area: starting-anchor-element;
+    }
+
+    .stream-name {
+        grid-area: row-content;
+    }
+}
+
+.topic-box {
+    /* Padding from original .topic-box definition. */
+    padding-top: 1px;
+    grid-template-columns:
+        25px $topic_resolve_width minmax(0, 1fr) minmax(0, max-content)
+        30px 0;
+}
+
+.topic-box .zero_count {
+    display: none;
 }
 
 .sidebar-topic-check {
-    display: flex;
-    align-items: center;
-    min-width: $topic_resolve_width;
+    grid-area: starting-anchor-element;
     font-size: 15px;
     height: 20px;
 }
 
-.conversation-partners,
-.topic-name,
+.topic-name {
+    grid-area: row-content;
+    padding: 1px 0;
+
+    /* TODO: We should figure out how to remove this without changing the spacing */
+    line-height: 1.1;
+
+    /* TODO: Consolidate these styles with conversation partners and stream name
+       once grid rewrite is complete on all sidebar rows.
+
+       Also: note that these styles will be moot for topic names once we allow
+       for multiline topics. If we hold multiline topics to a certain number
+       of lines, we'll likely need a JavaScript-based solution like Clamp.js
+       to display an ellipsis on the final visible line. */
+    white-space: nowrap;
+    /* Both `hidden` and `clip` are shown for the sake
+       of older browsers that do not support `clip`. */
+    overflow-x: hidden;
+    overflow-x: clip;
+    text-overflow: ellipsis;
+}
+
+.stream-markers-and-controls,
+.topic-markers-and-controls {
+    grid-area: markers-and-controls;
+    display: flex;
+    /* Present a uniform space between icons */
+    gap: 5px;
+    align-items: center;
+
+    .unread_mention_info {
+        /* Unset margin in favor of flex gap. */
+        margin: 0;
+    }
+
+    .unread_count {
+        /* Height is set here by the flexbox; this
+           decouples .unread_count from the app-wide
+           definition. */
+        height: auto;
+    }
+}
+
+.bottom_left_row .subscription_block .sidebar-menu-icon,
+.bottom_left_row .topic-box .sidebar-menu-icon {
+    position: static;
+    grid-area: ending-anchor-element;
+}
+
+.conversation-partners-list,
 .stream-name {
     flex: auto;
     min-width: 0;
@@ -613,9 +890,10 @@ li.top_left_scheduled_messages {
     padding: 1px $before_unread_count_padding 1px 0;
 }
 
-.topic-name {
-    /* TODO: We should figure out how to remove this without changing the spacing */
-    line-height: 1.1;
+.conversation-partners-list {
+    /* Don't allow growth, so that status emoji
+       remain adjacent the username. */
+    flex: 0 1 auto;
 }
 
 .left_sidebar_menu_icon_visible {
@@ -626,14 +904,15 @@ li.top_left_scheduled_messages {
     All of our left sidebar handlers use absolute
     positioning.  We should fix that.
 */
-.all-messages-sidebar-menu-icon,
-.stream-sidebar-menu-icon,
-.starred-messages-sidebar-menu-icon,
-.drafts-sidebar-menu-icon,
-.topic-sidebar-menu-icon {
+.top_left_row .sidebar-menu-icon,
+.bottom_left_row .sidebar-menu-icon {
     position: absolute;
     display: none;
-    right: 10px;
+    top: 1px;
+    right: 0;
+    font-size: 1em;
+    text-align: center;
+    padding: 0 6px;
 
     & i {
         padding-right: 0.35em;
@@ -649,7 +928,7 @@ li.top_left_scheduled_messages {
     */
 
     &:hover {
-        color: hsl(0deg 0% 0%) !important;
+        color: var(--color-vdots-hover);
     }
 
     /*
@@ -661,22 +940,34 @@ li.top_left_scheduled_messages {
 
     @media (hover: none) {
         display: block;
+        /* Show dots on touchscreens in a less distracting,
+           lighter shade. */
+        color: var(--color-vdots-hint);
     }
 }
 
 /*
-    The All messages and stream ellipsis-v (vertical 3 dots) are
-    pretty similar.
+    When you hover over list items, we hover
+    the vdots in light gray.
+
+    The stream icon should always display when
+    any topic is hovered, which is why it gets
+    a more specific selector here.
 */
-.all-messages-sidebar-menu-icon,
-.starred-messages-sidebar-menu-icon,
-.drafts-sidebar-menu-icon,
-.stream-sidebar-menu-icon {
-    top: 1px;
-    right: 0;
-    font-size: 1em;
-    text-align: center;
-    padding: 0 6px;
+#stream_filters li:hover .stream-sidebar-menu-icon,
+.top_left_row:hover .sidebar-menu-icon,
+.bottom_left_row:hover .sidebar-menu-icon {
+    display: inline;
+    cursor: pointer;
+    color: var(--color-vdots-visible);
+
+    /*
+        If you hover directly over the vdots icon,
+        show it in black.
+    */
+    &:hover {
+        color: var(--color-vdots-hover);
+    }
 }
 
 /*
@@ -684,26 +975,12 @@ li.top_left_scheduled_messages {
     font to show they're "lower" in the hierarchy,
     which also affects it positioning.
 */
-.topic-sidebar-menu-icon {
-    top: 2px;
-    right: 0;
+.bottom_left_row .topic-sidebar-menu-icon {
     font-size: 0.9em;
-    text-align: center;
-    padding: 1px 6px 0;
-}
-
-/*
-    When you hover over list items, we hover
-    the relevant ellipsis-v(vertical 3 dots) in light gray.
-*/
-li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
-li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
-li.top_left_drafts:hover .drafts-sidebar-menu-icon,
-#stream_filters li:hover .stream-sidebar-menu-icon,
-li.topic-list-item:hover .topic-sidebar-menu-icon {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0deg 0% 53%);
+    /* Strip the line height back to the font size,
+       so that vertical positioning is handled by
+       grid exclusively. */
+    line-height: 1;
 }
 
 ul.topic-list {
@@ -716,15 +993,9 @@ li.topic-list-item {
     padding-right: 5px;
 }
 
-.pm-box,
-.topic-box {
+.pm-box {
     display: flex;
     padding-top: 1px;
-    cursor: pointer;
-    align-items: center;
-}
-
-.pm-box {
     margin-right: 16px;
     align-items: baseline; /* Sets .user_circle alignment relative to text; standard icons do not participate in flex. */
 
@@ -744,8 +1015,7 @@ li.topic-list-item {
     }
 }
 
-.zero-pm-unreads .pm-box,
-.zero-topic-unreads .topic-box {
+.zero-pm-unreads .pm-box {
     margin-right: 15px;
 }
 

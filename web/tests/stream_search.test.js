@@ -18,7 +18,7 @@ mock_esm("../src/resize", {
 });
 
 const popovers = mock_esm("../src/popovers");
-const stream_popover = mock_esm("../src/stream_popover");
+const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const stream_list = zrequire("stream_list");
 
@@ -181,12 +181,12 @@ run_test("expanding_sidebar", () => {
     popovers.hide_all = () => {
         events.push("popovers.hide_all");
     };
-    stream_popover.show_streamlist_sidebar = () => {
-        events.push("stream_popover.show_streamlist_sidebar");
+    sidebar_ui.show_streamlist_sidebar = () => {
+        events.push("sidebar_ui.show_streamlist_sidebar");
     };
     $("#streamlist-toggle").show();
 
     stream_list.initiate_search();
 
-    assert.deepEqual(events, ["popovers.hide_all", "stream_popover.show_streamlist_sidebar"]);
+    assert.deepEqual(events, ["popovers.hide_all", "sidebar_ui.show_streamlist_sidebar"]);
 });

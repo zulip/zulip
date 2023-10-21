@@ -5,13 +5,14 @@ from django.utils.translation import gettext as _
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
     check_int,
     check_list,
     check_none_or,
     check_string,
+    check_string_fixed_length,
     check_union,
 )
 from zerver.lib.webhooks.common import check_send_webhook_message, unix_milliseconds_to_timestamp
@@ -55,11 +56,11 @@ def api_newrelic_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     # Handle old format
     # Once old is EOLed, delete if block and keep else block
-    if not payload.get("id").tame(check_none_or(check_int)):
+    if not payload.get("id").tame(check_none_or(check_string_fixed_length(36))):
         info = {
             "condition_name": payload.get("condition_name", "Unknown condition").tame(check_string),
             "details": payload.get("details", "No details.").tame(check_string),
@@ -160,9 +161,7 @@ def api_newrelic_webhook(
             policy_names_str = "Unknown Policy"
         topic_info = {
             "policy_name": policy_names_str,
-            "incident_id": payload.get("id", "Unknown ID").tame(
-                check_union([check_string, check_int])
-            ),
+            "incident_id": payload.get("id", "Unknown ID").tame(check_string),
         }
         topic = TOPIC_TEMPLATE.format(**topic_info)
 

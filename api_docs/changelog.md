@@ -20,6 +20,79 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 218**
+
+* [`POST /messages`](/api/send-message): Added an optional
+  `automatic_new_visibility_policy` enum field in the success response
+  to indicate the new visibility policy value due to the [visibility policy settings](/help/mute-a-topic)
+  during the send message action.
+
+**Feature level 217**
+
+* [`POST /mobile_push/test_notification`](/api/test-notify): Added new endpoint
+  to send a test push notification to a mobile device or devices.
+
+**Feature level 216**:
+
+* `PATCH /realm`, [`POST register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `enable_guest_user_indicator`
+  setting to control whether "(guest)" is added to user names in UI.
+
+**Feature level 215**
+
+* [`GET /events`](/api/get-events): Replaced the value `private`
+  with `direct` in the `message_type` field for the `typing` events
+  sent when a user starts or stops typing a message.
+
+* [`POST /typing`](/api/set-typing-status): Stopped supporting `private`
+  as a valid value for the `type` parameter.
+
+* [`POST /typing`](/api/set-typing-status): Stopped using the `to` parameter
+  for the `"stream"` type. Previously, in the case of the `"stream"` type, it
+  accepted a single-element list containing the ID of the stream. Added an
+  optional parameter, `stream_id`. Now, `to` is used only for `"direct"` type.
+  In the case of `"stream"` type, `stream_id` and `topic` are used.
+
+* Note that stream typing notifications were not enabled in any Zulip client
+  prior to feature level 215.
+
+**Feature level 214**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added two new user settings, `automatically_follow_topics_policy` and
+  `automatically_unmute_topics_in_muted_streams_policy`. The settings control the
+  user's preference on which topics the user will automatically 'follow' and
+  'unmute in muted streams' respectively.
+
+**Feature level 213**
+
+* [`POST /register`](/api/register-queue): Fixed incorrect handling of
+  unmuted and followed topics in calculating the `mentions` and
+  `count` fields of the `unread_msgs` object.
+
+**Feature level 212**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  `PATCH /realm`: Added the `jitsi_server_url` field to the `realm` object,
+  allowing organizations to set a custom Jitsi Meet server. Previously, this
+  was only available as a server-level configuration.
+
+* [`POST /register`](/api/register-queue): Added `server_jitsi_server_url`
+  fields to the `realm` object. The existing `jitsi_server_url` will now be
+  calculated as `realm_jitsi_server_url || server_jitsi_server_url`.
+
+**Feature level 211**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic),
+  [`POST /mark_all_as_read`](/api/mark-all-as-read):
+  Added a `complete` boolean field in the success response to indicate
+  whether all or only some of the targeted messages were processed.
+  This replaces the use of `"result": "partially_completed"` (introduced
+  in feature levels 154 and 153), so that these endpoints now send a
+  `result` string of either `"success"` or `"error"`, like the rest of
+  the Zulip API.
+
 **Feature level 210**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
@@ -538,17 +611,20 @@ No changes; feature level used for Zulip 6.0 release.
 **Feature level 154**
 
 * [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
-  When the process of deleting messages times out, a success response
-  with "partially_completed" result will now be returned by the server,
-  analogically to the `/mark_all_as_read` endpoint.
+  When the process of deleting messages times out, but successfully
+  deletes some messages in the topic (see feature level 147 for when
+  this endpoint started deleting messages in batches), a success
+  response with `"result": "partially_completed"` will now be returned
+  by the server, analogically to the `POST /mark_all_as_read` endpoint
+  (see feature level 153 entry below).
 
 **Feature level 153**
 
 * [`POST /mark_all_as_read`](/api/mark-all-as-read): Messages are now
   marked as read in batches, so that progress will be made even if the
   request times out because of an extremely large number of unread
-  messages to process. Upon timeout, a success response with a
-  "partially_completed" result will be returned by the server.
+  messages to process. Upon timeout, a success response with
+  `"result": "partially_completed"` will be returned by the server.
 
 **Feature level 152**
 
@@ -897,7 +973,7 @@ No changes; feature level used for Zulip 5.0 release.
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `escape_navigates_to_default_view` to allow users to
-  [disable the keyboard shortcut](/help/configure-default-view) for the `Esc` key that
+  [disable the keyboard shortcut](/help/configure-home-view) for the `Esc` key that
   navigates the app to the default view.
 
 **Feature level 106**
@@ -1399,7 +1475,7 @@ field with an integer field `invite_to_realm_policy`.
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
-  the user to [set the default view](/help/configure-default-view).
+  the user to [set the default view](/help/configure-home-view).
 
 **Feature level 41**
 

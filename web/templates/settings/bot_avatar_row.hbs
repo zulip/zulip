@@ -12,7 +12,7 @@
                     <i class="fa fa-download sea-green" aria-hidden="true"></i>
                 </a>
                 <button type="submit" id="copy_zuliprc" class="btn copy_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Copy zuliprc' }}">
-                    <i class="fa fa-clipboard copy-gold"></i>
+                    {{> ../copy_to_clipboard_svg }}
                 </button>
                 <button type="submit" class="btn deactivate_bot danger-red tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate bot' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-user-times" aria-hidden="true"></i>
@@ -20,6 +20,11 @@
                 <button type="submit" class="btn open_bots_subscribed_streams tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Subscribed streams' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-hashtag purple" aria-hidden="true"></i>
                 </button>
+                {{#if is_incoming_webhook_bot}}
+                <button type="submit" class="btn open-generate-integration-url-modal tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate URL for an integration'}}" data-api-key="{{api_key}}">
+                    <i class="fa fa-link steel-blue" aria-hidden="true"></i>
+                </button>
+                {{/if}}
             </div>
             {{/if}}
         </div>

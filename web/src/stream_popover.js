@@ -16,12 +16,12 @@ import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
-import * as popovers from "./popovers";
-import * as resize from "./resize";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as stream_settings_api from "./stream_settings_api";
+import * as stream_settings_components from "./stream_settings_components";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -35,7 +35,7 @@ let $stream_header_colorblock;
 
 // Keep the menu icon over which the popover is based off visible.
 function show_left_sidebar_menu_icon(element) {
-    $(element).closest("[class*='-sidebar-menu-icon']").addClass("left_sidebar_menu_icon_visible");
+    $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
 }
 
 // Remove the class from element when popover is closed
@@ -60,7 +60,7 @@ function get_popover_menu_items(sidebar_elem) {
 
 export function stream_sidebar_menu_handle_keyboard(key) {
     const items = get_popover_menu_items(stream_popover_instance);
-    popovers.popover_items_handle_keyboard(key, items);
+    popover_menus.popover_items_handle_keyboard(key, items);
 }
 
 export function elem_to_stream_id($elem) {
@@ -85,15 +85,6 @@ export function hide_stream_popover() {
     }
 }
 
-export function show_streamlist_sidebar() {
-    $(".app-main .column-left").addClass("expanded");
-    resize.resize_stream_filters_container();
-}
-
-export function hide_streamlist_sidebar() {
-    $(".app-main .column-left").removeClass("expanded");
-}
-
 function stream_popover_sub(e) {
     const $elem = $(e.currentTarget).parents("ul");
     const stream_id = elem_to_stream_id($elem);
@@ -114,12 +105,15 @@ function build_stream_popover(opts) {
         return;
     }
 
-    popovers.hide_all_except_sidebars();
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
     });
 
     popover_menus.toggle_popover_menu(elt, {
+        // Add a delay to separate `hideOnClick` and `onShow` so that
+        // `onShow` is called after `hideOnClick`.
+        // See https://github.com/atomiks/tippyjs/issues/230 for more details.
+        delay: [100, 0],
         ...left_sidebar_tippy_options,
         onCreate(instance) {
             stream_popover_instance = instance;
@@ -160,7 +154,7 @@ function build_stream_popover(opts) {
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
-                stream_settings_ui.set_muted(sub, !sub.is_muted);
+                stream_settings_api.set_stream_property(sub, "is_muted", !sub.is_muted);
                 e.stopPropagation();
             });
 
@@ -184,7 +178,7 @@ function build_stream_popover(opts) {
                 $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
                 const sub = stream_popover_sub(e);
-                stream_settings_ui.sub_or_unsub(sub);
+                stream_settings_components.sub_or_unsub(sub);
                 e.preventDefault();
                 e.stopPropagation();
             });
@@ -485,11 +479,23 @@ export function build_move_topic_to_stream_popover(
     });
 }
 
-export function register_click_handlers() {
+export function initialize() {
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
         const elt = e.currentTarget;
         const $stream_li = $(elt).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
+
+        build_stream_popover({
+            elt,
+            stream_id,
+        });
+
+        e.stopPropagation();
+    });
+
+    $("body").on("click", ".inbox-stream-menu", (e) => {
+        const elt = e.currentTarget;
+        const stream_id = Number.parseInt($(elt).attr("data-stream-id"), 10);
 
         build_stream_popover({
             elt,

@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import BaseCommand
+from typing_extensions import override
 
 from zerver.lib.export import export_usermessages_batch
 
@@ -12,6 +13,7 @@ from zerver.lib.export import export_usermessages_batch
 class Command(BaseCommand):
     help = """UserMessage fetching helper for export.py"""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--path", help="Path to find messages.json archives")
         parser.add_argument("--thread", help="Thread ID")
@@ -21,6 +23,7 @@ class Command(BaseCommand):
             help="ID of the message advertising users to react with thumbs up",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         logging.info("Starting UserMessage batch thread %s", options["thread"])
         files = set(glob.glob(os.path.join(options["path"], "messages-*.json.partial")))

@@ -1,6 +1,6 @@
 <div id="subscription_overlay" class="overlay new-style" data-overlay="subscriptions">
     <div class="flex overlay-content">
-        <div class="subscriptions-container modal-bg">
+        <div class="subscriptions-container overlay-container">
             <div class="subscriptions-header">
                 <div class="fa fa-chevron-left"></div>
                 <span class="subscriptions-title">{{t 'Streams' }}</span>
@@ -9,7 +9,7 @@
                 </div>
             </div>
             <div class="left">
-                <div class="search-container">
+                <div class="list-toggler-container">
                     <div id="add_new_subscription">
                         {{#if can_create_streams}}
                         <button class="create_stream_button create_stream_plus_button tippy-zulip-delayed-tooltip" data-tooltip-template-id="create-new-stream-tooltip-template" data-tippy-placement="bottom">

@@ -332,10 +332,11 @@ def get_openapi_parameters(
 def get_openapi_return_values(endpoint: str, method: str) -> Dict[str, Any]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
-    # In cases where we have used oneOf, the schemas only differ in examples
-    # So we can choose any.
-    if "oneOf" in schema:
-        schema = schema["oneOf"][0]
+    # We do not currently have documented endpoints that have multiple schemas
+    # ("oneOf", "anyOf", "allOf") for success ("200") responses. If this changes,
+    # then the assertion below will need to be removed, and this function updated
+    # so that endpoint responses will be rendered as expected.
+    assert "properties" in schema
     return schema["properties"]
 
 
@@ -359,11 +360,7 @@ def fix_events(content: Dict[str, Any]) -> None:
 
 
 def validate_against_openapi_schema(
-    content: Dict[str, Any],
-    path: str,
-    method: str,
-    status_code: str,
-    display_brief_error: bool = False,
+    content: Dict[str, Any], path: str, method: str, status_code: str
 ) -> bool:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint. Return true if validated and false if skipped.
@@ -372,9 +369,6 @@ def validate_against_openapi_schema(
     # This first set of checks are primarily training wheels that we
     # hope to eliminate over time as we improve our API documentation.
 
-    # No 500 responses have been documented, so skip them
-    if status_code.startswith("5"):
-        return False
     if path not in openapi_spec.openapi()["paths"]:
         endpoint = find_openapi_endpoint(path)
         # If it doesn't match it hasn't been documented yet.
@@ -390,7 +384,7 @@ def validate_against_openapi_schema(
         return True
     # Check if the response matches its code
     if status_code.startswith("2") and (
-        content.get("result", "success").lower() not in ["success", "partially_completed"]
+        content.get("result", "success").lower() != "success"
     ):  # nocoverage
         raise SchemaError("Response is not 200 but is validating against 200 schema")
     # Code is not declared but appears in various 400 responses. If

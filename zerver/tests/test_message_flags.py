@@ -3,6 +3,7 @@ from unittest import mock
 
 import orjson
 from django.db import connection, transaction
+from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.streams import do_change_stream_permission
@@ -66,7 +67,8 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         # Mark all existing messages as read
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read")
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         # Send a new message (this will be unread)
         new_message_id = self.send_stream_message(self.example_user("othello"), "Verona", "test")
@@ -126,7 +128,8 @@ class FirstUnreadAnchorTests(ZulipTestCase):
 
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read")
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         new_message_id = self.send_stream_message(self.example_user("othello"), "Verona", "test")
 
@@ -164,6 +167,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
 
 
 class UnreadCountTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         with mock.patch(
@@ -180,6 +184,7 @@ class UnreadCountTests(ZulipTestCase):
             mock_push_notifications_enabled.assert_called()
 
     # Sending a new message results in unread UserMessages being created
+    # for users other than sender.
     def test_new_message(self) -> None:
         self.login("hamlet")
         content = "Test message for unset read bit"
@@ -188,8 +193,10 @@ class UnreadCountTests(ZulipTestCase):
         self.assertGreater(len(user_messages), 0)
         for um in user_messages:
             self.assertEqual(um.message.content, content)
-            if um.user_profile.email != self.example_email("hamlet"):
+            if um.user_profile.delivery_email != self.example_email("hamlet"):
                 self.assertFalse(um.flags.read)
+            else:
+                self.assertTrue(um.flags.read)
 
     def test_update_flags(self) -> None:
         self.login("hamlet")
@@ -313,14 +320,16 @@ class UnreadCountTests(ZulipTestCase):
 
     def test_mark_all_in_stream_read(self) -> None:
         self.login("hamlet")
-        user_profile = self.example_user("hamlet")
-        stream = self.subscribe(user_profile, "test_stream")
-        self.subscribe(self.example_user("cordelia"), "test_stream")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        for user in [hamlet, cordelia, iago]:
+            self.subscribe(user, "test_stream")
+            self.subscribe(user, "Denmark")
+        stream = get_stream("test_stream", hamlet.realm)
 
-        message_id = self.send_stream_message(self.example_user("hamlet"), "test_stream", "hello")
-        unrelated_message_id = self.send_stream_message(
-            self.example_user("hamlet"), "Denmark", "hello"
-        )
+        message_id = self.send_stream_message(cordelia, "test_stream", "hello")
+        unrelated_message_id = self.send_stream_message(cordelia, "Denmark", "hello")
 
         with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
@@ -344,17 +353,18 @@ class UnreadCountTests(ZulipTestCase):
         differences = [key for key in expected if expected[key] != event[key]]
         self.assert_length(differences, 0)
 
-        hamlet = self.example_user("hamlet")
+        # cordelia sent the message and hamlet marked it as read.
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
-            if msg.user_profile.email == hamlet.email:
+            if msg.user_profile.email in [hamlet.email, cordelia.email]:
                 self.assertTrue(msg.flags.read)
             else:
                 self.assertFalse(msg.flags.read)
 
+        # cordelia sent the message, so marked as read only for him.
         unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
         for msg in unrelated_messages:
-            if msg.user_profile.email == hamlet.email:
+            if msg.user_profile.email in [hamlet.email, iago.email]:
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_stream_read(self) -> None:
@@ -382,20 +392,19 @@ class UnreadCountTests(ZulipTestCase):
 
     def test_mark_all_in_stream_topic_read(self) -> None:
         self.login("hamlet")
-        user_profile = self.example_user("hamlet")
-        self.subscribe(user_profile, "test_stream")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        for user in [hamlet, cordelia]:
+            self.subscribe(user, "test_stream")
+            self.subscribe(user, "Denmark")
 
-        message_id = self.send_stream_message(
-            self.example_user("hamlet"), "test_stream", "hello", "test_topic"
-        )
-        unrelated_message_id = self.send_stream_message(
-            self.example_user("hamlet"), "Denmark", "hello", "Denmark2"
-        )
+        message_id = self.send_stream_message(cordelia, "test_stream", "hello", "test_topic")
+        unrelated_message_id = self.send_stream_message(cordelia, "Denmark", "hello", "Denmark2")
         with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/mark_topic_as_read",
                 {
-                    "stream_id": get_stream("test_stream", user_profile.realm).id,
+                    "stream_id": get_stream("test_stream", hamlet.realm).id,
                     "topic_name": "test_topic",
                 },
             )
@@ -416,12 +425,12 @@ class UnreadCountTests(ZulipTestCase):
 
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
-            if msg.user_profile_id == user_profile.id:
+            if msg.user_profile_id == hamlet.id:
                 self.assertTrue(msg.flags.read)
 
         unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
         for msg in unrelated_messages:
-            if msg.user_profile_id == user_profile.id:
+            if msg.user_profile_id == hamlet.id:
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_topic_read(self) -> None:
@@ -674,7 +683,8 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
         self.assertNotEqual(unread_count, 0)
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read", {})
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         new_unread_count = (
             UserMessage.objects.filter(user_profile=hamlet)
@@ -687,12 +697,8 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
         self.login("hamlet")
         with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpiredError):
             result = self.client_post("/json/mark_all_as_read", {})
-            self.assertEqual(result.status_code, 200)
-
-            result_dict = orjson.loads(result.content)
-            self.assertEqual(
-                result_dict, {"result": "partially_completed", "msg": "", "code": "REQUEST_TIMEOUT"}
-            )
+            result_dict = self.assert_json_success(result)
+            self.assertFalse(result_dict["complete"])
 
 
 class GetUnreadMsgsTest(ZulipTestCase):
@@ -705,7 +711,9 @@ class GetUnreadMsgsTest(ZulipTestCase):
         subscription.is_muted = True
         subscription.save()
 
-    def mute_topic(self, user_profile: UserProfile, stream_name: str, topic_name: str) -> None:
+    def set_topic_visibility_policy(
+        self, user_profile: UserProfile, stream_name: str, topic_name: str, visibility_policy: int
+    ) -> None:
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
 
@@ -713,7 +721,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile,
             stream,
             topic_name,
-            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            visibility_policy=visibility_policy,
         )
 
     def test_raw_unread_stream(self) -> None:
@@ -748,15 +756,17 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         self.assert_length(all_message_ids, 12)  # sanity check on test setup
 
+        muted_stream = get_stream("test here", realm)
         self.mute_stream(
             user_profile=hamlet,
-            stream=get_stream("test here", realm),
+            stream=muted_stream,
         )
 
-        self.mute_topic(
+        self.set_topic_visibility_policy(
             user_profile=hamlet,
             stream_name="devel",
             topic_name="ruby",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
         raw_unread_data = get_raw_unread_data(
@@ -768,6 +778,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
         self.assertEqual(
             set(stream_dict.keys()),
             all_message_ids,
+        )
+
+        self.assertEqual(
+            raw_unread_data["muted_stream_ids"],
+            {muted_stream.id},
         )
 
         self.assertEqual(
@@ -961,7 +976,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
         muted_stream = self.subscribe(user_profile, "Muted stream")
         self.subscribe(sender, muted_stream.name)
         self.mute_stream(user_profile, muted_stream)
-        self.mute_topic(user_profile, "Denmark", "muted-topic")
+        self.set_topic_visibility_policy(
+            user_profile, "Denmark", "muted-topic", UserTopic.VisibilityPolicy.MUTED
+        )
+        self.set_topic_visibility_policy(
+            user_profile, "Muted stream", "unmuted-topic", UserTopic.VisibilityPolicy.UNMUTED
+        )
 
         stream_message_id = self.send_stream_message(sender, "Denmark", "hello")
         muted_stream_message_id = self.send_stream_message(sender, "Muted stream", "hello")
@@ -969,6 +989,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
             sender,
             "Denmark",
             topic_name="muted-topic",
+            content="hello",
+        )
+        unmuted_topic_muted_stream_message_id = self.send_stream_message(
+            sender,
+            "Muted stream",
+            topic_name="unmuted-topic",
             content="hello",
         )
 
@@ -983,17 +1009,18 @@ class GetUnreadMsgsTest(ZulipTestCase):
             aggregated_data = aggregate_unread_data(raw_unread_data)
             return aggregated_data
 
-        with mock.patch("zerver.lib.message.MAX_UNREAD_MESSAGES", 4):
+        with mock.patch("zerver.lib.message.MAX_UNREAD_MESSAGES", 5):
             result = get_unread_data()
-            self.assertEqual(result["count"], 2)
+            self.assertEqual(result["count"], 3)
             self.assertTrue(result["old_unreads_missing"])
 
         result = get_unread_data()
 
-        # The count here reflects the count of unread messages that we will
-        # report to users in the bankruptcy dialog, and for now it excludes unread messages
-        # from muted streams, but it doesn't exclude unread messages from muted topics yet.
-        self.assertEqual(result["count"], 4)
+        # The count here reflects the count of unread messages that we will report
+        # to users in the bankruptcy dialog, and it excludes unread messages from:
+        # * muted topics in unmuted streams
+        # * default or muted topics in muted streams
+        self.assertEqual(result["count"], 5)
         self.assertFalse(result["old_unreads_missing"])
 
         unread_pm = result["pms"][0]
@@ -1016,6 +1043,15 @@ class GetUnreadMsgsTest(ZulipTestCase):
         )
         self.assertEqual(unread_stream["topic"], "test")
         self.assertEqual(unread_stream["unread_message_ids"], [muted_stream_message_id])
+
+        unread_stream = result["streams"][3]
+        self.assertEqual(
+            unread_stream["stream_id"], get_stream("Muted stream", user_profile.realm).id
+        )
+        self.assertEqual(unread_stream["topic"], "unmuted-topic")
+        self.assertEqual(
+            unread_stream["unread_message_ids"], [unmuted_topic_muted_stream_message_id]
+        )
 
         huddle_string = ",".join(
             str(uid) for uid in sorted([sender_id, user_profile.id, othello.id])
@@ -1071,6 +1107,21 @@ class GetUnreadMsgsTest(ZulipTestCase):
         um.save()
         result = get_unread_data()
         self.assertEqual(result["mentions"], [])
+
+        um.flags = 0
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [])
+
+        # Test with a unmuted topic in muted stream
+        um = UserMessage.objects.get(
+            user_profile_id=user_profile.id,
+            message_id=unmuted_topic_muted_stream_message_id,
+        )
+        um.flags = UserMessage.flags.wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [unmuted_topic_muted_stream_message_id])
 
         um.flags = 0
         um.save()
@@ -1177,7 +1228,7 @@ class MessageAccessTests(ZulipTestCase):
 
         for msg in self.get_messages():
             if msg["id"] in message_ids:
-                check_flags(msg["flags"], {"starred"})
+                check_flags(msg["flags"], {"read", "starred"})
             else:
                 check_flags(msg["flags"], {"read"})
 
@@ -1187,7 +1238,7 @@ class MessageAccessTests(ZulipTestCase):
 
         for msg in self.get_messages():
             if msg["id"] in message_ids:
-                check_flags(msg["flags"], set())
+                check_flags(msg["flags"], {"read"})
 
     def test_change_collapsed_public_stream_historical(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1612,7 +1663,7 @@ class MarkUnreadTest(ZulipTestCase):
             stream_dict={},
             huddle_dict={},
             mentions=set(),
-            muted_stream_ids=[],
+            muted_stream_ids=set(),
             unmuted_stream_msgs=set(),
             old_unreads_missing=False,
         )
@@ -1634,7 +1685,7 @@ class MarkUnreadTest(ZulipTestCase):
             stream_dict={},
             huddle_dict={},
             mentions=set(),
-            muted_stream_ids=[],
+            muted_stream_ids=set(),
             unmuted_stream_msgs=set(),
             old_unreads_missing=False,
         )

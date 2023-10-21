@@ -45,6 +45,7 @@ from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.plugins.phonenumber.models import PhoneDevice
+from typing_extensions import override
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.message_send import check_send_message, check_send_stream_message
@@ -133,6 +134,7 @@ class UploadSerializeMixin(SerializeMixin):
     lockfile = "var/upload_lock"
 
     @classmethod
+    @override
     def setUpClass(cls: Any) -> None:
         if not os.path.exists(cls.lockfile):
             with open(cls.lockfile, "w"):  # nocoverage - rare locking case
@@ -149,6 +151,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
     # expectation.
     expected_console_output: Optional[str] = None
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.API_KEYS: Dict[str, str] = {}
@@ -157,6 +160,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
         bounce_key_prefix_for_testing(test_name)
         bounce_redis_key_prefix_for_testing(test_name)
 
+    @override
     def tearDown(self) -> None:
         super().tearDown()
         # Important: we need to clear event queues to avoid leaking data to future tests.
@@ -176,6 +180,10 @@ class ZulipTestCaseMixin(SimpleTestCase):
                 self.mock_ldap.reset()
             self.mock_initialize.stop()
 
+    def get_user_from_email(self, email: str, realm: Realm) -> UserProfile:
+        return get_user(email, realm)
+
+    @override
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
         if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
@@ -631,11 +639,11 @@ Output:
 
     def mit_user(self, name: str) -> UserProfile:
         email = self.mit_user_map[name]
-        return get_user(email, get_realm("zephyr"))
+        return self.get_user_from_email(email, get_realm("zephyr"))
 
     def lear_user(self, name: str) -> UserProfile:
         email = self.lear_user_map[name]
-        return get_user(email, get_realm("lear"))
+        return self.get_user_from_email(email, get_realm("lear"))
 
     def nonreg_email(self, name: str) -> str:
         return self.nonreg_user_map[name]
@@ -661,7 +669,7 @@ Output:
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_email = f"{short_name}-bot@zulip.testserver"
-        bot_profile = get_user(bot_email, user_profile.realm)
+        bot_profile = self.get_user_from_email(bot_email, user_profile.realm)
         return bot_profile
 
     def fail_to_create_test_bot(
@@ -1063,7 +1071,7 @@ Output:
         recipient_list = [to_user.id]
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_message(
+        sent_message_result = check_send_message(
             from_user,
             sending_client,
             "private",
@@ -1071,6 +1079,7 @@ Output:
             None,
             content,
         )
+        return sent_message_result.message_id
 
     def send_huddle_message(
         self,
@@ -1084,7 +1093,7 @@ Output:
 
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_message(
+        sent_message_result = check_send_message(
             from_user,
             sending_client,
             "private",
@@ -1092,6 +1101,7 @@ Output:
             None,
             content,
         )
+        return sent_message_result.message_id
 
     def send_stream_message(
         self,
@@ -1662,79 +1672,93 @@ Output:
         self, policy: str, validation_func: Callable[[UserProfile], bool]
     ) -> None:
         realm = get_realm("zulip")
-        owner_user = self.example_user("desdemona")
-        admin_user = self.example_user("iago")
-        moderator_user = self.example_user("shiva")
-        member_user = self.example_user("hamlet")
-        new_member_user = self.example_user("othello")
-        guest_user = self.example_user("polonius")
+
+        owner = "desdemona"
+        admin = "iago"
+        moderator = "shiva"
+        member = "hamlet"
+        new_member = "othello"
+        guest = "polonius"
+
+        def set_age(user_name: str, age: int) -> None:
+            user = self.example_user(user_name)
+            user.date_joined = timezone_now() - timedelta(age)
+            user.save()
 
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
-        new_member_user.date_joined = timezone_now() - timedelta(
-            days=realm.waiting_period_threshold - 1
-        )
-        new_member_user.save()
+        set_age(member, age=realm.waiting_period_threshold + 1)
+        set_age(new_member, age=realm.waiting_period_threshold - 1)
 
-        member_user.date_joined = timezone_now() - timedelta(
-            days=realm.waiting_period_threshold + 1
-        )
-        member_user.save()
+        def allow(user_name: str) -> None:
+            # Fetch a clean object for the user.
+            user = self.example_user(user_name)
+            with self.assert_database_query_count(0):
+                self.assertTrue(validation_func(user))
 
-        do_set_realm_property(realm, policy, Realm.POLICY_NOBODY, acting_user=None)
-        self.assertFalse(validation_func(owner_user))
-        self.assertFalse(validation_func(admin_user))
-        self.assertFalse(validation_func(moderator_user))
-        self.assertFalse(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        def prevent(user_name: str) -> None:
+            # Fetch a clean object for the user.
+            user = self.example_user(user_name)
+            with self.assert_database_query_count(0):
+                self.assertFalse(validation_func(user))
 
-        do_set_realm_property(realm, policy, Realm.POLICY_OWNERS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertFalse(validation_func(admin_user))
-        self.assertFalse(validation_func(moderator_user))
-        self.assertFalse(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        def set_policy(level: int) -> None:
+            do_set_realm_property(realm, policy, level, acting_user=None)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertFalse(validation_func(moderator_user))
-        self.assertFalse(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        set_policy(Realm.POLICY_NOBODY)
+        prevent(owner)
+        prevent(admin)
+        prevent(moderator)
+        prevent(member)
+        prevent(new_member)
+        prevent(guest)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertTrue(validation_func(moderator_user))
-        self.assertFalse(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        set_policy(Realm.POLICY_OWNERS_ONLY)
+        allow(owner)
+        prevent(admin)
+        prevent(moderator)
+        prevent(member)
+        prevent(new_member)
+        prevent(guest)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertTrue(validation_func(moderator_user))
-        self.assertTrue(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        set_policy(Realm.POLICY_ADMINS_ONLY)
+        allow(owner)
+        allow(admin)
+        prevent(moderator)
+        prevent(member)
+        prevent(new_member)
+        prevent(guest)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertTrue(validation_func(moderator_user))
-        self.assertTrue(validation_func(member_user))
-        self.assertTrue(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        set_policy(Realm.POLICY_MODERATORS_ONLY)
+        allow(owner)
+        allow(admin)
+        allow(moderator)
+        prevent(member)
+        prevent(new_member)
+        prevent(guest)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_EVERYONE, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertTrue(validation_func(moderator_user))
-        self.assertTrue(validation_func(member_user))
-        self.assertTrue(validation_func(new_member_user))
-        self.assertTrue(validation_func(guest_user))
+        set_policy(Realm.POLICY_FULL_MEMBERS_ONLY)
+        allow(owner)
+        allow(admin)
+        allow(moderator)
+        allow(member)
+        prevent(new_member)
+        prevent(guest)
+
+        set_policy(Realm.POLICY_MEMBERS_ONLY)
+        allow(owner)
+        allow(admin)
+        allow(moderator)
+        allow(member)
+        allow(new_member)
+        prevent(guest)
+
+        set_policy(Realm.POLICY_EVERYONE)
+        allow(owner)
+        allow(admin)
+        allow(moderator)
+        allow(member)
+        allow(new_member)
+        allow(guest)
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
@@ -1870,23 +1894,32 @@ Output:
             UserGroupMembership.objects.filter(user_profile=user, user_group=user_group).exists()
         )
 
-    @contextmanager
-    def soft_deactivate_and_check_long_term_idle(
-        self, user: UserProfile, expected: bool
-    ) -> Iterator[None]:
-        """
-        Ensure that the user is soft deactivated (long term idle), and check if the user
-        has been reactivated when exiting the context with an assertion
-        """
+    def _assert_long_term_idle(self, user: UserProfile) -> None:
         if not user.long_term_idle:
-            do_soft_deactivate_users([user])
-            self.assertTrue(user.long_term_idle)
-        try:
-            yield
-        finally:
-            # Prevent from using the old user object
-            user.refresh_from_db()
-            self.assertEqual(user.long_term_idle, expected)
+            raise AssertionError(
+                """
+                We expect you to explicitly call self.soft_deactivate_user
+                if your user is not already soft-deactivated.
+            """
+            )
+
+    def expect_soft_reactivation(self, user: UserProfile, action: Callable[[], None]) -> None:
+        self._assert_long_term_idle(user)
+        action()
+        # Prevent from using the old user object
+        user.refresh_from_db()
+        self.assertEqual(user.long_term_idle, False)
+
+    def expect_to_stay_long_term_idle(self, user: UserProfile, action: Callable[[], None]) -> None:
+        self._assert_long_term_idle(user)
+        action()
+        # Prevent from using the old user object
+        user.refresh_from_db()
+        self.assertEqual(user.long_term_idle, True)
+
+    def soft_deactivate_user(self, user: UserProfile) -> None:
+        do_soft_deactivate_users([user])
+        assert user.long_term_idle
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
@@ -1949,10 +1982,12 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
     ZulipTransactionTestCase tests if they leak state.
     """
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.models_ids_set = dict(get_row_ids_in_all_tables())
 
+    @override
     def tearDown(self) -> None:
         """Verifies that the test did not adjust the set of rows in the test
         database. This is a sanity check to help ensure that tests
@@ -2001,8 +2036,9 @@ class WebhookTestCase(ZulipTestCase):
 
     @property
     def test_user(self) -> UserProfile:
-        return get_user(self.TEST_USER_EMAIL, get_realm("zulip"))
+        return self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.url = self.build_webhook_url()
@@ -2248,6 +2284,7 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
     migrate_from: Optional[str] = None
     migrate_to: Optional[str] = None
 
+    @override
     def setUp(self) -> None:
         assert (
             self.migrate_from and self.migrate_to

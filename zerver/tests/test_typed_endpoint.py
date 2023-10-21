@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints, ValidationInfo, WrapValidator
 from pydantic.dataclasses import dataclass
 from pydantic.functional_validators import ModelWrapValidatorHandler
-from typing_extensions import Annotated
+from typing_extensions import Annotated, override
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
 from zerver.lib.request import RequestConfusingParamsError, RequestVariableMissingError
@@ -16,9 +16,9 @@ from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
     DocumentationStatus,
+    JsonBodyPayload,
     PathOnly,
     RequiredStringConstraint,
-    WebhookPayload,
     is_optional,
     typed_endpoint,
     typed_endpoint_without_parameters,
@@ -249,7 +249,7 @@ class TestEndpoint(ZulipTestCase):
         def webhook(
             request: HttpRequest,
             *,
-            body: WebhookPayload[WildValue],
+            body: JsonBodyPayload[WildValue],
             non_body: Json[int] = 0,
         ) -> Dict[str, object]:
             status = body["totame"]["status"].tame(check_bool)
@@ -262,26 +262,26 @@ class TestEndpoint(ZulipTestCase):
 
         # Set the body manually so that we can pass in something unusual
         request = HostRequestMock()
-        request.body = orjson.dumps([])
+        request._body = orjson.dumps([])
         with self.assertRaisesRegex(DjangoValidationError, "request is not a dict"):
             result = call_endpoint(webhook, request)
 
         # Test for the rare case when both body and GET are used
         request = HostRequestMock()
         request.GET.update({"non_body": "15"})
-        request.body = orjson.dumps({"totame": {"status": True}})
+        request._body = orjson.dumps({"totame": {"status": True}})
         result = call_endpoint(webhook, request)
         self.assertDictEqual(result, {"status": True, "foo": 15})
 
         with self.assertRaisesMessage(JsonableError, "Malformed JSON"):
             request = HostRequestMock()
-            request.body = b"{malformed_json"
+            request._body = b"{malformed_json"
             call_endpoint(webhook, request)
 
         with self.assertRaisesMessage(JsonableError, "Malformed payload"):
             request = HostRequestMock()
             # This body triggers UnicodeDecodeError
-            request.body = b"\x81"
+            request._body = b"\x81"
             call_endpoint(webhook, request)
 
     def test_path_only(self) -> None:
@@ -599,6 +599,7 @@ class ValidationErrorHandlingTest(ZulipTestCase):
             # data.
             error_message: str
 
+            @override
             def __repr__(self) -> str:
                 return f"Pydantic error type: {self.error_type}; Parameter type: {self.param_type}; Expected error message: {self.error_message}"
 

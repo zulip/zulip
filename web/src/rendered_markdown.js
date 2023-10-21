@@ -7,6 +7,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
+import {show_copied_confirmation} from "./copied_tooltip";
 import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
@@ -14,9 +15,9 @@ import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
-import {show_copied_confirmation} from "./tippyjs";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 /*
     rendered_markdown
@@ -64,7 +65,18 @@ function get_user_group_id_for_mention_button(elem) {
 }
 
 // Helper function to update a mentioned user's name.
-export function set_name_in_mention_element(element, name) {
+export function set_name_in_mention_element(element, name, user_id) {
+    if (user_id !== undefined && people.should_add_guest_user_indicator(user_id)) {
+        let display_text;
+        if (!$(element).hasClass("silent")) {
+            display_text = $t({defaultMessage: "@{name} (guest)"}, {name});
+        } else {
+            display_text = $t({defaultMessage: "{name} (guest)"}, {name});
+        }
+        $(element).text(display_text);
+        return;
+    }
+
     if ($(element).hasClass("silent")) {
         $(element).text(name);
     } else {
@@ -76,6 +88,15 @@ export const update_elements = ($content) => {
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction($content.text()) === "rtl") {
         $content.addClass("rtl");
+    }
+
+    if (util.is_client_safari()) {
+        // Without this video thumbnail doesn't load on Safari.
+        $content.find(".message_inline_video video").each(function () {
+            // On Safari, one needs to manually load video elements.
+            // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/load
+            this.load();
+        });
     }
 
     $content.find(".user-mention").each(function () {
@@ -111,7 +132,7 @@ export const update_elements = ($content) => {
             if (person !== undefined) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import.
-                set_name_in_mention_element(this, person.full_name);
+                set_name_in_mention_element(this, person.full_name, user_id);
             }
         }
     });

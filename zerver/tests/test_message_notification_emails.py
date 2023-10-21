@@ -104,14 +104,12 @@ class TestMessageNotificationEmails(ZulipTestCase):
         msg_id: int,
         verify_body_include: List[str],
         email_subject: str,
-        send_as_user: bool,
         verify_html_body: bool = False,
         show_message_content: bool = True,
         verify_body_does_not_include: Sequence[str] = [],
         trigger: str = "",
         mentioned_user_group_id: Optional[int] = None,
     ) -> None:
-        othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         tokens = self._get_tokens()
         with patch("zerver.lib.email_mirror.generate_missed_message_token", side_effect=tokens):
@@ -135,8 +133,6 @@ class TestMessageNotificationEmails(ZulipTestCase):
         assert isinstance(msg, EmailMultiAlternatives)
         from_email = str(Address(display_name="Zulip notifications", addr_spec=FromAddress.NOREPLY))
         self.assert_length(mail.outbox, 1)
-        if send_as_user:
-            from_email = f'"{othello.full_name}" <{othello.email}>'
         self.assertEqual(self.email_envelope_from(msg), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertEqual(self.email_display_from(msg), from_email)
         self.assertEqual(msg.subject, email_subject)
@@ -168,10 +164,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         if realm_name_in_notifications:
             email_subject = "DMs with Othello, the Moor of Venice [Zulip Dev]"
-        self._test_cases(msg_id, verify_body_include, email_subject, False)
+        self._test_cases(msg_id, verify_body_include, email_subject)
 
     def _extra_context_in_missed_stream_messages_mention(
-        self, send_as_user: bool, show_message_content: bool = True
+        self, show_message_content: bool = True
     ) -> None:
         for i in range(11):
             self.send_stream_message(
@@ -214,14 +210,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
             trigger=NotificationTriggers.MENTION,
         )
 
     def _extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(
-        self, send_as_user: bool, show_message_content: bool = True
+        self, show_message_content: bool = True
     ) -> None:
         for i in range(1, 6):
             self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
@@ -255,14 +250,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
             trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         )
 
     def _extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic(
-        self, send_as_user: bool, show_message_content: bool = True
+        self, show_message_content: bool = True
     ) -> None:
         for i in range(1, 6):
             self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
@@ -297,14 +291,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
             trigger=NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         )
 
     def _extra_context_in_missed_stream_messages_topic_wildcard_mention(
-        self, send_as_user: bool, show_message_content: bool = True
+        self, show_message_content: bool = True
     ) -> None:
         for i in range(1, 6):
             self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
@@ -338,14 +331,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
             trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
         )
 
     def _extra_context_in_missed_stream_messages_stream_wildcard_mention(
-        self, send_as_user: bool, show_message_content: bool = True
+        self, show_message_content: bool = True
     ) -> None:
         for i in range(1, 6):
             self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
@@ -380,13 +372,12 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
             trigger=NotificationTriggers.STREAM_WILDCARD_MENTION,
         )
 
-    def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool) -> None:
+    def _extra_context_in_missed_stream_messages_email_notify(self) -> None:
         for i in range(11):
             self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
@@ -400,12 +391,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             trigger=NotificationTriggers.STREAM_EMAIL,
         )
 
     def _extra_context_in_missed_stream_messages_mention_two_senders(
-        self, send_as_user: bool
+        self,
     ) -> None:
         cordelia = self.example_user("cordelia")
         self.subscribe(cordelia, "Denmark")
@@ -424,11 +414,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             trigger=NotificationTriggers.MENTION,
         )
 
-    def _resolved_topic_missed_stream_messages_thread_friendly(self, send_as_user: bool) -> None:
+    def _resolved_topic_missed_stream_messages_thread_friendly(self) -> None:
         topic_name = "threading and so forth"
         othello_user = self.example_user("othello")
         msg_id = -1
@@ -451,13 +440,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             trigger=NotificationTriggers.STREAM_EMAIL,
         )
 
     def _extra_context_in_missed_personal_messages(
         self,
-        send_as_user: bool,
         show_message_content: bool = True,
         message_content_disabled_by_user: bool = False,
         message_content_disabled_by_realm: bool = False,
@@ -499,12 +486,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
         )
 
-    def _reply_to_email_in_missed_personal_messages(self, send_as_user: bool) -> None:
+    def _reply_to_email_in_missed_personal_messages(self) -> None:
         msg_id = self.send_personal_message(
             self.example_user("othello"),
             self.example_user("hamlet"),
@@ -512,9 +498,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         verify_body_include = ["Reply to this email directly, or view it in Zulip Dev Zulip"]
         email_subject = "DMs with Othello, the Moor of Venice"
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
+        self._test_cases(msg_id, verify_body_include, email_subject)
 
-    def _reply_warning_in_missed_personal_messages(self, send_as_user: bool) -> None:
+    def _reply_warning_in_missed_personal_messages(self) -> None:
         msg_id = self.send_personal_message(
             self.example_user("othello"),
             self.example_user("hamlet"),
@@ -522,10 +508,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         verify_body_include = ["Do not reply to this email."]
         email_subject = "DMs with Othello, the Moor of Venice"
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
+        self._test_cases(msg_id, verify_body_include, email_subject)
 
     def _extra_context_in_missed_huddle_messages_two_others(
-        self, send_as_user: bool, show_message_content: bool = True
+        self, show_message_content: bool = True
     ) -> None:
         msg_id = self.send_huddle_message(
             self.example_user("othello"),
@@ -561,12 +547,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
         )
 
-    def _extra_context_in_missed_huddle_messages_three_others(self, send_as_user: bool) -> None:
+    def _extra_context_in_missed_huddle_messages_three_others(self) -> None:
         msg_id = self.send_huddle_message(
             self.example_user("othello"),
             [
@@ -581,9 +566,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = (
             "Group DMs with Cordelia, Lear's daughter, Iago, and Othello, the Moor of Venice"
         )
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
+        self._test_cases(msg_id, verify_body_include, email_subject)
 
-    def _extra_context_in_missed_huddle_messages_many_others(self, send_as_user: bool) -> None:
+    def _extra_context_in_missed_huddle_messages_many_others(self) -> None:
         msg_id = self.send_huddle_message(
             self.example_user("othello"),
             [
@@ -597,9 +582,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         verify_body_include = ["Othello, the Moor of Venice: > Group personal message! -- Reply"]
         email_subject = "Group DMs with Cordelia, Lear's daughter, Iago, and 2 others"
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
+        self._test_cases(msg_id, verify_body_include, email_subject)
 
-    def _deleted_message_in_missed_stream_messages(self, send_as_user: bool) -> None:
+    def _deleted_message_in_missed_stream_messages(self) -> None:
         msg_id = self.send_stream_message(
             self.example_user("othello"), "denmark", "@**King Hamlet** to be deleted"
         )
@@ -613,7 +598,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self.assert_length(mail.outbox, 0)
 
-    def _deleted_message_in_missed_personal_messages(self, send_as_user: bool) -> None:
+    def _deleted_message_in_missed_personal_messages(self) -> None:
         msg_id = self.send_personal_message(
             self.example_user("othello"),
             self.example_user("hamlet"),
@@ -629,7 +614,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self.assert_length(mail.outbox, 0)
 
-    def _deleted_message_in_missed_huddle_messages(self, send_as_user: bool) -> None:
+    def _deleted_message_in_missed_huddle_messages(self) -> None:
         msg_id = self.send_huddle_message(
             self.example_user("othello"),
             [
@@ -999,155 +984,85 @@ class TestMessageNotificationEmails(ZulipTestCase):
             False,
             acting_user=None,
         )
-        self._extra_context_in_missed_stream_messages_mention(False, show_message_content=False)
+        self._extra_context_in_missed_stream_messages_mention(show_message_content=False)
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(
-            False, show_message_content=False
+            show_message_content=False
         )
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic(
-            False, show_message_content=False
+            show_message_content=False
         )
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_topic_wildcard_mention(
-            False, show_message_content=False
+            show_message_content=False
         )
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_stream_wildcard_mention(
-            False, show_message_content=False
+            show_message_content=False
         )
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
-            False, show_message_content=False, message_content_disabled_by_user=True
+            show_message_content=False, message_content_disabled_by_user=True
         )
         mail.outbox = []
-        self._extra_context_in_missed_huddle_messages_two_others(False, show_message_content=False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user(self) -> None:
-        self._extra_context_in_missed_stream_messages_mention(True)
+        self._extra_context_in_missed_huddle_messages_two_others(show_message_content=False)
 
     def test_extra_context_in_missed_stream_messages(self) -> None:
-        self._extra_context_in_missed_stream_messages_mention(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user_topic_wildcard_in_followed_topic(
-        self,
-    ) -> None:
-        self._extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(True)
+        self._extra_context_in_missed_stream_messages_mention()
 
     def test_extra_context_in_missed_stream_messages_topic_wildcard_in_followed_topic(
         self,
     ) -> None:
-        self._extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(
-            False
-        )
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user_stream_wildcard_in_followed_topic(
-        self,
-    ) -> None:
-        self._extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic(
-            True
-        )
+        self._extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic()
 
     def test_extra_context_in_missed_stream_messages_stream_wildcard_in_followed_topic(
         self,
     ) -> None:
-        self._extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic(
-            False
-        )
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user_topic_wildcard(self) -> None:
-        self._extra_context_in_missed_stream_messages_topic_wildcard_mention(True)
+        self._extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic()
 
     def test_extra_context_in_missed_stream_messages_topic_wildcard(self) -> None:
-        self._extra_context_in_missed_stream_messages_topic_wildcard_mention(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user_stream_wildcard(self) -> None:
-        self._extra_context_in_missed_stream_messages_stream_wildcard_mention(True)
+        self._extra_context_in_missed_stream_messages_topic_wildcard_mention()
 
     def test_extra_context_in_missed_stream_messages_stream_wildcard(self) -> None:
-        self._extra_context_in_missed_stream_messages_stream_wildcard_mention(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user_two_senders(self) -> None:
-        self._extra_context_in_missed_stream_messages_mention_two_senders(True)
+        self._extra_context_in_missed_stream_messages_stream_wildcard_mention()
 
     def test_extra_context_in_missed_stream_messages_two_senders(self) -> None:
-        self._extra_context_in_missed_stream_messages_mention_two_senders(False)
+        self._extra_context_in_missed_stream_messages_mention_two_senders()
 
     def test_reply_to_email_in_missed_personal_messages(self) -> None:
-        self._reply_to_email_in_missed_personal_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_email_notify_as_user(self) -> None:
-        self._extra_context_in_missed_stream_messages_email_notify(True)
+        self._reply_to_email_in_missed_personal_messages()
 
     def test_extra_context_in_missed_stream_messages_email_notify(self) -> None:
-        self._extra_context_in_missed_stream_messages_email_notify(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_resolved_topic_missed_stream_messages_thread_friendly_as_user(self) -> None:
-        self._resolved_topic_missed_stream_messages_thread_friendly(True)
+        self._extra_context_in_missed_stream_messages_email_notify()
 
     def test_resolved_topic_missed_stream_messages_thread_friendly(self) -> None:
-        self._resolved_topic_missed_stream_messages_thread_friendly(False)
+        self._resolved_topic_missed_stream_messages_thread_friendly()
 
     @override_settings(EMAIL_GATEWAY_PATTERN="")
     def test_reply_warning_in_missed_personal_messages(self) -> None:
-        self._reply_warning_in_missed_personal_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_personal_messages_as_user(self) -> None:
-        self._extra_context_in_missed_personal_messages(True)
+        self._reply_warning_in_missed_personal_messages()
 
     def test_extra_context_in_missed_personal_messages(self) -> None:
-        self._extra_context_in_missed_personal_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_huddle_messages_two_others_as_user(self) -> None:
-        self._extra_context_in_missed_huddle_messages_two_others(True)
+        self._extra_context_in_missed_personal_messages()
 
     def test_extra_context_in_missed_huddle_messages_two_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_two_others(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_huddle_messages_three_others_as_user(self) -> None:
-        self._extra_context_in_missed_huddle_messages_three_others(True)
+        self._extra_context_in_missed_huddle_messages_two_others()
 
     def test_extra_context_in_missed_huddle_messages_three_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_three_others(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_huddle_messages_many_others_as_user(self) -> None:
-        self._extra_context_in_missed_huddle_messages_many_others(True)
+        self._extra_context_in_missed_huddle_messages_three_others()
 
     def test_extra_context_in_missed_huddle_messages_many_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_many_others(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_deleted_message_in_missed_stream_messages_as_user(self) -> None:
-        self._deleted_message_in_missed_stream_messages(True)
+        self._extra_context_in_missed_huddle_messages_many_others()
 
     def test_deleted_message_in_missed_stream_messages(self) -> None:
-        self._deleted_message_in_missed_stream_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_deleted_message_in_missed_personal_messages_as_user(self) -> None:
-        self._deleted_message_in_missed_personal_messages(True)
+        self._deleted_message_in_missed_stream_messages()
 
     def test_deleted_message_in_missed_personal_messages(self) -> None:
-        self._deleted_message_in_missed_personal_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_deleted_message_in_missed_huddle_messages_as_user(self) -> None:
-        self._deleted_message_in_missed_huddle_messages(True)
+        self._deleted_message_in_missed_personal_messages()
 
     def test_deleted_message_in_missed_huddle_messages(self) -> None:
-        self._deleted_message_in_missed_huddle_messages(False)
+        self._deleted_message_in_missed_huddle_messages()
 
     def test_realm_message_content_allowed_in_email_notifications(self) -> None:
         user = self.example_user("hamlet")
@@ -1162,7 +1077,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             user, "message_content_in_email_notifications", True, acting_user=None
         )
         mail.outbox = []
-        self._extra_context_in_missed_personal_messages(False, show_message_content=True)
+        self._extra_context_in_missed_personal_messages(show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
         do_change_user_setting(
@@ -1170,7 +1085,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
-            False, show_message_content=False, message_content_disabled_by_user=True
+            show_message_content=False, message_content_disabled_by_user=True
         )
 
         # When message content is not allowed at realm level
@@ -1184,7 +1099,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
-            False, show_message_content=False, message_content_disabled_by_realm=True
+            show_message_content=False, message_content_disabled_by_realm=True
         )
 
         do_change_user_setting(
@@ -1192,7 +1107,6 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
-            False,
             show_message_content=False,
             message_content_disabled_by_user=True,
             message_content_disabled_by_realm=True,
@@ -1219,7 +1133,6 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user=False,
             verify_html_body=True,
         )
 
@@ -1240,7 +1153,6 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user=False,
             verify_html_body=True,
         )
 
@@ -1260,7 +1172,6 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user=False,
             verify_html_body=True,
         )
 
@@ -1277,7 +1188,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/dm/{cordelia.id}-{encoded_name}"
         ]
         email_subject = "DMs with Cordelia, Lear's daughter"
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False)
+        self._test_cases(msg_id, verify_body_include, email_subject)
 
     def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1588,12 +1499,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
         verify_body_include = ["header text", "Open Zulip to see the spoiler content"]
         verify_body_does_not_include = ["secret-text"]
         email_subject = "#Denmark > test"
-        send_as_user = False
         self._test_cases(
             msg_id,
             verify_body_include,
             email_subject,
-            send_as_user,
             trigger=NotificationTriggers.MENTION,
             verify_body_does_not_include=verify_body_does_not_include,
         )
@@ -1623,9 +1532,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         verify_body_include = ["view it in Zulip Dev Zulip"]
         email_subject = "DMs with Othello, the Moor of Venice"
-        self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
-        )
+        self._test_cases(msg_id, verify_body_include, email_subject, verify_html_body=True)
 
     def test_long_term_idle_user_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1635,12 +1542,17 @@ class TestMessageNotificationEmails(ZulipTestCase):
             get_realm("zulip"), "large_user_group", [hamlet, othello, cordelia], acting_user=None
         )
 
+        def reset_hamlet_as_soft_deactivated_user() -> None:
+            nonlocal hamlet
+            hamlet = self.example_user("hamlet")
+            self.soft_deactivate_user(hamlet)
+
         # Do note that the event dicts for the missed messages are constructed by hand
         # The part of testing the consumption of missed messages by the worker is left to
         # test_queue_worker.test_missed_message_worker
 
         # Personal mention in a stream message should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+        def send_personal_mention() -> None:
             mention = f"@**{hamlet.full_name}**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1652,8 +1564,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 },
             )
 
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_personal_mention)
+
         # Direct message should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+        def send_direct_message() -> None:
             # Soft reactivate the user by sending a personal message
             personal_message_id = self.send_personal_message(othello, hamlet, "Message")
             handle_missedmessage_emails(
@@ -1664,6 +1579,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
                     )
                 },
             )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_direct_message)
 
         # Hamlet FOLLOWS the topic.
         # 'wildcard_mentions_notify' is disabled to verify the corner case when only
@@ -1679,7 +1597,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         # Topic wildcard mention in followed topic should soft reactivate the user
         # hamlet should be a topic participant
         self.send_stream_message(hamlet, "Denmark", "test message")
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+
+        def send_topic_wildcard_mention() -> None:
             mention = "@**topic**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1691,8 +1610,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 },
             )
 
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_topic_wildcard_mention)
+
         # Stream wildcard mention in followed topic should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
+        def send_stream_wildcard_mention() -> None:
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1704,6 +1626,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 },
             )
 
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_stream_wildcard_mention)
+
         # Reset
         do_set_user_topic_visibility_policy(
             hamlet,
@@ -1714,33 +1639,15 @@ class TestMessageNotificationEmails(ZulipTestCase):
         do_change_user_setting(hamlet, "wildcard_mentions_notify", True, acting_user=None)
 
         # Topic Wildcard mention should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
-            mention = "@**topic**"
-            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
-                hamlet.id,
-                {
-                    stream_mentioned_message_id: MissedMessageData(
-                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION
-                    ),
-                },
-            )
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_topic_wildcard_mention)
 
         # Stream Wildcard mention should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
-            mention = "@**all**"
-            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
-                hamlet.id,
-                {
-                    stream_mentioned_message_id: MissedMessageData(
-                        trigger=NotificationTriggers.STREAM_WILDCARD_MENTION
-                    ),
-                },
-            )
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_stream_wildcard_mention)
 
         # Group mention should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
+        def send_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1752,6 +1659,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
                     ),
                 },
             )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_group_mention)
 
     def test_followed_topic_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")

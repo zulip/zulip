@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
     check_int,
@@ -62,7 +62,7 @@ def api_circleci_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     type = payload["type"].tame(check_string)
     if type == "ping":

@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
@@ -65,7 +65,7 @@ def handle_scanning_completed_event(
     scan_results = ""
     scan_overview = payload["event_data"]["resources"][0]["scan_overview"]
     if "application/vnd.security.vulnerability.report; version=1.1" not in scan_overview:
-        raise UnsupportedWebhookEventTypeError("Unsupported harbor scanning webhook payload")
+        raise UnsupportedWebhookEventTypeError(str(list(scan_overview.keys())))
     scan_summaries = scan_overview["application/vnd.security.vulnerability.report; version=1.1"][
         "summary"
     ]["summary"]
@@ -95,7 +95,7 @@ def api_harbor_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     operator_username = "**{}**".format(payload["operator"].tame(check_string))
 

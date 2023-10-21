@@ -40,7 +40,7 @@ feedback.
 - Send test messages to [#test
   here](https://chat.zulip.org/#narrow/stream/7-test-here) or as a PM
   to yourself to avoid disturbing others.
-- [Start a new topic](/help/start-a-new-topic) unless you’re replying
+- [Start a new topic](/help/starting-a-new-topic) unless you’re replying
   to an existing conversation. If you see a new user talking about
   something unrelated on an existing topic, [move the messages to an
   appropriate new topic](/help/move-content-to-another-topic).
@@ -82,7 +82,7 @@ feedback.
 # Where do I send my message?
 
 This section describes popular public streams on chat.zulip.org. Kick
-off the discussion by [starting a new topic](/help/start-a-new-topic)
+off the discussion by [starting a new topic](/help/starting-a-new-topic)
 in the appropriate stream! Don’t stress too much about picking the
 right place if you’re not sure; anyone in the community can edit a
 topic name, and [moderators](/help/roles-and-permissions) can [move a

@@ -316,7 +316,7 @@ test("sort_languages", () => {
     assert.deepEqual(test_langs, ["j", "javascript", "java"]);
 
     // (Only one alias should be shown per language
-    // (i.e searching for "js" shouldn't show "javascript")
+    // (e.g. searching for "js" shouldn't show "javascript")
     test_langs = ["js", "javascript", "java"];
     test_langs = th.sort_languages(test_langs, "js");
     assert.deepEqual(test_langs, ["js", "java"]);
@@ -498,7 +498,7 @@ test("sort_recipients dup bots", () => {
     const recipients = th.sort_recipients({
         users: dup_objects,
         query: "b",
-        current_stream_id: "",
+        current_stream_id: undefined,
         current_topic: "",
     });
     const recipients_email = recipients.map((person) => person.email);
@@ -650,8 +650,7 @@ test("test compare directly for direct message", () => {
 
 test("highlight_with_escaping", () => {
     function highlight(query, item) {
-        const regex = th.build_highlight_regex(query);
-        return th.highlight_with_escaping_and_regex(regex, item);
+        return th.make_query_highlighter(query)(item);
     }
 
     let item = "Denmark";
@@ -671,10 +670,19 @@ test("highlight_with_escaping", () => {
     expected = "<strong>development h</strong>elp";
     result = highlight(query, item);
     assert.equal(result, expected);
+
+    item = "Prefix notprefix prefix";
+    query = "pre";
+    expected = "<strong>Pre</strong>fix notprefix <strong>pre</strong>fix";
+    result = highlight(query, item);
+    assert.equal(result, expected);
 });
 
 test("render_person when emails hidden", ({mock_template}) => {
     // Test render_person with regular person, under hidden email visibility case
+    page_params.custom_profile_field_types = {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    };
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, b_user_1.full_name);
@@ -689,6 +697,9 @@ test("render_person when emails hidden", ({mock_template}) => {
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
+    page_params.custom_profile_field_types = {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    };
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, a_user.full_name);
@@ -769,6 +780,7 @@ test("render_emoji", ({mock_template}) => {
         emoji_code: "1f44d",
         is_emoji: true,
         has_image: false,
+        has_pronouns: false,
         has_secondary: false,
         has_status: false,
     };
@@ -795,6 +807,7 @@ test("render_emoji", ({mock_template}) => {
         img_src: "TBD",
         is_emoji: true,
         has_image: true,
+        has_pronouns: false,
         has_secondary: false,
         has_status: false,
     };

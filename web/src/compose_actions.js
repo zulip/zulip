@@ -3,10 +3,10 @@
 import autosize from "autosize";
 import $ from "jquery";
 
-import * as fenced_code from "../shared/src/fenced_code";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
-import * as channel from "./channel";
+import * as blueslip from "./blueslip";
+
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -15,22 +15,17 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as recent_view_ui from "./recent_view_ui";
-import * as recent_view_util from "./recent_view_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
 import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
-import * as unread_ops from "./unread_ops";
 
 const compose_clear_box_hooks = [];
 const compose_cancel_hooks = [];
@@ -57,7 +52,7 @@ function hide_box() {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
-    $("#stream_message_recipient_topic").hide();
+    $("#compose_recipient_box").hide();
     $("#compose-direct-recipient").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
@@ -137,10 +132,12 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message();
     compose_fade.start_compose(msg_type);
-    stream_bar.decorate(
-        opts.stream_id,
-        $("#stream_message_recipient_topic .message_header_stream"),
-    );
+    if (msg_type === "stream") {
+        stream_bar.decorate(
+            opts.stream_id,
+            $("#stream_message_recipient_topic .message_header_stream"),
+        );
+    }
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -171,10 +168,10 @@ export function maybe_scroll_up_selected_message() {
     }
 }
 
-function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
+export function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     return {
         message_type: msg_type,
-        stream_id: "",
+        stream_id: undefined,
         topic: "",
         private_message_recipient: "",
         trigger: "unknown",
@@ -205,9 +202,14 @@ export function start(msg_type, opts) {
         return;
     }
 
-    // We may be able to clear it to change the recipient, so save any
-    // existing content as a draft.
-    drafts.update_draft();
+    if (!msg_type) {
+        // We prefer callers to be explicit about the message type, but
+        // we if we don't know, we open a stream compose box by default,
+        // which opens stream selection dropdown.
+        // Also, msg_type is used to check if compose box is open in compose_state.composing().
+        msg_type = "stream";
+        blueslip.warn("Empty message type in compose.start");
+    }
 
     autosize_message_content();
 
@@ -218,13 +220,14 @@ export function start(msg_type, opts) {
     expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+    const is_clear_topic_button_triggered = opts.trigger === "clear topic button";
 
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
     // direct message recipient should be.
     if (
         opts.trigger === "compose_hotkey" ||
-        opts.trigger === "new topic button" ||
+        is_clear_topic_button_triggered ||
         opts.trigger === "new direct message"
     ) {
         opts.topic = "";
@@ -234,26 +237,35 @@ export function start(msg_type, opts) {
     const subbed_streams = stream_data.subscribed_subs();
     if (
         subbed_streams.length === 1 &&
-        (opts.trigger === "new topic button" ||
+        (is_clear_topic_button_triggered ||
             (opts.trigger === "compose_hotkey" && msg_type === "stream"))
     ) {
         opts.stream_id = subbed_streams[0].stream_id;
     }
 
-    if (compose_state.composing() && !same_recipient_as_before(msg_type, opts)) {
-        // Clear the compose box if the existing message is to a different recipient
+    // If we go to a different narrow or there is new message content to populate the compose box
+    // with (like from a draft), save any existing content as a draft, and clear the compose box.
+    if (
+        compose_state.composing() &&
+        (!same_recipient_as_before(msg_type, opts) || opts.content !== undefined)
+    ) {
+        drafts.update_draft();
         clear_box();
     }
 
-    const $stream_header_colorblock = $(
-        "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
-    );
-    stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
+    if (msg_type === "stream") {
+        const $stream_header_colorblock = $(
+            "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
+        );
+        stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
+    }
 
     if (msg_type === "private") {
-        compose_state.set_compose_recipient_id(compose_recipient.DIRECT_MESSAGE_ID);
+        compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
+        compose_recipient.on_compose_select_recipient_update();
     } else if (opts.stream_id) {
         compose_state.set_stream_id(opts.stream_id);
+        compose_recipient.on_compose_select_recipient_update();
     } else {
         // Open stream selection dropdown if no stream is selected.
         compose_recipient.open_compose_recipient_dropdown();
@@ -271,14 +283,28 @@ export function start(msg_type, opts) {
         compose_state.message_content(opts.content);
     }
 
-    if (opts.draft_id) {
-        $("#compose-textarea").data("draft-id", opts.draft_id);
-    }
-
     compose_state.set_message_type(msg_type);
 
     // Show either stream/topic fields or "You and" field.
     show_compose_box(msg_type, opts);
+
+    if (opts.draft_id) {
+        $("#compose-textarea").data("draft-id", opts.draft_id);
+    }
+
+    if (opts.content !== undefined) {
+        // If we were provided with message content, we might need to
+        // resize the compose box, or display that it's too long.
+        compose_ui.autosize_textarea($("#compose-textarea"));
+        compose_validate.check_overflow_text();
+    }
+
+    const $clear_topic_button = $("#recipient_box_clear_topic_button");
+    if (is_clear_topic_button_triggered || opts.topic.length === 0) {
+        $clear_topic_button.hide();
+    } else {
+        $clear_topic_button.show();
+    }
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
@@ -320,99 +346,6 @@ export function cancel() {
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
-}
-
-export function respond_to_message(opts) {
-    let message;
-    let msg_type;
-    if (recent_view_util.is_visible()) {
-        message = recent_view_ui.get_focused_row_message();
-        if (message === undefined) {
-            // Open empty compose with nothing pre-filled since
-            // user is not focused on any table row.
-            start("stream", {trigger: "recent_view_nofocus"});
-            return;
-        }
-    } else {
-        message = message_lists.current.selected_message();
-
-        if (message === undefined) {
-            // empty narrow implementation
-            if (
-                !narrow_state.narrowed_by_pm_reply() &&
-                !narrow_state.narrowed_by_stream_reply() &&
-                !narrow_state.narrowed_by_topic_reply()
-            ) {
-                start("stream", {trigger: "empty_narrow_compose"});
-                return;
-            }
-            const current_filter = narrow_state.filter();
-            const first_term = current_filter.operators()[0];
-            const first_operator = first_term.operator;
-            const first_operand = first_term.operand;
-
-            if (first_operator === "stream" && !stream_data.is_subscribed_by_name(first_operand)) {
-                start("stream", {trigger: "empty_narrow_compose"});
-                return;
-            }
-
-            // Set msg_type to stream by default in the case of an empty
-            // home view.
-            msg_type = "stream";
-            if (narrow_state.narrowed_by_pm_reply()) {
-                msg_type = "private";
-            }
-
-            const new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
-            start(new_opts.message_type, new_opts);
-            return;
-        }
-
-        if (message_lists.current.can_mark_messages_read()) {
-            unread_ops.notify_server_message_read(message);
-        }
-    }
-
-    // Important note: A reply_type of 'personal' is for the R hotkey
-    // (replying to a message's sender with a direct message). All
-    // other replies can just copy message.type.
-    if (opts.reply_type === "personal" || message.type === "private") {
-        msg_type = "private";
-    } else {
-        msg_type = message.type;
-    }
-
-    let stream_id = "";
-    let topic = "";
-    let pm_recipient = "";
-    if (msg_type === "stream") {
-        stream_id = message.stream_id;
-        topic = message.topic;
-    } else {
-        pm_recipient = message.reply_to;
-        if (opts.reply_type === "personal") {
-            // reply_to for direct messages is everyone involved, so for
-            // personals replies we need to set the direct message
-            // recipient to just the sender
-            pm_recipient = people.get_by_user_id(message.sender_id).email;
-        } else {
-            pm_recipient = people.pm_reply_to(message);
-        }
-    }
-
-    start(msg_type, {
-        stream_id,
-        topic,
-        private_message_recipient: pm_recipient,
-        trigger: opts.trigger,
-    });
-}
-
-export function reply_with_mention(opts) {
-    respond_to_message(opts);
-    const message = message_lists.current.selected_message();
-    const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
-    compose_ui.insert_syntax_and_focus(mention);
 }
 
 export function on_topic_narrow() {
@@ -462,59 +395,6 @@ export function on_topic_narrow() {
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
     $("#compose-textarea").trigger("focus");
-}
-
-export function quote_and_reply(opts) {
-    const $textarea = $("#compose-textarea");
-    const message_id = message_lists.current.selected_id();
-    const message = message_lists.current.selected_message();
-    const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
-
-    if (!compose_state.has_message_content()) {
-        // The user has not started typing a message,
-        // so we will re-open the compose box.
-        // (If you did re-open the compose box, you
-        // are prone to glitches where you select the
-        // text, plus it's a complicated codepath that
-        // can have other unintended consequences.)
-        respond_to_message(opts);
-    }
-
-    compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
-
-    function replace_content(message) {
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message):
-        //     ```quote
-        //     message content
-        //     ```
-        let content = $t(
-            {defaultMessage: "{username} [said]({link_to_message}):"},
-            {
-                username: `@_**${message.sender_full_name}|${message.sender_id}**`,
-                link_to_message: `${hash_util.by_conversation_and_time_url(message)}`,
-            },
-        );
-        content += "\n";
-        const fence = fenced_code.get_unused_fence(message.raw_content);
-        content += `${fence}quote\n${message.raw_content}\n${fence}`;
-
-        compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
-        compose_ui.autosize_textarea($("#compose-textarea"));
-    }
-
-    if (message && message.raw_content) {
-        replace_content(message);
-        return;
-    }
-
-    channel.get({
-        url: "/json/messages/" + message_id,
-        success(data) {
-            message.raw_content = data.raw_content;
-            replace_content(message);
-        },
-    });
 }
 
 export function on_narrow(opts) {

@@ -2,19 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
-const _document = {
-    hasFocus() {
-        return true;
-    },
-};
-
 const fake_buddy_list = {
     scroll_container_sel: "#whatever",
+    $container: {
+        data() {},
+    },
     find_li() {},
     first_key() {},
     prev_key() {},
@@ -27,12 +24,10 @@ mock_esm("../src/buddy_list", {
 
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
-const stream_popover = mock_esm("../src/stream_popover");
 const resize = mock_esm("../src/resize");
+const sidebar_ui = mock_esm("../src/sidebar_ui");
 
-set_global("document", _document);
-
-const activity = zrequire("activity");
+const activity_ui = zrequire("activity_ui");
 const buddy_data = zrequire("buddy_data");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -71,21 +66,33 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
-        activity.set_cursor_and_filter();
+        activity_ui.set_cursor_and_filter();
         f({override});
     });
 }
 
+function set_input_val(val) {
+    $(".user-list-filter").val(val);
+    $(".user-list-filter").trigger("input");
+}
+
 test("clear_search", ({override}) => {
+    override(presence, "get_status", () => "active");
+    override(presence, "get_user_ids", () => all_user_ids);
+    override(popovers, "hide_all", () => {});
+    override(resize, "resize_sidebars", () => {});
+
+    // Empty because no users match this search string.
+    override(fake_buddy_list, "populate", (user_ids) => {
+        assert.deepEqual(user_ids, {keys: []});
+    });
+    set_input_val("somevalue");
+    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
+
+    // Now we're clearing the search string and everyone shows up again.
     override(fake_buddy_list, "populate", (user_ids) => {
         assert.deepEqual(user_ids, {keys: ordered_user_ids});
     });
-    override(presence, "get_status", () => "active");
-    override(presence, "get_user_ids", () => all_user_ids);
-    override(resize, "resize_sidebars", () => {});
-
-    $(".user-list-filter").val("somevalue");
-    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
     $("#clear_search_people_button").trigger("click");
     assert.equal($(".user-list-filter").val(), "");
     $("#clear_search_people_button").trigger("click");
@@ -96,19 +103,21 @@ test("escape_search", ({override}) => {
     page_params.realm_presence_disabled = true;
 
     override(resize, "resize_sidebars", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
+    override(popovers, "hide_all", () => {});
 
-    $(".user-list-filter").val("somevalue");
-    activity.escape_search();
+    set_input_val("somevalue");
+    activity_ui.escape_search();
     assert.equal($(".user-list-filter").val(), "");
-    activity.escape_search();
+    activity_ui.escape_search();
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
+
+    // We need to reset this because the unit tests aren't isolated from each other.
+    set_input_val("");
 });
 
 test("blur search right", ({override}) => {
-    override(popovers, "show_userlist_sidebar", () => {});
+    override(sidebar_ui, "show_userlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
     override(resize, "resize_sidebars", () => {});
 
     $(".user-list-filter").closest = (selector) => {
@@ -118,14 +127,13 @@ test("blur search right", ({override}) => {
 
     $(".user-list-filter").trigger("blur");
     assert.equal($(".user-list-filter").is_focused(), false);
-    activity.initiate_search();
+    activity_ui.initiate_search();
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 
 test("blur search left", ({override}) => {
-    override(stream_popover, "show_streamlist_sidebar", () => {});
+    override(sidebar_ui, "show_streamlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
     override(resize, "resize_sidebars", () => {});
 
     $(".user-list-filter").closest = (selector) => {
@@ -135,7 +143,7 @@ test("blur search left", ({override}) => {
 
     $(".user-list-filter").trigger("blur");
     assert.equal($(".user-list-filter").is_focused(), false);
-    activity.initiate_search();
+    activity_ui.initiate_search();
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 
@@ -152,7 +160,7 @@ test("filter_user_ids", ({override}) => {
     function test_filter(search_text, expected_users) {
         const expected_user_ids = expected_users.map((user) => user.user_id);
         $(".user-list-filter").val(search_text);
-        const filter_text = activity.get_filter_text();
+        const filter_text = activity_ui.get_filter_text();
         assert.deepEqual(
             buddy_data.get_filtered_and_sorted_user_ids(filter_text),
             expected_user_ids,
@@ -162,7 +170,7 @@ test("filter_user_ids", ({override}) => {
             assert.deepEqual(user_ids, expected_user_ids);
         });
 
-        activity.build_user_sidebar();
+        activity_ui.build_user_sidebar();
     }
 
     // Sanity check data setup.
@@ -197,8 +205,7 @@ test("click on user header to toggle display", ({override}) => {
     const $user_filter = $(".user-list-filter");
 
     override(popovers, "hide_all", () => {});
-    override(popovers, "hide_all_except_sidebars", () => {});
-    override(popovers, "show_userlist_sidebar", () => {});
+    override(sidebar_ui, "show_userlist_sidebar", () => {});
     override(resize, "resize_sidebars", () => {});
 
     page_params.realm_presence_disabled = true;
@@ -221,9 +228,9 @@ test("click on user header to toggle display", ({override}) => {
 });
 
 test("searching", () => {
-    assert.equal(activity.searching(), false);
+    assert.equal(activity_ui.searching(), false);
     $(".user-list-filter").trigger("focus");
-    assert.equal(activity.searching(), true);
+    assert.equal(activity_ui.searching(), true);
     $(".user-list-filter").trigger("blur");
-    assert.equal(activity.searching(), false);
+    assert.equal(activity_ui.searching(), false);
 });

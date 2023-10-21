@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.realm_linkifiers import do_add_linkifier, do_remove_linkifier
 from zerver.lib.management import ZulipBaseCommand
@@ -24,6 +25,7 @@ Example: ./manage.py edit_linkifiers --realm=zulip --op=remove '#(?P<id>[0-9]{2,
 Example: ./manage.py edit_linkifiers --realm=zulip --op=show
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--op", default="show", help="What operation to do (add, show, remove)."
@@ -39,6 +41,7 @@ Example: ./manage.py edit_linkifiers --realm=zulip --op=show
         )
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser

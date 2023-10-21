@@ -355,6 +355,10 @@ td .button {
         min-width: 325px;
         max-width: 100%;
     }
+
+    .account-settings-heading {
+        margin-right: 10px;
+    }
 }
 
 /* list_select is similar to settings_select, but without the height styling. */
@@ -541,13 +545,20 @@ input[type="checkbox"] {
     vertical-align: top;
     height: auto !important;
     width: auto !important;
+    white-space: break-spaces !important;
 
+    overflow-wrap: anywhere;
     background-color: transparent;
     border-radius: 4px;
     margin-top: 14px;
     margin-left: 10px;
     color: hsl(156deg 30% 50%);
     padding: 3px 10px;
+
+    &.account-alert-notification {
+        margin: 0 0 10px;
+        vertical-align: middle;
+    }
 
     &:not(:empty) {
         border: 1px solid hsl(156deg 30% 50%);
@@ -614,6 +625,12 @@ input[type="checkbox"] {
             font-weight: bold;
             word-break: break-all;
         }
+    }
+}
+
+#convert-demo-organization-form {
+    .domain_label {
+        display: inline-block;
     }
 }
 
@@ -753,10 +770,28 @@ input[type="checkbox"] {
 
 .admin_profile_fields_table,
 .edit_profile_field_choices_container,
-.admin_linkifiers_table,
 .profile_field_choices_table {
     .movable-row {
         cursor: move;
+
+        .fa-ellipsis-v {
+            color: hsl(0deg 0% 75%);
+            position: relative;
+            top: 1px;
+
+            + i {
+                margin-right: 5px;
+            }
+        }
+    }
+}
+
+.admin_linkifiers_table {
+    .movable-row {
+        .move-handle {
+            cursor: move;
+            user-select: none;
+        }
 
         .fa-ellipsis-v {
             color: hsl(0deg 0% 75%);
@@ -862,12 +897,24 @@ input[type="checkbox"] {
             color: hsl(0deg 56% 73%);
         }
 
-        .copy-gold {
-            color: hsl(51deg 90% 50%);
+        .copy_zuliprc {
+            padding: 0 4px;
+
+            #clipboard_image {
+                margin: 0 -2px 0 0;
+
+                path {
+                    fill: hsl(51deg 90% 50%);
+                }
+            }
         }
 
         .purple {
             color: hsl(278deg 62% 68%);
+        }
+
+        .steel-blue {
+            color: hsl(207deg 44% 49%);
         }
     }
 
@@ -1067,6 +1114,7 @@ input[type="checkbox"] {
 label.display-settings-radio-choice-label {
     border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
     padding: 8px 0 10px;
+    display: flex;
 
     &:last-of-type {
         border-bottom: none;
@@ -1095,7 +1143,8 @@ label.display-settings-radio-choice-label {
     }
 
     .right {
-        float: right;
+        /* Push to far right in flex container. */
+        margin-left: auto;
     }
 }
 
@@ -1125,16 +1174,13 @@ $option_title_width: 180px;
         overflow-x: hidden;
         overflow-y: visible;
         position: relative;
-        height: 36px;
 
         .user-name-and-status-text {
-            margin-top: -4px;
             display: flex;
             flex-direction: column;
         }
 
         .status-text {
-            display: inline-block;
             opacity: 0.75;
             font-size: 90%;
 
@@ -1161,7 +1207,7 @@ $option_title_width: 180px;
     font-size: 1.2em;
 }
 
-.invite-user-link i {
+.invite-user-link .fa-user-plus {
     text-decoration: none;
     margin-right: 5px;
 }
@@ -1487,7 +1533,8 @@ $option_title_width: 180px;
     }
 }
 
-.time-limit-custom-input {
+.time-limit-custom-input,
+.realm_jitsi_server_url_custom_input {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border: 1px solid hsl(0deg 0% 80%);
@@ -1501,6 +1548,16 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#realm_jitsi_server_url_setting {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    .jitsi_server_url_custom_input_label {
+        margin-bottom: 3px;
     }
 }
 
@@ -1665,20 +1722,6 @@ $option_title_width: 180px;
 
 #admin-user-list .last_active {
     width: 100px;
-}
-
-.required-text {
-    &:empty::after {
-        content: attr(data-empty);
-        display: block;
-
-        font-style: italic;
-        color: hsl(0deg 0% 67%);
-    }
-
-    &.thick:empty::after {
-        width: 100%;
-    }
 }
 
 #payload_url_inputbox {
@@ -1993,6 +2036,15 @@ $option_title_width: 180px;
     }
 }
 
+#admin_users_table .deactivated_user,
+#admin_deactivated_users_table .reactivated_user {
+    color: hsl(0deg 0% 64%);
+
+    & a {
+        color: inherit;
+    }
+}
+
 .settings_url_input,
 .settings_text_input {
     padding: 4px 6px;
@@ -2015,5 +2067,40 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#generate-integration-url-modal {
+    .inline {
+        display: inline;
+    }
+
+    .integration-url {
+        font-family: "Source Code Pro", monospace;
+        padding: 10px;
+        font-size: 0.85rem;
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        overflow-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .integration-url-name-wrapper .dropdown-widget-button {
+        width: 50%;
+    }
+
+    .integration-url-name-wrapper .dropdown_widget_value,
+    .integration-url-stream-wrapper .dropdown_widget_value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .integration-url-stream-wrapper .dropdown-widget-button {
+        width: 75%;
+    }
+
+    #stream-not-specified-notice {
+        margin-top: -10px;
     }
 }

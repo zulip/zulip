@@ -8,6 +8,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
@@ -223,7 +224,7 @@ class RealmTest(ZulipTestCase):
         )
         realm.save()
         result = self.client_patch("/json/realm", data)
-        self.assert_json_error(result, "Subdomain unavailable. Please choose a different one.")
+        self.assert_json_error(result, "Subdomain already in use. Please choose a different one.")
 
         # Now try to change the string_id to something available.
         data = dict(string_id="coolrealm")
@@ -864,6 +865,36 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
 
+    def test_jitsi_server_url(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        self.assertEqual(realm.video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"])
+
+        req = dict(jitsi_server_url=orjson.dumps("").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
+        req = dict(jitsi_server_url=orjson.dumps("invalidURL").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
+        req = dict(jitsi_server_url=orjson.dumps(12).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
+        valid_url = "https://jitsi.example.com"
+        req = dict(jitsi_server_url=orjson.dumps(valid_url).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.jitsi_server_url, valid_url)
+
+        req = dict(jitsi_server_url=orjson.dumps("default").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.jitsi_server_url, None)
+
     def test_do_create_realm(self) -> None:
         realm = do_create_realm("realm_string_id", "realm name")
 
@@ -1002,7 +1033,7 @@ class RealmTest(ZulipTestCase):
             UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
             UserGroup.NOBODY_GROUP_NAME,
         ]
-        self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
+        self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
 
     def test_changing_waiting_period_updates_system_groups(self) -> None:
         realm = get_realm("zulip")
@@ -1126,6 +1157,7 @@ class RealmTest(ZulipTestCase):
 
 
 class RealmAPITest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.login("desdemona")
@@ -1179,6 +1211,11 @@ class RealmAPITest(ZulipTestCase):
                     ).decode(),
                 ),
             ],
+            jitsi_server_url=[
+                dict(
+                    jitsi_server_url=orjson.dumps("https://example.jit.si").decode(),
+                ),
+            ],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["y"]["id"],
                 Realm.GIPHY_RATING_OPTIONS["r"]["id"],
@@ -1200,7 +1237,7 @@ class RealmAPITest(ZulipTestCase):
         if vals is None:
             raise AssertionError(f"No test created for {name}")
 
-        if name == "video_chat_provider":
+        if name in ("video_chat_provider", "jitsi_server_url"):
             self.set_up_db(name, vals[0][name])
             realm = self.update_with_api_multiple_value(vals[0])
             self.assertEqual(getattr(realm, name), orjson.loads(vals[0][name]))
@@ -1299,7 +1336,7 @@ class RealmAPITest(ZulipTestCase):
         bool_tests: List[bool] = [False, True]
         test_values: Dict[str, Any] = dict(
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
-            default_view=["recent_topics", "all_messages"],
+            default_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
@@ -1310,6 +1347,8 @@ class RealmAPITest(ZulipTestCase):
             email_notifications_batching_period_seconds=[120, 300],
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
             realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
+            automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
+            automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
         )
 
         vals = test_values.get(name)

@@ -1,8 +1,5 @@
 import $ from "jquery";
 
-import * as compose_state from "./compose_state";
-import * as overlays from "./overlays";
-import * as popovers from "./popovers";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 
@@ -18,18 +15,6 @@ export function is_visible() {
 
 export function get_dm_key(msg) {
     return "dm:" + msg.other_user_id;
-}
-
-export function is_in_focus() {
-    // Check if user is focused on
-    // inbox
-    return (
-        is_visible() &&
-        !compose_state.composing() &&
-        !popovers.any_active() &&
-        !overlays.is_overlay_or_modal_open() &&
-        !$(".home-page-input").is(":focus")
-    );
 }
 
 export function update_stream_colors() {

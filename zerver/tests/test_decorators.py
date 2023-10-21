@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_reactivate_user
@@ -200,7 +201,7 @@ class DecoratorTestCase(ZulipTestCase):
         request.POST["api_key"] = webhook_bot_api_key
         with self.assertLogs("zulip.zerver.webhooks", level="INFO") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = b"{}"
+                request._body = b"{}"
                 request.content_type = "application/json"
                 my_webhook_raises_exception(request)
 
@@ -212,7 +213,7 @@ class DecoratorTestCase(ZulipTestCase):
         request.POST["api_key"] = webhook_bot_api_key
         with self.assertLogs("zulip.zerver.webhooks", level="INFO") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = b"notjson"
+                request._body = b"notjson"
                 request.content_type = "text/plain"
                 my_webhook_raises_exception(request)
 
@@ -224,7 +225,7 @@ class DecoratorTestCase(ZulipTestCase):
         request.POST["api_key"] = webhook_bot_api_key
         with self.assertLogs("zulip.zerver.webhooks", level="ERROR") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = b"invalidjson"
+                request._body = b"invalidjson"
                 request.content_type = "application/json"
                 request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
                 my_webhook_raises_exception(request)
@@ -242,7 +243,7 @@ class DecoratorTestCase(ZulipTestCase):
         )
         with self.assertLogs("zulip.zerver.webhooks.unsupported", level="ERROR") as log:
             with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
-                request.body = b"invalidjson"
+                request._body = b"invalidjson"
                 request.content_type = "application/json"
                 request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
                 my_webhook_raises_exception_unsupported_event(request)
@@ -381,7 +382,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = b"{}"
+        request._body = b"{}"
         request.content_type = "text/plain"
 
         with self.assertLogs("zulip.zerver.webhooks") as logger:
@@ -404,7 +405,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = b"{}"
+        request._body = b"{}"
         request.content_type = "text/plain"
 
         with mock.patch(
@@ -414,9 +415,11 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 my_webhook_raises_exception(request)
 
-        mock_exception.assert_called_with(
-            exception_msg, stack_info=True, extra={"request": request}
-        )
+        mock_exception.assert_called_once()
+        self.assertIsInstance(mock_exception.call_args.args[0], UnsupportedWebhookEventTypeError)
+        self.assertEqual(mock_exception.call_args.args[0].event_type, "test_event")
+        self.assertEqual(mock_exception.call_args.args[0].msg, exception_msg)
+        self.assertEqual(mock_exception.call_args.kwargs, {"extra": {"request": request}})
 
     def test_authenticated_rest_api_view_with_non_webhook_view(self) -> None:
         @authenticated_rest_api_view()
@@ -430,7 +433,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = b"{}"
+        request._body = b"{}"
         request.content_type = "application/json"
 
         with mock.patch("zerver.decorator.webhook_logger.exception") as mock_exception:
@@ -875,6 +878,7 @@ class TestIncomingWebhookBot(ZulipTestCase):
 
 
 class TestValidateApiKey(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         zulip_realm = get_realm("zulip")
@@ -1134,11 +1138,11 @@ class TestAuthenticatedRequirePostDecorator(ZulipTestCase):
             )
 
         with self.assertLogs(level="WARNING") as mock_warning:
-            result = self.client_get(r"/json/remotes/server/register", {"stream": "Verona"})
+            result = self.client_get(r"/json/subscriptions/exists", {"stream": "Verona"})
             self.assertEqual(result.status_code, 405)
             self.assertEqual(
                 mock_warning.output,
-                ["WARNING:root:Method Not Allowed (GET): /json/remotes/server/register"],
+                ["WARNING:root:Method Not Allowed (GET): /json/subscriptions/exists"],
             )
 
 
@@ -1466,7 +1470,7 @@ class RestAPITest(ZulipTestCase):
         self.assert_in_response("Method Not Allowed", result)
 
         with self.settings(ZILENCER_ENABLED=True):
-            result = self.client_patch("/json/remotes/push/register")
+            result = self.client_patch("/api/v1/remotes/push/register")
             self.assertEqual(result.status_code, 405)
             self.assert_in_response("Method Not Allowed", result)
 

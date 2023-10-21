@@ -4,6 +4,7 @@ import cgi
 import datetime
 import html
 import logging
+import mimetypes
 import re
 import time
 import urllib
@@ -49,7 +50,7 @@ from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from soupsieve import escape as css_escape
 from tlds import tld_set
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib import mention
 from zerver.lib.cache import cache_with_key
@@ -523,6 +524,7 @@ class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
         super().__init__(zmd)
         self.zmd = zmd
 
+    @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_imgs = walk_tree(root, lambda e: e if e.tag == "img" else None)
@@ -535,9 +537,45 @@ class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
             img.set("src", get_camo_url(url))
 
 
+class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
+    """
+    Rewrite inline video tags to serve external content via Camo.
+
+    This rewrites all video, except ones that are served from the current
+    realm or global STATIC_URL. This is to ensure that each realm only loads
+    videos that are hosted on that realm or by the global installation,
+    avoiding information leakage to external domains or between realms. We need
+    to disable proxying of videos hosted on the same realm, because otherwise
+    we will break videos in /user_uploads/, which require authorization to
+    view.
+    """
+
+    def __init__(self, zmd: "ZulipMarkdown") -> None:
+        super().__init__(zmd)
+        self.zmd = zmd
+
+    @override
+    def run(self, root: Element) -> None:
+        # Get all URLs from the blob
+        found_videos = walk_tree(root, lambda e: e if e.tag == "video" else None)
+        for video in found_videos:
+            url = video.get("src")
+            assert url is not None
+            if is_static_or_current_realm_url(url, self.zmd.zulip_realm):
+                # Don't rewrite videos on our own site (e.g. user uploads).
+                continue
+            # Pass down both camo generated URL and the original video URL to the client.
+            # Camo URL is only used to generate preview of the video. When user plays the
+            # video, we switch to the source url to fetch the video. This allows playing
+            # the video with no load on our servers.
+            video.set("src", get_camo_url(url))
+            video.set("data-video-original-url", url)
+
+
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     """Return a `<code>` element containing the matching text."""
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -697,7 +735,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.zmd.image_preview_enabled:
             return False
         parsed_url = urllib.parse.urlparse(url)
-        # remove HTML URLs which end with image extensions that can not be shorted
+        # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
 
@@ -1155,6 +1193,51 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if uncle_link.attrib["href"] not in parent_links:
                 return insertion_index
 
+    def is_video(self, url: str) -> bool:
+        url_type = mimetypes.guess_type(url)[0]
+        # Support only video formats (containers) that are supported cross-browser and cross-device. As per
+        # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
+        # MP4 and WebM are the only formats that are widely supported.
+        supported_mimetypes = ["video/mp4", "video/webm"]
+        return url_type in supported_mimetypes
+
+    def add_video(
+        self,
+        root: Element,
+        url: str,
+        title: Optional[str],
+        class_attr: str = "message_inline_image message_inline_video",
+        insertion_index: Optional[int] = None,
+    ) -> None:
+        if insertion_index is not None:
+            div = Element("div")
+            root.insert(insertion_index, div)
+        else:
+            div = SubElement(root, "div")
+
+        div.set("class", class_attr)
+        # Add `a` tag so that the syntax of video matches with
+        # other media types and clients don't get confused.
+        a = SubElement(div, "a")
+        a.set("href", url)
+        if title:
+            a.set("title", title)
+        video = SubElement(a, "video")
+        video.set("src", url)
+        video.set("preload", "metadata")
+
+    def handle_video_inlining(
+        self, root: Element, found_url: ResultWithFamily[Tuple[str, Optional[str]]]
+    ) -> None:
+        info = self.get_inlining_information(root, found_url)
+        url = found_url.result[0]
+
+        self.add_video(info["parent"], url, info["title"], insertion_index=info["index"])
+
+        if info["remove"] is not None:
+            info["parent"].remove(info["remove"])
+
+    @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
@@ -1205,6 +1288,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if url in unique_previewable_urls and url not in processed_urls:
                 processed_urls.add(url)
             else:
+                continue
+
+            if self.is_video(url):
+                self.handle_video_inlining(root, found_url)
                 continue
 
             dropbox_image = self.dropbox_image(url)
@@ -1308,6 +1395,7 @@ class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
 
 
 class Timestamp(markdown.inlinepatterns.Pattern):
+    @override
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         time_input_string = match.group("time")
         try:
@@ -1392,6 +1480,7 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
+    @override
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is None or not db_data.translate_emoticons:
@@ -1407,6 +1496,7 @@ TEXT_PRESENTATION_RE = regex.compile(r"\P{Emoji_Presentation}\u20E3?")
 
 
 class UnicodeEmoji(CompiledInlineProcessor):
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, match: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1432,6 +1522,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
+    @override
     def handleMatch(self, match: Match[str]) -> Optional[Union[str, Element]]:
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
@@ -1460,6 +1551,7 @@ def content_has_emoji_syntax(content: str) -> bool:
 
 
 class Tex(markdown.inlinepatterns.Pattern):
+    @override
     def handleMatch(self, match: Match[str]) -> Union[str, Element]:
         rendered = render_tex(match.group("body"), is_inline=True)
         if rendered is not None:
@@ -1550,6 +1642,7 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
 
 
 class AutoLink(CompiledPattern):
+    @override
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group("url")
         db_data: Optional[DbData] = self.zmd.zulip_db_data
@@ -1608,6 +1701,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))[ ]{0,3}>[ ]?(.*)")
 
     # run() is very slightly forked from the base class; see notes below.
+    @override
     def run(self, parent: Element, blocks: List[str]) -> None:
         block = blocks.pop(0)
         m = self.RE.search(block)
@@ -1633,6 +1727,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         self.parser.parseChunk(quote, block)
         self.parser.state.reset()
 
+    @override
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes
         line = mention.MENTIONS_RE.sub(lambda m: "@_**{}**".format(m.group("match")), line)
@@ -1659,6 +1754,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
 
     LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         """Insert a newline between a paragraph and ulist if missing"""
         inserts = 0
@@ -1740,6 +1836,7 @@ class LinkifierPattern(CompiledInlineProcessor):
 
         super().__init__(compiled_re2, zmd)
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[Element, int, int], Tuple[None, None, None]]:
@@ -1760,6 +1857,7 @@ class LinkifierPattern(CompiledInlineProcessor):
 
 
 class UserMentionPattern(CompiledInlineProcessor):
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1823,6 +1921,7 @@ class UserMentionPattern(CompiledInlineProcessor):
 
 
 class UserGroupMentionPattern(CompiledInlineProcessor):
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1863,6 +1962,7 @@ class StreamPattern(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1894,6 +1994,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1958,6 +2059,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             return True
         return False
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is not None:
@@ -2013,6 +2115,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         return el
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -2073,6 +2176,7 @@ class ZulipMarkdown(markdown.Markdown):
         )
         self.set_output_format("html")
 
+    @override
     def build_parser(self) -> markdown.Markdown:
         # Build the parser using selected default features from Python-Markdown.
         # The complete list of all available processors can be found in the
@@ -2229,6 +2333,7 @@ class ZulipMarkdown(markdown.Markdown):
         )
         if settings.CAMO_URI:
             treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
+            treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry:

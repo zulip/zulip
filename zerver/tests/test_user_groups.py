@@ -52,11 +52,9 @@ class UserGroupTestCase(ZulipTestCase):
         subgroup_ids = get_subgroup_ids(user_group, direct_subgroup_only=True)
         self.assertSetEqual(set(subgroup_ids), {member.id for member in members})
 
-    def create_user_group_for_test(
-        self, group_name: str, realm: Realm = get_realm("zulip")
-    ) -> UserGroup:
+    def create_user_group_for_test(self, group_name: str) -> UserGroup:
         members = [self.example_user("othello")]
-        return check_add_user_group(realm, group_name, members, acting_user=None)
+        return check_add_user_group(get_realm("zulip"), group_name, members, acting_user=None)
 
     def test_user_groups_in_realm_serialized(self) -> None:
         realm = get_realm("zulip")
@@ -303,6 +301,16 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
         self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
 
+        # Test emtpty group name.
+        params = {
+            "name": "",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Test empty group",
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group name can't be empty!")
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+
         # Test invalid prefixes for user group name.
         params = {
             "name": "@test",
@@ -427,7 +435,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_can_edit_user_groups(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_edit_user_groups()
 
         self.check_has_permission_policies("user_group_edit_policy", validation_func)
@@ -480,6 +487,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"name": "a" * (UserGroup.MAX_NAME_LENGTH + 1)}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
+
+        # Test emtpty group name.
+        params = {"name": ""}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "User group name can't be empty!")
 
         # Test invalid prefixes for user group name.
         params = {"name": "@test"}

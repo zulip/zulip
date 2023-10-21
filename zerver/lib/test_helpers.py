@@ -38,6 +38,7 @@ from django.test import override_settings
 from django.urls import URLResolver
 from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
+from typing_extensions import override
 
 from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.user_settings import do_change_user_setting
@@ -372,14 +373,7 @@ class HostRequestMock(HttpRequest):
             ),
         )
 
-    @property
-    def body(self) -> bytes:
-        return super().body
-
-    @body.setter
-    def body(self, val: bytes) -> None:
-        self._body = val
-
+    @override
     def get_host(self) -> str:
         return self.host
 
@@ -510,6 +504,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # static content URLs, since the content they point to may
             # or may not exist.
             "coverage/(?P<path>.+)",
+            "config-error/(?P<error_name>[^/]+)",
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",

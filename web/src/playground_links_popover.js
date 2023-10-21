@@ -1,11 +1,10 @@
 import $ from "jquery";
 import url_template_lib from "url-template";
 
-import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
+import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
 import * as realm_playground from "./realm_playground";
 import * as ui_util from "./ui_util";
 
@@ -34,7 +33,7 @@ function toggle_playground_links_popover(element, playground_info) {
         onCreate(instance) {
             playground_links_popover_instance = instance;
             instance.setContent(
-                ui_util.parse_html(render_playground_links_popover_content({playground_info})),
+                ui_util.parse_html(render_playground_links_popover({playground_info})),
             );
         },
         onShow(instance) {
@@ -78,7 +77,7 @@ function get_playground_links_popover_items() {
 
 export function handle_keyboard(key) {
     const $items = get_playground_links_popover_items();
-    popovers.popover_items_handle_keyboard(key, $items);
+    popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
 function register_click_handlers() {

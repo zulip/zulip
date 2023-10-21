@@ -4,6 +4,7 @@ from unittest import mock
 
 import requests
 import responses
+from typing_extensions import override
 from urllib3.util import Retry
 
 from zerver.lib.outgoing_http import OutgoingSession
@@ -11,6 +12,7 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class RequestMockWithProxySupport(responses.RequestsMock):
+    @override
     def _on_request(
         self,
         adapter: requests.adapters.HTTPAdapter,
@@ -29,6 +31,7 @@ class RequestMockWithProxySupport(responses.RequestsMock):
 
 
 class RequestMockWithTimeoutAsHeader(responses.RequestsMock):
+    @override
     def _on_request(
         self,
         adapter: requests.adapters.HTTPAdapter,

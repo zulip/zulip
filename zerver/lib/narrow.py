@@ -43,7 +43,7 @@ from sqlalchemy.sql import (
 )
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -204,6 +204,7 @@ class BadNarrowOperatorError(JsonableError):
         self.desc: str = desc
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Invalid narrow operator: {desc}")
 
@@ -308,9 +309,6 @@ class NarrowBuilder:
         # methods to the same criterion.  See the class's block comment
         # for details.
 
-        # We have to be careful here because we're letting users call a method
-        # by name! The prefix 'by_' prevents it from colliding with builtin
-        # Python __magic__ stuff.
         operator = term["operator"]
         operand = term["operand"]
 
@@ -580,20 +578,26 @@ class NarrowBuilder:
             # complex query to get messages between these two users
             # with either of them as the sender.
             self_recipient_id = self.user_profile.recipient_id
-            cond = or_(
-                and_(
-                    column("sender_id", Integer) == other_participant.id,
-                    column("recipient_id", Integer) == self_recipient_id,
-                ),
-                and_(
-                    column("sender_id", Integer) == self.user_profile.id,
-                    column("recipient_id", Integer) == recipient.id,
+            cond = and_(
+                column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+                column("realm_id", Integer) == self.realm.id,
+                or_(
+                    and_(
+                        column("sender_id", Integer) == other_participant.id,
+                        column("recipient_id", Integer) == self_recipient_id,
+                    ),
+                    and_(
+                        column("sender_id", Integer) == self.user_profile.id,
+                        column("recipient_id", Integer) == recipient.id,
+                    ),
                 ),
             )
             return query.where(maybe_negate(cond))
 
         # Direct message with self
         cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+            column("realm_id", Integer) == self.realm.id,
             column("sender_id", Integer) == self.user_profile.id,
             column("recipient_id", Integer) == recipient.id,
         )
@@ -647,16 +651,22 @@ class NarrowBuilder:
         self_recipient_id = self.user_profile.recipient_id
         # See note above in `by_dm` about needing bidirectional messages
         # for direct messages with another person.
-        cond = or_(
-            and_(
-                column("sender_id", Integer) == narrow_user_profile.id,
-                column("recipient_id", Integer) == self_recipient_id,
+        cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+            column("realm_id", Integer) == self.realm.id,
+            or_(
+                and_(
+                    column("sender_id", Integer) == narrow_user_profile.id,
+                    column("recipient_id", Integer) == self_recipient_id,
+                ),
+                and_(
+                    column("sender_id", Integer) == self.user_profile.id,
+                    column("recipient_id", Integer) == narrow_user_profile.recipient_id,
+                ),
+                and_(
+                    column("recipient_id", Integer).in_(huddle_recipient_ids),
+                ),
             ),
-            and_(
-                column("sender_id", Integer) == self.user_profile.id,
-                column("recipient_id", Integer) == narrow_user_profile.recipient_id,
-            ),
-            column("recipient_id", Integer).in_(huddle_recipient_ids),
         )
         return query.where(maybe_negate(cond))
 
@@ -676,7 +686,11 @@ class NarrowBuilder:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
         recipient_ids = self._get_huddle_recipients(narrow_profile)
-        cond = column("recipient_id", Integer).in_(recipient_ids)
+        cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+            column("realm_id", Integer) == self.realm.id,
+            column("recipient_id", Integer).in_(recipient_ids),
+        )
         return query.where(maybe_negate(cond))
 
     def by_search(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
@@ -912,13 +926,12 @@ def get_base_query_for_search(
     realm_id: int, user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
 ) -> Tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
-    realm_cond = column("realm_id", Integer) == literal(realm_id)
     if not need_user_message:
         assert need_message
         query = (
             select(column("id", Integer).label("message_id"))
             .select_from(table("zerver_message"))
-            .where(realm_cond)
+            .where(column("realm_id", Integer) == literal(realm_id))
         )
 
         inner_msg_id_col = literal_column("zerver_message.id", Integer)
@@ -928,9 +941,11 @@ def get_base_query_for_search(
     if need_message:
         query = (
             select(column("message_id", Integer), column("flags", Integer))
-            .where(realm_cond)
-            .where(column("user_profile_id", Integer) == literal(user_profile.id))
-            .select_from(
+            # We don't limit by realm_id despite the join to
+            # zerver_messages, since the user_profile_id limit in
+            # usermessage is more selective, and the query planner
+            # can't know about that cross-table correlation.
+            .where(column("user_profile_id", Integer) == literal(user_profile.id)).select_from(
                 join(
                     table("zerver_usermessage"),
                     table("zerver_message"),

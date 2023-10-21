@@ -4,6 +4,7 @@ from typing import Any, List, Match
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 from zerver.lib.emoji import EMOTICON_CONVERSIONS, name_to_codepoint
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
@@ -38,6 +39,7 @@ ROW_HTML = """\
 
 
 class EmoticonTranslationsHelpExtension(Extension):
+    @override
     def extendMarkdown(self, md: Markdown) -> None:
         """Add SettingHelpExtension to the Markdown instance."""
         md.registerExtension(self)
@@ -49,6 +51,7 @@ class EmoticonTranslationsHelpExtension(Extension):
 
 
 class EmoticonTranslation(Preprocessor):
+    @override
     def run(self, lines: List[str]) -> List[str]:
         for loc, line in enumerate(lines):
             match = REGEXP.search(line)

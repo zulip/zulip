@@ -4,6 +4,7 @@ from unittest import mock
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.message_delete import do_delete_messages
@@ -103,6 +104,7 @@ class RetentionTestingBase(ZulipTestCase):
 
 
 class ArchiveMessagesTestingBase(RetentionTestingBase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.zulip_realm = get_realm("zulip")
@@ -576,6 +578,7 @@ class TestArchivingReactions(ArchiveMessagesTestingBase):
 
 
 class MoveMessageToArchiveBase(RetentionTestingBase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.sender = self.example_user("hamlet")

@@ -146,8 +146,8 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     if user_profile.is_realm_admin:
         # Admin can delete any message, any time.
         return
-    if message.sender != user_profile:
-        # Users can only delete messages sent by them.
+    if message.sender != user_profile and message.sender.bot_owner_id != user_profile.id:
+        # Users can only delete messages sent by them or by their bots.
         raise JsonableError(_("You don't have permission to delete this message"))
     if not user_profile.can_delete_own_message():
         # Only user with roles as allowed by delete_own_message_policy can delete message.
@@ -158,7 +158,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
         # None means no time limit to delete message
         return
     if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
-        # User can not delete message after deadline time of realm
+        # User cannot delete message after deadline time of realm
         raise JsonableError(_("The time limit for deleting this message has passed"))
     return
 

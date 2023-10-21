@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
@@ -17,7 +17,7 @@ def api_bitbucket_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
     branches: Optional[str] = None,
 ) -> HttpResponse:
     repository = payload["repository"]

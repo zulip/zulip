@@ -938,6 +938,7 @@ class AdminCreateUserTest(ZulipTestCase):
         realm = admin.realm
         self.login_user(admin)
         do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        do_set_realm_property(realm, "default_language", "ja", acting_user=None)
         valid_params = dict(
             email="romeo@zulip.net",
             password="xxxx",
@@ -1026,6 +1027,8 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.full_name, "Romeo Montague")
         self.assertEqual(new_user.id, result["user_id"])
         self.assertEqual(new_user.tos_version, UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
+        # Make sure the new user got the realm's default language
+        self.assertEqual(new_user.default_language, "ja")
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(
@@ -1567,6 +1570,20 @@ class ActivateTest(ZulipTestCase):
         result = self.client_post(f"/json/users/{invalid_user_id}/reactivate")
         self.assert_json_error(result, "No such user")
 
+    def test_api_with_mirrordummy_user(self) -> None:
+        self.login("iago")
+        desdemona = self.example_user("desdemona")
+        change_user_is_active(desdemona, False)
+
+        desdemona.is_mirror_dummy = True
+        desdemona.save(update_fields=["is_mirror_dummy"])
+
+        # Cannot deactivate a user which is marked as "mirror dummy" from importing
+        result = self.client_post(f"/json/users/{desdemona.id}/reactivate")
+        self.assert_json_error(
+            result, "Cannot activate a placeholder account; ask the user to sign up, instead."
+        )
+
     def test_api_with_insufficient_permissions(self) -> None:
         non_admin = self.example_user("othello")
         do_change_user_role(non_admin, UserProfile.ROLE_MEMBER, acting_user=None)
@@ -1893,6 +1910,7 @@ class RecipientInfoTest(ZulipTestCase):
             service_bot_tuples=[],
             all_bot_user_ids=set(),
             topic_participant_user_ids=set(),
+            sender_muted_stream=False,
         )
 
         self.assertEqual(info, expected_info)
@@ -1949,11 +1967,13 @@ class RecipientInfoTest(ZulipTestCase):
             possible_stream_wildcard_mention=False,
         )
         self.assertEqual(info.stream_wildcard_mention_user_ids, set())
-        self.assertEqual(info.topic_wildcard_mention_user_ids, set())
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
 
         # User who sent a message to the topic, or reacted to a message on the topic
         # is only considered as a possible user to be notified for topic mention.
-        self.send_stream_message(hamlet, stream_name, content="test message", topic_name=topic_name)
+        self.send_stream_message(
+            othello, stream_name, content="test message", topic_name=topic_name
+        )
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
@@ -1963,7 +1983,7 @@ class RecipientInfoTest(ZulipTestCase):
             possible_stream_wildcard_mention=False,
         )
         self.assertEqual(info.stream_wildcard_mention_user_ids, set())
-        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id, othello.id})
 
         info = get_recipient_info(
             realm_id=realm.id,
@@ -1985,7 +2005,7 @@ class RecipientInfoTest(ZulipTestCase):
             possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
-        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id, othello.id})
 
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = False

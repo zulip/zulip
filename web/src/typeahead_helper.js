@@ -7,6 +7,7 @@ import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
@@ -29,16 +30,24 @@ export function build_highlight_regex(query) {
 }
 
 export function highlight_with_escaping_and_regex(regex, item) {
+    // if regex is empty return entire item highlighted and escaped
+    if (regex.source === "()") {
+        return "<strong>" + Handlebars.Utils.escapeExpression(item) + "</strong>";
+    }
+
     // We need to assemble this manually (as opposed to doing 'join') because we need to
     // (1) escape all the pieces and (2) the regex is case-insensitive, and we need
     // to know the case of the content we're replacing (you can't just use a bolded
     // version of 'query')
 
-    const pieces = item.split(regex);
+    const pieces = item.split(regex).filter(Boolean);
     let result = "";
 
-    for (const piece of pieces) {
-        if (regex.test(piece)) {
+    for (let i = 0; i < pieces.length; i += 1) {
+        const piece = pieces[i];
+        if (regex.test(piece) && (i === 0 || pieces[i - 1].endsWith(" "))) {
+            // only highlight if the matching part is a word prefix, ie
+            // if it is the 1st piece or if there was a space before it
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
             result += Handlebars.Utils.escapeExpression(piece);
@@ -49,21 +58,12 @@ export function highlight_with_escaping_and_regex(regex, item) {
 }
 
 export function make_query_highlighter(query) {
-    let i;
     query = query.toLowerCase();
 
     const regex = build_highlight_regex(query);
 
     return function (phrase) {
-        let result = "";
-        const parts = phrase.split(" ");
-        for (i = 0; i < parts.length; i += 1) {
-            if (i > 0) {
-                result += " ";
-            }
-            result += highlight_with_escaping_and_regex(regex, parts[i]);
-        }
-        return result;
+        return highlight_with_escaping_and_regex(regex, phrase);
     };
 }
 
@@ -71,6 +71,7 @@ export function render_typeahead_item(args) {
     args.has_image = args.img_src !== undefined;
     args.has_status = args.status_emoji_info !== undefined;
     args.has_secondary = args.secondary !== undefined;
+    args.has_pronouns = args.pronouns !== undefined;
     return render_typeahead_list_item(args);
 }
 
@@ -87,12 +88,19 @@ export function render_person(person) {
 
     const status_emoji_info = user_status.get_status_emoji(person.user_id);
 
+    const PRONOUNS_ID = page_params.custom_profile_field_types.PRONOUNS.id;
+    const pronouns_list = people.get_custom_fields_by_type(person.user_id, PRONOUNS_ID);
+
+    const pronouns = pronouns_list?.[0]?.value;
+
     const typeahead_arguments = {
         primary: person.full_name,
         img_src: avatar_url,
         user_circle_class,
         is_person: true,
         status_emoji_info,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
+        pronouns,
     };
 
     typeahead_arguments.secondary = person.delivery_email;

@@ -151,13 +151,21 @@ class UnreadDirectMessageCounter {
         this.bucketer.delete(message_id);
     }
 
-    get_counts() {
-        const pm_dict = new Map(); // Hash by user_ids_string -> count
+    get_counts(include_latest_msg_id = false) {
+        const pm_dict = new Map(); // Hash by user_ids_string -> count Optional[, max_id]
         let total_count = 0;
         let right_sidebar_count = 0;
         for (const [user_ids_string, id_set] of this.bucketer) {
             const count = id_set.size;
-            pm_dict.set(user_ids_string, count);
+            if (include_latest_msg_id) {
+                const latest_msg_id = Math.max(...id_set);
+                pm_dict.set(user_ids_string, {
+                    count,
+                    latest_msg_id,
+                });
+            } else {
+                pm_dict.set(user_ids_string, count);
+            }
             const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
             const is_with_one_human =
                 user_ids.length === 1 && !people.get_by_user_id(user_ids[0]).is_bot;
@@ -261,7 +269,7 @@ class UnreadTopicCounter {
         this.bucketer.delete(msg_id);
     }
 
-    get_counts(include_per_topic_count = false) {
+    get_counts(include_per_topic_count = false, include_per_topic_latest_msg_id = false) {
         const res = {};
         res.stream_unread_messages = 0;
         res.stream_count = new Map(); // hash by stream_id -> count
@@ -280,7 +288,15 @@ class UnreadTopicCounter {
                 let stream_count = 0;
                 for (const [topic, msgs] of per_stream_bucketer) {
                     const topic_count = msgs.size;
-                    topic_unread.set(topic, topic_count);
+                    if (include_per_topic_latest_msg_id) {
+                        const latest_msg_id = Math.max(...msgs);
+                        topic_unread.set(topic, {
+                            topic_count,
+                            latest_msg_id,
+                        });
+                    } else {
+                        topic_unread.set(topic, topic_count);
+                    }
                     stream_count += topic_count;
                 }
 
@@ -360,7 +376,7 @@ class UnreadTopicCounter {
         for (const [topic, msgs] of per_stream_bucketer) {
             const topic_count = msgs.size;
 
-            if (user_topics.is_topic_unmuted(stream_id, topic)) {
+            if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
                 unmuted_count += topic_count;
             } else if (user_topics.is_topic_muted(stream_id, topic)) {
                 muted_count += topic_count;
@@ -464,7 +480,7 @@ class UnreadTopicCounter {
             const topic = stream_bucketer.reverse_lookup.get(message_id);
             const stream_is_muted = sub_store.get(stream_id)?.is_muted;
             if (stream_is_muted) {
-                if (user_topics.is_topic_unmuted(stream_id, topic)) {
+                if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
                     streams_with_unmuted_mentions.add(stream_id);
                 }
             } else {
@@ -709,10 +725,17 @@ export function update_message_for_mention(message, content_edited = false) {
         return false;
     }
 
+    // A message is said to have an unmuted mention if message contains a mention and
+    // if the message is a direct message or
+    // if the message is in a non muted topic in an unmuted stream or
+    // if the message is in a followed or an unmuted topic in a muted stream.
     const is_unmuted_mention =
-        message.type === "stream" &&
         message.mentioned &&
-        !user_topics.is_topic_muted(message.stream_id, message.topic);
+        (message.type === "private" ||
+            (!stream_data.is_muted(message.stream_id) &&
+                !user_topics.is_topic_muted(message.stream_id, message.topic)) ||
+            (stream_data.is_muted(message.stream_id) &&
+                user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic)));
 
     if (is_unmuted_mention || message.mentioned_me_directly) {
         unread_mentions_counter.add(message.id);
@@ -763,14 +786,17 @@ export function declare_bankruptcy() {
     unread_mention_topics.clear();
 }
 
-export function get_unread_pm() {
-    const pm_res = unread_direct_message_counter.get_counts();
+export function get_unread_pm(include_per_bucket_latest_msg_id = false) {
+    const pm_res = unread_direct_message_counter.get_counts(include_per_bucket_latest_msg_id);
     return pm_res;
 }
 
-export function get_unread_topics() {
+export function get_unread_topics(include_per_topic_latest_msg_id = false) {
     const include_per_topic_count = true;
-    const topics_res = unread_topic_counter.get_counts(include_per_topic_count);
+    const topics_res = unread_topic_counter.get_counts(
+        include_per_topic_count,
+        include_per_topic_latest_msg_id,
+    );
     return topics_res;
 }
 

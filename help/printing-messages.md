@@ -1,33 +1,31 @@
 # Printing messages
 
-Zulip [conversations](/help/recent-conversations) are printable from the
-Zulip web app. So is any other message feed view, including
-[searches](https://zulip.com/help/search-for-messages).
+Zulip lets you print the messages in any view, including
+[topics](/help/reading-topics), [direct message
+conversations](/help/reading-dms), and [searches](/help/search-for-messages).
+
+Printouts include just the content you need, without sidebars and buttons.
+Messages will be printed with black text on a white background, regardless of
+whether you're using [light or dark theme](/help/dark-theme).
 
 {start_tabs}
 
 {tab|web}
 
-1. Navigate to a stream, topic, or direct message view.
+1. Navigate to any message view.
 
-1. Ensure that all messages you wish to print from further back in time
-   have been loaded and can be scrolled to on screen (all loaded messages
-   will print).
+1. Scroll up through message history until you can see the oldest message that
+   you wish to print.
 
-1. Use your browser's print feature (e.g., File > Print) to preview
+1. Use your browser's print feature (e.g., **File** > **Print**) to preview
    and print your messages.
 
+!!! tip ""
+
+    If the print preview includes more messages than you need, select which
+    pages you want from the printing menu.
+
 {end_tabs}
-
-Messages will print beginning with the oldest loaded message you can see on
-screen. If you need your printout to include messages from further back in time,
-you'll need to scroll up through the message history until you can see the
-messages you wish to print.
-
-Conversation printouts exclude sidebars and other interface features that you
-otherwise see on screen. And whether you're viewing Zulip in the [light or dark
-theme](/help/dark-theme), Zulip message views will print with appropriate colors
-for paper or system-generated PDFs. Background colors will not be printed.
 
 ## Related articles
 

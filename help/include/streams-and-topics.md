@@ -9,9 +9,9 @@ conversational thread. Here is what it looks like in Zulip.
 
 Topics are one of the most wonderful aspects of using Zulip:
 
-* Lots of [conversations](/help/recent-conversations) can happen in the same
-  stream at the same time, each in its own topic. You never have to worry about
-  interrupting — each conversation has its own space.
+* Lots of conversations can happen in the same stream at the same time, each in
+  its own topic. You never have to worry about interrupting — each conversation
+  has its own space.
 * Conversations can last many hours or days, letting everyone respond in their
   own time. Don't worry about replying long after a message is sent —
   everyone will see your reply in context.
