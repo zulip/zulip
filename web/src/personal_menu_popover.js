@@ -107,3 +107,10 @@ export function initialize() {
         },
     });
 }
+
+export function toggle() {
+    // NOTE: Since to open personal menu, you need to click on your avatar (which calls
+    // tippyjs.hideAll()), or go via gear menu if using hotkeys, we don't need to
+    // call tippyjs.hideAll() for it.
+    $("#personal-menu").trigger("click");
+}
