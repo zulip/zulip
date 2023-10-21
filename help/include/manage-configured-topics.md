@@ -2,10 +2,7 @@
 
 {tab|desktop-web}
 
-{settings_tab|topics}
-
-1. Configure notifications for each topic by selecting the desired option from
-   the dropdown in the **Status** column.
+{!manage-configured-topics-desktop-web.md!}
 
 {tab|mobile}
 
