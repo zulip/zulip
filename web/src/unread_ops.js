@@ -333,25 +333,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
             message.unread = true;
             mentioned_me_directly = message.mentioned_me_directly;
         } else {
-            // BUG: If we don't have a copy of the message locally, we
-            // have no way to correctly compute whether the mentions
-            // are personal mentions or wildcard mentions, because
-            // message_info doesn't contain that information... so we
-            // guess that it's a personal mention.
-            //
-            // This is a correctness bug, but is likely very rare: We
-            // will have a copy of all unread messages locally once
-            // the app has finished the message_fetch backfill
-            // sequence (and also will certainly have this message if
-            // this is the client where the "Mark as unread" action
-            // was taken). Further, the distinction is only important
-            // for mentions in muted streams, where we count direct
-            // mentions as important enough to promote, and wildcard
-            // mentions as not.
-            //
-            // A possible fix would be to just fetch the fully message
-            // from the API here, but the right fix likely requires API changes.
-            mentioned_me_directly = message_info.mentioned;
+            mentioned_me_directly = message_info.mentioned_me_directly;
         }
 
         let user_ids_string;

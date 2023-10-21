@@ -82,6 +82,8 @@ from zerver.models import (
 class MessageDetailsDict(TypedDict, total=False):
     type: str
     mentioned: bool
+    mentioned_me_directly: bool
+    wildcard_mentioned: bool
     user_ids: List[int]
     stream_id: int
     topic: str
@@ -116,6 +118,8 @@ class RawUnreadMessagesResult(TypedDict):
     stream_dict: Dict[int, RawUnreadStreamDict]
     huddle_dict: Dict[int, RawUnreadHuddleDict]
     mentions: Set[int]
+    mentions_me_directly: Set[int]
+    wildcard_mentions: Set[int]
     muted_stream_ids: Set[int]
     unmuted_stream_msgs: Set[int]
     old_unreads_missing: bool
@@ -1189,9 +1193,13 @@ def extract_unread_data_from_um_rows(
         # TODO: Add support for alert words here as well.
         is_mentioned = (row["flags"] & UserMessage.flags.mentioned) != 0
         is_wildcard_mentioned = (row["flags"] & UserMessage.flags.wildcard_mentioned) != 0
+        is_direct_mentioned = (row["flags"] & UserMessage.flags.mentioned_me_directly) != 0
         if is_mentioned:
             mentions.add(message_id)
+        if is_direct_mentioned:
+            mentions_me_directly.add(message_id)
         if is_wildcard_mentioned:
+            wildcard_mentions.add(message_id)
             if msg_type == Recipient.STREAM:
                 stream_id = row["message__recipient__type_id"]
                 topic = row[MESSAGE__TOPIC]
@@ -1403,6 +1411,10 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+            if message_id in raw_unread_data["mentions_me_directly"]:
+                message_details["mentioned_me_directly"] = True
+            elif message_id in raw_unread_data["wildcard_mentions"]:
+                message_details["wildcard_mentioned"] = True
         unread_data[str(message_id)] = message_details
 
     for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
@@ -1417,6 +1429,10 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+            if message_id in raw_unread_data["mentions_me_directly"]:
+                message_details["mentioned_me_directly"] = True
+            elif message_id in raw_unread_data["wildcard_mentions"]:
+                message_details["wildcard_mentioned"] = True
         unread_data[str(message_id)] = message_details
 
     for message_id, huddle_message_details in raw_unread_data["huddle_dict"].items():
@@ -1433,6 +1449,10 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+            if message_id in raw_unread_data["mentions_me_directly"]:
+                message_details["mentioned_me_directly"] = True
+            elif message_id in raw_unread_data["wildcard_mentions"]:
+                message_details["wildcard_mentioned"] = True
         unread_data[str(message_id)] = message_details
 
     return unread_data
