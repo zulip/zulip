@@ -486,7 +486,11 @@ def validate_request(
     # against the OpenAPI documentation.
     assert isinstance(data, dict)
     mock_request = MockRequest(
-        "http://localhost:9991/", method, "/api/v1" + url, headers=http_headers, args=data
+        "http://localhost:9991/",
+        method,
+        "/api/v1" + url,
+        headers=http_headers,
+        args={k: str(v) for k, v in data.items()},
     )
     try:
         openapi_spec.spec().validate_request(mock_request)
