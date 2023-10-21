@@ -826,7 +826,7 @@ def get_messages_iterator(
                 if message.get("mimetype") == "application/vnd.slack-docs":
                     # This is a Slack "Post" which is HTML-formatted
                     file_url = message.get("url_private_download")
-                    response = requests.get(file_url)               
+                    response = requests.get(file_url)
                     response.encoding = "utf-8"
                     # response encoding to "utf-8" is required to specify encoding for response.text
                     # html2text is GPL licensed, so run it as a subprocess.
