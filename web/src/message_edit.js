@@ -1337,3 +1337,39 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
         error: error_cb,
     });
 }
+
+export function is_message_oldest_or_newest(
+    stream_id,
+    topic_name,
+    message_id,
+    success_callback,
+    error_callback,
+) {
+    const data = {
+        anchor: message_id,
+        num_before: 1,
+        num_after: 1,
+        narrow: JSON.stringify([
+            {operator: "stream", operand: stream_id},
+            {operator: "topic", operand: topic_name},
+        ]),
+    };
+
+    channel.get({
+        url: "/json/messages",
+        data,
+        success(data) {
+            let is_oldest = true;
+            let is_newest = true;
+            for (const message of data.messages) {
+                if (message.id < message_id) {
+                    is_oldest = false;
+                } else if (message.id > message_id) {
+                    is_newest = false;
+                }
+            }
+            success_callback(is_oldest, is_newest);
+        },
+        error: error_callback,
+    });
+}
