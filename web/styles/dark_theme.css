@@ -1255,14 +1255,6 @@
         box-shadow: 0 5px 10px hsl(0deg 0% 0% / 40%);
     }
 
-    #invite-user-modal {
-        #clipboard_image {
-            & path {
-                fill: hsl(236deg 33% 90%);
-            }
-        }
-    }
-
     #user-profile-modal {
         #default-section {
             .default-field {
