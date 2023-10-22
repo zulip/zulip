@@ -5015,8 +5015,8 @@ paths:
           description: |
             The ID of the attachment to be deleted.
           schema:
-            type: string
-          example: "1"
+            type: integer
+          example: 1
           required: true
       responses:
         "200":
