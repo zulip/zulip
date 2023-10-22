@@ -237,3 +237,9 @@ export function close_active(): void {
     const $micromodal = $(".micromodal.modal--open");
     Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
 }
+
+export function close_active_if_any(): void {
+    if (any_active()) {
+        close_active();
+    }
+}

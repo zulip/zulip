@@ -14,6 +14,7 @@ import * as info_overlay from "./info_overlay";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
+import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -407,6 +408,7 @@ function hashchanged(from_reload, e) {
     overlays.close_for_hash_change();
     sidebar_ui.hide_all();
     popovers.hide_all();
+    modals.close_active_if_any();
     browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);
     browser_history.state.changing_hash = false;
