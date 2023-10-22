@@ -41,7 +41,10 @@ function get_notification_content(message) {
         (message.type === "private" || message.type === "test-notification") &&
         !user_settings.pm_content_in_desktop_notifications
     ) {
-        content = "New direct message from " + message.sender_full_name;
+        content = $t(
+            {defaultMessage: "New direct message from {sender_full_name}"},
+            {sender_full_name: message.sender_full_name},
+        );
     }
 
     return content;
