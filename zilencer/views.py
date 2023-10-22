@@ -17,7 +17,7 @@ from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import BaseModel, ConfigDict
 
-from analytics.lib.counts import COUNT_STATS
+from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from corporate.lib.stripe import do_deactivate_remote_server
 from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError
@@ -396,6 +396,13 @@ def remote_server_notify_push(
         user_identity,
         len(android_devices),
         len(apple_devices),
+    )
+    do_increment_logging_stat(
+        server,
+        COUNT_STATS["mobile_pushes_received::day"],
+        None,
+        timezone_now(),
+        increment=len(android_devices) + len(apple_devices),
     )
 
     # Truncate incoming pushes to 200, due to APNs maximum message

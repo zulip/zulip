@@ -3,9 +3,11 @@ from typing import Any, Dict, List, Optional, Tuple, Type
 from unittest import mock
 
 import orjson
+import time_machine
 from django.apps import apps
 from django.db import models
 from django.db.models import Sum
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 from typing_extensions import override
@@ -53,14 +55,20 @@ from zerver.actions.user_activity import update_user_activity_interval
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
+from zerver.lib.push_notifications import (
+    get_message_payload_apns,
+    get_message_payload_gcm,
+    hex_to_b64,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import TimeZoneNotUTCError, floor_to_day
+from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Client,
     Huddle,
     Message,
+    NotificationTriggers,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
@@ -74,7 +82,7 @@ from zerver.models import (
     get_user,
     is_cross_realm_bot_email,
 )
-from zilencer.models import RemoteInstallationCount, RemoteZulipServer
+from zilencer.models import RemoteInstallationCount, RemotePushDeviceToken, RemoteZulipServer
 from zilencer.views import get_last_id_from_server
 
 
@@ -236,7 +244,7 @@ class AnalyticsTestCase(ZulipTestCase):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
                 kwargs[key] = kwargs.get(key, value)
-            if table is not InstallationCount and "realm" not in kwargs:
+            if table not in [InstallationCount, RemoteInstallationCount] and "realm" not in kwargs:
                 if "user" in kwargs:
                     kwargs["realm"] = kwargs["user"].realm
                 elif "stream" in kwargs:
@@ -1374,6 +1382,86 @@ class TestLoggingCountStats(AnalyticsTestCase):
             1,
             RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
                 "value__sum"
+            ],
+        )
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    def test_mobile_pushes_received_count(self) -> None:
+        self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
+        self.server = RemoteZulipServer.objects.create(
+            uuid=self.server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=timezone_now(),
+        )
+
+        hamlet = self.example_user("hamlet")
+        token = "aaaa"
+
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64(token),
+            user_uuid=(hamlet.uuid),
+            server=self.server,
+        )
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64(token + "aa"),
+            user_uuid=(hamlet.uuid),
+            server=self.server,
+        )
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=hex_to_b64(token),
+            user_uuid=str(hamlet.uuid),
+            server=self.server,
+        )
+
+        message = Message(
+            sender=hamlet,
+            recipient=self.example_user("othello").recipient,
+            realm_id=hamlet.realm_id,
+            content="This is test content",
+            rendered_content="This is test content",
+            date_sent=timezone_now(),
+            sending_client=get_client("test"),
+        )
+        message.set_topic_name("Test topic")
+        message.save()
+        gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        apns_payload = get_message_payload_apns(
+            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
+        )
+
+        payload = {
+            "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
+            "gcm_payload": gcm_payload,
+            "apns_payload": apns_payload,
+            "gcm_options": gcm_options,
+        }
+        now = timezone_now()
+        with time_machine.travel(now, tick=False), mock.patch(
+            "zilencer.views.send_android_push_notification"
+        ), mock.patch("zilencer.views.send_apple_push_notification"), self.assertLogs(
+            "zilencer.views", level="INFO"
+        ):
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+                subdomain="",
+            )
+            self.assert_json_success(result)
+
+        # There are 3 devices we created for the user, and the Count increment should
+        # match that number.
+        self.assertTableState(
+            RemoteInstallationCount,
+            ["property", "value", "subgroup", "server", "remote_id", "end_time"],
+            [
+                ["mobile_pushes_received::day", 3, None, self.server, None, ceiling_to_day(now)],
             ],
         )
 
