@@ -23,6 +23,9 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
 from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
 
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteInstallationCount, RemoteZulipServer
+
 ## Logging setup ##
 
 logger = logging.getLogger("zulip.management")
@@ -293,7 +296,7 @@ def do_aggregate_to_summary_table(
 
 # called from zerver.actions; should not throw any errors
 def do_increment_logging_stat(
-    model_object_for_bucket: Union[Realm, UserProfile, Stream],
+    model_object_for_bucket: Union[Realm, UserProfile, Stream, "RemoteZulipServer"],
     stat: CountStat,
     subgroup: Optional[Union[str, int, bool]],
     event_time: datetime,
@@ -305,13 +308,20 @@ def do_increment_logging_stat(
     table = stat.data_collector.output_table
     if table == RealmCount:
         assert isinstance(model_object_for_bucket, Realm)
-        id_args: Dict[str, Union[Realm, UserProfile, Stream]] = {"realm": model_object_for_bucket}
+        id_args: Dict[str, Optional[Union[Realm, UserProfile, Stream, "RemoteZulipServer"]]] = {
+            "realm": model_object_for_bucket
+        }
     elif table == UserCount:
         assert isinstance(model_object_for_bucket, UserProfile)
         id_args = {"realm": model_object_for_bucket.realm, "user": model_object_for_bucket}
-    else:  # StreamCount
+    elif table == StreamCount:
         assert isinstance(model_object_for_bucket, Stream)
         id_args = {"realm": model_object_for_bucket.realm, "stream": model_object_for_bucket}
+    elif table == RemoteInstallationCount:
+        assert isinstance(model_object_for_bucket, RemoteZulipServer)
+        id_args = {"server": model_object_for_bucket, "remote_id": None}
+    else:
+        raise AssertionError("Unsupported CountStat output_table")
 
     if stat.frequency == CountStat.DAY:
         end_time = ceiling_to_day(event_time)
@@ -832,6 +842,15 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
             dependencies=["active_users_audit:is_bot:day", "15day_actives::day"],
         ),
     ]
+
+    if settings.ZILENCER_ENABLED:
+        count_stats_.append(
+            LoggingCountStat(
+                "mobile_pushes_received::day",
+                RemoteInstallationCount,
+                CountStat.DAY,
+            )
+        )
 
     return OrderedDict((stat.property, stat) for stat in count_stats_)
 
