@@ -4749,7 +4749,7 @@ msgstr ""
 
 #: zerver/models.py:3338
 msgid "Custom emoji"
-msgstr "Emojis personalitzats"
+msgstr "Emoji personalitzats"
 
 #: zerver/models.py:3339
 msgid "Zulip extra emoji"

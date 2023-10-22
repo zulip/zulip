@@ -3617,13 +3617,13 @@ msgstr "Muss ein Organisations-Administrator oder Emoji-Autor sein."
 
 #: zerver/lib/emoji.py:141
 msgid "Emoji names must end with either a letter or digit."
-msgstr "Namen von Emojis müssen entweder mit einem Buchstaben oder mit einer Zahl enden."
+msgstr "Namen von Emoji müssen entweder mit einem Buchstaben oder mit einer Zahl enden."
 
 #: zerver/lib/emoji.py:144
 msgid ""
 "Emoji names must contain only lowercase English letters, digits, spaces, "
 "dashes, and underscores."
-msgstr "Namen von Emojis dürfen nur aus Kleinbuchstaben ohne Umlauten, Zahlen, Leerzeichen, Strichen und Unterstrichen bestehen."
+msgstr "Namen von Emoji dürfen nur aus Kleinbuchstaben ohne Umlauten, Zahlen, Leerzeichen, Strichen und Unterstrichen bestehen."
 
 #: zerver/lib/emoji.py:147
 msgid "Emoji name is missing"
