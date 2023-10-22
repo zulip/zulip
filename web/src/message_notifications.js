@@ -104,8 +104,7 @@ function get_notification_title(message, content, msg_count) {
                 if (content.length + title.length + other_recipients.length > 230) {
                     // Then count how many people are in the conversation and summarize
                     // by saying the conversation is with "you and [number] other people"
-                    other_recipients =
-                        other_recipients.replaceAll(/[^,]/g, "").length + " other people";
+                    other_recipients = message.display_recipient.length - 2 + " other people";
                 }
 
                 title += " (to you and " + other_recipients + ")";
