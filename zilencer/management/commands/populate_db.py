@@ -829,28 +829,29 @@ class Command(BaseCommand):
             UserProfile.objects.filter(is_bot=False, realm=zulip_realm)
         )
 
-        # As we plan to change the default values for 'automatically_follow_topics_policy' and
-        # 'automatically_unmute_topics_in_muted_streams_policy' in the future, it will lead to
-        # skewing a lot of our tests, which now need to take into account extra events and database queries.
-        #
-        # We explicitly set the values for both settings to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER'
-        # to make the tests independent of the default values.
-        #
-        # We have separate tests to verify events generated, database query counts,
-        # and other important details related to the above-mentioned settings.
-        for user in user_profiles:
-            do_change_user_setting(
-                user,
-                "automatically_follow_topics_policy",
-                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
-                acting_user=None,
-            )
-            do_change_user_setting(
-                user,
-                "automatically_unmute_topics_in_muted_streams_policy",
-                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
-                acting_user=None,
-            )
+        if options["test_suite"]:
+            # As we plan to change the default values for 'automatically_follow_topics_policy' and
+            # 'automatically_unmute_topics_in_muted_streams_policy' in the future, it will lead to
+            # skewing a lot of our tests, which now need to take into account extra events and database queries.
+            #
+            # We explicitly set the values for both settings to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER'
+            # to make the tests independent of the default values.
+            #
+            # We have separate tests to verify events generated, database query counts,
+            # and other important details related to the above-mentioned settings.
+            for user in user_profiles:
+                do_change_user_setting(
+                    user,
+                    "automatically_follow_topics_policy",
+                    UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                    acting_user=None,
+                )
+                do_change_user_setting(
+                    user,
+                    "automatically_unmute_topics_in_muted_streams_policy",
+                    UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                    acting_user=None,
+                )
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
