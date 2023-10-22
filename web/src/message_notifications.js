@@ -85,7 +85,7 @@ function remove_sender_from_list_of_recipients(message) {
         .slice(", ".length, -", ".length);
 }
 
-function get_notification_title(message, content, msg_count) {
+function get_notification_title(message, msg_count) {
     let title = message.sender_full_name;
     let other_recipients;
 
@@ -100,8 +100,11 @@ function get_notification_title(message, content, msg_count) {
         case "private":
             other_recipients = remove_sender_from_list_of_recipients(message);
             if (message.display_recipient.length > 2) {
+                // Character limit taken from https://www.pushengage.com/push-notification-character-limits
+                // We use a higher character limit so that the 3rd sender can at least be partially visible so that
+                // the user can distinguish the group DM.
                 // If the message has too many recipients to list them all...
-                if (content.length + title.length + other_recipients.length > 230) {
+                if (title.length + other_recipients.length > 50) {
                     // Then count how many people are in the conversation and summarize
                     // by saying the conversation is with "you and [number] other people"
                     other_recipients = message.display_recipient.length - 2 + " other people";
@@ -137,7 +140,7 @@ export function process_notification(notification) {
         notification_object.close();
     }
 
-    const title = get_notification_title(message, content, msg_count);
+    const title = get_notification_title(message, msg_count);
 
     if (notification.desktop_notify) {
         const icon_url = people.small_avatar_url(message);
