@@ -721,19 +721,22 @@ export function dispatch_normal_event(event) {
                 // present in the backend/Jinja2 templates.
                 settings_display.set_default_language_name(event.language_name);
             }
-            if (
-                event.property === "default_view" && // If current hash is empty (default view), and the
+            if (event.property === "default_view") {
+                left_sidebar_navigation_area.handle_home_view_changed(event.value);
+
+                // If current hash is empty (default view), and the
                 // user changes the default view while in settings,
                 // then going back to an empty hash on closing the
                 // overlay will not match the view currently displayed
                 // under settings, so we set the hash to the previous
                 // value of the default view.
-                !browser_history.state.hash_before_overlay &&
-                overlays.settings_open()
-            ) {
-                browser_history.state.hash_before_overlay =
-                    "#" +
-                    (original_default_view === "recent_topics" ? "recent" : original_default_view);
+                if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
+                    browser_history.state.hash_before_overlay =
+                        "#" +
+                        (original_default_view === "recent_topics"
+                            ? "recent"
+                            : original_default_view);
+                }
             }
             if (event.property === "twenty_four_hour_time") {
                 // Rerender the whole message list UI

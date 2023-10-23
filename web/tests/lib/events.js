@@ -920,6 +920,13 @@ exports.fixtures = {
         value: "all_messages",
     },
 
+    user_settings__default_view_inbox: {
+        type: "user_settings",
+        op: "update",
+        property: "default_view",
+        value: "inbox",
+    },
+
     user_settings__default_view_recent_topics: {
         type: "user_settings",
         op: "update",
