@@ -478,7 +478,15 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         result = django_client.delete(
-            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+            url,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",  # https://code.djangoproject.com/ticket/33230
+                **(headers or {}),
+            },
+            **extra,
         )
         self.validate_api_response_openapi(
             url,
@@ -551,7 +559,10 @@ Output:
             encoded,
             follow=follow,
             secure=secure,
-            headers=headers,
+            headers={
+                "Content-Type": content_type,  # https://code.djangoproject.com/ticket/33230
+                **(headers or {}),
+            },
             content_type=content_type,
             **extra,
         )
