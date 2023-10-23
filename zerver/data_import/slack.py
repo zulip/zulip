@@ -830,7 +830,8 @@ def get_messages_iterator(
                     response.encoding = "utf-8"
                     # response encoding to "utf-8" is required to specify encoding for response.text
                     # html2text is GPL licensed, so run it as a subprocess.
-                    text = subprocess.check_output(["html2text"], input=response.text, text=True)
+                    markdown_content = ["markdownify", "--heading-style", "atx"]
+                    text = subprocess.check_output(markdown_content, input=response.text, text=True)
                     message["text"] = "*Imported from Slack Canvas*\n" + text
                     message["ts"] = message.get("created")
                 if dir_name in added_channels:
