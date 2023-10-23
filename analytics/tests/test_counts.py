@@ -73,6 +73,8 @@ from zerver.models import (
     get_user,
     is_cross_realm_bot_email,
 )
+from zilencer.models import RemoteInstallationCount, RemoteZulipServer
+from zilencer.views import get_last_id_from_server
 
 
 class AnalyticsTestCase(ZulipTestCase):
@@ -1849,3 +1851,26 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             1,
         )
         self.assertEqual(RealmCount.objects.filter(property="realm_active_humans::day").count(), 1)
+
+
+class GetLastIdFromServerTest(ZulipTestCase):
+    def test_get_last_id_from_server_ignores_null(self) -> None:
+        """
+        Verifies that get_last_id_from_server ignores null remote_ids, since this goes
+        against the default Postgres ordering behavior, which treats nulls as the largest value.
+        """
+        self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
+        self.server = RemoteZulipServer.objects.create(
+            uuid=self.server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=timezone_now(),
+        )
+        first = RemoteInstallationCount.objects.create(
+            end_time=timezone_now(), server=self.server, property="test", value=1, remote_id=1
+        )
+        RemoteInstallationCount.objects.create(
+            end_time=timezone_now(), server=self.server, property="test2", value=1, remote_id=None
+        )
+        result = get_last_id_from_server(self.server, RemoteInstallationCount)
+        self.assertEqual(result, first.remote_id)

@@ -135,7 +135,7 @@ class BaseRemoteCount(BaseCount):
     # The remote_id field is the id value of the corresponding *Count object
     # on the remote server.
     # It lets us deduplicate data from the remote server.
-    remote_id = models.IntegerField()
+    remote_id = models.IntegerField(null=True)
 
     class Meta:
         abstract = True
