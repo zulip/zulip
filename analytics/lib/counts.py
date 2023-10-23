@@ -293,7 +293,7 @@ def do_aggregate_to_summary_table(
 
 # called from zerver.actions; should not throw any errors
 def do_increment_logging_stat(
-    zerver_object: Union[Realm, UserProfile, Stream],
+    model_object_for_bucket: Union[Realm, UserProfile, Stream],
     stat: CountStat,
     subgroup: Optional[Union[str, int, bool]],
     event_time: datetime,
@@ -304,14 +304,14 @@ def do_increment_logging_stat(
 
     table = stat.data_collector.output_table
     if table == RealmCount:
-        assert isinstance(zerver_object, Realm)
-        id_args: Dict[str, Union[Realm, UserProfile, Stream]] = {"realm": zerver_object}
+        assert isinstance(model_object_for_bucket, Realm)
+        id_args: Dict[str, Union[Realm, UserProfile, Stream]] = {"realm": model_object_for_bucket}
     elif table == UserCount:
-        assert isinstance(zerver_object, UserProfile)
-        id_args = {"realm": zerver_object.realm, "user": zerver_object}
+        assert isinstance(model_object_for_bucket, UserProfile)
+        id_args = {"realm": model_object_for_bucket.realm, "user": model_object_for_bucket}
     else:  # StreamCount
-        assert isinstance(zerver_object, Stream)
-        id_args = {"realm": zerver_object.realm, "stream": zerver_object}
+        assert isinstance(model_object_for_bucket, Stream)
+        id_args = {"realm": model_object_for_bucket.realm, "stream": model_object_for_bucket}
 
     if stat.frequency == CountStat.DAY:
         end_time = ceiling_to_day(event_time)
