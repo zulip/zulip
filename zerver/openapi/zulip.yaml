@@ -1388,7 +1388,7 @@ paths:
                                 Event sent when a reaction is added to a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
-                                - $ref: "#/components/schemas/EmojiReactionBase"
+                                - $ref: "#/components/schemas/EmojiReactionEvent"
                                 - additionalProperties: false
                                   properties:
                                     id:
@@ -1434,7 +1434,7 @@ paths:
                                 Event sent when a reaction is removed from a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
-                                - $ref: "#/components/schemas/EmojiReactionBase"
+                                - $ref: "#/components/schemas/EmojiReactionEvent"
                                 - additionalProperties: false
                                   properties:
                                     id:
@@ -18524,14 +18524,54 @@ components:
         [help-email-visibility]: /help/configure-email-visibility
     EmojiReaction:
       allOf:
-        - $ref: "#/components/schemas/EmojiReactionBase"
+        - $ref: "#/components/schemas/EmojiBase"
         - additionalProperties: false
           properties:
             emoji_code: {}
             emoji_name: {}
             reaction_type: {}
-            user_id: {}
-            user: {}
+            user_id:
+              type: integer
+              description: |
+                The ID of the user who added the reaction.
+
+                **Changes**: New in Zulip 3.0 (feature level 2). The `user`
+                object is deprecated and will be removed in the future.
+            user:
+              type: object
+              additionalProperties: false
+              deprecated: true
+              description: |
+                Dictionary with data on the user who added the
+                reaction, including the user ID as the `id`
+                field. Note that reactions data received from the
+                [events API](/api/get-events) has a slightly different
+                `user` dictionary format, with the user ID field
+                called `user_id` instead.
+
+                **Changes**: Deprecated and to be removed in a future release
+                once core clients have migrated to use the adjacent `user_id`
+                field, which was introduced in Zulip 3.0 (feature level 2).
+                Clients supporting older Zulip server versions should use
+                the user ID mentioned in the description above as they would
+                the `user_id` field.
+              properties:
+                id:
+                  type: integer
+                  description: |
+                    ID of the user.
+                email:
+                  type: string
+                  description: |
+                    Zulip API email of the user.
+                full_name:
+                  type: string
+                  description: |
+                    Full name of the user.
+                is_mirror_dummy:
+                  type: boolean
+                  description: |
+                    Whether the user is a mirror dummy.
     EmojiBase:
       type: object
       properties:
@@ -18566,7 +18606,7 @@ components:
             - `zulip_extra_emoji` : These are special emoji included with Zulip.
               In this namespace, `emoji_code` will be the name of the emoji (e.g.
               "zulip").
-    EmojiReactionBase:
+    EmojiReactionEvent:
       allOf:
         - $ref: "#/components/schemas/EmojiBase"
         - properties:
@@ -18583,11 +18623,8 @@ components:
               deprecated: true
               description: |
                 Dictionary with data on the user who added the
-                reaction, including the user ID as the `id`
-                field. Note that reactions data received from the
-                [events API](/api/get-events) has a slightly different
-                `user` dictionary format, with the user ID field
-                called `user_id` instead.
+                reaction, including the user ID as the `user_id`
+                field.
 
                 **Changes**: Deprecated and to be removed in a future release
                 once core clients have migrated to use the adjacent `user_id`
@@ -18596,7 +18633,7 @@ components:
                 the user ID mentioned in the description above as they would
                 the `user_id` field.
               properties:
-                id:
+                user_id:
                   type: integer
                   description: |
                     ID of the user.
