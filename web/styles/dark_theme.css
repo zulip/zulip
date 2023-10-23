@@ -1508,20 +1508,6 @@
             }
         }
     }
-
-    .visibility_policy_popover {
-        .visibility_policy_option {
-            &:hover:not(.selected_visibility_policy) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                border: 1px solid hsl(0deg 0% 100% / 12%);
-            }
-        }
-
-        .selected_visibility_policy {
-            background-color: hsl(0deg 0% 17% / 50%);
-            border: 1px solid hsl(0deg 0% 100% / 12%);
-        }
-    }
 }
 
 @media screen {
