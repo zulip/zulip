@@ -164,10 +164,10 @@ function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
         is_guest: page_params.is_guest,
         development_environment: page_params.development_environment,
-        is_all_messages_default_view:
-            user_settings.default_view === settings_config.default_view_values.all_messages.code,
-        is_recent_view_default_view:
-            user_settings.default_view === settings_config.default_view_values.recent_topics.code,
+        is_all_messages_home_view:
+            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
+        is_recent_view_home_view:
+            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);

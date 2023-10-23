@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 219**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`PATCH /settings`](/api/update-settings): Renamed `default_view` and
+  `escape_navigates_to_default_view` settings to `web_home_view` and
+  `web_escape_navigates_to_home_view` respectively.
+
 **Feature level 218**
 
 * [`POST /messages`](/api/send-message): Added an optional

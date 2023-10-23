@@ -14,7 +14,7 @@ const browser_history = zrequire("browser_history");
 
 function test(label, f) {
     run_test(label, (...args) => {
-        user_settings.default_view = "recent";
+        user_settings.web_home_view = "recent";
         window.location.hash = "#bogus";
         browser_history.clear_for_testing();
         f(...args);

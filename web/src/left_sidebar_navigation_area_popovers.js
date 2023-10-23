@@ -20,12 +20,12 @@ import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
 function common_click_handlers() {
-    $("body").on("click", ".set-default-view", (e) => {
+    $("body").on("click", ".set-home-view", (e) => {
         e.preventDefault();
         e.preventDefault();
 
-        const default_view = $(e.currentTarget).attr("data-view-code");
-        const data = {default_view};
+        const web_home_view = $(e.currentTarget).attr("data-view-code");
+        const data = {web_home_view};
         channel.patch({
             url: "/json/settings",
             data,
@@ -116,11 +116,11 @@ export function initialize() {
         },
         onShow(instance) {
             popovers.hide_all();
-            const view_code = settings_config.default_view_values.inbox.code;
+            const view_code = settings_config.web_home_view_values.inbox.code;
             instance.setContent(
                 parse_html(
                     render_left_sidebar_inbox_popover({
-                        is_default_view: user_settings.default_view === view_code,
+                        is_home_view: user_settings.web_home_view === view_code,
                         view_code,
                     }),
                 ),
@@ -138,11 +138,11 @@ export function initialize() {
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
             popovers.hide_all();
-            const view_code = settings_config.default_view_values.all_messages.code;
+            const view_code = settings_config.web_home_view_values.all_messages.code;
             instance.setContent(
                 parse_html(
                     render_left_sidebar_all_messages_popover({
-                        is_default_view: user_settings.default_view === view_code,
+                        is_home_view: user_settings.web_home_view === view_code,
                         view_code,
                     }),
                 ),
@@ -160,11 +160,11 @@ export function initialize() {
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
             popovers.hide_all();
-            const view_code = settings_config.default_view_values.recent_topics.code;
+            const view_code = settings_config.web_home_view_values.recent_topics.code;
             instance.setContent(
                 parse_html(
                     render_left_sidebar_recent_view_popover({
-                        is_default_view: user_settings.default_view === view_code,
+                        is_home_view: user_settings.web_home_view === view_code,
                         view_code,
                     }),
                 ),

@@ -1534,8 +1534,8 @@ class UserBaseSettings(models.Model):
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
     # This setting controls which view is rendered first when Zulip loads.
     # Values for it are URL suffix after `#`.
-    default_view = models.TextField(default="recent_topics")
-    escape_navigates_to_default_view = models.BooleanField(default=True)
+    web_home_view = models.TextField(default="recent_topics")
+    web_escape_navigates_to_home_view = models.BooleanField(default=True)
     dense_mode = models.BooleanField(default=True)
     fluid_layout_width = models.BooleanField(default=False)
     high_contrast_mode = models.BooleanField(default=False)
@@ -1732,7 +1732,7 @@ class UserBaseSettings(models.Model):
         # Instead, see `modern_settings` below.
         color_scheme=int,
         default_language=str,
-        default_view=str,
+        web_home_view=str,
         demote_inactive_streams=int,
         dense_mode=bool,
         emojiset=str,
@@ -1775,7 +1775,7 @@ class UserBaseSettings(models.Model):
         # Add new general settings here.
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
-        escape_navigates_to_default_view=bool,
+        web_escape_navigates_to_home_view=bool,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,

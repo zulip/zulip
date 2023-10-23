@@ -913,27 +913,6 @@ exports.fixtures = {
         language_name: "French",
     },
 
-    user_settings__default_view_all_messages: {
-        type: "user_settings",
-        op: "update",
-        property: "default_view",
-        value: "all_messages",
-    },
-
-    user_settings__default_view_inbox: {
-        type: "user_settings",
-        op: "update",
-        property: "default_view",
-        value: "inbox",
-    },
-
-    user_settings__default_view_recent_topics: {
-        type: "user_settings",
-        op: "update",
-        property: "default_view",
-        value: "recent_topics",
-    },
-
     user_settings__demote_inactive_streams: {
         type: "user_settings",
         op: "update",
@@ -980,13 +959,6 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "enter_sends",
-        value: true,
-    },
-
-    user_settings__escape_navigates_to_default_view: {
-        type: "user_settings",
-        op: "update",
-        property: "escape_navigates_to_default_view",
         value: true,
     },
 
@@ -1051,6 +1023,34 @@ exports.fixtures = {
         op: "update",
         property: "user_list_style",
         value: 2,
+    },
+
+    user_settings__web_escape_navigates_to_home_view: {
+        type: "user_settings",
+        op: "update",
+        property: "web_escape_navigates_to_home_view",
+        value: true,
+    },
+
+    user_settings__web_home_view_all_messages: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "all_messages",
+    },
+
+    user_settings__web_home_view_inbox: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "inbox",
+    },
+
+    user_settings__web_home_view_recent_topics: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "recent_topics",
     },
 
     user_settings__web_mark_read_on_scroll_policy: {
