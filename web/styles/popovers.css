@@ -1205,15 +1205,6 @@ ul {
         }
     }
 
-    .clear_status {
-        margin-left: auto;
-        color: hsl(0deg 0% 40%) !important;
-
-        &:hover {
-            text-decoration: none;
-        }
-    }
-
     .status_emoji {
         width: 16px;
         height: 16px;
@@ -1222,6 +1213,15 @@ ul {
     .zulip-icon {
         position: relative;
         top: -1px;
+    }
+}
+
+.personal-menu-clear-status {
+    margin-left: auto;
+    color: hsl(0deg 0% 40%) !important;
+
+    &:hover {
+        text-decoration: none;
     }
 }
 
