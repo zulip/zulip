@@ -855,5 +855,10 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
     return OrderedDict((stat.property, stat) for stat in count_stats_)
 
 
+# These properties are tracked by the bouncer itself and therefore syncing them
+# from a remote server should not be allowed - or the server would be able to interfere
+# with our data.
+BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES = ["mobile_pushes_received::day"]
+
 # To avoid refactoring for now COUNT_STATS can be used as before
 COUNT_STATS = get_count_stats()
