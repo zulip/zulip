@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as helpers from "./helpers";
-import type {DiscountDetails, Prices} from "./helpers";
+import type {Prices} from "./helpers";
 import {page_params} from "./page_params";
 
 export const initialize = (): void => {
@@ -42,14 +42,14 @@ export const initialize = (): void => {
     });
 
     $("input[type=radio][name=schedule]").on("change", function (this: HTMLInputElement) {
-        helpers.update_charged_amount(prices, this.value as keyof Prices);
+        helpers.update_charged_amount(prices, helpers.schedule_schema.parse(this.value));
     });
 
     $("select[name=organization-type]").on("change", (e) => {
         const string_value = $((e.currentTarget as HTMLSelectElement).selectedOptions).attr(
             "data-string-value",
         );
-        helpers.update_discount_details(string_value as keyof DiscountDetails);
+        helpers.update_discount_details(helpers.organization_type_schema.parse(string_value));
     });
 
     $("#autopay_annual_price").text(helpers.format_money(prices.annual));
@@ -63,7 +63,7 @@ export const initialize = (): void => {
     );
     helpers.update_charged_amount(
         prices,
-        $("input[type=radio][name=schedule]:checked").val() as keyof Prices,
+        helpers.schedule_schema.parse($("input[type=radio][name=schedule]:checked").val()),
     );
 };
 
