@@ -867,14 +867,14 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.default_language, "fr");
 
-    event = event_fixtures.user_settings__escape_navigates_to_default_view;
-    user_settings.escape_navigates_to_default_view = false;
+    event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
+    user_settings.web_escape_navigates_to_home_view = false;
     let toggled = [];
-    $("#go-to-default-view-hotkey-help").toggleClass = (cls) => {
+    $("#go-to-home-view-hotkey-help").toggleClass = (cls) => {
         toggled.push(cls);
     };
     dispatch(event);
-    assert_same(user_settings.escape_navigates_to_default_view, true);
+    assert_same(user_settings.web_escape_navigates_to_home_view, true);
     assert_same(toggled, ["notdisplayed"]);
 
     let called = false;
@@ -945,24 +945,24 @@ run_test("user_settings", ({override}) => {
     }
 
     {
-        event = event_fixtures.user_settings__default_view_recent_topics;
-        user_settings.default_view = "all_messages";
+        event = event_fixtures.user_settings__web_home_view_recent_topics;
+        user_settings.web_home_view = "all_messages";
         dispatch(event);
-        assert.equal(user_settings.default_view, "recent_topics");
+        assert.equal(user_settings.web_home_view, "recent_topics");
     }
 
     {
-        event = event_fixtures.user_settings__default_view_all_messages;
-        user_settings.default_view = "recent_topics";
+        event = event_fixtures.user_settings__web_home_view_all_messages;
+        user_settings.web_home_view = "recent_topics";
         dispatch(event);
-        assert.equal(user_settings.default_view, "all_messages");
+        assert.equal(user_settings.web_home_view, "all_messages");
     }
 
     {
-        event = event_fixtures.user_settings__default_view_inbox;
-        user_settings.default_view = "all_messages";
+        event = event_fixtures.user_settings__web_home_view_inbox;
+        user_settings.web_home_view = "all_messages";
         dispatch(event);
-        assert.equal(user_settings.default_view, "inbox");
+        assert.equal(user_settings.web_home_view, "inbox");
     }
 
     {

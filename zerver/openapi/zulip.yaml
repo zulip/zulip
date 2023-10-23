@@ -10032,25 +10032,29 @@ paths:
           schema:
             type: boolean
           example: false
-        - name: default_view
+        - name: web_home_view
           in: query
           description: |
-            The [default view](/help/configure-home-view) used when opening a new
+            The [home view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
             - "inbox" - Inbox view
             - "all_messages" - All messages view
+
+            **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+            called `default_view`, which was new in Zulip 4.0 (feature level 42).
           schema:
             type: string
           example: all_messages
-        - name: escape_navigates_to_default_view
+        - name: web_escape_navigates_to_home_view
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-home-view).
+            [configured home view](/help/configure-home-view).
 
-            **Changes**: New in Zulip 5.0 (feature level 107).
+            **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was called
+            `escape_navigates_to_default_view`, which was new in Zulip 5.0 (feature level 107).
           schema:
             type: boolean
           example: true
@@ -12369,22 +12373,27 @@ paths:
 
                               The value needs to be a standard language code that the Zulip server has
                               translation data for; for example, `"en"` for English or `"de"` for German.
-                          default_view:
+                          web_home_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-home-view) used when opening a new
+                              The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - All messages view
-                          escape_navigates_to_default_view:
+
+                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                              called `default_view`, which was new in Zulip 4.0 (feature level 42).
+                          web_escape_navigates_to_home_view:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-home-view).
+                              [configured home view](/help/configure-home-view).
 
-                              **Changes**: New in Zulip 5.0 (feature level 107).
+                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this
+                              was called `escape_navigates_to_default_view`, which was new in Zulip
+                              5.0 (feature level 107).
                           left_side_userlist:
                             type: boolean
                             description: |
@@ -13217,7 +13226,7 @@ paths:
                           client capability and access the `user_settings` object instead.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
-                      default_view:
+                      web_home_view:
                         deprecated: true
                         type: string
                         description: |
@@ -13225,7 +13234,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          The [default view](/help/configure-home-view) in Zulip, represented
+                          The [home view](/help/configure-home-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
@@ -13233,9 +13242,12 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                          connecting to newer servers should declare the `user_settings_object`
-                          client capability and access the `user_settings` object instead.
+                          **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                          called `default_view`, which was new in Zulip 4.0 (feature level 42).
+
+                          **Deprecated** in Zulip 5.0 (feature level 89). Clients connecting to newer
+                          servers should declare the `user_settings_object` client capability and
+                          access the `user_settings` object instead.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
                       high_contrast_mode:
@@ -14562,22 +14574,27 @@ paths:
 
                               The value needs to be a standard language code that the Zulip server has
                               translation data for; for example, `"en"` for English or `"de"` for German.
-                          default_view:
+                          web_home_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-home-view) used when opening a new
+                              The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - All messages view
-                          escape_navigates_to_default_view:
+
+                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                              called `default_view`, which was new in Zulip 4.0 (feature level 42).
+                          web_escape_navigates_to_home_view:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-home-view).
+                              [configured home view](/help/configure-home-view).
 
-                              **Changes**: New in Zulip 5.0 (feature level 107).
+                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this
+                              was called `escape_navigates_to_default_view`, which was new in Zulip
+                              5.0 (feature level 107).
                           left_side_userlist:
                             type: boolean
                             description: |
@@ -15627,30 +15644,35 @@ paths:
           schema:
             type: string
           example: en
-        - name: default_view
+        - name: web_home_view
           in: query
           description: |
-            The [default view](/help/configure-home-view) used when opening a new
+            The [home view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
             - "inbox" - Inbox view
             - "all_messages" - All messages view
 
-            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+            called `default_view`, which was new in Zulip 4.0 (feature level 42).
+
+            Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
 
             Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: all_messages
-        - name: escape_navigates_to_default_view
+        - name: web_escape_navigates_to_home_view
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-home-view).
+            [configured home view](/help/configure-home-view).
 
-            **Changes**: New in Zulip 5.0 (feature level 107).
+            **Changes**: New in Zulip 8.0 (feature level 219). Previously, this
+            was called `escape_navigates_to_default_view`, which was new in Zulip
+            5.0 (feature level 107).
           schema:
             type: boolean
           example: true

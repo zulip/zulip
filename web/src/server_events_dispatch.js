@@ -688,12 +688,12 @@ export function dispatch_normal_event(event) {
             const user_display_settings = [
                 "color_scheme",
                 "default_language",
-                "default_view",
+                "web_home_view",
                 "demote_inactive_streams",
                 "dense_mode",
                 "web_mark_read_on_scroll_policy",
                 "emojiset",
-                "escape_navigates_to_default_view",
+                "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
                 "timezone",
@@ -708,7 +708,7 @@ export function dispatch_normal_event(event) {
                 "send_read_receipts",
             ];
 
-            const original_default_view = user_settings.default_view;
+            const original_home_view = user_settings.web_home_view;
             if (user_display_settings.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
@@ -721,21 +721,19 @@ export function dispatch_normal_event(event) {
                 // present in the backend/Jinja2 templates.
                 settings_display.set_default_language_name(event.language_name);
             }
-            if (event.property === "default_view") {
+            if (event.property === "web_home_view") {
                 left_sidebar_navigation_area.handle_home_view_changed(event.value);
 
-                // If current hash is empty (default view), and the
-                // user changes the default view while in settings,
+                // If current hash is empty (home view), and the
+                // user changes the home view while in settings,
                 // then going back to an empty hash on closing the
                 // overlay will not match the view currently displayed
                 // under settings, so we set the hash to the previous
-                // value of the default view.
+                // value of the home view.
                 if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
                     browser_history.state.hash_before_overlay =
                         "#" +
-                        (original_default_view === "recent_topics"
-                            ? "recent"
-                            : original_default_view);
+                        (original_home_view === "recent_topics" ? "recent" : original_home_view);
                 }
             }
             if (event.property === "twenty_four_hour_time") {
@@ -809,8 +807,8 @@ export function dispatch_normal_event(event) {
             if (event.property === "display_emoji_reaction_users") {
                 message_live_update.rerender_messages_view();
             }
-            if (event.property === "escape_navigates_to_default_view") {
-                $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+            if (event.property === "web_escape_navigates_to_home_view") {
+                $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
             }
             if (event.property === "enter_sends") {
                 user_settings.enter_sends = event.value;

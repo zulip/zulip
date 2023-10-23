@@ -6,9 +6,9 @@
             {{t "Mark all messages as read" }}
         </a>
     </li>
-    {{#unless is_default_view}}
+    {{#unless is_home_view}}
     <li>
-        <a tabindex="0" class="set-default-view" data-view-code="{{view_code}}">
+        <a tabindex="0" class="set-home-view" data-view-code="{{view_code}}">
             <i class="fa fa-home" aria-hidden="true"></i>
             {{#tr}}
                 Make <b>inbox</b> my home view

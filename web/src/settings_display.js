@@ -166,7 +166,7 @@ export function set_up(settings_panel) {
         .find(".setting_demote_inactive_streams")
         .val(settings_object.demote_inactive_streams);
     $container.find(".setting_color_scheme").val(settings_object.color_scheme);
-    $container.find(".setting_default_view").val(settings_object.default_view);
+    $container.find(".setting_web_home_view").val(settings_object.web_home_view);
     $container
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));

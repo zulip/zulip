@@ -1212,7 +1212,7 @@ class UserProfileTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(cordelia, "default_language", "de", acting_user=None)
-        do_change_user_setting(cordelia, "default_view", "all_messages", acting_user=None)
+        do_change_user_setting(cordelia, "web_home_view", "all_messages", acting_user=None)
         do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
         do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
         do_change_user_setting(
@@ -1284,7 +1284,7 @@ class UserProfileTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
 
-        realm_user_default.default_view = "recent_topics"
+        realm_user_default.web_home_view = "recent_topics"
         realm_user_default.emojiset = "twitter"
         realm_user_default.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
         realm_user_default.enable_offline_email_notifications = False
@@ -1299,7 +1299,7 @@ class UserProfileTest(ZulipTestCase):
         with self.capture_send_event_calls(expected_num_events=0):
             copy_default_settings(realm_user_default, cordelia)
 
-        self.assertEqual(cordelia.default_view, "recent_topics")
+        self.assertEqual(cordelia.web_home_view, "recent_topics")
         self.assertEqual(cordelia.emojiset, "twitter")
         self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_LIGHT)
         self.assertEqual(cordelia.enable_offline_email_notifications, False)
