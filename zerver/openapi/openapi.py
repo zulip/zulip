@@ -348,17 +348,6 @@ def find_openapi_endpoint(path: str) -> Optional[str]:
     return None
 
 
-def fix_events(content: Dict[str, Any]) -> None:
-    """Remove undocumented events from events array. This is a makeshift
-    function so that further documentation of `/events` can happen with
-    only zulip.yaml changes and minimal other changes. It should be removed
-    as soon as `/events` documentation is complete.
-    """
-    # 'user' is deprecated so remove its occurrences from the events array
-    for event in content["events"]:
-        event.pop("user", None)
-
-
 def validate_against_openapi_schema(
     content: Dict[str, Any], path: str, method: str, status_code: str
 ) -> bool:
@@ -395,12 +384,6 @@ def validate_against_openapi_schema(
         # been added as all 400 have the same schema.  When all 400
         # response have been defined this should be removed.
         return True
-
-    if endpoint == "/events" and method == "get":
-        # This a temporary function for checking only documented events
-        # as all events haven't been documented yet.
-        # TODO: Remove this after all events have been documented.
-        fix_events(content)
 
     mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
     mock_response = MockResponse(
