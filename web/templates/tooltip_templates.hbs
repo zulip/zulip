@@ -80,15 +80,24 @@
     {{tooltip_hotkey_hints "G" "←"}}
 </template>
 <template id="all-message-tooltip-template">
-    {{t 'All messages' }}
+    <div class="views-tooltip-container" data-view-code="all_messages">
+        <div>{{t 'All messages' }}</div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+    </div>
     {{tooltip_hotkey_hints "A"}}
 </template>
 <template id="recent-conversations-tooltip-template">
-    {{t 'Recent conversations' }}
+    <div class="views-tooltip-container" data-view-code="recent_topics">
+        <div>{{t 'Recent conversations' }}</div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+    </div>
     {{tooltip_hotkey_hints "T"}}
 </template>
 <template id="inbox-tooltip-template">
-    {{t 'Inbox' }}
+    <div class="views-tooltip-container" data-view-code="inbox">
+        <div>{{t 'Inbox' }}</div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+    </div>
     {{tooltip_hotkey_hints "Shift" "I"}}
 </template>
 <template id="drafts-tooltip-template">

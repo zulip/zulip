@@ -5,6 +5,7 @@ import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n";
 import * as popover_menus from "./popover_menus";
+import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
@@ -127,6 +128,34 @@ export function initialize() {
         placement: "right",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+    });
+
+    // Variant of .tippy-left-sidebar-tooltip configuration. Here
+    // we need to dynamically check which view is the home view.
+    delegate("body", {
+        target: ".tippy-views-tooltip",
+        placement: "right",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $container = instance.popper.querySelector(".views-tooltip-container");
+            if ($($container).data("view-code") === user_settings.default_view) {
+                $($container).find(".views-tooltip-home-view-note").removeClass("hide");
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
         popperOptions: {
             modifiers: [
                 {
