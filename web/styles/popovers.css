@@ -1217,12 +1217,21 @@ ul {
 }
 
 .personal-menu-clear-status {
+    display: flex;
+    padding: 3px;
+    align-items: center;
     margin-left: auto;
     color: hsl(0deg 0% 40%) !important;
+    border-radius: 4px;
 
-    &:hover {
+    &:hover,
+    &:focus {
         text-decoration: none;
     }
+}
+
+.personal-menu-clear-status .personal-menu-clear-status-icon {
+    top: 0;
 }
 
 #gear-menu-dropdown {
