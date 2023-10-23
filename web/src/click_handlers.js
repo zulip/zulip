@@ -787,7 +787,7 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        hashchange.set_hash_to_default_view();
+        hashchange.set_hash_to_home_view();
     });
 
     // MAIN CLICK HANDLER

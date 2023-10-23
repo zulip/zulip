@@ -350,10 +350,10 @@ export function process_escape_key(e) {
         return true;
     }
 
-    /* The Ctrl+[ hotkey navigates to the default view
+    /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
-    if (user_settings.escape_navigates_to_default_view || e.which === 219) {
-        hashchange.set_hash_to_default_view();
+    if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
+        hashchange.set_hash_to_home_view();
         return true;
     }
 

@@ -746,7 +746,7 @@ class TestRealmAuditLog(ZulipTestCase):
         value: Union[bool, int, str]
         test_values = dict(
             default_language="de",
-            default_view="all_messages",
+            web_home_view="all_messages",
             emojiset="twitter",
             notification_sound="ding",
         )
