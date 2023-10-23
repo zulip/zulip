@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
+import * as settings_config from "./settings_config";
 import * as ui_util from "./ui_util";
 
 let last_mention_count = 0;
@@ -139,6 +140,22 @@ export function highlight_inbox_view() {
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
+}
+
+export function handle_home_view_changed(new_default_view) {
+    const $recent_view_sidebar_menu_icon = $(".recent-view-sidebar-menu-icon");
+    const $all_messages_sidebar_menu_icon = $(".all-messages-sidebar-menu-icon");
+    if (new_default_view === settings_config.default_view_values.all_messages.code) {
+        $recent_view_sidebar_menu_icon.removeClass("hide");
+        $all_messages_sidebar_menu_icon.addClass("hide");
+    } else if (new_default_view === settings_config.default_view_values.recent_topics.code) {
+        $recent_view_sidebar_menu_icon.addClass("hide");
+        $all_messages_sidebar_menu_icon.removeClass("hide");
+    } else {
+        // Inbox is default view.
+        $recent_view_sidebar_menu_icon.removeClass("hide");
+        $all_messages_sidebar_menu_icon.removeClass("hide");
+    }
 }
 
 export function initialize() {
