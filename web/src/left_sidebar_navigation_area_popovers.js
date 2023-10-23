@@ -1,8 +1,10 @@
 import $ from "jquery";
 
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
+import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar_all_messages_popover.hbs";
 import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar_condensed_views_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar_inbox_popover.hbs";
+import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar_recent_view_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 
 import * as channel from "./channel";
@@ -127,6 +129,50 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.left_sidebar_inbox_popover = undefined;
+        },
+    });
+
+    // All messages popover
+    popover_menus.register_popover_menu(".all-messages-sidebar-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onShow(instance) {
+            popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
+            popovers.hide_all();
+            const view_code = settings_config.default_view_values.all_messages.code;
+            instance.setContent(
+                parse_html(
+                    render_left_sidebar_all_messages_popover({
+                        is_default_view: user_settings.default_view === view_code,
+                        view_code,
+                    }),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.left_sidebar_all_messages_popover = undefined;
+        },
+    });
+
+    // Recent view popover
+    popover_menus.register_popover_menu(".recent-view-sidebar-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onShow(instance) {
+            popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
+            popovers.hide_all();
+            const view_code = settings_config.default_view_values.recent_topics.code;
+            instance.setContent(
+                parse_html(
+                    render_left_sidebar_recent_view_popover({
+                        is_default_view: user_settings.default_view === view_code,
+                        view_code,
+                    }),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.left_sidebar_recent_view_popover = undefined;
         },
     });
 

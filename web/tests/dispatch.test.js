@@ -79,6 +79,7 @@ const submessage = mock_esm("../src/submessage");
 mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
+    handle_home_view_changed() {},
 });
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
@@ -955,6 +956,13 @@ run_test("user_settings", ({override}) => {
         user_settings.default_view = "recent_topics";
         dispatch(event);
         assert.equal(user_settings.default_view, "all_messages");
+    }
+
+    {
+        event = event_fixtures.user_settings__default_view_inbox;
+        user_settings.default_view = "all_messages";
+        dispatch(event);
+        assert.equal(user_settings.default_view, "inbox");
     }
 
     {

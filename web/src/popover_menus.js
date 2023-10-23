@@ -27,6 +27,8 @@ export const popover_instances = {
     starred_messages: null,
     drafts: null,
     left_sidebar_inbox_popover: null,
+    left_sidebar_all_messages_popover: null,
+    left_sidebar_recent_view_popover: null,
     top_left_sidebar: null,
     message_actions: null,
     stream_settings: null,
