@@ -57,7 +57,8 @@ export function activate({
     });
 
     function update_edit_controls(): void {
-        const has_question = $elem.find("input.poll-question").val()!.toString().trim() !== "";
+        const has_question =
+            $elem.find<HTMLInputElement>("input.poll-question").val()!.trim() !== "";
         $elem.find("button.poll-question-check").toggle(has_question);
     }
 
@@ -98,8 +99,8 @@ export function activate({
     }
 
     function submit_question(): void {
-        const $poll_question_input = $elem.find("input.poll-question");
-        let new_question = $poll_question_input.val()!.toString().trim();
+        const $poll_question_input = $elem.find<HTMLInputElement>("input.poll-question");
+        let new_question = $poll_question_input.val()!.trim();
         const old_question = poll_data.get_question();
 
         // We should disable the button for blank questions,
@@ -123,8 +124,8 @@ export function activate({
     }
 
     function submit_option(): void {
-        const $poll_option_input = $elem.find("input.poll-option");
-        const option = $poll_option_input.val()!.toString().trim();
+        const $poll_option_input = $elem.find<HTMLInputElement>("input.poll-option");
+        const option = $poll_option_input.val()!.trim();
         const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
@@ -207,8 +208,8 @@ export function activate({
     }
 
     function check_option_button(): void {
-        const $poll_option_input = $elem.find("input.poll-option");
-        const option = ($poll_option_input.val() as string)?.trim();
+        const $poll_option_input = $elem.find<HTMLInputElement>("input.poll-option");
+        const option = $poll_option_input.val()!.trim();
         const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
