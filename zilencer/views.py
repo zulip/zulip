@@ -17,7 +17,11 @@ from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import BaseModel, ConfigDict
 
-from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
+from analytics.lib.counts import (
+    BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
+    COUNT_STATS,
+    do_increment_logging_stat,
+)
 from corporate.lib.stripe import do_deactivate_remote_server
 from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError
@@ -449,7 +453,10 @@ def validate_incoming_table_data(
 ) -> None:
     last_id = get_last_id_from_server(server, model)
     for row in rows:
-        if is_count_stat and row["property"] not in COUNT_STATS:
+        if is_count_stat and (
+            row["property"] not in COUNT_STATS
+            or row["property"] in BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES
+        ):
             raise JsonableError(_("Invalid property {property}").format(property=row["property"]))
         if row.get("id") is None:
             # This shouldn't be possible, as submitting data like this should be
