@@ -111,11 +111,6 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.gear_menu = instance;
-            $(".focus-dropdown").on("focus", (e) => {
-                e.preventDefault();
-                $("#gear-menu-dropdown").find(".org-version a").trigger("focus");
-            });
-
             $popper.on("click", ".webathena_login", (e) => {
                 $("#zephyr-mirror-error").removeClass("show");
                 const principal = ["zephyr", "zephyr"];
