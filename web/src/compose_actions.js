@@ -17,6 +17,7 @@ import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
 import * as settings_config from "./settings_config";
@@ -191,6 +192,7 @@ export function start(msg_type, opts) {
         blueslip.warn("Empty message type in compose.start");
     }
 
+    popovers.hide_all();
     autosize_message_content();
 
     if (reload_state.is_in_progress()) {

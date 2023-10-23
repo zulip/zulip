@@ -17,7 +17,9 @@ mock_esm("../src/resize", {
     resize_stream_filters_container: noop,
 });
 
-const popovers = mock_esm("../src/popovers");
+const popovers = mock_esm("../src/popovers", {
+    hide_all: noop,
+});
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const stream_list = zrequire("stream_list");
@@ -188,5 +190,9 @@ run_test("expanding_sidebar", () => {
 
     stream_list.initiate_search();
 
-    assert.deepEqual(events, ["popovers.hide_all", "sidebar_ui.show_streamlist_sidebar"]);
+    assert.deepEqual(events, [
+        "popovers.hide_all",
+        "popovers.hide_all",
+        "sidebar_ui.show_streamlist_sidebar",
+    ]);
 });
