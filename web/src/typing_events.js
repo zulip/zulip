@@ -29,7 +29,7 @@ const MAX_USERS_TO_DISPLAY_NAME = 3;
 
 function get_users_typing_for_narrow() {
     if (narrow_state.narrowed_to_topic()) {
-        return typing_data.get_topic_typists(narrow_state.stream_id(), narrow_state.topic());
+        return [];
     }
 
     if (!narrow_state.narrowed_to_pms()) {

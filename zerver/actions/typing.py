@@ -1,3 +1,4 @@
+import random
 from typing import List
 
 from django.utils.translation import gettext as _
@@ -77,6 +78,14 @@ def do_send_stream_typing_notification(
         topic=topic,
     )
 
-    user_ids_to_notify = get_user_ids_for_streams({stream.id})[stream.id]
+    try:
+        with open("/etc/zulip/stream_typing_notifications") as file:
+            probability_to_notify_all = float(file.read())  # nocoverage
+    except FileNotFoundError:
+        probability_to_notify_all = 0
+
+    user_ids_to_notify = set()
+    if random.random() < probability_to_notify_all:
+        user_ids_to_notify = get_user_ids_for_streams({stream.id})[stream.id]  # nocoverage
 
     send_event(sender.realm, event, user_ids_to_notify)

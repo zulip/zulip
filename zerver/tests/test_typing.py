@@ -1,3 +1,5 @@
+from typing import Set
+
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -372,10 +374,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         stream_id = self.get_stream_id(stream_name)
         topic = "Some topic"
 
-        expected_user_ids = {
-            user_profile.id
-            for user_profile in self.users_subscribed_to_stream(stream_name, sender.realm)
-        }
+        expected_user_ids: Set[int] = set()
 
         params = dict(
             type="stream",
@@ -384,7 +383,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             topic=topic,
         )
 
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(4):
             with self.capture_send_event_calls(expected_num_events=1) as events:
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
@@ -406,10 +405,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         stream_id = self.get_stream_id(stream_name)
         topic = "Some topic"
 
-        expected_user_ids = {
-            user_profile.id
-            for user_profile in self.users_subscribed_to_stream(stream_name, sender.realm)
-        }
+        expected_user_ids: Set[int] = set()
 
         params = dict(
             type="stream",
@@ -418,7 +414,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             topic=topic,
         )
 
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(4):
             with self.capture_send_event_calls(expected_num_events=1) as events:
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
@@ -475,10 +471,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         stream_id = self.get_stream_id(stream_name)
         topic = "Some topic"
 
-        expected_user_ids = {
-            user_profile.id
-            for user_profile in self.users_subscribed_to_stream(stream_name, sender.realm)
-        }
+        expected_user_ids: Set[int] = set()
 
         params = dict(
             type="stream",

@@ -1226,8 +1226,8 @@ class NormalActionsTest(BaseAction):
                 topic,
             ),
             state_change_expected=False,
+            num_events=0,
         )
-        check_typing_start("events[0]", events[0])
 
         events = self.verify_action(
             lambda: do_send_stream_typing_notification(
@@ -1237,8 +1237,8 @@ class NormalActionsTest(BaseAction):
                 topic,
             ),
             state_change_expected=False,
+            num_events=0,
         )
-        check_typing_stop("events[0]", events[0])
 
         # Having client_capability `stream_typing_notification=False`
         # shouldn't produce any events.
