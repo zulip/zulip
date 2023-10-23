@@ -10,11 +10,28 @@ import * as drafts from "./drafts";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as scheduled_messages from "./scheduled_messages";
+import * as settings_config from "./settings_config";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import {parse_html, update_unread_count_in_dom} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+
+function common_click_handlers() {
+    $("body").on("click", ".set-default-view", (e) => {
+        e.preventDefault();
+        e.preventDefault();
+
+        const default_view = $(e.currentTarget).attr("data-view-code");
+        const data = {default_view};
+        channel.patch({
+            url: "/json/settings",
+            data,
+        });
+
+        popovers.hide_all();
+    });
+}
 
 export function initialize() {
     // Starred messages popover
@@ -97,7 +114,15 @@ export function initialize() {
         },
         onShow(instance) {
             popovers.hide_all();
-            instance.setContent(parse_html(render_left_sidebar_inbox_popover()));
+            const view_code = settings_config.default_view_values.inbox.code;
+            instance.setContent(
+                parse_html(
+                    render_left_sidebar_inbox_popover({
+                        is_default_view: user_settings.default_view === view_code,
+                        view_code,
+                    }),
+                ),
+            );
         },
         onHidden(instance) {
             instance.destroy();
@@ -135,4 +160,6 @@ export function initialize() {
             popover_menus.popover_instances.top_left_sidebar = undefined;
         },
     });
+
+    common_click_handlers();
 }
