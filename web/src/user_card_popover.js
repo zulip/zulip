@@ -680,7 +680,7 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".user-card-popover-actions .clear_status", (e) => {
+    $("body").on("click", ".user-card-popover-actions .personal-menu-clear-status", (e) => {
         e.preventDefault();
         const me = elem_to_user_id($(e.target).parents("ul"));
         user_status.server_update_status({
