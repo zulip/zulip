@@ -444,6 +444,10 @@ def validate_incoming_table_data(
     for row in rows:
         if is_count_stat and row["property"] not in COUNT_STATS:
             raise JsonableError(_("Invalid property {property}").format(property=row["property"]))
+        if row.get("id") is None:
+            # This shouldn't be possible, as submitting data like this should be
+            # prevented by our param validators.
+            raise AssertionError(f"Missing id field in row {row}")
         if row["id"] <= last_id:
             raise JsonableError(_("Data is out of order."))
         last_id = row["id"]
@@ -592,7 +596,15 @@ def remote_server_post_analytics(
 
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
-    last_count = model.objects.filter(server=server).order_by("remote_id").only("remote_id").last()
+    last_count = (
+        model.objects.filter(server=server)
+        # Rows with remote_id=None are managed by the bouncer service itself,
+        # and thus aren't meant for syncing and should be ignored here.
+        .exclude(remote_id=None)
+        .order_by("remote_id")
+        .only("remote_id")
+        .last()
+    )
     if last_count is not None:
         return last_count.remote_id
     return 0
