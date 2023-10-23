@@ -340,15 +340,6 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
             // if the user backspaces and there is input, just do normal char
             // deletion, otherwise delete the last pill in the sequence.
-            if (
-                e.key === "Backspace" &&
-                (funcs.value(e.target).length === 0 || window.getSelection()?.anchorOffset === 0)
-            ) {
-                e.preventDefault();
-                funcs.removeLastPill();
-
-                return;
-            }
 
             // if one is on the ".input" element and back/left arrows, then it
             // should switch to focus the last pill in the list.
