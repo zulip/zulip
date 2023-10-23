@@ -257,6 +257,10 @@ paths:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
                                         - update_display_settings
+                                user:
+                                  type: string
+                                  description: |
+                                    The Zulip API email of the user.
                                 setting_name:
                                   type: string
                                   description: |
@@ -278,6 +282,7 @@ paths:
                               example:
                                 {
                                   "type": "update_display_settings",
+                                  "user": "iago@zulip.com",
                                   "setting_name": "high_contrast_mode",
                                   "setting": false,
                                   "id": 0,
@@ -302,6 +307,10 @@ paths:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
                                         - update_global_notifications
+                                user:
+                                  type: string
+                                  description: |
+                                    The Zulip API email of the user.
                                 notification_name:
                                   type: string
                                   description: |
@@ -317,6 +326,7 @@ paths:
                               example:
                                 {
                                   "type": "update_global_notifications",
+                                  "user": "iago@zulip.com",
                                   "notification_name": "enable_sounds",
                                   "setting": true,
                                   "id": 0,
