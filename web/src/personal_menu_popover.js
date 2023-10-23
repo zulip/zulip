@@ -40,13 +40,13 @@ export function initialize() {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.personal_menu = instance;
 
-            tippy(".clear_status", {
+            tippy(".personal-menu-clear-status", {
                 placement: "top",
                 appendTo: document.body,
                 interactive: true,
             });
 
-            $popper.one("click", ".clear_status", (e) => {
+            $popper.one("click", ".personal-menu-clear-status", (e) => {
                 e.preventDefault();
                 const me = page_params.user_id;
                 user_status.server_update_status({
