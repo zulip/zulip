@@ -225,6 +225,11 @@ function get_props_for_popover_centering(popover_props) {
 // shortcuts and similar alternative ways to open a popover menu.
 export function toggle_popover_menu(target, popover_props, options) {
     const instance = target._tippy;
+    if (instance) {
+        instance.hide();
+        return;
+    }
+
     let mobile_popover_props = {};
 
     // If the window is mobile-sized, we will render the
@@ -233,11 +238,6 @@ export function toggle_popover_menu(target, popover_props, options) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
         };
-    }
-
-    if (instance) {
-        instance.hide();
-        return;
     }
 
     tippy(target, {
