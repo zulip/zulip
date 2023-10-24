@@ -2,14 +2,17 @@
 
 {tab|desktop-web}
 
-1. Click **Mentions** in the left sidebar.
+1. Click on <i class="zulip-icon zulip-icon-at-sign"></i> **Mentions**
+   (or <i class="zulip-icon zulip-icon-at-sign"></i> if the **views**
+   section is collapsed) in the left sidebar.
 
 1. Browse your mentions. You can click on a message recipient bar to go
    to the [conversation](/help/recent-conversations) where you were mentioned.
 
 !!! tip ""
+
     You can also [search your mentions](/help/search-for-messages) using the
-    `is:mentioned` flag.
+    `is:mentioned` filter.
 
 {tab|mobile}
 
