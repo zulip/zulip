@@ -4853,6 +4853,7 @@ paths:
                       An example JSON response for when the supplied stream does not exist:
   /mark_all_as_read:
     post:
+      deprecated: true
       operationId: mark-all-as-read
       summary: Mark all messages as read
       tags: ["messages"]
@@ -4866,7 +4867,11 @@ paths:
         response. If all messages were marked as read, then the success response
         will return `"complete": true`.
 
-        **Changes**: Before Zulip 8.0 (feature level 211), if the server's
+        **Changes**: Deprecated; clients should use the [update personal message
+        flags for narrow](/api/update-message-flags-for-narrow) endpoint instead
+        as this endpoint will be removed in a future release.
+
+        Before Zulip 8.0 (feature level 211), if the server's
         processing was interrupted by a timeout, but some messages were marked
         as read, then it would return `"result": "partially_completed"`, along
         with a `code` field for an error string, in the success response to
@@ -4905,11 +4910,16 @@ paths:
                     example: {"msg": "", "result": "success", "complete": true}
   /mark_stream_as_read:
     post:
+      deprecated: true
       operationId: mark-stream-as-read
       summary: Mark messages in a stream as read
       tags: ["messages"]
       description: |
         Mark all the unread messages in a stream as read.
+
+        **Changes**: Deprecated; clients should use the [update personal message
+        flags for narrow](/api/update-message-flags-for-narrow) endpoint instead
+        as this endpoint will be removed in a future release.
       parameters:
         - name: stream_id
           in: query
@@ -4924,11 +4934,16 @@ paths:
           $ref: "#/components/responses/SimpleSuccess"
   /mark_topic_as_read:
     post:
+      deprecated: true
       operationId: mark-topic-as-read
       summary: Mark messages in a topic as read
       tags: ["messages"]
       description: |
         Mark all the unread messages in a topic as read.
+
+        **Changes**: Deprecated; clients should use the [update personal message
+        flags for narrow](/api/update-message-flags-for-narrow) endpoint instead
+        as this endpoint will be removed in a future release.
       parameters:
         - name: stream_id
           in: query
@@ -6405,9 +6420,6 @@ paths:
 
         See also the endpoint for [updating flags on a range of
         messages within a narrow](/api/update-message-flags-for-narrow).
-        For updating the `read` flag on common collections of messages, see also
-        the
-        [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
       x-parameter-description: |
         ## Available flags
         <div>
