@@ -1106,6 +1106,8 @@ def extract_unread_data_from_um_rows(
     unmuted_stream_msgs: Set[int] = set()
     huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
     mentions: Set[int] = set()
+    mentions_me_directly: Set[int] = set()
+    wildcard_mentions: Set[int] = set()
     total_unreads = 0
 
     raw_unread_messages: RawUnreadMessagesResult = dict(
