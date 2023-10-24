@@ -217,8 +217,7 @@
             width: 100%;
             border-radius: 0;
             box-shadow: none;
-            /* To be visible over `#streamlist-toggle-unreadcount`
-            and `#userlist-toggle-unreadcount`. */
+            /* To be visible over `#streamlist-toggle-unreadcount` */
             z-index: 20;
         }
 
