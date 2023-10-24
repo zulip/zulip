@@ -254,7 +254,7 @@ def process_new_human_user(
                 get_system_bot(settings.NOTIFICATION_BOT, prereg_user.referred_by.realm_id),
                 prereg_user.referred_by,
                 _("{user} accepted your invitation to join Zulip!").format(
-                    user=f"{user_profile.full_name} <`{user_profile.email}`>"
+                    user=silent_mention_syntax_for_user(user_profile)
                 ),
             )
 
