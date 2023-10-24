@@ -561,6 +561,8 @@ li.active-sub-filter {
         /* TODO: Set this 24px height value as a variable.
            Keep filter-icon height the full height of the box. */
         height: 24px;
+        /* Enlarge icons slightly in condensed views. */
+        font-size: 15px;
         color: var(--color-left-sidebar-navigation-icon);
     }
 }
