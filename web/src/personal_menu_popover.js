@@ -43,7 +43,6 @@ export function initialize() {
             tippy(".personal-menu-clear-status", {
                 placement: "top",
                 appendTo: document.body,
-                interactive: true,
             });
 
             $popper.one("click", ".personal-menu-clear-status", (e) => {
