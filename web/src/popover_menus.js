@@ -138,6 +138,88 @@ export const default_popover_props = {
     touch: true,
     /* Don't use allow-HTML here since it is unsafe. Instead, use `parse_html`
        to generate the required html */
+    popperOptions: {
+        modifiers: [
+            {
+                // Hide popover for which the reference element is hidden.
+                // References:
+                // https://popper.js.org/docs/v2/modifiers/
+                // https://github.com/atomiks/tippyjs/blob/ad85f6feb79cf6c5853c43bf1b2a50c4fa98e7a1/src/createTippy.ts#L608
+                name: "destroy-popover-if-reference-hidden",
+                enabled: true,
+                phase: "beforeWrite",
+                requires: ["$$tippy"],
+                fn({state}) {
+                    const instance = state.elements.reference._tippy;
+                    const $popover = $(state.elements.popper);
+                    const $tippy_box = $popover.find(".tippy-box");
+                    if ($tippy_box.hasClass("show-when-reference-hidden")) {
+                        return;
+                    }
+
+                    // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
+                    // but linter wants us to write it like this.
+                    const is_reference_outside_window = Object.hasOwn(
+                        $tippy_box[0].dataset,
+                        "referenceHidden",
+                    );
+                    if (is_reference_outside_window) {
+                        instance.hide();
+                        return;
+                    }
+
+                    const $reference = $(state.elements.reference);
+                    // We don't want to hide popovers in these fixed / sticky elements where the reference cannot be obscured.
+                    if (
+                        $reference.parents("#compose").length === 1 ||
+                        $reference.parents("#navbar-fixed-container").length === 1 ||
+                        $reference.parents(".sticky_header").length === 1
+                    ) {
+                        return;
+                    }
+
+                    const reference_rect = $reference[0].getBoundingClientRect();
+                    // Hide popover if the reference element is below another element.
+                    //
+                    // This is the logic we want but since it is too expensive to run
+                    // on every scroll, we run a cheaper version of this to just check if
+                    // compose, sticky header or navbar are not obscuring the reference
+                    // in message list where we want a better experience.
+                    // Also, elementFromPoint can be quite buggy since element can be temporarily
+                    // hidden or obscured by other elements like `simplebar-wrapper`.
+                    //
+                    // const topmost_element = document.elementFromPoint(
+                    //     reference_rect.left,
+                    //     reference_rect.top,
+                    // );
+                    // if (
+                    //     !topmost_element ||
+                    //     ($(topmost_element).closest($reference).length === 0 &&
+                    //         $(topmost_element).find($reference).length === 0)
+                    // ) {
+                    //     instance.hide();
+                    // }
+
+                    // Hide popover if the reference element is below compose, sticky header or navbar.
+                    const elements_at_reference_position = document.elementsFromPoint(
+                        reference_rect.left,
+                        reference_rect.top,
+                    );
+
+                    if (
+                        elements_at_reference_position.some(
+                            (element) =>
+                                element.id === "navbar-fixed-container" ||
+                                element.id === "compose" ||
+                                element.classList.contains("sticky_header"),
+                        )
+                    ) {
+                        instance.hide();
+                    }
+                },
+            },
+        ],
+    },
 };
 
 export const left_sidebar_tippy_options = {
@@ -238,6 +320,13 @@ export function toggle_popover_menu(target, popover_props, options) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
         };
+    }
+
+    if (popover_props.popperOptions?.modifiers) {
+        popover_props.popperOptions.modifiers = [
+            ...default_popover_props.popperOptions.modifiers,
+            ...popover_props.popperOptions.modifiers,
+        ];
     }
 
     tippy(target, {

@@ -993,9 +993,6 @@ export function complete_rerender() {
         callback_after_render: () => setTimeout(revive_current_focus, 0),
         is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
-            // Hide popovers on scroll in recent conversations.
-            popovers.hide_all();
-
             // Update the focused element for keyboard navigation if needed.
             recenter_focus_if_off_screen();
         },
