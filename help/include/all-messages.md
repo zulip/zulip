@@ -9,7 +9,7 @@ view](/help/configure-home-view#configure-home-view) for the Zulip web app.
 
 {tab|desktop-web}
 
-{relative|message|all}
+{!go-to-all-messages.md!}
 
 {tab|mobile}
 
