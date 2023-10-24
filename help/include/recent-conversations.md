@@ -6,7 +6,7 @@ for catching up on messages sent while you were away.
 
 {tab|desktop-web}
 
-{relative|message|recent}
+{!go-to-recent-conversations.md!}
 
 1. The filters at the top help you quickly find relevant conversations.
    For example, select **Participated** to narrow to the conversations you
