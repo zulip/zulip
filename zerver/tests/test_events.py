@@ -287,6 +287,7 @@ class BaseAction(ZulipTestCase):
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
         linkifier_url_template: bool = True,
+        user_list_incomplete: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -316,6 +317,7 @@ class BaseAction(ZulipTestCase):
                 user_settings_object=user_settings_object,
                 pronouns_field_type_supported=pronouns_field_type_supported,
                 linkifier_url_template=linkifier_url_template,
+                user_list_incomplete=user_list_incomplete,
             )
         )
 
@@ -331,6 +333,7 @@ class BaseAction(ZulipTestCase):
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
         # We want even those `send_event` calls which have been hooked to
@@ -362,6 +365,7 @@ class BaseAction(ZulipTestCase):
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
@@ -389,6 +393,7 @@ class BaseAction(ZulipTestCase):
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -1561,6 +1566,15 @@ class NormalActionsTest(BaseAction):
 
         check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
+
+        events = self.verify_action(
+            lambda: self.register("alice@zulip.com", "alice"),
+            num_events=2,
+            user_list_incomplete=True,
+        )
+
+        check_user_group_add_members("events[0]", events[0])
+        check_user_group_add_members("events[1]", events[1])
 
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
@@ -4229,6 +4243,18 @@ class SubscribeActionTest(BaseAction):
         check_realm_user_remove("events[1]", events[1])
         self.assertEqual(events[1]["person"]["user_id"], othello.id)
 
+        # Check the state change works correctly when user_list_complete
+        # is set to True.
+        self.subscribe(othello, "test_stream1")
+        unsubscribe_action = lambda: bulk_remove_subscriptions(
+            realm, [othello], [stream], acting_user=None
+        )
+        events = self.verify_action(unsubscribe_action, num_events=2, user_list_incomplete=True)
+        check_subscription_peer_remove("events[0]", events[0])
+        self.assertEqual(set(events[0]["user_ids"]), {othello.id})
+        check_realm_user_remove("events[1]", events[1])
+        self.assertEqual(events[1]["person"]["user_id"], othello.id)
+
     def test_user_access_events_on_changing_subscriptions_for_guests(self) -> None:
         self.set_up_db_for_testing_user_access()
         polonius = self.example_user("polonius")
@@ -4249,6 +4275,19 @@ class SubscribeActionTest(BaseAction):
             realm, [polonius, self.example_user("iago")], [stream], acting_user=None
         )
         events = self.verify_action(unsubscribe_action, num_events=3)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+        check_realm_user_remove("events[2]", events[2])
+        self.assertEqual(events[2]["person"]["user_id"], othello.id)
+
+        # Check the state change works correctly when user_list_complete
+        # is set to True.
+        stream = self.subscribe(self.example_user("othello"), "new_stream")
+        self.subscribe(polonius, "new_stream")
+        unsubscribe_action = lambda: bulk_remove_subscriptions(
+            realm, [polonius], [stream], acting_user=None
+        )
+        events = self.verify_action(unsubscribe_action, num_events=3, user_list_incomplete=True)
         check_subscription_remove("events[0]", events[0])
         check_stream_delete("events[1]", events[1])
         check_realm_user_remove("events[2]", events[2])

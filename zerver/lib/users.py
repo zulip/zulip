@@ -897,6 +897,7 @@ def get_users_for_api(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
+    user_list_incomplete: bool = False,
 ) -> Dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to
     acting_user via the standard format for the Zulip API.  If
@@ -939,11 +940,12 @@ def get_users_for_api(
             custom_profile_field_data=custom_profile_field_data,
         )
 
-    for inaccessible_user_row in inaccessible_user_dicts:
-        # We already have the required data for inaccessible users
-        # in row object, so we can just add it to result directly.
-        user_id = inaccessible_user_row["user_id"]
-        result[user_id] = inaccessible_user_row
+    if not user_list_incomplete:
+        for inaccessible_user_row in inaccessible_user_dicts:
+            # We already have the required data for inaccessible users
+            # in row object, so we can just add it to result directly.
+            user_id = inaccessible_user_row["user_id"]
+            result[user_id] = inaccessible_user_row
 
     return result
 

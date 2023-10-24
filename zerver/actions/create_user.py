@@ -394,6 +394,7 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -
             type="realm_user",
             op="add",
             person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
+            inaccessible_user=True,
         )
         send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
 

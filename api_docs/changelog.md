@@ -20,6 +20,23 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 232**
+
+* [`POST /register`](/api/register-queue): Added a new
+  `user_list_incomplete` [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  controlling whether `realm_users` contains "Unknown user"
+  placeholder objects for users that the current user cannot access
+  due to a `can_access_all_users_group` policy.
+
+* [`GET /events`](/api/get-events): The new `user_list_incomplete`
+  [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  controls whether to send `realm_user` events with `op: "add"`
+  containing "Unknown user" placeholder objects to clients when a new
+  user is created that the client does not have access to due to a
+  `can_access_all_users_group` policy.
+
 **Feature level 231**
 
 * [`POST /register`](/api/register-queue):
