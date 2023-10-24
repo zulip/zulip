@@ -73,7 +73,7 @@ stream or topic as read**.
 
 {tab|via-inbox-view}
 
-{relative|message|inbox}
+{!go-to-inbox.md!}
 
 1. Hover over a stream or topic in the left sidebar.
 
