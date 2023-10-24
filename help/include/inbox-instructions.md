@@ -2,7 +2,7 @@
 
 {tab|desktop-web}
 
-{relative|message|inbox}
+{!go-to-inbox.md!}
 
 1. Click on a conversation you're interested in to view it. You can return to
    **Inbox** when done to select the next conversation.
