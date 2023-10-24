@@ -131,6 +131,7 @@ def fetch_initial_state_data(
     spectator_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
+    user_list_incomplete: bool = False,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -480,6 +481,7 @@ def fetch_initial_state_data(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             # Don't send custom profile field values to spectators.
             include_custom_profile_fields=user_profile is not None,
+            user_list_incomplete=user_list_incomplete,
         )
         state["cross_realm_bots"] = list(get_cross_realm_dicts())
 
@@ -704,6 +706,7 @@ def apply_events(
     slim_presence: bool,
     include_subscribers: bool,
     linkifier_url_template: bool,
+    user_list_incomplete: bool,
 ) -> None:
     for event in events:
         if event["type"] == "restart":
@@ -726,6 +729,7 @@ def apply_events(
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
 
@@ -738,6 +742,7 @@ def apply_event(
     slim_presence: bool,
     include_subscribers: bool,
     linkifier_url_template: bool,
+    user_list_incomplete: bool,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -999,10 +1004,13 @@ def apply_event(
                         ]
         elif event["op"] == "remove":
             if person_user_id in state["raw_users"]:
-                inaccessible_user_dict = get_data_for_inaccessible_user(
-                    user_profile.realm, person_user_id
-                )
-                state["raw_users"][person_user_id] = inaccessible_user_dict
+                if user_list_incomplete:
+                    del state["raw_users"][person_user_id]
+                else:
+                    inaccessible_user_dict = get_data_for_inaccessible_user(
+                        user_profile.realm, person_user_id
+                    )
+                    state["raw_users"][person_user_id] = inaccessible_user_dict
 
             if include_subscribers:
                 for sub in state["subscriptions"]:
@@ -1547,6 +1555,7 @@ def do_events_register(
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
     user_settings_object = client_capabilities.get("user_settings_object", False)
     linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
+    user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
 
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)
@@ -1570,6 +1579,7 @@ def do_events_register(
             linkifier_url_template=linkifier_url_template,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
+            user_list_incomplete=user_list_incomplete,
             # slim_presence is a noop, because presence is not included.
             slim_presence=True,
             # Force include_subscribers=False for security reasons.
@@ -1605,6 +1615,7 @@ def do_events_register(
             user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
         if queue_id is None:
@@ -1622,6 +1633,7 @@ def do_events_register(
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
         # Apply events that came in while we were fetching initial data
@@ -1636,6 +1648,7 @@ def do_events_register(
                 slim_presence=slim_presence,
                 include_subscribers=include_subscribers,
                 linkifier_url_template=linkifier_url_template,
+                user_list_incomplete=user_list_incomplete,
             )
         except RestartEventError:
             # This represents a rare race condition, where Tornado
