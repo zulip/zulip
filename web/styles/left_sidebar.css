@@ -896,7 +896,8 @@ li.top_left_scheduled_messages {
     All of our left sidebar handlers use absolute
     positioning.  We should fix that.
 */
-.sidebar-menu-icon {
+.bottom_left_row .sidebar-menu-icon,
+.top_left_row .sidebar-menu-icon {
     display: none;
     width: 100%;
     cursor: pointer;
