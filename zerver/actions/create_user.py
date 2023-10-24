@@ -582,11 +582,9 @@ def do_create_user(
     return user_profile
 
 
-def do_activate_mirror_dummy_user(
-    user_profile: UserProfile, *, acting_user: Optional[UserProfile]
-) -> None:
+def do_activate_protouser(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     """Called to have a user "take over" a "mirror dummy" user
-    (i.e. is_mirror_dummy=True) account when they sign up with the
+    (i.e. is_mirror_protouser=True or is_imported_protouser=True) account when they sign up with the
     same email address.
 
     Essentially, the result should be as though we had created the
@@ -600,12 +598,19 @@ def do_activate_mirror_dummy_user(
     """
     with transaction.atomic():
         change_user_is_active(user_profile, True)
-        user_profile.is_mirror_dummy = False
+        user_profile.is_mirror_protouser = False
+        user_profile.is_imported_protouser = False
         user_profile.set_unusable_password()
         user_profile.date_joined = timezone_now()
         user_profile.tos_version = settings.TERMS_OF_SERVICE_VERSION
         user_profile.save(
-            update_fields=["date_joined", "password", "is_mirror_dummy", "tos_version"]
+            update_fields=[
+                "date_joined",
+                "password",
+                "is_mirror_protouser",
+                "is_imported_protouser",
+                "tos_version",
+            ]
         )
 
         event_time = user_profile.date_joined
@@ -636,7 +641,11 @@ def do_activate_mirror_dummy_user(
 @transaction.atomic(savepoint=False)
 def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     """Reactivate a user that had previously been deactivated"""
-    if user_profile.is_mirror_dummy:
+    if (
+        user_profile.is_mirror_protouser
+        or user_profile.is_imported_protouser
+        or user_profile.is_deleted_protouser
+    ):
         raise JsonableError(
             _("Cannot activate a placeholder account; ask the user to sign up, instead.")
         )

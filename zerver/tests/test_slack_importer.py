@@ -327,7 +327,7 @@ class SlackImporter(ZulipTestCase):
         # Normal users
         self.assert_length(users, 5)
         self.assertEqual(users[0]["id"], "U061A1R2R")
-        self.assertEqual(users[0]["is_mirror_dummy"], False)
+        self.assertEqual(users[0]["is_imported_protouser"], False)
         self.assertFalse("team_domain" in users[0])
         self.assertEqual(users[1]["id"], "U061A5N1G")
         self.assertEqual(users[2]["id"], "U064KUGRJ")
@@ -339,10 +339,10 @@ class SlackImporter(ZulipTestCase):
         fourth_fifth.sort(key=lambda x: x["id"])
         self.assertEqual(fourth_fifth[0]["id"], "U061A3E0G")
         self.assertEqual(fourth_fifth[0]["team_domain"], "foreignteam1")
-        self.assertEqual(fourth_fifth[0]["is_mirror_dummy"], True)
+        self.assertEqual(fourth_fifth[0]["is_imported_protouser"], True)
         self.assertEqual(fourth_fifth[1]["id"], "U061A8H1G")
         self.assertEqual(fourth_fifth[1]["team_domain"], "foreignteam2")
-        self.assertEqual(fourth_fifth[1]["is_mirror_dummy"], True)
+        self.assertEqual(fourth_fifth[1]["is_imported_protouser"], True)
 
     @mock.patch("zerver.data_import.slack.get_data_file")
     def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:
@@ -360,7 +360,7 @@ class SlackImporter(ZulipTestCase):
                 "team_id": "T5YFFM2QY",
                 "name": "john",
                 "deleted": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "real_name": "John Doe",
                 "profile": {
                     "image_32": "",
@@ -380,7 +380,7 @@ class SlackImporter(ZulipTestCase):
                 "name": "Jane",
                 "real_name": "Jane Doe",
                 "deleted": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "profile": {
                     "image_32": "https://secure.gravatar.com/avatar/random.png",
                     "fields": custom_profile_field_user2,
@@ -395,7 +395,7 @@ class SlackImporter(ZulipTestCase):
                 "real_name": "Bot",
                 "is_bot": True,
                 "deleted": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "profile": {
                     "image_32": "https://secure.gravatar.com/avatar/random1.png",
                     "skype": "test_skype_name",
@@ -410,7 +410,7 @@ class SlackImporter(ZulipTestCase):
                 "color": "9d8eee",
                 "is_bot": False,
                 "is_app_user": False,
-                "is_mirror_dummy": True,
+                "is_imported_protouser": True,
                 "team_domain": "foreignteam",
                 "profile": {
                     "image_32": "https://secure.gravatar.com/avatar/random6.png",
@@ -433,7 +433,7 @@ class SlackImporter(ZulipTestCase):
                 "is_restricted": True,
                 "is_ultra_restricted": False,
                 "is_bot": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "profile": {
                     "email": "steviejacob34@yahoo.com",
                     "avatar_hash": "hash",
@@ -451,7 +451,7 @@ class SlackImporter(ZulipTestCase):
                 "is_restricted": True,
                 "is_ultra_restricted": True,
                 "is_bot": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "profile": {
                     "email": "pratik@mit.edu",
                     "avatar_hash": "hash",
@@ -469,7 +469,7 @@ class SlackImporter(ZulipTestCase):
                 "is_restricted": False,
                 "is_ultra_restricted": False,
                 "is_bot": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "profile": {
                     "email": "george@yahoo.com",
                     "avatar_hash": "hash",
@@ -487,7 +487,7 @@ class SlackImporter(ZulipTestCase):
                 "is_restricted": False,
                 "is_ultra_restricted": False,
                 "is_bot": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "profile": {
                     "email": "daniel@gmail.com",
                     "avatar_hash": "hash",
@@ -548,7 +548,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
         self.assertEqual(zerver_userprofile[0]["is_active"], True)
-        self.assertEqual(zerver_userprofile[0]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[0]["is_imported_protouser"], False)
         self.assertEqual(zerver_userprofile[0]["role"], UserProfile.ROLE_MEMBER)
         self.assertEqual(zerver_userprofile[0]["enable_desktop_notifications"], True)
         self.assertEqual(zerver_userprofile[0]["email"], "jon@gmail.com")
@@ -560,14 +560,14 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[1]["role"], UserProfile.ROLE_REALM_OWNER)
         self.assertEqual(zerver_userprofile[1]["is_staff"], False)
         self.assertEqual(zerver_userprofile[1]["is_active"], True)
-        self.assertEqual(zerver_userprofile[0]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[0]["is_imported_protouser"], False)
 
         self.assertEqual(
             zerver_userprofile[2]["id"], test_slack_user_id_to_zulip_user_id["U09TYF5Sk"]
         )
         self.assertEqual(zerver_userprofile[2]["is_bot"], True)
         self.assertEqual(zerver_userprofile[2]["is_active"], True)
-        self.assertEqual(zerver_userprofile[2]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[2]["is_imported_protouser"], False)
         self.assertEqual(zerver_userprofile[2]["email"], "bot1@zulipchat.com")
         self.assertEqual(zerver_userprofile[2]["bot_type"], 1)
         self.assertEqual(zerver_userprofile[2]["avatar_source"], "U")
@@ -581,7 +581,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[3]["email"], "matt.perry@foreignteam.slack.com")
         self.assertEqual(zerver_userprofile[3]["realm"], 1)
         self.assertEqual(zerver_userprofile[3]["full_name"], "Matt Perry")
-        self.assertEqual(zerver_userprofile[3]["is_mirror_dummy"], True)
+        self.assertEqual(zerver_userprofile[3]["is_imported_protouser"], True)
         self.assertEqual(zerver_userprofile[3]["can_forge_sender"], False)
 
         self.assertEqual(
@@ -590,7 +590,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[4]["role"], UserProfile.ROLE_GUEST)
         self.assertEqual(zerver_userprofile[4]["is_staff"], False)
         self.assertEqual(zerver_userprofile[4]["is_active"], True)
-        self.assertEqual(zerver_userprofile[4]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[4]["is_imported_protouser"], False)
 
         self.assertEqual(
             zerver_userprofile[5]["id"], test_slack_user_id_to_zulip_user_id["U8X25EBAB"]
@@ -598,7 +598,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[5]["role"], UserProfile.ROLE_GUEST)
         self.assertEqual(zerver_userprofile[5]["is_staff"], False)
         self.assertEqual(zerver_userprofile[5]["is_active"], True)
-        self.assertEqual(zerver_userprofile[5]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[5]["is_imported_protouser"], False)
 
         self.assertEqual(
             zerver_userprofile[6]["id"], test_slack_user_id_to_zulip_user_id["U015J7JSE"]
@@ -606,7 +606,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[6]["role"], UserProfile.ROLE_REALM_OWNER)
         self.assertEqual(zerver_userprofile[6]["is_staff"], False)
         self.assertEqual(zerver_userprofile[6]["is_active"], True)
-        self.assertEqual(zerver_userprofile[6]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[6]["is_imported_protouser"], False)
 
         self.assertEqual(
             zerver_userprofile[7]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC80"]
@@ -614,7 +614,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[7]["role"], UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertEqual(zerver_userprofile[7]["is_staff"], False)
         self.assertEqual(zerver_userprofile[7]["is_active"], True)
-        self.assertEqual(zerver_userprofile[7]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[7]["is_imported_protouser"], False)
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1

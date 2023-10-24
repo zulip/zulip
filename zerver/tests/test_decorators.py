@@ -808,7 +808,7 @@ class InactiveUserTest(ZulipTestCase):
 
         """
         user_profile = self.example_user("hamlet")
-        user_profile.is_mirror_dummy = True
+        user_profile.is_mirror_protouser = True
         user_profile.save()
 
         password = initial_password(user_profile.delivery_email)
@@ -835,7 +835,7 @@ class InactiveUserTest(ZulipTestCase):
             self.assertIn("Please enter a correct email", str(form.errors))
 
         # Test a non-mirror-dummy deactivated user.
-        user_profile.is_mirror_dummy = False
+        user_profile.is_mirror_protouser = False
         user_profile.save()
 
         form = OurAuthenticationForm(request, payload)

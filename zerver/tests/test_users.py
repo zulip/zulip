@@ -1629,8 +1629,8 @@ class ActivateTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         change_user_is_active(desdemona, False)
 
-        desdemona.is_mirror_dummy = True
-        desdemona.save(update_fields=["is_mirror_dummy"])
+        desdemona.is_mirror_protouser = True
+        desdemona.save(update_fields=["is_mirror_protouser"])
 
         # Cannot deactivate a user which is marked as "mirror dummy" from importing
         result = self.client_post(f"/json/users/{desdemona.id}/reactivate")
@@ -2745,7 +2745,7 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(
             replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
         )
-        self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
+        self.assertEqual(replacement_dummy_user.is_deleted_protouser, True)
         self.assertEqual(replacement_dummy_user.is_active, False)
         self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
 
@@ -2817,7 +2817,7 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(
             replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
         )
-        self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
+        self.assertEqual(replacement_dummy_user.is_deleted_protouser, True)
         self.assertEqual(replacement_dummy_user.is_active, False)
         self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
 

@@ -357,8 +357,8 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
-        self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_dummy"], False)
-        self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
+        self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_protouser"], False)
+        self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_protouser"], False)
 
         last_event_id = events[0]["id"]
         local_id = "10.02"
@@ -995,7 +995,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 sender_realm_id=sender.realm_id,
                 sender_avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 sender_avatar_version=1,
-                sender_is_mirror_dummy=None,
+                sender_is_mirror_protouser=None,
                 sender_email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 recipient_type=None,
                 recipient_type_id=None,

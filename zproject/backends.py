@@ -245,9 +245,9 @@ def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, An
         return False
     if not user_profile.is_active:
         if return_data is not None:
-            if user_profile.is_mirror_dummy:
+            if user_profile.is_mirror_protouser:
                 # Record whether it's a mirror dummy account
-                return_data["is_mirror_dummy"] = True
+                return_data["is_mirror_protouser"] = True
             return_data["inactive_user"] = True
             return_data["inactive_user_id"] = user_profile.id
         return False
@@ -1443,7 +1443,7 @@ class ExternalAuthResult:
 
             if "subdomain" not in self.data_dict:
                 self.data_dict["subdomain"] = self.user_profile.realm.subdomain
-            if not self.user_profile.is_mirror_dummy:
+            if not self.user_profile.is_mirror_protouser:
                 self.data_dict["is_signup"] = False
 
     def store_data(self) -> str:
@@ -1846,7 +1846,7 @@ def social_auth_finish(
     desktop_flow_otp = strategy.session_get("desktop_flow_otp")
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
-    if user_profile is None or user_profile.is_mirror_dummy:
+    if user_profile is None or user_profile.is_mirror_protouser:
         is_signup = strategy.session_get("is_signup") == "1" or backend.should_auto_signup()
     else:
         is_signup = False
@@ -1907,7 +1907,7 @@ def social_auth_finish(
     result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
 
     if mobile_flow_otp or desktop_flow_otp:
-        if user_profile is not None and not user_profile.is_mirror_dummy:
+        if user_profile is not None and not user_profile.is_mirror_protouser:
             # For mobile and desktop app authentication, login_or_register_remote_user
             # will redirect to a special zulip:// URL that is handled by
             # the app after a successful authentication; so we can

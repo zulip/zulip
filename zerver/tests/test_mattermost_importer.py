@@ -90,7 +90,7 @@ class MatterMostImporter(ZulipTestCase):
         reset_mirror_dummy_users(username_to_user)
 
         harry_dict = username_to_user["harry"]
-        harry_dict["is_mirror_dummy"] = False
+        harry_dict["is_imported_protouser"] = False
 
         realm_id = 3
 
@@ -103,7 +103,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["id"], 1)
         self.assertEqual(user["is_active"], True)
         self.assertEqual(user["role"], UserProfile.ROLE_REALM_OWNER)
-        self.assertEqual(user["is_mirror_dummy"], False)
+        self.assertEqual(user["is_imported_protouser"], False)
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "harry")
         self.assertEqual(user["timezone"], "UTC")
@@ -115,7 +115,7 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "slytherin"
         snape_dict = username_to_user["snape"]
-        snape_dict["is_mirror_dummy"] = True
+        snape_dict["is_imported_protouser"] = True
         user = process_user(snape_dict, realm_id, team_name, user_id_mapper)
         self.assertEqual(user["avatar_source"], "G")
         self.assertEqual(user["delivery_email"], "snape@zulip.com")
@@ -124,7 +124,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["id"], 2)
         self.assertEqual(user["is_active"], False)
         self.assertEqual(user["role"], UserProfile.ROLE_MEMBER)
-        self.assertEqual(user["is_mirror_dummy"], True)
+        self.assertEqual(user["is_imported_protouser"], True)
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "snape")
         self.assertEqual(user["timezone"], "UTC")
@@ -137,7 +137,7 @@ class MatterMostImporter(ZulipTestCase):
         reset_mirror_dummy_users(username_to_user)
 
         sirius_dict = username_to_user["sirius"]
-        sirius_dict["is_mirror_dummy"] = False
+        sirius_dict["is_imported_protouser"] = False
 
         realm_id = 3
 
@@ -148,7 +148,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["email"], "sirius@zulip.com")
         self.assertEqual(user["full_name"], "Sirius Black")
         self.assertEqual(user["role"], UserProfile.ROLE_GUEST)
-        self.assertEqual(user["is_mirror_dummy"], False)
+        self.assertEqual(user["is_imported_protouser"], False)
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "sirius")
         self.assertEqual(user["timezone"], "UTC")
@@ -578,13 +578,13 @@ class MatterMostImporter(ZulipTestCase):
             mattermost_data=mattermost_data,
             username_to_user=username_to_user,
         )
-        self.assertFalse(username_to_user["harry"]["is_mirror_dummy"])
-        self.assertFalse(username_to_user["ron"]["is_mirror_dummy"])
-        self.assertFalse(username_to_user["malfoy"]["is_mirror_dummy"])
+        self.assertFalse(username_to_user["harry"]["is_imported_protouser"])
+        self.assertFalse(username_to_user["ron"]["is_imported_protouser"])
+        self.assertFalse(username_to_user["malfoy"]["is_imported_protouser"])
 
         # snape is mirror dummy since the user sent a message in gryffindor and
         # left the team
-        self.assertTrue(username_to_user["snape"]["is_mirror_dummy"])
+        self.assertTrue(username_to_user["snape"]["is_imported_protouser"])
 
     def test_build_reactions(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
@@ -744,9 +744,9 @@ class MatterMostImporter(ZulipTestCase):
 
         realm = get_realm("gryffindor")
 
-        self.assertFalse(get_user("harry@zulip.com", realm).is_mirror_dummy)
-        self.assertFalse(get_user("ron@zulip.com", realm).is_mirror_dummy)
-        self.assertTrue(get_user("snape@zulip.com", realm).is_mirror_dummy)
+        self.assertFalse(get_user("harry@zulip.com", realm).is_imported_protouser)
+        self.assertFalse(get_user("ron@zulip.com", realm).is_imported_protouser)
+        self.assertTrue(get_user("snape@zulip.com", realm).is_imported_protouser)
 
         messages = Message.objects.filter(realm=realm)
         for message in messages:

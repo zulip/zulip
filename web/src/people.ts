@@ -1540,7 +1540,9 @@ function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser
                     full_name: message.sender_full_name,
                     id: message.sender_id,
                     email: message.sender_email,
-                    is_mirror_dummy: false,
+                    is_mirror_protouser: false,
+                    is_imported_protouser: false,
+                    is_deleted_protouser: false,
                 },
             ];
             break;

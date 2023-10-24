@@ -53,7 +53,7 @@ class UserDisplayRecipient(TypedDict):
     email: str
     full_name: str
     id: int
-    is_mirror_dummy: bool
+    is_mirror_protouser: bool
 
 
 DisplayRecipientT: TypeAlias = Union[str, List[UserDisplayRecipient]]

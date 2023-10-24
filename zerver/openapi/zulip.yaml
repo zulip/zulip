@@ -6237,19 +6237,25 @@ paths:
                                 [
                                   {
                                     "id": 4,
-                                    "is_mirror_dummy": false,
+                                    "is_mirror_protouser": false,
+                                    "is_imported_protouser": false,
+                                    "is_deleted_protouser": false,
                                     "email": "hamlet@zulip.com",
                                     "full_name": "King Hamlet",
                                   },
                                   {
                                     "id": 5,
-                                    "is_mirror_dummy": false,
+                                    "is_mirror_protouser": false,
+                                    "is_imported_protouser": false,
+                                    "is_deleted_protouser": false,
                                     "email": "iago@zulip.com",
                                     "full_name": "Iago",
                                   },
                                   {
                                     "id": 8,
-                                    "is_mirror_dummy": false,
+                                    "is_mirror_protouser": false,
+                                    "is_imported_protouser": false,
+                                    "is_deleted_protouser": false,
                                     "email": "prospero@zulip.com",
                                     "full_name": "Prospero from The Tempest",
                                   },
@@ -7471,19 +7477,25 @@ paths:
                               [
                                 {
                                   "id": 4,
-                                  "is_mirror_dummy": false,
+                                  "is_mirror_protouser": false,
+                                  "is_imported_protouser": false,
+                                  "is_deleted_protouser": false,
                                   "email": "hamlet@zulip.com",
                                   "full_name": "King Hamlet",
                                 },
                                 {
                                   "id": 5,
-                                  "is_mirror_dummy": false,
+                                  "is_mirror_protouser": false,
+                                  "is_imported_protouser": false,
+                                  "is_deleted_protouser": false,
                                   "email": "iago@zulip.com",
                                   "full_name": "Iago",
                                 },
                                 {
                                   "id": 8,
-                                  "is_mirror_dummy": false,
+                                  "is_mirror_protouser": false,
+                                  "is_imported_protouser": false,
+                                  "is_deleted_protouser": false,
                                   "email": "prospero@zulip.com",
                                   "full_name": "Prospero from The Tempest",
                                 },
@@ -19159,10 +19171,18 @@ components:
                   type: string
                   description: |
                     Full name of the user.
-                is_mirror_dummy:
+                is_mirror_protouser:
                   type: boolean
                   description: |
                     Whether the user is a mirror dummy.
+                is_imported_protouser:
+                  type: boolean
+                  description: |
+                    Whether the user is imported from a third-party, e.g. Slack.
+                is_deleted_protouser:
+                  type: boolean
+                  description: |
+                    Whether the user is a deleted user.
     EmojiBase:
       type: object
       properties:
@@ -19236,10 +19256,18 @@ components:
                   type: string
                   description: |
                     Full name of the user.
-                is_mirror_dummy:
+                is_mirror_protouser:
                   type: boolean
                   description: |
                     Whether the user is a mirror dummy.
+                is_imported_protouser:
+                  type: boolean
+                  description: |
+                    Whether the user is imported from a third-party, e.g. Slack.
+                is_deleted_protouser:
+                  type: boolean
+                  description: |
+                    Whether the user is a deleted user.
     MessagesEvent:
       allOf:
         - $ref: "#/components/schemas/MessagesBase"
@@ -19323,10 +19351,18 @@ components:
                     type: string
                     description: |
                       Full name of the user.
-                  is_mirror_dummy:
+                  is_mirror_protouser:
                     type: boolean
                     description: |
                       Whether the user is a mirror dummy.
+                  is_imported_protouser:
+                    type: boolean
+                    description: |
+                      Whether the user is imported from a third-party, e.g. Slack.
+                  is_deleted_protouser:
+                    type: boolean
+                    description: |
+                      Whether the user is a deleted user.
           description: |
             Data on the recipient of the message;
             either the name of a stream or a dictionary containing basic data on

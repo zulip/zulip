@@ -12,11 +12,7 @@ from zerver.actions.bots import (
     do_change_default_sending_stream,
 )
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.create_user import (
-    do_activate_mirror_dummy_user,
-    do_create_user,
-    do_reactivate_user,
-)
+from zerver.actions.create_user import do_activate_protouser, do_create_user, do_reactivate_user
 from zerver.actions.realm_domains import (
     do_add_realm_domain,
     do_change_realm_domain,
@@ -108,7 +104,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user = do_create_user("email", "password", realm, "full_name", acting_user=None)
         do_deactivate_user(user, acting_user=user)
-        do_activate_mirror_dummy_user(user, acting_user=user)
+        do_activate_protouser(user, acting_user=user)
         do_deactivate_user(user, acting_user=user)
         do_reactivate_user(user, acting_user=user)
         self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 8)

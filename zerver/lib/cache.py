@@ -577,7 +577,17 @@ def flush_user_profile(
     if changed(update_fields, ["role"]):
         cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
-    if changed(update_fields, ["email", "full_name", "id", "is_mirror_dummy"]):
+    if changed(
+        update_fields,
+        [
+            "email",
+            "full_name",
+            "id",
+            "is_mirror_protouser",
+            "is_imported_protouser",
+            "is_deleted_protouser",
+        ],
+    ):
         delete_display_recipient_cache(user_profile)
 
     # Invalidate our bots_in_realm info dict if any bot has

@@ -36,11 +36,7 @@ from analytics.models import (
     installation_epoch,
 )
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.create_user import (
-    do_activate_mirror_dummy_user,
-    do_create_user,
-    do_reactivate_user,
-)
+from zerver.actions.create_user import do_activate_protouser, do_create_user, do_reactivate_user
 from zerver.actions.invites import (
     do_invite_users,
     do_resend_user_invite_email,
@@ -1375,7 +1371,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 "value__sum"
             ],
         )
-        do_activate_mirror_dummy_user(user, acting_user=None)
+        do_activate_protouser(user, acting_user=None)
         self.assertEqual(
             1,
             RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
@@ -1982,7 +1978,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
             "email4", "password", self.default_realm, "full_name", acting_user=None
         )
         do_deactivate_user(user2, acting_user=None)
-        do_activate_mirror_dummy_user(user3, acting_user=None)
+        do_activate_protouser(user3, acting_user=None)
         do_reactivate_user(user4, acting_user=None)
         end_time = floor_to_day(timezone_now()) + self.DAY
         do_fill_count_stat_at_hour(self.stat, end_time)

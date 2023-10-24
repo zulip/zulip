@@ -64,7 +64,7 @@ class DoRestCallTests(ZulipTestCase):
                 "sender_email_address_visibility": UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 "recipient_type": "stream",
                 "recipient_type_id": 999,
-                "sender_is_mirror_dummy": False,
+                "sender_is_mirror_protouser": False,
                 TOPIC_NAME: "Foo",
                 "id": "",
                 "type": "stream",

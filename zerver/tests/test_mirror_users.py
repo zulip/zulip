@@ -76,7 +76,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertIn(new_user_email, realm_emails)
 
         bob = get_user(new_user_email, new_user_realm)
-        self.assertTrue(bob.is_mirror_dummy)
+        self.assertTrue(bob.is_mirror_protouser)
 
     @mock.patch(
         "DNS.dnslookup",
@@ -98,7 +98,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         assert mirror_sender is not None
         self.assertEqual(mirror_sender.email, sender_email)
-        self.assertTrue(mirror_sender.is_mirror_dummy)
+        self.assertTrue(mirror_sender.is_mirror_protouser)
 
     def test_irc_mirror(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -127,7 +127,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertIn("bob@irc.zulip.com", realm_emails)
 
         bob = get_user("bob@irc.zulip.com", sender.realm)
-        self.assertTrue(bob.is_mirror_dummy)
+        self.assertTrue(bob.is_mirror_protouser)
 
     def test_jabber_mirror(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -156,7 +156,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertIn(self.nonreg_email("bob"), realm_emails)
 
         bob = get_user(self.nonreg_email("bob"), sender.realm)
-        self.assertTrue(bob.is_mirror_dummy)
+        self.assertTrue(bob.is_mirror_protouser)
 
     def test_create_mirror_user_despite_race(self) -> None:
         realm = get_realm("zulip")
@@ -169,7 +169,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
             self.assertEqual(kwargs["full_name"], "fred")
             self.assertEqual(kwargs["email"], email)
             self.assertEqual(kwargs["active"], False)
-            self.assertEqual(kwargs["is_mirror_dummy"], True)
+            self.assertEqual(kwargs["is_mirror_protouser"], True)
             # We create an actual user here to simulate a race.
             # We use the minimal, un-mocked function.
             kwargs["bot_type"] = None

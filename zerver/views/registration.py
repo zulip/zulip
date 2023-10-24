@@ -29,7 +29,7 @@ from confirmation.models import (
     validate_key,
 )
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.create_user import do_activate_mirror_dummy_user, do_create_user
+from zerver.actions.create_user import do_activate_protouser, do_create_user
 from zerver.actions.default_streams import lookup_default_stream_groups
 from zerver.actions.user_settings import (
     do_change_full_name,
@@ -584,9 +584,11 @@ def registration_helper(
                 # With realm_creation=True, we're going to return further down,
                 # after finishing up the creation process.
 
-        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+        if existing_user_profile is not None and (
+            existing_user_profile.is_imported_protouser or existing_user_profile.is_mirror_protouser
+        ):
             user_profile = existing_user_profile
-            do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
+            do_activate_protouser(user_profile, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
@@ -596,7 +598,7 @@ def registration_helper(
                 get_default_language_for_new_user(realm, request=request),
                 acting_user=None,
             )
-            # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
+            # TODO: When we clean up the `do_activate_protouser` code path,
             # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:

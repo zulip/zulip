@@ -64,7 +64,7 @@ def process_users(
 
     for rc_user_id in user_id_to_user_map:
         user_dict = user_id_to_user_map[rc_user_id]
-        is_mirror_dummy = False
+        is_imported_protouser = False
         is_bot = False
         is_active = True
 
@@ -78,7 +78,7 @@ def process_users(
             if user_dict["type"] == "bot":
                 is_bot = True
             else:
-                is_mirror_dummy = True
+                is_imported_protouser = True
 
         if user_dict.get("emails") is None:
             user_dict["emails"] = [
@@ -120,7 +120,7 @@ def process_users(
             id=id,
             is_active=is_active,
             role=role,
-            is_mirror_dummy=is_mirror_dummy,
+            is_imported_protouser=is_imported_protouser,
             realm_id=realm_id,
             short_name=short_name,
             timezone=timezone,

@@ -131,7 +131,7 @@ def get_existing_user_errors(
     users = get_users_by_delivery_email(emails, target_realm).only(
         "delivery_email",
         "is_active",
-        "is_mirror_dummy",
+        "is_mirror_protouser",
     )
 
     """
@@ -160,7 +160,7 @@ def get_existing_user_errors(
             # HAPPY PATH!  Most people invite users that don't exist yet.
             return
 
-        if existing_user_profile.is_mirror_dummy:
+        if existing_user_profile.is_mirror_protouser:
             if existing_user_profile.is_active:
                 raise AssertionError("Mirror dummy user is already active!")
             return

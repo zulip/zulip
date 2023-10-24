@@ -456,7 +456,7 @@ check_message = make_checker(message_event)
 _check_direct_message_display_recipient = DictType(
     required_keys=[
         ("id", int),
-        ("is_mirror_dummy", bool),
+        ("is_mirror_protouser", bool),
         ("email", str),
         ("full_name", str),
     ]
@@ -528,7 +528,7 @@ reaction_legacy_user_type = DictType(
         ("full_name", str),
         ("user_id", int),
     ]
-    # We should probably declare is_mirror_dummy as an optional field here.
+    # We should probably declare is_mirror_protouser as an optional field here.
 )
 
 reaction_add_event = event_dict_type(

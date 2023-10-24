@@ -321,8 +321,8 @@ def users_to_zerver_userprofile(
 
         userprofile = UserProfile(
             full_name=get_user_full_name(user),
-            is_active=not user.get("deleted", False) and not user["is_mirror_dummy"],
-            is_mirror_dummy=user["is_mirror_dummy"],
+            is_active=not user.get("deleted", False) and not user["is_imported_protouser"],
+            is_imported_protouser=user["is_imported_protouser"],
             id=user_id,
             email=email,
             delivery_email=email,
@@ -440,7 +440,7 @@ def process_customprofilefields(
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if "email" in user["profile"]:
         return user["profile"]["email"]
-    if user["is_mirror_dummy"]:
+    if user["is_imported_protouser"]:
         return Address(username=user["name"], domain=f'{user["team_domain"]}.slack.com').addr_spec
     if "bot_id" in user["profile"]:
         return SlackBotEmail.get_email(user["profile"], domain_name)
@@ -1244,11 +1244,11 @@ def fetch_shared_channel_users(
     user_list: List[ZerverFieldsT], slack_data_dir: str, token: str
 ) -> None:
     normal_user_ids = set()
-    mirror_dummy_user_ids = set()
+    mirror_protouser_ids = set()
     added_channels = {}
     team_id_to_domain: Dict[str, str] = {}
     for user in user_list:
-        user["is_mirror_dummy"] = False
+        user["is_imported_protouser"] = False
         normal_user_ids.add(user["id"])
 
     public_channels = get_data_file(slack_data_dir + "/channels.json")
@@ -1260,18 +1260,18 @@ def fetch_shared_channel_users(
         added_channels[channel["name"]] = True
         for user_id in channel["members"]:
             if user_id not in normal_user_ids:
-                mirror_dummy_user_ids.add(user_id)
+                mirror_protouser_ids.add(user_id)
 
     all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {})
     for message in all_messages:
         user_id = get_message_sending_user(message)
         if user_id is None or user_id in normal_user_ids:
             continue
-        mirror_dummy_user_ids.add(user_id)
+        mirror_protouser_ids.add(user_id)
 
-    # Fetch data on the mirror_dummy_user_ids from the Slack API (it's
+    # Fetch data on the mirror_protouser_ids from the Slack API (it's
     # not included in the data export file).
-    for user_id in mirror_dummy_user_ids:
+    for user_id in mirror_protouser_ids:
         user = get_slack_api_data(
             "https://slack.com/api/users.info", "user", token=token, user=user_id
         )
@@ -1282,7 +1282,7 @@ def fetch_shared_channel_users(
             )
             team_id_to_domain[team_id] = team["domain"]
         user["team_domain"] = team_id_to_domain[team_id]
-        user["is_mirror_dummy"] = True
+        user["is_imported_protouser"] = True
         user_list.append(user)
 
 

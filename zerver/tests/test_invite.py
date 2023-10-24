@@ -589,7 +589,7 @@ class InviteUserTest(InviteUserBase):
         self.login_user(inviter)
 
         mirror_user = self.example_user("cordelia")
-        mirror_user.is_mirror_dummy = True
+        mirror_user.is_mirror_protouser = True
         mirror_user.save()
         change_user_is_active(mirror_user, False)
 

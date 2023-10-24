@@ -19,7 +19,7 @@ display_recipient_fields = [
     "id",
     "email",
     "full_name",
-    "is_mirror_dummy",
+    "is_mirror_protouser",
 ]
 
 

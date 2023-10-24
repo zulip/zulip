@@ -525,7 +525,7 @@ class OurAuthenticationForm(AuthenticationForm):
                     )
                 )
 
-            if return_data.get("inactive_user") and not return_data.get("is_mirror_dummy"):
+            if return_data.get("inactive_user") and not return_data.get("is_mirror_protouser"):
                 # We exclude mirror dummy accounts here. They should be treated as the
                 # user never having had an account, so we let them fall through to the
                 # normal invalid_login case below.

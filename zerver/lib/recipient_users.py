@@ -70,7 +70,7 @@ def validate_recipient_user_profiles(
     for user_profile in user_profiles:
         if (
             not user_profile.is_active
-            and not user_profile.is_mirror_dummy
+            and not user_profile.is_mirror_protouser
             and not allow_deactivated
         ) or user_profile.realm.deactivated:
             raise ValidationError(

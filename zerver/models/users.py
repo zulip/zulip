@@ -490,7 +490,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # message senders in our cross-protocol Zephyr<->Zulip content
     # mirroring integration, so that we can display mirrored content
     # like native Zulip messages (with a name + avatar, etc.).
-    is_mirror_dummy = models.BooleanField(default=False)
+    is_mirror_protouser = models.BooleanField(default=False)
+
+    # Used for accounts that has been imported from a third-party
+    # for example Slack
+    is_imported_protouser = models.BooleanField(default=False)
+
+    # Used for accounts that has been deleted
+    is_deleted_protouser = models.BooleanField(default=False)
 
     # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Zephyr/Jabber mirroring.

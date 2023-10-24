@@ -373,7 +373,11 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
             request.session[key] = value
 
     user_profile = result.user_profile
-    if user_profile is None or user_profile.is_mirror_dummy:
+    if (
+        user_profile is None
+        or user_profile.is_mirror_protouser
+        or user_profile.is_imported_protouser
+    ):
         return register_remote_user(request, result)
     # Otherwise, the user has successfully authenticated to an
     # account, and we need to do the right thing depending whether

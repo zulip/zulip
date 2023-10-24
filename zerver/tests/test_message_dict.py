@@ -339,7 +339,7 @@ class MessageHydrationTest(ZulipTestCase):
         obj = dict(
             recipient_type=Recipient.STREAM,
             recipient_type_id=stream_id,
-            sender_is_mirror_dummy=False,
+            sender_is_mirror_protouser=False,
             sender_email=cordelia.email,
             sender_full_name=cordelia.full_name,
             sender_id=cordelia.id,
@@ -357,14 +357,14 @@ class MessageHydrationTest(ZulipTestCase):
                 email="aaron@example.com",
                 full_name="Aaron Smith",
                 id=999,
-                is_mirror_dummy=False,
+                is_mirror_protouser=False,
             ),
         ]
 
         obj = dict(
             recipient_type=Recipient.PERSONAL,
             recipient_type_id=None,
-            sender_is_mirror_dummy=False,
+            sender_is_mirror_protouser=False,
             sender_email=cordelia.email,
             sender_full_name=cordelia.full_name,
             sender_id=cordelia.id,
@@ -379,13 +379,13 @@ class MessageHydrationTest(ZulipTestCase):
                     email="aaron@example.com",
                     full_name="Aaron Smith",
                     id=999,
-                    is_mirror_dummy=False,
+                    is_mirror_protouser=False,
                 ),
                 dict(
                     email=cordelia.email,
                     full_name=cordelia.full_name,
                     id=cordelia.id,
-                    is_mirror_dummy=False,
+                    is_mirror_protouser=False,
                 ),
             ],
         )
@@ -535,7 +535,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
                 "email": user_profile.email,
                 "full_name": user_profile.full_name,
                 "id": user_profile.id,
-                "is_mirror_dummy": user_profile.is_mirror_dummy,
+                "is_mirror_protouser": user_profile.is_mirror_protouser,
             }
             self.assertTrue(recipient_dict in display_recipient)
 

@@ -1008,14 +1008,14 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     for row in rows:
         if exportable_user_ids is not None:
             if row["id"] in exportable_user_ids:
-                assert not row["is_mirror_dummy"]
+                assert not row["is_mirror_protouser"]
             else:
                 # Convert non-exportable users to
-                # inactive is_mirror_dummy users.
-                row["is_mirror_dummy"] = True
+                # inactive is_mirror_protouser users.
+                row["is_mirror_protouser"] = True
                 row["is_active"] = False
 
-        if row["is_mirror_dummy"]:
+        if row["is_mirror_protouser"]:
             dummy_rows.append(row)
         else:
             normal_rows.append(row)

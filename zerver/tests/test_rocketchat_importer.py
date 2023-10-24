@@ -120,7 +120,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["full_name"], "Rocket.Cat")
         self.assertEqual(user["id"], 1)
         self.assertEqual(user["is_active"], False)
-        self.assertEqual(user["is_mirror_dummy"], False)
+        self.assertEqual(user["is_imported_protouser"], False)
         self.assertEqual(user["is_bot"], True)
         self.assertEqual(user["bot_type"], 1)
         self.assertEqual(user["bot_owner"], 2)
@@ -139,7 +139,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["full_name"], "Harry Potter")
         self.assertEqual(user["id"], 3)
         self.assertEqual(user["is_active"], True)
-        self.assertEqual(user["is_mirror_dummy"], False)
+        self.assertEqual(user["is_imported_protouser"], False)
         self.assertEqual(user["is_bot"], False)
         self.assertEqual(user["bot_type"], None)
         self.assertEqual(user["bot_owner"], None)
@@ -148,7 +148,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["short_name"], "harry.potter")
         self.assertEqual(user["timezone"], "UTC")
 
-        # Test `is_mirror_dummy` set for users of type `unknown`
+        # Test `is_imported_protouser` set for users of type `unknown`
         rocketchat_data["user"].append(
             {
                 "_id": "s0m34ndmID",
@@ -177,7 +177,7 @@ class RocketChatImporter(ZulipTestCase):
 
         self.assertEqual(user["id"], 7)
         self.assertEqual(user["is_active"], False)
-        self.assertEqual(user["is_mirror_dummy"], True)
+        self.assertEqual(user["is_imported_protouser"], True)
         self.assertEqual(user["is_bot"], False)
 
     def test_categorize_channels_and_map_with_id(self) -> None:
@@ -989,13 +989,13 @@ class RocketChatImporter(ZulipTestCase):
 
         realm = get_realm("hogwarts")
 
-        self.assertFalse(get_user("rocket.cat-bot@zulip.example.com", realm).is_mirror_dummy)
+        self.assertFalse(get_user("rocket.cat-bot@zulip.example.com", realm).is_imported_protouser)
         self.assertTrue(get_user("rocket.cat-bot@zulip.example.com", realm).is_bot)
-        self.assertFalse(get_user("harrypotter@email.com", realm).is_mirror_dummy)
+        self.assertFalse(get_user("harrypotter@email.com", realm).is_imported_protouser)
         self.assertFalse(get_user("harrypotter@email.com", realm).is_bot)
-        self.assertFalse(get_user("ronweasley@email.com", realm).is_mirror_dummy)
+        self.assertFalse(get_user("ronweasley@email.com", realm).is_imported_protouser)
         self.assertFalse(get_user("ronweasley@email.com", realm).is_bot)
-        self.assertFalse(get_user("hermionegranger@email.com", realm).is_mirror_dummy)
+        self.assertFalse(get_user("hermionegranger@email.com", realm).is_imported_protouser)
         self.assertFalse(get_user("hermionegranger@email.com", realm).is_bot)
 
         messages = Message.objects.filter(realm_id=realm.id)

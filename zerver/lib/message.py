@@ -478,7 +478,7 @@ class MessageDict:
 
         del obj["recipient_type"]
         del obj["recipient_type_id"]
-        del obj["sender_is_mirror_dummy"]
+        del obj["sender_is_mirror_protouser"]
         del obj["sender_email_address_visibility"]
         if "can_access_sender" in obj:
             del obj["can_access_sender"]
@@ -692,7 +692,7 @@ class MessageDict:
             "realm__string_id",
             "avatar_source",
             "avatar_version",
-            "is_mirror_dummy",
+            "is_mirror_protouser",
             "email_address_visibility",
         )
 
@@ -709,7 +709,7 @@ class MessageDict:
             obj["sender_realm_str"] = user_row["realm__string_id"]
             obj["sender_avatar_source"] = user_row["avatar_source"]
             obj["sender_avatar_version"] = user_row["avatar_version"]
-            obj["sender_is_mirror_dummy"] = user_row["is_mirror_dummy"]
+            obj["sender_is_mirror_protouser"] = user_row["is_mirror_protouser"]
             obj["sender_email_address_visibility"] = user_row["email_address_visibility"]
 
     @staticmethod
@@ -723,7 +723,7 @@ class MessageDict:
 
         recipient_type = obj["recipient_type"]
         recipient_type_id = obj["recipient_type_id"]
-        sender_is_mirror_dummy = obj["sender_is_mirror_dummy"]
+        sender_is_mirror_protouser = obj["sender_is_mirror_protouser"]
         sender_email = obj["sender_email"]
         sender_full_name = obj["sender_full_name"]
         sender_id = obj["sender_id"]
@@ -740,7 +740,7 @@ class MessageDict:
                     "email": sender_email,
                     "full_name": sender_full_name,
                     "id": sender_id,
-                    "is_mirror_dummy": sender_is_mirror_dummy,
+                    "is_mirror_protouser": sender_is_mirror_protouser,
                 }
                 if recip["email"] < display_recipient[0]["email"]:
                     display_recipient = [recip, display_recipient[0]]
