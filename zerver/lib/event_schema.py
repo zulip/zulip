@@ -1206,6 +1206,16 @@ def check_realm_user_update(
     )
 
 
+realm_user_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_user")),
+        ("op", Equals("remove")),
+        ("person", removed_user_type),
+    ],
+)
+check_realm_user_remove = make_checker(realm_user_remove_event)
+
+
 restart_event = event_dict_type(
     required_keys=[
         ("type", Equals("restart")),

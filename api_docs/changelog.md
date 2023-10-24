@@ -41,6 +41,9 @@ format used by the Zulip server that they are interacting with.
 * [`GET /events`](/api/get-events): `realm_user` events with `op: "add"`
   are now also sent when a guest user gains access to a user.
 
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "remove"`
+  are now also sent when a guest user loses access to a user.
+
 **Feature level 227**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
