@@ -63,6 +63,7 @@ from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
+    get_data_for_inaccessible_user,
     get_users_for_api,
     is_administrator_role,
     max_message_id_for_user,
@@ -989,6 +990,12 @@ def apply_event(
                         sub["subscribers"] = [
                             user_id for user_id in sub["subscribers"] if user_id != person_user_id
                         ]
+        elif event["op"] == "remove":
+            if person_user_id in state["raw_users"]:
+                inaccessible_user_dict = get_data_for_inaccessible_user(
+                    user_profile.realm, person_user_id
+                )
+                state["raw_users"][person_user_id] = inaccessible_user_dict
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
