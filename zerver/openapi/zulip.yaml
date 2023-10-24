@@ -12059,7 +12059,8 @@ paths:
                                   type: array
                                   description: |
                                     The message IDs of the recent unread direct messages sent
-                                    by either user in this one-on-one direct message conversation.
+                                    by either user in this one-on-one direct message conversation,
+                                    sorted in ascending order.
                                   items:
                                     type: integer
                           streams:
@@ -12087,7 +12088,8 @@ paths:
                                 unread_message_ids:
                                   type: array
                                   description: |
-                                    The message IDs of the recent unread messages sent in this stream.
+                                    The message IDs of the recent unread messages sent in this stream,
+                                    sorted in ascending order.
                                   items:
                                     type: integer
                           huddles:
@@ -12110,7 +12112,7 @@ paths:
                                   type: array
                                   description: |
                                     The message IDs of the recent unread messages which have been sent in
-                                    this group direct message conversation.
+                                    this group direct message conversation, sorted in ascending order.
                                   items:
                                     type: integer
                           mentions:
