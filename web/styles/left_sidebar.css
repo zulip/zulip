@@ -653,7 +653,10 @@ li.top_left_scheduled_messages {
 
     .filter-icon {
         grid-area: starting-anchor-element;
-        text-align: center;
+        /* Use a flex container to handle
+           icon centering within the grid area. */
+        display: flex;
+        justify-content: center;
     }
 
     .left-sidebar-navigation-label {
