@@ -11,17 +11,6 @@ import * as modals from "./modals";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 
-// On mobile web, opening the keyboard can trigger a resize event
-// (which in turn can trigger a scroll event).  This will have the
-// side effect of closing popovers, which we don't want.  So we
-// suppress the first hide from scrolling after a resize using this
-// variable.
-let suppress_scroll_hide = false;
-
-export function set_suppress_scroll_hide() {
-    suppress_scroll_hide = true;
-}
-
 export const popover_instances = {
     compose_control_buttons: null,
     starred_messages: null,
@@ -288,25 +277,4 @@ export function initialize() {
     overlays.register_pre_close_hook(popovers.hide_all);
     modals.register_pre_open_hook(popovers.hide_all);
     modals.register_pre_close_hook(popovers.hide_all);
-
-    let last_scroll = 0;
-
-    $(document).on("scroll", () => {
-        if (suppress_scroll_hide) {
-            suppress_scroll_hide = false;
-            return;
-        }
-
-        const date = Date.now();
-
-        // only run `popovers.hide_all()` if the last scroll was more
-        // than 250ms ago.
-        if (date - last_scroll > 250) {
-            popovers.hide_all();
-        }
-
-        // update the scroll time on every event to make sure it doesn't
-        // retrigger `hide_all` while still scrolling.
-        last_scroll = date;
-    });
 }
