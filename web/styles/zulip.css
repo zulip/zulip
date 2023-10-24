@@ -2297,8 +2297,7 @@ div.focused-message-list {
     padding-bottom: 9px;
 }
 
-#streamlist-toggle-unreadcount,
-#userlist-toggle-unreadcount {
+#streamlist-toggle-unreadcount {
     position: absolute;
     display: none;
     height: 12px;
