@@ -589,7 +589,7 @@ export function emoji_select_tab($elt) {
     }
     // Handles the corner case of the scrolling back to top.
     if (scrolltop === 0) {
-        currently_selected = section_head_offsets[0].section;
+        currently_selected = "Popular";
     }
     if (currently_selected) {
         $(".emoji-popover-tab-item.active").removeClass("active");
