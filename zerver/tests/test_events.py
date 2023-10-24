@@ -166,6 +166,7 @@ from zerver.lib.event_schema import (
     check_realm_update,
     check_realm_update_dict,
     check_realm_user_add,
+    check_realm_user_remove,
     check_realm_user_update,
     check_scheduled_message_add,
     check_scheduled_message_remove,
@@ -4078,6 +4079,15 @@ class SubscribeActionTest(BaseAction):
         check_subscription_peer_add("events[1]", events[1])
         self.assertEqual(set(events[1]["user_ids"]), {iago.id, othello.id})
 
+        unsubscribe_action = lambda: bulk_remove_subscriptions(
+            realm, [othello, iago], [stream], acting_user=None
+        )
+        events = self.verify_action(unsubscribe_action, num_events=2)
+        check_subscription_peer_remove("events[0]", events[0])
+        self.assertEqual(set(events[0]["user_ids"]), {iago.id, othello.id})
+        check_realm_user_remove("events[1]", events[1])
+        self.assertEqual(events[1]["person"]["user_id"], othello.id)
+
     def test_user_access_events_on_changing_subscriptions_for_guests(self) -> None:
         self.set_up_db_for_testing_user_access()
         polonius = self.example_user("polonius")
@@ -4092,6 +4102,15 @@ class SubscribeActionTest(BaseAction):
         check_stream_create("events[0]", events[0])
         check_subscription_add("events[1]", events[1])
         check_realm_user_add("events[2]", events[2])
+        self.assertEqual(events[2]["person"]["user_id"], othello.id)
+
+        unsubscribe_action = lambda: bulk_remove_subscriptions(
+            realm, [polonius, self.example_user("iago")], [stream], acting_user=None
+        )
+        events = self.verify_action(unsubscribe_action, num_events=3)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+        check_realm_user_remove("events[2]", events[2])
         self.assertEqual(events[2]["person"]["user_id"], othello.id)
 
 

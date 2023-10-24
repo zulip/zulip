@@ -1085,7 +1085,9 @@ paths:
                                 }
                             - type: object
                               description: |
-                                No longer sent by modern Zulip servers.
+                                Event sent to guest users when they lose access to a user.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event was deprecated.
 
                                 **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
 
