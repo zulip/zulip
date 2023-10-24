@@ -2,7 +2,14 @@
 
 {tab|desktop}
 
-{relative|message|starred}
+1. Click on <i class="zulip-icon zulip-icon-star-filled"></i> **Starred messages**
+   (or <i class="zulip-icon zulip-icon-star-filled"></i> if the **views**
+   section is collapsed) in the left sidebar.
+
+!!! tip ""
+
+    You can also [search your starred messages](/help/search-for-messages)
+    using the `is:starred` filter.
 
 {tab|mobile}
 
