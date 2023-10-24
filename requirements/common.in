@@ -54,6 +54,9 @@ django-bitfield
 # Needed for Android push notifications
 python-gcm
 
+markdownify
+# needed to convert HTML to Markdown format 
+
 # Needed for the email mirror
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200

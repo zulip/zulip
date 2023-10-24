@@ -184,6 +184,7 @@ beautifulsoup4==4.12.2 \
     --hash=sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a
     # via
     #   -r requirements/common.in
+    #   markdownify
     #   pyoembed
     #   zulip-bots
 boto3==1.28.62 \
@@ -1060,6 +1061,10 @@ lxml==4.9.3 \
 markdown==3.5 \
     --hash=sha256:4afb124395ce5fc34e6d9886dab977fd9ae987fc6e85689f08278cf0c69d4bf3 \
     --hash=sha256:a807eb2e4778d9156c8f07876c6e4d50b5494c5665c4834f67b06459dfd877b3
+    # via -r requirements/common.in
+markdownify==0.11.6 \
+    --hash=sha256:009b240e0c9f4c8eaf1d085625dcd4011e12f0f8cec55dedf9ea6f7655e49bfe \
+    --hash=sha256:ba35fe289d5e9073bcd7d2cad629278fe25f1a93741fcdc0bfb4f009076d8324
     # via -r requirements/common.in
 markupsafe==2.1.3 \
     --hash=sha256:05fb21170423db021895e1ea1e1f3ab3adb85d1c2333cbc2310f2a26bc77272e \
@@ -2062,6 +2067,7 @@ six==1.16.0 \
     #   ecdsa
     #   html5lib
     #   isodate
+    #   markdownify
     #   python-binary-memcached
     #   python-dateutil
     #   rfc3339-validator

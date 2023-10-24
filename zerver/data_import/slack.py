@@ -829,8 +829,8 @@ def get_messages_iterator(
                     response = requests.get(file_url)
                     response.encoding = "utf-8"
                     # response encoding to "utf-8" is required to specify encoding for response.text
-                    # html2text is GPL licensed, so run it as a subprocess.
                     markdown_content = ["markdownify", "--heading-style", "atx"]
+                    # markdownify is used to convert text from HTML to Markdown format
                     text = subprocess.check_output(markdown_content, input=response.text, text=True)
                     message["text"] = "*Imported from Slack Canvas*\n" + text
                     message["ts"] = message.get("created")
