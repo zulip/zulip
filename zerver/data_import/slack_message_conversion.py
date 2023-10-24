@@ -62,7 +62,7 @@ SLACK_BOLD_REGEX = r"""
 def get_user_full_name(user: ZerverFieldsT) -> str:
     if "deleted" in user and user["deleted"] is False:
         return user["real_name"] or user["name"]
-    elif user["is_mirror_dummy"]:
+    elif user["is_imported_protouser"]:
         return user["profile"].get("real_name", user["name"])
     else:
         return user["name"]

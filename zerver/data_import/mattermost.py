@@ -100,12 +100,12 @@ def process_user(
     else:
         role = UserProfile.ROLE_MEMBER
 
-    if user_dict["is_mirror_dummy"]:
+    if user_dict["is_imported_protouser"]:
         is_active = False
-        is_mirror_dummy = True
+        is_imported_protouser = True
     else:
         is_active = True
-        is_mirror_dummy = False
+        is_imported_protouser = False
 
     return build_user_profile(
         avatar_source=avatar_source,
@@ -116,7 +116,7 @@ def process_user(
         id=id,
         is_active=is_active,
         role=role,
-        is_mirror_dummy=is_mirror_dummy,
+        is_imported_protouser=is_imported_protouser,
         realm_id=realm_id,
         short_name=short_name,
         timezone=timezone,
@@ -133,7 +133,7 @@ def convert_user_data(
     user_data_list = []
     for username in user_data_map:
         user = user_data_map[username]
-        if check_user_in_team(user, team_name) or user["is_mirror_dummy"]:
+        if check_user_in_team(user, team_name) or user["is_imported_protouser"]:
             user_data_list.append(user)
 
     for raw_item in user_data_list:
@@ -834,20 +834,20 @@ def label_mirror_dummy_users(
         if post_team == team_name:
             user = username_to_user[post["user"]]
             if not check_user_in_team(user, team_name):
-                user["is_mirror_dummy"] = True
+                user["is_imported_protouser"] = True
 
     if num_teams == 1:
         for post in mattermost_data["post"]["direct_post"]:
             assert "team" not in post
             user = username_to_user[post["user"]]
             if not check_user_in_team(user, team_name):
-                user["is_mirror_dummy"] = True
+                user["is_imported_protouser"] = True
 
 
 def reset_mirror_dummy_users(username_to_user: Dict[str, Dict[str, Any]]) -> None:
     for username in username_to_user:
         user = username_to_user[username]
-        user["is_mirror_dummy"] = False
+        user["is_imported_protouser"] = False
 
 
 def mattermost_data_file_to_dict(mattermost_data_file: str) -> Dict[str, Any]:

@@ -498,7 +498,7 @@ reaction_legacy_user_type = DictType(
         ("full_name", str),
         ("user_id", int),
     ]
-    # We should probably declare is_mirror_dummy as an optional field here.
+    # We should probably declare is_mirror_protouser as an optional field here.
 )
 
 reaction_add_event = event_dict_type(

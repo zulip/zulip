@@ -60,20 +60,20 @@ class SlackMessageConversion(ZulipTestCase):
                 "id": "U0CBK5KAT",
                 "name": "aaron.anzalone",
                 "deleted": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "real_name": "",
             },
             {
                 "id": "U08RGD1RD",
                 "name": "john",
                 "deleted": False,
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "real_name": "John Doe",
             },
             {
                 "id": "U09TYF5Sk",
                 "name": "Jane",
-                "is_mirror_dummy": False,
+                "is_imported_protouser": False,
                 "deleted": True,  # Deleted users don't have 'real_name' key in Slack
             },
         ]

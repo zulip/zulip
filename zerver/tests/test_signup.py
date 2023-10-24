@@ -3915,7 +3915,7 @@ class UserSignUpTest(ZulipTestCase):
         subdomain = "zephyr"
         user_profile = self.mit_user("sipbtest")
         email = user_profile.delivery_email
-        user_profile.is_mirror_dummy = True
+        user_profile.is_mirror_protouser = True
         user_profile.save()
         change_user_is_active(user_profile, False)
 
@@ -3999,7 +3999,7 @@ class UserSignUpTest(ZulipTestCase):
         """
         user_profile = self.mit_user("sipbtest")
         email = user_profile.delivery_email
-        user_profile.is_mirror_dummy = True
+        user_profile.is_mirror_protouser = True
         user_profile.save()
         change_user_is_active(user_profile, True)
 

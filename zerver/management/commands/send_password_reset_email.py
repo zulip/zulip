@@ -30,7 +30,11 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: str) -> None:
         if options["entire_server"]:
             users: Iterable[UserProfile] = UserProfile.objects.filter(
-                is_active=True, is_bot=False, is_mirror_dummy=False
+                is_active=True,
+                is_bot=False,
+                is_mirror_protouser=False,
+                is_imported_protouser=False,
+                is_deleted_protouser=False,
             )
         else:
             realm = self.get_realm(options)

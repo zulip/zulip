@@ -80,7 +80,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
             realm=realm,
             full_name=f"Deleted User {user_id}",
             active=False,
-            is_mirror_dummy=True,
+            is_deleted_protouser=True,
             force_date_joined=date_joined,
         )
         subs_to_recreate = [
@@ -185,7 +185,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
             realm=realm,
             full_name=f"Deleted User {user_id} (temp)",
             active=False,
-            is_mirror_dummy=True,
+            is_deleted_protouser=True,
             force_date_joined=date_joined,
             create_personal_recipient=False,
         )
@@ -205,7 +205,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
             realm=realm,
             full_name=f"Deleted User {user_id}",
             active=False,
-            is_mirror_dummy=True,
+            is_deleted_protouser=True,
             force_date_joined=date_joined,
             create_personal_recipient=False,
         )
@@ -268,8 +268,8 @@ def do_deactivate_user(
             #
             # Ideally, we need to also ensure their zephyr mirroring bot
             # isn't running, but that's a separate issue.
-            user_profile.is_mirror_dummy = True
-            user_profile.save(update_fields=["is_mirror_dummy"])
+            user_profile.is_mirror_protouser = True
+            user_profile.save(update_fields=["is_mirror_protouser"])
 
         change_user_is_active(user_profile, False)
 
