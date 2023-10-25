@@ -8,6 +8,8 @@ const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
 set_global("document", {});
+class ClipboardEvent {}
+set_global("ClipboardEvent", ClipboardEvent);
 
 const noop = () => {};
 const example_img_link = "http://example.com/example.png";
@@ -163,16 +165,16 @@ run_test("copy from pill", ({mock_template}) => {
 
     const $pill_stub = "<pill-stub RED>";
 
+    const originalEvent = new ClipboardEvent();
+    originalEvent.clipboardData = {
+        setData(format, text) {
+            assert.equal(format, "text/plain");
+            copied_text = text;
+        },
+    };
     const e = {
         currentTarget: $pill_stub,
-        originalEvent: {
-            clipboardData: {
-                setData(format, text) {
-                    assert.equal(format, "text/plain");
-                    copied_text = text;
-                },
-            },
-        },
+        originalEvent,
         preventDefault: noop,
     };
 
@@ -198,15 +200,15 @@ run_test("paste to input", ({mock_template}) => {
 
     const paste_text = "blue,yellow";
 
-    const e = {
-        originalEvent: {
-            clipboardData: {
-                getData(format) {
-                    assert.equal(format, "text/plain");
-                    return paste_text;
-                },
-            },
+    const originalEvent = new ClipboardEvent();
+    originalEvent.clipboardData = {
+        getData(format) {
+            assert.equal(format, "text/plain");
+            return paste_text;
         },
+    };
+    const e = {
+        originalEvent,
         preventDefault: noop,
     };
 
