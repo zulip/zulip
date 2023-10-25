@@ -172,7 +172,7 @@ def build_analytics_data(
     )
 
 
-def send_analytics_to_remote_server() -> None:
+def send_analytics_to_push_bouncer() -> None:
     # first, check what's latest
     try:
         result = send_to_push_bouncer("GET", "server/analytics/status", {})
