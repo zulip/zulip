@@ -10,7 +10,8 @@ import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 
 import {BlueslipError, display_stacktrace} from "./blueslip_stacktrace";
-import {page_params} from "./page_params";
+
+const development_environment = $("#page-params").data("params").development_environment;
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
@@ -81,7 +82,7 @@ export function info(msg: string, more_info?: unknown): void {
 export function warn(msg: string, more_info?: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.warn(...args);
-    if (page_params.development_environment) {
+    if (development_environment) {
         console.trace();
     }
 }
@@ -100,7 +101,7 @@ export function error(msg: string, more_info?: object | undefined, original_erro
     logger.error(...args);
 
     // Throw an error in development; this will show a dialog (see below).
-    if (page_params.development_environment) {
+    if (development_environment) {
         throw new BlueslipError(msg, more_info, original_error);
     }
     // This function returns to its caller in production!  To raise a
@@ -109,7 +110,7 @@ export function error(msg: string, more_info?: object | undefined, original_erro
 
 // Install a window-wide onerror handler in development to display the stacktraces, to make them
 // hard to miss
-if (page_params.development_environment) {
+if (development_environment) {
     $(window).on("error", (event: JQuery.TriggeredEvent) => {
         const {originalEvent} = event;
         if (!(originalEvent instanceof ErrorEvent)) {
