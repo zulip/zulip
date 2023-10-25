@@ -236,6 +236,12 @@ function get_max_selectable_cols(row) {
 }
 
 function set_table_focus(row, col, using_keyboard) {
+    if (topics_widget.get_current_list().length === 0) {
+        // If there are no topics to show, we don't want to focus on the table.
+        set_default_focus();
+        return true;
+    }
+
     const $topic_rows = $("#recent_view_table table tbody tr");
     if ($topic_rows.length === 0 || row < 0 || row >= $topic_rows.length) {
         row_focus = 0;
@@ -300,11 +306,11 @@ function set_table_focus(row, col, using_keyboard) {
 
 export function get_focused_row_message() {
     if (is_table_focused()) {
-        const $topic_rows = $("#recent_view_table table tbody tr");
-        if ($topic_rows.length === 0) {
+        if (topics_widget.get_current_list().length === 0) {
             return undefined;
         }
 
+        const $topic_rows = $("#recent_view_table table tbody tr");
         const $topic_row = $topic_rows.eq(row_focus);
         const conversation_id = $topic_row.attr("id").slice(recent_conversation_key_prefix.length);
         const topic_last_msg_id = topics.get(conversation_id).last_msg_id;
