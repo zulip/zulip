@@ -777,6 +777,75 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, f"'{othello.email}' is no longer using Zulip.")
 
+    def test_personal_message_to_inaccessible_users(self) -> None:
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        self.set_up_db_for_testing_user_access()
+        self.login("polonius")
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test direct message",
+                "to": orjson.dumps([othello.id]).decode(),
+            },
+        )
+        self.assert_json_error(
+            result, "You do not have permission to access some of the recipients."
+        )
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test direct message",
+                "to": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual(msg.content, "Test direct message")
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test group direct message",
+                "to": orjson.dumps([othello.id, cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_error(
+            result, "You do not have permission to access some of the recipients."
+        )
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test group direct message",
+                "to": orjson.dumps([hamlet.id, cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_error(
+            result, "You do not have permission to access some of the recipients."
+        )
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test group direct message",
+                "to": orjson.dumps([hamlet.id, iago.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual(msg.content, "Test group direct message")
+
     def test_invalid_type(self) -> None:
         """
         Sending a message of unknown type returns error JSON.
