@@ -6200,13 +6200,18 @@ paths:
 
                           Only present if the sender's visibility was in fact changed.
 
-                          Intended to be used by clients where it is important to explicitly display a
-                          notice that the topic's visibility policy has changed automatically due to
-                          the message sent. The information is also important to correctly decide whether to
-                          display a warning or notice suggesting to unmute the topic after sending a message
-                          to a muted stream. Such a notice might feel confusing in the event that the act of
-                          sending the message had already resulted in the user unmuting or following the topic
-                          in question.
+                          The value can be either [unmuted or followed](/api/update-user-topic#parameter-visibility_policy).
+
+                          Clients will also be notified about the change in policy via a
+                          `user_topic` event as usual. This field is intended to be used by clients
+                          to explicitly inform the user when a topic's visibility policy was changed
+                          automatically due to sending a message.
+
+                          For example, the Zulip web application uses this field to decide whether
+                          to display a warning or notice suggesting to unmute the topic after
+                          sending a message to a muted stream. Such a notice would be confusing in
+                          the event that the act of sending the message had already resulted in the
+                          user automatically unmuting or following the topic in question.
 
                           **Changes**: New in Zulip 8.0 (feature level 218).
                     example:
