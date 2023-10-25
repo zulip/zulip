@@ -1,13 +1,13 @@
 import type {Message} from "./types";
 
-let is_rt_visible = false;
+let is_view_visible = false;
 
 export function set_visible(value: boolean): void {
-    is_rt_visible = value;
+    is_view_visible = value;
 }
 
 export function is_visible(): boolean {
-    return is_rt_visible;
+    return is_view_visible;
 }
 
 export function get_topic_key(stream_id: number, topic: string): string {
