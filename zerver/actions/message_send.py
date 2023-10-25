@@ -75,7 +75,13 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
-from zerver.lib.users import check_user_can_access_all_users, get_accessible_user_ids
+from zerver.lib.users import (
+    check_can_access_user,
+    check_user_can_access_all_users,
+    get_accessible_user_ids,
+    get_subscribers_of_target_user_subscriptions,
+    get_users_involved_in_dms_with_target_users,
+)
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
@@ -85,6 +91,7 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
+    SystemGroups,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -571,6 +578,7 @@ def build_message_send_dict(
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
+    recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -698,6 +706,7 @@ def build_message_send_dict(
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
+        recipients_for_user_creation_events=recipients_for_user_creation_events,
     )
 
     return message_send_dict
@@ -1056,6 +1065,15 @@ def do_send_messages(
             sender_id=sender.id,
             user_notifications_data_list=user_notifications_data_list,
         )
+
+        if send_request.recipients_for_user_creation_events is not None:
+            from zerver.actions.create_user import notify_created_user
+
+            for (
+                new_accessible_user,
+                notify_user_ids,
+            ) in send_request.recipients_for_user_creation_events.items():
+                notify_created_user(new_accessible_user, list(notify_user_ids))
 
         event = dict(
             type="message",
@@ -1476,6 +1494,59 @@ def check_sender_can_access_recipients(
         raise JsonableError(_("You do not have permission to access some of the recipients."))
 
 
+def get_recipients_for_user_creation_events(
+    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
+) -> Dict[UserProfile, Set[int]]:
+    """
+    This function returns a dictionary with data about which users would
+    receive stream creation events due to gaining access to a user.
+    The key of the dictionary is a user object and the value is a set of
+    user_ids that would gain access to that user.
+    """
+    recipients_for_user_creation_events: Dict[UserProfile, Set[int]] = defaultdict(set)
+
+    # If none of the users in the direct message conversation are
+    # guests, then there is no possible can_access_all_users_group
+    # policy that would mean sending this message changes any user's
+    # user access to other users.
+    guest_recipients = [user for user in user_profiles if user.is_guest]
+    if len(guest_recipients) == 0:
+        return recipients_for_user_creation_events
+
+    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+        return recipients_for_user_creation_events
+
+    if len(user_profiles) == 1:
+        if not check_can_access_user(sender, user_profiles[0]):
+            recipients_for_user_creation_events[sender].add(user_profiles[0].id)
+        return recipients_for_user_creation_events
+
+    users_involved_in_dms = get_users_involved_in_dms_with_target_users(guest_recipients, realm)
+    subscribers_of_guest_recipient_subscriptions = get_subscribers_of_target_user_subscriptions(
+        guest_recipients
+    )
+
+    for recipient_user in guest_recipients:
+        for user in user_profiles:
+            if user.id == recipient_user.id or user.is_bot:
+                continue
+
+            if (
+                user.id not in users_involved_in_dms[recipient_user.id]
+                and user.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
+            ):
+                recipients_for_user_creation_events[user].add(recipient_user.id)
+
+        if (
+            not sender.is_bot
+            and sender.id not in users_involved_in_dms[recipient_user.id]
+            and sender.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
+        ):
+            recipients_for_user_creation_events[sender].add(recipient_user.id)
+
+    return recipients_for_user_creation_events
+
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(
@@ -1508,6 +1579,7 @@ def check_message(
     if realm is None:
         realm = sender.realm
 
+    recipients_for_user_creation_events = None
     if addressee.is_stream():
         topic_name = addressee.topic()
         topic_name = truncate_topic(topic_name)
@@ -1564,6 +1636,10 @@ def check_message(
         check_sender_can_access_recipients(realm, sender, user_profiles)
 
         check_private_message_policy(realm, sender, user_profiles)
+
+        recipients_for_user_creation_events = get_recipients_for_user_creation_events(
+            realm, sender, user_profiles
+        )
 
         # API super-users who set the `forged` flag are allowed to
         # forge messages sent by any user, so we disable the
@@ -1629,6 +1705,7 @@ def check_message(
         mention_backend=mention_backend,
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
+        recipients_for_user_creation_events=recipients_for_user_creation_events,
     )
 
     if (

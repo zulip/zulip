@@ -209,6 +209,7 @@ class SendMessageRequest:
     service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: Optional[int] = None
+    recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None
 
 
 # We won't try to fetch more unread message IDs from the database than

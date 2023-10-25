@@ -414,12 +414,11 @@ _check_topic_links = DictType(
     ]
 )
 
-message_fields = [
+basic_message_fields = [
     ("avatar_url", OptionalType(str)),
     ("client", str),
     ("content", str),
     ("content_type", Equals("text/html")),
-    ("display_recipient", str),
     ("id", int),
     ("is_me_message", bool),
     ("reactions", ListType(dict)),
@@ -428,12 +427,17 @@ message_fields = [
     ("sender_email", str),
     ("sender_full_name", str),
     ("sender_id", int),
-    ("stream_id", int),
     (TOPIC_NAME, str),
     (TOPIC_LINKS, ListType(_check_topic_links)),
     ("submessages", ListType(dict)),
     ("timestamp", int),
     ("type", str),
+]
+
+message_fields = [
+    *basic_message_fields,
+    ("display_recipient", str),
+    ("stream_id", int),
 ]
 
 message_event = event_dict_type(
@@ -444,6 +448,28 @@ message_event = event_dict_type(
     ]
 )
 check_message = make_checker(message_event)
+
+_check_direct_message_display_recipient = DictType(
+    required_keys=[
+        ("id", int),
+        ("is_mirror_dummy", bool),
+        ("email", str),
+        ("full_name", str),
+    ]
+)
+
+direct_message_fields = [
+    *basic_message_fields,
+    ("display_recipient", ListType(_check_direct_message_display_recipient)),
+]
+direct_message_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("message")),
+        ("flags", ListType(str)),
+        ("message", DictType(direct_message_fields)),
+    ]
+)
+check_direct_message = make_checker(direct_message_event)
 
 # This legacy presence structure is intended to be replaced by a more
 # sensible data structure.
