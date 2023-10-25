@@ -140,13 +140,12 @@ export async function fill_form(
         return (await page.$(`select[name="${CSS.escape(name)}"]`)) !== null;
     }
     for (const name of Object.keys(params)) {
-        const name_selector = `${form_selector} [name="${name}"]`;
         const value = params[name];
         if (typeof value === "boolean") {
             await page.$eval(
-                name_selector,
+                `${form_selector} input[name="${CSS.escape(name)}"]`,
                 (el, value) => {
-                    if (el instanceof HTMLInputElement && el.checked !== value) {
+                    if (el.checked !== value) {
                         el.click();
                     }
                 },
@@ -156,13 +155,9 @@ export async function fill_form(
             if (typeof value !== "string") {
                 throw new TypeError(`Expected string for ${name}`);
             }
-            await page.select(name_selector, value);
+            await page.select(`${form_selector} select[name="${CSS.escape(name)}"]`, value);
         } else {
-            // clear any existing text in the input field before filling.
-            await page.$eval(name_selector, (el) => {
-                (el as HTMLInputElement).value = "";
-            });
-            await page.type(name_selector, value);
+            await clear_and_type(page, `${form_selector} [name="${CSS.escape(name)}"`, value);
         }
     }
 }
@@ -173,17 +168,24 @@ export async function check_form_contents(
     params: Record<string, boolean | string>,
 ): Promise<void> {
     for (const name of Object.keys(params)) {
-        const name_selector = `${form_selector} [name="${name}"]`;
         const expected_value = params[name];
         if (typeof expected_value === "boolean") {
             assert.equal(
-                await page.$eval(name_selector, (el) => (el as HTMLInputElement).checked),
+                await page.$eval(
+                    `${form_selector} input[name="${CSS.escape(name)}"]`,
+                    (el) => el.checked,
+                ),
                 expected_value,
                 "Form content is not as expected.",
             );
         } else {
             assert.equal(
-                await page.$eval(name_selector, (el) => (el as HTMLInputElement).value),
+                await page.$eval(`${form_selector} [name="${CSS.escape(name)}"]`, (el) => {
+                    if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) {
+                        throw new TypeError("Expected <input> or <textarea>");
+                    }
+                    return el.value;
+                }),
                 expected_value,
                 "Form content is not as expected.",
             );
@@ -266,8 +268,8 @@ export async function log_in(
         username: credentials.username,
         password: credentials.password,
     };
-    await fill_form(page, "#login_form", params);
-    await page.$eval("#login_form", (form) => (form as HTMLFormElement).submit());
+    await fill_form(page, "form#login_form", params);
+    await page.$eval("form#login_form", (form) => form.submit());
 
     await page.waitForSelector("#recent_view_filter_buttons", {visible: true});
 }
@@ -295,8 +297,8 @@ export function set_realm_url(new_realm_url: string): void {
 export async function ensure_enter_does_not_send(page: Page): Promise<void> {
     // NOTE: Caller should ensure that the compose box is already open.
     const enter_sends = await page.$eval(
-        ".enter_sends_true",
-        (el) => (el as HTMLElement).style.display !== "none",
+        "span.enter_sends_true",
+        (el) => el.style.display !== "none",
     );
 
     if (enter_sends) {
@@ -311,13 +313,12 @@ export async function assert_compose_box_content(
     page: Page,
     expected_value: string,
 ): Promise<void> {
-    const compose_box_element = await page.waitForSelector("#compose-textarea");
-    const compose_box_content = await page.evaluate((element) => {
-        if (!(element instanceof HTMLTextAreaElement)) {
-            throw new TypeError("expected HTMLTextAreaElement");
-        }
-        return element.value;
-    }, compose_box_element);
+    const compose_box_element = await page.waitForSelector("textarea#compose-textarea");
+    assert(compose_box_element !== null);
+    const compose_box_content = await page.evaluate(
+        (element) => element.value,
+        compose_box_element,
+    );
     assert.equal(
         compose_box_content,
         expected_value,
