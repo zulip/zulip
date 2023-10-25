@@ -644,6 +644,7 @@ li.top_left_scheduled_messages {
 
     .left-sidebar-navigation-label {
         grid-area: row-content;
+        padding-right: $before_unread_count_padding;
     }
 
     .unread_count {
@@ -832,7 +833,7 @@ li.top_left_scheduled_messages {
 
 .topic-name {
     grid-area: row-content;
-    padding: 1px 0;
+    padding: 1px $before_unread_count_padding 1px 0;
 
     /* TODO: We should figure out how to remove this without changing the spacing */
     line-height: 1.1;
