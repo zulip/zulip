@@ -9126,6 +9126,7 @@ paths:
                       A typical failed JSON response for when the target stream does not exist:
   /users/me/subscriptions/muted_topics:
     patch:
+      deprecated: true
       operationId: mute-topic
       summary: Topic muting
       tags: ["streams"]
