@@ -1,12 +1,12 @@
 import {gtag, install} from "ga-gtag";
-
-import {page_params} from "../page_params";
+import $ from "jquery";
 
 export let config;
+const google_analytics_id = $("#page-params").data("params").google_analytics_id;
 
-if (page_params.google_analytics_id !== undefined) {
-    install(page_params.google_analytics_id);
-    config = (info) => gtag("config", page_params.google_analytics_id, info);
+if (google_analytics_id !== undefined) {
+    install(google_analytics_id);
+    config = (info) => gtag("config", google_analytics_id, info);
 } else {
     config = () => {};
 }
