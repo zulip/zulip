@@ -18,13 +18,6 @@ type TypingStatusState = {
     idle_timer: ReturnType<typeof setTimeout>;
 };
 
-function message_type(recipient: Recipient): "direct" | "stream" {
-    if (Array.isArray(recipient)) {
-        return "direct";
-    }
-    return "stream";
-}
-
 function lower_same(a: string, b: string): boolean {
     return a.toLowerCase() === b.toLowerCase();
 }
@@ -39,13 +32,12 @@ function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
         return false;
     }
 
-    if (message_type(a) === "direct" && message_type(b) === "direct") {
+    if (Array.isArray(a) && Array.isArray(b)) {
+        // direct message recipients
         return _.isEqual(a, b);
-    } else if (message_type(a) === "stream" && message_type(b) === "stream") {
-        // type assertions to avoid linter error
-        const aStreamTopic = a as StreamTopic;
-        const bStreamTopic = b as StreamTopic;
-        return same_stream_and_topic(aStreamTopic, bStreamTopic);
+    } else if (!Array.isArray(a) && !Array.isArray(b)) {
+        // stream recipients
+        return same_stream_and_topic(a, b);
     }
 
     return false;
