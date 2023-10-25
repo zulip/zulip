@@ -1,7 +1,22 @@
 import * as Sentry from "@sentry/browser";
+import $ from "jquery";
 import _ from "lodash";
 
-import {page_params} from "./page_params";
+const page_params: {
+    is_admin: boolean;
+    is_guest: boolean;
+    is_moderator: boolean;
+    is_owner: boolean;
+    is_spectator: boolean;
+    realm_sentry_key: string | undefined;
+    realm_uri: string;
+    server_sentry_dsn: string | undefined;
+    server_sentry_environment: string | undefined;
+    server_sentry_sample_rate: number | undefined;
+    server_sentry_trace_rate: number | undefined;
+    user_id: number | undefined;
+    zulip_version: string;
+} = $("#page-params").data("params");
 
 type UserInfo = {
     id?: string;

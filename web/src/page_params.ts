@@ -76,7 +76,6 @@ export const page_params: {
     realm_plan_type: number;
     realm_private_message_policy: number;
     realm_push_notifications_enabled: boolean;
-    realm_sentry_key: string | undefined;
     realm_enable_guest_user_indicator: boolean;
     realm_upload_quota_mib: number | null;
     realm_uri: string;
@@ -89,10 +88,6 @@ export const page_params: {
     server_name_changes_disabled: boolean;
     server_needs_upgrade: boolean;
     server_presence_offline_threshold_seconds: number;
-    server_sentry_dsn: string | undefined;
-    server_sentry_environment: string | undefined;
-    server_sentry_sample_rate: number | undefined;
-    server_sentry_trace_rate: number | undefined;
     server_web_public_streams_enabled: boolean;
     show_billing: boolean;
     show_plans: boolean;
