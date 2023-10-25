@@ -2,6 +2,8 @@ import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 import _ from "lodash";
 
+import * as sentry_util from "./sentry_util";
+
 const page_params: {
     is_admin: boolean;
     is_guest: boolean;
@@ -23,27 +25,6 @@ type UserInfo = {
     realm: string;
     role?: string;
 };
-
-export function normalize_path(path: string, is_portico = false): string {
-    if (path === undefined) {
-        return "unknown";
-    }
-    path = path
-        .replace(/\/\d+(\/|$)/, "/*$1")
-        .replace(
-            /^\/(join|reactivate|new|accounts\/do_confirm|accounts\/confirm_new_email)\/[^/]+(\/?)$/,
-            "$1/*$2",
-        );
-    if (is_portico) {
-        return "portico: " + path;
-    }
-    return path;
-}
-
-export function shouldCreateSpanForRequest(url: string): boolean {
-    const parsed = new URL(url, window.location.href);
-    return parsed.pathname !== "/json/events";
-}
 
 if (page_params.server_sentry_dsn) {
     const url_matches = [/^\//];
@@ -106,10 +87,10 @@ if (page_params.server_sentry_dsn) {
                     return {
                         ...context,
                         metadata: {source: "custom"},
-                        name: normalize_path(location.pathname, sentry_key === "www"),
+                        name: sentry_util.normalize_path(location.pathname, sentry_key === "www"),
                     };
                 },
-                shouldCreateSpanForRequest,
+                shouldCreateSpanForRequest: sentry_util.shouldCreateSpanForRequest,
             }),
         ],
         allowUrls: url_matches,
