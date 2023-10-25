@@ -28,7 +28,7 @@
                     <ul class="navbar-dropdown-menu-inner-list">
                         {{#if status_content_available}}
                         <li class="text-item navbar-dropdown-menu-inner-list-item">
-                            <span>
+                            <span class="personal-menu-status-wrapper">
                                 {{#if status_emoji_info}}
                                     {{#if status_emoji_info.emoji_alt_code}}
                                     <span class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</span>
@@ -39,7 +39,11 @@
                                     {{/if}}
                                 {{/if}}
                                 <span class="status_text">
-                                    {{status_text}}
+                                    {{#if show_placeholder_for_status_text}}
+                                        <i>{{t "No status text"}}</i>
+                                    {{else}}
+                                        {{status_text}}
+                                    {{/if}}
                                 </span>
                             </span>
                             <a href="" class="personal-menu-clear-status navbar-dropdown-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
