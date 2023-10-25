@@ -1234,6 +1234,12 @@ ul {
     top: 0;
 }
 
+.personal-menu-status-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 #gear-menu-dropdown {
     padding: 5px 0;
     box-shadow: var(--box-shadow-gear-menu);
