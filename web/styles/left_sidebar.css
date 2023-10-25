@@ -504,6 +504,8 @@ li.active-sub-filter {
         /* Unset padding from individual top_left items */
         padding: 0;
         border-radius: 4px;
+        /* Set a positioning context for the unread dot. */
+        position: relative;
 
         .unread_count {
             position: absolute;
