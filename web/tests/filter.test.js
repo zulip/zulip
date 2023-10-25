@@ -361,6 +361,7 @@ test("basics", () => {
     // filter.supports_collapsing_recipients loop.
     terms = [
         {operator: "is", operand: "resolved", negated: true},
+        {operator: "is", operand: "followed", negated: true},
         {operator: "is", operand: "dm", negated: true},
         {operator: "channel", operand: "channel_name", negated: true},
         {operator: "channels", operand: "web-public", negated: true},
@@ -488,6 +489,10 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     }
 
     is_operator = [{operator: "is", operand: "resolved", negated: true}];
+    filter = new Filter([...additional_terms_to_test, ...is_operator]);
+    assert.ok(!filter.can_mark_messages_read());
+
+    is_operator = [{operator: "is", operand: "followed", negated: true}];
     filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 }
@@ -858,6 +863,14 @@ test("predicate_basics", ({override}) => {
     assert.ok(predicate({type: stream_message, topic: resolved_topic_name}));
     assert.ok(!predicate({topic: resolved_topic_name}));
     assert.ok(!predicate({type: stream_message, topic: "foo"}));
+
+    predicate = get_predicate([["is", "followed"]]);
+
+    override(user_topics, "is_topic_followed", () => false);
+    assert.ok(!predicate({type: "stream", topic: "foo", stream_id: 5}));
+
+    override(user_topics, "is_topic_followed", () => true);
+    assert.ok(predicate({type: "stream", topic: "foo", stream_id: 5}));
 
     const unknown_stream_id = 999;
     override(user_topics, "is_topic_muted", () => false);
@@ -1406,6 +1419,10 @@ test("describe", ({mock_template}) => {
     string = "topics marked as resolved";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
+    narrow = [{operator: "is", operand: "followed"}];
+    string = "followed topics";
+    assert.equal(Filter.search_description_as_html(narrow), string);
+
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
     string = "invalid something_we_do_not_support operand for is operator";
     assert.equal(Filter.search_description_as_html(narrow), string);
@@ -1739,6 +1756,7 @@ test("navbar_helpers", () => {
     const is_dm = [{operator: "is", operand: "dm"}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
+    const is_followed = [{operator: "is", operand: "followed"}];
     const channels_public = [{operator: "channels", operand: "public"}];
     const channel_topic_terms = [
         {operator: "channel", operand: "foo"},
@@ -1841,6 +1859,15 @@ test("navbar_helpers", () => {
             icon: "check",
             title: "translated: Topics marked as resolved",
             redirect_url_with_search: "/#narrow/topics/is/resolved",
+        },
+        {
+            terms: is_followed,
+            is_common_narrow: true,
+            zulip_icon: "follow",
+            title: "translated: Followed topics",
+            redirect_url_with_search: "/#narrow/topics/is/followed",
+            description: "translated: Messages in topics you follow.",
+            link: "/help/follow-a-topic",
         },
         {
             terms: channel_topic_terms,

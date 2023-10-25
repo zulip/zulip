@@ -602,6 +602,16 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             incompatible_patterns: [{operator: "is", operand: "mentioned"}],
         },
         {
+            search_string: "is:followed",
+            description_html: "followed topics",
+            incompatible_patterns: [
+                {operator: "is", operand: "followed"},
+                {operator: "is", operand: "dm"},
+                {operator: "dm"},
+                {operator: "dm-including"},
+            ],
+        },
+        {
             search_string: "is:alerted",
             description_html: "alerted messages",
             incompatible_patterns: [{operator: "is", operand: "alerted"}],

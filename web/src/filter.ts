@@ -165,6 +165,11 @@ function message_matches_search_term(message: Message, operator: string, operand
                     return unread.message_unread(message);
                 case "resolved":
                     return message.type === "stream" && resolved_topic.is_resolved(message.topic);
+                case "followed":
+                    return (
+                        message.type === "stream" &&
+                        user_topics.is_topic_followed(message.stream_id, message.topic)
+                    );
                 default:
                     return false; // is:whatever returns false
             }
@@ -503,6 +508,7 @@ export class Filter {
             "is-starred",
             "is-unread",
             "is-resolved",
+            "is-followed",
             "has-link",
             "has-image",
             "has-attachment",
@@ -753,6 +759,8 @@ export class Filter {
             "not-is-dm",
             "is-resolved",
             "not-is-resolved",
+            "is-followed",
+            "not-is-followed",
             "in-home",
             "in-all",
             "channels-public",
@@ -853,6 +861,9 @@ export class Filter {
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["is-followed"])) {
+            return true;
+        }
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
             this.operands("sender")[0] === people.my_current_email()
@@ -924,6 +935,8 @@ export class Filter {
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
                     return "/#narrow/topics/is/resolved";
+                case "is-followed":
+                    return "/#narrow/topics/is/followed";
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":
@@ -987,6 +1000,9 @@ export class Filter {
                 break;
             case "is-resolved":
                 icon = "check";
+                break;
+            case "is-followed":
+                zulip_icon = "follow";
                 break;
             default:
                 icon = undefined;
@@ -1069,6 +1085,8 @@ export class Filter {
                     return $t({defaultMessage: "Direct message feed"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
+                case "is-followed":
+                    return $t({defaultMessage: "Followed topics"});
                 // These cases return false for is_common_narrow, and therefore are not
                 // formatted in the message view header. They are used in narrow.js to
                 // update the browser title.
@@ -1102,6 +1120,13 @@ export class Filter {
                         defaultMessage: "Important messages, tasks, and other useful references.",
                     }),
                     link: "/help/star-a-message#view-your-starred-messages",
+                };
+            case "is-followed":
+                return {
+                    description: $t({
+                        defaultMessage: "Messages in topics you follow.",
+                    }),
+                    link: "/help/follow-a-topic",
                 };
         }
         if (
