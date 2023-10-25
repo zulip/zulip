@@ -75,6 +75,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
+from zerver.lib.users import check_user_can_access_all_users, get_accessible_user_ids
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
@@ -1460,6 +1461,21 @@ def check_private_message_policy(
         raise JsonableError(_("Direct messages are disabled in this organization."))
 
 
+def check_sender_can_access_recipients(
+    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
+) -> None:
+    if check_user_can_access_all_users(sender):
+        return
+
+    users_accessible_to_sender = set(get_accessible_user_ids(realm, sender))
+    # Guest users can access all the bots (including cross-realm bots).
+    non_bot_recipient_user_ids = {user.id for user in user_profiles if not user.is_bot}
+
+    inaccessible_recipients = non_bot_recipient_user_ids - users_accessible_to_sender
+    if inaccessible_recipients:
+        raise JsonableError(_("You do not have permission to access some of the recipients."))
+
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(
@@ -1544,6 +1560,8 @@ def check_message(
             "jabber_mirror",
             "JabberMirror",
         ]
+
+        check_sender_can_access_recipients(realm, sender, user_profiles)
 
         check_private_message_policy(realm, sender, user_profiles)
 
