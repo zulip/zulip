@@ -184,6 +184,8 @@ def send_analytics_to_push_bouncer() -> None:
     last_acked_installation_count_id = result["last_installation_count_id"]
     last_acked_realmauditlog_id = result["last_realmauditlog_id"]
 
+    # Gather only entries with IDs greater than the last ID received by the push bouncer.
+    # We don't re-send old data that's already been submitted.
     (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
         realm_count_query=RealmCount.objects.filter(id__gt=last_acked_realm_count_id),
         installation_count_query=InstallationCount.objects.filter(
@@ -204,7 +206,6 @@ def send_analytics_to_push_bouncer() -> None:
         "version": orjson.dumps(ZULIP_VERSION).decode(),
     }
 
-    # Gather only entries with an ID greater than last_realm_count_id
     try:
         send_to_push_bouncer("POST", "server/analytics", request)
     except JsonableError as e:
