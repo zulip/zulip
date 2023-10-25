@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 type Context = {
     items_container_selector: string;
@@ -41,7 +42,8 @@ export function focus_on_sibling_element(context: Context): void {
 
     const $new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
     if ($new_focus_element.length > 0) {
-        activate_element($new_focus_element[0].children[0] as HTMLElement, context);
+        assert($new_focus_element[0].children[0] instanceof HTMLElement);
+        activate_element($new_focus_element[0].children[0], context);
     }
 }
 
@@ -72,7 +74,8 @@ export function modals_handle_events(event_key: string, context: Context): void 
 export function set_initial_element(element_id: string, context: Context): void {
     if (element_id) {
         const $current_element = get_element_by_id(element_id, context);
-        const focus_element = $current_element[0].children[0] as HTMLElement;
+        const focus_element = $current_element[0].children[0];
+        assert(focus_element instanceof HTMLElement);
         activate_element(focus_element, context);
         $(`.${CSS.escape(context.items_list_selector)}`)[0].scrollTop = 0;
     }
@@ -145,7 +148,8 @@ function initialize_focus(event_name: string, context: Context): void {
         $element = get_first_element();
     }
 
-    const focus_element = $element[0].children[0] as HTMLElement;
+    const focus_element = $element[0].children[0];
+    assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
 }
 
@@ -156,7 +160,8 @@ function scroll_to_element($element: JQuery, context: Context): void {
     if ($element.children.length === 0) {
         return;
     }
-    activate_element($element[0].children[0] as HTMLElement, context);
+    assert($element[0].children[0] instanceof HTMLElement);
+    activate_element($element[0].children[0], context);
 
     const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
     const $items_container = $(`.${CSS.escape(context.items_container_selector)}`);
