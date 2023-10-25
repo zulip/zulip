@@ -554,9 +554,12 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
             const plotDiv = document.querySelector<Plotly.PlotlyHTMLElement>(
                 "#id_messages_sent_over_time",
             )!;
-            traces.me.visible = (plotDiv.data[0] as Plotly.PlotData).visible;
-            traces.human.visible = (plotDiv.data[1] as Plotly.PlotData).visible;
-            traces.bot.visible = (plotDiv.data[2] as Plotly.PlotData).visible;
+            assert("visible" in plotDiv.data[0]);
+            assert("visible" in plotDiv.data[1]);
+            assert("visible" in plotDiv.data[2]);
+            traces.me.visible = plotDiv.data[0].visible;
+            traces.human.visible = plotDiv.data[1].visible;
+            traces.bot.visible = plotDiv.data[2].visible;
         }
         layout.xaxis!.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
@@ -693,6 +696,9 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
     }
 
     type PlotDataByMessageClient = PlotTrace & {
+        trace: {
+            x: number[];
+        };
         trace_annotations: Partial<Plotly.PlotData>;
     };
 
@@ -806,8 +812,8 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
     function draw_plot(): void {
         $("#id_messages_sent_by_client > div").removeClass("spinner");
         const data_ = plot_data[user_button][time_button];
-        layout.height = layout.margin!.b! + data_.trace.x!.length * 30;
-        layout.xaxis!.range = [0, Math.max(...(data_.trace.x as number[])) * 1.3];
+        layout.height = layout.margin!.b! + data_.trace.x.length * 30;
+        layout.xaxis!.range = [0, Math.max(...data_.trace.x) * 1.3];
         void Plotly.newPlot(
             "id_messages_sent_by_client",
             [data_.trace, data_.trace_annotations],
@@ -1300,8 +1306,10 @@ function populate_messages_read_over_time(raw_data: unknown): void {
             const plotDiv = document.querySelector<Plotly.PlotlyHTMLElement>(
                 "#id_messages_read_over_time",
             )!;
-            traces.me.visible = (plotDiv.data[0] as Plotly.PlotData).visible;
-            traces.everyone.visible = (plotDiv.data[1] as Plotly.PlotData).visible;
+            assert("visible" in plotDiv.data[0]);
+            assert("visible" in plotDiv.data[1]);
+            traces.me.visible = plotDiv.data[0].visible;
+            traces.everyone.visible = plotDiv.data[1].visible;
         }
         layout.xaxis!.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
