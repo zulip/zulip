@@ -138,6 +138,7 @@ from zerver.lib.event_schema import (
     check_default_stream_groups,
     check_default_streams,
     check_delete_message,
+    check_direct_message,
     check_draft_add,
     check_draft_remove,
     check_draft_update,
@@ -535,6 +536,41 @@ class NormalActionsTest(BaseAction):
         self.verify_action(
             lambda: self.send_huddle_message(self.example_user("cordelia"), huddle, "hola"),
         )
+
+    def test_user_creation_events_on_sending_messages(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        cordelia = self.example_user("cordelia")
+
+        self.user_profile = polonius
+
+        # Test that guest will not receive creation event
+        # for bots as they can access all the bots.
+        bot = self.create_test_bot("test2", cordelia, full_name="Test bot")
+        events = self.verify_action(
+            lambda: self.send_personal_message(bot, polonius, "hola"), num_events=1
+        )
+        check_direct_message("events[0]", events[0])
+
+        events = self.verify_action(
+            lambda: self.send_personal_message(cordelia, polonius, "hola"), num_events=2
+        )
+        check_direct_message("events[0]", events[0])
+        check_realm_user_add("events[1]", events[1])
+        self.assertEqual(events[1]["person"]["user_id"], cordelia.id)
+
+        othello = self.example_user("othello")
+        desdemona = self.example_user("desdemona")
+
+        events = self.verify_action(
+            lambda: self.send_huddle_message(othello, [polonius, desdemona, bot], "hola"),
+            num_events=3,
+        )
+        check_direct_message("events[0]", events[0])
+        check_realm_user_add("events[1]", events[1])
+        check_realm_user_add("events[2]", events[2])
+        user_creation_user_ids = {events[1]["person"]["user_id"], events[2]["person"]["user_id"]}
+        self.assertEqual(user_creation_user_ids, {othello.id, desdemona.id})
 
     def test_stream_send_message_events(self) -> None:
         hamlet = self.example_user("hamlet")
