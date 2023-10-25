@@ -81,14 +81,6 @@ export function save_narrow(operators) {
     changehash(new_hash);
 }
 
-function set_recent_view(operators) {
-    if (browser_history.state.changing_hash) {
-        return;
-    }
-    const new_hash = hash_util.operators_to_hash(operators, true);
-    changehash(new_hash);
-}
-
 export function activate(raw_operators, opts) {
     /* Main entry point for switching to a new view / message list.
        Note that for historical reasons related to the current
@@ -359,16 +351,6 @@ export function activate(raw_operators, opts) {
             const stream_name = operators[0].operand;
             const stream_id = stream_data.get_sub(stream_name).stream_id;
             recent_view_ui.show(stream_id);
-            compose_closed_ui.update_buttons_for_stream_views();
-            compose_closed_ui.update_reply_recipient_label();
-            left_sidebar_navigation_area.handle_narrow_activated(filter);
-            pm_list.handle_narrow_activated(filter);
-            stream_list.handle_narrow_activated(filter);
-            message_view_header.render_title_area(filter);
-            narrow_state.reset_current_filter();
-            if (opts.change_hash) {
-                set_recent_view(operators);
-            }
             return;
         }
 

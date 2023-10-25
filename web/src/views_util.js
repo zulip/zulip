@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as compose_recipient from "./compose_recipient";
+import {Filter} from "./filter";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
@@ -10,6 +11,7 @@ import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as search from "./search";
 import * as stream_list from "./stream_list";
+import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
 
 export function show(opts) {
@@ -37,7 +39,20 @@ export function show(opts) {
     opts.update_compose();
     narrow_state.reset_current_filter();
     narrow_title.update_narrow_title(narrow_state.filter());
-    message_view_header.render_title_area();
+    if (opts.recent_view_stream_id) {
+        const stream_name = sub_store.maybe_get_stream_name(opts.recent_view_stream_id);
+        message_view_header.render_title_area(
+            new Filter([
+                {
+                    negated: false,
+                    operator: "stream",
+                    operand: stream_name,
+                },
+            ]),
+        );
+    } else {
+        message_view_header.render_title_area();
+    }
     compose_recipient.handle_middle_pane_transition();
     search.clear_search_form();
     opts.complete_rerender();

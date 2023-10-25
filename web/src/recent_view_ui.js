@@ -10,6 +10,7 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
+import {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -38,6 +39,7 @@ import {
 import * as scroll_util from "./scroll_util";
 import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
@@ -1040,9 +1042,20 @@ export function show(for_stream_id = null) {
         highlight_view_in_left_sidebar() {
             if (for_stream_id === null) {
                 left_sidebar_navigation_area.highlight_recent_view();
+            } else {
+                const stream_name = sub_store.maybe_get_stream_name(for_stream_id);
+                if (stream_name) {
+                    const filter = new Filter([
+                        {
+                            negated: false,
+                            operator: "stream",
+                            operand: stream_name,
+                        },
+                    ]);
+                    left_sidebar_navigation_area.handle_narrow_activated(filter);
+                    stream_list.handle_narrow_activated(filter);
+                }
             }
-            // TODO: When showing for a specific stream, we might want to highlight
-            // the current stream in the left sidebar.
         },
         $view: $("#recent_view"),
         // We want to show `new stream message` instead of
@@ -1050,6 +1063,7 @@ export function show(for_stream_id = null) {
         // function. So, we reuse it here.
         update_compose: compose_closed_ui.update_buttons_for_non_stream_views,
         is_recent_view: true,
+        recent_view_stream_id: for_stream_id,
         is_visible: () =>
             for_stream_id ? is_stream_view_visible(for_stream_id) : is_main_view_visible(),
         reset_current_filter: for_stream_id === null,
