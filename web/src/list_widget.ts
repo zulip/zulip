@@ -277,7 +277,9 @@ export function create<Key = unknown, Item = Key>(
             if (items?.selected_items) {
                 const data = items.selected_items;
                 for (const value of data) {
-                    const $list_item = $container.find(`li[data-value = "${value as string}"]`);
+                    const $list_item = $container.find(
+                        `li[data-value="${CSS.escape(String(value))}"]`,
+                    );
                     if ($list_item.length) {
                         const $link_elem = $list_item.find("a").expectOne();
                         $list_item.addClass("checked");
