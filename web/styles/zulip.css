@@ -2277,8 +2277,6 @@ div.focused-message-list {
     top: 0;
     left: 0;
     text-align: center;
-    vertical-align: middle;
-    /* border-right: 2px solid hsl(204, 20%, 74%); */
 }
 
 .hide-streamlist-toggle-visibility,
@@ -2289,12 +2287,11 @@ div.focused-message-list {
 #streamlist-toggle-button {
     text-decoration: none;
     color: hsl(0deg 0% 52%);
-    display: block;
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
+    height: 40px;
 }
 
 #streamlist-toggle-unreadcount {
@@ -3189,8 +3186,6 @@ select.invite-as {
 
     #streamlist-toggle-button {
         height: var(--header-height);
-        padding-top: 0;
-        padding-bottom: 0;
     }
 
     .column-right #personal-menu .header-button-avatar {
