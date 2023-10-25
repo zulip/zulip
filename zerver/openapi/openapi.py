@@ -294,7 +294,10 @@ def generate_openapi_fixture(endpoint: str, method: str) -> List[str]:
 
 def get_openapi_description(endpoint: str, method: str) -> str:
     """Fetch a description from the full spec object."""
-    return openapi_spec.openapi()["paths"][endpoint][method.lower()]["description"]
+    endpoint_documentation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
+    endpoint_description = endpoint_documentation["description"]
+    check_deprecated_consistency(endpoint_documentation, endpoint_description)
+    return endpoint_description
 
 
 def get_openapi_summary(endpoint: str, method: str) -> str:
@@ -432,19 +435,19 @@ def validate_schema(schema: Dict[str, Any]) -> None:
             validate_schema(schema["additionalProperties"])
 
 
-def likely_deprecated_parameter(parameter_description: str) -> bool:
-    if "**Changes**: Deprecated" in parameter_description:
+def deprecated_note_in_description(description: str) -> bool:
+    if "**Changes**: Deprecated" in description:
         return True
 
-    return "**Deprecated**" in parameter_description
+    return "**Deprecated**" in description
 
 
 def check_deprecated_consistency(argument: Mapping[str, Any], description: str) -> None:
     # Test to make sure deprecated parameters are marked so.
-    if likely_deprecated_parameter(description):
+    if deprecated_note_in_description(description):
         assert argument["deprecated"]
     if "deprecated" in argument:
-        assert likely_deprecated_parameter(description)
+        assert deprecated_note_in_description(description)
 
 
 # Skip those JSON endpoints whose query parameters are different from
