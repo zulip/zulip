@@ -42,16 +42,10 @@ export function get_playground_info_for_languages(
 function sort_pygments_pretty_names_by_priority(
     comparator_func: (a: string, b: string) => number,
 ): void {
-    const priority_sorted_pygments_data = Object.keys(generated_pygments_data.langs).sort(
-        comparator_func,
+    const priority_sorted_pygments_data = Object.entries(generated_pygments_data.langs).sort(
+        ([a], [b]) => comparator_func(a, b),
     );
-    for (const alias of priority_sorted_pygments_data) {
-        // This variable is just for type safety so that we can access
-        // generated_pygments_data.langs[lang].pretty_name without a type error.
-        // We know that alias is a valid key of generated_pygments_data.langs because
-        // we just got it from Object.keys(generated_pygments_data.langs).
-        const lang = alias as keyof typeof generated_pygments_data.langs;
-        const pretty_name = generated_pygments_data.langs[lang].pretty_name;
+    for (const [alias, {pretty_name}] of priority_sorted_pygments_data) {
         // JS Map remembers the original order of insertion of keys.
         if (map_pygments_pretty_name_to_aliases.has(pretty_name)) {
             map_pygments_pretty_name_to_aliases.get(pretty_name)!.push(alias);
