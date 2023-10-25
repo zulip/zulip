@@ -38,7 +38,10 @@ export function initialize(): void {
         }
         e.preventDefault();
         const current_licenses: number = $("#licensechange-input-section").data("licenses");
-        const new_licenses: number = Number.parseInt($("#new_licenses_input").val() as string, 10);
+        const new_licenses: number = Number.parseInt(
+            $<HTMLInputElement>("input#new_licenses_input").val()!,
+            10,
+        );
         if (new_licenses > current_licenses) {
             $("#new_license_count_holder").text(new_licenses);
             $("#current_license_count_holder").text(current_licenses);

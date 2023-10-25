@@ -11,21 +11,21 @@ $(() => {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
-    const $password_field = $("#id_password, #id_new_password1");
+    const $password_field = $<HTMLInputElement>("input#id_password, input#id_new_password1");
     if ($password_field.length > 0) {
         $.validator.addMethod(
             "password_strength",
             (value: string) => password_quality(value, undefined, $password_field),
-            () => password_warning($password_field.val() as string, $password_field),
+            () => password_warning($password_field.val()!, $password_field),
         );
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
-        password_quality($password_field.val() as string, $("#pw_strength .bar"), $password_field);
+        password_quality($password_field.val()!, $("#pw_strength .bar"), $password_field);
 
         $password_field.on("input", function () {
             // Update the password strength bar even if we aren't validating
             // the field yet.
-            password_quality($(this).val() as string, $("#pw_strength .bar"), $(this));
+            password_quality($(this).val()!, $("#pw_strength .bar"), $(this));
         });
     }
 
@@ -143,13 +143,13 @@ $(() => {
         },
     });
 
-    $(".register-page #email, .login-page-container #id_username").on(
+    $<HTMLInputElement>(".register-page input#email, .login-page-container input#id_username").on(
         "focusout keydown",
         function (e) {
             // check if it is the "focusout" or if it is a keydown, then check if
             // the keycode was the one for "Enter".
             if (e.type === "focusout" || e.key === "Enter") {
-                $(this).val(($(this).val() as string).trim());
+                $(this).val($(this).val()!.trim());
             }
         },
     );
@@ -239,7 +239,9 @@ $(() => {
 
     $("#change-email-address-visibility-modal .dialog_submit_button").on("click", () => {
         const selected_val = Number.parseInt(
-            $("#new_user_email_address_visibility").val() as string,
+            $<HTMLSelectElement & {type: "select-one"}>(
+                "select:not([multiple])#new_user_email_address_visibility",
+            ).val()!,
             10,
         );
         $("#email_address_visibility").val(selected_val);
