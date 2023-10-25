@@ -178,6 +178,7 @@ export function get_personal_menu_content_context() {
 
         // user status
         status_content_available: Boolean(status_text || status_emoji_info),
+        show_placeholder_for_status_text: !status_text && status_emoji_info,
         status_text,
         status_emoji_info,
         user_time: people.get_user_time(my_user_id),
