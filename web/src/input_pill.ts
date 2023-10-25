@@ -1,6 +1,7 @@
 // todo: Refactor pills subsystem to use modern javascript classes?
 
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
@@ -408,9 +409,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             e.preventDefault();
 
             // get text representation of clipboard
-            const text = ((e.originalEvent ?? e) as ClipboardEvent).clipboardData?.getData(
-                "text/plain",
-            );
+            assert(e.originalEvent instanceof ClipboardEvent);
+            const text = e.originalEvent.clipboardData?.getData("text/plain");
 
             // insert text manually
             document.execCommand("insertText", false, text);
@@ -440,10 +440,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         store.$parent.on("copy", ".pill", (e) => {
             const element: HTMLElement = e.currentTarget;
             const {item} = funcs.getByElement(element)!;
-            (e.originalEvent as ClipboardEvent).clipboardData?.setData(
-                "text/plain",
-                store.get_text_from_item(item),
-            );
+            assert(e.originalEvent instanceof ClipboardEvent);
+            e.originalEvent.clipboardData?.setData("text/plain", store.get_text_from_item(item));
             e.preventDefault();
         });
     }
