@@ -116,6 +116,7 @@ Zulip offers the following filters based on the location of the message.
 
 ### Search by message status
 
+* `is:followed`: Search messages in [followed topics](/help/follow-a-topic).
 * `is:resolved`: Search messages in [resolved topics](/help/resolve-a-topic).
 * `-is:resolved`: Search messages in [unresolved topics](/help/resolve-a-topic).
 * `is:unread`: Search your unread messages.

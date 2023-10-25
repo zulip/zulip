@@ -337,6 +337,13 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         empty_narrow_html("translated: No topics are marked as resolved."),
     );
 
+    set_filter([["is", "followed"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You aren't following any topics."),
+    );
+
     // organization has disabled sending direct messages
     realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;

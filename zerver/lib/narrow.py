@@ -58,6 +58,7 @@ from zerver.lib.streams import (
     get_web_public_streams_queryset,
 )
 from zerver.lib.topic_sqlalchemy import (
+    get_followed_topic_condition_sa,
     get_resolved_topic_condition_sa,
     topic_column_sa,
     topic_match_sa,
@@ -404,6 +405,9 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
         elif operand == "resolved":
             cond = get_resolved_topic_condition_sa()
+            return query.where(maybe_negate(cond))
+        elif operand == "followed":
+            cond = get_followed_topic_condition_sa(self.user_profile.id)
             return query.where(maybe_negate(cond))
         raise BadNarrowOperatorError("unknown 'is' operand " + operand)
 
@@ -912,7 +916,7 @@ def ok_to_include_history(
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
         for term in narrow:
-            if term["operator"] == "is" and term["operand"] not in {"resolved"}:
+            if term["operator"] == "is" and term["operand"] not in {"resolved", "followed"}:
                 include_history = False
 
     return include_history

@@ -270,6 +270,20 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="is", operand="resolved", negated=True)
         self._do_add_term_test(term, "WHERE (subject NOT LIKE %(subject_1)s || '%%'")
 
+    def test_add_term_using_is_operator_for_followed_topics(self) -> None:
+        term = dict(operator="is", operand="followed", negated=False)
+        self._do_add_term_test(
+            term,
+            "EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id)",
+        )
+
+    def test_add_term_using_is_operator_for_negated_followed_topics(self) -> None:
+        term = dict(operator="is", operand="followed", negated=True)
+        self._do_add_term_test(
+            term,
+            "NOT (EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id))",
+        )
+
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = dict(operator="is", operand="non_supported")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
@@ -951,6 +965,8 @@ class NarrowLibraryTest(ZulipTestCase):
     def test_build_narrow_predicate_invalid(self) -> None:
         with self.assertRaises(JsonableError):
             build_narrow_predicate([NarrowTerm(operator="invalid_operator", operand="operand")])
+        with self.assertRaises(JsonableError):
+            build_narrow_predicate([NarrowTerm(operator="is", operand="followed")])
 
     def test_is_spectator_compatible(self) -> None:
         self.assertTrue(is_spectator_compatible([]))
@@ -4579,6 +4595,37 @@ class MessageHasKeywordsTest(ZulipTestCase):
         result = self.client_get(
             "/json/messages",
             dict(narrow=has_reaction_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+
+
+class MessageIsTest(ZulipTestCase):
+    def test_message_is_followed(self) -> None:
+        self.login("iago")
+        is_followed_narrow = orjson.dumps([dict(operator="is", operand="followed")]).decode()
+
+        # Sending a message in a topic that isn't followed by the user.
+        msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="hey")
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_followed_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+
+        stream_id = self.get_stream_id("Denmark", self.example_user("hamlet").realm)
+
+        # Following the topic.
+        payload = {
+            "stream_id": stream_id,
+            "topic": "hey",
+            "visibility_policy": int(UserTopic.VisibilityPolicy.FOLLOWED),
+        }
+        self.client_post("/json/user_topics", payload)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_followed_narrow, anchor=msg_id, num_before=0, num_after=0),
         )
         messages = self.assert_json_success(result)["messages"]
         self.assert_length(messages, 1)
