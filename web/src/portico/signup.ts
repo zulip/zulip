@@ -75,6 +75,11 @@ $(() => {
             const $firstInputElement = $("input:not(:hidden, :disabled)").first();
             // Focus on the first input field in the form.
             $firstInputElement.trigger("focus");
+            // Override the automatic scroll to the focused
+            // element. On the (tall) new organization form, at least,
+            // this avoids scrolling to the middle of the page (past
+            // the organization details section).
+            $("html").scrollTop(0);
         } else {
             // If input field with errors is present.
             // Find the input field having errors and stores it in a variable.
