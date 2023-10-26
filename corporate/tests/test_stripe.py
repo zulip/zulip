@@ -44,6 +44,7 @@ from corporate.lib.stripe import (
     BillingError,
     InvalidBillingScheduleError,
     InvalidTierError,
+    RealmBillingSession,
     StripeCardError,
     add_months,
     approve_sponsorship,
@@ -52,7 +53,6 @@ from corporate.lib.stripe import (
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
     do_change_remote_server_plan_type,
-    do_create_stripe_customer,
     do_deactivate_remote_server,
     downgrade_small_realms_behind_on_payments_as_needed,
     get_discount_for_realm,
@@ -76,7 +76,6 @@ from corporate.lib.stripe import (
     update_license_ledger_for_automanaged_plan,
     update_license_ledger_for_manual_plan,
     update_license_ledger_if_needed,
-    update_or_create_stripe_customer,
     update_sponsorship_status,
     void_all_open_invoices,
 )
@@ -2081,7 +2080,7 @@ class StripeTest(StripeTestCase):
         self.login_user(hamlet)
 
         with patch(
-            "corporate.lib.stripe_event_handler.update_or_create_stripe_customer",
+            "corporate.lib.stripe_event_handler.RealmBillingSession",
             side_effect=Exception,
         ), self.assertLogs("corporate.stripe", "WARNING"):
             response = self.upgrade()
@@ -2460,7 +2459,8 @@ class StripeTest(StripeTestCase):
         # If you pay by invoice, your payment method should be
         # "Billed by invoice", even if you have a card on file
         # user = self.example_user("hamlet")
-        # do_create_stripe_customer(user, stripe_create_token().id)
+        # billing_session = RealmBillingSession(user)
+        # billing_session.create_stripe_customer()
         # self.login_user(user)
         # self.upgrade(invoice=True)
         # stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
@@ -3618,8 +3618,8 @@ class StripeTest(StripeTestCase):
 
         self.assertEqual(void_all_open_invoices(iago.realm), 0)
 
-        zulip_customer = update_or_create_stripe_customer(iago)
-        lear_customer = update_or_create_stripe_customer(king)
+        zulip_customer = RealmBillingSession(iago).update_or_create_stripe_customer()
+        lear_customer = RealmBillingSession(king).update_or_create_stripe_customer()
 
         assert zulip_customer.stripe_customer_id
         stripe.InvoiceItem.create(
@@ -3723,7 +3723,8 @@ class StripeTest(StripeTestCase):
 
             customer = None
             if create_stripe_customer:
-                customer = do_create_stripe_customer(users[0])
+                billable_user = RealmBillingSession(users[0])
+                customer = billable_user.create_stripe_customer()
             plan = None
             if create_plan:
                 plan, _ = self.subscribe_realm_to_monthly_plan_on_manual_license_management(
@@ -3857,7 +3858,7 @@ class StripeTest(StripeTestCase):
 
         king = self.lear_user("king")
         realm = king.realm
-        customer = update_or_create_stripe_customer(king)
+        customer = RealmBillingSession(king).update_or_create_stripe_customer()
         plan = CustomerPlan.objects.create(
             customer=customer,
             automanage_licenses=True,
@@ -3993,11 +3994,11 @@ class StripeTest(StripeTestCase):
         customer = Customer.objects.create(realm=iago.realm)
         self.assertFalse(customer_has_credit_card_as_default_payment_method(customer))
 
-        customer = do_create_stripe_customer(iago)
+        billable_user = RealmBillingSession(iago)
+        customer = billable_user.create_stripe_customer()
         self.assertFalse(customer_has_credit_card_as_default_payment_method(customer))
 
-        customer = do_create_stripe_customer(
-            iago,
+        customer = billable_user.create_stripe_customer(
             payment_method=create_payment_method(
                 self.get_test_card_number(
                     attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
@@ -4463,34 +4464,40 @@ class BillingHelpersTest(ZulipTestCase):
         user = self.example_user("hamlet")
         # No existing Customer object
         with patch(
-            "corporate.lib.stripe.do_create_stripe_customer", return_value="returned"
+            "corporate.lib.stripe.BillingSession.create_stripe_customer", return_value="returned"
         ) as mocked1:
-            returned = update_or_create_stripe_customer(user, payment_method="payment_method_id")
+            billing_session = RealmBillingSession(user)
+            returned = billing_session.update_or_create_stripe_customer(
+                payment_method="payment_method_id"
+            )
         mocked1.assert_called_once()
         self.assertEqual(returned, "returned")
 
         customer = Customer.objects.create(realm=get_realm("zulip"))
         # Customer exists but stripe_customer_id is None
         with patch(
-            "corporate.lib.stripe.do_create_stripe_customer", return_value="returned"
+            "corporate.lib.stripe.BillingSession.create_stripe_customer", return_value="returned"
         ) as mocked2:
-            returned = update_or_create_stripe_customer(user, payment_method="payment_method_id")
+            billing_session = RealmBillingSession(user)
+            returned = billing_session.update_or_create_stripe_customer(
+                payment_method="payment_method_id"
+            )
         mocked2.assert_called_once()
         self.assertEqual(returned, "returned")
 
         customer.stripe_customer_id = "cus_12345"
         customer.save()
         # Customer exists, replace payment source
-        with patch("corporate.lib.stripe.do_replace_payment_method") as mocked3:
-            returned_customer = update_or_create_stripe_customer(
-                self.example_user("hamlet"), "token"
-            )
+        with patch("corporate.lib.stripe.BillingSession.replace_payment_method") as mocked3:
+            billing_session = RealmBillingSession(user)
+            returned_customer = billing_session.update_or_create_stripe_customer("token")
         mocked3.assert_called_once()
         self.assertEqual(returned_customer, customer)
 
         # Customer exists, do nothing
-        with patch("corporate.lib.stripe.do_replace_payment_method") as mocked4:
-            returned_customer = update_or_create_stripe_customer(self.example_user("hamlet"), None)
+        with patch("corporate.lib.stripe.BillingSession.replace_payment_method") as mocked4:
+            billing_session = RealmBillingSession(user)
+            returned_customer = billing_session.update_or_create_stripe_customer(None)
         mocked4.assert_not_called()
         self.assertEqual(returned_customer, customer)
 

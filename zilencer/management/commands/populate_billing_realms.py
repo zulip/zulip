@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import add_months, update_or_create_stripe_customer
+from corporate.lib.stripe import add_months, RealmBillingSession
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
@@ -156,7 +156,8 @@ class Command(BaseCommand):
             if customer_profile.tier is None:
                 continue
 
-            customer = update_or_create_stripe_customer(user)
+            billing_session = RealmBillingSession(user)
+            customer = billing_session.update_or_create_stripe_customer()
             assert customer.stripe_customer_id is not None
 
             # Add a test card to the customer.

@@ -15,6 +15,7 @@ from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
     MIN_INVOICED_LICENSES,
     BillingError,
+    RealmBillingSession,
     compute_plan_parameters,
     ensure_customer_does_not_have_active_plan,
     get_latest_seat_count,
@@ -23,7 +24,6 @@ from corporate.lib.stripe import (
     process_initial_upgrade,
     sign_string,
     unsign_string,
-    update_or_create_stripe_customer,
     update_sponsorship_status,
     validate_licenses,
 )
@@ -90,7 +90,8 @@ def setup_upgrade_checkout_session_and_payment_intent(
     billing_modality: str,
     onboarding: bool,
 ) -> stripe.checkout.Session:
-    customer = update_or_create_stripe_customer(user)
+    billing_session = RealmBillingSession(user)
+    customer = billing_session.update_or_create_stripe_customer()
     assert customer is not None  # for mypy
     free_trial = is_free_trial_offer_enabled()
     _, _, _, price_per_license = compute_plan_parameters(

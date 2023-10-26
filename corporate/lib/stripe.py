@@ -2,10 +2,11 @@ import logging
 import math
 import os
 import secrets
+from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from typing import Callable, Dict, Generator, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union
 
 import stripe
 from django.conf import settings
@@ -16,7 +17,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
-from typing_extensions import ParamSpec
+from typing_extensions import ParamSpec, override
 
 from corporate.models import (
     Customer,
@@ -31,7 +32,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.send_email import FromAddress, send_email_to_billing_admins_and_realm_owners
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
+from zerver.models import AbstractRealmAuditLog, Realm, RealmAuditLog, UserProfile, get_system_bot
 from zilencer.models import RemoteZulipServer, RemoteZulipServerAuditLog
 from zproject.config import get_secret
 
@@ -315,75 +316,132 @@ def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
     )
 
 
-@catch_stripe_errors
-def do_create_stripe_customer(user: UserProfile, payment_method: Optional[str] = None) -> Customer:
-    realm = user.realm
-    # We could do a better job of handling race conditions here, but if two
-    # people from a realm try to upgrade at exactly the same time, the main
-    # bad thing that will happen is that we will create an extra stripe
-    # customer that we can delete or ignore.
-    stripe_customer = stripe.Customer.create(
-        description=f"{realm.string_id} ({realm.name})",
-        email=user.delivery_email,
-        metadata={"realm_id": realm.id, "realm_str": realm.string_id},
-        payment_method=payment_method,
-    )
-    stripe.Customer.modify(
-        stripe_customer.id, invoice_settings={"default_payment_method": payment_method}
-    )
-    event_time = timestamp_to_datetime(stripe_customer.created)
-    with transaction.atomic():
-        RealmAuditLog.objects.create(
-            realm=user.realm,
-            acting_user=user,
-            event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
-            event_time=event_time,
+class BillingSession(ABC):
+    @abstractmethod
+    def get_customer(self) -> Optional[Customer]:
+        pass
+
+    @abstractmethod
+    def write_to_audit_log(
+        self, event_type: int, event_time: datetime, *, extra_data: Optional[Dict[str, Any]] = None
+    ) -> None:
+        pass
+
+    @abstractmethod
+    def get_data_for_stripe_customer(self) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def update_or_create_customer(self, stripe_customer_id: str) -> Customer:
+        pass
+
+    @catch_stripe_errors
+    def create_stripe_customer(self, payment_method: Optional[str] = None) -> Customer:
+        stripe_customer_data = self.get_data_for_stripe_customer()
+        stripe_customer = stripe.Customer.create(
+            description=stripe_customer_data["description"],
+            email=stripe_customer_data["email"],
+            metadata={
+                "realm_id": stripe_customer_data["realm_id"],
+                "realm_str": stripe_customer_data["realm_str"],
+            },
+            payment_method=payment_method,
         )
+        stripe.Customer.modify(
+            stripe_customer.id, invoice_settings={"default_payment_method": payment_method}
+        )
+        event_time = timestamp_to_datetime(stripe_customer.created)
+        with transaction.atomic():
+            self.write_to_audit_log(AbstractRealmAuditLog.STRIPE_CUSTOMER_CREATED, event_time)
+            if payment_method is not None:
+                self.write_to_audit_log(AbstractRealmAuditLog.STRIPE_CARD_CHANGED, event_time)
+            customer = self.update_or_create_customer(stripe_customer.id)
+        return customer
+
+    @catch_stripe_errors
+    def replace_payment_method(
+        self, stripe_customer_id: str, payment_method: str, pay_invoices: bool = False
+    ) -> None:
+        stripe.Customer.modify(
+            stripe_customer_id, invoice_settings={"default_payment_method": payment_method}
+        )
+        self.write_to_audit_log(AbstractRealmAuditLog.STRIPE_CARD_CHANGED, timezone_now())
+        if pay_invoices:
+            for stripe_invoice in stripe.Invoice.list(
+                collection_method="charge_automatically",
+                customer=stripe_customer_id,
+                status="open",
+            ):
+                # The stripe customer with the associated ID will get either a receipt
+                # or a "failed payment" email, but the in-app messaging could be clearer
+                # here (e.g. it could explicitly tell the user that there were payment(s)
+                # and that they succeeded or failed). Worth fixing if we notice that a
+                # lot of cards end up failing at this step.
+                stripe.Invoice.pay(stripe_invoice)
+
+    # Returns Customer instead of stripe_customer so that we don't make a Stripe
+    # API call if there's nothing to update
+    @catch_stripe_errors
+    def update_or_create_stripe_customer(self, payment_method: Optional[str] = None) -> Customer:
+        customer = self.get_customer()
+        if customer is None or customer.stripe_customer_id is None:
+            # We could do a better job of handling race conditions here, but if two
+            # people try to upgrade at exactly the same time, the main bad thing that
+            # will happen is that we will create an extra stripe customer that we can
+            # delete or ignore.
+            return self.create_stripe_customer(payment_method=payment_method)
         if payment_method is not None:
+            self.replace_payment_method(customer.stripe_customer_id, payment_method, True)
+        return customer
+
+
+class RealmBillingSession(BillingSession):
+    def __init__(self, user: UserProfile) -> None:
+        self.user = user
+        self.realm = user.realm
+
+    @override
+    def get_customer(self) -> Optional[Customer]:
+        return get_customer_by_realm(self.realm)
+
+    @override
+    def write_to_audit_log(
+        self, event_type: int, event_time: datetime, *, extra_data: Optional[Dict[str, Any]] = None
+    ) -> None:
+        if extra_data:
             RealmAuditLog.objects.create(
-                realm=user.realm,
-                acting_user=user,
-                event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
+                realm=self.realm,
+                acting_user=self.user,
+                event_type=event_type,
+                event_time=event_time,
+                extra_data=extra_data,
+            )
+        else:
+            RealmAuditLog.objects.create(
+                realm=self.realm,
+                acting_user=self.user,
+                event_type=event_type,
                 event_time=event_time,
             )
+
+    @override
+    def get_data_for_stripe_customer(self) -> Dict[str, Any]:
+        data: Dict[str, Any] = {}
+        data["description"] = f"{self.realm.string_id} ({self.realm.name})"
+        data["email"] = self.user.delivery_email
+        data["realm_id"] = self.realm.id
+        data["realm_str"] = self.realm.string_id
+        return data
+
+    @override
+    def update_or_create_customer(self, stripe_customer_id: str) -> Customer:
         customer, created = Customer.objects.update_or_create(
-            realm=realm, defaults={"stripe_customer_id": stripe_customer.id}
+            realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
         )
         from zerver.actions.users import do_make_user_billing_admin
 
-        do_make_user_billing_admin(user)
-    return customer
-
-
-@catch_stripe_errors
-def do_replace_payment_method(
-    user: UserProfile, payment_method: str, pay_invoices: bool = False
-) -> None:
-    customer = get_customer_by_realm(user.realm)
-    assert customer is not None  # for mypy
-    assert customer.stripe_customer_id is not None  # for mypy
-
-    stripe.Customer.modify(
-        customer.stripe_customer_id, invoice_settings={"default_payment_method": payment_method}
-    )
-
-    RealmAuditLog.objects.create(
-        realm=user.realm,
-        acting_user=user,
-        event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
-        event_time=timezone_now(),
-    )
-    if pay_invoices:
-        for stripe_invoice in stripe.Invoice.list(
-            collection_method="charge_automatically",
-            customer=customer.stripe_customer_id,
-            status="open",
-        ):
-            # The user will get either a receipt or a "failed payment" email, but the in-app
-            # messaging could be clearer here (e.g. it could explicitly tell the user that there
-            # were payment(s) and that they succeeded or failed).
-            # Worth fixing if we notice that a lot of cards end up failing at this step.
-            stripe.Invoice.pay(stripe_invoice)
+        do_make_user_billing_admin(self.user)
+        return customer
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
@@ -544,21 +602,6 @@ def make_end_of_cycle_updates_if_needed(
     return None, last_ledger_entry
 
 
-# Returns Customer instead of stripe_customer so that we don't make a Stripe
-# API call if there's nothing to update
-@catch_stripe_errors
-def update_or_create_stripe_customer(
-    user: UserProfile, payment_method: Optional[str] = None
-) -> Customer:
-    realm = user.realm
-    customer = get_customer_by_realm(realm)
-    if customer is None or customer.stripe_customer_id is None:
-        return do_create_stripe_customer(user, payment_method=payment_method)
-    if payment_method is not None:
-        do_replace_payment_method(user, payment_method, True)
-    return customer
-
-
 def calculate_discounted_price_per_license(
     original_price_per_license: int, discount: Decimal
 ) -> int:
@@ -681,8 +724,8 @@ def process_initial_upgrade(
     charge_automatically: bool,
     free_trial: bool,
 ) -> None:
-    realm = user.realm
-    customer = update_or_create_stripe_customer(user)
+    billing_session = RealmBillingSession(user)
+    customer = billing_session.update_or_create_stripe_customer()
     assert customer.stripe_customer_id is not None  # for mypy
     assert customer.realm is not None
     ensure_customer_does_not_have_active_plan(customer)
@@ -707,7 +750,7 @@ def process_initial_upgrade(
         else:
             # billed_licenses can be greater than licenses if users are added between the start of
             # this function (process_initial_upgrade) and now
-            billed_licenses = max(get_latest_seat_count(realm), licenses)
+            billed_licenses = max(get_latest_seat_count(customer.realm), licenses)
         plan_params = {
             "automanage_licenses": automanage_licenses,
             "charge_automatically": charge_automatically,
@@ -731,11 +774,9 @@ def process_initial_upgrade(
         )
         plan.invoiced_through = ledger_entry
         plan.save(update_fields=["invoiced_through"])
-        RealmAuditLog.objects.create(
-            realm=realm,
-            acting_user=user,
-            event_time=billing_cycle_anchor,
+        billing_session.write_to_audit_log(
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
+            event_time=billing_cycle_anchor,
             extra_data=plan_params,
         )
 
@@ -771,7 +812,7 @@ def process_initial_upgrade(
 
     from zerver.actions.realm_settings import do_change_realm_plan_type
 
-    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
+    do_change_realm_plan_type(customer.realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
 
 
 def update_license_ledger_for_manual_plan(
