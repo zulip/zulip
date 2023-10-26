@@ -327,7 +327,35 @@ body {
     --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
     --color-gear-menu-blue-text: hsl(217deg 100% 50%);
     --color-header-button-hover: hsl(0deg 0% 0% / 5%);
+    /* This is a technique for directing CSS to do
+       the color mixing ordinarily handled by the
+       alpha channel in hsl(); here, the alpha value
+       is omitted from the hsl() syntax and instead
+       used as the percentage for mixing over top of
+       the navbar background. This is needed so that
+       elements like the unread-count dot can make
+       use of the color, but neither compound alpha
+       values or apply alpha values over different
+       colors, such as the background color on the
+       unread dot.
+
+       The second color value aligns with
+       --color-background-navbar. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 5%,
+        hsl(0deg 0% 97%)
+    );
     --color-header-button-focus: hsl(0deg 0% 0% / 8%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 8%,
+        hsl(0deg 0% 97%)
+    );
     --color-fill-hover-copy-icon: hsl(200deg 100% 40%);
     --color-fill-user-invite-copy-icon: hsl(0deg 0% 46.7%);
 }
@@ -483,7 +511,21 @@ body {
     --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
     --color-gear-menu-blue-text: hsl(217deg 100% 65%);
     --color-header-button-hover: hsl(0deg 0% 100% / 4%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 4%,
+        hsl(0deg 0% 13%)
+    );
     --color-header-button-focus: hsl(0deg 0% 100% / 7%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 7%,
+        hsl(0deg 0% 13%)
+    );
     --color-fill-user-invite-copy-icon: hsl(236deg 33% 90%);
 }
 
@@ -2295,6 +2337,10 @@ div.focused-message-list {
 
     &:hover {
         background-color: var(--color-header-button-hover);
+
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-hover-no-alpha);
+        }
     }
 
     &:active {
@@ -2308,6 +2354,13 @@ div.focused-message-list {
     &:focus-visible {
         outline: none;
         background-color: var(--color-header-button-focus);
+    }
+
+    &:active,
+    &:focus-visible {
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-focus-no-alpha);
+        }
     }
 }
 
