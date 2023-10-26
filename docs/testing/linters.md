@@ -30,7 +30,7 @@ below will direct you to the official documentation for these projects.
 - [Prettier](https://prettier.io/)
 - [Puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
-- [ruff](https://github.com/charliermarsh/ruff)
+- [ruff](https://github.com/astral-sh/ruff)
 - [stylelint](https://github.com/stylelint/stylelint)
 
 Zulip also uses some home-grown code to perform tasks like validating
