@@ -1,5 +1,6 @@
 import datetime
 import logging
+import markdownify
 import os
 import posixpath
 import random
@@ -829,9 +830,8 @@ def get_messages_iterator(
                     response = requests.get(file_url)
                     response.encoding = "utf-8"
                     # response encoding to "utf-8" is required to specify encoding for response.text
-                    markdown_content = ["markdownify", "--heading-style", "atx"]
+                    text = markdownify.markdownify(response.text, heading_style="ATX")
                     # markdownify is used to convert text from HTML to Markdown format
-                    text = subprocess.check_output(markdown_content, input=response.text, text=True)
                     message["text"] = "*Imported from Slack Canvas*\n" + text
                     message["ts"] = message.get("created")
                 if dir_name in added_channels:
