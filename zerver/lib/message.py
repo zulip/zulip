@@ -1194,12 +1194,10 @@ def extract_unread_data_from_um_rows(
             )
 
         # TODO: Add support for alert words here as well.
-        is_mentioned = (row["flags"] & UserMessage.flags.mentioned) != 0
+        is_direct_mention = (row["flags"] & UserMessage.flags.mentioned) != 0
         is_wildcard_mentioned = (row["flags"] & UserMessage.flags.wildcard_mentioned) != 0
-        is_direct_mentioned = (row["flags"] & UserMessage.flags.mentioned_me_directly) != 0
-        if is_mentioned:
+        if is_direct_mention:
             mentions.add(message_id)
-        if is_direct_mentioned:
             mentions_me_directly.add(message_id)
         if is_wildcard_mentioned:
             wildcard_mentions.add(message_id)
