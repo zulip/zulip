@@ -674,5 +674,5 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         realm=user_profile.realm,
         altered_user_dict=altered_user_dict,
         stream_dict=stream_dict,
-        private_peer_dict=subscriber_peer_info.private_peer_dict,
+        subscriber_peer_info=subscriber_peer_info,
     )

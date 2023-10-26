@@ -782,8 +782,12 @@ paths:
                                 to see a given stream's subscriber list, they will receive this event
                                 for the existing subscriptions to the stream.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 205), this event was not
-                                sent when a user gained access to a stream due to their [role
+                                **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
+                                incorrectly not sent to guest users when subscribers to web-public
+                                streams and subscribed public streams changed.
+
+                                Prior to Zulip 8.0 (feature level 205), this event was not sent when
+                                a user gained access to a stream due to their [role
                                 changing](/help/roles-and-permissions).
 
                                 Prior to Zulip 6.0 (feature level 134), this event was not sent when a
@@ -841,10 +845,13 @@ paths:
                                 from streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
 
-                                **Changes**: In Zulip 4.0 (feature level 35), the singular
-                                `user_id` and `stream_id` integers included in this event
-                                were replaced with plural `user_ids` and `stream_ids` integer
-                                arrays.
+                                **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
+                                incorrectly not sent to guest users when subscribers to web-public
+                                streams and subscribed public streams changed.
+
+                                In Zulip 4.0 (feature level 35), the singular `user_id` and
+                                `stream_id` integers included in this event were replaced
+                                with plural `user_ids` and `stream_ids` integer arrays.
 
                                 In Zulip 3.0 (feature level 19), the `stream_id` field was
                                 added to identify the stream the user unsubscribed from,
@@ -1197,9 +1204,11 @@ paths:
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the stream; just that it exists.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 205), this event was
-                                not sent when a user gained access to a stream due to their role
-                                changing.
+                                **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
+                                incorrectly not sent to guest users a web-public stream was created.
+
+                                Prior to Zulip 8.0 (feature level 205), this event was not sent
+                                when a user gained access to a stream due to their role changing.
 
                                 Prior to Zulip 8.0 (feature level 192), this event was not sent
                                 when guest users gained access to a public stream by being

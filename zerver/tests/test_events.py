@@ -3557,6 +3557,14 @@ class UserDisplayActionTest(BaseAction):
         action = lambda: self.subscribe(self.example_user("hamlet"), "Test stream 2")
         events = self.verify_action(action, num_events=0, state_change_expected=False)
 
+        # Check that guest user receives stream creation event for web-public stream.
+        action = lambda: self.subscribe(
+            self.example_user("hamlet"), "Web public test stream", is_web_public=True
+        )
+        events = self.verify_action(action, num_events=2, state_change_expected=True)
+        check_stream_create("events[0]", events[0])
+        check_subscription_peer_add("events[1]", events[1])
+
         self.user_profile = self.example_user("hamlet")
         action = lambda: self.subscribe(
             self.example_user("hamlet"), "Private test stream", invite_only=True
@@ -3779,14 +3787,87 @@ class SubscribeActionTest(BaseAction):
         stream.invite_only = False
         stream.save()
 
-        # Subscribe as a guest to a public stream.
+        # Test events for guest user.
         self.user_profile = self.example_user("polonius")
+
+        # Guest user does not receive peer_add/peer_remove events for unsubscribed
+        # public streams.
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.example_user("othello")], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            num_events=0,
+            state_change_expected=False,
+        )
+
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.example_user("othello")], [stream], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            num_events=0,
+            state_change_expected=False,
+        )
+
+        # Subscribe as a guest to a public stream.
         action = lambda: bulk_add_subscriptions(
             user_profile.realm, [stream], [self.user_profile], acting_user=None
         )
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_create("events[0]", events[0])
         check_subscription_add("events[1]", events[1])
+
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.example_user("othello")], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers,
+        )
+        check_subscription_peer_add("events[0]", events[0])
+
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.example_user("othello")], [stream], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers,
+        )
+        check_subscription_peer_remove("events[0]", events[0])
+
+        stream = self.make_stream("web-public-stream", self.user_profile.realm, is_web_public=True)
+        # Guest user receives peer_add/peer_remove events for unsubscribed
+        # web-public streams.
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.example_user("othello")], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers,
+        )
+
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.example_user("othello")], [stream], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers,
+        )
+
+        # Subscribe as a guest to web-public stream. Guest does not receive stream creation
+        # event for web-public stream.
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.user_profile], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
+        check_subscription_add("events[0]", events[0])
 
 
 class DraftActionTest(BaseAction):
