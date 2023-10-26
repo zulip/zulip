@@ -352,6 +352,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         !people.is_my_user_id(user.user_id);
     const args = {
         user_id: user.user_id,
+        is_active: people.is_person_active(user.user_id),
         full_name: user.full_name,
         email: user.delivery_email,
         profile_data,
