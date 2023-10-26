@@ -733,14 +733,8 @@
         color: hsl(236deg 33% 90%);
     }
 
-    #streamlist-toggle,
     #userlist-toggle {
         color: inherit;
-    }
-
-    #streamlist-toggle-button {
-        color: inherit;
-        background-color: inherit;
     }
 
     #userlist-toggle-button {

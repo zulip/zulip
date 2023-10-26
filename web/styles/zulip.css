@@ -2286,12 +2286,29 @@ div.focused-message-list {
 
 #streamlist-toggle-button {
     text-decoration: none;
-    color: hsl(0deg 0% 52%);
+    color: var(--color-navbar-icon);
     display: flex;
     align-items: center;
     justify-content: center;
     width: 40px;
     height: 40px;
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
 }
 
 #streamlist-toggle-unreadcount {
@@ -2299,7 +2316,7 @@ div.focused-message-list {
     display: none;
     height: 6px;
     width: 6px;
-    background-color: var(--color-background-unread-counter-dot);
+    background-color: var(--color-navbar-icon);
     top: 10px;
     right: 9px;
     border: 2px solid var(--color-background-navbar);
