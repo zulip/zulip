@@ -442,18 +442,18 @@ export const dev_only_slash_commands = [
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/me is excited (Display action text)"}),
+        text: $t({defaultMessage: "/me (Action Message)"}),
         name: "me",
         aliases: "",
     },
     {
-        text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
+        text: $t({defaultMessage: "/poll (Create a poll)"}),
         name: "poll",
         aliases: "",
         placeholder: $t({defaultMessage: "Question"}),
     },
     {
-        text: $t({defaultMessage: "/todo (Create a todo list)"}),
+        text: $t({defaultMessage: "/todo (Create a collaborative to-do list)"}),
         name: "todo",
         aliases: "",
     },
