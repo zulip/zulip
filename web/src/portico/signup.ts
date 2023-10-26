@@ -74,7 +74,7 @@ $(() => {
             // not hidden and disabled and store it in a variable.
             const $firstInputElement = $("input:not(:hidden, :disabled)").first();
             // Focus on the first input field in the form.
-            common.autofocus($firstInputElement);
+            $firstInputElement.trigger("focus");
         } else {
             // If input field with errors is present.
             // Find the input field having errors and stores it in a variable.
@@ -83,7 +83,7 @@ $(() => {
                 .parent()
                 .find("input");
             // Focus on the input field having errors.
-            common.autofocus($inputElementWithError);
+            $inputElementWithError.trigger("focus");
         }
 
         // reset error message displays
