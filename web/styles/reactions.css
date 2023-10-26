@@ -84,9 +84,18 @@
     }
 
     .message_reaction_count {
+        /* 90% works out here to 12.6px */
         font-size: 90%;
-        margin: 2px 3px;
-        line-height: 1em;
+        /* No top and bottom margin; just allow
+           flexbox to handle the vertical alignment. */
+        margin: 0 3px;
+        /* Set the 12.6px text on a 13px line;
+           the goal is to have that 13px line
+           center correctly on the vertical with
+           the 17px-square emoji, resulting in
+           2px of space above and below the
+           reaction count/name. */
+        line-height: 13px;
     }
 
     .message_reaction:hover .message_reaction_count {
