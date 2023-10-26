@@ -6,7 +6,6 @@ import posixpath
 import random
 import secrets
 import shutil
-import subprocess
 import zipfile
 from collections import defaultdict
 from email.headerregistry import Address
