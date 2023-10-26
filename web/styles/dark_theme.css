@@ -733,18 +733,6 @@
         color: hsl(236deg 33% 90%);
     }
 
-    #userlist-toggle {
-        color: inherit;
-    }
-
-    #userlist-toggle-button {
-        color: hsl(221deg 9% 54%);
-
-        &:hover {
-            color: inherit;
-        }
-    }
-
     .zoom-in {
         #topics_header {
             background-color: var(--color-background);
