@@ -7,10 +7,10 @@ from django.conf import settings
 
 from corporate.lib.stripe import (
     BillingError,
+    RealmBillingSession,
     UpgradeWithExistingPlanError,
     ensure_customer_does_not_have_active_plan,
     process_initial_upgrade,
-    update_or_create_stripe_customer,
 )
 from corporate.models import Event, PaymentIntent, Session
 from zerver.models import get_active_user_profile_by_id_in_realm
@@ -75,6 +75,7 @@ def handle_checkout_session_completed_event(
     user_id = stripe_session.metadata.get("user_id")
     assert user_id is not None
     user = get_active_user_profile_by_id_in_realm(user_id, session.customer.realm)
+    billing_session = RealmBillingSession(user)
     payment_method = stripe_setup_intent.payment_method
 
     if session.type in [
@@ -82,7 +83,7 @@ def handle_checkout_session_completed_event(
         Session.RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD,
     ]:
         ensure_customer_does_not_have_active_plan(session.customer)
-        update_or_create_stripe_customer(user, payment_method)
+        billing_session.update_or_create_stripe_customer(payment_method)
         assert session.payment_intent is not None
         session.payment_intent.status = PaymentIntent.PROCESSING
         session.payment_intent.last_payment_error = ()
@@ -98,7 +99,7 @@ def handle_checkout_session_completed_event(
         Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE,
     ]:
         ensure_customer_does_not_have_active_plan(session.customer)
-        update_or_create_stripe_customer(user, payment_method)
+        billing_session.update_or_create_stripe_customer(payment_method)
         process_initial_upgrade(
             user,
             int(stripe_setup_intent.metadata["licenses"]),
@@ -108,7 +109,7 @@ def handle_checkout_session_completed_event(
             free_trial=True,
         )
     elif session.type in [Session.CARD_UPDATE_FROM_BILLING_PAGE]:
-        update_or_create_stripe_customer(user, payment_method)
+        billing_session.update_or_create_stripe_customer(payment_method)
 
 
 @error_handler
