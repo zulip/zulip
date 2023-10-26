@@ -510,6 +510,11 @@ ul {
         font-size: 18px;
     }
 
+    .deactivated-user-icon {
+        margin: -1px;
+        vertical-align: middle;
+    }
+
     .user_profile_name {
         margin: 0 10px;
     }
