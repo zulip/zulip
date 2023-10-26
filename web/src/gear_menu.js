@@ -10,7 +10,7 @@ import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
-import * as settings_display from "./settings_display";
+import * as settings_preferences from "./settings_preferences";
 import {parse_html} from "./ui_util";
 
 /*
@@ -154,7 +154,7 @@ export function initialize() {
                 instance.hide();
                 e.preventDefault();
                 e.stopPropagation();
-                settings_display.launch_default_language_setting_modal();
+                settings_preferences.launch_default_language_setting_modal();
             });
 
             // We cannot update recipient bar color using dark_theme.enable/disable due to
