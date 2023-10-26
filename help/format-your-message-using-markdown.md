@@ -154,7 +154,9 @@ A summary of the formatting syntax above is available in the Zulip app.
 
 {start_tabs}
 
-{relative|gear|message-formatting}
+{tab|desktop-web}
+
+{relative|help|message-formatting}
 
 !!! tip ""
 

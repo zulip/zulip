@@ -29,15 +29,6 @@ gear_info = {
     "stats": ['<i class="fa fa-bar-chart"></i> Usage statistics', "/stats"],
     "plans": ['<i class="fa fa-rocket"></i> Plans and pricing', "/plans/"],
     "billing": ['<i class="fa fa-credit-card"></i> Billing', "/billing/"],
-    "keyboard-shortcuts": [
-        '<i class="fa fa-keyboard-o"></i> Keyboard shortcuts (?)',
-        "/#keyboard-shortcuts",
-    ],
-    "message-formatting": [
-        '<i class="fa fa-pencil"></i> Message formatting',
-        "/#message-formatting",
-    ],
-    "search-filters": ['<i class="fa fa-search"></i> Search filters', "/#search-operators"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
@@ -55,6 +46,41 @@ def gear_handle_match(key: str) -> str:
     else:
         item = f"**{gear_info[key][0]}**"
     return gear_instructions.format(item=item)
+
+
+help_info = {
+    # The pattern is key: [name, link]
+    # key is from REGEXP: `{relative|help|key}`
+    # name is what the item is called in the help menu: `Select **name**.`
+    # link is used for relative links: `Select [name](link).`
+    "keyboard-shortcuts": [
+        '<i class="zulip-icon zulip-icon-keyboard"></i> Keyboard shortcuts',
+        "/#keyboard-shortcuts",
+    ],
+    "message-formatting": [
+        '<i class="zulip-icon zulip-icon-edit"></i> Message formatting',
+        "/#message-formatting",
+    ],
+    "search-filters": [
+        '<i class="zulip-icon zulip-icon-manage-search"></i> Search filters',
+        "/#search-operators",
+    ],
+}
+
+help_instructions = """
+1. Click on the **Help menu** (<i class="zulip-icon zulip-icon-help"></i>) icon
+   in the upper right corner of the app.
+
+1. Select {item}.
+"""
+
+
+def help_handle_match(key: str) -> str:
+    if relative_help_links:
+        item = f"[{help_info[key][0]}]({help_info[key][1]})"
+    else:
+        item = f"**{help_info[key][0]}**"
+    return help_instructions.format(item=item)
 
 
 stream_info = {
@@ -136,6 +162,7 @@ LINK_TYPE_HANDLERS = {
     "gear": gear_handle_match,
     "stream": stream_handle_match,
     "message": message_handle_match,
+    "help": help_handle_match,
 }
 
 
