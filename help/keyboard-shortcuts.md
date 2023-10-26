@@ -242,7 +242,13 @@ A summary of the keyboard shortcuts above is available in the Zulip app.
 
 {start_tabs}
 
-{relative|gear|keyboard-shortcuts}
+{tab|desktop-web}
+
+{relative|help|keyboard-shortcuts}
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>?</kbd> to open the keyboard shortcuts reference.
 
 {end_tabs}
 

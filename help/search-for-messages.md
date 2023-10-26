@@ -154,7 +154,9 @@ A summary of the search filters above is available in the Zulip app.
 
 {start_tabs}
 
-{relative|gear|search-filters}
+{tab|desktop-web}
+
+{relative|help|search-filters}
 
 {end_tabs}
 
