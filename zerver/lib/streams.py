@@ -31,6 +31,7 @@ from zerver.models import (
     UserGroup,
     UserProfile,
     active_non_guest_user_ids,
+    active_user_ids,
     bulk_get_streams,
     get_realm_stream,
     get_stream,
@@ -179,7 +180,11 @@ def create_stream_if_needed(
             )
     if created:
         if stream.is_public():
-            send_stream_creation_event(realm, stream, active_non_guest_user_ids(stream.realm_id))
+            if stream.is_web_public:
+                notify_user_ids = active_user_ids(stream.realm_id)
+            else:
+                notify_user_ids = active_non_guest_user_ids(stream.realm_id)
+            send_stream_creation_event(realm, stream, notify_user_ids)
         else:
             realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
             send_stream_creation_event(realm, stream, realm_admin_ids)

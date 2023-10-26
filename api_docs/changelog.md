@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 220**
+
+* [`GET /events`](/api/get-events): Stream creation events for web-public
+  streams are now sent to all guest users in the organization as well.
+
+* [`GET /events`](/api/get-events): The `subscription` events for `op:
+  "peer_add"` and `op: "peer_remove"` are now sent to subscribed guest
+  users for public streams and to all the guest users for web-public
+  streams; previously, they incorrectly only received these for
+  private streams.
+
 **Feature level 219**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)

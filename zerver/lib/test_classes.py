@@ -1389,14 +1389,18 @@ Output:
 
     # Subscribe to a stream directly
     def subscribe(
-        self, user_profile: UserProfile, stream_name: str, invite_only: bool = False
+        self,
+        user_profile: UserProfile,
+        stream_name: str,
+        invite_only: bool = False,
+        is_web_public: bool = False,
     ) -> Stream:
         realm = user_profile.realm
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(
-                realm, stream_name, invite_only=invite_only
+                realm, stream_name, invite_only=invite_only, is_web_public=is_web_public
             )
         bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
