@@ -344,9 +344,9 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             // right of the last pill (with or without text in the
             // input), then backspace deletes the last pill.
             if (
-                selection?.type !== "range" &&
                 e.key === "Backspace" &&
-                (funcs.value(e.target).length === 0 || selection?.anchorOffset === 0)
+                (funcs.value(e.target).length === 0 ||
+                    (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
             ) {
                 e.preventDefault();
                 funcs.removeLastPill();
