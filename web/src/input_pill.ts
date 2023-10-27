@@ -75,22 +75,7 @@ export type InputPillContainer<T> = {
     _get_pills_for_testing: () => InputPill<T>[];
 };
 
-export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> | undefined {
-    if (!opts.$container) {
-        blueslip.error("Pill needs container.");
-        return undefined;
-    }
-
-    if (!opts.create_item_from_text) {
-        blueslip.error("Pill needs create_item_from_text");
-        return undefined;
-    }
-
-    if (!opts.get_text_from_item) {
-        blueslip.error("Pill needs get_text_from_item");
-        return undefined;
-    }
-
+export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> {
     // a stateful object of this `pill_container` instance.
     // all unique instance information is stored in here.
     const store: InputPillStore<T> = {

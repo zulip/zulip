@@ -51,28 +51,18 @@ run_test("basics", ({mock_template}) => {
         return html;
     });
 
-    const config = {};
-
-    blueslip.expect("error", "Pill needs container.");
-    input_pill.create(config);
-
     const $pill_input = $.create("pill_input");
     const $container = $.create("container");
     $container.set_find_results(".input", $pill_input);
 
-    blueslip.expect("error", "Pill needs create_item_from_text");
-    config.$container = $container;
-    input_pill.create(config);
-
-    blueslip.expect("error", "Pill needs get_text_from_item");
-    config.create_item_from_text = noop;
-    input_pill.create(config);
-
-    config.get_text_from_item = noop;
-    config.pill_config = {
-        show_user_status_emoji: true,
-    };
-    const widget = input_pill.create(config);
+    const widget = input_pill.create({
+        $container,
+        create_item_from_text: noop,
+        get_text_from_item: noop,
+        pill_config: {
+            show_user_status_emoji: true,
+        },
+    });
     const status_emoji_info = {emoji_code: 5};
 
     // type for a pill can be any string but it needs to be
