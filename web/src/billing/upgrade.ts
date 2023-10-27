@@ -1,16 +1,16 @@
 import $ from "jquery";
 
 import * as helpers from "./helpers";
-import type {DiscountDetails, Prices} from "./helpers";
+import type {Prices} from "./helpers";
 import {page_params} from "./page_params";
 
 export const initialize = (): void => {
     helpers.set_tab("upgrade");
     helpers.set_sponsorship_form();
     $("#add-card-button").on("click", (e) => {
-        const license_management: string = $(
+        const license_management = $<HTMLInputElement>(
             "input[type=radio][name=license_management]:checked",
-        ).val() as string;
+        ).val()!;
         if (!helpers.is_valid_input($(`#${CSS.escape(license_management)}_license_count`))) {
             return;
         }
@@ -37,19 +37,17 @@ export const initialize = (): void => {
         monthly: page_params.monthly_price * (1 - page_params.percent_off / 100),
     };
 
-    $("input[type=radio][name=license_management]").on("change", function (this: HTMLInputElement) {
+    $<HTMLInputElement>("input[type=radio][name=license_management]").on("change", function () {
         helpers.show_license_section(this.value);
     });
 
-    $("input[type=radio][name=schedule]").on("change", function (this: HTMLInputElement) {
-        helpers.update_charged_amount(prices, this.value as keyof Prices);
+    $<HTMLInputElement>("input[type=radio][name=schedule]").on("change", function () {
+        helpers.update_charged_amount(prices, helpers.schedule_schema.parse(this.value));
     });
 
-    $("select[name=organization-type]").on("change", (e) => {
-        const string_value = $((e.currentTarget as HTMLSelectElement).selectedOptions).attr(
-            "data-string-value",
-        );
-        helpers.update_discount_details(string_value as keyof DiscountDetails);
+    $<HTMLSelectElement>("select[name=organization-type]").on("change", (e) => {
+        const string_value = $(e.currentTarget.selectedOptions).attr("data-string-value");
+        helpers.update_discount_details(helpers.organization_type_schema.parse(string_value));
     });
 
     $("#autopay_annual_price").text(helpers.format_money(prices.annual));
@@ -59,11 +57,13 @@ export const initialize = (): void => {
     $("#invoice_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
 
     helpers.show_license_section(
-        $("input[type=radio][name=license_management]:checked").val() as string,
+        $<HTMLInputElement>("input[type=radio][name=license_management]:checked").val()!,
     );
     helpers.update_charged_amount(
         prices,
-        $("input[type=radio][name=schedule]:checked").val() as keyof Prices,
+        helpers.schedule_schema.parse(
+            $<HTMLInputElement>("input[type=radio][name=schedule]:checked").val(),
+        ),
     );
 };
 

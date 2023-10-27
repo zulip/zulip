@@ -7,19 +7,18 @@ import {page_params} from "./page_params";
 
 type FormDataObject = Record<string, string>;
 
-export type Prices = {
-    monthly: number;
-    annual: number;
-};
+export const schedule_schema = z.enum(["monthly", "annual"]);
+export type Prices = Record<z.infer<typeof schedule_schema>, number>;
 
-export type DiscountDetails = {
-    opensource: string;
-    research: string;
-    nonprofit: string;
-    event: string;
-    education: string;
-    education_nonprofit: string;
-};
+export const organization_type_schema = z.enum([
+    "opensource",
+    "research",
+    "nonprofit",
+    "event",
+    "education",
+    "education_nonprofit",
+]);
+export type DiscountDetails = Record<z.infer<typeof organization_type_schema>, string>;
 
 export const stripe_session_url_schema = z.object({
     stripe_session_url: z.string(),

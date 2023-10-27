@@ -71,6 +71,21 @@ Files: web/images/icons/search.svg
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+Files: web/shared/icons/all-messages.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/at-sign.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/drafts.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/edit.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -101,6 +116,11 @@ Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_
 Copyright: Google, Inc.
 License: Apache-2.0
 Comment: Material volume icon (rounded) with custom cross symbol
+
+Files: web/shared/icons/scheduled-messages.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
 
 Files: web/shared/icons/smart-toy.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:smart_toy
@@ -226,6 +246,11 @@ Files: web/shared/icons/power.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
+
+Files: web/images/empty-view-illustrations/inbox-done.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Custom made out of feather icons by Vlad Koborov
 
 Files: web/shared/icons/unmute.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_up

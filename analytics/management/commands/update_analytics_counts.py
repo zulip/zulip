@@ -12,7 +12,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
 from scripts.lib.zulip_tools import ENDC, WARNING
-from zerver.lib.remote_server import send_analytics_to_remote_server
+from zerver.lib.remote_server import send_analytics_to_push_bouncer
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
 
@@ -96,4 +96,4 @@ class Command(BaseCommand):
         logger.info("Finished updating analytics counts through %s", fill_to_time)
 
         if settings.PUSH_NOTIFICATION_BOUNCER_URL and settings.SUBMIT_USAGE_STATISTICS:
-            send_analytics_to_remote_server()
+            send_analytics_to_push_bouncer()

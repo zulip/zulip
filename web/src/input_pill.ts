@@ -1,6 +1,7 @@
 // todo: Refactor pills subsystem to use modern javascript classes?
 
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
@@ -338,11 +339,14 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 return;
             }
 
-            // if the user backspaces and there is input, just do normal char
-            // deletion, otherwise delete the last pill in the sequence.
+            const selection = window.getSelection();
+            // If no text is selected, and the cursor is just to the
+            // right of the last pill (with or without text in the
+            // input), then backspace deletes the last pill.
             if (
+                selection?.type !== "range" &&
                 e.key === "Backspace" &&
-                (funcs.value(e.target).length === 0 || window.getSelection()?.anchorOffset === 0)
+                (funcs.value(e.target).length === 0 || selection?.anchorOffset === 0)
             ) {
                 e.preventDefault();
                 funcs.removeLastPill();
@@ -354,7 +358,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             // should switch to focus the last pill in the list.
             // the rest of the events then will be taken care of in the function
             // below that handles events on the ".pill" class.
-            if (e.key === "ArrowLeft" && window.getSelection()?.anchorOffset === 0) {
+            if (e.key === "ArrowLeft" && selection?.anchorOffset === 0) {
                 store.$parent.find(".pill").last().trigger("focus");
             }
 
@@ -408,9 +412,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             e.preventDefault();
 
             // get text representation of clipboard
-            const text = ((e.originalEvent ?? e) as ClipboardEvent).clipboardData?.getData(
-                "text/plain",
-            );
+            assert(e.originalEvent instanceof ClipboardEvent);
+            const text = e.originalEvent.clipboardData?.getData("text/plain");
 
             // insert text manually
             document.execCommand("insertText", false, text);
@@ -440,10 +443,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         store.$parent.on("copy", ".pill", (e) => {
             const element: HTMLElement = e.currentTarget;
             const {item} = funcs.getByElement(element)!;
-            (e.originalEvent as ClipboardEvent).clipboardData?.setData(
-                "text/plain",
-                store.get_text_from_item(item),
-            );
+            assert(e.originalEvent instanceof ClipboardEvent);
+            e.originalEvent.clipboardData?.setData("text/plain", store.get_text_from_item(item));
             e.preventDefault();
         });
     }

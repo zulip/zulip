@@ -82,7 +82,7 @@ export function update(new_hash: string): void {
 export function exit_overlay(): void {
     if (hash_parser.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
-        const new_hash = state.hash_before_overlay || `#${user_settings.default_view}`;
+        const new_hash = state.hash_before_overlay || `#${user_settings.web_home_view}`;
         update(new_hash);
     }
 }
@@ -100,7 +100,7 @@ export function update_hash_internally_if_required(hash: string): void {
 }
 
 export function return_to_web_public_hash(): void {
-    window.location.hash = state.spectator_old_hash ?? `#${user_settings.default_view}`;
+    window.location.hash = state.spectator_old_hash ?? `#${user_settings.web_home_view}`;
 }
 
 export function get_full_url(hash: string): string {
@@ -146,7 +146,7 @@ export function set_hash(hash: string): void {
         // TODO: Delete this case if we don't see any error reports in a while.
         if (hash === "" || hash === "#") {
             // Setting empty hash here would scroll to the top.
-            hash = user_settings.default_view;
+            hash = user_settings.web_home_view;
         }
 
         blueslip.error("browser does not support pushState");

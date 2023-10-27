@@ -13,6 +13,7 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
+import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as stream_popover from "./stream_popover";
@@ -39,6 +40,11 @@ function focus_first_action_popover_item() {
 }
 
 export function toggle_message_actions_menu(message) {
+    if (popover_menus.is_message_actions_popover_displayed()) {
+        popovers.hide_all();
+        return true;
+    }
+
     if (message.locally_echoed || message_edit.is_editing(message.id)) {
         // Don't open the popup for locally echoed messages for now.
         // It creates bugs with things like keyboard handlers when
@@ -47,6 +53,12 @@ export function toggle_message_actions_menu(message) {
         // including previews, when a user tries to reach them from the
         // keyboard.
         return true;
+    }
+
+    // Since this can be called via hotkey, we need to
+    // hide any other popovers that may be open before.
+    if (popovers.any_active()) {
+        popovers.hide_all();
     }
 
     message_viewport.maybe_scroll_to_show_message_top();

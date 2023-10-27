@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
+import * as settings_config from "./settings_config";
 import * as ui_util from "./ui_util";
 
 let last_mention_count = 0;
@@ -15,9 +16,9 @@ export function update_scheduled_messages_row() {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
     if (count > 0) {
-        $scheduled_li.show();
+        $scheduled_li.addClass("show-with-scheduled-messages");
     } else {
-        $scheduled_li.hide();
+        $scheduled_li.removeClass("show-with-scheduled-messages");
     }
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
@@ -81,6 +82,24 @@ export function handle_narrow_activated(filter) {
     }
 }
 
+function toggle_condensed_navigation_area() {
+    const $views_label_container = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    if ($views_label_container.hasClass("showing-expanded-navigation")) {
+        // Toggle into the condensed state
+        $views_label_container.addClass("showing-condensed-navigation");
+        $views_label_container.removeClass("showing-expanded-navigation");
+        $views_label_icon.addClass("fa-caret-right");
+        $views_label_icon.removeClass("fa-caret-down");
+    } else {
+        // Toggle into the expanded state
+        $views_label_container.addClass("showing-expanded-navigation");
+        $views_label_container.removeClass("showing-condensed-navigation");
+        $views_label_icon.addClass("fa-caret-down");
+        $views_label_icon.removeClass("fa-caret-right");
+    }
+}
+
 export function highlight_recent_view() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
@@ -112,10 +131,6 @@ function do_new_messages_animation($li) {
     setTimeout(end_animation, 6000);
 }
 
-export function initialize() {
-    update_scheduled_messages_row();
-}
-
 export function highlight_inbox_view() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
@@ -125,4 +140,36 @@ export function highlight_inbox_view() {
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
+}
+
+export function handle_home_view_changed(new_home_view) {
+    const $recent_view_sidebar_menu_icon = $(".recent-view-sidebar-menu-icon");
+    const $all_messages_sidebar_menu_icon = $(".all-messages-sidebar-menu-icon");
+    if (new_home_view === settings_config.web_home_view_values.all_messages.code) {
+        $recent_view_sidebar_menu_icon.removeClass("hide");
+        $all_messages_sidebar_menu_icon.addClass("hide");
+    } else if (new_home_view === settings_config.web_home_view_values.recent_topics.code) {
+        $recent_view_sidebar_menu_icon.addClass("hide");
+        $all_messages_sidebar_menu_icon.removeClass("hide");
+    } else {
+        // Inbox is home view.
+        $recent_view_sidebar_menu_icon.removeClass("hide");
+        $all_messages_sidebar_menu_icon.removeClass("hide");
+    }
+}
+
+export function initialize() {
+    update_scheduled_messages_row();
+
+    $("body").on("click", "#views-label-container", (e) => {
+        if (
+            $(e.currentTarget).hasClass("showing-condensed-navigation") &&
+            !($(e.target).hasClass("sidebar-title") || $(e.target).hasClass("fa-caret-right"))
+        ) {
+            // Ignore clicks on condensed nav items
+            return;
+        }
+        e.stopPropagation();
+        toggle_condensed_navigation_area();
+    });
 }

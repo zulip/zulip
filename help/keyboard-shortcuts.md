@@ -201,6 +201,10 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **Toggle gear menu**: <kbd>G</kbd>
 
+* **Open personal menu**: <kbd>G</kbd> + <kbd class="arrow-key">→</kbd>
+
+* **Open help menu**: <kbd>G</kbd> + <kbd class="arrow-key">←</kbd>
+
 ### For a selected message (outlined in blue)
 
 * **Toggle emoji reactions menu**: <kbd>:</kbd>
@@ -237,11 +241,6 @@ A summary of the keyboard shortcuts above is available in the Zulip app.
 {start_tabs}
 
 {relative|gear|keyboard-shortcuts}
-
-!!! tip ""
-
-    You can also click the **keyboard** (<i class="fa fa-keyboard-o"></i>)
-    icon at the bottom of the app, just below the right sidebar.
 
 {end_tabs}
 

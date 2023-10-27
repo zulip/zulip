@@ -3,21 +3,18 @@ import type {Page} from "puppeteer";
 import * as common from "./lib/common";
 
 async function open_set_user_status_modal(page: Page): Promise<void> {
-    const menu_icon_selector = ".user_sidebar_entry:first-child .user-list-sidebar-menu-icon";
     // We are clicking on the menu icon with the help of `waitForFunction` because the list
     // re-renders many times and can cause the element to become stale.
-    await page.waitForFunction(
-        (selector: string): boolean => {
-            const menu_icon = document.querySelector(selector);
-            if (menu_icon) {
-                (menu_icon as HTMLSpanElement).click();
-                return true;
-            }
-            return false;
-        },
-        {},
-        menu_icon_selector,
-    );
+    await page.waitForFunction((): boolean => {
+        const menu_icon = document.querySelector<HTMLSpanElement>(
+            ".user_sidebar_entry:first-child span.user-list-sidebar-menu-icon",
+        );
+        if (menu_icon) {
+            menu_icon.click();
+            return true;
+        }
+        return false;
+    });
     await page.waitForSelector(".user_popover_email", {visible: true});
     // We are using evaluate to click because it is very hard to detect if the user info popover has opened.
     await page.evaluate(() =>

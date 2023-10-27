@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {ElementHandle, Page} from "puppeteer";
+import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
@@ -156,11 +156,9 @@ async function test_organization_permissions(page: Page): Promise<void> {
 async function test_add_emoji(page: Page): Promise<void> {
     await common.fill_form(page, "#add-custom-emoji-form", {name: "zulip logo"});
 
-    const emoji_upload_handle = await page.$("#emoji_file_input");
+    const emoji_upload_handle = await page.$("input#emoji_file_input");
     assert.ok(emoji_upload_handle);
-    await (emoji_upload_handle as ElementHandle<HTMLInputElement>).uploadFile(
-        "static/images/logo/zulip-icon-128x128.png",
-    );
+    await emoji_upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
     await page.click("#add-custom-emoji-modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
@@ -194,11 +192,9 @@ async function test_custom_realm_emoji(page: Page): Promise<void> {
 }
 
 async function test_upload_realm_icon_image(page: Page): Promise<void> {
-    const upload_handle = await page.$("#realm-icon-upload-widget .image_file_input");
+    const upload_handle = await page.$("#realm-icon-upload-widget input.image_file_input");
     assert.ok(upload_handle);
-    await (upload_handle as ElementHandle<HTMLInputElement>).uploadFile(
-        "static/images/logo/zulip-icon-128x128.png",
-    );
+    await upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
     await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
         visible: true,

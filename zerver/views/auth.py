@@ -143,12 +143,14 @@ def create_preregistration_realm(
     name: str,
     string_id: str,
     org_type: int,
+    default_language: str,
 ) -> PreregistrationRealm:
     return PreregistrationRealm.objects.create(
         email=email,
         name=name,
         string_id=string_id,
         org_type=org_type,
+        default_language=default_language,
     )
 
 

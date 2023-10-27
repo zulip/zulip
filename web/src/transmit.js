@@ -26,7 +26,8 @@ export function send_message(request, on_success, error) {
             data: request,
             success: function success(data) {
                 // Call back to our callers to do things like closing the compose
-                // box and turning off spinners and reifying locally echoed messages.
+                // box, turning off spinners, reifying locally echoed messages and
+                // displaying visibility policy related compose banners.
                 on_success(data);
                 // Once everything is done, get ready to report times to the server.
                 const state = sent_messages.get_message_state(request.local_id);

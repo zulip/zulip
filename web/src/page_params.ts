@@ -10,6 +10,15 @@ export const page_params: {
         allowed: boolean;
     }[];
     corporate_enabled: boolean;
+    custom_profile_fields: {
+        display_in_profile_summary?: boolean;
+        field_data: string;
+        hint: string;
+        id: number;
+        name: string;
+        order: number;
+        type: number;
+    }[];
     delivery_email: string;
     development_environment: boolean;
     is_admin: boolean;

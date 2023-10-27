@@ -470,11 +470,7 @@ ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
 
 # From address for welcome emails.
 WELCOME_EMAIL_SENDER: Optional[Dict[str, str]] = None
-# Whether we should use users' own email addresses as the from
-# address when sending missed-message emails.  Off by default
-# because some transactional email providers reject sending such
-# emails since they can look like spam.
-SEND_MISSED_MESSAGE_EMAILS_AS_USER = False
+
 # Whether to send periodic digests of activity.
 SEND_DIGEST_EMAILS = True
 

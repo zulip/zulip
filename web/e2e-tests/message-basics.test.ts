@@ -87,7 +87,7 @@ async function un_narrow(page: Page): Promise<void> {
     if ((await (await page.$(".message_comp"))!.boundingBox())?.height) {
         await page.keyboard.press("Escape");
     }
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
     assert.strictEqual(await page.title(), "All messages - Zulip Dev - Zulip");
 }
@@ -286,7 +286,7 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await page.click((await get_stream_li(page, "Verona")) + " a");
     await expect_verona_stream(page);
 
-    await page.click(".top_left_all_messages a");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
 
     const all_private_messages_icon = "#show_all_private_messages";
@@ -479,7 +479,7 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
 
 async function message_basic_tests(page: Page): Promise<void> {
     await common.log_in(page);
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
 
     console.log("Sending messages");

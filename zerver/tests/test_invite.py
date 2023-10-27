@@ -957,7 +957,7 @@ class InviteUserTest(InviteUserBase):
         self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
             inviter_msg.content.startswith(
-                f"alice_zulip.com <`{invitee_profile.email}`> accepted your",
+                f"@_**{invitee_profile.full_name}|{invitee_profile.id}** accepted your",
             )
         )
 

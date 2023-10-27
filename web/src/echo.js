@@ -84,15 +84,13 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
     message.queue_id = page_params.queue_id;
     message.resend = true;
 
-    const local_id = message.local_id;
-
     function on_success(data) {
         const message_id = data.id;
-        const locally_echoed = true;
+        message.locally_echoed = true;
 
         hide_retry_spinner($row);
 
-        on_send_message_success(local_id, message_id, locally_echoed);
+        on_send_message_success(message, data);
 
         // Resend succeeded, so mark as no longer failed
         failed_message_success(message_id);

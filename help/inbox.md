@@ -23,7 +23,7 @@ conversations.
 
 {tab|desktop-web}
 
-{relative|message|inbox}
+{!go-to-inbox.md!}
 
 1. Toggle **Include muted** next to the filter box at the top.
 
@@ -35,7 +35,7 @@ conversations.
 
 {tab|desktop-web}
 
-{relative|message|inbox}
+{!go-to-inbox.md!}
 
 1. Use the **Filter** box at the top to find a conversation.
    You can filter by stream, topic, or direct message participants.

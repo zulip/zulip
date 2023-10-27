@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
@@ -13,7 +14,7 @@ import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as user_topics from "./user_topics";
 
-function notify_unmute(muted_narrow, stream_id, topic_name) {
+export function notify_unmute(muted_narrow, stream_id, topic_name) {
     const $unmute_notification = $(
         render_unmute_topic_banner({
             muted_narrow,
@@ -50,6 +51,25 @@ export function notify_above_composebox(
     // We pass in include_unmute_banner as false because we don't want to
     // clear any unmute_banner associated with this same message.
     compose_banner.clear_message_sent_banners(false);
+    compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
+}
+
+export function notify_automatic_new_visibility_policy(message, data) {
+    const followed =
+        data.automatic_new_visibility_policy === user_topics.all_visibility_policies.FOLLOWED;
+    const stream_topic = get_message_header(message);
+    const narrow_url = get_above_composebox_narrow_url(message);
+    const $notification = $(
+        render_automatic_new_visibility_policy_banner({
+            banner_type: compose_banner.SUCCESS,
+            classname: compose_banner.CLASSNAMES.automatic_new_visibility_policy,
+            link_msg_id: data.id,
+            stream_topic,
+            narrow_url,
+            followed,
+            button_text: $t({defaultMessage: "Change setting"}),
+        }),
+    );
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
 }
 
@@ -139,15 +159,6 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
                 "Slightly unexpected: A message not sent by us batches with those that were.",
             );
             continue;
-        }
-
-        const muted_narrow = get_muted_narrow(message);
-        if (muted_narrow) {
-            notify_unmute(muted_narrow, message.stream_id, message.topic);
-            // We don't `continue` after showing the unmute banner, allowing multiple
-            // banners (at max 2 including the unmute banner) to be shown at once,
-            // as it's common for the unmute case to occur simultaneously with
-            // another banner's case, like sending a message to another narrow.
         }
 
         let banner_text = get_local_notify_mix_reason(message);
@@ -244,7 +255,7 @@ export function reify_message_id(opts) {
 export function initialize({on_click_scroll_to_selected, on_narrow_to_recipient}) {
     $("#compose_banners").on(
         "click",
-        ".narrow_to_recipient .above_compose_banner_action_link",
+        ".narrow_to_recipient .above_compose_banner_action_link, .automatic_new_visibility_policy .above_compose_banner_action_link",
         (e) => {
             const message_id = $(e.currentTarget).data("message-id");
             on_narrow_to_recipient(message_id);

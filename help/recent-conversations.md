@@ -10,8 +10,8 @@
     <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
 
 ## Related articles
-* [Finding a conversation to read](/help/finding-a-topic-to-read)
-* [Reading conversations](/help/reading-topics)
+* [Finding a conversation to read](/help/finding-a-conversation-to-read)
+* [Reading conversations](/help/reading-conversations)
 * [Reading strategies](/help/reading-strategies)
 * [Inbox](/help/inbox)
 * [All messages](/help/all-messages)

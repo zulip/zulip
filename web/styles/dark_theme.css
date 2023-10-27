@@ -59,6 +59,16 @@
     }
 
     /************************* MODAL DARK THEME *******************/
+    .user_profile_manage_own_edit_button,
+    .user_profile_manage_others_edit_button {
+        color: hsl(200deg 100% 50%);
+        cursor: pointer;
+
+        &:hover {
+            color: hsl(200deg 79% 66%);
+        }
+    }
+
     .dialog_exit_button {
         background-color: hsl(211deg 29% 14%);
         color: hsl(0deg 0% 100%);
@@ -691,24 +701,13 @@
         opacity: 0.2;
     }
 
-    #gear_menu_about_zulip {
-        .white_zulip_icon_without_text {
-            filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)
-                brightness(99%) contrast(89%);
-        }
-    }
-
-    #gear-menu {
-        .dark-theme {
+    .spectator-view #gear-menu-dropdown {
+        .gear-menu-select-dark-theme {
             display: none;
         }
 
-        .light-theme {
+        .gear-menu-select-light-theme {
             display: block;
-        }
-
-        .dropdown-menu a:hover {
-            color: hsl(0deg 0% 100%);
         }
     }
 
@@ -742,24 +741,6 @@
 
     .spectator_narrow_login_button .login_button i {
         color: hsl(236deg 33% 90%);
-    }
-
-    #streamlist-toggle,
-    #userlist-toggle {
-        color: inherit;
-    }
-
-    #streamlist-toggle-button {
-        color: inherit;
-        background-color: inherit;
-    }
-
-    #userlist-toggle-button {
-        color: hsl(221deg 9% 54%);
-
-        &:hover {
-            color: inherit;
-        }
     }
 
     .zoom-in {
@@ -1264,14 +1245,6 @@
         /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
     color. */
         box-shadow: 0 5px 10px hsl(0deg 0% 0% / 40%);
-    }
-
-    #invite-user-modal {
-        #clipboard_image {
-            & path {
-                fill: hsl(236deg 33% 90%);
-            }
-        }
     }
 
     #user-profile-modal {
