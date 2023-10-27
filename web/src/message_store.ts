@@ -1,6 +1,7 @@
 import * as blueslip from "./blueslip";
 import * as people from "./people";
 import type {Submessage, TopicLink} from "./types";
+import * as util from "./util";
 
 const stored_messages = new Map();
 
@@ -188,7 +189,9 @@ export function get_pm_emails(message: Message): string {
 
 export function get_pm_full_names(message: Message): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
-    const names = people.get_display_full_names(user_ids).sort();
+    const names = people
+        .get_display_full_names(user_ids)
+        .sort((a: string, b: string) => util.strcmp(a.toLowerCase(), b.toLowerCase()));
 
     return names.join(", ");
 }

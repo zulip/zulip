@@ -118,6 +118,33 @@ export function init(): void {
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
+// A function that sorts Email according to the user's full name
+export function sort_emails(emails: string[], user_ids: number[]): string[] {
+    const names_array = user_ids.map((user_id) => {
+        let person;
+        if (!people_by_user_id_dict.has(user_id)) {
+            person = undefined;
+        } else {
+            person = people_by_user_id_dict.get(user_id);
+        }
+        if (!person) {
+            return "?";
+        }
+        return person.full_name;
+    });
+
+    const combined_array = names_array
+        .map((name, index) => ({
+            name,
+            email: emails[index],
+        }))
+        .filter((item) => item.name !== undefined);
+
+    combined_array.sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+    const sorted_emails = combined_array.map((item) => item.email);
+    return sorted_emails;
+}
+
 export function split_to_ints(lst: string): number[] {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
@@ -311,9 +338,7 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
 
     emails = emails.map((email) => email.toLowerCase());
 
-    emails.sort();
-
-    return emails.join(",");
+    return sort_emails(emails, user_ids).join(",");
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
@@ -475,7 +500,9 @@ export function get_recipients(user_ids_string: string): string {
         return my_full_name();
     }
 
-    const names = get_display_full_names(other_ids).sort();
+    const names = get_display_full_names(other_ids).sort((a: string, b: string) =>
+        util.strcmp(a.toLowerCase(), b.toLowerCase()),
+    );
     return names.join(", ");
 }
 
@@ -505,9 +532,7 @@ export function pm_reply_to(message: Message): string | undefined {
         return person.email;
     });
 
-    emails.sort();
-
-    const reply_to = emails.join(",");
+    const reply_to = sort_emails(emails, user_ids).join(",");
 
     return reply_to;
 }
@@ -1735,7 +1760,7 @@ export function is_my_user_id(user_id: number | string): boolean {
 }
 
 export function compare_by_name(a: User, b: User): number {
-    return util.strcmp(a.full_name, b.full_name);
+    return util.strcmp(a.full_name.toLowerCase(), b.full_name.toLowerCase());
 }
 
 export function sort_but_pin_current_user_on_top(users: User[]): void {

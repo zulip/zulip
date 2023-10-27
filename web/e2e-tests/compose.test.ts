@@ -150,8 +150,8 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     await pm.click();
     await page.waitForSelector("#compose-textarea", {visible: true});
     const recipient_internal_emails = [
-        await common.get_internal_email_from_name(page, "othello"),
         await common.get_internal_email_from_name(page, "cordelia"),
+        await common.get_internal_email_from_name(page, "othello"),
     ].join(",");
     await common.pm_recipient.expect(page, recipient_internal_emails);
 }

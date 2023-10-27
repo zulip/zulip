@@ -199,7 +199,7 @@ function get_users_for_recipient_row(message) {
     });
 
     function compare_by_name(a, b) {
-        return a.full_name < b.full_name ? -1 : a.full_name > b.full_name ? 1 : 0;
+        return util.strcmp(a.full_name.toLowerCase(), b.full_name.toLowerCase());
     }
 
     return users.sort(compare_by_name);
