@@ -17,7 +17,7 @@
 
     <h4>{{ title }} {% if realm_stats_link %}{{ realm_stats_link }}{% endif %}</h4>
 
-
+    {% if not is_home %}
     <ul class="nav nav-tabs">
         {% for name, activity in data %}
         <li {% if loop.first %} class="active" {% endif %}>
@@ -25,6 +25,7 @@
         </li>
         {% endfor %}
     </ul>
+    {% endif %}
 
     <div class="tab-content">
 
