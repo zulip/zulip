@@ -98,6 +98,7 @@ function toggle_condensed_navigation_area() {
         $views_label_icon.addClass("fa-caret-down");
         $views_label_icon.removeClass("fa-caret-right");
     }
+    resize.resize_stream_filters_container();
 }
 
 export function highlight_recent_view() {
