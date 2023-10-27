@@ -210,6 +210,7 @@ export function set_cursor_and_filter() {
 
 export function initiate_search() {
     if (user_filter) {
+        popovers.hide_all();
         user_filter.initiate_search();
     }
 }

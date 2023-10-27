@@ -57,8 +57,7 @@ run_test("basics", ({override}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
-    override(buddy_list, "get_data_from_keys", (opts) => {
-        const keys = opts.keys;
+    override(buddy_list, "get_data_from_keys", (keys) => {
         assert.deepEqual(keys, [alice.user_id]);
         return "data-stub";
     });

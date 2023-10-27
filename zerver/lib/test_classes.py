@@ -820,6 +820,7 @@ Output:
         source_realm_id: str = "",
         key: Optional[str] = None,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_default_language: str = "en",
         enable_marketing_emails: Optional[bool] = None,
         email_address_visibility: Optional[int] = None,
         is_demo_organization: bool = False,
@@ -840,6 +841,7 @@ Output:
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
             "realm_type": realm_type,
+            "realm_default_language": realm_default_language,
             "key": key if key is not None else find_key_by_email(email),
             "timezone": timezone,
             "terms": True,
@@ -874,12 +876,14 @@ Output:
         realm_subdomain: str,
         realm_name: str,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_default_language: str = "en",
         realm_in_root_domain: Optional[str] = None,
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
             "realm_name": realm_name,
             "realm_type": realm_type,
+            "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
         }
         if realm_in_root_domain is not None:

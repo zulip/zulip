@@ -3,7 +3,6 @@ import tippy from "tippy.js";
 
 import render_personal_menu from "../templates/personal_menu.hbs";
 
-import * as gear_menu from "./gear_menu";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -20,6 +19,7 @@ function elem_to_user_id($elem) {
 
 export function initialize() {
     popover_menus.register_popover_menu("#personal-menu", {
+        theme: "navbar-dropdown-menu",
         placement: "bottom",
         offset: [-50, 0],
         // The strategy: "fixed"; and eventlisteners modifier option
@@ -38,20 +38,15 @@ export function initialize() {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            $popper.addClass("personal-menu-tippy");
             popover_menus.popover_instances.personal_menu = instance;
 
-            // Workaround for the gear menu not being a tippy popover
-            // and thus not auto-closing.
-            gear_menu.close();
-
-            tippy(".clear_status", {
+            tippy(".personal-menu-clear-status", {
                 placement: "top",
                 appendTo: document.body,
                 interactive: true,
             });
 
-            $popper.one("click", ".clear_status", (e) => {
+            $popper.one("click", ".personal-menu-clear-status", (e) => {
                 e.preventDefault();
                 const me = page_params.user_id;
                 user_status.server_update_status({
@@ -94,12 +89,6 @@ export function initialize() {
                 popovers.hide_all();
                 e.preventDefault();
             });
-
-            $(".focus-dropdown").on("focus", (e) => {
-                e.preventDefault();
-                $popper.find("li:visible a").eq(0).trigger("focus");
-            });
-
             instance.popperInstance.update();
         },
         onShow(instance) {
@@ -111,4 +100,11 @@ export function initialize() {
             popover_menus.popover_instances.personal_menu = undefined;
         },
     });
+}
+
+export function toggle() {
+    // NOTE: Since to open personal menu, you need to click on your avatar (which calls
+    // tippyjs.hideAll()), or go via gear menu if using hotkeys, we don't need to
+    // call tippyjs.hideAll() for it.
+    $("#personal-menu").trigger("click");
 }

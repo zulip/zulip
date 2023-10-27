@@ -75,8 +75,10 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4> This is a title </h4>
-    <h1> This is the html </h1>
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <div class="empty-feed-notice-description">
+            <h1> This is the html </h1>
+    </div>
 </div>
 `,
     );
@@ -98,13 +100,13 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4> This is a title </h4>
-    <div>
-        Some common words were excluded from your search. <br/>You searched for:
-        <span>stream: new</span>
-        <span>topic: test</span>
-            <span>search</span>
-            <del>a</del>
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <div class="empty-feed-notice-description">
+            Some common words were excluded from your search. <br/>You searched for:
+            <span>stream: new</span>
+            <span>topic: test</span>
+                <span>search</span>
+                <del>a</del>
     </div>
 </div>
 `,
@@ -123,11 +125,11 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4> This is a title </h4>
-    <div>
-        You searched for:
-        <span>stream: hello world</span>
-            <span>searchA</span>
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <div class="empty-feed-notice-description">
+            You searched for:
+            <span>stream: hello world</span>
+                <span>searchA</span>
     </div>
 </div>
 `,
@@ -146,11 +148,11 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4> This is a title </h4>
-    <div>
-        You searched for:
-        <span>topic: hello</span>
-            <span>searchB</span>
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <div class="empty-feed-notice-description">
+            You searched for:
+            <span>topic: hello</span>
+                <span>searchB</span>
     </div>
 </div>
 `,

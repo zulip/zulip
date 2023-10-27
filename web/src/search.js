@@ -238,6 +238,7 @@ export function open_search_bar_and_close_narrow_description() {
     }
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
+    popovers.hide_all();
 }
 
 export function close_search_bar_and_open_narrow_description() {

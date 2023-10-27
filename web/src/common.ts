@@ -6,13 +6,6 @@ import {$t} from "./i18n";
 
 export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
 
-// TODO: Move this to the portico codebase.
-export function autofocus($elem: JQuery): void {
-    $(() => {
-        $elem.trigger("focus");
-    });
-}
-
 export function phrase_match(query: string, phrase: string): boolean {
     // match "tes" to "test" and "stream test" but not "hostess"
     let i;

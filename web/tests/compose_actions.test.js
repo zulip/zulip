@@ -58,6 +58,9 @@ mock_esm("../src/message_lists", {
 mock_esm("../src/resize", {
     reset_compose_message_max_height: noop,
 });
+mock_esm("../src/popovers", {
+    hide_all: noop,
+});
 
 const people = zrequire("people");
 

@@ -907,6 +907,7 @@ export function hide_search_section() {
 }
 
 export function initiate_search() {
+    popovers.hide_all();
     show_search_section();
 
     const $filter = $(".stream-list-filter").expectOne();

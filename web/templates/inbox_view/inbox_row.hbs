@@ -47,33 +47,21 @@
             <div class="inbox-right-part-wrapper">
                 <div class="inbox-right-part">
                     {{#if is_topic}}
-                        {{#if development}}
-                            <span class="visibility-policy-indicator change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" tabindex="0">
-                                {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
-                                    <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic'}}"
-                                      role="button" aria-haspopup="true" aria-label="{{t 'You follow this topic' }}"></i>
-                                {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
-                                    <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic'}}"
-                                      role="button" aria-haspopup="true" aria-label="{{t 'You have unmuted this topic' }}"></i>
-                                {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                                    <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic'}}"
-                                      role="button" aria-haspopup="true" aria-label="{{t 'You have muted this topic' }}"></i>
-                                {{else}}
-                                    <i class="zulip-icon zulip-icon-inherit recipient_bar_icon" data-tippy-content="{{t 'You will get default notifications for this topic'}}"
-                                      role="button" aria-haspopup="true" aria-label="{{t 'You will get default notifications for this topic' }}"></i>
-                                {{/if}}
-                            </span>
-                        {{else}}
-                            <span class="visibility-policy-indicator" tabindex="0">
-                                {{#if stream_muted}}
-                                    <i class="zulip-icon zulip-icon-unmute stream_muted {{#if topic_unmuted}}on_hover_topic_mute {{else}}on_hover_topic_unmute {{/if}} recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" role="button"
-                                      {{#if topic_unmuted}} data-tippy-content="{{t 'Mute topic' }}" aria-label="{{t 'Mute topic' }}" {{else}} data-tippy-content="{{t 'Unmute topic' }}" aria-label="{{t 'Unmute topic' }}" {{/if}} data-tippy-trigger="mouseenter"></i>
-                                {{else}}
-                                    <i class="zulip-icon zulip-icon-mute stream_unmuted {{#if topic_muted}}on_hover_topic_unmute {{else}}on_hover_topic_mute {{/if}} recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" role="button"
-                                      {{#if topic_muted}} data-tippy-content="{{t 'Unmute topic' }}" aria-label="{{t 'Unmute topic' }}" {{else}} data-tippy-content="{{t 'Mute topic' }}" aria-label="{{t 'Mute topic' }}" {{/if}} data-tippy-trigger="mouseenter"></i>
-                                {{/if}}
-                            </span>
-                        {{/if}}
+                        <span class="visibility-policy-indicator change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" tabindex="0">
+                            {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
+                                <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic'}}"
+                                  role="button" aria-haspopup="true" aria-label="{{t 'You follow this topic' }}"></i>
+                            {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
+                                <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic'}}"
+                                  role="button" aria-haspopup="true" aria-label="{{t 'You have unmuted this topic' }}"></i>
+                            {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
+                                <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic'}}"
+                                  role="button" aria-haspopup="true" aria-label="{{t 'You have muted this topic' }}"></i>
+                            {{else}}
+                                <i class="zulip-icon zulip-icon-inherit recipient_bar_icon" data-tippy-content="{{t 'You will get default notifications for this topic'}}"
+                                  role="button" aria-haspopup="true" aria-label="{{t 'You will get default notifications for this topic' }}"></i>
+                            {{/if}}
+                        </span>
                     {{/if}}
                     <div class="inbox-action-button inbox-topic-menu"
                       {{#if is_topic}}data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"

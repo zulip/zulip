@@ -37,27 +37,24 @@ if settings.BILLING_ENABLED:
 
 
 def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
-    # Uses index: zerver_message_date_sent_3b5b05d8
+    # To align with UTC days, we subtract an hour from end_time to
+    # get the start_time, since the hour that starts at midnight was
+    # on the previous day.
     query = SQL(
         """
         select
             r.string_id,
-            (now()::date - date_sent::date) age,
-            count(*) cnt
-        from zerver_message m
-        join zerver_userprofile up on up.id = m.sender_id
-        join zerver_realm r on r.id = up.realm_id
-        join zerver_client c on c.id = m.sending_client_id
+            (now()::date - (end_time - interval '1 hour')::date) age,
+            coalesce(sum(value), 0) cnt
+        from zerver_realm r
+        join analytics_realmcount rc on r.id = rc.realm_id
         where
-            (not up.is_bot)
+            property = 'messages_sent:is_bot:hour'
         and
-            date_sent > now()::date - interval '8 day'
+            subgroup = 'false'
         and
-            c.name not in ('zephyr_mirror', 'ZulipMonitoring')
+            end_time > now()::date - interval '8 day' - interval '1 hour'
         group by
-            r.string_id,
-            age
-        order by
             r.string_id,
             age
     """

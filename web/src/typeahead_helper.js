@@ -7,6 +7,7 @@ import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
@@ -70,6 +71,7 @@ export function render_typeahead_item(args) {
     args.has_image = args.img_src !== undefined;
     args.has_status = args.status_emoji_info !== undefined;
     args.has_secondary = args.secondary !== undefined;
+    args.has_pronouns = args.pronouns !== undefined;
     return render_typeahead_list_item(args);
 }
 
@@ -86,6 +88,11 @@ export function render_person(person) {
 
     const status_emoji_info = user_status.get_status_emoji(person.user_id);
 
+    const PRONOUNS_ID = page_params.custom_profile_field_types.PRONOUNS.id;
+    const pronouns_list = people.get_custom_fields_by_type(person.user_id, PRONOUNS_ID);
+
+    const pronouns = pronouns_list?.[0]?.value;
+
     const typeahead_arguments = {
         primary: person.full_name,
         img_src: avatar_url,
@@ -93,6 +100,7 @@ export function render_person(person) {
         is_person: true,
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
+        pronouns,
     };
 
     typeahead_arguments.secondary = person.delivery_email;

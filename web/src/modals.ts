@@ -1,5 +1,6 @@
 import $ from "jquery";
 import Micromodal from "micromodal";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import * as overlay_util from "./overlay_util";
@@ -105,7 +106,8 @@ export function open(
     const $micromodal = $(id_selector);
 
     $micromodal.find(".modal__container").on("animationend", (event) => {
-        const animation_name = (event.originalEvent as AnimationEvent).animationName;
+        assert(event.originalEvent instanceof AnimationEvent);
+        const animation_name = event.originalEvent.animationName;
         if (animation_name === "mmfadeIn") {
             // Micromodal adds the is-open class before the modal animation
             // is complete, which isn't really helpful since a modal is open after the
@@ -198,7 +200,8 @@ export function close(modal_id: string, conf: Pick<ModalConfig, "on_hidden"> = {
     // mechanism as a convenience for hooks only known when
     // closing the modal.
     $micromodal.find(".modal__container").on("animationend", (event) => {
-        const animation_name = (event.originalEvent as AnimationEvent).animationName;
+        assert(event.originalEvent instanceof AnimationEvent);
+        const animation_name = event.originalEvent.animationName;
         if (animation_name === "mmfadeOut" && conf.on_hidden) {
             conf.on_hidden();
         }
@@ -236,4 +239,10 @@ export function close_active(): void {
 
     const $micromodal = $(".micromodal.modal--open");
     Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
+}
+
+export function close_active_if_any(): void {
+    if (any_active()) {
+        close_active();
+    }
 }

@@ -34,7 +34,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {tab|desktop-web}
 
-{relative|message|scheduled}
+{!go-to-scheduled-messages.md!}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the message you
    want to edit or reschedule.
@@ -60,7 +60,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {tab|desktop-web}
 
-{relative|message|scheduled}
+{!go-to-scheduled-messages.md!}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the message you
    want to send now.
@@ -82,7 +82,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {tab|desktop-web}
 
-{relative|message|scheduled}
+{!go-to-scheduled-messages.md!}
 
 1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the message you
    want to delete.
@@ -100,7 +100,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {tab|desktop-web}
 
-{relative|message|scheduled}
+{!go-to-scheduled-messages.md!}
 
 !!! tip ""
 

@@ -78,6 +78,8 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/edit-or-delete-a-message", "/help/delete-a-message"),
     URLRedirect("/help/start-a-new-topic", "/help/starting-a-new-topic"),
     URLRedirect("/help/configure-default-view", "/help/configure-home-view"),
+    URLRedirect("/help/reading-topics", "/help/reading-conversations"),
+    URLRedirect("/help/finding-a-topic-to-read", "/help/finding-a-conversation-to-read"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

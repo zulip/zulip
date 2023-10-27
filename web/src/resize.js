@@ -175,7 +175,7 @@ export function resize_sidebars() {
 }
 
 export function update_recent_view_filters_height() {
-    const recent_view_filters_height = $("#recent_topics_filter_buttons").outerHeight(true) ?? 0;
+    const recent_view_filters_height = $("#recent_view_filter_buttons").outerHeight(true) ?? 0;
     $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
 }
 

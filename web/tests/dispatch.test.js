@@ -79,6 +79,7 @@ const submessage = mock_esm("../src/submessage");
 mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
+    handle_home_view_changed() {},
 });
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
@@ -424,7 +425,7 @@ run_test("realm settings", ({override}) => {
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(settings_invites, "update_invite_user_panel", noop);
     override(sidebar_ui, "update_invite_user_option", noop);
-    override(gear_menu, "initialize", noop);
+    override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
@@ -866,14 +867,14 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.default_language, "fr");
 
-    event = event_fixtures.user_settings__escape_navigates_to_default_view;
-    user_settings.escape_navigates_to_default_view = false;
+    event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
+    user_settings.web_escape_navigates_to_home_view = false;
     let toggled = [];
-    $("#go-to-default-view-hotkey-help").toggleClass = (cls) => {
+    $("#go-to-home-view-hotkey-help").toggleClass = (cls) => {
         toggled.push(cls);
     };
     dispatch(event);
-    assert_same(user_settings.escape_navigates_to_default_view, true);
+    assert_same(user_settings.web_escape_navigates_to_home_view, true);
     assert_same(toggled, ["notdisplayed"]);
 
     let called = false;
@@ -944,17 +945,24 @@ run_test("user_settings", ({override}) => {
     }
 
     {
-        event = event_fixtures.user_settings__default_view_recent_topics;
-        user_settings.default_view = "all_messages";
+        event = event_fixtures.user_settings__web_home_view_recent_topics;
+        user_settings.web_home_view = "all_messages";
         dispatch(event);
-        assert.equal(user_settings.default_view, "recent_topics");
+        assert.equal(user_settings.web_home_view, "recent_topics");
     }
 
     {
-        event = event_fixtures.user_settings__default_view_all_messages;
-        user_settings.default_view = "recent_topics";
+        event = event_fixtures.user_settings__web_home_view_all_messages;
+        user_settings.web_home_view = "recent_topics";
         dispatch(event);
-        assert.equal(user_settings.default_view, "all_messages");
+        assert.equal(user_settings.web_home_view, "all_messages");
+    }
+
+    {
+        event = event_fixtures.user_settings__web_home_view_inbox;
+        user_settings.web_home_view = "all_messages";
+        dispatch(event);
+        assert.equal(user_settings.web_home_view, "inbox");
     }
 
     {

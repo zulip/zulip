@@ -206,7 +206,12 @@ body {
     --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-dot: var(
+        --color-background-unread-counter
+    );
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
+    --color-border-unread-counter: var(--color-background-unread-counter);
+    --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
@@ -255,6 +260,9 @@ body {
     --color-vdots-hint: hsl(0deg 0% 0% / 30%);
     --color-vdots-visible: hsl(0deg 0% 0% / 53%);
     --color-vdots-hover: hsl(0deg 0% 0%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
     --color-tab-picker-icon: hsl(200deg 100% 40%);
 
     /* Message feed loading indicator colors */
@@ -279,6 +287,7 @@ body {
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
+    --color-background-inbox-no-unreads-illustration: hsl(147deg 57% 25%);
     --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 0%);
     --color-inbox-search-text: hsl(0deg 0% 0%);
@@ -300,6 +309,27 @@ body {
     --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
     --color-icons-inbox: hsl(0deg 0% 0%);
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
+        0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 13%);
+    --box-shadow-gear-menu: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 20% 50%);
+    --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 50%);
+    --color-header-button-hover: hsl(0deg 0% 0% / 5%);
+    --color-header-button-focus: hsl(0deg 0% 0% / 8%);
+    --color-fill-hover-copy-icon: hsl(200deg 100% 40%);
+    --color-fill-user-invite-copy-icon: hsl(0deg 0% 46.7%);
 }
 
 %dark-theme {
@@ -337,7 +367,12 @@ body {
     --color-border-dropdown-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
+    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
+    --color-border-unread-counter: hsl(105deg 2% 50%);
+    --color-border-unread-counter-popover-menu: var(
+        --color-border-unread-counter
+    );
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
@@ -389,6 +424,9 @@ body {
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
     --color-vdots-hover: hsl(0deg 0% 100%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
 
     /* Message feed loading indicator colors */
@@ -412,6 +450,7 @@ body {
 
     /* Inbox view */
     --color-background-inbox: var(--color-background);
+    --color-background-inbox-no-unreads-illustration: hsl(147deg 40% 55%);
     --color-icon-search-inbox: hsl(0deg 0% 100%);
     --color-inbox-search-text: hsl(0deg 0% 95%);
     --color-border-inbox-search: hsl(0deg 0% 100% / 20%);
@@ -432,6 +471,20 @@ body {
     --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
     --color-icons-inbox: hsl(0deg 0% 100%);
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 35% 60%);
+    --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 65%);
+    --color-header-button-hover: hsl(0deg 0% 100% / 4%);
+    --color-header-button-focus: hsl(0deg 0% 100% / 7%);
+    --color-fill-user-invite-copy-icon: hsl(236deg 33% 90%);
 }
 
 @media screen {
@@ -734,59 +787,6 @@ p.n-margin {
     }
 }
 
-#gear-menu .dropdown-menu {
-    .org-name,
-    .org-url {
-        padding: 0 20px;
-    }
-
-    .org-info {
-        text-align: center;
-
-        & a {
-            white-space: normal;
-        }
-    }
-
-    .org-name {
-        font-size: large;
-        font-weight: bold;
-    }
-
-    .org-url {
-        line-height: 100%;
-        color: hsl(0deg 0% 52%);
-    }
-
-    .org-version {
-        padding-top: 3px;
-        white-space: normal;
-    }
-
-    .org-upgrade {
-        color: hsl(226deg 82% 60%);
-
-        & a {
-            padding: 0;
-        }
-    }
-
-    .org-plan,
-    .org-upgrade {
-        & a {
-            line-height: 16px;
-        }
-    }
-
-    .plan-separator {
-        line-height: 8px;
-    }
-
-    .small-font-size {
-        font-size: 12px;
-    }
-}
-
 .recent_view_container #recent_view_table {
     margin-top: var(--navbar-fixed-height);
 }
@@ -837,10 +837,11 @@ body.has-overlay-scrollbar {
         display: flex;
         justify-content: space-evenly;
         position: absolute;
-        top: 10px;
-        right: 40px;
-        /* width of right column - width of gear icon - right margin of column-right (250px - 40px -7px) */
-        width: 203px;
+        top: 8px;
+        /* gear menu + help menu width (40px * 2) */
+        right: 80px;
+        /* width of right column - width of gear icon - right margin of column-right (250px - 40px - 40px -7px) */
+        width: 163px;
 
         & a {
             font-size: calc(16em / 14);
@@ -1016,7 +1017,7 @@ li,
     z-index: 2;
 
     &:hover svg path {
-        fill: hsl(200deg 100% 40%);
+        fill: var(--color-fill-hover-copy-icon);
     }
 }
 
@@ -1045,6 +1046,14 @@ li,
     /* This property nullifies the box-shadow rendered by .btn class */
     &:active {
         box-shadow: none;
+    }
+
+    & path {
+        fill: var(--color-fill-user-invite-copy-icon);
+    }
+
+    &:hover svg path {
+        fill: var(--color-fill-hover-copy-icon);
     }
 }
 
@@ -1145,10 +1154,6 @@ strong {
     position: relative;
 }
 
-#gear-menu .light-theme {
-    display: none;
-}
-
 /* .dropdown-menu from v2.3.2
    + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
    basic idea of this fix is to remove decorations from :hover and apply them only
@@ -1232,29 +1237,6 @@ li.actual-dropdown-menu i {
     width: 14px;
     text-align: center;
     margin-right: 3px;
-}
-
-#gear_menu_about_zulip {
-    .white_zulip_icon_without_text {
-        position: relative;
-        top: 3px;
-        width: 14px;
-        height: 14px;
-        margin-right: 3px;
-        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
-            brightness(20%) contrast(95%);
-    }
-
-    .about_zulip_text {
-        position: relative;
-        top: 1.4px;
-    }
-
-    :hover {
-        .white_zulip_icon_without_text {
-            filter: none;
-        }
-    }
 }
 
 td.pointer {
@@ -2289,55 +2271,12 @@ div.focused-message-list {
     }
 }
 
-#navbar-buttons {
-    white-space: nowrap;
-    display: inline-block;
-    float: right;
-
-    & ul.nav {
-        margin: 0;
-
-        .dropdown-toggle,
-        li.active .dropdown-toggle {
-            font-size: 20px;
-            color: inherit;
-            opacity: 0.5;
-            text-shadow: none;
-            padding-left: 0 !important;
-            background-color: inherit;
-            box-shadow: inherit;
-            display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
-        }
-
-        .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
-            opacity: 1;
-        }
-
-        & li.dropdown.open .dropdown-toggle {
-            background: none;
-            opacity: 1;
-            text-shadow: none;
-        }
-
-        & li.dropdown li.divider {
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-    }
-}
-
 #streamlist-toggle {
     display: none;
     position: absolute;
     top: 0;
     left: 0;
     text-align: center;
-    vertical-align: middle;
-    /* border-right: 2px solid hsl(204, 20%, 74%); */
 }
 
 .hide-streamlist-toggle-visibility,
@@ -2347,33 +2286,43 @@ div.focused-message-list {
 
 #streamlist-toggle-button {
     text-decoration: none;
-    color: hsl(0deg 0% 52%);
-    display: block;
-    position: relative;
+    color: var(--color-navbar-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
+    height: 40px;
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
 }
 
-#streamlist-toggle-unreadcount,
-#userlist-toggle-unreadcount {
+#streamlist-toggle-unreadcount {
     position: absolute;
     display: none;
-    height: 12px;
-    min-width: 12px;
-    line-height: 12px;
-    background-color: hsl(0deg 100% 20%);
-    top: 4px;
-    right: 4px;
-    border: 1px solid hsl(0deg 0% 93%);
-    box-shadow: 0 0 1px hsl(0deg 0% 0% / 20%);
-    border-radius: 12px;
-    padding: 1px;
-    font-size: 9px;
-    z-index: 15;
-    font-weight: normal;
-    color: hsl(0deg 0% 100%);
+    height: 6px;
+    width: 6px;
+    background-color: var(--color-navbar-icon);
+    top: 10px;
+    right: 9px;
+    border: 2px solid var(--color-background-navbar);
+    border-radius: 6px;
+    padding: 0;
+    font-size: 0;
 }
 
 .nav .dropdown-menu {
@@ -2398,12 +2347,6 @@ div.focused-message-list {
         content: "";
         z-index: 10;
     }
-}
-
-#gear-menu .zulip-icon-language {
-    position: relative;
-    top: 2.5px;
-    left: -0.5px;
 }
 
 .nav .dropdown-menu a,
@@ -2720,6 +2663,15 @@ select.invite-as {
 .empty_feed_notice {
     padding: 3em 1em;
     text-align: center;
+}
+
+.empty-feed-notice-title {
+    font-size: 1.5em;
+    font-weight: 400;
+}
+
+.empty-feed-notice-description {
+    font-size: 1.1em;
 }
 
 .message-fade,
@@ -3047,12 +2999,14 @@ select.invite-as {
 
     .spectator-view {
         #navbar-middle {
-            margin-right: 85px;
+            /* = 40px (width of button) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: 130px;
         }
 
-        #navbar-buttons {
-            position: absolute;
-            right: 45px;
+        #help-menu,
+        #gear-menu {
+            position: relative;
+            right: 40px;
         }
     }
 
@@ -3096,7 +3050,8 @@ select.invite-as {
     }
 
     #navbar-middle {
-        margin-right: 127px;
+        /* = 40px (width of button) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: 170px;
     }
 }
 
@@ -3180,14 +3135,20 @@ select.invite-as {
 @media (width < $sm_min) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
-        margin-top: 31px;
+        margin-top: var(--navbar-fixed-height);
+        /* For very small sizes, skip the relatively large top padding. */
+        padding-top: 0;
+    }
+
+    /* TODO: Properly and accurately align the
+       topmost headers on the left and right
+       sidebar. */
+    .column-right.expanded .right-sidebar-items {
+        margin-top: 10px;
     }
 
     .column-left.expanded {
         .left-sidebar {
-            /* For very small sizes, skip the relatively large top padding. */
-            padding-top: 0;
-
             #streams_header {
                 padding-right: 10px;
             }
@@ -3200,17 +3161,19 @@ select.invite-as {
 
     .spectator-view {
         #navbar-middle {
-            margin-right: 65px;
+            /* = 30px (width of button) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: 100px;
         }
 
-        #navbar-buttons {
-            position: absolute;
-            right: 35px;
+        #help-menu,
+        #gear-menu {
+            right: 30px;
         }
     }
 
     #navbar-middle {
-        margin-right: 97px;
+        /* = 30px (width of button) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: 130px;
     }
 
     .nav .dropdown-menu {
@@ -3224,7 +3187,6 @@ select.invite-as {
     }
 
     #streamlist-toggle,
-    #navbar-buttons,
     #message_view_header,
     #searchbox,
     .header {
@@ -3242,13 +3204,11 @@ select.invite-as {
 
     #streamlist-toggle-button {
         height: var(--header-height);
-        padding-top: 0;
-        padding-bottom: 0;
     }
 
-    #navbar-buttons ul.nav .dropdown-toggle,
-    #navbar-buttons ul.nav li.active .dropdown-toggle {
-        top: -8px;
+    #streamlist-toggle-unreadcount {
+        /* Adjust in response to shorter navbar. */
+        top: 5px;
     }
 
     .column-right #personal-menu .header-button-avatar {
@@ -3470,16 +3430,49 @@ select.invite-as {
     }
 }
 
-.header-button,
-#navbar-buttons #settings-dropdown {
+.header-button {
     width: var(--header-height);
     height: var(--header-height);
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
-    top: 0;
-    right: 0;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    .zulip-icon {
+        color: var(--color-navbar-icon);
+    }
+
+    .zulip-icon-gear {
+        font-size: 18px;
+    }
+
+    .zulip-icon-help,
+    .zulip-icon-triple-users {
+        font-size: 20px;
+    }
+
+    .zulip-icon-help {
+        position: relative;
+        top: 0.5px;
+        right: -0.5px;
+    }
 }
 
 #personal-menu {
@@ -3490,73 +3483,5 @@ select.invite-as {
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
-    }
-}
-
-#personal-menu-dropdown {
-    display: block;
-    margin: 0;
-    position: relative;
-    padding: 0;
-    border: solid 1px var(--color-border-dropdown-menu);
-    background-color: var(--color-background-dropdown-menu);
-    max-height: 85vh;
-    min-width: 230px;
-    overflow-x: hidden;
-    user-select: none;
-
-    .simplebar-content {
-        min-width: max-content;
-    }
-
-    .personal-menu-nav {
-        border-radius: 6px;
-        overflow: hidden;
-    }
-}
-
-.personal-menu-tippy {
-    .tippy-box {
-        border: 0;
-    }
-
-    .tippy-content {
-        padding: 0;
-    }
-
-    & > .tippy-box > .tippy-arrow {
-        position: absolute;
-        left: 50%;
-        top: -5.5px !important;
-        width: 16px;
-        height: 8px;
-        z-index: 1;
-        transform: translateX(-50%);
-        filter: drop-shadow(0 -1.25px 0 var(--color-border-dropdown-menu));
-
-        &::before {
-            display: none;
-        }
-
-        &::after {
-            border: 0 !important;
-            content: "";
-            top: 0;
-            width: 100%;
-            height: 100%;
-            mask-image: url("../shared/icons/popover-arrow.svg");
-            mask-size: contain;
-            mask-repeat: no-repeat;
-            background-color: var(--color-background-dropdown-menu);
-        }
-    }
-}
-
-.keyboard-shortcut-option {
-    & span.tooltip-hotkey-hint {
-        margin-left: auto;
-        padding: 0 4px;
-        color: var(--color-hotkey-hint);
-        border-color: var(--color-hotkey-hint);
     }
 }

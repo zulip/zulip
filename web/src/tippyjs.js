@@ -5,6 +5,7 @@ import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n";
 import * as popover_menus from "./popover_menus";
+import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
@@ -139,6 +140,34 @@ export function initialize() {
         },
     });
 
+    // Variant of .tippy-left-sidebar-tooltip configuration. Here
+    // we need to dynamically check which view is the home view.
+    delegate("body", {
+        target: ".tippy-views-tooltip",
+        placement: "right",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $container = instance.popper.querySelector(".views-tooltip-container");
+            if ($($container).data("view-code") === user_settings.web_home_view) {
+                $($container).find(".views-tooltip-home-view-note").removeClass("hide");
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+    });
+
     // The below definitions are for specific tooltips that require
     // custom JavaScript code or configuration.  Note that since the
     // below specify the target directly, elements using those should
@@ -196,6 +225,7 @@ export function initialize() {
             "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
+            "#copy_generated_invite_link",
         ],
         appendTo: () => document.body,
     });

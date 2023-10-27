@@ -496,3 +496,35 @@
         display: none !important;
     }
 }
+
+.inbox-container #inbox-pane #inbox-empty-without-search {
+    margin-top: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.inbox-empty-illustration {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 16px;
+    background-color: var(--color-background-inbox-no-unreads-illustration);
+    mask: url("../images/empty-view-illustrations/inbox-done.svg") no-repeat
+        center;
+}
+
+.inbox-empty-title {
+    /* Matches the font-size used for .empty-list-message */
+    font-size: 1.5em;
+    color: var(--color-background-inbox-no-unreads-illustration);
+}
+
+.inbox-empty-action {
+    font-size: 1.3em;
+    padding-top: 0.5em;
+}
+
+.inbox-container #inbox-pane .inbox-empty-action-link {
+    text-decoration: underline;
+    color: hsl(200deg 100% 40%);
+}

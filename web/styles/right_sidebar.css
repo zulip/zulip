@@ -251,17 +251,6 @@ $user_status_emoji_width: 24px;
     }
 }
 
-#keyboard-icon {
-    position: relative;
-    cursor: pointer;
-    font-size: 20px;
-    margin-right: 15px;
-}
-
-#sidebar-keyboard-shortcuts {
-    color: inherit;
-}
-
 .right-sidebar-shortcuts {
     display: flex;
     flex-direction: row;

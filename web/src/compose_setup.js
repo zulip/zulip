@@ -182,6 +182,17 @@ export function initialize() {
     $("body").on(
         "click",
         `.${CSS.escape(
+            compose_banner.CLASSNAMES.automatic_new_visibility_policy,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            window.location.href = "/#settings/notifications";
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(
             compose_banner.CLASSNAMES.unscheduled_message,
         )} .main-view-banner-action-button`,
         (event) => {

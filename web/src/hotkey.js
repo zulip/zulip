@@ -34,6 +34,7 @@ import * as message_scroll_state from "./message_scroll_state";
 import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as navbar_menus from "./navbar_menus";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -289,11 +290,6 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (gear_menu.is_open()) {
-        gear_menu.close();
-        return true;
-    }
-
     if (processing_text()) {
         if (activity_ui.searching()) {
             activity_ui.escape_search();
@@ -354,10 +350,10 @@ export function process_escape_key(e) {
         return true;
     }
 
-    /* The Ctrl+[ hotkey navigates to the default view
+    /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
-    if (user_settings.escape_navigates_to_default_view || e.which === 219) {
-        hashchange.set_hash_to_default_view();
+    if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
+        hashchange.set_hash_to_home_view();
         return true;
     }
 
@@ -415,11 +411,13 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(".dropdown.open, .dropup.open").length > 0 && $(e.target).attr("role") === "menuitem") {
-        // on dropdown menu elements, force a click and prevent default.
-        // this is because these links do not have an href and so don't force a
-        // default action.
+    if (popovers.any_active() && $(e.target).hasClass("navigate-link-on-enter")) {
+        // If a popover is open and we pressed Enter on a menu item,
+        // call click directly on the item to navigate to the `href`.
+        // trigger("click") doesn't work for them to navigate to `href`.
         e.target.click();
+        e.preventDefault();
+        popovers.hide_all();
         return true;
     }
 
@@ -736,17 +734,6 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (hotkey.message_view_only && gear_menu.is_open()) {
-        // Inside the gear menu, we don't process most hotkeys; the
-        // exception is that the gear_menu hotkey should toggle the
-        // menu closed again.
-        if (event_name === "gear_menu") {
-            gear_menu.close();
-            return true;
-        }
-        return false;
-    }
-
     if (overlays.settings_open() && !user_card_popover.user_card.is_open()) {
         return false;
     }
@@ -778,6 +765,14 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
+        return true;
+    }
+
+    // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
+    if (
+        navbar_menus.is_navbar_menus_displayed() &&
+        navbar_menus.handle_keyboard_events(event_name)
+    ) {
         return true;
     }
 
@@ -897,7 +892,7 @@ export function process_hotkey(e, hotkey) {
             search.initiate_search();
             return true;
         case "gear_menu":
-            gear_menu.open();
+            gear_menu.toggle();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");

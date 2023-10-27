@@ -75,6 +75,7 @@ import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
+import * as navbar_help_menu from "./navbar_help_menu";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -102,6 +103,7 @@ import * as scroll_util from "./scroll_util";
 import * as search from "./search";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_display from "./settings_display";
 import * as settings_notifications from "./settings_notifications";
@@ -162,6 +164,10 @@ function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
         is_guest: page_params.is_guest,
         development_environment: page_params.development_environment,
+        is_all_messages_home_view:
+            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
+        is_recent_view_home_view:
+            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
@@ -696,6 +702,7 @@ export function initialize_everything() {
     });
     unread_ops.initialize();
     gear_menu.initialize();
+    navbar_help_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
     settings_display.initialize();

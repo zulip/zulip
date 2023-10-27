@@ -27,6 +27,9 @@ export const popover_instances = {
     starred_messages: null,
     drafts: null,
     left_sidebar_inbox_popover: null,
+    left_sidebar_all_messages_popover: null,
+    left_sidebar_recent_view_popover: null,
+    top_left_sidebar: null,
     message_actions: null,
     stream_settings: null,
     compose_mobile_button: null,
@@ -35,6 +38,8 @@ export const popover_instances = {
     send_later: null,
     change_visibility_policy: null,
     personal_menu: null,
+    gear_menu: null,
+    help_menu: null,
 };
 
 /* Keyboard UI functions */
@@ -95,6 +100,26 @@ export function get_starred_messages_popover() {
 
 export function is_compose_enter_sends_popover_displayed() {
     return popover_instances.compose_enter_sends?.state.isVisible;
+}
+
+export function is_personal_menu_popover_displayed() {
+    return popover_instances.personal_menu?.state.isVisible;
+}
+
+export function is_gear_menu_popover_displayed() {
+    return popover_instances.gear_menu?.state.isVisible;
+}
+
+export function get_gear_menu_instance() {
+    return popover_instances.gear_menu;
+}
+
+export function is_help_menu_popover_displayed() {
+    return popover_instances.help_menu?.state.isVisible;
+}
+
+export function is_message_actions_popover_displayed() {
+    return popover_instances.message_actions?.state.isVisible;
 }
 
 function get_popover_items_for_instance(instance) {

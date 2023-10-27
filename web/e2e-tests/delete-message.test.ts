@@ -22,7 +22,7 @@ async function click_delete_and_return_last_msg_id(page: Page): Promise<string> 
 
 async function delete_message_test(page: Page): Promise<void> {
     await common.log_in(page);
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
     const messages_quantity = (await page.$$("#zhome .message_row")).length;
     const last_message_id = await click_delete_and_return_last_msg_id(page);

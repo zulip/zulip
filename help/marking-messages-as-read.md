@@ -73,7 +73,7 @@ stream or topic as read**.
 
 {tab|via-inbox-view}
 
-{relative|message|inbox}
+{!go-to-inbox.md!}
 
 1. Hover over a stream or topic in the left sidebar.
 
@@ -83,7 +83,7 @@ stream or topic as read**.
 
 {tab|via-recent-conversations}
 
-{relative|message|recent}
+{!go-to-recent-conversations.md!}
 
 1. Click on an unread messages counter in the **Topic** column to mark all
    messages in that topic as read.

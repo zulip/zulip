@@ -230,20 +230,16 @@ function populate_group_from_message_container(group, message_container) {
             group.stream_id = -1;
         } else {
             group.stream_id = sub.stream_id;
-            group.stream_muted = sub.is_muted;
         }
         group.is_subscribed = stream_data.is_subscribed(group.stream_id);
         group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
-        group.topic_muted = user_topics.is_topic_muted(group.stream_id, group.topic);
-        group.topic_unmuted = user_topics.is_topic_unmuted(group.stream_id, group.topic);
         group.visibility_policy = user_topics.get_topic_visibility_policy(
             group.stream_id,
             group.topic,
         );
 
-        // The following two fields are not specific to this group, but this is the
+        // The following field is not specific to this group, but this is the
         // easiest way we've figured out for passing the data to the template rendering.
-        group.development = page_params.development_environment;
         group.all_visibility_policies = user_topics.all_visibility_policies;
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
