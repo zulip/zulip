@@ -1111,6 +1111,8 @@ def extract_unread_data_from_um_rows(
     total_unreads = 0
 
     raw_unread_messages: RawUnreadMessagesResult = dict(
+        mentions_me_directly=mentions_me_directly,
+        wildcard_mentions=wildcard_mentions
         pm_dict=pm_dict,
         stream_dict=stream_dict,
         muted_stream_ids=muted_stream_ids,
