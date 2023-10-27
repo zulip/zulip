@@ -296,6 +296,7 @@ test("basics", () => {
     // filter.supports_collapsing_recipients loop.
     terms = [
         {operator: "is", operand: "resolved", negated: true},
+        {operator: "is", operand: "followed", negated: true},
         {operator: "is", operand: "dm", negated: true},
         {operator: "stream", operand: "stream_name", negated: true},
         {operator: "streams", operand: "web-public", negated: true},
@@ -400,6 +401,10 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     }
 
     is_operator = [{operator: "is", operand: "resolved", negated: true}];
+    filter = new Filter([...additional_terms_to_test, ...is_operator]);
+    assert.ok(!filter.can_mark_messages_read());
+
+    is_operator = [{operator: "is", operand: "followed", negated: true}];
     filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 }
@@ -757,6 +762,9 @@ test("predicate_basics", () => {
     const resolved_topic_name = resolved_topic.resolve_name("foo");
     assert.ok(predicate({type: "stream", topic: resolved_topic_name}));
     assert.ok(!predicate({topic: resolved_topic_name}));
+    assert.ok(!predicate({type: "stream", topic: "foo"}));
+
+    predicate = get_predicate([["is", "followed"]]);
     assert.ok(!predicate({type: "stream", topic: "foo"}));
 
     const unknown_stream_id = 999;
@@ -1232,6 +1240,10 @@ test("describe", ({mock_template}) => {
     string = "topics marked as resolved";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
+    narrow = [{operator: "is", operand: "followed"}];
+    string = "topics followed";
+    assert.equal(Filter.search_description_as_html(narrow), string);
+
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
     string = "invalid something_we_do_not_support operand for is operator";
     assert.equal(Filter.search_description_as_html(narrow), string);
@@ -1542,6 +1554,7 @@ test("navbar_helpers", () => {
     const is_dm = [{operator: "is", operand: "dm"}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
+    const is_followed = [{operator: "is", operand: "followed"}];
     const streams_public = [{operator: "streams", operand: "public"}];
     const stream_topic_terms = [
         {operator: "stream", operand: "foo"},
@@ -1636,6 +1649,12 @@ test("navbar_helpers", () => {
             icon: "check",
             title: "translated: Topics marked as resolved",
             redirect_url_with_search: "/#narrow/topics/is/resolved",
+        },
+        {
+            terms: is_followed,
+            is_common_narrow: true,
+            title: "translated: Topics followed",
+            redirect_url_with_search: "/#narrow/topics/is/followed",
         },
         {
             terms: stream_topic_terms,

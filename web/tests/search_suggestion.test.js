@@ -426,6 +426,7 @@ test("empty_query_suggestions", () => {
         "is:alerted",
         "is:unread",
         "is:resolved",
+        "is:followed",
         "sender:myself@zulip.com",
         "stream:devel",
         "stream:office",
@@ -445,6 +446,7 @@ test("empty_query_suggestions", () => {
     assert.equal(describe("is:alerted"), "Alerted messages");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
+    assert.equal(describe("is:followed"), "Topics followed");
     assert.equal(describe("sender:myself@zulip.com"), "Sent by me");
     assert.equal(describe("has:link"), "Messages that contain links");
     assert.equal(describe("has:image"), "Messages that contain images");
@@ -530,6 +532,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "is:alerted",
         "is:unread",
         "is:resolved",
+        "is:followed",
         "sender:alice@zulip.com",
         "dm:alice@zulip.com",
         "dm-including:alice@zulip.com",
@@ -547,6 +550,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("is:alerted"), "Alerted messages");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
+    assert.equal(describe("is:followed"), "Topics followed");
 
     query = "-i";
     suggestions = get_suggestions(query);
@@ -558,6 +562,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "-is:alerted",
         "-is:unread",
         "-is:resolved",
+        "-is:followed",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -567,12 +572,21 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("-is:alerted"), "Exclude alerted messages");
     assert.equal(describe("-is:unread"), "Exclude unread messages");
     assert.equal(describe("-is:resolved"), "Exclude topics marked as resolved");
+    assert.equal(describe("-is:followed"), "Exclude topics followed");
 
     // operand suggestions follow.
 
     query = "is:";
     suggestions = get_suggestions(query);
-    expected = ["is:dm", "is:starred", "is:mentioned", "is:alerted", "is:unread", "is:resolved"];
+    expected = [
+        "is:dm",
+        "is:starred",
+        "is:mentioned",
+        "is:alerted",
+        "is:unread",
+        "is:resolved",
+        "is:followed",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:st";
