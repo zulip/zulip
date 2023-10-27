@@ -2284,7 +2284,6 @@ div.focused-message-list {
         display: none;
     }
 
-    .sub_count,
     .message-header-stream-settings-button,
     & > span {
         white-space: nowrap;
@@ -2331,8 +2330,6 @@ div.focused-message-list {
         text-overflow: clip;
         color: inherit;
         text-decoration: none;
-        /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
-        padding-right: calc(3px + 10px);
         /* Don't yield any space needed for the stream name. */
         flex-shrink: 0;
 
@@ -2340,61 +2337,6 @@ div.focused-message-list {
             font-size: 14px;
             position: relative;
             top: 1px;
-        }
-    }
-
-    .divider {
-        color: hsl(0deg 0% 88%);
-        font-size: 20px;
-        margin: 0 3px;
-    }
-
-    .sub_count,
-    .narrow_description {
-        background: none;
-        font-size: 14px;
-        color: inherit;
-        font-weight: 400;
-        line-height: 20px;
-    }
-
-    .sub_count {
-        padding-left: 10px;
-        margin-left: 1px;
-        padding-right: 10px;
-        margin-right: 1px;
-        overflow: visible;
-
-        .fa.fa-user-o {
-            margin-left: 0;
-        }
-
-        &::before,
-        &::after {
-            content: "|";
-            position: absolute;
-            top: 25%;
-            height: 50%;
-            color: hsl(0deg 0% 88%);
-            font-size: 20px;
-
-            @media (width < $sm_min) {
-                top: 10%;
-            }
-        }
-
-        &::before {
-            left: -3px;
-
-            @media (width < $sm_min) {
-                /* this ensures the before "|" doesn't overlap
-                   with the stream name text on small narrows */
-                left: 0;
-            }
-        }
-
-        &::after {
-            right: -3px;
         }
     }
 
@@ -2409,6 +2351,11 @@ div.focused-message-list {
         white-space: nowrap;
         padding: 12px 0;
         padding-left: 10px;
+        background: none;
+        font-size: 14px;
+        color: inherit;
+        font-weight: 400;
+        line-height: 20px;
 
         @media (width < $sm_min) {
             padding: 7px 0;
