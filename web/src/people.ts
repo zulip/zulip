@@ -112,6 +112,40 @@ export function init(): void {
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
+// A function that sorts Email according to the user's full name
+export function sortEmails(emails: string[], user_ids:number[]): string[] {
+    const namesArray = user_ids.map((user_id) => {
+        const person = people_by_user_id_dict.get(user_id);
+        return person?.full_name;
+    });
+    
+    // Combine the non-undefined elements
+    const combinedArray = namesArray
+        .map((name, index) => ({
+            name,
+            email: emails[index],
+        }))
+        .filter((item) => item.name !== undefined);
+    
+    // Sort the combined array based on the 'name' property.
+    combinedArray.sort((a, b) => {
+        const nameA = a.name!.toLowerCase(); // Use ! to assert that a.name is not undefined
+        const nameB = b.name!.toLowerCase(); // Use ! to assert that b.name is not undefined
+        return nameA.localeCompare(nameB);
+    });
+    
+    const sortedemails = combinedArray.map((item) => item.email);
+    return sortedemails;
+}
+
+export function sortNames(names: string[]): string[] {
+    return names.sort((a,b)=>{
+        const nameA = a!.toLowerCase(); // Use ! to assert that a.name is not undefined
+        const nameB = b!.toLowerCase(); // Use ! to assert that b.name is not undefined
+        return nameA.localeCompare(nameB);
+    });
+}
+
 export function split_to_ints(lst: string): number[] {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
@@ -294,11 +328,7 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
         return undefined;
     }
 
-    emails = emails.map((email) => email.toLowerCase());
-
-    emails.sort();
-
-    return emails.join(",");
+    return sortEmails(emails,user_ids).join(",");
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
@@ -470,7 +500,7 @@ export function get_recipients(user_ids_string: string): string {
         return my_full_name();
     }
 
-    const names = get_display_full_names(other_ids).sort();
+    const names = sortNames(get_display_full_names(other_ids));
     return names.join(", ");
 }
 
@@ -500,9 +530,7 @@ export function pm_reply_to(message: Message): string | undefined {
         return person.email;
     });
 
-    emails.sort();
-
-    const reply_to = emails.join(",");
+    const reply_to = sortEmails(emails,user_ids).join(",");
 
     return reply_to;
 }
@@ -1668,7 +1696,7 @@ export function is_my_user_id(user_id: number | string): boolean {
 }
 
 export function compare_by_name(a: User, b: User): number {
-    return util.strcmp(a.full_name, b.full_name);
+    return util.strcmp(a.full_name.toLowerCase(), b.full_name.toLowerCase());
 }
 
 export function sort_but_pin_current_user_on_top(users: User[]): void {
