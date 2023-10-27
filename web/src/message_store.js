@@ -45,15 +45,14 @@ export function get_pm_emails(message) {
                 return "?";
             }
             return person.email;
-        })
-        .sort();
+        });
 
-    return emails.join(", ");
+    return people.sortEmails(emails,user_ids).join(", ");
 }
 
 export function get_pm_full_names(message) {
     const user_ids = people.pm_with_user_ids(message);
-    const names = people.get_display_full_names(user_ids).sort();
+    const names = people.sortNames(people.get_display_full_names(user_ids));
 
     return names.join(", ");
 }
