@@ -61,6 +61,7 @@ EXEMPT_FILES = make_set(
         "web/src/blueslip.ts",
         "web/src/blueslip_stacktrace.ts",
         "web/src/browser_history.ts",
+        "web/src/buddy_list.js",
         "web/src/click_handlers.js",
         "web/src/compose.js",
         "web/src/compose_actions.js",

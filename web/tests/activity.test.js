@@ -122,6 +122,7 @@ function test(label, f) {
         });
 
         stub_buddy_list_elements();
+        helpers.override(buddy_list, "render_section_headers", noop);
 
         presence.presence_info.set(alice.user_id, {status: "active"});
         presence.presence_info.set(fred.user_id, {status: "active"});
@@ -231,7 +232,6 @@ test("presence_list_full_update", ({override, mock_template}) => {
     mock_template("presence_rows.hbs", false, (data) => {
         presence_rows = [...presence_rows, ...data.presence_rows];
     });
-    mock_template("empty_list_widget_for_list.hbs", false, noop);
 
     $(".user-list-filter").trigger("focus");
 
@@ -293,7 +293,6 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     override(sidebar_ui, "hide_all", noop);
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(resize, "resize_sidebars", noop);
-    mock_template("empty_list_widget_for_list.hbs", false, noop);
 
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.

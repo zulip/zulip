@@ -27,6 +27,8 @@ $user_status_emoji_width: 24px;
 
 #buddy-list-users-matching-view-container,
 #buddy-list-other-users-container {
+    margin-bottom: 10px;
+
     &.no-display {
         display: none;
     }
@@ -36,6 +38,7 @@ $user_status_emoji_width: 24px;
 #buddy-list-other-users {
     width: 90%;
     margin-left: 10px;
+    margin-bottom: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
 
@@ -116,6 +119,7 @@ $user_status_emoji_width: 24px;
         font-size: 14px;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
+        margin-left: 5px;
         text-align: left;
 
         &:hover {

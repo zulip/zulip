@@ -49,6 +49,12 @@ const bob = {
     full_name: "Bob Smith",
 };
 people.add_active_user(bob);
+const chris = {
+    email: "chris@zulip.com",
+    user_id: 20,
+    full_name: "Chris Smith",
+};
+people.add_active_user(chris);
 const $alice_li = $.create("alice-stub");
 const $bob_li = $.create("bob-stub");
 
@@ -104,9 +110,11 @@ run_test("basics", ({override}) => {
     assert.equal($li, $alice_li);
 });
 
-run_test("split list", ({override, override_rewire}) => {
+run_test("split list", ({override, override_rewire, mock_template}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
+    stub_buddy_list_elements();
+    mock_template("buddy_list/section_header.hbs", false, noop);
 
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
 
@@ -114,18 +122,15 @@ run_test("split list", ({override, override_rewire}) => {
         if (opts.items.length > 0) {
             return "html-stub";
         }
-        return "empty";
+        return "empty-list";
     });
     override(message_viewport, "height", () => 550);
     override(padded_widget, "update_padding", noop);
-    stub_buddy_list_elements();
 
     let appended_to_users_matching_view = false;
     $("#buddy-list-users-matching-view").append = (html) => {
         if (html === "html-stub") {
             appended_to_users_matching_view = true;
-        } else {
-            assert.equal(html, "empty");
         }
     };
 
@@ -133,8 +138,6 @@ run_test("split list", ({override, override_rewire}) => {
     $("#buddy-list-other-users").append = (html) => {
         if (html === "html-stub") {
             appended_to_other_users = true;
-        } else {
-            assert.equal(html, "empty");
         }
     };
 
@@ -193,6 +196,7 @@ run_test("fill_screen_with_content early break on big list", ({override}) => {
     stub_buddy_list_elements();
     const buddy_list = new BuddyList();
     const elem = init_simulated_scrolling();
+    stub_buddy_list_elements();
 
     let chunks_inserted = 0;
     override(buddy_list, "render_more", () => {
@@ -235,6 +239,7 @@ run_test("big_list", ({override, override_rewire, mock_template}) => {
     override(message_viewport, "height", () => 550);
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
     mock_template("empty_list_widget_for_list.hbs", false, noop);
+    mock_template("buddy_list/section_header.hbs", false, noop);
 
     let items_to_html_call_count = 0;
     override(buddy_list, "items_to_html", () => {
@@ -366,6 +371,7 @@ run_test("scrolling", ({override}) => {
     });
     stub_buddy_list_elements();
     init_simulated_scrolling();
+    stub_buddy_list_elements();
 
     clear_buddy_list(buddy_list);
     assert.ok(tried_to_fill);

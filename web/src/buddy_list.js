@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_section_header from "../templates/buddy_list/section_header.hbs";
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
 import render_presence_row from "../templates/presence_row.hbs";
 import render_presence_rows from "../templates/presence_rows.hbs";
@@ -13,6 +14,14 @@ import * as padded_widget from "./padded_widget";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
+
+function get_formatted_sub_count(sub_count) {
+    if (sub_count >= 1000) {
+        // parseInt() is used to floor the value of division to an integer
+        sub_count = Number.parseInt(sub_count / 1000, 10) + "k";
+    }
+    return sub_count;
+}
 
 class BuddyListConf {
     matching_view_list_selector = "#buddy-list-users-matching-view";
@@ -89,7 +98,6 @@ export class BuddyList extends BuddyListConf {
 
         // We do a handful of things once we're done rendering all the users,
         // and each of these tasks need shared data that we'll compute first.
-        // (More to come in upcoming commits.)
         const current_sub = narrow_state.stream_sub();
         const pm_ids_set = narrow_state.pm_ids_set();
 
@@ -105,10 +113,15 @@ export class BuddyList extends BuddyListConf {
         const has_inactive_other_users = other_users_count > this.other_user_ids.length;
 
         const data = {
+            current_sub,
+            hide_headers,
+            subscriber_count,
+            other_users_count,
             has_inactive_users_matching_view,
             has_inactive_other_users,
         };
 
+        this.render_section_headers(data);
         if (!hide_headers) {
             this.update_empty_list_placeholders(data);
         }
@@ -146,6 +159,65 @@ export class BuddyList extends BuddyListConf {
             $("#buddy-list-users-matching-view").empty();
             $("#buddy-list-users-matching-view").append(empty_list_widget);
         }
+    }
+
+    render_section_headers({current_sub, hide_headers, subscriber_count, other_users_count}) {
+        $("#buddy-list-users-matching-view-container .buddy-list-subsection-header").empty();
+        $("#buddy-list-other-users-container .buddy-list-subsection-header").empty();
+
+        $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
+
+        // Usually we show the user counts in the headers, but if we're hiding
+        // those headers then we show the total user count in the main title.
+        const default_userlist_title = $t({defaultMessage: "USERS"});
+        if (hide_headers) {
+            const total_user_count = people.get_active_human_count();
+            const formatted_count = get_formatted_sub_count(total_user_count);
+            const userlist_title = `${default_userlist_title} (${formatted_count})`;
+            $("#userlist-title").text(userlist_title);
+            return;
+        }
+        $("#userlist-title").text(default_userlist_title);
+
+        let header_text;
+        let tooltip_text;
+
+        if (current_sub) {
+            header_text = $t({defaultMessage: "In this stream"});
+            tooltip_text = $t(
+                {defaultMessage: "{N, plural, one {# subscriber} other {# subscribers}}"},
+                {N: subscriber_count},
+            );
+        } else {
+            header_text = $t({defaultMessage: "In this conversation"});
+            tooltip_text = $t(
+                {defaultMessage: "{N, plural, one {# participant} other {# participants}}"},
+                {N: subscriber_count},
+            );
+        }
+
+        $("#buddy-list-users-matching-view-container .buddy-list-subsection-header").append(
+            render_section_header({
+                id: "buddy-list-users-matching-view-section-heading",
+                header_text,
+                user_count: get_formatted_sub_count(subscriber_count),
+                tooltip_text,
+                toggle_class: "toggle-users-matching-view",
+            }),
+        );
+
+        $("#buddy-list-other-users-container .buddy-list-subsection-header").append(
+            render_section_header({
+                id: "buddy-list-other-users-section-heading",
+                header_text: $t({defaultMessage: "Others"}),
+                user_count: get_formatted_sub_count(other_users_count),
+                tooltip_text: $t(
+                    {defaultMessage: "{N, plural, one {# other user} other {# other users}}"},
+                    {N: other_users_count},
+                ),
+                toggle_class: "toggle-other-users",
+            }),
+        );
     }
 
     render_more(opts) {
@@ -203,11 +275,15 @@ export class BuddyList extends BuddyListConf {
         this.$other_users_container.append(other_users_html);
 
         const hide_headers = this.should_hide_headers(current_sub, pm_ids_set);
-        $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
-        $("#buddy-list-other-users-container .buddy-list-subsection-header").toggleClass(
-            "no-display",
+        const subscriber_count = this.total_subscriber_count(current_sub, pm_ids_set);
+        const total_user_count = people.get_active_human_count();
+        const other_users_count = total_user_count - subscriber_count;
+        this.render_section_headers({
+            current_sub,
             hide_headers,
-        );
+            subscriber_count,
+            other_users_count,
+        });
 
         // Invariant: more_user_ids.length >= items.length.
         // (Usually they're the same, but occasionally user ids
