@@ -612,13 +612,6 @@
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
-    #message_view_header .sub_count {
-        &::before,
-        &::after {
-            color: hsl(0deg 0% 100% / 50%);
-        }
-    }
-
     & div.overlay,
     #subscription_overlay
         #stream-creation
