@@ -129,7 +129,11 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
         classname: compose_banner.CLASSNAMES.private_stream_warning,
     });
     const $container = compose_banner.get_compose_banner_container($textarea);
-    compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+    compose_banner.update_or_append_banner(
+        new_row,
+        compose_banner.CLASSNAMES.private_stream_warning,
+        $container,
+    );
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
