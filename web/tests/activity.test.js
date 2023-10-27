@@ -123,6 +123,7 @@ function test(label, f) {
 
         stub_buddy_list_elements();
         helpers.override(buddy_list, "render_section_headers", noop);
+        helpers.override(buddy_list, "render_view_user_list_links", noop);
 
         presence.presence_info.set(alice.user_id, {status: "active"});
         presence.presence_info.set(fred.user_id, {status: "active"});

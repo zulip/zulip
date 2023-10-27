@@ -32,6 +32,11 @@ $user_status_emoji_width: 24px;
     &.no-display {
         display: none;
     }
+
+    .view-all-subscribers-link,
+    .view-all-users-link {
+        margin-left: 15px;
+    }
 }
 
 #buddy-list-users-matching-view,
@@ -124,6 +129,17 @@ $user_status_emoji_width: 24px;
 
         &:hover {
             background-color: inherit;
+        }
+    }
+
+    /* Overwrite some stray list rules (including one in left_sidebar.css) to turn color
+       back to the bootstrap default. */
+    .view-all-subscribers-link,
+    .view-all-users-link {
+        color: var(--color-text-url);
+
+        &:hover {
+            color: var(--color-text-url-hover);
         }
     }
 

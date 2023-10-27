@@ -1,5 +1,6 @@
 "use strict";
 
+const {noop} = require("./test");
 const $ = require("./zjquery");
 
 let users_matching_view = [];
@@ -42,4 +43,7 @@ exports.stub_buddy_list_elements = () => {
     $("#buddy-list-other-users").children = () => [];
     $("#buddy-list-users-matching-view .empty-list-message").length = 0;
     $("#buddy-list-other-users .empty-list-message").length = 0;
+    $("#buddy-list-other-users-container .view-all-users-link").length = 0;
+    $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove = noop;
+    $("#buddy-list-other-users-container .view-all-users-link").remove = noop;
 };

@@ -1,12 +1,15 @@
 import $ from "jquery";
 
 import render_section_header from "../templates/buddy_list/section_header.hbs";
+import render_view_all_subscribers from "../templates/buddy_list/view_all_subscribers.hbs";
+import render_view_all_users from "../templates/buddy_list/view_all_users.hbs";
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
 import render_presence_row from "../templates/presence_row.hbs";
 import render_presence_rows from "../templates/presence_rows.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
@@ -14,6 +17,7 @@ import * as padded_widget from "./padded_widget";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
+import * as stream_data from "./stream_data";
 
 function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
@@ -121,6 +125,11 @@ export class BuddyList extends BuddyListConf {
             has_inactive_other_users,
         };
 
+        $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
+        $("#buddy-list-other-users-container .view-all-users-link").remove();
+        if (!buddy_data.get_is_searching_users()) {
+            this.render_view_user_list_links(data);
+        }
         this.render_section_headers(data);
         if (!hide_headers) {
             this.update_empty_list_placeholders(data);
@@ -316,6 +325,33 @@ export class BuddyList extends BuddyListConf {
             return pm_ids_list.length + 1;
         }
         return 0;
+    }
+
+    render_view_user_list_links({
+        current_sub,
+        has_inactive_users_matching_view,
+        has_inactive_other_users,
+    }) {
+        // For stream views, we show a link at the bottom of the list of subscribed users that
+        // lets a user find the full list of subscribed users and information about them.
+        if (
+            current_sub &&
+            stream_data.can_view_subscribers(current_sub) &&
+            has_inactive_users_matching_view
+        ) {
+            const stream_edit_hash = hash_util.stream_edit_url(current_sub, "subscribers");
+            $("#buddy-list-users-matching-view-container").append(
+                render_view_all_subscribers({
+                    stream_edit_hash,
+                }),
+            );
+        }
+
+        // We give a link to view the list of all users to help reduce confusion about
+        // there being hidden (inactive) "other" users.
+        if (has_inactive_other_users) {
+            $("#buddy-list-other-users-container").append(render_view_all_users());
+        }
     }
 
     get_items() {

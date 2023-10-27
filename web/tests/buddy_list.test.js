@@ -75,7 +75,7 @@ run_test("get_items", () => {
     assert.deepEqual(items, [$alice_li, $bob_li]);
 });
 
-run_test("basics", ({override}) => {
+run_test("basics", ({override, mock_template}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
@@ -83,6 +83,7 @@ run_test("basics", ({override}) => {
     override(message_viewport, "height", () => 550);
     override(padded_widget, "update_padding", noop);
     stub_buddy_list_elements();
+    mock_template("buddy_list/view_all_users.hbs", false, noop);
 
     let appended_to_users_matching_view;
     $("#buddy-list-users-matching-view").append = (html) => {
@@ -115,6 +116,7 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
     init_simulated_scrolling();
     stub_buddy_list_elements();
     mock_template("buddy_list/section_header.hbs", false, noop);
+    mock_template("buddy_list/view_all_users.hbs", false, noop);
 
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
 
@@ -171,10 +173,11 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
     assert.ok(appended_to_other_users);
 });
 
-run_test("find_li", ({override}) => {
+run_test("find_li", ({override, mock_template}) => {
     const buddy_list = new BuddyList();
 
     override(buddy_list, "fill_screen_with_content", noop);
+    mock_template("buddy_list/view_all_users.hbs", false, noop);
     stub_buddy_list_elements();
 
     clear_buddy_list(buddy_list);
@@ -192,11 +195,12 @@ run_test("find_li", ({override}) => {
     assert.equal($li, $bob_li);
 });
 
-run_test("fill_screen_with_content early break on big list", ({override}) => {
+run_test("fill_screen_with_content early break on big list", ({override, mock_template}) => {
     stub_buddy_list_elements();
     const buddy_list = new BuddyList();
     const elem = init_simulated_scrolling();
     stub_buddy_list_elements();
+    mock_template("buddy_list/view_all_users.hbs", false, noop);
 
     let chunks_inserted = 0;
     override(buddy_list, "render_more", () => {
@@ -240,6 +244,7 @@ run_test("big_list", ({override, override_rewire, mock_template}) => {
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
     mock_template("empty_list_widget_for_list.hbs", false, noop);
     mock_template("buddy_list/section_header.hbs", false, noop);
+    mock_template("buddy_list/view_all_users.hbs", false, noop);
 
     let items_to_html_call_count = 0;
     override(buddy_list, "items_to_html", () => {
@@ -363,12 +368,13 @@ run_test("find_li w/bad key", ({override}) => {
     assert.deepEqual($undefined_li, []);
 });
 
-run_test("scrolling", ({override}) => {
+run_test("scrolling", ({override, mock_template}) => {
     const buddy_list = new BuddyList();
     let tried_to_fill;
     override(buddy_list, "fill_screen_with_content", () => {
         tried_to_fill = true;
     });
+    mock_template("buddy_list/view_all_users.hbs", false, noop);
     stub_buddy_list_elements();
     init_simulated_scrolling();
     stub_buddy_list_elements();

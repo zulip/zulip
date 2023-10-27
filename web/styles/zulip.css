@@ -294,6 +294,8 @@ body {
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
     --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
+    --color-text-url: hsl(200deg 100% 40%);
+    --color-text-url-hover: hsl(200deg 100% 25%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -596,6 +598,7 @@ body {
         hsl(0deg 0% 75%) 75%,
         hsl(0deg 0% 11%)
     );
+    --color-text-url-hover: hsl(200deg 79% 66%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
