@@ -2712,13 +2712,26 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(json["removed"], 2)
         self.assert_length(json["not_removed"], 0)
 
+    def test_remove_unsubbed_user_along_with_subbed(self) -> None:
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=17,
+            target_users=[self.example_user("cordelia"), self.example_user("iago")],
+            is_realm_admin=True,
+            is_subbed=True,
+            invite_only=False,
+            target_users_subbed=False,
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+        self.assert_length(json["not_removed"], 1)
+
     def test_remove_already_not_subbed(self) -> None:
         """
         Trying to unsubscribe someone who already isn't subscribed to a stream
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=11,
+            query_count=9,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,

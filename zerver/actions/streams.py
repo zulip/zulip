@@ -639,6 +639,10 @@ def bulk_add_subscriptions(
             sub_info = SubInfo(user_profile, sub, stream)
             subs_to_add.append(sub_info)
 
+    if len(subs_to_add) == 0 and len(subs_to_activate) == 0:
+        # We can return early if users are already subscribed to all the streams.
+        return ([], already_subscribed)
+
     bulk_add_subs_to_db_with_logging(
         realm=realm,
         acting_user=acting_user,
@@ -807,6 +811,11 @@ def bulk_remove_subscriptions(
     subs_to_deactivate = [
         sub_info for sub_infos in existing_subs_by_user.values() for sub_info in sub_infos
     ]
+
+    if len(subs_to_deactivate) == 0:
+        # We can return early if users are not subscribed to any of the streams.
+        return ([], not_subscribed)
+
     sub_ids_to_deactivate = [sub_info.sub.id for sub_info in subs_to_deactivate]
     streams_to_unsubscribe = [sub_info.stream for sub_info in subs_to_deactivate]
     # We do all the database changes in a transaction to ensure
