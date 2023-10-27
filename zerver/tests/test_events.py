@@ -3551,7 +3551,7 @@ class UserDisplayActionTest(BaseAction):
         check_stream_create("events[0]", events[0])
         check_subscription_add("events[1]", events[1])
 
-        # Check that guest user does not receive stream creation itself of public
+        # Check that guest user does not receive stream creation event of public
         # stream.
         self.user_profile = self.example_user("polonius")
         action = lambda: self.subscribe(self.example_user("hamlet"), "Test stream 2")
