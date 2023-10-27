@@ -74,6 +74,7 @@ IGNORED_PHRASES = [
     r"user@example\.com",
     r"acme",
     # Fragments of larger strings
+    r"is …",
     r"your subscriptions on your Streams page",
     r"Add global time<br />Everyone sees global times in their own time zone\.",
     r"user",
