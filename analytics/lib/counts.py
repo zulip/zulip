@@ -845,8 +845,23 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
 
     if settings.ZILENCER_ENABLED:
         count_stats_.append(
+            # Tracks the number of push notifications requested to be sent
+            # by a remote server.
             LoggingCountStat(
                 "mobile_pushes_received::day",
+                RemoteInstallationCount,
+                CountStat.DAY,
+            )
+        )
+        count_stats_.append(
+            # Tracks the number of push notifications successfully sent to mobile
+            # devices, as requested by the remote server. Therefore this should be
+            # less than or equal to mobile_pushes_received - with potential tiny offsets
+            # resulting from a request being *received* by the bouncer right before midnight,
+            # but *sent* to the mobile device right after midnight. This would cause the increments
+            # to happen to CountStat records for different days.
+            LoggingCountStat(
+                "mobile_pushes_forwarded::day",
                 RemoteInstallationCount,
                 CountStat.DAY,
             )

@@ -429,7 +429,7 @@ def remote_server_notify_push(
     # send_apple_push_notification.
 
     gcm_payload = truncate_payload(gcm_payload)
-    send_android_push_notification(
+    android_successfully_delivered = send_android_push_notification(
         user_identity, android_devices, gcm_payload, gcm_options, remote=server
     )
 
@@ -437,7 +437,17 @@ def remote_server_notify_push(
         apns_payload["custom"].get("zulip"), dict
     ):
         apns_payload["custom"]["zulip"] = truncate_payload(apns_payload["custom"]["zulip"])
-    send_apple_push_notification(user_identity, apple_devices, apns_payload, remote=server)
+    apple_successfully_delivered = send_apple_push_notification(
+        user_identity, apple_devices, apns_payload, remote=server
+    )
+
+    do_increment_logging_stat(
+        server,
+        COUNT_STATS["mobile_pushes_forwarded::day"],
+        None,
+        timezone_now(),
+        increment=android_successfully_delivered + apple_successfully_delivered,
+    )
 
     return json_success(
         request,
