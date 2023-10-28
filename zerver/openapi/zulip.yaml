@@ -4703,7 +4703,7 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to updat topic settings.
+                                Event sent to update topic settings.
 
                               properties:
                                 id:
