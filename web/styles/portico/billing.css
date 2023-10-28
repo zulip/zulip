@@ -7,20 +7,8 @@
     background-color: hsl(0deg 0% 98%);
     height: 100vh;
 
-    .hero {
-        background-color: hsl(153deg 32% 55%);
-        color: hsl(153deg 32% 55%);
-        position: absolute;
-        top: 0;
-        width: 100%;
-    }
-
     .page-content {
         padding: 100px 0 30px;
-    }
-
-    .small-hero {
-        padding: 120px 50px 0;
     }
 
     .main {
@@ -414,4 +402,8 @@ input[name="licenses"] {
     text-align: left;
     margin-left: 2px;
     margin-top: 5px;
+}
+
+.header.portico-header {
+    display: block;
 }

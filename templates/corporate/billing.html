@@ -5,19 +5,10 @@
 <title>{{ _("Billing") }} | Zulip</title>
 {% endblock %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
-
-{% block content %}
+{% block portico_content %}
 
 <div class="app portico-page">
-
-    {% include 'zerver/billing_nav.html' %}
-
     <div class="billing-upgrade-page">
-        <div class="hero small-hero"></div>
-
         <div class="page-content">
             <div class="main">
                 <div class="alert alert-danger" id="error-message-box"></div>
