@@ -104,6 +104,7 @@ def billing_home(
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
+        "org_name": user.realm.name,
     }
 
     if not user.has_billing_access:
