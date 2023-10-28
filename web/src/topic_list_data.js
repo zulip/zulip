@@ -11,6 +11,27 @@ import * as util from "./util";
 const max_topics = 8;
 const max_topics_with_unread = 12;
 
+export function initialize(params) {
+    const topic_settings = params.topic;
+
+    for (const setting of topic_settings) {
+        stream_topic_history.add_settings({
+            stream_id: setting.stream_id,
+            topic_name: setting.topic_name,
+            topic_locked: setting.topic_locked,
+        });
+    }
+}
+
+export function can_post_messages_in_topic(stream_id, topic_name) {
+    if (!stream_id || !topic_name) {
+        return false;
+    }
+
+    const topic_setting = stream_topic_history.get_topic_settings(stream_id, topic_name);
+    return !topic_setting.topic_locked;
+}
+
 function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
     for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);

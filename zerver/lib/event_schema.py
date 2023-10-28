@@ -1855,6 +1855,18 @@ user_status_event = event_dict_type(
 )
 _check_user_status = make_checker(user_status_event)
 
+topic_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("topic")),
+        ("op", Equals("update")),
+        ("property", str),
+        ("value", bool),
+        ("name", str),
+        ("stream_id", int),
+    ],
+)
+check_topic_update = make_checker(topic_update_event)
+
 
 def check_user_status(var_name: str, event: Dict[str, object], fields: Set[str]) -> None:
     _check_user_status(var_name, event)

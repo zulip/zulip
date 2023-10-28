@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_locked_topic_banner from "../templates/compose_banner/locked_topic_banner.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_wildcard_warning from "../templates/compose_banner/wildcard_warning.hbs";
@@ -19,6 +20,7 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import * as topic_list_data from "./topic_list_data";
 import * as util from "./util";
 
 let user_acknowledged_wildcard = false;
@@ -288,6 +290,30 @@ function show_wildcard_warnings(opts) {
     user_acknowledged_wildcard = false;
 }
 
+function show_locked_topic_warnings(banner_container) {
+    const classname = compose_banner.CLASSNAMES.wildcard_warning;
+    const button_text = $t({defaultMessage: "Yes, send"});
+
+    const locked_topic_template = render_locked_topic_banner({
+        banner_type: compose_banner.WARNING,
+        button_text,
+        hide_close_button: true,
+        classname,
+    });
+
+    if (banner_container.find(`.${CSS.escape(classname)}`).length === 0) {
+        compose_banner.append_compose_banner_to_banner_list(
+            locked_topic_template,
+            banner_container,
+        );
+    } else {
+        // if there is already a banner, replace it with the new one
+        compose_banner.update_or_append_banner(locked_topic_template, classname, banner_container);
+    }
+
+    user_acknowledged_wildcard = false;
+}
+
 export function clear_wildcard_warnings($banner_container) {
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
     $banner_container.find(`.${CSS.escape(classname)}`).remove();
@@ -426,6 +452,19 @@ export function validate_stream_message_mentions(opts) {
     return true;
 }
 
+function validate_moderator_message_locked_topic(banner_container) {
+    if (!user_acknowledged_wildcard) {
+        show_locked_topic_warnings(banner_container);
+        return false;
+    }
+    clear_wildcard_warnings(banner_container);
+
+    // at this point, the user has either acknowledged the warning
+    user_acknowledged_wildcard = false;
+
+    return true;
+}
+
 export function validation_error(error_type, stream_name) {
     const $banner_container = $("#compose_banners");
     switch (error_type) {
@@ -519,6 +558,14 @@ function validate_stream_message(scheduling_message) {
             compose_banner.CLASSNAMES.no_post_permissions,
             $banner_container,
         );
+        return false;
+    }
+
+    if (
+        (page_params.is_admin || page_params.is_moderator) &&
+        !topic_list_data.can_post_messages_in_topic(sub.stream_id, compose_state.topic()) &&
+        !validate_moderator_message_locked_topic($banner_container)
+    ) {
         return false;
     }
 

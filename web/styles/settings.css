@@ -1171,8 +1171,7 @@ $option_title_width: 180px;
         text-align: left;
         white-space: nowrap;
         text-overflow: ellipsis;
-        overflow-x: hidden;
-        overflow-y: visible;
+        overflow: hidden visible;
         position: relative;
 
         .user-name-and-status-text {

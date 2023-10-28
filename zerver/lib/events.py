@@ -50,7 +50,7 @@ from zerver.lib.streams import do_get_streams, get_web_public_streams
 from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_public_subs
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.topic import TOPIC_NAME, get_topic_settings
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
@@ -614,6 +614,17 @@ def fetch_initial_state_data(
 
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
+
+    if want("topic"):
+        # instead of making another database call we can get the streams from the state
+        stream_ids = [stream["stream_id"] for stream in state.get("subscriptions", [])]
+        stream_ids.extend([stream["stream_id"] for stream in state.get("unsubscribed", [])])
+        stream_ids.extend([stream["stream_id"] for stream in state.get("never_subscribed", [])])
+        stream_ids.extend(
+            [stream["stream_id"] for stream in state.get("realm_default_streams", [])]
+        )
+
+        state["topic"] = get_topic_settings(stream_ids)
 
     if want("update_display_settings") and not user_settings_object:
         for prop in UserProfile.display_settings_legacy:
@@ -1255,6 +1266,11 @@ def apply_event(
         # from scratch.  Definitely don't need to re-query everything,
         # but this case is likely rare enough that it's reasonable to do so.
         state["raw_recent_private_conversations"] = get_recent_private_conversations(user_profile)
+    elif event["type"] == "topic" and event["op"] == "update":
+        for setting in state["topic"]:
+            if setting["stream_id"] == event["stream_id"] and event["property"] == "topic_locked":
+                setting[event["property"]] = event["value"]
+
     elif event["type"] == "reaction":
         # The client will get the message with the reactions directly
         pass

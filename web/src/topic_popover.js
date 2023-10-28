@@ -12,6 +12,7 @@ import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
+import * as topic_edit from "./topic_edit";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_topics from "./user_topics";
@@ -139,6 +140,12 @@ export function initialize() {
                     message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
                         message_edit.toggle_resolve_topic(message_id, topic_name, true);
                     });
+
+                    instance.hide();
+                });
+
+                $popper.one("click", ".sidebar-popover-toggle-lock", () => {
+                    topic_edit.toggle_topic_locked_status(stream_id, topic_name);
 
                     instance.hide();
                 });

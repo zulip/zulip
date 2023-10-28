@@ -126,6 +126,7 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
+import * as topic_list_data from "./topic_list_data";
 import * as topic_popover from "./topic_popover";
 import * as transmit from "./transmit";
 import * as tutorial from "./tutorial";
@@ -530,6 +531,7 @@ export function initialize_everything() {
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
     const scheduled_messages_params = pop_fields("scheduled_messages");
+    const topic_data = pop_fields("topic");
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. */
@@ -746,6 +748,7 @@ export function initialize_everything() {
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
     hotkey.initialize();
+    topic_list_data.initialize(topic_data);
 
     $("#app-loading").addClass("loaded");
 }

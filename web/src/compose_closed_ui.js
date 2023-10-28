@@ -5,8 +5,10 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import * as topic_list_data from "./topic_list_data";
 
 export function get_recipient_label(message) {
     // TODO: This code path is bit of a type-checking disaster; we mix
@@ -59,22 +61,24 @@ export function get_recipient_label(message) {
     return "";
 }
 
-function update_reply_button_state(disable = false) {
+function update_reply_button_state(disable = false, disabled_by_mod = false) {
     $(".compose_reply_button").attr("disabled", disable);
     if (disable) {
-        $("#compose_buttons .compose_reply_button").attr(
+        $("#compose_buttons #compose_reply_button_container").attr(
             "data-tooltip-template-id",
-            "compose_reply_button_disabled_tooltip_template",
+            disabled_by_mod
+                ? "compose_reply_button_disabled_moderator_tooltip_template"
+                : "compose_reply_button_disabled_tooltip_template",
         );
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#compose_buttons .compose_reply_button").attr(
+        $("#compose_buttons #compose_reply_button_container").attr(
             "data-tooltip-template-id",
             "compose_reply_message_button_tooltip_template",
         );
     } else {
-        $("#compose_buttons .compose_reply_button").attr(
+        $("#compose_buttons #compose_reply_button_container").attr(
             "data-tooltip-template-id",
             "compose_reply_selected_topic_button_tooltip_template",
         );
@@ -110,11 +114,11 @@ function toggle_direct_message_button_visibility(is_direct_message_narrow) {
     }
 }
 
-function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
+function update_buttons(text_stream, is_direct_message_narrow, disable_reply, disabled_by_mod) {
     const text_conversation = $t({defaultMessage: "New direct message"});
     update_new_conversation_button(text_stream, is_direct_message_narrow);
     update_new_direct_message_button(text_conversation);
-    update_reply_button_state(disable_reply);
+    update_reply_button_state(disable_reply, disabled_by_mod);
     toggle_direct_message_button_visibility(is_direct_message_narrow);
 }
 
@@ -135,7 +139,7 @@ export function update_buttons_for_private() {
     // disable the [Message X] button when in a private narrow
     // if the user cannot dm the current recipient
     const disable_reply = true;
-    $("#compose_buttons .compose_reply_button").attr(
+    $("#compose_buttons #compose_reply_button_container").attr(
         "data-tooltip-template-id",
         "disable_reply_compose_reply_button_tooltip_template",
     );
@@ -148,7 +152,18 @@ export function update_buttons_for_stream_views() {
         "data-tooltip-template-id",
         "new_topic_message_button_tooltip_template",
     );
-    update_buttons(text_stream);
+
+    const stream = narrow_state?.stream_sub?.();
+    let topic_locked = false;
+    if (
+        stream &&
+        !(page_params.is_admin || page_params.is_moderator) &&
+        !topic_list_data.can_post_messages_in_topic(stream?.stream_id, narrow_state.topic())
+    ) {
+        topic_locked = true;
+    }
+
+    update_buttons(text_stream, null, topic_locked, topic_locked);
 }
 
 export function update_buttons_for_non_stream_views() {
@@ -187,6 +202,11 @@ export function initialize() {
             // open due to "All messages" loading in the background,
             // so we only update if message feed is visible.
             update_reply_recipient_label();
+
+            // if it is stream view update button
+            if (narrow_state.stream_sub()) {
+                update_buttons_for_stream_views();
+            }
         }
     });
 

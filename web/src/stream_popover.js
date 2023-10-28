@@ -14,6 +14,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
+import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
 import * as settings_data from "./settings_data";
@@ -24,6 +25,7 @@ import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_components from "./stream_settings_components";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
+import * as topic_list_data from "./topic_list_data";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
@@ -287,9 +289,34 @@ export function build_move_topic_to_stream_popover(
         // disabled in case when user does not have permission to edit
         // topic and thus submit button is disabled if stream is also
         // not changed.
-        $("#move_topic_modal .dialog_submit_button")[0].disabled =
+        let disabled = false;
+
+        if (
             Number.parseInt(current_stream_id, 10) === Number.parseInt(select_stream_id, 10) &&
-            (new_topic_name === undefined || new_topic_name.trim() === old_topic_name.trim());
+            (new_topic_name === undefined || new_topic_name.trim() === old_topic_name.trim())
+        ) {
+            disabled = true;
+        }
+
+        if (
+            new_topic_name &&
+            !(page_params.is_admin || page_params.is_moderator) &&
+            !topic_list_data.can_post_messages_in_topic(
+                Number.parseInt(select_stream_id, 10),
+                new_topic_name,
+            )
+        ) {
+            ui_report.error(
+                $t_html({defaultMessage: "Error: This topic has been locked by a moderator."}),
+                undefined,
+                $("#move_topic_modal #dialog_error"),
+            );
+            disabled = true;
+        } else {
+            $("#move_topic_modal #dialog_error").fadeOut(100);
+        }
+
+        $("#move_topic_modal .dialog_submit_button")[0].disabled = disabled;
     }
 
     function move_topic() {

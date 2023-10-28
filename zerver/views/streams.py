@@ -76,6 +76,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.timeout import TimeoutExpiredError, timeout
 from zerver.lib.topic import (
+    delete_topic,
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
     messages_for_topic,
@@ -965,6 +966,9 @@ def delete_in_topic(
         timeout(50, delete_in_batches)
     except TimeoutExpiredError:
         return json_success(request, data={"complete": False})
+
+    # Delete the topic when all messages within the topic are deleted
+    delete_topic(realm_id=user_profile.realm.id, stream_id=stream.id, topic_name=topic_name)
 
     return json_success(request, data={"complete": True})
 

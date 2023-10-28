@@ -161,6 +161,7 @@ ALL_ZULIP_TABLES = {
     "zerver_stream",
     "zerver_submessage",
     "zerver_subscription",
+    "zerver_topic",
     "zerver_useractivity",
     "zerver_useractivityinterval",
     "zerver_usergroup",

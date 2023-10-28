@@ -18,6 +18,7 @@ from zerver.lib.message import access_message, access_web_public_message, messag
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import check_topic_to_update
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.models import Message, UserProfile
@@ -123,6 +124,14 @@ def update_message_backend(
     send_notification_to_new_thread: Json[bool] = True,
     content: Optional[str] = None,
 ) -> HttpResponse:
+    if propagate_mode in ["change_later", "change_all"]:
+        check_topic_to_update(
+            user_profile=user_profile,
+            message_id=message_id,
+            new_topic_name=topic_name,
+            new_stream_id=stream_id,
+        )
+
     number_changed = check_update_message(
         user_profile,
         message_id,

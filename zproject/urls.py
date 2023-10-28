@@ -166,6 +166,7 @@ from zerver.views.streams import (
 )
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail
+from zerver.views.topics import toggle_topic_locked_status
 from zerver.views.tutorial import set_tutorial_status
 from zerver.views.typing import send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
@@ -469,6 +470,8 @@ v1_api_and_json_patterns = [
     ),
     # Delete topic in stream
     rest_path("streams/<int:stream_id>/delete_topic", POST=delete_in_topic),
+    # Toggles Topic lock status
+    rest_path("topics/lock", POST=toggle_topic_locked_status),
     rest_path("default_streams", POST=add_default_stream, DELETE=remove_default_stream),
     rest_path("default_stream_groups/create", POST=create_default_stream_group),
     rest_path(

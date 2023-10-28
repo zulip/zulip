@@ -212,8 +212,7 @@ li.show-more-topics {
 
 #left_sidebar_scroll_container {
     outline: none;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden auto;
     position: relative;
     z-index: 0;
     width: 100%;

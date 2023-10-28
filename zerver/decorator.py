@@ -45,6 +45,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     OrganizationAdministratorRequiredError,
     OrganizationMemberRequiredError,
+    OrganizationModeratorRequiredError,
     OrganizationOwnerRequiredError,
     RealmDeactivatedError,
     UnauthorizedError,
@@ -159,6 +160,24 @@ def require_realm_admin(
     ) -> HttpResponse:
         if not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequiredError
+        return func(request, user_profile, *args, **kwargs)
+
+    return wrapper
+
+
+def require_realm_moderator(
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
+    @wraps(func)
+    def wrapper(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
+    ) -> HttpResponse:
+        if not user_profile.is_realm_admin and not user_profile.is_moderator:
+            raise OrganizationModeratorRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper

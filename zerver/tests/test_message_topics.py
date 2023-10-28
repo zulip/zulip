@@ -1,5 +1,6 @@
 from unittest import mock
 
+import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.streams import do_change_stream_permission
@@ -334,3 +335,49 @@ class TopicDeleteTest(ZulipTestCase):
             )
             result_dict = self.assert_json_success(result)
             self.assertFalse(result_dict["complete"])
+
+
+class TopicLockTest(ZulipTestCase):
+    def test_topic_lock(self) -> None:
+        stream_name = "Verona"
+        topic_name = "Test Topic"
+        endpoint = "/json/topics/lock"
+
+        # mod user locks the topic
+        user_profile = self.example_user("shiva")
+        self.login_user(user_profile)
+        stream = get_stream(stream_name, user_profile.realm)
+
+        result = self.client_post(
+            endpoint,
+            {
+                "topic_name": topic_name,
+                "stream_id": stream.id,
+            },
+        )
+
+        self.assert_json_success(result)
+
+        # non-mod user locks the topic
+        user_profile = self.example_user("hamlet")
+        self.subscribe(user_profile, stream_name)
+        stream = get_stream(stream_name, user_profile.realm)
+        self.login_user(user_profile)
+
+        # Locking the topic
+        result = self.client_post(
+            endpoint,
+            {"topic_name": topic_name, "stream_id": stream.id},
+        )
+        self.assert_json_error(result, "Must be a moderator")
+
+        # When topic is locked the member user should not be able to send message
+        post_data = {
+            "type": "stream",
+            "to": orjson.dumps(stream_name).decode(),
+            "content": "This is a message for topic",
+            "topic": topic_name,
+        }
+        result = self.client_post("/json/messages", post_data)
+
+        self.assert_json_error(result, "Must be a moderator")

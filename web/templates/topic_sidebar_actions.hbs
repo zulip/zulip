@@ -85,6 +85,21 @@
     </li>
     {{/if}}
 
+    {{!-- //TODO: 360ammar - add unlock check --}}
+    {{#if is_realm_moderator}}
+    <li>
+        <a tabindex="0" class="sidebar-popover-toggle-lock" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            {{#if topic_locked }}
+            <i class="fa fa-unlock" aria-hidden="true"></i>
+            {{t "Unlock topic"}}
+            {{else}}
+            <i class="fa fa-lock" aria-hidden="true"></i>
+            {{t "Lock topic"}}
+            {{/if}}
+        </a>
+    </li>
+    {{/if}}
+
     {{#if is_realm_admin}}
     <li>
         <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">

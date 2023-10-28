@@ -482,6 +482,7 @@ export function activate(raw_operators, opts) {
         // It is important to call this after other important updates
         // like narrow filter and compose recipients happen.
         compose_recipient.handle_middle_pane_transition();
+        compose_recipient?.check_posting_policy_for_compose_box?.();
 
         const post_span = span.startChild({
             op: "function",

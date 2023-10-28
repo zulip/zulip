@@ -641,6 +641,24 @@ export function dispatch_normal_event(event) {
                     break;
             }
             break;
+
+        case "topic":
+            switch (event.op) {
+                case "update":
+                    if (event.property === "topic_locked") {
+                        stream_topic_history.add_settings({
+                            stream_id: event.stream_id,
+                            topic_name: event.name,
+                            topic_locked: event.value,
+                        });
+                    }
+                    break;
+                default:
+                    blueslip.error("Unexpected event type topic" + event.op);
+                    break;
+            }
+            break;
+
         case "typing":
             if (event.sender.user_id === page_params.user_id) {
                 // typing notifications are sent to the user who is typing

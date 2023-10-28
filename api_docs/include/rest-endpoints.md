@@ -51,6 +51,7 @@
 * [Topic muting](/api/mute-topic)
 * [Update personal preferences for a topic](/api/update-user-topic)
 * [Delete a topic](/api/delete-topic)
+* [Lock a topic](/api/lock-topic)
 * [Add a default stream](/api/add-default-stream)
 * [Remove a default stream](/api/remove-default-stream)
 

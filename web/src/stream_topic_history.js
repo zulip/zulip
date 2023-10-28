@@ -121,6 +121,25 @@ export class PerStreamHistory {
         }
     }
 
+    add_or_update_setting({topic_name, topic_locked = false}) {
+        const existing = this.topics.get(topic_name);
+
+        if (!existing) {
+            this.topics.set(topic_name, {
+                message_id: 0,
+                pretty_name: topic_name,
+                historical: true,
+                count: 1,
+                topic_locked,
+            });
+            return;
+        }
+
+        if (existing.topic_locked !== topic_locked) {
+            existing.topic_locked = topic_locked;
+        }
+    }
+
     add_or_update({topic_name, message_id = 0}) {
         message_id = Number.parseInt(message_id, 10);
         this.update_stream_max_message_id(message_id);
@@ -133,6 +152,7 @@ export class PerStreamHistory {
                 pretty_name: topic_name,
                 historical: false,
                 count: 1,
+                topic_locked: false,
             });
             return;
         }
@@ -177,10 +197,11 @@ export class PerStreamHistory {
         for (const obj of server_history) {
             const topic_name = obj.name;
             const message_id = obj.max_id;
+            const topic_locked = obj.topic_locked;
 
             const existing = this.topics.get(topic_name);
 
-            if (existing && !existing.historical) {
+            if (existing && !existing.historical && existing.topic_locked === topic_locked) {
                 // Trust out local data more, since it
                 // maintains counts.
                 continue;
@@ -194,6 +215,7 @@ export class PerStreamHistory {
                 message_id,
                 pretty_name: topic_name,
                 historical: true,
+                topic_locked,
             });
             this.update_stream_max_message_id(message_id);
         }
@@ -220,6 +242,20 @@ export class PerStreamHistory {
 
     get_max_message_id() {
         return this.max_message_id;
+    }
+
+    get_topic_settings(topic_name) {
+        const topic = this.topics.get(topic_name);
+
+        if (!topic) {
+            return {
+                topic_locked: false,
+            };
+        }
+
+        return {
+            topic_locked: topic.topic_locked,
+        };
     }
 }
 
@@ -287,6 +323,15 @@ export function add_message(opts) {
     });
 }
 
+export function add_settings({stream_id, topic_name, topic_locked = false}) {
+    const history = find_or_create(stream_id);
+
+    history.add_or_update_setting({
+        topic_name,
+        topic_locked,
+    });
+}
+
 export function add_history(stream_id, server_history) {
     const history = find_or_create(stream_id);
     history.add_history(server_history);
@@ -326,4 +371,10 @@ export function add_request_pending_for(stream_id) {
 
 export function remove_request_pending_for(stream_id) {
     request_pending_stream_ids.delete(stream_id);
+}
+
+export function get_topic_settings(stream_id, topic_name) {
+    const history = find_or_create(stream_id);
+
+    return history.get_topic_settings(topic_name);
 }

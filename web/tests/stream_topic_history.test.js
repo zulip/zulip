@@ -172,9 +172,9 @@ test("server_history", () => {
 
     function add_server_history() {
         stream_topic_history.add_history(stream_id, [
-            {name: "local", max_id: 501},
-            {name: "hist2", max_id: 31},
-            {name: "hist1", max_id: 30},
+            {name: "local", max_id: 501, topic_locked: false},
+            {name: "hist2", max_id: 31, topic_locked: false},
+            {name: "hist1", max_id: 30, topic_locked: false},
         ]);
     }
 

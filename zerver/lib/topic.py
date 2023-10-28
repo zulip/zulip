@@ -7,9 +7,10 @@ from django.db.models import Q, QuerySet, Subquery
 from sqlalchemy.sql import ColumnElement, column, func, literal
 from sqlalchemy.types import Boolean, Text
 
+from zerver.lib.exceptions import OrganizationModeratorRequiredError
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
-from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
+from zerver.models import Message, Reaction, Stream, Topic, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -204,22 +205,22 @@ def update_messages_for_topic_edit(
     return messages_list
 
 
-def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
-    canonical_topic_names: Dict[str, Tuple[int, str]] = {}
+def generate_topic_history_from_db_rows(rows: List[Tuple[str, int, bool]]) -> List[Dict[str, Any]]:
+    canonical_topic_names: Dict[str, Tuple[int, str, bool]] = {}
 
     # Sort rows by max_message_id so that if a topic
     # has many different casings, we use the most
     # recent row.
     rows = sorted(rows, key=lambda tup: tup[1])
 
-    for topic_name, max_message_id in rows:
+    for topic_name, max_message_id, locked in rows:
         canonical_name = topic_name.lower()
-        canonical_topic_names[canonical_name] = (max_message_id, topic_name)
+        canonical_topic_names[canonical_name] = (max_message_id, topic_name, locked)
 
     history = []
-    for max_message_id, topic_name in canonical_topic_names.values():
+    for max_message_id, topic_name, locked in canonical_topic_names.values():
         history.append(
-            dict(name=topic_name, max_id=max_message_id),
+            dict(name=topic_name, max_id=max_message_id, locked=locked),
         )
     return sorted(history, key=lambda x: -x["max_id"])
 
@@ -231,17 +232,23 @@ def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> Lis
     # most recently-used case (in generate_topic_history_from_db_rows)
     query = """
     SELECT
-        "zerver_message"."subject" as topic,
-        max("zerver_message".id) as max_message_id
+        COALESCE("zerver_topic"."topic_name", "zerver_message"."subject") as topic,
+        max("zerver_message".id) as max_message_id,
+        COALESCE("zerver_topic"."locked", FALSE) as locked
     FROM "zerver_message"
+    LEFT JOIN "zerver_topic" ON (
+        "zerver_message"."realm_id" = "zerver_topic"."realm_id" AND
+        "zerver_message"."subject" = "zerver_topic"."topic_name"
+    )
     WHERE (
         "zerver_message"."realm_id" = %s AND
         "zerver_message"."recipient_id" = %s
     )
     GROUP BY (
-        "zerver_message"."subject"
+        COALESCE("zerver_topic"."topic_name", "zerver_message"."subject"),
+        "zerver_topic"."locked"
     )
-    ORDER BY max("zerver_message".id) DESC
+    ORDER BY max("zerver_message".id) DESC;
     """
     cursor.execute(query, [realm_id, recipient_id])
     rows = cursor.fetchall()
@@ -262,11 +269,16 @@ def get_topic_history_for_stream(
     # most recently-used case (in generate_topic_history_from_db_rows)
     query = """
     SELECT
-        "zerver_message"."subject" as topic,
-        max("zerver_message".id) as max_message_id
+        COALESCE("zerver_topic"."topic_name", "zerver_message"."subject") as topic,
+        max("zerver_message".id) as max_message_id,
+        COALESCE("zerver_topic"."locked", FALSE) as locked
     FROM "zerver_message"
-    INNER JOIN "zerver_usermessage" ON (
+    LEFT JOIN "zerver_usermessage" ON (
         "zerver_usermessage"."message_id" = "zerver_message"."id"
+    )
+    LEFT JOIN "zerver_topic" ON (
+        "zerver_message"."realm_id" = "zerver_topic"."realm_id" AND
+        "zerver_message"."subject" = "zerver_topic"."topic_name"
     )
     WHERE (
         "zerver_usermessage"."user_profile_id" = %s AND
@@ -274,9 +286,10 @@ def get_topic_history_for_stream(
         "zerver_message"."recipient_id" = %s
     )
     GROUP BY (
-        "zerver_message"."subject"
+        COALESCE("zerver_topic"."topic_name", "zerver_message"."subject"),
+        "zerver_topic"."locked"
     )
-    ORDER BY max("zerver_message".id) DESC
+    ORDER BY max("zerver_message".id) DESC;
     """
     cursor.execute(query, [user_profile.id, user_profile.realm_id, recipient_id])
     rows = cursor.fetchall()
@@ -321,3 +334,99 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
         ).values_list("id", flat=True)
     )
     return participants
+
+
+def update_topic(
+    realm_id: int,
+    stream_id: int,
+    topic_name: str,
+    new_topic_name: Optional[str] = None,
+    new_stream_id: Optional[int] = None,
+    toggle_locked: bool = False,
+) -> Optional[Topic]:
+    try:
+        topic = Topic.objects.get(realm=realm_id, stream=stream_id, topic_name__iexact=topic_name)
+
+        if new_topic_name is not None:
+            topic.topic_name = new_topic_name
+        if new_stream_id is not None:
+            topic.stream_id = new_stream_id
+        if toggle_locked:
+            topic.locked = not topic.locked
+
+        topic.save()
+        return topic
+    except Topic.DoesNotExist:
+        if toggle_locked:
+            new_topic = Topic(
+                realm_id=realm_id, stream_id=stream_id, topic_name=topic_name, locked=True
+            )
+            new_topic.save()
+            return new_topic
+    return None
+
+
+def check_topic_to_update(
+    user_profile: UserProfile,
+    message_id: int,
+    new_stream_id: Optional[int] = None,
+    new_topic_name: Optional[str] = None,
+) -> None:
+    # importing it here to avoid circular import
+    from zerver.lib.message import access_message
+
+    message, ignore_user_message = access_message(user_profile, message_id)
+
+    if message.topic_name() is not None and message.recipient.type_id is not None:
+        update_topic(
+            realm_id=user_profile.realm_id,
+            stream_id=message.recipient.type_id,
+            topic_name=message.topic_name(),
+            new_topic_name=new_topic_name,
+            new_stream_id=new_stream_id,
+        )
+
+
+def check_write_access_to_topic(
+    user_profile: UserProfile,
+    stream_id: int,
+    topic_name: str,
+) -> None:
+    try:
+        topic = Topic.objects.get(
+            realm=user_profile.realm.id, stream=stream_id, topic_name__iexact=topic_name
+        )
+
+        if topic.locked and not user_profile.is_moderator and not user_profile.is_realm_admin:
+            raise OrganizationModeratorRequiredError
+
+    except Topic.DoesNotExist:
+        return None
+
+
+def get_topic_settings(stream_ids: List[int]) -> List[Dict[str, Any]]:
+    topic_settings = Topic.objects.filter(
+        stream_id__in=stream_ids,
+    ).values("stream_id", "topic_name", "locked")
+
+    topic_settings_list = [
+        {
+            "stream_id": setting["stream_id"],
+            "topic_name": setting["topic_name"],
+            "topic_locked": setting["locked"],
+        }
+        for setting in topic_settings
+    ]
+
+    return topic_settings_list
+
+
+def delete_topic(realm_id: int, stream_id: int, topic_name: str) -> bool:
+    try:
+        topic = Topic.objects.get(realm=realm_id, stream=stream_id, topic_name__iexact=topic_name)
+
+        topic.delete()
+        return True
+
+    except Topic.DoesNotExist:
+        return False

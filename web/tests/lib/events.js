@@ -773,6 +773,15 @@ exports.fixtures = {
         value: true,
     },
 
+    topic__update: {
+        type: "topic",
+        op: "update",
+        name: "topic name",
+        stream_id: 99,
+        property: "topic_locked",
+        value: true,
+    },
+
     typing__start: {
         type: "typing",
         op: "start",

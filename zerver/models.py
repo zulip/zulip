@@ -5151,3 +5151,20 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
 
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
+
+
+class Topic(models.Model):
+    topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    locked = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                "realm_id",
+                "stream_id",
+                Lower("topic_name"),
+                name="zerver_topic_unique",
+            ),
+        ]

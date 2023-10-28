@@ -72,7 +72,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import access_stream_for_send_message, ensure_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.topic import participants_for_topic
+from zerver.lib.topic import check_write_access_to_topic, participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.validator import check_widget_content
@@ -1311,6 +1311,7 @@ def check_send_message(
             sender_queue_id,
             widget_content,
             skip_stream_access_check=skip_stream_access_check,
+            check_topic_access=True,
         )
     except ZephyrMessageAlreadySentError as e:
         return SentMessageResult(message_id=e.message_id)
@@ -1473,6 +1474,7 @@ def check_message(
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
+    check_topic_access: bool = False,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1499,6 +1501,11 @@ def check_message(
         else:
             stream = addressee.stream()
         assert stream is not None
+
+        if check_topic_access:
+            check_write_access_to_topic(
+                user_profile=sender, stream_id=stream.id, topic_name=topic_name
+            )
 
         # To save a database round trip, we construct the Recipient
         # object for the Stream rather than fetching it from the

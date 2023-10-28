@@ -4700,6 +4700,48 @@ paths:
                                   "op": "remove",
                                   "scheduled_message_id": 17,
                                 }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to updat topic settings.
+
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - topic
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the stream the topic is in.
+                                name:
+                                  type: string
+                                  description: |
+                                    The name of the topic.
+                                value:
+                                  type: boolean
+                                  description: |
+                                    The new value of the property to update.
+                                property:
+                                  type: string
+                                  description: |
+                                    The property being updated.
+                              example:
+                                {
+                                  "type": "topic",
+                                  "op": "update",
+                                  "property": "topic_locked",
+                                  "value": false,
+                                  "name": "test topic",
+                                  "stream_id": 17,
+                                }
                       queue_id:
                         type: string
                         description: |
@@ -8562,15 +8604,19 @@ paths:
                               description: |
                                 The name of the topic.
                               type: string
+                            locked:
+                              description: |
+                                The locked status of the topic.
+                              type: boolean
                     example:
                       {
                         "msg": "",
                         "result": "success",
                         "topics":
                           [
-                            {"max_id": 26, "name": "Denmark3"},
-                            {"max_id": 23, "name": "Denmark1"},
-                            {"max_id": 6, "name": "Denmark2"},
+                            {"max_id": 26, "name": "Denmark3", "locked": false},
+                            {"max_id": 23, "name": "Denmark1", "locked": true},
+                            {"max_id": 6, "name": "Denmark2", "locked": false},
                           ],
                       }
         "400":
@@ -15044,6 +15090,26 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           The full name of the current user.
+                      topic:
+                        type: array
+                        description: |
+                          Array of topic settings.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            stream_id:
+                              type: integer
+                              description: |
+                                Id of the stream the topic is in.
+                            topic_name:
+                              type: string
+                              description: |
+                                Display name of the topic.
+                            topic_locked:
+                              type: boolean
+                              description: |
+                                Return true if the topic is read-only.
                       cross_realm_bots:
                         type: array
                         description: |
@@ -16726,6 +16792,51 @@ paths:
                     description: |
                       Error when the user does not have permission
                       to delete topics in this organization:
+  /topics/lock:
+    post:
+      operationId: lock-topic
+      summary: Lock a topic
+      tags: ["streams", "topics"]
+      description: |
+        Lock or unlocks a topic.
+
+      x-requires-administrator: true
+      parameters:
+        - name: stream_id
+          in: query
+          description: |
+            The stream_id of the stream the topic is in.
+          schema:
+            type: integer
+          example: 7
+          required: true
+        - name: topic_name
+          in: query
+          description: |
+            The name of the topic to lock.
+          schema:
+            type: string
+          example: new coffee machine
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Must be a moderator",
+                        "code": "UNAUTHORIZED_PRINCIPAL",
+                      }
+                    description: |
+                      Error when the user does not have permission
+                      to lock topics in this organization:
   /typing:
     post:
       operationId: set-typing-status

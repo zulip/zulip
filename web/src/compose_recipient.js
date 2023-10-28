@@ -20,6 +20,7 @@ import * as settings_config from "./settings_config";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import * as topic_list_data from "./topic_list_data";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
@@ -112,6 +113,19 @@ export function get_posting_policy_error_message() {
     if (stream && !stream_data.can_post_messages_in_stream(stream)) {
         return $t({
             defaultMessage: "You do not have permission to post in this stream.",
+        });
+    }
+
+    if (
+        !(page_params.is_admin || page_params.is_moderator) &&
+        compose_state.stream_id() &&
+        !topic_list_data.can_post_messages_in_topic(
+            compose_state.stream_id(),
+            compose_state.topic(),
+        )
+    ) {
+        return $t({
+            defaultMessage: "This topic has been locked by a moderator.",
         });
     }
     return "";
@@ -333,6 +347,7 @@ export function initialize() {
     // changes for the stream dropdown are handled in on_compose_select_recipient_update
     $("#stream_message_recipient_topic,#private_message_recipient").on("change", () => {
         update_on_recipient_change();
+        check_posting_policy_for_compose_box();
         compose_state.set_recipient_edited_manually(true);
     });
 }

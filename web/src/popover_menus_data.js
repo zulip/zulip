@@ -16,6 +16,7 @@ import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
+import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
@@ -124,6 +125,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
+    const topic_settings = stream_topic_history.get_topic_settings(stream_id, topic_name);
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -139,6 +141,8 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         url,
         visibility_policy,
         all_visibility_policies,
+        is_realm_moderator: page_params.is_moderator || page_params.is_admin,
+        topic_locked: topic_settings.topic_locked,
     };
 }
 

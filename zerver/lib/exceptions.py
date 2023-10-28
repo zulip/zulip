@@ -286,6 +286,18 @@ class OrganizationOwnerRequiredError(JsonableError):
         return _("Must be an organization owner")
 
 
+class OrganizationModeratorRequiredError(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Must be a moderator")
+
+
 class AuthenticationFailedError(JsonableError):
     # Generic class for authentication failures
     code: ErrorCode = ErrorCode.AUTHENTICATION_FAILED
