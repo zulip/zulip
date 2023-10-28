@@ -85,6 +85,19 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
+let is_triggered_via_hotkey = false;
+
+function focus_first_not_org_info_item_on_focus($popper) {
+    if (is_triggered_via_hotkey) {
+        // Focus the first item in the gear menu popover.
+        $popper
+            .find(".navbar-dropdown-menu-outer-list-item:not(.org-info) a:visible")
+            .first()
+            .trigger("focus");
+        is_triggered_via_hotkey = false;
+    }
+}
+
 function render(instance) {
     const rendered_gear_menu = render_gear_menu_popover(
         popover_menus_data.get_gear_menu_content_context(),
@@ -111,6 +124,8 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.gear_menu = instance;
+            focus_first_not_org_info_item_on_focus($popper);
+
             $popper.on("click", ".webathena_login", (e) => {
                 $("#zephyr-mirror-error").removeClass("show");
                 const principal = ["zephyr", "zephyr"];
@@ -189,7 +204,7 @@ export function initialize() {
     });
 }
 
-export function toggle() {
+export function toggle(triggered_via_hotkey) {
     if (popover_menus.is_gear_menu_popover_displayed()) {
         popovers.hide_all();
         return;
@@ -201,6 +216,7 @@ export function toggle() {
         popovers.hide_all();
     }
 
+    is_triggered_via_hotkey = Boolean(triggered_via_hotkey);
     $("#gear-menu").trigger("click");
 }
 

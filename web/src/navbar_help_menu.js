@@ -6,6 +6,8 @@ import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import {parse_html} from "./ui_util";
 
+let is_triggered_via_hotkey = false;
+
 export function initialize() {
     popover_menus.register_popover_menu("#help-menu", {
         theme: "navbar-dropdown-menu",
@@ -27,6 +29,10 @@ export function initialize() {
         },
         onMount(instance) {
             popover_menus.popover_instances.help_menu = instance;
+            if (is_triggered_via_hotkey) {
+                popover_menus.focus_first_popover_item_from_instance(instance);
+                is_triggered_via_hotkey = false;
+            }
         },
         onShow(instance) {
             instance.setContent(
@@ -44,9 +50,10 @@ export function initialize() {
     });
 }
 
-export function toggle() {
+export function toggle(triggered_via_hotkey) {
     // NOTE: Since to open help menu, you need to click on help navbar icon (which calls
     // tippyjs.hideAll()), or go via gear menu if using hotkeys, we don't need to
     // call tippyjs.hideAll() for it.
     $("#help-menu").trigger("click");
+    is_triggered_via_hotkey = Boolean(triggered_via_hotkey);
 }

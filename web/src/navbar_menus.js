@@ -12,7 +12,7 @@ export function is_navbar_menus_displayed() {
     );
 }
 
-export function handle_keyboard_events(event_name) {
+export function handle_keyboard_events(event_name, triggered_via_hotkey) {
     // We don't need to process arrow keys in navbar menus for spectators
     // since they only have gear menu present.
     if (
@@ -22,7 +22,7 @@ export function handle_keyboard_events(event_name) {
     ) {
         // Open gear menu popover on left arrow.
         personal_menu_popover.toggle();
-        gear_menu.toggle();
+        gear_menu.toggle(triggered_via_hotkey);
         return true;
     }
 
@@ -32,7 +32,7 @@ export function handle_keyboard_events(event_name) {
     ) {
         // Open gear menu popover on right arrow.
         navbar_help_menu.toggle();
-        gear_menu.toggle();
+        gear_menu.toggle(triggered_via_hotkey);
         return true;
     }
 
@@ -43,12 +43,12 @@ export function handle_keyboard_events(event_name) {
         } else if (event_name === "right_arrow" && !page_params.is_spectator) {
             // Open personal menu popover on g + right arrow.
             gear_menu.toggle();
-            personal_menu_popover.toggle();
+            personal_menu_popover.toggle(triggered_via_hotkey);
             return true;
         } else if (event_name === "left_arrow") {
             // Open help menu popover on g + left arrow.
             gear_menu.toggle();
-            navbar_help_menu.toggle();
+            navbar_help_menu.toggle(triggered_via_hotkey);
             return true;
         }
     }

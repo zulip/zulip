@@ -73,6 +73,11 @@ export function focus_first_popover_item($items, index = 0) {
     $items.eq(index).expectOne().trigger("focus");
 }
 
+export function focus_first_popover_item_from_instance(instance, index = 0) {
+    const items = get_popover_items_for_instance(instance);
+    focus_first_popover_item(items, index);
+}
+
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
     const items = get_popover_items_for_instance(instance);
     popover_items_handle_keyboard(key, items);
