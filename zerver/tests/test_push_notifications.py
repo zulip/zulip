@@ -603,9 +603,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "gcm_options": {},
         }
         with mock.patch(
-            "zilencer.views.send_android_push_notification"
+            "zilencer.views.send_android_push_notification", return_value=2
         ) as android_push, mock.patch(
-            "zilencer.views.send_apple_push_notification"
+            "zilencer.views.send_apple_push_notification", return_value=1
         ) as apple_push, self.assertLogs(
             "zilencer.views", level="INFO"
         ) as logger:
@@ -698,8 +698,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
         }
         time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
         with time_machine.travel(time_received, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification"
-        ), mock.patch("zilencer.views.send_apple_push_notification"), self.assertLogs(
+            "zilencer.views.send_android_push_notification", return_value=1
+        ), mock.patch(
+            "zilencer.views.send_apple_push_notification", return_value=1
+        ), self.assertLogs(
             "zilencer.views", level="INFO"
         ) as logger:
             result = self.uuid_post(

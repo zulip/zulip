@@ -1439,8 +1439,10 @@ class TestLoggingCountStats(AnalyticsTestCase):
         }
         now = timezone_now()
         with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification"
-        ), mock.patch("zilencer.views.send_apple_push_notification"), self.assertLogs(
+            "zilencer.views.send_android_push_notification", return_value=1
+        ), mock.patch(
+            "zilencer.views.send_apple_push_notification", return_value=1
+        ), self.assertLogs(
             "zilencer.views", level="INFO"
         ):
             result = self.uuid_post(
@@ -1452,13 +1454,17 @@ class TestLoggingCountStats(AnalyticsTestCase):
             )
             self.assert_json_success(result)
 
-        # There are 3 devices we created for the user, and the Count increment should
-        # match that number.
+        # There are 3 devices we created for the user:
+        # 1. The mobile_pushes_received increment should match that number.
+        # 2. mobile_pushes_forwarded only counts successful deliveries, and we've set up
+        #    the mocks above to simulate 1 successful android and 1 successful apple delivery.
+        #    Thus the increment should be just 2.
         self.assertTableState(
             RemoteInstallationCount,
             ["property", "value", "subgroup", "server", "remote_id", "end_time"],
             [
                 ["mobile_pushes_received::day", 3, None, self.server, None, ceiling_to_day(now)],
+                ["mobile_pushes_forwarded::day", 2, None, self.server, None, ceiling_to_day(now)],
             ],
         )
 
