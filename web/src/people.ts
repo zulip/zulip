@@ -335,6 +335,8 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
         return undefined;
     }
 
+    emails = emails.map((email) => email.toLowerCase());
+
     return sortEmails(emails,user_ids).join(",");
 }
 
