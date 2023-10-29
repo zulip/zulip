@@ -100,6 +100,7 @@ from zerver.actions.streams import (
     do_rename_stream,
 )
 from zerver.actions.submessage import do_add_submessage
+from zerver.actions.topics import notify_topic_locked_status
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
@@ -233,6 +234,7 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
+    Topic,
     UserGroup,
     UserMessage,
     UserPresence,
@@ -3154,6 +3156,28 @@ class NormalActionsTest(BaseAction):
         )
         check_user_settings_update("events[0]", events[0])
 
+    def test_topic_locked_status(self) -> None:
+        topic_name="test"
+        stream = get_stream("Denmark", self.user_profile.realm)
+        self.subscribe(user_profile=self.user_profile, stream_name=stream.name)
+
+
+        topic = Topic.objects.create(
+            realm=self.user_profile.realm,
+            stream=stream,
+            topic_name=topic_name,
+            locked=True
+        )
+
+        action = lambda: notify_topic_locked_status(
+            topic=topic,
+            user_profile=self.user_profile,
+        )
+        
+        self.verify_action(
+            action=action,
+            state_change_expected=False,
+        )
 
 class RealmPropertyActionTest(BaseAction):
     def do_set_realm_property_test(self, name: str) -> None:
