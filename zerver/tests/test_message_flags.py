@@ -1889,6 +1889,7 @@ class MarkUnreadTest(ZulipTestCase):
                 dict(
                     type="stream",
                     mentioned=True,
+                    mentioned_me_directly=True,
                     topic="test",
                     unmuted_stream_msg=True,
                     stream_id=stream.id,
@@ -2215,6 +2216,7 @@ class MarkUnreadTest(ZulipTestCase):
                     type="private",
                     user_ids=[sender.id],
                     mentioned=True,
+                    mentioned_me_directly=True,
                 ),
             )
 
