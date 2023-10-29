@@ -97,7 +97,9 @@
                 <p>
                     <strong>Stream ID:</strong> {{sub.stream_id}}
                 </p>
-
+                <p>
+                    Created by <span class="user-pill" data-user-id="{{sub.creator_id}}">@{{sub.creator_name}}</span> on {{sub.creation_date}}. <a href="{{sub.stream_events_link}}">Stream events</a>
+                </p>
             </div>
         </div>
 
