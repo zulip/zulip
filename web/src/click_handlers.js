@@ -574,7 +574,7 @@ export function initialize() {
     });
 
     // DIRECT MESSAGE LIST TOOLTIPS (not displayed on touch devices)
-    $("body").on("mouseenter", ".pm_user_status", (e) => {
+    $("body").on("mouseenter", ".dm-user-status", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
         const user_ids_string = $elem.attr("data-user-ids-string");
