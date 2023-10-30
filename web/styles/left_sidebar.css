@@ -270,12 +270,23 @@ li.show-more-topics {
                 color: inherit;
             }
 
-            .pm_left_col {
-                min-width: $left_col_size;
+            /* TODO: Consolidate and eliminate these temporary
+               styles once CSS Grid is in place, taking care to
+               preserve the opacity on icons that need it. */
+            .fa-group,
+            .zulip-icon,
+            .user_circle {
+                display: block;
+            }
 
-                & span:not(.user_circle) {
-                    opacity: 0.7;
-                }
+            .fa-group,
+            .zulip-icon {
+                min-width: $left_col_size;
+                opacity: 0.7;
+            }
+
+            .user_circle {
+                margin-right: 7px;
             }
         }
 
