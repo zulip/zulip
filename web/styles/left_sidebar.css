@@ -219,7 +219,7 @@ li.show-more-topics {
     width: 100%;
 }
 
-.private_messages_container {
+.direct-messages-container {
     margin-right: 16px;
     margin-left: 6px;
     z-index: 1;
@@ -1168,7 +1168,7 @@ li.topic-list-item {
         display: none;
     }
 
-    &.private_messages_container ul.pm-list {
+    &.direct-messages-container ul.pm-list {
         margin-bottom: $bottom_scrolling_buffer;
     }
 
