@@ -594,6 +594,25 @@ paths:
                                             should update any data structures associated
                                             with this user to use this new value as the
                                             user's Zulip API email address.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When a user is deactivated or reactivated.
+
+                                        **Changes**: New in Zulip 8.0 (feature level
+                                        222). Previously the server sent a `realm_user` event with
+                                        `op` field set to `remove` when deactivating a user and a
+                                        `realm_user` event with `op` field set to `add` when
+                                        reactivating a user.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        is_active:
+                                          type: boolean
+                                          description: |
+                                            A boolean describing whether the user account has been deactivated.
                               additionalProperties: false
                               example:
                                 {
@@ -1048,8 +1067,12 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to all users in a Zulip organization when
-                                a user is deactivated.
+                                No longer sent by modern Zulip servers.
+
+                                **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
+
+                                Previously, this event was sent to all users in a Zulip organization when a
+                                user was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3715,6 +3738,11 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users when a bot has been deactivated.
+
+                                **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
+
+                                Previously, this event was sent to all users in a Zulip organization when a
+                                bot was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -17982,6 +18010,15 @@ components:
             owner_id:
               nullable: true
             services: {}
+            is_active:
+              type: boolean
+              description: |
+                A boolean describing whether the user account has been deactivated.
+
+                **Changes**: New in Zulip 8.0 (feature level 222). Previously
+                we sent `realm_user` event with `op` field set to `remove`
+                when deactivating a bot and `realm_user` event with `op`
+                field set to `add` when reactivating a bot.
     BasicBotBase:
       type: object
       properties:

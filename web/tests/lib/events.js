@@ -440,15 +440,6 @@ exports.fixtures = {
         },
     },
 
-    realm_bot__remove: {
-        type: "realm_bot",
-        op: "remove",
-        bot: {
-            user_id: 42,
-            full_name: "The Bot",
-        },
-    },
-
     realm_bot__update: {
         type: "realm_bot",
         op: "update",
@@ -565,15 +556,6 @@ exports.fixtures = {
             timezone: "America/New_York",
             date_joined: "2020-01-01",
             delivery_email: "test-delivery@example.com",
-        },
-    },
-
-    realm_user__remove: {
-        type: "realm_user",
-        op: "remove",
-        person: {
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
         },
     },
 

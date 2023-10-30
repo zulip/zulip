@@ -299,23 +299,23 @@ def do_deactivate_user(
 
         transaction.on_commit(lambda: delete_user_sessions(user_profile))
 
-        event_remove_user = dict(
+        event_deactivate_user = dict(
             type="realm_user",
-            op="remove",
-            person=dict(user_id=user_profile.id, full_name=user_profile.full_name),
+            op="update",
+            person=dict(user_id=user_profile.id, is_active=False),
         )
         send_event_on_commit(
-            user_profile.realm, event_remove_user, active_user_ids(user_profile.realm_id)
+            user_profile.realm, event_deactivate_user, active_user_ids(user_profile.realm_id)
         )
 
         if user_profile.is_bot:
-            event_remove_bot = dict(
+            event_deactivate_bot = dict(
                 type="realm_bot",
-                op="remove",
-                bot=dict(user_id=user_profile.id, full_name=user_profile.full_name),
+                op="update",
+                bot=dict(user_id=user_profile.id, is_active=False),
             )
             send_event_on_commit(
-                user_profile.realm, event_remove_bot, bot_owner_user_ids(user_profile)
+                user_profile.realm, event_deactivate_bot, bot_owner_user_ids(user_profile)
             )
 
 

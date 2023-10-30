@@ -46,6 +46,7 @@ from zerver.models import (
     UserGroupMembership,
     UserMessage,
     UserProfile,
+    active_user_ids,
     bot_owner_user_ids,
     get_system_bot,
 )
@@ -639,10 +640,21 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
     if settings.BILLING_ENABLED:
         update_license_ledger_if_needed(user_profile.realm, event_time)
 
-    notify_created_user(user_profile)
+    event = dict(
+        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)
+    )
+    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     if user_profile.is_bot:
-        notify_created_bot(user_profile)
+        event = dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=user_profile.id,
+                is_active=True,
+            ),
+        )
+        send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
         if bot_owner_changed:
             from zerver.actions.bots import send_bot_owner_update_events
