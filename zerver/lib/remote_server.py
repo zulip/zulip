@@ -13,7 +13,7 @@ from version import ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.models import RealmAuditLog
+from zerver.models import Realm, RealmAuditLog
 
 
 class PushBouncerSession(OutgoingSession):
@@ -172,6 +172,24 @@ def build_analytics_data(
     )
 
 
+def get_realms_info_for_push_bouncer() -> List[Dict[str, Any]]:
+    realms = Realm.objects.order_by("id")
+    realm_info_dicts = [
+        dict(
+            id=realm.id,
+            uuid=str(realm.uuid),
+            uuid_owner_secret=realm.uuid_owner_secret,
+            host=realm.host,
+            url=realm.uri,
+            deactivated=realm.deactivated,
+            date_created=realm.date_created.timestamp(),
+        )
+        for realm in realms
+    ]
+
+    return realm_info_dicts
+
+
 def send_analytics_to_push_bouncer() -> None:
     # first, check what's latest
     try:
@@ -203,6 +221,7 @@ def send_analytics_to_push_bouncer() -> None:
         "realm_counts": orjson.dumps(realm_count_data).decode(),
         "installation_counts": orjson.dumps(installation_count_data).decode(),
         "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
+        "realms": orjson.dumps(get_realms_info_for_push_bouncer()).decode(),
         "version": orjson.dumps(ZULIP_VERSION).decode(),
     }
 

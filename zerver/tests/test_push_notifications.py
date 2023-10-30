@@ -70,6 +70,7 @@ from zerver.models import (
     Message,
     NotificationTriggers,
     PushDeviceToken,
+    Realm,
     RealmAuditLog,
     Recipient,
     Stream,
@@ -87,6 +88,7 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import (
         RemoteInstallationCount,
         RemotePushDeviceToken,
+        RemoteRealm,
         RemoteRealmAuditLog,
         RemoteRealmCount,
         RemoteZulipServer,
@@ -1014,6 +1016,34 @@ class AnalyticsBouncerTest(BouncerTestCase):
         send_analytics_to_push_bouncer()
         check_counts(2, 2, 1, 1, 1)
 
+        self.assertEqual(
+            list(
+                RemoteRealm.objects.order_by("id").values(
+                    "server_id",
+                    "uuid",
+                    "uuid_owner_secret",
+                    "host",
+                    "realm_date_created",
+                    "registration_deactivated",
+                    "realm_deactivated",
+                    "plan_type",
+                )
+            ),
+            [
+                {
+                    "server_id": self.server.id,
+                    "uuid": realm.uuid,
+                    "uuid_owner_secret": realm.uuid_owner_secret,
+                    "host": realm.host,
+                    "realm_date_created": realm.date_created,
+                    "registration_deactivated": False,
+                    "realm_deactivated": False,
+                    "plan_type": RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+                }
+                for realm in Realm.objects.order_by("id")
+            ],
+        )
+
         # Test having no new rows
         send_analytics_to_push_bouncer()
         check_counts(3, 2, 1, 1, 1)
@@ -1147,6 +1177,44 @@ class AnalyticsBouncerTest(BouncerTestCase):
             send_analytics_to_push_bouncer()
         self.assertEqual(m.output, ["WARNING:root:Invalid property invalid count stat"])
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_remote_realm_duplicate_uuid(self) -> None:
+        """
+        Tests for a case where a RemoteRealm with a certain uuid is already registered for one server,
+        and then another server tries to register the same uuid. This generally shouldn't happen,
+        because export->import of a realm should re-generate the uuid, but we should have error
+        handling for this edge case nonetheless.
+        """
+
+        second_server = RemoteZulipServer.objects.create(
+            uuid=uuid.uuid4(),
+            api_key="magic_secret_api_key2",
+            hostname="demo2.example.com",
+            last_updated=now(),
+        )
+
+        self.add_mock_response()
+        user = self.example_user("hamlet")
+        realm = user.realm
+
+        RemoteRealm.objects.create(
+            server=second_server,
+            uuid=realm.uuid,
+            uuid_owner_secret=realm.uuid_owner_secret,
+            host=realm.host,
+            realm_date_created=realm.date_created,
+            registration_deactivated=False,
+            realm_deactivated=False,
+            plan_type=RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+        )
+
+        with transaction.atomic(), self.assertLogs(level="WARNING") as m:
+            # The usual atomic() wrapper to avoid IntegrityError breaking the test's
+            # transaction.
+            send_analytics_to_push_bouncer()
+        self.assertEqual(m.output, ["WARNING:root:Duplicate registration detected."])
 
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
     # and don't send realmauditlog_rows. Make sure that continues to work.

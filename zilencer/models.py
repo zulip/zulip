@@ -84,6 +84,41 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
         return f"{self.server!r} {self.user_id}"
 
 
+class RemoteRealm(models.Model):
+    """
+    Each object corresponds to a single remote Realm that is using the
+    Mobile Push Notifications Service via `manage.py register_server`.
+    """
+
+    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+
+    # The unique UUID and secret for this realm.
+    uuid = models.UUIDField(unique=True)
+    uuid_owner_secret = models.TextField()
+
+    # Value obtained's from the remote server's realm.host.
+    host = models.TextField()
+
+    # The fields below are analogical to RemoteZulipServer fields.
+
+    last_updated = models.DateTimeField("last updated", auto_now=True)
+
+    # Whether the realm registration has been deactivated.
+    registration_deactivated = models.BooleanField(default=False)
+    # Whether the realm has been deactivated on the remote server.
+    realm_deactivated = models.BooleanField(default=False)
+
+    # When the realm was created on the remote server.
+    realm_date_created = models.DateTimeField()
+
+    # Plan types for self-hosted customers
+    PLAN_TYPE_SELF_HOSTED = 1
+    PLAN_TYPE_STANDARD = 102
+
+    # The current billing plan for the remote server, similar to Realm.plan_type.
+    plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED, db_index=True)
+
+
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
     """Audit data associated with a remote Zulip server (not specific to a
     realm).  Used primarily for tracking registration and billing
