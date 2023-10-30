@@ -13,7 +13,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-12 17:43+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: David Wood <heavy.spot0252@fuligin.ink>, 2022-2023\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>, 2023\n"
 "Language-Team: English (United Kingdom) (http://app.transifex.com/zulip/zulip/language/en_GB/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -514,7 +514,7 @@ msgstr "Billing"
 
 #: templates/corporate/billing.html:243
 msgid "Confirm license increase"
-msgstr ""
+msgstr "Confirm licence increase"
 
 #: templates/corporate/billing.html:245
 #: templates/zerver/change_email_address_visibility_modal.html:8
@@ -805,7 +805,7 @@ msgstr "Sign up with %(identity_provider)s"
 
 #: templates/zerver/accounts_home.html:92
 msgid "Already have an account?"
-msgstr ""
+msgstr "Already have an account?"
 
 #: templates/zerver/accounts_home.html:92 templates/zerver/footer.html:17
 #: templates/zerver/log_into_subdomain_token_invalid.html:13
@@ -938,7 +938,7 @@ msgid ""
 "        organization first. Please use EmailAuthBackend to create\n"
 "        your organization and then try again.\n"
 "    "
-msgstr ""
+msgstr "\n        You are trying to log in using LDAP without creating an\n        organisation first. Please use EmailAuthBackend to create\n        your organisation and then try again.\n    "
 
 #: templates/zerver/confirm_continue_registration.html:4
 msgid "Account not found"
@@ -1095,7 +1095,7 @@ msgstr "Normal users"
 
 #: templates/zerver/development/email_log.html:34
 msgid "Forward emails to an email account"
-msgstr ""
+msgstr "Forward emails to an email account"
 
 #: templates/zerver/development/email_log.html:68
 msgid "Close"
@@ -2896,7 +2896,7 @@ msgstr "{user} accepted your invitation to join Zulip!"
 #: zerver/actions/create_user.py:597
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
-msgstr ""
+msgstr "Cannot activate a placeholder account; ask the user to sign up, instead."
 
 #: zerver/actions/custom_profile_fields.py:126
 msgid "Invalid order mapping."
@@ -5253,7 +5253,7 @@ msgstr "<p>You are not authorised to view this file.</p>"
 
 #: zerver/views/typing.py:35
 msgid "Missing stream_id"
-msgstr ""
+msgstr "Missing stream_id"
 
 #: zerver/views/typing.py:41
 msgid "User has disabled typing notifications for stream messages"
@@ -5261,7 +5261,7 @@ msgstr "User has disabled typing notifications for stream messages"
 
 #: zerver/views/typing.py:50
 msgid "Missing 'to' argument"
-msgstr ""
+msgstr "Missing 'to' argument"
 
 #: zerver/views/typing.py:55
 msgid "Empty 'to' list"
@@ -5559,7 +5559,7 @@ msgstr "Unknown WordPress webhook action: {hook}"
 msgid ""
 "Your data export is complete. [View and download "
 "exports]({export_settings_link})."
-msgstr ""
+msgstr "Your data export is complete. [View and download exports]({export_settings_link})."
 
 #: zilencer/auth.py:84
 msgid "Invalid subdomain for push notifications bouncer"
