@@ -16,7 +16,7 @@ from corporate.lib.stripe import (
     MIN_INVOICED_LICENSES,
     BillingError,
     compute_plan_parameters,
-    ensure_realm_does_not_have_active_plan,
+    ensure_customer_does_not_have_active_plan,
     get_latest_seat_count,
     is_free_trial_offer_enabled,
     is_sponsored_realm,
@@ -169,7 +169,9 @@ def upgrade(
     ),
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
-    ensure_realm_does_not_have_active_plan(user.realm)
+    customer = get_customer_by_realm(user.realm)
+    if customer is not None:
+        ensure_customer_does_not_have_active_plan(customer)
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
         if billing_modality == "charge_automatically" and license_management == "automatic":
@@ -178,7 +180,6 @@ def upgrade(
             schedule = "annual"
             license_management = "manual"
 
-        customer = get_customer_by_realm(user.realm)
         exempt_from_license_number_check = (
             customer is not None and customer.exempt_from_license_number_check
         )
