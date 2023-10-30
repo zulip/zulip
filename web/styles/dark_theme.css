@@ -430,7 +430,7 @@
 
     .active_private_messages_section {
         #private_messages_section,
-        #private_messages_list,
+        #direct-messages-list,
         #hide-more-direct-messages {
             background-color: hsl(199deg 33% 46% / 20%);
         }
