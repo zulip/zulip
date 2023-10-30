@@ -6,6 +6,7 @@ import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
@@ -26,7 +27,6 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
-import * as recent_view_data from "./recent_view_data";
 import * as recent_view_util from "./recent_view_util";
 import * as scroll_util from "./scroll_util";
 import * as sidebar_ui from "./sidebar_ui";
@@ -94,7 +94,7 @@ const recent_conversation_key_prefix = "recent_conversation:";
 export function clear_for_tests() {
     filters.clear();
     dropdown_filters.clear();
-    recent_view_data.conversations.clear();
+    all_messages_data.recent_view_data.conversations.clear();
     topics_widget = undefined;
 }
 
@@ -325,7 +325,8 @@ export function get_focused_row_message() {
         const $topic_rows = $("#recent_view_table table tbody tr");
         const $topic_row = $topic_rows.eq(row_focus);
         const conversation_id = $topic_row.attr("id").slice(recent_conversation_key_prefix.length);
-        const topic_last_msg_id = recent_view_data.conversations.get(conversation_id).last_msg_id;
+        const topic_last_msg_id =
+            all_messages_data.recent_view_data.conversations.get(conversation_id).last_msg_id;
         return message_store.get(topic_last_msg_id);
     }
     return undefined;
@@ -351,9 +352,14 @@ export function revive_current_focus() {
         if (last_visited_topic) {
             // If the only message in the topic was deleted,
             // then the topic will not be in Recent Conversations data.
-            if (recent_view_data.conversations.get(last_visited_topic) !== undefined) {
+            if (
+                all_messages_data.recent_view_data.conversations.get(last_visited_topic) !==
+                undefined
+            ) {
                 const topic_last_msg_id =
-                    recent_view_data.conversations.get(last_visited_topic).last_msg_id;
+                    all_messages_data.recent_view_data.conversations.get(
+                        last_visited_topic,
+                    ).last_msg_id;
                 const current_list = topics_widget.get_current_list();
                 const last_visited_topic_index = current_list.findIndex(
                     (topic) => topic.last_msg_id === topic_last_msg_id,
@@ -410,7 +416,7 @@ export function process_messages(messages, msg_list_data) {
     let conversation_data_updated = false;
     if (messages.length > 0) {
         for (const msg of messages) {
-            if (recent_view_data.process_message(msg)) {
+            if (all_messages_data.recent_view_data.process_message(msg)) {
                 conversation_data_updated = true;
             }
         }
@@ -616,7 +622,9 @@ function get_topic_row(topic_data) {
 export function process_topic_edit(old_stream_id, old_topic, new_topic, new_stream_id) {
     // See `recent_senders.process_topic_edit` for
     // logic behind this and important notes on use of this function.
-    recent_view_data.conversations.delete(recent_view_util.get_topic_key(old_stream_id, old_topic));
+    all_messages_data.recent_view_data.conversations.delete(
+        recent_view_util.get_topic_key(old_stream_id, old_topic),
+    );
 
     const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
     process_messages(old_topic_msgs);
@@ -639,7 +647,9 @@ export function update_topics_of_deleted_message_ids(message_ids) {
     const topics_to_rerender = message_util.get_topics_for_message_ids(message_ids);
 
     for (const [stream_id, topic] of topics_to_rerender.values()) {
-        recent_view_data.conversations.delete(recent_view_util.get_topic_key(stream_id, topic));
+        all_messages_data.recent_view_data.conversations.delete(
+            recent_view_util.get_topic_key(stream_id, topic),
+        );
         const msgs = message_util.get_messages_in_topic(stream_id, topic);
         process_messages(msgs);
     }
@@ -721,11 +731,11 @@ export function inplace_rerender(topic_key) {
     if (!recent_view_util.is_visible()) {
         return false;
     }
-    if (!recent_view_data.conversations.has(topic_key)) {
+    if (!all_messages_data.recent_view_data.conversations.has(topic_key)) {
         return false;
     }
 
-    const topic_data = recent_view_data.conversations.get(topic_key);
+    const topic_data = all_messages_data.recent_view_data.conversations.get(topic_key);
     const $topic_row = get_topic_row(topic_data);
     // We cannot rely on `topic_widget.meta.filtered_list` to know
     // if a topic is rendered since the `filtered_list` might have
@@ -771,7 +781,7 @@ export function inplace_rerender(topic_key) {
 
 export function update_topic_visibility_policy(stream_id, topic) {
     const key = recent_view_util.get_topic_key(stream_id, topic);
-    if (!recent_view_data.conversations.has(key)) {
+    if (!all_messages_data.recent_view_data.conversations.has(key)) {
         // we receive mute request for a topic we are
         // not tracking currently
         return false;
@@ -1003,7 +1013,9 @@ export function complete_rerender() {
     }
 
     // Show topics list
-    const mapped_topic_values = [...recent_view_data.get_conversations().values()];
+    const mapped_topic_values = [
+        ...all_messages_data.recent_view_data.get_conversations().values(),
+    ];
 
     if (topics_widget) {
         topics_widget.replace_list_data(mapped_topic_values);

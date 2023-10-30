@@ -3,6 +3,7 @@ import {FetchStatus} from "./fetch_status";
 import type {Filter} from "./filter";
 import type {Message} from "./message_store";
 import * as muted_users from "./muted_users";
+import type {RecentViewData} from "./recent_view_data";
 import {current_user} from "./state_data";
 import * as unread from "./unread";
 import * as user_topics from "./user_topics";
@@ -17,6 +18,7 @@ export class MessageListData {
     excludes_muted_topics: boolean;
     _local_only: Set<number>;
     _selected_id: number;
+    _recent_view_data: RecentViewData;
     predicate?: (message: Message) => boolean;
 
     // MessageListData is a core data structure for keeping track of a
@@ -26,7 +28,15 @@ export class MessageListData {
     // See also MessageList and MessageListView, which are important
     // to actually display a message list.
 
-    constructor({excludes_muted_topics, filter}: {excludes_muted_topics: boolean; filter: Filter}) {
+    constructor({
+        excludes_muted_topics,
+        filter,
+        recent_view_data,
+    }: {
+        excludes_muted_topics: boolean;
+        filter: Filter;
+        recent_view_data: RecentViewData;
+    }) {
         // The Filter object defines which messages match the narrow,
         // and defines most of the configuration for the MessageListData.
         this.filter = filter;
@@ -36,6 +46,14 @@ export class MessageListData {
         // that the server possesses matching this narrow, and whether
         // we're in the progress of fetching more.
         this.fetch_status = new FetchStatus();
+
+        // The RecentViewData object keeps track of data for a recent
+        // view associated with this message list. For example, Recent
+        // Conversations is the recent view for All Messages, but
+        // we plan on adding recent views for stream narrows as well.
+        // If there's no recent view version of a message list,
+        // _recent_view_data is null.
+        this._recent_view_data = recent_view_data || null;
 
         // _all_items is a sorted list of all message objects that
         // match this.filter, regardless of muting.
@@ -64,6 +82,10 @@ export class MessageListData {
         // there is no selected message. A common situation is when
         // there are no messages matching the current filter.
         this._selected_id = -1;
+    }
+
+    get recent_view_data(): RecentViewData {
+        return this._recent_view_data;
     }
 
     all_messages(): Message[] {

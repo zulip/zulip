@@ -14,7 +14,6 @@ import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
-import * as recent_view_data from "./recent_view_data";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
 import {current_user} from "./state_data";
@@ -371,7 +370,7 @@ export function reify_message_id(local_id, server_id) {
     message_store.reify_message_id(opts);
     update_message_lists(opts);
     compose_notifications.reify_message_id(opts);
-    recent_view_data.reify_message_id_if_available(opts);
+    all_messages_data.recent_view_data?.reify_message_id_if_available(opts);
 }
 
 export function update_message_lists({old_id, new_id}) {
