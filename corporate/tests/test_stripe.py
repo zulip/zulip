@@ -624,7 +624,7 @@ class StripeTestCase(ZulipTestCase):
         class StripeMock(Mock):
             def __init__(self, depth: int = 1) -> None:
                 super().__init__(spec=stripe.Card)
-                self.id = "id"
+                self.id = "cus_123"
                 self.created = "1000"
                 self.last4 = "4242"
 
@@ -1894,7 +1894,7 @@ class StripeTest(StripeTestCase):
         )
         self.assertEqual(
             m.output[0],
-            "WARNING:corporate.stripe:Upgrade of zulip failed because of existing active plan.",
+            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (with stripe_customer_id: cus_123) failed because of existing active plan.",
         )
         self.assert_length(m.output, 1)
 
@@ -3247,7 +3247,7 @@ class StripeTest(StripeTestCase):
                 self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         self.assertEqual(
             m.output[0],
-            "WARNING:corporate.stripe:Upgrade of zulip failed because of existing active plan.",
+            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (with stripe_customer_id: cus_123) failed because of existing active plan.",
         )
         self.assertEqual(
             context.exception.error_description, "subscribing with existing subscription"

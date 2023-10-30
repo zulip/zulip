@@ -8,7 +8,7 @@ from django.conf import settings
 from corporate.lib.stripe import (
     BillingError,
     UpgradeWithExistingPlanError,
-    ensure_realm_does_not_have_active_plan,
+    ensure_customer_does_not_have_active_plan,
     process_initial_upgrade,
     update_or_create_stripe_customer,
 )
@@ -81,7 +81,7 @@ def handle_checkout_session_completed_event(
         Session.UPGRADE_FROM_BILLING_PAGE,
         Session.RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD,
     ]:
-        ensure_realm_does_not_have_active_plan(user.realm)
+        ensure_customer_does_not_have_active_plan(session.customer)
         update_or_create_stripe_customer(user, payment_method)
         assert session.payment_intent is not None
         session.payment_intent.status = PaymentIntent.PROCESSING
@@ -97,7 +97,7 @@ def handle_checkout_session_completed_event(
         Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE,
         Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE,
     ]:
-        ensure_realm_does_not_have_active_plan(user.realm)
+        ensure_customer_does_not_have_active_plan(session.customer)
         update_or_create_stripe_customer(user, payment_method)
         process_initial_upgrade(
             user,
@@ -136,7 +136,7 @@ def handle_payment_intent_succeeded_event(
         discountable=False,
     )
     try:
-        ensure_realm_does_not_have_active_plan(user.realm)
+        ensure_customer_does_not_have_active_plan(payment_intent.customer)
     except UpgradeWithExistingPlanError as e:
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
