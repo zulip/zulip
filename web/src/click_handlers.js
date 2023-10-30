@@ -592,7 +592,7 @@ export function initialize() {
         function check_reference_removed(mutation, instance) {
             return Array.prototype.includes.call(
                 mutation.removedNodes,
-                $(instance.reference).parents(".pm-list")[0],
+                $(instance.reference).parents(".dm-list")[0],
             );
         }
 

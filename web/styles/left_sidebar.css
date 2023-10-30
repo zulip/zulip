@@ -250,7 +250,7 @@ li.show-more-topics {
         }
     }
 
-    & ul.pm-list {
+    & ul.dm-list {
         list-style-type: none;
         font-weight: 400;
         margin-left: 0;
@@ -1168,7 +1168,7 @@ li.topic-list-item {
         display: none;
     }
 
-    &.direct-messages-container ul.pm-list {
+    &.direct-messages-container ul.dm-list {
         margin-bottom: $bottom_scrolling_buffer;
     }
 

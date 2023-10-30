@@ -86,7 +86,7 @@ export function update_private_messages() {
             set_dom_to(new_dom);
         } else {
             // Otherwise, empty the section.
-            $(".pm-list").empty();
+            $(".dm-list").empty();
             prior_dom = undefined;
         }
     } else {
