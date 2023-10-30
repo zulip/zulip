@@ -6,14 +6,15 @@
 # André Koot <meneer@tken.net>, 2017,2021
 # kolkmvd <marco.git@vdkolk.nl>, 2018
 # Steven Uzeel <stevenuzeel@gmail.com>, 2021
-# Tim Abbott <tabbott@kandralabs.com>, 2021
+# Tim Abbott <tabbott@kandralabs.com>, 2021,2023
+# Tom Van Eyck, 2023
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-12 17:43+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: André Koot <meneer@tken.net>, 2017,2021\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2021,2023\n"
 "Language-Team: Dutch (http://app.transifex.com/zulip/zulip/language/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -24,7 +25,7 @@ msgstr ""
 #: analytics/views/stats.py:111 zerver/decorator.py:630
 #: zerver/decorator.py:648
 msgid "Not allowed for guest users"
-msgstr "Geen toegang voor gast gebruikers."
+msgstr "Geen toegang voor gastgebruikers"
 
 #: analytics/views/stats.py:154
 msgid "Invalid organization"
@@ -72,7 +73,7 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr ""
+msgstr "Jouw organisatie heeft geen resterende Zulip-licenties en kan geen nieuwe gebruikers meer accepteren. [Verhoog het aantal licenties]({billing_page_link}) of [deactiveer inactieve gebruikers]({deactivate_user_help_page_link}) om nieuwe gebruikers toe te laten treden."
 
 #: corporate/lib/registration.py:36
 #, python-brace-format
@@ -81,7 +82,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
-msgstr ""
+msgstr "Jouw organisatie heeft nog maar 1 resterende Zulip-licentie over. Je kan [het aantal licenties verhogen]({billing_page_link}) of [inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer dan 1 nieuwe gebruiker toe te laten treden."
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -90,7 +91,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
-msgstr ""
+msgstr "Jouw organisatie heeft nog maar 2 resterende Zulip-licenties over. Je kan [het aantal licenties verhogen]({billing_page_link}) of [inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer dan 2 nieuwe gebruiker toe te laten treden."
 
 #: corporate/lib/registration.py:46
 #, python-brace-format
@@ -99,7 +100,7 @@ msgid ""
 " the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
-msgstr ""
+msgstr "Jouw organisatie heeft nog maar 3 resterende Zulip-licenties over. Je kan [het aantal licenties verhogen]({billing_page_link}) of [inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer dan 3 nieuwe gebruiker toe te laten treden."
 
 #: corporate/lib/registration.py:57
 #, python-brace-format
@@ -108,30 +109,30 @@ msgid ""
 "Zulip licenses are in use. Please [increase the number of "
 "licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow new members to join."
-msgstr ""
+msgstr "Een nieuwe gebruiker ({email}) kon niet toetreden tot jouw organisatie omdat alle Zulip-licenties in gebruik zijn. [Verhoog het aantal licenties]({billing_page_link}) of [deactiveer inactieve gebruikers]({deactivate_user_help_page_link}) om nieuwe gebruikers toe te laten treden."
 
 #: corporate/lib/registration.py:109
 msgid "All Zulip licenses for this organization are currently in use."
-msgstr ""
+msgstr "Alle Zulip-licenties voor deze organisatie zijn momenteel in gebruik."
 
 #: corporate/lib/registration.py:112
 #, python-brace-format
 msgid ""
 "Your organization does not have enough unused Zulip licenses to invite "
 "{num_invites} users."
-msgstr ""
+msgstr "Jouw organisatie heeft niet genoeg resterende Zulip-licenties over om {num_invites} gebruikers uit te nodigen."
 
 #: corporate/lib/stripe.py:114
 #, python-brace-format
 msgid "You must invoice for at least {min_licenses} users."
-msgstr ""
+msgstr "Je moet voor minstens {min_licenses} gebruikers aankopen."
 
 #: corporate/lib/stripe.py:121
 #, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
-msgstr ""
+msgstr "Aankopen met meer dan {max_licenses} kunnen niet verwerkt worden via deze pagina. Contacteer alsjeblieft {email} om de upgrade te voltooien."
 
 #: corporate/lib/stripe.py:229
 #, python-brace-format
@@ -140,7 +141,7 @@ msgstr "Er is iets mis gegaan. Neem alsjeblieft contact op met {email}."
 
 #: corporate/lib/stripe.py:230
 msgid "Something went wrong. Please reload the page."
-msgstr "Er is iets mis gegaan. Herlaad de pagina, alsjeblieft."
+msgstr "Er is iets mis gegaan. Herlaad alsjeblieft de pagina."
 
 #: corporate/lib/stripe.py:304
 msgid "Something went wrong. Please wait a few seconds and try again."
@@ -152,7 +153,7 @@ msgid ""
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
-msgstr ""
+msgstr "Jouw organisatie's aanvraag voor gesponsorde hosting is aanvaard! Je bent geüpgraded naar {plan_name}, zonder meerkost. {emoji}\n\nWe zouden het ten zeerste op prijs stellen als je {begin_link} Zulip zou kunnen weergeven als sponsor op jouw website{end_link}!"
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
