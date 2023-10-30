@@ -119,7 +119,7 @@ export function set_status_emoji(event: UserStatusEvent): void {
     });
 }
 
-export function initialize(params: {user_status: object}): void {
+export function initialize(params: {user_status: unknown}): void {
     user_info.clear();
 
     const user_status = user_status_param_schema.parse(params.user_status);
