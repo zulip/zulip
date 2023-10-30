@@ -78,14 +78,32 @@ bots will be deactivated until the user manually
 
 {start_tabs}
 
+{tab|via-organization-settings}
+
 {settings_tab|deactivated-users-admin}
 
 1. Click the **Reactivate** button to the right of the user account that you
-want to reactivate.
+   want to reactivate.
+
+{tab|via-user-profile}
+
+1. Click on a user's profile picture or name on a message they sent
+   to open their **user card**.
+
+1. Click **View profile**.
+
+1. Select the **Manage user** tab.
+
+1. Click **Reactivate user** at the bottom of the **Manage user** menu.
+
+1. Approve by clicking **Confirm**.
+
+{!manage-user-tab-tip.md!}
 
 {end_tabs}
 
 !!! tip ""
+
     You may want to [review and adjust](/help/manage-user-stream-subscriptions)
     the reactivated user's stream subscriptions.
 
