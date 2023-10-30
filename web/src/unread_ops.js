@@ -446,11 +446,97 @@ export function mark_current_list_as_read(options) {
     notify_server_messages_read(message_lists.current.all_messages(), options);
 }
 
-export function mark_stream_as_read(stream_id, cont) {
+export function mark_stream_as_read(
+    stream_id,
+    messages_marked_read_till_now = 0,
+    batch_size = INITIAL_BATCH_SIZE,
+) {
+    message_lists.current.prevent_reading();
+    const narrow = JSON.stringify([{operator: "stream", operand: stream_id}]);
+
+    const opts = {
+        anchor: "first_unread",
+        num_before: 0,
+        // The first message is not counted
+        num_after: batch_size - 1,
+        narrow,
+        op: "add",
+        flag: "read",
+    };
     channel.post({
-        url: "/json/mark_stream_as_read",
-        data: {stream_id},
-        success: cont,
+        url: "/json/messages/flags/narrow",
+        data: opts,
+
+        success(data) {
+            messages_marked_read_till_now += data.updated_count;
+
+            if (!data.found_newest) {
+                // If we weren't able to complete the request fully in
+                // the current batch, show a progress indicator.
+                ui_report.loading(
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "{N, plural, one {Working… {N} message marked as read so far.} other {Working… {N} messages marked as read so far.}}",
+                        },
+                        {N: messages_marked_read_till_now},
+                    ),
+                    $("#request-progress-status-banner"),
+                );
+                if (!loading_indicator_displayed) {
+                    loading.make_indicator(
+                        $("#request-progress-status-banner .loading-indicator"),
+                        {abs_positioned: true},
+                    );
+                    loading_indicator_displayed = true;
+                }
+
+                mark_stream_as_read(stream_id, messages_marked_read_till_now, FOLLOWUP_BATCH_SIZE);
+            } else if (loading_indicator_displayed) {
+                // If we were showing a loading indicator, then
+                // display that we finished. For the common case where
+                // the operation succeeds in a single batch, we don't
+                // bother distracting the user with the indication;
+                // the success will be obvious from the UI updating.
+                loading_indicator_displayed = false;
+                ui_report.loading(
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}",
+                        },
+                        {N: messages_marked_read_till_now},
+                    ),
+                    $("#request-progress-status-banner"),
+                    true,
+                );
+            }
+        },
+        error(xhr) {
+            if (xhr.readyState === 0) {
+                // client cancelled the request
+            } else if (xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+                // If we hit the rate limit, just continue without showing any error.
+                const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
+                setTimeout(
+                    mark_as_unread_from_here.bind(
+                        this,
+                        stream_id,
+                        messages_marked_read_till_now,
+                        batch_size,
+                    ),
+                    milliseconds_to_wait,
+                );
+            } else {
+                // TODO: Ideally, this case would communicate the
+                // failure to the user, with some manual retry
+                // offered, since the most likely cause is a 502.
+                blueslip.error("Unexpected error marking messages as unread", {
+                    status: xhr.status,
+                    body: xhr.responseText,
+                });
+            }
+        },
     });
 }
 
