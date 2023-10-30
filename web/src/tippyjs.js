@@ -423,7 +423,7 @@ export function initialize() {
     delegate("body", {
         target: "#pm_tooltip_container",
         onShow(instance) {
-            if ($(".private_messages_container").hasClass("zoom-in")) {
+            if ($(".direct-messages-container").hasClass("zoom-in")) {
                 return false;
             }
 
