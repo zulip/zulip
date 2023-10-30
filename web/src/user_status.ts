@@ -38,7 +38,7 @@ const user_status_schema = z.union([
     }),
 ]);
 
-const user_status_param_schema = z.record(z.coerce.number(), user_status_schema);
+const user_status_param_schema = z.record(z.string(), user_status_schema);
 
 const user_info = new Map<number, string>();
 const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
