@@ -501,10 +501,6 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         );
     });
 
-    // Only show home if there's an empty bar
-    if (operators.length === 0 && last_string === "") {
-        suggestions.unshift({search_string: "", description_html: "All messages"});
-    }
     return suggestions;
 }
 
