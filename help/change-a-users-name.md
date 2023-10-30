@@ -20,11 +20,7 @@ Organization administrators can always change any user's name.
 
 {!save-changes.md!}
 
-!!! tip ""
-
-    You can also access the **Manage user** tab by clicking the **pencil and
-    paper** (<i class="fa fa-edit"></i>) icon at the top of the [user
-    profile](/help/view-someones-profile).
+{!manage-user-tab-tip.md!}
 
 {tab|via-organization-settings}
 

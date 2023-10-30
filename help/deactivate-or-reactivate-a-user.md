@@ -23,6 +23,7 @@ When you deactivate a user:
   this user will not be able to rejoin with the same email account.
 
 !!! warn ""
+
     You must go through the deactivation process below to fully remove a user's
     access to your Zulip organization. Changing a user's password or removing
     their single sign-on account will not log them out of their open Zulip
@@ -32,7 +33,7 @@ When you deactivate a user:
 
 {start_tabs}
 
-{tab|via-user-card}
+{tab|via-user-profile}
 
 {!manage-this-user.md!}
 
@@ -43,16 +44,7 @@ When you deactivate a user:
 
 1. Approve by clicking **Deactivate**.
 
-{tab|via-user-profile}
-
-{!manage-this-user-via-user-profile.md!}
-
-1. Click **Deactivate user** at the bottom of the **Manage user** menu.
-
-1. *(optional)* Select **Notify this user by email?** if desired, and enter a
-   custom comment to include in the notification email.
-
-1. Approve by clicking **Deactivate**.
+{!manage-user-tab-tip.md!}
 
 {tab|via-organization-settings}
 
@@ -61,14 +53,15 @@ When you deactivate a user:
 1. In the **Actions** column, click the **deactivate** (<i class="fa
    fa-user-times"></i>) icon for the user you want to deactivate.
 
-2. *(optional)* Select **Notify this user by email?** if desired, and enter a
+1. *(optional)* Select **Notify this user by email?** if desired, and enter a
    custom comment to include in the notification email.
 
-3. Approve by clicking **Deactivate**.
+1. Approve by clicking **Deactivate**.
 
 {end_tabs}
 
 !!! tip ""
+
     Organization administrators cannot deactivate organization owners.
 
 ## Reactivating a user
