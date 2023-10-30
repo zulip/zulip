@@ -865,13 +865,6 @@ def apply_event(
             if not person["is_bot"]:
                 person["profile_data"] = {}
             state["raw_users"][person_user_id] = person
-        elif event["op"] == "remove":
-            state["raw_users"][person_user_id]["is_active"] = False
-            if include_subscribers:
-                for sub in state["subscriptions"]:
-                    sub["subscribers"] = [
-                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
-                    ]
         elif event["op"] == "update":
             is_me = person_user_id == user_profile.id
 
@@ -980,16 +973,17 @@ def apply_event(
 
                 if "new_email" in person:
                     p["email"] = person["new_email"]
+
+                if "is_active" in person and not person["is_active"] and include_subscribers:
+                    for sub in state["subscriptions"]:
+                        sub["subscribers"] = [
+                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                        ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
         if event["op"] == "add":
             state["realm_bots"].append(event["bot"])
-        elif event["op"] == "remove":
-            user_id = event["bot"]["user_id"]
-            for bot in state["realm_bots"]:
-                if bot["user_id"] == user_id:
-                    bot["is_active"] = False
         elif event["op"] == "delete":
             state["realm_bots"] = [
                 item for item in state["realm_bots"] if item["user_id"] != event["bot"]["user_id"]
