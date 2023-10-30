@@ -335,7 +335,7 @@ li.show-more-topics {
 
 .active_private_messages_section {
     #private_messages_section,
-    #private_messages_list,
+    #direct-messages-list,
     #hide-more-direct-messages {
         background-color: hsl(202deg 56% 91%);
     }
@@ -344,7 +344,7 @@ li.show-more-topics {
         border-radius: 4px 4px 0 0;
     }
 
-    #private_messages_list {
+    #direct-messages-list {
         border-radius: 0 0 4px 4px;
     }
 

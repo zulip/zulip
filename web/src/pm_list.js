@@ -37,7 +37,7 @@ export function close() {
     update_private_messages();
 }
 
-export function _build_private_messages_list() {
+export function _build_direct_messages_list() {
     const conversations = pm_list_data.get_conversations();
     const pm_list_info = pm_list_data.get_list_info(zoomed);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
@@ -58,7 +58,7 @@ export function _build_private_messages_list() {
 }
 
 function set_dom_to(new_dom) {
-    const $container = scroll_util.get_content_element($("#private_messages_list"));
+    const $container = scroll_util.get_content_element($("#direct-messages-list"));
 
     function replace_content(html) {
         $container.html(html);
@@ -90,7 +90,7 @@ export function update_private_messages() {
             prior_dom = undefined;
         }
     } else {
-        const new_dom = _build_private_messages_list();
+        const new_dom = _build_direct_messages_list();
         set_dom_to(new_dom);
     }
     // Make sure to update the left sidebar heights after updating
