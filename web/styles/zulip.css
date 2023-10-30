@@ -3467,12 +3467,6 @@ select.invite-as {
     .zulip-icon-triple-users {
         font-size: 20px;
     }
-
-    .zulip-icon-help {
-        position: relative;
-        top: 0.5px;
-        right: -0.5px;
-    }
 }
 
 #personal-menu {
