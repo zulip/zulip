@@ -202,14 +202,14 @@ function zoom_out() {
 }
 
 export function initialize() {
-    $(".private_messages_container").on("click", "#show_more_private_messages", (e) => {
+    $(".private_messages_container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
 
         zoom_in();
     });
 
-    $(".private_messages_container").on("click", "#hide_more_private_messages", (e) => {
+    $(".private_messages_container").on("click", "#hide-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
 
