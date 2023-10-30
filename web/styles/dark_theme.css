@@ -34,7 +34,7 @@
         }
     }
 
-    & ul.pm-list,
+    & ul.dm-list,
     & ul.filters {
         color: hsl(0deg 0% 100% / 80%);
 
