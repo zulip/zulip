@@ -260,7 +260,7 @@ li.show-more-topics {
             font-size: 90%;
         }
 
-        & li.pm-list-item {
+        & li.dm-list-item {
             position: relative;
             padding: 1px 10px 1px 4px;
             margin-left: 2px;
@@ -290,7 +290,7 @@ li.show-more-topics {
             }
         }
 
-        & li#show_more_private_messages {
+        & li#show-more-direct-messages {
             cursor: pointer;
             padding-right: 26px;
             padding-left: 6px;
@@ -336,7 +336,7 @@ li.show-more-topics {
 .active_private_messages_section {
     #private_messages_section,
     #private_messages_list,
-    #hide_more_private_messages {
+    #hide-more-direct-messages {
         background-color: hsl(202deg 56% 91%);
     }
 
@@ -1027,7 +1027,7 @@ li.topic-list-item {
     }
 }
 
-.zero-pm-unreads .dm-box {
+.zero-dm-unreads .dm-box {
     margin-right: 15px;
 }
 
@@ -1176,7 +1176,7 @@ li.topic-list-item {
         display: inline;
     }
 
-    #hide_more_private_messages {
+    #hide-more-direct-messages {
         display: block;
         text-decoration: none;
         color: inherit;
