@@ -58,7 +58,7 @@ function get_sorted_topics(): Map<string | undefined, TopicData> {
     return new Map([...topics.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id));
 }
 
-export function get(): Map<string | undefined, TopicData> {
+export function get_topics(): Map<string | undefined, TopicData> {
     return get_sorted_topics();
 }
 

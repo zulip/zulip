@@ -941,7 +941,7 @@ export function complete_rerender() {
     }
 
     // Show topics list
-    const mapped_topic_values = [...recent_view_data.get().values()];
+    const mapped_topic_values = [...recent_view_data.get_topics().values()];
 
     if (topics_widget) {
         topics_widget.replace_list_data(mapped_topic_values);
