@@ -3789,6 +3789,15 @@ class StripeTest(StripeTestCase):
         )
         rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
+        # Customer objects without a realm should be excluded from query.
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=str(uuid.uuid4()),
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        Customer.objects.create(remote_server=remote_server, stripe_customer_id="cus_xxx")
+
         with patch("corporate.lib.stripe.void_all_open_invoices") as void_all_open_invoices_mock:
             downgrade_small_realms_behind_on_payments_as_needed()
 
