@@ -21,7 +21,7 @@ let zoomed = false;
 
 function get_private_messages_section_header() {
     return $(
-        ".private_messages_container #private_messages_section #private_messages_section_header",
+        ".direct-messages-container #private_messages_section #private_messages_section_header",
     );
 }
 
@@ -118,11 +118,11 @@ export function update_dom_with_unread_counts(counts) {
 }
 
 export function highlight_all_private_messages_view() {
-    $(".private_messages_container").addClass("active_private_messages_section");
+    $(".direct-messages-container").addClass("active_private_messages_section");
 }
 
 function unhighlight_all_private_messages_view() {
-    $(".private_messages_container").removeClass("active_private_messages_section");
+    $(".direct-messages-container").removeClass("active_private_messages_section");
 }
 
 function scroll_pm_into_view($target_li) {
@@ -188,7 +188,7 @@ export function toggle_private_messages_section() {
 function zoom_in() {
     zoomed = true;
     update_private_messages();
-    $(".private_messages_container").removeClass("zoom-out").addClass("zoom-in");
+    $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
     $("#streams_list").hide();
     $(".left-sidebar .right-sidebar-items").hide();
 }
@@ -196,20 +196,20 @@ function zoom_in() {
 function zoom_out() {
     zoomed = false;
     update_private_messages();
-    $(".private_messages_container").removeClass("zoom-in").addClass("zoom-out");
+    $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
 }
 
 export function initialize() {
-    $(".private_messages_container").on("click", "#show-more-direct-messages", (e) => {
+    $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
 
         zoom_in();
     });
 
-    $(".private_messages_container").on("click", "#hide-more-direct-messages", (e) => {
+    $(".direct-messages-container").on("click", "#hide-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
 

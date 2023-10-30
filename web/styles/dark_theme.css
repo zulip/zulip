@@ -224,7 +224,7 @@
     .app-main,
     .column-middle,
     #streams_header,
-    .private_messages_container {
+    .direct-messages-container {
         background-color: var(--color-background);
     }
 
