@@ -34,6 +34,7 @@ from zerver.lib.push_notifications import (
 )
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     check_bool,
@@ -53,6 +54,7 @@ from zilencer.auth import InvalidZulipServerKeyError
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,
+    RemoteRealm,
     RemoteRealmAuditLog,
     RemoteRealmCount,
     RemoteZulipServer,
@@ -501,6 +503,36 @@ def batch_create_table_data(
         row_objects = row_objects[BATCH_SIZE:]
 
 
+def update_remote_realm_data_for_server(
+    server: RemoteZulipServer, server_realms_info: List[Dict[str, Any]]
+) -> None:
+    uuids = [realm["uuid"] for realm in server_realms_info]
+    already_registered_uuids = set(
+        str(uuid)
+        for uuid in RemoteRealm.objects.filter(uuid__in=uuids, server=server).values_list(
+            "uuid", flat=True
+        )
+    )
+
+    new_remote_realms = [
+        RemoteRealm(
+            server=server,
+            uuid=realm["uuid"],
+            uuid_owner_secret=realm["uuid_owner_secret"],
+            host=realm["host"],
+            realm_deactivated=realm["deactivated"],
+            realm_date_created=timestamp_to_datetime(realm["date_created"]),
+        )
+        for realm in server_realms_info
+        if realm["uuid"] not in already_registered_uuids
+    ]
+
+    try:
+        RemoteRealm.objects.bulk_create(new_remote_realms)
+    except IntegrityError:
+        raise JsonableError(_("Duplicate registration detected."))
+
+
 @has_request_variables
 def remote_server_post_analytics(
     request: HttpRequest,
@@ -547,11 +579,31 @@ def remote_server_post_analytics(
         ),
         default=None,
     ),
+    realms: Optional[List[Dict[str, Any]]] = REQ(
+        # Pre-8.0 servers don't send this data.
+        default=None,
+        json_validator=check_list(
+            check_dict_only(
+                [
+                    ("id", check_int),
+                    ("uuid", check_string),
+                    ("uuid_owner_secret", check_string),
+                    ("host", check_string),
+                    ("url", check_string),
+                    ("deactivated", check_bool),
+                    ("date_created", check_float),
+                ]
+            )
+        ),
+    ),
 ) -> HttpResponse:
     validate_incoming_table_data(server, RemoteRealmCount, realm_counts, True)
     validate_incoming_table_data(server, RemoteInstallationCount, installation_counts, True)
     if realmauditlog_rows is not None:
         validate_incoming_table_data(server, RemoteRealmAuditLog, realmauditlog_rows)
+
+    if realms is not None:
+        update_remote_realm_data_for_server(server, realms)
 
     remote_realm_counts = [
         RemoteRealmCount(
