@@ -1005,7 +1005,7 @@ li.topic-list-item {
     padding-right: 5px;
 }
 
-.pm-box {
+.dm-box {
     display: flex;
     padding-top: 1px;
     margin-right: 16px;
@@ -1027,7 +1027,7 @@ li.topic-list-item {
     }
 }
 
-.zero-pm-unreads .pm-box {
+.zero-pm-unreads .dm-box {
     margin-right: 15px;
 }
 
