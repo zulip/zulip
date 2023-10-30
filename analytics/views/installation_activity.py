@@ -25,9 +25,9 @@ from zerver.lib.request import has_request_variables
 from zerver.models import Realm, get_org_type_display_name
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import (
+    from corporate.lib.analytics import (
         estimate_annual_recurring_revenue_by_realm,
-        get_realms_to_default_discount_dict,
+        get_realms_with_default_discount_dict,
     )
 
 
@@ -198,7 +198,7 @@ def realm_summary_table() -> str:
     total_arr = 0
     if settings.BILLING_ENABLED:
         estimated_arrs = estimate_annual_recurring_revenue_by_realm()
-        realms_to_default_discount = get_realms_to_default_discount_dict()
+        realms_with_default_discount = get_realms_with_default_discount_dict()
 
         for row in rows:
             row["plan_type_string"] = get_plan_name(row["plan_type"])
@@ -209,14 +209,14 @@ def realm_summary_table() -> str:
                 row["arr"] = estimated_arrs[string_id]
 
             if row["plan_type"] in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
-                row["effective_rate"] = 100 - int(realms_to_default_discount.get(string_id, 0))
+                row["effective_rate"] = 100 - int(realms_with_default_discount.get(string_id, 0))
             elif row["plan_type"] == Realm.PLAN_TYPE_STANDARD_FREE:
                 row["effective_rate"] = 0
             elif (
                 row["plan_type"] == Realm.PLAN_TYPE_LIMITED
-                and string_id in realms_to_default_discount
+                and string_id in realms_with_default_discount
             ):
-                row["effective_rate"] = 100 - int(realms_to_default_discount[string_id])
+                row["effective_rate"] = 100 - int(realms_with_default_discount[string_id])
             else:
                 row["effective_rate"] = ""
 

@@ -35,6 +35,7 @@ from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
 from typing_extensions import ParamSpec, override
 
+from corporate.lib.analytics import get_realms_with_default_discount_dict
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
     MAX_INVOICED_LICENSES,
@@ -58,7 +59,6 @@ from corporate.lib.stripe import (
     get_latest_seat_count,
     get_plan_renewal_or_end_date,
     get_price_per_license,
-    get_realms_to_default_discount_dict,
     invoice_plan,
     invoice_plans_as_needed,
     is_free_trial_offer_enabled,
@@ -4537,24 +4537,6 @@ class BillingHelpersTest(ZulipTestCase):
         )
         self.assertEqual(get_current_plan_by_realm(realm), plan)
 
-    def test_get_realms_to_default_discount_dict(self) -> None:
-        Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_1")
-        lear_customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_2")
-        lear_customer.default_discount = Decimal(30)
-        lear_customer.save(update_fields=["default_discount"])
-        zephyr_customer = Customer.objects.create(
-            realm=get_realm("zephyr"), stripe_customer_id="cus_3"
-        )
-        zephyr_customer.default_discount = Decimal(0)
-        zephyr_customer.save(update_fields=["default_discount"])
-
-        self.assertEqual(
-            get_realms_to_default_discount_dict(),
-            {
-                "lear": Decimal("30.0000"),
-            },
-        )
-
     def test_is_realm_on_free_trial(self) -> None:
         realm = get_realm("zulip")
         self.assertFalse(is_realm_on_free_trial(realm))
@@ -4634,6 +4616,37 @@ class BillingHelpersTest(ZulipTestCase):
                     f"{remote_server.id}, server has already been deactivated."
                 ],
             )
+
+
+class AnalyticsHelpersTest(ZulipTestCase):
+    def test_get_realms_to_default_discount_dict(self) -> None:
+        Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_1")
+        lear_customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_2")
+        lear_customer.default_discount = Decimal(30)
+        lear_customer.save(update_fields=["default_discount"])
+        zephyr_customer = Customer.objects.create(
+            realm=get_realm("zephyr"), stripe_customer_id="cus_3"
+        )
+        zephyr_customer.default_discount = Decimal(0)
+        zephyr_customer.save(update_fields=["default_discount"])
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=str(uuid.uuid4()),
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        remote_customer = Customer.objects.create(
+            remote_server=remote_server, stripe_customer_id="cus_4"
+        )
+        remote_customer.default_discount = Decimal(50)
+        remote_customer.save(update_fields=["default_discount"])
+
+        self.assertEqual(
+            get_realms_with_default_discount_dict(),
+            {
+                "lear": Decimal("30.0000"),
+            },
+        )
 
 
 class LicenseLedgerTest(StripeTestCase):
