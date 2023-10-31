@@ -714,6 +714,7 @@ export function init_dropdown_widgets() {
         get_options: () =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(
                 "create_multiuse_invite_group",
+                "realm",
             ),
         $events_container: $("#settings_overlay_container #organization-permissions"),
         item_click_callback(event, dropdown) {
