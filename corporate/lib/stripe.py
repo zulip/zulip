@@ -3,6 +3,7 @@ import math
 import os
 import secrets
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
@@ -316,6 +317,13 @@ def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
     )
 
 
+@dataclass
+class StripeCustomerData:
+    description: str
+    email: str
+    metadata: Dict[str, Any]
+
+
 class BillingSession(ABC):
     @abstractmethod
     def get_customer(self) -> Optional[Customer]:
@@ -328,7 +336,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def get_data_for_stripe_customer(self) -> Dict[str, Any]:
+    def get_data_for_stripe_customer(self) -> StripeCustomerData:
         pass
 
     @abstractmethod
@@ -339,12 +347,9 @@ class BillingSession(ABC):
     def create_stripe_customer(self, payment_method: Optional[str] = None) -> Customer:
         stripe_customer_data = self.get_data_for_stripe_customer()
         stripe_customer = stripe.Customer.create(
-            description=stripe_customer_data["description"],
-            email=stripe_customer_data["email"],
-            metadata={
-                "realm_id": stripe_customer_data["realm_id"],
-                "realm_str": stripe_customer_data["realm_str"],
-            },
+            description=stripe_customer_data.description,
+            email=stripe_customer_data.email,
+            metadata=stripe_customer_data.metadata,
             payment_method=payment_method,
         )
         stripe.Customer.modify(
@@ -425,13 +430,16 @@ class RealmBillingSession(BillingSession):
             )
 
     @override
-    def get_data_for_stripe_customer(self) -> Dict[str, Any]:
-        data: Dict[str, Any] = {}
-        data["description"] = f"{self.realm.string_id} ({self.realm.name})"
-        data["email"] = self.user.delivery_email
-        data["realm_id"] = self.realm.id
-        data["realm_str"] = self.realm.string_id
-        return data
+    def get_data_for_stripe_customer(self) -> StripeCustomerData:
+        metadata: Dict[str, Any] = {}
+        metadata["realm_id"] = self.realm.id
+        metadata["realm_str"] = self.realm.string_id
+        realm_stripe_customer_data = StripeCustomerData(
+            description=f"{self.realm.string_id} ({self.realm.name})",
+            email=self.user.delivery_email,
+            metadata=metadata,
+        )
+        return realm_stripe_customer_data
 
     @override
     def update_or_create_customer(self, stripe_customer_id: str) -> Customer:

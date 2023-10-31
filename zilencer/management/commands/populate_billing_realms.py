@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import add_months, RealmBillingSession
+from corporate.lib.stripe import RealmBillingSession, add_months
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
