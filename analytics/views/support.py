@@ -54,10 +54,8 @@ if settings.ZILENCER_ENABLED:
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import approve_sponsorship as do_approve_sponsorship
     from corporate.lib.stripe import (
-        attach_discount_to_realm,
         downgrade_at_the_end_of_billing_cycle,
         downgrade_now_without_creating_additional_invoices,
-        get_discount_for_realm,
         get_latest_seat_count,
         make_end_of_cycle_updates_if_needed,
         switch_realm_from_standard_to_plus_plan,
@@ -65,6 +63,7 @@ if settings.BILLING_ENABLED:
         update_sponsorship_status,
         void_all_open_invoices,
     )
+    from corporate.lib.support import attach_discount_to_realm, get_discount_for_realm
     from corporate.models import (
         Customer,
         CustomerPlan,

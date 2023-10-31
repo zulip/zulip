@@ -340,7 +340,9 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def update_or_create_customer(self, stripe_customer_id: str) -> Customer:
+    def update_or_create_customer(
+        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
+    ) -> Customer:
         pass
 
     @catch_stripe_errors
@@ -399,11 +401,39 @@ class BillingSession(ABC):
             self.replace_payment_method(customer.stripe_customer_id, payment_method, True)
         return customer
 
+    def attach_discount_to_customer(self, discount: Decimal) -> None:
+        customer = self.get_customer()
+        old_discount: Optional[Decimal] = None
+        if customer is not None:
+            old_discount = customer.default_discount
+            customer.default_discount = discount
+            customer.save(update_fields=["default_discount"])
+        else:
+            customer = self.update_or_create_customer(defaults={"default_discount": discount})
+        plan = get_current_plan_by_customer(customer)
+        if plan is not None:
+            plan.price_per_license = get_price_per_license(
+                plan.tier, plan.billing_schedule, discount
+            )
+            plan.discount = discount
+            plan.save(update_fields=["price_per_license", "discount"])
+        self.write_to_audit_log(
+            event_type=AbstractRealmAuditLog.REALM_DISCOUNT_CHANGED,
+            event_time=timezone_now(),
+            extra_data={"old_discount": old_discount, "new_discount": discount},
+        )
+
 
 class RealmBillingSession(BillingSession):
-    def __init__(self, user: UserProfile) -> None:
+    def __init__(self, user: UserProfile, realm: Optional[Realm] = None) -> None:
         self.user = user
-        self.realm = user.realm
+        if realm is not None:
+            assert user.is_staff
+            self.realm = realm
+            self.support_session = True
+        else:
+            self.realm = user.realm
+            self.support_session = False
 
     @override
     def get_customer(self) -> Optional[Customer]:
@@ -431,6 +461,8 @@ class RealmBillingSession(BillingSession):
 
     @override
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
+        # Support requests do not set any stripe billing information.
+        assert self.support_session is False
         metadata: Dict[str, Any] = {}
         metadata["realm_id"] = self.realm.id
         metadata["realm_str"] = self.realm.string_id
@@ -442,14 +474,24 @@ class RealmBillingSession(BillingSession):
         return realm_stripe_customer_data
 
     @override
-    def update_or_create_customer(self, stripe_customer_id: str) -> Customer:
-        customer, created = Customer.objects.update_or_create(
-            realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
-        )
-        from zerver.actions.users import do_make_user_billing_admin
+    def update_or_create_customer(
+        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
+    ) -> Customer:
+        if stripe_customer_id is not None:
+            # Support requests do not set any stripe billing information.
+            assert self.support_session is False
+            customer, created = Customer.objects.update_or_create(
+                realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
+            )
+            from zerver.actions.users import do_make_user_billing_admin
 
-        do_make_user_billing_admin(self.user)
-        return customer
+            do_make_user_billing_admin(self.user)
+            return customer
+        else:
+            customer, created = Customer.objects.update_or_create(
+                realm=self.realm, defaults=defaults
+            )
+            return customer
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
@@ -1002,31 +1044,6 @@ def is_realm_on_free_trial(realm: Realm) -> bool:
     return plan is not None and plan.is_free_trial()
 
 
-def attach_discount_to_realm(
-    realm: Realm, discount: Decimal, *, acting_user: Optional[UserProfile]
-) -> None:
-    customer = get_customer_by_realm(realm)
-    old_discount: Optional[Decimal] = None
-    if customer is not None:
-        old_discount = customer.default_discount
-        customer.default_discount = discount
-        customer.save(update_fields=["default_discount"])
-    else:
-        Customer.objects.create(realm=realm, default_discount=discount)
-    plan = get_current_plan_by_realm(realm)
-    if plan is not None:
-        plan.price_per_license = get_price_per_license(plan.tier, plan.billing_schedule, discount)
-        plan.discount = discount
-        plan.save(update_fields=["price_per_license", "discount"])
-    RealmAuditLog.objects.create(
-        realm=realm,
-        acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
-        event_time=timezone_now(),
-        extra_data={"old_discount": old_discount, "new_discount": discount},
-    )
-
-
 def update_sponsorship_status(
     realm: Realm, sponsorship_pending: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -1077,13 +1094,6 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
 
 def is_sponsored_realm(realm: Realm) -> bool:
     return realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE
-
-
-def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
-    customer = get_customer_by_realm(realm)
-    if customer is not None:
-        return customer.default_discount
-    return None
 
 
 def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
