@@ -196,6 +196,7 @@ function setup_dropdown(sub, slim_sub) {
         get_options: () =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(
                 "can_remove_subscribers_group",
+                "stream",
             ),
         item_click_callback(event, dropdown) {
             dropdown.hide();

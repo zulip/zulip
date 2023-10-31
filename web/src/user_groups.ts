@@ -223,9 +223,12 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
 
 export function get_realm_user_groups_for_dropdown_list_widget(
     setting_name: string,
+    setting_type: "realm" | "stream" | "group",
 ): UserGroupForDropdownListWidget[] {
-    const group_setting_config =
-        group_permission_settings.get_group_permission_setting_config(setting_name);
+    const group_setting_config = group_permission_settings.get_group_permission_setting_config(
+        setting_name,
+        setting_type,
+    );
 
     if (group_setting_config === undefined) {
         return [];
