@@ -61,6 +61,7 @@ export function create({$pill_container, get_potential_subscribers}) {
 
     const $pill_widget_input = $pill_container.find(".input");
     const $pill_widget_button = $pill_container.parent().find(".add-subscriber-button");
+    const $stream_subscription_req_result_elem = $( ".stream_subscription_request_result",).expectOne()[0];
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
@@ -70,12 +71,13 @@ export function create({$pill_container, get_potential_subscribers}) {
     );
     // Disable the add button when there is no pending text that can be converted
     // into a pill and the number of existing pills is zero.
-    $pill_widget_input.on("input", () =>
+    $pill_widget_input.on("input", () => {
         $pill_widget_button.prop(
             "disabled",
             !pill_widget.is_pending() && pill_widget.items().length === 0,
-        ),
-    );
+        );
+        $stream_subscription_req_result_elem.innerHTML = "";
+    });
 
     return pill_widget;
 }
