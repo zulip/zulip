@@ -375,9 +375,9 @@ def update_stream_backend(
     if stream_post_policy is not None:
         do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
 
-    for setting_name, permissions_configuration in Stream.stream_permission_group_settings.items():
+    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
         request_settings_dict = locals()
-        setting_group_id_name = permissions_configuration.id_field_name
+        setting_group_id_name = permission_configuration.id_field_name
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
@@ -394,11 +394,11 @@ def update_stream_backend(
                 user_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permissions_configuration.require_system_group,
-                allow_internet_group=permissions_configuration.allow_internet_group,
-                allow_owners_group=permissions_configuration.allow_owners_group,
-                allow_nobody_group=permissions_configuration.allow_nobody_group,
-                allow_everyone_group=permissions_configuration.allow_everyone_group,
+                require_system_group=permission_configuration.require_system_group,
+                allow_internet_group=permission_configuration.allow_internet_group,
+                allow_owners_group=permission_configuration.allow_owners_group,
+                allow_nobody_group=permission_configuration.allow_nobody_group,
+                allow_everyone_group=permission_configuration.allow_everyone_group,
             )
             do_change_stream_group_based_setting(
                 stream, setting_name, user_group, acting_user=user_profile

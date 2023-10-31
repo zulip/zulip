@@ -330,8 +330,8 @@ def update_realm(
         if k in realm.property_types:
             req_vars[k] = v
 
-        for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-            if k == permissions_configuration.id_field_name:
+        for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+            if k == permission_configuration.id_field_name:
                 req_group_setting_vars[k] = v
 
     for k, v in req_vars.items():
@@ -342,8 +342,8 @@ def update_realm(
             else:
                 data[k] = v
 
-    for setting_name, permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-        setting_group_id_name = permissions_configuration.id_field_name
+    for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        setting_group_id_name = permission_configuration.id_field_name
 
         assert setting_group_id_name in req_group_setting_vars
 
@@ -355,11 +355,11 @@ def update_realm(
                 user_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permissions_configuration.require_system_group,
-                allow_internet_group=permissions_configuration.allow_internet_group,
-                allow_owners_group=permissions_configuration.allow_owners_group,
-                allow_nobody_group=permissions_configuration.allow_nobody_group,
-                allow_everyone_group=permissions_configuration.allow_everyone_group,
+                require_system_group=permission_configuration.require_system_group,
+                allow_internet_group=permission_configuration.allow_internet_group,
+                allow_owners_group=permission_configuration.allow_owners_group,
+                allow_nobody_group=permission_configuration.allow_nobody_group,
+                allow_everyone_group=permission_configuration.allow_everyone_group,
             )
             do_change_realm_permission_group_setting(
                 realm, setting_name, user_group, acting_user=user_profile

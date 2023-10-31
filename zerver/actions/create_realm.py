@@ -122,8 +122,8 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
 def set_default_for_realm_permission_group_settings(realm: Realm) -> None:
     system_groups_dict = get_role_based_system_groups_dict(realm)
 
-    for setting_name, permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-        group_name = permissions_configuration.default_group_name
+    for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        group_name = permission_configuration.default_group_name
         setattr(realm, setting_name, system_groups_dict[group_name])
 
     realm.save(update_fields=list(Realm.REALM_PERMISSION_GROUP_SETTINGS.keys()))
@@ -224,8 +224,8 @@ def do_create_realm(
 
         # For now a dummy value of -1 is given to groups fields which
         # is changed later before the transaction is committed.
-        for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-            setattr(realm, permissions_configuration.id_field_name, -1)
+        for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+            setattr(realm, permission_configuration.id_field_name, -1)
 
         realm.save()
 
