@@ -217,6 +217,19 @@ li.show-more-topics {
     position: relative;
     z-index: 0;
     width: 100%;
+
+    .direct-messages-container {
+        /* TODO: Clean up this value and the
+           analogous one on #stream-filters;
+           this could be done alongside the
+           --left-sidebar-collapse-widget-gutter
+           cleanup so that all of the left sidebar
+           space is better, more uniformly handled.
+           That will be an essential pre-condition
+           for a resizable left sidebar. */
+        margin-right: 12px;
+        margin-left: 0;
+    }
 }
 
 .direct-messages-container {
@@ -261,32 +274,14 @@ li.show-more-topics {
         }
 
         & li.dm-list-item {
-            position: relative;
-            padding: 1px 10px 1px 4px;
-            margin-left: 2px;
-
             & a {
                 text-decoration: none;
                 color: inherit;
             }
 
-            /* TODO: Consolidate and eliminate these temporary
-               styles once CSS Grid is in place, taking care to
-               preserve the opacity on icons that need it. */
-            .fa-group,
-            .zulip-icon,
-            .user_circle {
-                display: block;
-            }
-
             .fa-group,
             .zulip-icon {
-                min-width: $left_col_size;
                 opacity: 0.7;
-            }
-
-            .user_circle {
-                margin-right: 7px;
             }
         }
 
@@ -664,10 +659,10 @@ li.top_left_scheduled_messages {
 }
 
 .conversation-partners {
+    grid-area: row-content;
     line-height: 1.25;
-    display: flex;
-    width: 100%;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .conversation-partners .status-emoji {
@@ -680,6 +675,7 @@ li.top_left_scheduled_messages {
 #views-label-container,
 .top_left_row,
 .left-sidebar-navigation-label-container,
+.dm-box,
 .subscription_block,
 .topic-box {
     display: grid;
@@ -891,8 +887,6 @@ li.top_left_scheduled_messages {
 
 .conversation-partners-list,
 .stream-name {
-    flex: auto;
-    min-width: 0;
     white-space: nowrap;
     overflow-x: hidden;
     overflow-x: clip;
@@ -901,9 +895,10 @@ li.top_left_scheduled_messages {
 }
 
 .conversation-partners-list {
-    /* Don't allow growth, so that status emoji
-       remain adjacent the username. */
-    flex: 0 1 auto;
+    /* TODO: See about consolidating or re-expressing
+       .stream-name spacing so as to not require
+       padding there, either. */
+    padding: 0;
 }
 
 /*
@@ -1006,29 +1001,34 @@ li.topic-list-item {
 }
 
 .dm-box {
-    display: flex;
-    padding-top: 1px;
-    margin-right: 16px;
-    align-items: baseline; /* Sets .user_circle alignment relative to text; standard icons do not participate in flex. */
+    grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
+    /* This padding maintains the legacy 22.5px height
+       on DM rows. */
+    padding: 2.5px 0;
+
+    .conversation-partners-icon {
+        grid-area: starting-anchor-element;
+        justify-self: center;
+        align-self: center;
+    }
 
     .user_circle {
-        min-width: 8px;
+        width: 8px;
         height: 8px;
-        margin-top: 0;
-        margin-bottom: 0;
-        margin-left: 2px;
-        position: relative;
-        top: 0;
+        /* TODO: Remove these after right-sidebar
+           row rewrites. */
+        float: none;
+        position: static;
     }
 
     .zulip-icon.zulip-icon-bot {
         font-size: 90%; /* Reduce the bulkiness of this icon */
         padding: 3px 0 3px 1px; /* Shift reduced icon a pixel left to maintain horizontal centering. */
     }
-}
 
-.zero-dm-unreads .dm-box {
-    margin-right: 15px;
+    .unread_count {
+        grid-area: markers-and-controls;
+    }
 }
 
 .zoom-out {
