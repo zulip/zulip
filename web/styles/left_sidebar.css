@@ -660,7 +660,10 @@ li.top_left_scheduled_messages {
 
 .conversation-partners {
     grid-area: row-content;
-    line-height: 1.25;
+    /* Set an 18px line-height to better vertically
+       center user circles and icons (both of which
+       have even heights). */
+    line-height: 18px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1002,9 +1005,8 @@ li.topic-list-item {
 
 .dm-box {
     grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
-    /* This padding maintains the legacy 22.5px height
-       on DM rows. */
-    padding: 2.5px 0;
+    /* This padding maintains a 22px height on DM rows. */
+    padding: 2.25px 0;
 
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
@@ -1028,6 +1030,22 @@ li.topic-list-item {
 
     .unread_count {
         grid-area: markers-and-controls;
+        /* TODO: This is an alternative method
+           for presenting a 16px-tall unread
+           counter, regardless of context. This
+           method could be used app-wide once
+           all of the layout methods for presenting
+           unreads have been modernized.
+
+           Set the line-height to match the
+           font-size, so that the numerals sit in
+           a 12px box. */
+        line-height: 12px;
+        /* Use flexbox to vertically center
+           the 12px-high text node within the
+           16px-high unread box. */
+        display: flex;
+        align-items: center;
     }
 }
 
