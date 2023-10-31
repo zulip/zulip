@@ -13,6 +13,7 @@ import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
 export let compose_spinner_visible = false;
@@ -250,15 +251,15 @@ export function compute_placeholder_text(opts) {
     // For direct messages
     if (opts.private_message_recipient) {
         const recipient_list = opts.private_message_recipient.split(",");
-        const recipient_names = recipient_list
-            .map((recipient) => {
+        const recipient_names = new Intl.ListFormat(user_settings.default_language).format(
+            recipient_list.map((recipient) => {
                 const user = people.get_by_email(recipient);
                 if (people.should_add_guest_user_indicator(user.user_id)) {
                     return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
                 }
                 return user.full_name;
-            })
-            .join(", ");
+            }),
+        );
 
         if (recipient_list.length === 1) {
             // If it's a single user, display status text if available
