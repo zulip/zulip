@@ -254,9 +254,9 @@ def fetch_initial_state_data(
 
         for (
             setting_name,
-            permissions_configuration,
+            permission_configuration,
         ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-            state["realm_" + setting_name] = getattr(realm, permissions_configuration.id_field_name)
+            state["realm_" + setting_name] = getattr(realm, permission_configuration.id_field_name)
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
