@@ -61,7 +61,9 @@ export function create({$pill_container, get_potential_subscribers}) {
 
     const $pill_widget_input = $pill_container.find(".input");
     const $pill_widget_button = $pill_container.parent().find(".add-subscriber-button");
-    const $stream_subscription_req_result_elem = $( ".stream_subscription_request_result",).expectOne()[0];
+    const $stream_subscription_req_result_elem = $(
+        ".stream_subscription_request_result",
+    ).expectOne()[0];
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
