@@ -2,11 +2,11 @@
     <div class="dm-box dm-user-status" data-user-ids-string="{{user_ids_string}}" data-is-group="{{is_group}}">
 
         {{#if is_group}}
-        <span class="fa fa-group"></span>
+        <span class="conversation-partners-icon fa fa-group"></span>
         {{else if is_bot}}
-        <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
+        <span class="conversation-partners-icon zulip-icon zulip-icon-bot" aria-hidden="true"></span>
         {{else}}
-        <span class="{{user_circle_class}} user_circle"></span>
+        <span class="conversation-partners-icon {{user_circle_class}} user_circle"></span>
         {{/if}}
 
         <a href="{{url}}" class="conversation-partners">
