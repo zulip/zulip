@@ -288,7 +288,14 @@ li.show-more-topics {
         & li#show-more-direct-messages {
             cursor: pointer;
             padding-right: 26px;
-            padding-left: 6px;
+            /* TODO: Rewrite the show-more and show-less
+               buttons as grids alongside the left sidebar
+               header rewrites. This padding value
+               is a stopgap to provide the same lefthand
+               alignment as the "more topics" text, which
+               aligns with the topic above--just as this
+               aligns with the DM row above. */
+            padding-left: 29px;
 
             & a {
                 font-size: 12px;
@@ -1214,7 +1221,12 @@ li.topic-list-item {
 
         & span {
             display: block;
-            padding: 2px 0 2px 4px;
+            /* TODO: Rewrite the show-more and show-less
+               buttons as grids alongside the left sidebar
+               header rewrites. The 6px left padding here
+               aligns the "back to streams" text with the
+               DIRECT MESSAGES heading above. */
+            padding: 2px 0 2px 6px;
         }
 
         &:hover {
