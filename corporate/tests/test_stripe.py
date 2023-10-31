@@ -48,14 +48,12 @@ from corporate.lib.stripe import (
     StripeCardError,
     add_months,
     approve_sponsorship,
-    attach_discount_to_realm,
     catch_stripe_errors,
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
     do_change_remote_server_plan_type,
     do_deactivate_remote_server,
     downgrade_small_realms_behind_on_payments_as_needed,
-    get_discount_for_realm,
     get_latest_seat_count,
     get_plan_renewal_or_end_date,
     get_price_per_license,
@@ -79,6 +77,7 @@ from corporate.lib.stripe import (
     update_sponsorship_status,
     void_all_open_invoices,
 )
+from corporate.lib.support import attach_discount_to_realm, get_discount_for_realm
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -2470,75 +2469,6 @@ class StripeTest(StripeTestCase):
         # card on file, and should show it
         # TODO
 
-    @mock_stripe()
-    def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
-        # Attach discount before Stripe customer exists
-        user = self.example_user("hamlet")
-        attach_discount_to_realm(user.realm, Decimal(85), acting_user=user)
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = {"old_discount": None, "new_discount": str(Decimal("85"))}
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-        self.login_user(user)
-        # Check that the discount appears in page_params
-        self.assert_in_success_response(["85"], self.client_get("/upgrade/"))
-        # Check that the customer was charged the discounted amount
-        self.upgrade()
-        customer = Customer.objects.first()
-        assert customer is not None
-        [charge] = stripe.Charge.list(customer=customer.stripe_customer_id)
-        self.assertEqual(1200 * self.seat_count, charge.amount)
-        stripe_customer_id = customer.stripe_customer_id
-        assert stripe_customer_id is not None
-        [invoice] = stripe.Invoice.list(customer=stripe_customer_id)
-        self.assertEqual(
-            [1200 * self.seat_count, -1200 * self.seat_count],
-            [item.amount for item in invoice.lines],
-        )
-        # Check CustomerPlan reflects the discount
-        plan = CustomerPlan.objects.get(price_per_license=1200, discount=Decimal(85))
-
-        # Attach discount to existing Stripe customer
-        plan.status = CustomerPlan.ENDED
-        plan.save(update_fields=["status"])
-        attach_discount_to_realm(user.realm, Decimal(25), acting_user=user)
-        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.upgrade(license_management="automatic", billing_modality="charge_automatically")
-        [charge, _] = stripe.Charge.list(customer=customer.stripe_customer_id)
-        self.assertEqual(6000 * self.seat_count, charge.amount)
-        stripe_customer_id = customer.stripe_customer_id
-        assert stripe_customer_id is not None
-        [invoice, _] = stripe.Invoice.list(customer=stripe_customer_id)
-        self.assertEqual(
-            [6000 * self.seat_count, -6000 * self.seat_count],
-            [item.amount for item in invoice.lines],
-        )
-        plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
-
-        attach_discount_to_realm(user.realm, Decimal(50), acting_user=user)
-        plan.refresh_from_db()
-        self.assertEqual(plan.price_per_license, 4000)
-        self.assertEqual(plan.discount, 50)
-        customer.refresh_from_db()
-        self.assertEqual(customer.default_discount, 50)
-        invoice_plans_as_needed(self.next_year + timedelta(days=10))
-        stripe_customer_id = customer.stripe_customer_id
-        assert stripe_customer_id is not None
-        [invoice, _, _] = stripe.Invoice.list(customer=stripe_customer_id)
-        self.assertEqual([4000 * self.seat_count], [item.amount for item in invoice.lines])
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = {
-            "old_discount": str(Decimal("25.0000")),
-            "new_discount": str(Decimal("50")),
-        }
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-        self.assertEqual(realm_audit_log.acting_user, user)
-
     def test_approve_sponsorship(self) -> None:
         user = self.example_user("hamlet")
         approve_sponsorship(user.realm, acting_user=user)
@@ -2571,13 +2501,6 @@ class StripeTest(StripeTestCase):
         expected_extra_data = {"sponsorship_pending": True}
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
-
-    def test_get_discount_for_realm(self) -> None:
-        user = self.example_user("hamlet")
-        self.assertEqual(get_discount_for_realm(user.realm), None)
-
-        attach_discount_to_realm(user.realm, Decimal(85), acting_user=None)
-        self.assertEqual(get_discount_for_realm(user.realm), 85)
 
     @mock_stripe()
     def test_replace_payment_method(self, *mocks: Mock) -> None:
@@ -3750,7 +3673,7 @@ class StripeTest(StripeTestCase):
             users_to_create=1, create_stripe_customer=False, create_plan=False
         )
         # To create local Customer object but no Stripe customer.
-        attach_discount_to_realm(realm, Decimal(20), acting_user=None)
+        attach_discount_to_realm(realm, Decimal(20), acting_user=self.example_user("iago"))
         rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, False, False))
 
         realm, _, _, _ = create_realm(
@@ -5040,3 +4963,83 @@ class TestTestClasses(ZulipTestCase):
 
         realm.refresh_from_db()
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+
+
+class TestSupportBillingHelpers(StripeTestCase):
+    def test_get_discount_for_realm(self) -> None:
+        iago = self.example_user("iago")
+        user = self.example_user("hamlet")
+        self.assertEqual(get_discount_for_realm(user.realm), None)
+
+        attach_discount_to_realm(user.realm, Decimal(85), acting_user=iago)
+        self.assertEqual(get_discount_for_realm(user.realm), 85)
+
+    @mock_stripe()
+    def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
+        # Attach discount before Stripe customer exists
+        support_admin = self.example_user("iago")
+        user = self.example_user("hamlet")
+        attach_discount_to_realm(user.realm, Decimal(85), acting_user=support_admin)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {"old_discount": None, "new_discount": str(Decimal("85"))}
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.login_user(user)
+        # Check that the discount appears in page_params
+        self.assert_in_success_response(["85"], self.client_get("/upgrade/"))
+        # Check that the customer was charged the discounted amount
+        self.upgrade()
+        customer = Customer.objects.first()
+        assert customer is not None
+        [charge] = stripe.Charge.list(customer=customer.stripe_customer_id)
+        self.assertEqual(1200 * self.seat_count, charge.amount)
+        stripe_customer_id = customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice] = stripe.Invoice.list(customer=stripe_customer_id)
+        self.assertEqual(
+            [1200 * self.seat_count, -1200 * self.seat_count],
+            [item.amount for item in invoice.lines],
+        )
+        # Check CustomerPlan reflects the discount
+        plan = CustomerPlan.objects.get(price_per_license=1200, discount=Decimal(85))
+
+        # Attach discount to existing Stripe customer
+        plan.status = CustomerPlan.ENDED
+        plan.save(update_fields=["status"])
+        attach_discount_to_realm(user.realm, Decimal(25), acting_user=support_admin)
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.upgrade(license_management="automatic", billing_modality="charge_automatically")
+        [charge, _] = stripe.Charge.list(customer=customer.stripe_customer_id)
+        self.assertEqual(6000 * self.seat_count, charge.amount)
+        stripe_customer_id = customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice, _] = stripe.Invoice.list(customer=stripe_customer_id)
+        self.assertEqual(
+            [6000 * self.seat_count, -6000 * self.seat_count],
+            [item.amount for item in invoice.lines],
+        )
+        plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
+
+        attach_discount_to_realm(user.realm, Decimal(50), acting_user=support_admin)
+        plan.refresh_from_db()
+        self.assertEqual(plan.price_per_license, 4000)
+        self.assertEqual(plan.discount, 50)
+        customer.refresh_from_db()
+        self.assertEqual(customer.default_discount, 50)
+        invoice_plans_as_needed(self.next_year + timedelta(days=10))
+        stripe_customer_id = customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice, _, _] = stripe.Invoice.list(customer=stripe_customer_id)
+        self.assertEqual([4000 * self.seat_count], [item.amount for item in invoice.lines])
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_discount": str(Decimal("25.0000")),
+            "new_discount": str(Decimal("50")),
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, support_admin)
