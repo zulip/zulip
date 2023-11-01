@@ -267,6 +267,13 @@
 
 #message-send-controls-container {
     grid-area: message-send-controls-container;
+    /* A columnar flex does a nice job here
+       holding Drafts to the top of the
+       container, and the send button to
+       the bottom--even as the compose box
+       expands or contracts. */
+    display: flex;
+    flex-direction: column;
 }
 
 #message-formatting-controls-container {
@@ -274,10 +281,12 @@
 }
 
 #compose-limit-indicator {
-    margin-right: 8px;
     font-size: 12px;
     color: hsl(39deg 100% 50%);
-    align-self: center;
+
+    /* Keep the limit indicator
+       just above the send button */
+    margin-top: auto;
 
     &.over_limit {
         color: hsl(0deg 76% 65%);
@@ -981,7 +990,6 @@ textarea.new_message_textarea,
     display: flex;
     flex-direction: row;
     white-space: nowrap;
-    margin-top: 2px;
     height: 24px;
 
     &.disabled-message-send-controls {
