@@ -1233,9 +1233,11 @@ ul {
     margin-left: auto;
     color: hsl(0deg 0% 40%) !important;
     border-radius: 4px;
+    opacity: 0.5;
 
     &:hover,
     &:focus {
+        opacity: 0.9;
         text-decoration: none;
     }
 }
