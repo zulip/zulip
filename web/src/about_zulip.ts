@@ -17,10 +17,14 @@ export function launch(): void {
         },
     });
 
-    const clipboard = new ClipboardJS("#about-zulip .fa-copy");
+    const zulip_version_clipboard = new ClipboardJS("#about-zulip .fa-copy.zulip-version");
+    zulip_version_clipboard.on("success", () => {
+        show_copied_confirmation($("#about-zulip .fa-copy.zulip-version")[0]);
+    });
 
-    clipboard.on("success", () => {
-        show_copied_confirmation($("#about-zulip .fa-copy")[0]);
+    const zulip_merge_base_clipboard = new ClipboardJS("#about-zulip .fa-copy.zulip-merge-base");
+    zulip_merge_base_clipboard.on("success", () => {
+        show_copied_confirmation($("#about-zulip .fa-copy.zulip-merge-base")[0]);
     });
 }
 
