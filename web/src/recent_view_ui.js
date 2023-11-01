@@ -136,7 +136,8 @@ export function set_oldest_message_date(msg_list_data) {
     const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
     const has_found_newest = msg_list_data.fetch_status.has_found_newest();
 
-    oldest_message_timestamp = Math.min(msg_list_data.first().timestamp, oldest_message_timestamp);
+    const first_message_timestamp = msg_list_data.first()?.timestamp ?? Number.POSITIVE_INFINITY;
+    oldest_message_timestamp = Math.min(first_message_timestamp, oldest_message_timestamp);
 
     if (has_found_oldest) {
         loading_state = ALL_MESSAGES_LOADED;
