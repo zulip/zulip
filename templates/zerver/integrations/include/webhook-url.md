@@ -1,1 +1,1 @@
-`{{ api_url }}{{ integration_url }}?api_key=abcdefgh&stream=stream%20name`
+`{{ api_url }}{{ integration_url }}?api_key=abcdefgh&stream=123`
