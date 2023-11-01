@@ -248,11 +248,6 @@
     .compose_bottom_top_container {
         display: flex;
     }
-
-    .compose_bottom_bottom_container {
-        display: flex;
-        justify-content: space-between;
-    }
 }
 
 #compose_limit_indicator {
