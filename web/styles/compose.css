@@ -237,7 +237,7 @@
            4px outside padding.
 
            TODO: get this value into a CSS variable. */
-        grid-template: auto 32px / minmax(0, 1fr) 112px;
+        grid-template: minmax(0, 1fr) 32px / minmax(0, 1fr) 112px;
         grid-template-areas:
             "compose-textarea message-send-controls-container"
             "message-formatting-controls-container . ";
@@ -249,8 +249,20 @@
     }
 }
 
-#compose-textarea {
+#compose-textarea,
+#preview-message-area-container {
     grid-area: compose-textarea;
+    /* When the compose box is full screen, this
+       auto height will kick in and make sure that
+       the textarea opens to fill its whole grid
+       area. */
+    height: auto;
+}
+
+#preview-message-area-container {
+    /* Keep preview container invisible outside
+       of preview mode. */
+    display: none;
 }
 
 #message-send-controls-container {
@@ -1142,16 +1154,34 @@ textarea.new_message_textarea,
 
     #compose-textarea,
     #preview_message_area {
+        /* When in full screen, override any height-
+           related properties set on the textarea itself,
+           e.g., from manually resizing the textarea. */
+        max-height: none !important;
+        height: auto !important;
+    }
+
+    #preview_message_area {
         /* Setting height to 0 is necessary to make the flex+Simplebar
            combination work correctly, without pushing the compose
            controls offscreen when previewing a very tall message. */
-        max-height: none !important;
         height: 0;
         flex: 1;
     }
 }
 
 .preview_mode {
+    #preview-message-area-container {
+        /* When in preview mode, we display the
+           preview container as a columnar flexbox.
+           This containing element is necessary
+           because Simplebar on its own will cause
+           a grid blowout despite a minmax(0, 1fr)
+           row definition. */
+        display: flex;
+        flex-flow: column;
+    }
+
     .preview_mode_disabled {
         cursor: not-allowed;
         opacity: 0.3;
