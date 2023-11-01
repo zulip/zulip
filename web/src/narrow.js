@@ -770,7 +770,11 @@ export function narrow_to_next_topic(opts = {}) {
         topic: narrow_state.topic(),
     };
 
-    const next_narrow = topic_generator.get_next_topic(curr_info.stream, curr_info.topic);
+    const next_narrow = topic_generator.get_next_topic(
+        curr_info.stream,
+        curr_info.topic,
+        opts.only_followed_topics,
+    );
 
     if (!next_narrow) {
         return;

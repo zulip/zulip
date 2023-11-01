@@ -88,6 +88,7 @@ const keydown_shift_mappings = {
     38: {name: "up_arrow", message_view_only: false}, // up arrow
     40: {name: "down_arrow", message_view_only: false}, // down arrow
     72: {name: "view_edit_history", message_view_only: true}, // 'H'
+    78: {name: "narrow_to_next_unread_followed_topic", message_view_only: false}, // 'N'
 };
 
 const keydown_unshift_mappings = {
@@ -904,7 +905,10 @@ export function process_hotkey(e, hotkey) {
             narrow.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic({trigger: "hotkey"});
+            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            return true;
+        case "narrow_to_next_unread_followed_topic":
+            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
             return true;
         case "p_key":
             narrow.narrow_to_next_pm_string({trigger: "hotkey"});
