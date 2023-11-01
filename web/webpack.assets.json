@@ -51,6 +51,16 @@
         "./src/portico/landing-page",
         "./styles/portico/landing_page.css"
     ],
+    "apps-download": [
+        "./src/bundles/portico",
+        "./src/portico/apps_download",
+        "./styles/portico/landing_page.css"
+    ],
+    "teams-page": [
+        "./src/bundles/portico",
+        "./src/portico/teams_page",
+        "./styles/portico/landing_page.css"
+    ],
     "landing-page-hello": [
         "./src/bundles/hello",
         "./src/portico/hello",

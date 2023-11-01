@@ -5,7 +5,7 @@ import _ from "lodash";
 import * as blueslip from "./blueslip";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
-import {normalize_path, shouldCreateSpanForRequest} from "./sentry";
+import * as sentry_util from "./sentry_util";
 import * as spectators from "./spectators";
 
 // We omit `success` handler from original `AjaxSettings` type because it types
@@ -46,7 +46,7 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
     }
 
     const existing_span = Sentry.getCurrentHub().getScope().getSpan();
-    const txn_title = `call ${args.type} ${normalize_path(args.url)}`;
+    const txn_title = `call ${args.type} ${sentry_util.normalize_path(args.url)}`;
     const span_data = {
         op: "function",
         description: txn_title,
@@ -56,7 +56,7 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
         },
     };
     let span: Sentry.Span | undefined;
-    if (!shouldCreateSpanForRequest(args.url)) {
+    if (!sentry_util.shouldCreateSpanForRequest(args.url)) {
         // Leave the span unset, so we don't record a transaction
     } else {
         if (!existing_span) {
