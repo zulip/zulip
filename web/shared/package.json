@@ -1,6 +1,6 @@
 {
   "name": "@zulip/shared",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "license": "Apache-2.0",
   "scripts": {
     "prepare": "rm -rf lib && tsc && cp src/*.flow lib",
