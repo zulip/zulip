@@ -26,6 +26,10 @@ See also \`reset-to-pull-request\`.
 EOF
 }
 
+this_dir=${BASH_SOURCE[0]%/*}
+# shellcheck source=lib/ensure-getopt.sh
+. "${this_dir}"/lib/ensure-getopt.sh
+
 args="$(getopt -o '' --long help,merge -n "$0" -- "$@")"
 eval "set -- $args"
 
