@@ -248,6 +248,8 @@ body {
     --color-text-dropdown-menu: hsl(0deg 0% 15%);
     --color-text-full-name: hsl(0deg 0% 15%);
     --color-text-item: hsl(0deg 0% 40%);
+    --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
+    --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
@@ -443,6 +445,8 @@ body {
     --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
     --color-text-full-name: hsl(0deg 0% 100%);
     --color-text-item: hsl(0deg 0% 50%);
+    --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
+    --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
