@@ -2,7 +2,9 @@ Get GitHub notifications in Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
     You can refer to GitHub's documentation for [webhook events](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads).
 
