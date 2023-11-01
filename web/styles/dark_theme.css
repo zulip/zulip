@@ -111,7 +111,7 @@
     }
 
     .modal__btn:disabled,
-    .disabled-compose-send-button-container button {
+    .disabled-message-send-controls button {
         opacity: 1;
         background-color: hsl(0deg 0% 83% / 50%);
     }
