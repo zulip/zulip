@@ -9261,18 +9261,18 @@ paths:
   /mobile_push/test_notification:
     post:
       operationId: test-notify
-      summary: Sends a test notifications to the user's mobile device(s)
+      summary: Sends a test notification to the user's mobile device(s)
       tags: ["mobile"]
       description: |
         This endpoint allows a user to trigger a test push notification to their
-        selected mobile devices, or all their mobile devices.
+        selected mobile device, or all their mobile devices.
 
         **Changes**: New in Zulip 8.0 (feature level 217).
       parameters:
         - name: token
           in: query
           description: |
-            The push token for the device to send the test notification to.
+            The push token for the device to which to send the test notification.
 
             If this parameter is not submitted, the test notification will be sent to all of the
             user's devices registered on the server.
@@ -19875,7 +19875,8 @@ components:
           description: |
             ## Invalid push device token
 
-            A typical failed JSON response for when the push device token is invalid:
+            A typical failed JSON response for when the push device token is not
+            recognized by the Zulip server:
     InvalidRemotePushDeviceTokenError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
