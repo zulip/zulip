@@ -944,14 +944,14 @@ textarea.new_message_textarea,
     }
 }
 
-.compose_right_float_container {
+.message-send-controls {
     display: flex;
     flex-direction: row;
     white-space: nowrap;
     margin-top: 2px;
     height: 24px;
 
-    &.disabled-compose-send-button-container {
+    &.disabled-message-send-controls {
         cursor: not-allowed;
 
         & button {

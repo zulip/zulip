@@ -82,19 +82,21 @@
                             </div>
                             <div class="drag"></div>
 
-                            <div class="compose_right_float_container order-3">
+                            <div id="message-send-controls-container">
                                 <a role="button" class="compose_control_button compose_draft_button hide-sm" tabindex=0 href="#drafts" data-tooltip-template-id="compose_draft_tooltip_template">
                                     {{t 'Drafts' }}
                                 </a>
                                 <span id="compose_limit_indicator"></span>
-                                <button type="submit" id="compose-send-button" class="button small send_message compose-submit-button animated-purple-button">
-                                    <img class="loader" alt="" src="" />
-                                    <span>{{t 'Send' }}</span>
-                                </button>
-                                <button class="animated-purple-button message-control-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">
-                                    <div class="separator-line"></div>
-                                    <i class="zulip-icon zulip-icon-more-vertical"></i>
-                                </button>
+                                <div class="message-send-controls">
+                                    <button type="submit" id="compose-send-button" class="button small send_message compose-submit-button animated-purple-button">
+                                        <img class="loader" alt="" src="" />
+                                        <span>{{t 'Send' }}</span>
+                                    </button>
+                                    <button class="animated-purple-button message-control-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">
+                                        <div class="separator-line"></div>
+                                        <i class="zulip-icon zulip-icon-more-vertical"></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <div id="below-compose-content">
