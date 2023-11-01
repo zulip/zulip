@@ -326,9 +326,14 @@ export function load_messages(opts, attempt = 1) {
                 ui_report.hide_error($("#connection-error"));
             }
 
-            if (opts.msg_list.narrowed && opts.msg_list !== message_lists.current) {
-                // We unnarrowed before getting an error so don't
-                // bother trying again or doing further processing.
+            if (
+                opts.msg_list !== undefined &&
+                opts.msg_list !== message_lists.current &&
+                opts.msg_list.narrowed
+            ) {
+                // This fetch was for a narrow, and we unnarrowed
+                // before getting an error, so don't bother trying
+                // again or doing further processing.
                 return;
             }
             if (xhr.status === 400) {
