@@ -1261,6 +1261,14 @@ ul {
     gap: 5px;
 }
 
+.personal-menu-status-text {
+    color: var(--color-text-personal-menu-some-status);
+}
+
+.personal-menu-no-status-text {
+    color: var(--color-text-personal-menu-no-status);
+}
+
 #gear-menu-dropdown {
     padding: 5px 0;
     box-shadow: var(--box-shadow-gear-menu);
