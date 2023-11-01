@@ -169,6 +169,8 @@
             display: flex;
             align-items: center;
             height: var(--compose-recipient-box-min-height);
+            /* Round up natural width to next whole pixel. */
+            width: 23px;
 
             .fa-angle-right {
                 font-size: 0.9em;
@@ -229,8 +231,17 @@
         box-shadow: none;
         border: none;
         height: 100%;
-        display: flex;
-        flex-flow: column;
+        display: grid;
+        /* Vlad's design calls for 122px for the send column
+           at its widest; 112px accounts for 6px of gap and
+           4px outside padding.
+
+           TODO: get this value into a CSS variable. */
+        grid-template: auto 32px / minmax(0, 1fr) 112px;
+        grid-template-areas:
+            "compose-textarea message-send-controls-container"
+            "message-formatting-controls-container . ";
+        grid-gap: 6px;
     }
 
     .message_content {
@@ -238,12 +249,16 @@
     }
 }
 
+#compose-textarea {
+    grid-area: compose-textarea;
+}
+
+#message-send-controls-container {
+    grid-area: message-send-controls-container;
+}
+
 #message-formatting-controls-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-top: 6px;
-    margin-bottom: -2px;
+    grid-area: message-formatting-controls-container;
 }
 
 #compose-limit-indicator {
@@ -276,13 +291,23 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding-bottom: 5px;
+    /* Matched to 6px grid-gap on .messagebox grid. */
+    padding-bottom: 6px;
 }
 
 #compose_top_right {
     display: flex;
     align-items: center;
     height: var(--compose-recipient-box-min-height);
+    /* Align to compose controls; that's 112px width,
+       minus 23px for the narrow indicator, but then
+       add back 6px of grid gap for 95px here.
+
+       TODO: Make variables here; expanded use of grid
+       on the compose box will make these unnecessary,
+       eventually. */
+    width: calc(112px - 23px + 6px);
+    justify-content: flex-end;
 
     & button {
         background: transparent;
@@ -970,7 +995,6 @@ textarea.new_message_textarea,
     /* minus 5px padding. */
     width: calc(100% - 12px);
     padding: 5px;
-    margin-top: 5px;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
     /* the minimum height the textarea collapses to. */
