@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as input_pill from "./input_pill";
 import * as keydown_util from "./keydown_util";
 import * as pill_typeahead from "./pill_typeahead";
