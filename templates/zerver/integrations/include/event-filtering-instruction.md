@@ -1,6 +1,7 @@
 To filter the events that trigger the notifications, you can append
 either `&only_events=["event_a","event_b"]` or `&exclude_events=["event_a","event_b"]`
-(or both, with different events) to the URL with an arbitrary number of supported events.
+(or both, with different events) to the URL you generated with an arbitrary
+number of supported events.
 
 Below are the events that {{ integration_display_name }} bot supports:
 
