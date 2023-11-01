@@ -86,7 +86,7 @@
                                 <a role="button" class="compose_control_button compose_draft_button hide-sm" tabindex=0 href="#drafts" data-tooltip-template-id="compose_draft_tooltip_template">
                                     {{t 'Drafts' }}
                                 </a>
-                                <span id="compose_limit_indicator"></span>
+                                <span id="compose-limit-indicator"></span>
                                 <div class="message-send-controls">
                                     <button type="submit" id="compose-send-button" class="button small send_message compose-submit-button animated-purple-button">
                                         <img class="loader" alt="" src="" />
@@ -99,10 +99,8 @@
                                 </div>
                             </div>
 
-                            <div id="below-compose-content">
-                                <div class="compose_bottom_top_container">
-                                    {{> compose_control_buttons }}
-                                </div>
+                            <div id="message-formatting-controls-container">
+                                {{> compose_control_buttons }}
                             </div>
                         </div>
                     </div>

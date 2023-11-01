@@ -547,7 +547,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     page_params.max_message_length = 10000;
 
     const $textarea = $("textarea#compose-textarea");
-    const $indicator = $("#compose_limit_indicator");
+    const $indicator = $("#compose-limit-indicator");
     const $send_button = $("#compose-send-button");
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {

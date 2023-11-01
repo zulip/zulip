@@ -619,7 +619,7 @@ export function check_overflow_text() {
     // expensive.
     const text = compose_state.message_content();
     const max_length = page_params.max_message_length;
-    const $indicator = $("#compose_limit_indicator");
+    const $indicator = $("#compose-limit-indicator");
 
     if (text.length > max_length) {
         $indicator.addClass("over_limit");

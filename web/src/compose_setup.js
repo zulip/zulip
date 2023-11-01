@@ -44,8 +44,12 @@ export function initialize() {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
 
-    $("#below-compose-content .video_link").toggle(compose_call.compute_show_video_chat_button());
-    $("#below-compose-content .audio_link").toggle(compose_call.compute_show_audio_chat_button());
+    $(".compose-control-buttons-container .video_link").toggle(
+        compose_call.compute_show_video_chat_button(),
+    );
+    $(".compose-control-buttons-container .audio_link").toggle(
+        compose_call.compute_show_audio_chat_button(),
+    );
 
     $("textarea#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("textarea#compose-textarea").expectOne());

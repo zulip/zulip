@@ -238,19 +238,15 @@
     }
 }
 
-#below-compose-content {
+#message-formatting-controls-container {
     display: flex;
     flex-direction: column;
     width: 100%;
     margin-top: 6px;
     margin-bottom: -2px;
-
-    .compose_bottom_top_container {
-        display: flex;
-    }
 }
 
-#compose_limit_indicator {
+#compose-limit-indicator {
     margin-right: 8px;
     font-size: 12px;
     color: hsl(39deg 100% 50%);
@@ -862,7 +858,7 @@ textarea.new_message_textarea,
     min-height: var(--compose-recipient-box-min-height);
 }
 
-.compose_control_buttons_container {
+.compose-control-buttons-container {
     margin-right: auto;
     display: flex;
     gap: 4px;
