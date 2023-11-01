@@ -2,9 +2,9 @@
 
 {start_tabs}
 
-{!start-composing.md!}
-
 {tab|desktop-web}
+
+{!start-composing.md!}
 
 1. Click the **video camera** (<i class="fa fa-video-camera"></i>) icon at the
    bottom of the compose box. This will insert a **Join video call.** link into
@@ -56,8 +56,8 @@ supported by zulip are:
 
 !!! tip ""
 
-    It is also possible to disable the video call button for your organization by
-    setting the provider to "None".
+    It is also possible to disable the video call button for your organization
+    by setting the provider to "None".
 
 ### Change your organization's video call provider
 
@@ -65,9 +65,29 @@ supported by zulip are:
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings** select appropriate provider from **Call provider** dropdown.
+1. Under **Other settings**, select the desired provider from the
+   **Call provider** dropdown.
 
-1. Click **Save changes**.
+{!save-changes.md!}
+
+{end_tabs}
+
+### Use a self-hosted instance of Jitsi Meet
+
+Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
+as its default video call provider. You can also use a self-hosted
+instance of Jitsi Meet.
+
+{start_tabs}
+
+{settings_tab|organization-settings}
+
+1. Under **Other settings**, select **Custom URL** from the
+   **Jitsi server URL** dropdown.
+
+1. Enter the URL of your self-hosted Jitsi Meet server.
+
+{!save-changes.md!}
 
 {end_tabs}
 
