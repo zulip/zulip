@@ -272,13 +272,12 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (popovers.any_active() || sidebar_ui.any_sidebar_expanded_as_overlay()) {
+    if (popovers.any_active()) {
         if (user_card_popover.manage_menu.is_open()) {
             user_card_popover.manage_menu.hide();
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
         }
-        sidebar_ui.hide_all();
         popovers.hide_all();
         return true;
     }
@@ -347,6 +346,11 @@ export function process_escape_key(e) {
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
         $("input:focus,textarea:focus").trigger("blur");
+        return true;
+    }
+
+    if (sidebar_ui.any_sidebar_expanded_as_overlay()) {
+        sidebar_ui.hide_all();
         return true;
     }
 
