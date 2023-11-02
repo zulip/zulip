@@ -17,12 +17,12 @@ export function bulk_set_stream_property(sub_data, $status_element) {
     return undefined;
 }
 
-export function set_stream_property(sub, property, value, $status_element) {
-    const sub_data = {stream_id: sub.stream_id, property, value};
+export function set_stream_property(sub, data, $status_element) {
+    const sub_data = {stream_id: sub.stream_id, ...data};
     bulk_set_stream_property([sub_data], $status_element);
 }
 
 export function set_color(stream_id, color) {
     const sub = sub_store.get(stream_id);
-    set_stream_property(sub, "color", color);
+    set_stream_property(sub, {property: "color", value: color});
 }
