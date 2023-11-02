@@ -58,6 +58,8 @@ export class UserSearch {
     }
 
     escape_search() {
+        buddy_data.set_is_searching_users(false);
+
         if (this.empty()) {
             this.close_widget();
             return;
