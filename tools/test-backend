@@ -283,7 +283,7 @@ def main() -> None:
     if options.processes is not None and options.processes < 1:
         raise argparse.ArgumentTypeError("option processes: Only positive integers are allowed.")
 
-    zerver_test_dir = "zerver/tests/"
+    test_dirs = ["zerver/tests/", "corporate/tests", "analytics/tests"]
 
     # While running --rerun, we read var/last_test_failure.json to get
     # the list of tests that failed on the last run, and then pretend
@@ -305,20 +305,21 @@ def main() -> None:
             args[i] = suite.rstrip("/").replace("/", ".")
 
         def rewrite_arguments(search_key: str) -> None:
-            for root, dirs, files_names in os.walk(zerver_test_dir, topdown=False):
-                for file_name in files_names:
-                    # Check for files starting with alphanumeric characters and ending with '.py'
-                    # Ignore backup files if any
-                    if not file_name[0].isalnum() or not file_name.endswith(".py"):
-                        continue
-                    filepath = os.path.join(root, file_name)
-                    with open(filepath) as f:
-                        for line in f:
-                            if search_key not in line:
-                                continue
-                            new_suite = filepath.replace(".py", ".") + suite
-                            args[i] = new_suite
-                            return
+            for test_dir in test_dirs:
+                for root, dirs, files_names in os.walk(test_dir, topdown=False):
+                    for file_name in files_names:
+                        # Check for files starting with alphanumeric characters and ending with '.py'
+                        # Ignore backup files if any
+                        if not file_name[0].isalnum() or not file_name.endswith(".py"):
+                            continue
+                        filepath = os.path.join(root, file_name)
+                        with open(filepath) as f:
+                            for line in f:
+                                if search_key not in line:
+                                    continue
+                                new_suite = filepath.replace(".py", ".") + suite
+                                args[i] = new_suite
+                                return
 
         for suite in args:
             if suite[0].isupper() and "test_" in suite:
@@ -329,12 +330,13 @@ def main() -> None:
 
         for i, suite in enumerate(args):
             if suite.startswith("test"):
-                for root, dirs, files_names in os.walk(zerver_test_dir):
-                    for file_name in files_names:
-                        if file_name in (suite, f"{suite}.py"):
-                            new_suite = os.path.join(root, file_name)
-                            args[i] = new_suite
-                            break
+                for test_dir in test_dirs:
+                    for root, dirs, files_names in os.walk(test_dir):
+                        for file_name in files_names:
+                            if file_name in (suite, f"{suite}.py"):
+                                new_suite = os.path.join(root, file_name)
+                                args[i] = new_suite
+                                break
 
         for i, suite in enumerate(args):
             args[i] = suite.replace(".py", "")
