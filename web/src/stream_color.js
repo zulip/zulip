@@ -65,7 +65,6 @@ export function set_colorpicker_color($colorpicker, color) {
     $colorpicker.spectrum({
         ...subscriptions_table_colorpicker_options,
         color,
-        container: "#subscription_overlay .subscription_settings.show",
     });
 }
 
