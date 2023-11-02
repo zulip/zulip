@@ -974,10 +974,6 @@ li.top_left_scheduled_messages {
        by .zulip-icon */
     font-size: 17px;
 
-    &.hide {
-        display: none !important;
-    }
-
     /*
         If you hover directly over the ellipsis itself,
         show it in black.
