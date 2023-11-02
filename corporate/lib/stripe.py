@@ -330,6 +330,7 @@ class AuditLogEventType(Enum):
     STRIPE_CARD_CHANGED = 2
     CUSTOMER_PLAN_CREATED = 3
     DISCOUNT_CHANGED = 4
+    SPONSORSHIP_APPROVED = 5
 
 
 class BillingSessionAuditLogEventError(Exception):
@@ -365,6 +366,10 @@ class BillingSession(ABC):
     def update_or_create_customer(
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
     ) -> Customer:
+        pass
+
+    @abstractmethod
+    def approve_sponsorship(self) -> None:
         pass
 
     @catch_stripe_errors
@@ -471,6 +476,8 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RealmAuditLog.REALM_DISCOUNT_CHANGED
+        elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
+            return RealmAuditLog.REALM_SPONSORSHIP_APPROVED
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -532,6 +539,39 @@ class RealmBillingSession(BillingSession):
                 realm=self.realm, defaults=defaults
             )
             return customer
+
+    @override
+    def approve_sponsorship(self) -> None:
+        # Sponsorship approval is only a support admin action.
+        assert self.support_session
+
+        from zerver.actions.message_send import internal_send_private_message
+        from zerver.actions.realm_settings import do_change_realm_plan_type
+
+        do_change_realm_plan_type(self.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=self.user)
+        customer = self.get_customer()
+        if customer is not None and customer.sponsorship_pending:
+            customer.sponsorship_pending = False
+            customer.save(update_fields=["sponsorship_pending"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
+            )
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
+        for user in self.realm.get_human_billing_admin_and_realm_owner_users():
+            with override_language(user.default_language):
+                # Using variable to make life easier for translators if these details change.
+                message = _(
+                    "Your organization's request for sponsored hosting has been approved! "
+                    "You have been upgraded to {plan_name}, free of charge. {emoji}\n\n"
+                    "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
+                    "we would really appreciate it!"
+                ).format(
+                    plan_name="Zulip Cloud Standard",
+                    emoji=":tada:",
+                    begin_link="[",
+                    end_link="](/help/linking-to-zulip-website)",
+                )
+                internal_send_private_message(notification_bot, user, message)
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
@@ -1097,39 +1137,6 @@ def update_sponsorship_status(
         event_time=timezone_now(),
         extra_data={"sponsorship_pending": sponsorship_pending},
     )
-
-
-def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
-    from zerver.actions.message_send import internal_send_private_message
-    from zerver.actions.realm_settings import do_change_realm_plan_type
-
-    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
-    customer = get_customer_by_realm(realm)
-    if customer is not None and customer.sponsorship_pending:
-        customer.sponsorship_pending = False
-        customer.save(update_fields=["sponsorship_pending"])
-        RealmAuditLog.objects.create(
-            realm=realm,
-            acting_user=acting_user,
-            event_type=RealmAuditLog.REALM_SPONSORSHIP_APPROVED,
-            event_time=timezone_now(),
-        )
-    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
-    for user in realm.get_human_billing_admin_and_realm_owner_users():
-        with override_language(user.default_language):
-            # Using variable to make life easier for translators if these details change.
-            message = _(
-                "Your organization's request for sponsored hosting has been approved! "
-                "You have been upgraded to {plan_name}, free of charge. {emoji}\n\n"
-                "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
-                "we would really appreciate it!"
-            ).format(
-                plan_name="Zulip Cloud Standard",
-                emoji=":tada:",
-                begin_link="[",
-                end_link="](/help/linking-to-zulip-website)",
-            )
-            internal_send_private_message(notification_bot, user, message)
 
 
 def is_sponsored_realm(realm: Realm) -> bool:

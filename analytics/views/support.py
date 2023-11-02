@@ -52,7 +52,6 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import approve_sponsorship as do_approve_sponsorship
     from corporate.lib.stripe import (
         downgrade_at_the_end_of_billing_cycle,
         downgrade_now_without_creating_additional_invoices,
@@ -63,7 +62,11 @@ if settings.BILLING_ENABLED:
         update_sponsorship_status,
         void_all_open_invoices,
     )
-    from corporate.lib.support import attach_discount_to_realm, get_discount_for_realm
+    from corporate.lib.support import (
+        approve_realm_sponsorship,
+        attach_discount_to_realm,
+        get_discount_for_realm,
+    )
     from corporate.models import (
         Customer,
         CustomerPlan,
@@ -257,7 +260,7 @@ def support(
                 update_sponsorship_status(realm, False, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
         elif approve_sponsorship:
-            do_approve_sponsorship(realm, acting_user=acting_user)
+            approve_realm_sponsorship(realm, acting_user=acting_user)
             context["success_message"] = f"Sponsorship approved for {realm.string_id}"
         elif modify_plan is not None:
             if modify_plan == "downgrade_at_billing_cycle_end":

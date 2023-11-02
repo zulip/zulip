@@ -50,7 +50,6 @@ from corporate.lib.stripe import (
     RealmBillingSession,
     StripeCardError,
     add_months,
-    approve_sponsorship,
     catch_stripe_errors,
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
@@ -80,7 +79,11 @@ from corporate.lib.stripe import (
     update_sponsorship_status,
     void_all_open_invoices,
 )
-from corporate.lib.support import attach_discount_to_realm, get_discount_for_realm
+from corporate.lib.support import (
+    approve_realm_sponsorship,
+    attach_discount_to_realm,
+    get_discount_for_realm,
+)
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -2471,24 +2474,6 @@ class StripeTest(StripeTestCase):
         # If you sign up with a card and then downgrade, we still have your
         # card on file, and should show it
         # TODO
-
-    def test_approve_sponsorship(self) -> None:
-        user = self.example_user("hamlet")
-        approve_sponsorship(user.realm, acting_user=user)
-        realm = get_realm("zulip")
-        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
-
-        expected_message = (
-            "Your organization's request for sponsored hosting has been approved! You have been upgraded to Zulip Cloud Standard, free of charge. :tada:"
-            "\n\nIf you could [list Zulip as a sponsor on your website](/help/linking-to-zulip-website), we would really appreciate it!"
-        )
-        sender = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
-        recipient_id = self.example_user("desdemona").recipient_id
-        message = Message.objects.filter(realm_id=realm.id, sender=sender.id).first()
-        assert message is not None
-        self.assertEqual(message.content, expected_message)
-        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
-        self.assertEqual(message.recipient_id, recipient_id)
 
     def test_update_sponsorship_status(self) -> None:
         lear = get_realm("lear")
@@ -5057,3 +5042,23 @@ class TestSupportBillingHelpers(StripeTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, support_admin)
+
+    def test_approve_realm_sponsorship(self) -> None:
+        realm = get_realm("zulip")
+        self.assertNotEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
+
+        support_admin = self.example_user("iago")
+        approve_realm_sponsorship(realm, acting_user=support_admin)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
+
+        expected_message = (
+            "Your organization's request for sponsored hosting has been approved! You have been upgraded to Zulip Cloud Standard, free of charge. :tada:"
+            "\n\nIf you could [list Zulip as a sponsor on your website](/help/linking-to-zulip-website), we would really appreciate it!"
+        )
+        sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        recipient_id = self.example_user("desdemona").recipient_id
+        message = Message.objects.filter(realm_id=realm.id, sender=sender.id).first()
+        assert message is not None
+        self.assertEqual(message.content, expected_message)
+        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message.recipient_id, recipient_id)

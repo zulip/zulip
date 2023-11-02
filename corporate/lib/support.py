@@ -29,3 +29,8 @@ def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
 def attach_discount_to_realm(realm: Realm, discount: Decimal, *, acting_user: UserProfile) -> None:
     billing_session = RealmBillingSession(acting_user, realm)
     billing_session.attach_discount_to_customer(discount)
+
+
+def approve_realm_sponsorship(realm: Realm, *, acting_user: UserProfile) -> None:
+    billing_session = RealmBillingSession(acting_user, realm)
+    billing_session.approve_sponsorship()
