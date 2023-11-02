@@ -92,7 +92,6 @@ class MentionBackend:
             rows = (
                 UserProfile.objects.filter(
                     realm_id=self.realm_id,
-                    is_active=True,
                 )
                 .filter(
                     functools.reduce(lambda a, b: a | b, q_list),
