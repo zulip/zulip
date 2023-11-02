@@ -4,12 +4,12 @@
 {% set PAGE_TITLE = "💚 Request sponsorship" %}
 
 {% block portico_content %}
-<div class="register-account flex full-page">
+<div class="register-account flex full-page sponsorship-page">
     <div class="center-block new-style">
         <div class="pitch">
             <h1>💚 Request sponsorship</h1>
         </div>
-        <div id="registration" class="white-box">
+        <div class="white-box">
             <div id="sponsorship-error" class="alert alert-danger"></div>
             <div id="sponsorship-input-section">
                 <form id="sponsorship-form" method="post">
@@ -20,7 +20,7 @@
                     </div>
                     <div class="input-box sponsorship-form-field">
                         <div class="inline-block relative">
-                            <select name="realm_type" id="realm_type" class="sponsorship-form-select">
+                            <select name="organization-type" id="organization-type" class="sponsorship-form-select">
                                 {% for org_type in sorted_org_types %}
                                     {% if not org_type[1].hidden %}
                                     <option data-string-value="{{ org_type[0] }}"
@@ -32,11 +32,11 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <label for="realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
+                        <label for="organization-type" class="inline-block label-title">{{ _('Organization type') }}</label>
                     </div>
                     <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-website" class="inline-block label-title">{{ _('Organization website') }}</label>
-                        <input id="org-website" name="website" type="text" class="input-large" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
+                        <input id="org-website" name="website" type="text" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
                     </div>
                     <div class="input-box sponsorship-form-field">
                         <label for="description" class="inline-block label-title">{{ _('Describe your organization briefly') }}</label>
@@ -46,8 +46,8 @@
                     <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
                     <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
                         <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
-                            Submit
-                            <object class="loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            <span class="sponsorship-button-text">Submit</span>
+                            <object class="loader sponsorship-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
                     </div>
                 </form>
