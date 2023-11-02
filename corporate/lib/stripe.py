@@ -331,6 +331,7 @@ class AuditLogEventType(Enum):
     CUSTOMER_PLAN_CREATED = 3
     DISCOUNT_CHANGED = 4
     SPONSORSHIP_APPROVED = 5
+    SPONSORSHIP_PENDING_STATUS_CHANGED = 6
 
 
 class BillingSessionAuditLogEventError(Exception):
@@ -450,6 +451,18 @@ class BillingSession(ABC):
             extra_data={"old_discount": old_discount, "new_discount": discount},
         )
 
+    def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> None:
+        customer = self.get_customer()
+        if customer is None:
+            customer = self.update_or_create_customer()
+        customer.sponsorship_pending = sponsorship_pending
+        customer.save(update_fields=["sponsorship_pending"])
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED,
+            event_time=timezone_now(),
+            extra_data={"sponsorship_pending": sponsorship_pending},
+        )
+
 
 class RealmBillingSession(BillingSession):
     def __init__(self, user: UserProfile, realm: Optional[Realm] = None) -> None:
@@ -478,6 +491,8 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.REALM_DISCOUNT_CHANGED
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RealmAuditLog.REALM_SPONSORSHIP_APPROVED
+        elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
+            return RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -1122,21 +1137,6 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
 def is_realm_on_free_trial(realm: Realm) -> bool:
     plan = get_current_plan_by_realm(realm)
     return plan is not None and plan.is_free_trial()
-
-
-def update_sponsorship_status(
-    realm: Realm, sponsorship_pending: bool, *, acting_user: Optional[UserProfile]
-) -> None:
-    customer, _ = Customer.objects.get_or_create(realm=realm)
-    customer.sponsorship_pending = sponsorship_pending
-    customer.save(update_fields=["sponsorship_pending"])
-    RealmAuditLog.objects.create(
-        realm=realm,
-        acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
-        event_time=timezone_now(),
-        extra_data={"sponsorship_pending": sponsorship_pending},
-    )
 
 
 def is_sponsored_realm(realm: Realm) -> bool:

@@ -6,7 +6,8 @@ import orjson
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import add_months, update_sponsorship_status
+from corporate.lib.stripe import add_months
+from corporate.lib.support import update_realm_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
 from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
@@ -558,8 +559,9 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertFalse(customer.sponsorship_pending)
 
     def test_approve_sponsorship(self) -> None:
+        support_admin = self.example_user("iago")
         lear_realm = get_realm("lear")
-        update_sponsorship_status(lear_realm, True, acting_user=None)
+        update_realm_sponsorship_status(lear_realm, True, acting_user=support_admin)
         king_user = self.lear_user("king")
         king_user.role = UserProfile.ROLE_REALM_OWNER
         king_user.save()
