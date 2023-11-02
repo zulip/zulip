@@ -4,6 +4,30 @@
 {% set PAGE_TITLE = "💚 Request sponsorship" %}
 
 {% block portico_content %}
+
+{% if is_sponsored %}
+
+<div class="flex full-page thanks-page">
+    <div class="center-block new-style">
+        <h1>Zulip Cloud billing for {{realm_name}}</h1>
+        <p> Zulip is sponsoring free Zulip Cloud Standard hosting for your organization. 🎉 </p>
+    </div>
+</div>
+
+{% elif is_sponsorship_pending %}
+
+<div class="flex full-page thanks-page">
+    <div class="center-block new-style">
+        <h1>Sponsorship request pending for {{realm_name}}</h1>
+        <p> Your organization has requested sponsorship for a free or discounted Zulip Cloud Standard plan.</p>
+        <p>
+            Please feel free to <a href="mailto:support@zulip.com">contact Zulip support</a> with any questions or updates to your request.
+        </p>
+    </div>
+</div>
+
+{% else %}
+
 <div class="register-account flex full-page sponsorship-page">
     <div class="center-block new-style">
         <div class="pitch">
@@ -55,5 +79,6 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 {% endblock %}

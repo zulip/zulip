@@ -20,7 +20,6 @@ from corporate.lib.stripe import (
     ensure_customer_does_not_have_active_plan,
     get_latest_seat_count,
     is_free_trial_offer_enabled,
-    is_sponsored_realm,
     process_initial_upgrade,
     sign_string,
     unsign_string,
@@ -35,7 +34,7 @@ from corporate.models import (
     get_current_plan_by_customer,
     get_customer_by_realm,
 )
-from corporate.views.billing_page import add_sponsorship_info_to_context, billing_home
+from corporate.views.billing_page import billing_home
 from zerver.actions.users import do_make_user_billing_admin
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
@@ -258,17 +257,16 @@ def initial_upgrade(
     if not settings.BILLING_ENABLED or user.is_guest:
         return render(request, "404.html", status=404)
 
-    billing_page_url = reverse(billing_home)
-
     customer = get_customer_by_realm(user.realm)
-    if customer is not None and (
-        get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending
-    ):
+    if (
+        customer is not None and customer.sponsorship_pending
+    ) or user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
+        return HttpResponseRedirect(reverse("sponsorship_request"))
+
+    billing_page_url = reverse(billing_home)
+    if customer is not None and (get_current_plan_by_customer(customer) is not None or onboarding):
         if onboarding:
             billing_page_url = f"{billing_page_url}?onboarding=true"
-        return HttpResponseRedirect(billing_page_url)
-
-    if is_sponsored_realm(user.realm):
         return HttpResponseRedirect(billing_page_url)
 
     percent_off = Decimal(0)
@@ -302,7 +300,6 @@ def initial_upgrade(
         },
         "is_demo_organization": user.realm.demo_organization_scheduled_deletion_date is not None,
     }
-    add_sponsorship_info_to_context(context, user)
 
     response = render(request, "corporate/upgrade.html", context=context)
     return response
