@@ -16,32 +16,32 @@
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                     <div class="input-box no-validation">
                         <label for="org-name" class="inline-block label-title">{{ _('Organization') }}</label>
-                        <div id="org-name">{{ realm_name }}</div>
+                        <div id="org-name" class="not-editable-realm-field">{{ realm_name }}</div>
                     </div>
-                    <label>
-                        <h4>Organization type</h4>
-                    </label>
-                    <select name="organization-type" class="bootstrap-focus-style">
-                        {% for org_type in sorted_org_types %}
-                            {% if not org_type[1].hidden %}
-                            <option data-string-value="{{ org_type[0] }}"
-                              {% if org_type[1].id == realm_org_type %}selected{% endif %}
-                              value="{{ org_type[1].id }}">
-                                {{ _(org_type[1].name) }}
-                            </option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                    <br />
-                    <label>
-                        <h4>Organization website</h4>
-                    </label>
-                    <input name="website" type="text" class="input-large" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
-                    <label>
-                        <h4>Describe your organization briefly</h4>
-                    </label>
-                    <textarea name="description" cols="100" rows="5" required></textarea>
-                    <br />
+                    <div class="input-box">
+                        <div class="inline-block relative">
+                            <select name="realm_type" id="realm_type" class="sponsorship-form-select">
+                                {% for org_type in sorted_org_types %}
+                                    {% if not org_type[1].hidden %}
+                                    <option data-string-value="{{ org_type[0] }}"
+                                      {% if org_type[1].id == realm_org_type %}selected{% endif %}
+                                      value="{{ org_type[1].id }}">
+                                        {{ _(org_type[1].name) }}
+                                    </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <label for="realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
+                    </div>
+                    <div class="input-box no-validation">
+                        <label for="org-website" class="inline-block label-title">{{ _('Organization website') }}</label>
+                        <input id="org-website" name="website" type="text" class="input-large" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
+                    </div>
+                    <div class="input-box">
+                        <label for="description" class="inline-block label-title">{{ _('Describe your organization briefly') }}</label>
+                        <textarea id="description" name="description" cols="100" rows="5" required></textarea>
+                    </div>
                     <p id="sponsorship-discount-details"></p>
                     <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
                     <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
