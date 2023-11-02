@@ -6,7 +6,6 @@ import {page_params} from "./page_params";
 
 export const initialize = (): void => {
     helpers.set_tab("upgrade");
-    helpers.set_sponsorship_form();
     $("#add-card-button").on("click", (e) => {
         const license_management = $<HTMLInputElement>(
             "input[type=radio][name=license_management]:checked",

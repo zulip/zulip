@@ -58,15 +58,6 @@ run_test("initialize", ({override_rewire}) => {
                     };
                     success_callback();
                     break;
-                case "sponsorship":
-                    assert.equal(url, "/json/billing/sponsorship");
-                    assert.deepEqual(ignored_inputs, []);
-                    assert.equal(type, "POST");
-                    location.replace = (new_location) => {
-                        assert.equal(new_location, "/");
-                    };
-                    success_callback();
-                    break;
                 /* istanbul ignore next */
                 default:
                     throw new Error("Unhandled case");
@@ -99,21 +90,17 @@ run_test("initialize", ({override_rewire}) => {
 
     const add_card_click_handler = $("#add-card-button").get_on_handler("click");
     const invoice_click_handler = $("#invoice-button").get_on_handler("click");
-    const request_sponsorship_click_handler = $("#sponsorship-button").get_on_handler("click");
 
     override_rewire(helpers, "is_valid_input", () => true);
     add_card_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 1);
     invoice_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 2);
-    request_sponsorship_click_handler(e);
-    assert.equal(create_ajax_request_form_call_count, 3);
 
     override_rewire(helpers, "is_valid_input", () => false);
     add_card_click_handler(e);
     invoice_click_handler(e);
-    request_sponsorship_click_handler(e);
-    assert.equal(create_ajax_request_form_call_count, 3);
+    assert.equal(create_ajax_request_form_call_count, 2);
 
     override_rewire(helpers, "show_license_section", (section) => {
         assert.equal(section, "manual");

@@ -27,7 +27,6 @@
                     <li class="active"><a data-toggle="tab" href="#overview">Overview</a></li>
                     <li><a data-toggle="tab" href="#payment-method">Payment method</a></li>
                     <li><a data-toggle="tab" href="#settings">Settings</a></li>
-                    <li><a data-toggle="tab" href="#sponsorship">💚 Request sponsorship</a></li>
                 </ul>
 
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
@@ -171,8 +170,6 @@
                         <div class="tab-pane" id="loading">
                         </div>
                     </div>
-
-                    {% include "corporate/sponsorship.html" %}
                 </div>
 
                 <div id="goto-zulip-organization-link">
