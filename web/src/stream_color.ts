@@ -41,7 +41,11 @@ export function get_corrected_color(hex_color: string): Colord {
 }
 
 export function get_stream_privacy_icon_color(hex_color: string): string {
-    return get_corrected_color(hex_color).toHex();
+    const corrected_color = get_corrected_color(hex_color);
+    if (settings_data.using_dark_theme()) {
+        return corrected_color.toHex();
+    }
+    return corrected_color.darken(0.12).toHex();
 }
 
 export function get_recipient_bar_color(color: string): string {
