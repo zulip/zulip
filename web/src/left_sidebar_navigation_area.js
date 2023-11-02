@@ -4,6 +4,7 @@ import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
 import * as settings_config from "./settings_config";
 import * as ui_util from "./ui_util";
+import * as unread from "./unread";
 
 let last_mention_count = 0;
 
@@ -143,6 +144,33 @@ export function highlight_inbox_view() {
     }, 0);
 }
 
+function handle_home_view_order(home_view) {
+    // Remove class and tabindex from current home view
+    const $current_home_view = $(".selected-home-view");
+    $current_home_view.removeAttr("tabindex");
+    $current_home_view.removeClass("selected-home-view");
+
+    const $all_messages_rows = $(".top_left_all_messages");
+    const $recent_views_rows = $(".top_left_recent_view");
+    const $inbox_rows = $(".top_left_inbox");
+
+    const res = unread.get_counts();
+
+    // Add the class and tabindex to the matching home view
+    if (home_view === settings_config.web_home_view_values.all_messages.code) {
+        $all_messages_rows.addClass("selected-home-view");
+        $all_messages_rows.find("a").attr("tabindex", 0);
+    } else if (home_view === settings_config.web_home_view_values.recent_topics.code) {
+        $recent_views_rows.addClass("selected-home-view");
+        $recent_views_rows.find("a").attr("tabindex", 0);
+    } else {
+        // Inbox is home view.
+        $inbox_rows.addClass("selected-home-view");
+        $inbox_rows.find("a").attr("tabindex", 0);
+    }
+    update_dom_with_unread_counts(res, true);
+}
+
 export function handle_home_view_changed(new_home_view) {
     const $recent_view_sidebar_menu_icon = $(".recent-view-sidebar-menu-icon");
     const $all_messages_sidebar_menu_icon = $(".all-messages-sidebar-menu-icon");
@@ -157,6 +185,7 @@ export function handle_home_view_changed(new_home_view) {
         $recent_view_sidebar_menu_icon.removeClass("hide");
         $all_messages_sidebar_menu_icon.removeClass("hide");
     }
+    handle_home_view_order(new_home_view);
 }
 
 export function initialize() {
