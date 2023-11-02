@@ -800,17 +800,58 @@ textarea.new_message_textarea,
     width: 100%;
 }
 
-#compose-send-button {
-    padding: 3px 12px;
+.compose-send-or-save-button {
+    border-radius: 4px;
+    border: 0;
     margin-bottom: 0;
-    font-weight: 600;
-    font-size: 0.9em;
-    border-radius: 4px 0 0 4px;
+    color: var(--color-compose-send-button-icon-color);
+    background-color: var(--color-compose-send-button-background);
+
+    &:active {
+        transition: all 80ms;
+        transform: scale(0.96);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        border: 1px solid var(--color-compose-send-button-focus-border);
+        box-shadow: 0 0 5px var(--color-compose-send-button-focus-shadow);
+        background-color: var(
+            --color-compose-send-button-background-interactive
+        );
+    }
+
+    &:hover {
+        background-color: var(
+            --color-compose-send-button-background-interactive
+        );
+    }
+}
+
+#compose-send-button {
+    width: 74px;
+    height: 28px;
+    /* Allow to grow but not shrink */
+    flex: 1 0 auto;
+    /* Override inherited styles
+       so that flexbox can do the
+       job of positioning the icon. */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .zulip-icon-send {
+        display: block;
+        font-size: 17px;
+        line-height: 16px;
+    }
 
     .loader {
         display: none;
-        position: relative;
-        top: -6px;
     }
 }
 
@@ -988,9 +1029,6 @@ textarea.new_message_textarea,
 
 .message-send-controls {
     display: flex;
-    flex-direction: row;
-    white-space: nowrap;
-    height: 24px;
 
     &.disabled-message-send-controls {
         cursor: not-allowed;
@@ -1099,7 +1137,41 @@ textarea.new_message_textarea,
     margin-right: 4px;
 }
 
-/* `^` icon located next to `Send` / `Scheduled` button which shows
+/* Class for send-area buttons, such as
+   Drafts and the send-adjacent vdots */
+.message-control-button {
+    border: 0;
+    outline: 0;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    color: var(--color-compose-message-control-button);
+    background-color: var(--color-compose-message-control-button-background);
+    font-weight: 450;
+
+    &:active {
+        transition: all 80ms;
+        transform: scale(0.96);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:hover {
+        /* We need to use !important here, regrettably, to keep the default
+           dark-mode hover colors from showing. */
+        color: var(
+            --color-compose-message-control-button-interactive
+        ) !important;
+        background-color: var(
+            --color-compose-message-control-button-background-interactive
+        );
+        text-decoration: none;
+    }
+}
+
+/* vdots icon located next to `Send` / `Scheduled` button which shows
    options to schedule the message. */
 #send_later {
     display: flex;
