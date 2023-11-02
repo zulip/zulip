@@ -14,6 +14,10 @@
             <div id="sponsorship-input-section">
                 <form id="sponsorship-form" method="post">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+                    <div class="input-box no-validation">
+                        <label for="org-name" class="inline-block label-title">{{ _('Organization') }}</label>
+                        <div id="org-name">{{ realm_name }}</div>
+                    </div>
                     <label>
                         <h4>Organization type</h4>
                     </label>
