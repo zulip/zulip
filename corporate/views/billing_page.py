@@ -77,6 +77,16 @@ def add_sponsorship_info_to_context(context: Dict[str, Any], user_profile: UserP
 
 @zulip_login_required
 @has_request_variables
+def sponsorship_request(request: HttpRequest) -> HttpResponse:
+    user = request.user
+    assert user.is_authenticated
+    context: Dict[str, Any] = {}
+    add_sponsorship_info_to_context(context, user)
+    return render(request, "corporate/sponsorship.html", context=context)
+
+
+@zulip_login_required
+@has_request_variables
 def billing_home(
     request: HttpRequest, onboarding: bool = REQ(default=False, json_validator=check_bool)
 ) -> HttpResponse:
