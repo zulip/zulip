@@ -916,6 +916,7 @@ button#register_auth_button_gitlab {
     }
 }
 
+#sponsorship-form,
 #registration,
 #new-realm-creation {
     width: auto;
@@ -1012,7 +1013,8 @@ button#register_auth_button_gitlab {
         width: 450px;
     }
 
-    .register-button .loader {
+    .register-button .loader,
+    .sponsorship-button-loader {
         display: none;
         vertical-align: top;
         position: relative;

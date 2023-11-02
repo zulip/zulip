@@ -44,11 +44,6 @@ export const initialize = (): void => {
         helpers.update_charged_amount(prices, helpers.schedule_schema.parse(this.value));
     });
 
-    $<HTMLSelectElement>("select[name=organization-type]").on("change", (e) => {
-        const string_value = $(e.currentTarget.selectedOptions).attr("data-string-value");
-        helpers.update_discount_details(helpers.organization_type_schema.parse(string_value));
-    });
-
     $("#autopay_annual_price").text(helpers.format_money(prices.annual));
     $("#autopay_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
     $("#autopay_monthly_price").text(helpers.format_money(prices.monthly));

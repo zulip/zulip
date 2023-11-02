@@ -371,6 +371,33 @@ input[name="licenses"] {
     background-color: hsl(240deg 96% 68%);
 }
 
-#sponsorship-form {
+.sponsorship-page .white-box {
     margin: 30px;
+}
+
+.sponsorship-page #sponsorship-form {
+    margin: 0;
+}
+
+#sponsorship-discount-details {
+    font-weight: normal;
+    margin: 2px;
+    padding-top: 25px;
+    text-align: left;
+    overflow-wrap: break-word;
+    width: 450px;
+}
+
+@media (width < 600px) {
+    .sponsorship-page {
+        transform: scale(0.8);
+        margin: -50px;
+    }
+}
+
+@media (width < 460px) {
+    .sponsorship-page {
+        transform: scale(0.6);
+        margin: -150px -100px;
+    }
 }

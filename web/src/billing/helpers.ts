@@ -5,7 +5,7 @@ import * as loading from "../loading";
 
 import {page_params} from "./page_params";
 
-type FormDataObject = Record<string, string>;
+export type FormDataObject = Record<string, string>;
 
 export const schedule_schema = z.enum(["monthly", "annual"]);
 export type Prices = Record<z.infer<typeof schedule_schema>, number>;
@@ -108,7 +108,7 @@ export function update_charged_amount(prices: Prices, schedule: keyof Prices): v
     $("#charged_amount").text(format_money(page_params.seat_count * prices[schedule]));
 }
 
-export function update_discount_details(organization_type: keyof DiscountDetails): void {
+export function update_discount_details(organization_type: string): void {
     let discount_notice =
         "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
     const discount_details: DiscountDetails = {
@@ -120,9 +120,20 @@ export function update_discount_details(organization_type: keyof DiscountDetails
         education_nonprofit:
             "Zulip Cloud Standard is discounted 90% for education non-profits with online purchase.",
     };
-    if (discount_details[organization_type]) {
-        discount_notice = discount_details[organization_type];
+
+    try {
+        const parsed_organization_type = organization_type_schema.parse(organization_type);
+        discount_notice = discount_details[parsed_organization_type];
+    } catch {
+        // This will likely fail if organization_type is not in organization_type_schema or
+        // parsed_organization_type is not preset in discount_details. In either case, we will
+        // fallback to the default discount_notice.
+        //
+        // Why use try / catch?
+        // Because organization_type_schema.options.includes wants organization_type to be of type
+        // opensource | research | ... and defining a type like that is not useful.
     }
+
     $("#sponsorship-discount-details").text(discount_notice);
 }
 
@@ -159,18 +170,6 @@ export function set_tab(page: string): void {
 
     current_page = page;
     window.addEventListener("hashchange", handle_hashchange);
-}
-
-export function set_sponsorship_form(): void {
-    $("#sponsorship-button").on("click", (e) => {
-        if (!is_valid_input($("#sponsorship-form"))) {
-            return;
-        }
-        e.preventDefault();
-        create_ajax_request("/json/billing/sponsorship", "sponsorship", [], "POST", () =>
-            window.location.replace("/"),
-        );
-    });
 }
 
 export function is_valid_input(elem: JQuery<HTMLFormElement>): boolean {
