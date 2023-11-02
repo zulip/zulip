@@ -14,7 +14,7 @@ type UserPill = {
     email: string;
 };
 
-type UserPillWidget = InputPillContainer<UserPill>;
+export type UserPillWidget = InputPillContainer<UserPill>;
 
 export function create_item_from_email(
     email: string,
