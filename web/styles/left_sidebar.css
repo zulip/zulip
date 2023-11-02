@@ -603,6 +603,19 @@ li.active-sub-filter {
     border: 0.5px solid var(--color-border-unread-counter);
 }
 
+/* Don't show unread counts on views... */
+.top_left_inbox,
+.top_left_recent_view,
+.top_left_all_messages {
+    .unread_count {
+        visibility: hidden;
+    }
+    /* ...unless it's the selected home view. */
+    &.selected-home-view .unread_count {
+        visibility: visible;
+    }
+}
+
 /* Don't show the scheduled messages item... */
 li.top_left_scheduled_messages {
     display: none;
