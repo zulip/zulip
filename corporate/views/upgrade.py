@@ -24,7 +24,6 @@ from corporate.lib.stripe import (
     process_initial_upgrade,
     sign_string,
     unsign_string,
-    update_sponsorship_status,
     validate_licenses,
 )
 from corporate.lib.support import get_support_url
@@ -325,6 +324,7 @@ def sponsorship(
     description: str = REQ(),
 ) -> HttpResponse:
     realm = user.realm
+    billing_session = RealmBillingSession(user)
 
     requested_by = user.full_name
     user_role = user.get_role_name()
@@ -353,7 +353,7 @@ def sponsorship(
                 realm.org_type = org_type
                 realm.save(update_fields=["org_type"])
 
-            update_sponsorship_status(realm, True, acting_user=user)
+            billing_session.update_customer_sponsorship_status(True)
             do_make_user_billing_admin(user)
 
             org_type_display_name = get_org_type_display_name(org_type)

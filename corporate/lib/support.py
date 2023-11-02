@@ -34,3 +34,10 @@ def attach_discount_to_realm(realm: Realm, discount: Decimal, *, acting_user: Us
 def approve_realm_sponsorship(realm: Realm, *, acting_user: UserProfile) -> None:
     billing_session = RealmBillingSession(acting_user, realm)
     billing_session.approve_sponsorship()
+
+
+def update_realm_sponsorship_status(
+    realm: Realm, sponsorship_pending: bool, *, acting_user: UserProfile
+) -> None:
+    billing_session = RealmBillingSession(acting_user, realm)
+    billing_session.update_customer_sponsorship_status(sponsorship_pending)

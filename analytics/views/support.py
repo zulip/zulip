@@ -59,13 +59,13 @@ if settings.BILLING_ENABLED:
         make_end_of_cycle_updates_if_needed,
         switch_realm_from_standard_to_plus_plan,
         update_billing_method_of_current_plan,
-        update_sponsorship_status,
         void_all_open_invoices,
     )
     from corporate.lib.support import (
         approve_realm_sponsorship,
         attach_discount_to_realm,
         get_discount_for_realm,
+        update_realm_sponsorship_status,
     )
     from corporate.models import (
         Customer,
@@ -254,10 +254,10 @@ def support(
                 ] = f"Billing method of {realm.string_id} updated to charge automatically."
         elif sponsorship_pending is not None:
             if sponsorship_pending:
-                update_sponsorship_status(realm, True, acting_user=acting_user)
+                update_realm_sponsorship_status(realm, True, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} marked as pending sponsorship."
             else:
-                update_sponsorship_status(realm, False, acting_user=acting_user)
+                update_realm_sponsorship_status(realm, False, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
         elif approve_sponsorship:
             approve_realm_sponsorship(realm, acting_user=acting_user)
