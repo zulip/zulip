@@ -81,6 +81,14 @@ def sponsorship_request(request: HttpRequest) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
     context: Dict[str, Any] = {}
+
+    customer = get_customer_by_realm(user.realm)
+    if customer is not None and customer.sponsorship_pending:
+        context["is_sponsorship_pending"] = True
+
+    if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
+        context["is_sponsored"] = True
+
     add_sponsorship_info_to_context(context, user)
     return render(request, "corporate/sponsorship.html", context=context)
 
@@ -93,32 +101,33 @@ def billing_home(
     user = request.user
     assert user.is_authenticated
 
-    customer = get_customer_by_realm(user.realm)
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
     }
 
+    if not user.has_billing_access:
+        return render(request, "corporate/billing.html", context=context)
+
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
         context["is_sponsored"] = True
-        return render(request, "corporate/billing.html", context=context)
+        return HttpResponseRedirect(reverse("sponsorship_request"))
+
+    customer = get_customer_by_realm(user.realm)
+    if (
+        customer is not None and customer.sponsorship_pending
+    ) or user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
+        return HttpResponseRedirect(reverse("sponsorship_request"))
 
     if customer is None:
         from corporate.views.upgrade import initial_upgrade
 
         return HttpResponseRedirect(reverse(initial_upgrade))
 
-    if customer.sponsorship_pending:
-        context["sponsorship_pending"] = True
-        return render(request, "corporate/billing.html", context=context)
-
     if not CustomerPlan.objects.filter(customer=customer).exists():
         from corporate.views.upgrade import initial_upgrade
 
         return HttpResponseRedirect(reverse(initial_upgrade))
-
-    if not user.has_billing_access:
-        return render(request, "corporate/billing.html", context=context)
 
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
@@ -172,7 +181,6 @@ def billing_home(
                 CustomerPlan=CustomerPlan,
                 onboarding=onboarding,
             )
-            add_sponsorship_info_to_context(context, user)
 
     return render(request, "corporate/billing.html", context=context)
 

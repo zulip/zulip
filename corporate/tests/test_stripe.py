@@ -22,7 +22,6 @@ from typing import (
     Tuple,
     TypeVar,
 )
-from unittest import mock
 from unittest.mock import Mock, patch
 
 import orjson
@@ -437,6 +436,11 @@ class StripeTestCase(ZulipTestCase):
         self.now = datetime(2012, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
         self.next_month = datetime(2012, 2, 2, 3, 4, 5, tzinfo=timezone.utc)
         self.next_year = datetime(2013, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
+
+        # Make hamlet billing admin for testing.
+        hamlet = self.example_user("hamlet")
+        hamlet.is_billing_admin = True
+        hamlet.save(update_fields=["is_billing_admin"])
 
     def get_signed_seat_count_from_response(self, response: "TestHttpResponse") -> Optional[str]:
         match = re.search(r"name=\"signed_seat_count\" value=\"(.+)\"", response.content.decode())
@@ -2288,22 +2292,23 @@ class StripeTest(StripeTestCase):
 
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "/billing/")
+        self.assertEqual(response["Location"], "/sponsorship/")
 
         response = self.client_get("/billing/")
-        self.assert_in_success_response(
-            ["Your organization has requested sponsored or discounted hosting."], response
-        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/sponsorship/")
+
+        response = self.client_get("/sponsorship/")
         self.assert_in_success_response(
             [
-                'Please <a href="mailto:support@zulip.com">contact Zulip support</a> if you have any questions or concerns.'
+                "Your organization has requested sponsorship for a free or discounted Zulip Cloud Standard plan."
             ],
             response,
         )
-        # Ensure that the other "contact support" footer is not displayed, since that would be
-        # duplicate.
-        self.assert_not_in_success_response(
-            ['<a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.'],
+        self.assert_in_success_response(
+            [
+                'Please feel free to <a href="mailto:support@zulip.com">contact Zulip support</a> with any questions or updates to your request.'
+            ],
             response,
         )
 
@@ -2317,13 +2322,9 @@ class StripeTest(StripeTestCase):
         user.realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         user.realm.save()
         self.login_user(self.example_user("hamlet"))
-        response = self.client_get("/billing/")
+        response = self.client_get("/sponsorship/")
         self.assert_in_success_response(
-            ["Your organization is fully sponsored and is on the <b>Zulip Cloud Standard</b>"],
-            response,
-        )
-        self.assert_in_success_response(
-            ['<a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.'],
+            ["Zulip is sponsoring free Zulip Cloud Standard hosting for your organization."],
             response,
         )
 
@@ -2331,13 +2332,22 @@ class StripeTest(StripeTestCase):
         user = self.example_user("iago")
         self.login_user(user)
         response = self.client_get("/billing/")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual("/upgrade/", response["Location"])
+        not_admin_message = (
+            "You must be an organization owner or a billing administrator to view this page."
+        )
+        self.assert_in_success_response([not_admin_message], response)
 
         user.realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         user.realm.save()
         response = self.client_get("/billing/")
-        self.assertEqual(response.status_code, 200)
+        self.assert_in_success_response([not_admin_message], response)
+
+        # Billing page redirects to sponsorship page for standard free admins.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("/sponsorship/", response["Location"])
 
         user.realm.plan_type = Realm.PLAN_TYPE_LIMITED
         user.realm.save()
@@ -2347,7 +2357,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/upgrade/", response["Location"])
 
     def test_upgrade_page_for_demo_organizations(self) -> None:
-        user = self.example_user("iago")
+        user = self.example_user("hamlet")
         user.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
         user.realm.save()
         self.login_user(user)
@@ -2366,7 +2376,7 @@ class StripeTest(StripeTestCase):
         user.realm.save()
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "/billing/")
+        self.assertEqual(response["Location"], "/sponsorship/")
 
         user.realm.plan_type = Realm.PLAN_TYPE_LIMITED
         user.realm.save()
@@ -3808,47 +3818,6 @@ class StripeTest(StripeTestCase):
         (invoice,) = stripe.Invoice.list(customer=stripe_customer_id)
         self.assertEqual(invoice.amount_due, 7200)
 
-    def test_request_sponsorship_available_on_upgrade_and_billing_pages(self) -> None:
-        """
-        Verifies that the Request sponsorship form is available on both the upgrade
-        page and the billing page for already subscribed customers.
-        """
-        realm = get_realm("zulip")
-        self.login("desdemona")
-        result = self.client_get("/upgrade/")
-        self.assert_in_success_response(["Request sponsorship"], result)
-
-        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
-        plan = CustomerPlan.objects.create(
-            customer=customer,
-            status=CustomerPlan.ACTIVE,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.ANNUAL,
-            tier=CustomerPlan.STANDARD,
-            price_per_license=1000,
-        )
-        LicenseLedger.objects.create(
-            plan=plan,
-            is_renewal=True,
-            event_time=timezone_now(),
-            licenses=9,
-            licenses_at_next_renewal=9,
-        )
-
-        mock_stripe_customer = mock.MagicMock()
-        mock_stripe_customer.email = "desdemona@zulip.com"
-
-        with mock.patch(
-            "corporate.views.billing_page.stripe_get_customer", return_value=mock_stripe_customer
-        ):
-            result = self.client_get("/billing/")
-        # Sanity assert to make sure we're testing the subscribed billing page.
-        self.assert_in_success_response(
-            ["Your current plan is <strong>Zulip Cloud Standard</strong>."], result
-        )
-
-        self.assert_in_success_response(["Request sponsorship"], result)
-
     @mock_stripe()
     def test_customer_has_credit_card_as_default_payment_method(self, *mocks: Mock) -> None:
         iago = self.example_user("iago")
@@ -4046,10 +4015,6 @@ class RequiresBillingAccessTest(StripeTestCase):
     @override
     def setUp(self, *mocks: Mock) -> None:
         super().setUp()
-        hamlet = self.example_user("hamlet")
-        hamlet.is_billing_admin = True
-        hamlet.save(update_fields=["is_billing_admin"])
-
         desdemona = self.example_user("desdemona")
         desdemona.role = UserProfile.ROLE_REALM_OWNER
         desdemona.save(update_fields=["role"])

@@ -188,18 +188,8 @@
                     </p>
                 </div>
                 {% elif admin_access and not has_active_plan %}
+                <!-- For sponsored or sponsorship pending organizations we already redirect to /sponsorship page. -->
                 <div class="tab-content">
-                    {% if sponsorship_pending %}
-                    <h3>Your organization has requested sponsored or discounted hosting.</h3>
-                    <br />
-                    Please <a href="mailto:support@zulip.com">contact Zulip support</a> if you have any questions or concerns.
-                    {% elif is_sponsored %}
-                    <center>
-                        <p>
-                            <h3>💚 Your organization is fully sponsored and is on the <b>Zulip Cloud Standard</b> plan.</h3>
-                        </p>
-                    </center>
-                    {% else %}
                     <center>
                         <p>
                             <h2>Your organization is on the <b>Zulip Free</b> plan.</h2>
@@ -211,16 +201,12 @@
                             </a>
                         </p>
                     </center>
-                    {% endif %}
                 </div>
-                {% if not sponsorship_pending %}
-                {# In the other case, we're displaying a different message about contacting support. #}
                 <div class="support-link">
                     <p>
                         <a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.
                     </p>
                 </div>
-                {% endif %}
                 {% else %}
                 <p>
                     You must be an organization owner or a billing administrator to view this page.
