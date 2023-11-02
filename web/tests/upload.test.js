@@ -319,11 +319,11 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     hide_upload_banner_called = false;
     let compose_ui_replace_syntax_called = false;
 
-    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
+    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading budapest.png…]()");
         assert.equal(new_syntax, "");
-        assert.equal(textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea, $("textarea#compose-textarea"));
     });
     on_click_close_button_callback();
     assert.ok(remove_file_called);
@@ -543,14 +543,14 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     };
 
     let compose_ui_replace_syntax_called = false;
-    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
+    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
             new_syntax,
             "[copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
-        assert.equal(textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea, $("textarea#compose-textarea"));
     });
     let compose_ui_autosize_textarea_called = false;
     override_rewire(compose_ui, "autosize_textarea", () => {
@@ -586,11 +586,11 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     compose_ui_replace_syntax_called = false;
     const on_restriction_failed_callback = callbacks["restriction-failed"];
     on_info_visible_callback();
-    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
+    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(new_syntax, "");
-        assert.equal(textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea, $("textarea#compose-textarea"));
     });
     on_restriction_failed_callback(file, null, null);
     assert.ok(compose_ui_replace_syntax_called);
