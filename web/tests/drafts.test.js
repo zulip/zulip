@@ -195,7 +195,7 @@ test("snapshot_message", ({override_rewire}) => {
     set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), undefined);
 
-    curr_draft = {};
+    curr_draft = {type: false};
     set_compose_state();
     assert.equal(drafts.snapshot_message(), undefined);
 });
@@ -246,7 +246,7 @@ test("remove_old_drafts", () => {
 });
 
 test("update_draft", ({override, override_rewire}) => {
-    compose_state.set_message_type(null);
+    compose_state.set_message_type(false);
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
 
