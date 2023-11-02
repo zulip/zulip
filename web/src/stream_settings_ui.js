@@ -92,7 +92,7 @@ function should_list_all_streams() {
 }
 
 export function toggle_pin_to_top_stream(sub) {
-    stream_settings_api.set_stream_property(sub, "pin_to_top", !sub.pin_to_top);
+    stream_settings_api.set_stream_property(sub, {property: "pin_to_top", value: !sub.pin_to_top});
 }
 
 export function update_stream_name(sub, new_name) {

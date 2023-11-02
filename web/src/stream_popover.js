@@ -154,7 +154,10 @@ function build_stream_popover(opts) {
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
-                stream_settings_api.set_stream_property(sub, "is_muted", !sub.is_muted);
+                stream_settings_api.set_stream_property(sub, {
+                    property: "is_muted",
+                    value: !sub.is_muted,
+                });
                 e.stopPropagation();
             });
 

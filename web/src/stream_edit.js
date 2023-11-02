@@ -300,8 +300,7 @@ function stream_is_muted_changed(e) {
 
     stream_settings_api.set_stream_property(
         sub,
-        "is_muted",
-        e.target.checked,
+        {property: "is_muted", value: e.target.checked},
         $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
     );
 }
@@ -322,7 +321,11 @@ function stream_setting_changed(e) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
-    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
+    stream_settings_api.set_stream_property(
+        sub,
+        {property: setting, value: e.target.checked},
+        $status_element,
+    );
 }
 
 export function archive_stream(stream_id, $alert_element, $stream_row) {
