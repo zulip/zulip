@@ -13,10 +13,6 @@ export function is_visible() {
     return is_inbox_visible;
 }
 
-export function get_dm_key(msg) {
-    return "dm:" + msg.other_user_id;
-}
-
 export function update_stream_colors() {
     if (!is_visible()) {
         return;
