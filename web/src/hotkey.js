@@ -54,6 +54,7 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as topic_list from "./topic_list";
 import * as unread_ops from "./unread_ops";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
@@ -333,6 +334,13 @@ export function process_escape_key(e) {
 
             // If the user hit the Esc key, cancel the current compose
             compose_actions.cancel();
+            return true;
+        }
+
+        // When the input is focused, we blur and clear the input. A second "Esc"
+        // will zoom out, handled below.
+        if (stream_list.is_zoomed_in() && $("#filter-topic-input").is(":focus")) {
+            topic_list.clear_topic_search(e);
             return true;
         }
 
