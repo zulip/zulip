@@ -26,12 +26,12 @@ export function update_scheduled_messages_row() {
 export function update_dom_with_unread_counts(counts, skip_animations) {
     // Note that direct message counts are handled in pm_list.js.
 
-    // mentioned/inbox have simple integer counts
+    // mentioned/home views have simple integer counts
     const $mentioned_li = $(".top_left_mentions");
-    const $inbox_li = $(".top_left_inbox");
+    const $home_view_li = $(".selected-home-view");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
-    ui_util.update_unread_count_in_dom($inbox_li, counts.home_unread_messages);
+    ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
