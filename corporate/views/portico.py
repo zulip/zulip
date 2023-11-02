@@ -52,7 +52,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
     free_trial_days = settings.FREE_TRIAL_DAYS
     sponsorship_pending = False
-    sponsorship_url = "/upgrade/#sponsorship"
+    sponsorship_url = "/sponsorship/"
     if is_subdomain_root_or_alias(request):
         # If we're on the root domain, we make this link first ask you which organization.
         sponsorship_url = f"/accounts/go/?{urlencode({'next': sponsorship_url})}"

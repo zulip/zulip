@@ -1,3 +1,6 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
 <div class="tab-pane" id="sponsorship">
     <div id="sponsorship-error" class="alert alert-danger"></div>
     <div id="sponsorship-input-section">
@@ -49,3 +52,4 @@
         Request received! The page will now reload.
     </div>
 </div>
+{% endblock %}
