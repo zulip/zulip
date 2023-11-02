@@ -874,16 +874,6 @@ export function searching() {
     return $(".stream-list-filter").expectOne().is(":focus");
 }
 
-export function escape_search() {
-    const $filter = $(".stream-list-filter").expectOne();
-    if ($filter.val() === "") {
-        clear_and_hide_search();
-        return;
-    }
-    $filter.val("");
-    update_streams_for_search();
-}
-
 export function clear_search(e) {
     e.stopPropagation();
     const $filter = $(".stream-list-filter").expectOne();
@@ -926,7 +916,7 @@ export function initiate_search() {
 }
 
 export function clear_and_hide_search() {
-    const $filter = $(".stream-list-filter");
+    const $filter = $(".stream-list-filter").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
         update_streams_for_search();

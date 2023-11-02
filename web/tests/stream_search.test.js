@@ -84,11 +84,6 @@ run_test("basics", ({override_rewire}) => {
         assert.ok($input.is_focused());
     }
 
-    function verify_blurred() {
-        assert.ok(stream_list.searching());
-        assert.ok($input.is_focused());
-    }
-
     function verify_collapsed() {
         assert.ok($section.hasClass("notdisplayed"));
         assert.ok(!$input.is_focused());
@@ -163,8 +158,8 @@ run_test("basics", ({override_rewire}) => {
 
     // Escape a non-empty search.
     $input.val("foo");
-    stream_list.escape_search();
-    verify_blurred();
+    stream_list.clear_and_hide_search();
+    verify_collapsed();
 
     // Expand the widget.
     toggle_filter();
@@ -172,7 +167,7 @@ run_test("basics", ({override_rewire}) => {
 
     // Escape an empty search.
     $input.val("");
-    stream_list.escape_search();
+    stream_list.clear_and_hide_search();
     verify_collapsed();
 });
 
