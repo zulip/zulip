@@ -1,3 +1,4 @@
+import type {Colord} from "colord";
 import {colord, extend} from "colord";
 import lchPlugin from "colord/plugins/lch";
 import mixPlugin from "colord/plugins/mix";
@@ -25,7 +26,7 @@ export function update_stream_recipient_color($stream_header: JQuery): void {
     }
 }
 
-export function get_stream_privacy_icon_color(hex_color: string): string {
+export function get_corrected_color(hex_color: string): Colord {
     // LCH stands for Lightness, Chroma, and Hue.
     // This function restricts Lightness of a color to be between 20 to 75.
     const color = colord(hex_color).toLch();
@@ -36,13 +37,17 @@ export function get_stream_privacy_icon_color(hex_color: string): string {
     } else if (color.l > max_color_l) {
         color.l = max_color_l;
     }
-    return colord(color).toHex();
+    return colord(color);
+}
+
+export function get_stream_privacy_icon_color(hex_color: string): string {
+    return get_corrected_color(hex_color).toHex();
 }
 
 export function get_recipient_bar_color(color: string): string {
     // Mixes 50% of color to 40% of white (light theme) / black (dark theme).
     const using_dark_theme = settings_data.using_dark_theme();
-    color = get_stream_privacy_icon_color(color);
+    color = get_corrected_color(color).toHex();
     return colord(using_dark_theme ? "#000000" : "#f9f9f9")
         .mix(color, using_dark_theme ? 0.38 : 0.22)
         .toHex();
