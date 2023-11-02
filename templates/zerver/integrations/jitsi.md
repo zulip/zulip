@@ -1,17 +1,33 @@
-[Jitsi Meet](https://jitsi.org/jitsi-meet/) is Zulip's default video
-call provider. Jitsi Meet is a fully-encrypted, 100% open source video
-conferencing solution.
+By default, Zulip integrates with [Jitsi Meet](https://jitsi.org/jitsi-meet/),
+a fully-encrypted, 100% open source video conferencing solution.
+
+Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
+as its default video call provider. You can also use a self-hosted
+instance of Jitsi Meet.
 
 ### Using Jitsi Meet
 
-1. Set Jitsi as the organization's [video call
-   provider](/help/start-a-call#changing-your-organizations-video-call-provider),
-   if it isn't already.
+{settings_tab|organization-settings}
 
-2. Zulip's [call button](/help/start-a-call) will now create meetings
-   using Jitsi Meet.
+1. Under **Other settings**, select **Jitsi Meet** from the **Call provider**
+   dropdown.
 
-Zulip's default video call provider is the cloud version of [Jitsi
-Meet](https://meet.jit.si/) but it also possible to use Zulip with a
-self-hosted instance of Jitsi Meet; to configure this, just set
-`JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
+1. _(optional)_ Select **Custom URL** from the **Jitsi server URL** dropdown,
+   and enter the URL of your self-hosted Jitsi Meet server. You can also set
+   `JITSI_SERVER_URL` in `/etc/zulip/settings.py` to specify the server's URL.
+
+1. Click **Save changes**, and use <kbd>Esc</kbd> to exit the settings.
+
+1. [Open the compose box](/help/open-the-compose-box), and click the
+   **video camera** (<i class="fa fa-video-camera"></i>) icon to insert
+   a video call link, or the **phone** (<i class="fa fa-phone"></i>) icon
+   to insert an audio call link into your message.
+
+1. Send the message, and click on the link in the message to start or join
+   the call.
+
+!!! tip ""
+
+    You can replace the call link label with any text you like.
+
+[jitsi-server-url]: /help/start-a-call#configure-a-self-hosted-instance-of-jitsi-meet
