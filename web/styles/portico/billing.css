@@ -370,3 +370,7 @@ input[name="licenses"] {
     landing_page.css. */
     background-color: hsl(240deg 96% 68%);
 }
+
+#sponsorship-form {
+    margin: 30px;
+}
