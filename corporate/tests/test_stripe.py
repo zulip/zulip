@@ -72,7 +72,6 @@ from corporate.lib.stripe import (
     stripe_get_customer,
     switch_realm_from_standard_to_plus_plan,
     unsign_string,
-    update_billing_method_of_current_plan,
     update_license_ledger_for_automanaged_plan,
     update_license_ledger_for_manual_plan,
     update_license_ledger_if_needed,
@@ -82,6 +81,7 @@ from corporate.lib.support import (
     approve_realm_sponsorship,
     attach_discount_to_realm,
     get_discount_for_realm,
+    update_realm_billing_method,
     update_realm_sponsorship_status,
 )
 from corporate.models import (
@@ -3849,41 +3849,6 @@ class StripeTest(StripeTestCase):
 
         self.assert_in_success_response(["Request sponsorship"], result)
 
-    def test_update_billing_method_of_current_plan(self) -> None:
-        realm = get_realm("zulip")
-        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
-        plan = CustomerPlan.objects.create(
-            customer=customer,
-            status=CustomerPlan.ACTIVE,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.ANNUAL,
-            tier=CustomerPlan.STANDARD,
-        )
-        self.assertEqual(plan.charge_automatically, False)
-
-        iago = self.example_user("iago")
-        update_billing_method_of_current_plan(realm, True, acting_user=iago)
-        plan.refresh_from_db()
-        self.assertEqual(plan.charge_automatically, True)
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = {"charge_automatically": plan.charge_automatically}
-        self.assertEqual(realm_audit_log.acting_user, iago)
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
-        update_billing_method_of_current_plan(realm, False, acting_user=iago)
-        plan.refresh_from_db()
-        self.assertEqual(plan.charge_automatically, False)
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = {"charge_automatically": plan.charge_automatically}
-        self.assertEqual(realm_audit_log.acting_user, iago)
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
     @mock_stripe()
     def test_customer_has_credit_card_as_default_payment_method(self, *mocks: Mock) -> None:
         iago = self.example_user("iago")
@@ -5062,3 +5027,38 @@ class TestSupportBillingHelpers(StripeTestCase):
         expected_extra_data = {"sponsorship_pending": True}
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
+
+    def test_update_realm_billing_method(self) -> None:
+        realm = get_realm("zulip")
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            status=CustomerPlan.ACTIVE,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.ANNUAL,
+            tier=CustomerPlan.STANDARD,
+        )
+        self.assertEqual(plan.charge_automatically, False)
+
+        iago = self.example_user("iago")
+        update_realm_billing_method(realm, True, acting_user=iago)
+        plan.refresh_from_db()
+        self.assertEqual(plan.charge_automatically, True)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {"charge_automatically": plan.charge_automatically}
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        update_realm_billing_method(realm, False, acting_user=iago)
+        plan.refresh_from_db()
+        self.assertEqual(plan.charge_automatically, False)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {"charge_automatically": plan.charge_automatically}
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)

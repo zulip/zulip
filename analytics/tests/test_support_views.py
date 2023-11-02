@@ -419,7 +419,7 @@ class TestSupportEndpoint(ZulipTestCase):
             result,
         )
 
-    @mock.patch("analytics.views.support.update_billing_method_of_current_plan")
+    @mock.patch("analytics.views.support.update_realm_billing_method")
     def test_change_billing_method(self, m: mock.Mock) -> None:
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
