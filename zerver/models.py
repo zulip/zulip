@@ -4053,7 +4053,9 @@ class Subscription(models.Model):
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
-    return UserProfile.objects.select_related("realm", "bot_owner").get(id=user_profile_id)
+    return UserProfile.objects.select_related(
+        "realm", "realm__can_access_all_users_group", "bot_owner"
+    ).get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:
@@ -4069,7 +4071,9 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
     try:
-        return UserProfile.objects.select_related("realm", "bot_owner").get(api_key=api_key)
+        return UserProfile.objects.select_related(
+            "realm", "realm__can_access_all_users_group", "bot_owner"
+        ).get(api_key=api_key)
     except UserProfile.DoesNotExist:
         # We will cache failed lookups with None.  The
         # use case here is that broken API clients may
@@ -4093,9 +4097,9 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS security model.  Use get_user in
     those code paths.
     """
-    return UserProfile.objects.select_related("realm", "bot_owner").get(
-        delivery_email__iexact=email.strip(), realm=realm
-    )
+    return UserProfile.objects.select_related(
+        "realm", "realm__can_access_all_users_group", "bot_owner"
+    ).get(delivery_email__iexact=email.strip(), realm=realm)
 
 
 def get_users_by_delivery_email(emails: Set[str], realm: Realm) -> QuerySet[UserProfile]:
@@ -4130,9 +4134,9 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS.  In those code paths, use
     get_user_by_delivery_email.
     """
-    return UserProfile.objects.select_related("realm", "bot_owner").get(
-        email__iexact=email.strip(), realm=realm
-    )
+    return UserProfile.objects.select_related(
+        "realm", "realm__can_access_all_users_group", "bot_owner"
+    ).get(email__iexact=email.strip(), realm=realm)
 
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:
@@ -4145,7 +4149,9 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
 
 
 def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
-    return UserProfile.objects.select_related("realm", "bot_owner").get(id=uid, realm=realm)
+    return UserProfile.objects.select_related(
+        "realm", "realm__can_access_all_users_group", "bot_owner"
+    ).get(id=uid, realm=realm)
 
 
 def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
