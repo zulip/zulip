@@ -37,7 +37,7 @@ export function get_item(key, config, file_id) {
     if (config.mode === "compose") {
         switch (key) {
             case "textarea":
-                return $("#compose-textarea");
+                return $("textarea#compose-textarea");
             case "send_button":
                 return $("#compose-send-button");
             case "banner_container":

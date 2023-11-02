@@ -320,7 +320,7 @@ export function process_escape_key(e) {
             // Check if the giphy popover was open using compose box.
             // Hide GIPHY popover if it's open.
             if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
-                $("#compose-textarea").trigger("focus");
+                $("textarea#compose-textarea").trigger("focus");
                 return true;
             }
 
@@ -620,7 +620,7 @@ export function process_shift_tab_key() {
         return emoji_picker.navigate("shift_tab");
     }
 
-    if ($("#stream_message_recipient_topic").is(":focus")) {
+    if ($("input#stream_message_recipient_topic").is(":focus")) {
         compose_recipient.open_compose_recipient_dropdown();
         return true;
     }

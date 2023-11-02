@@ -68,7 +68,7 @@ people.add_cross_realm_user(welcome_bot);
 function test_ui(label, f) {
     // The sloppy_$ flag lets us reuse setup from prior tests.
     run_test(label, (helpers) => {
-        $("#compose-textarea").val("some message");
+        $("textarea#compose-textarea").val("some message");
         f(helpers);
     });
 }
@@ -178,7 +178,7 @@ test_ui("validate", ({mock_template}) => {
     }
 
     function add_content_to_compose_box() {
-        $("#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("foobarfoobar");
     }
 
     // test validating direct messages
@@ -243,7 +243,7 @@ test_ui("validate", ({mock_template}) => {
     });
     initialize_pm_pill();
     compose_state.private_message_recipient("welcome-bot@example.com");
-    $("#compose-textarea").toggleClass = (classname, value) => {
+    $("textarea#compose-textarea").toggleClass = (classname, value) => {
         assert.equal(classname, "invalid");
         assert.equal(value, true);
     };
@@ -546,7 +546,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     mock_banners();
     page_params.max_message_length = 10000;
 
-    const $textarea = $("#compose-textarea");
+    const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose_limit_indicator");
     const $send_button = $("#compose-send-button");
     let banner_rendered = false;

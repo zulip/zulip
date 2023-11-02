@@ -124,7 +124,7 @@ export function reply_with_mention(opts) {
 }
 
 export function quote_and_reply(opts) {
-    const $textarea = $("#compose-textarea");
+    const $textarea = $("textarea#compose-textarea");
     const message_id = message_lists.current.selected_id();
     const message = message_lists.current.selected_message();
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
@@ -159,7 +159,7 @@ export function quote_and_reply(opts) {
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
 
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
-        compose_ui.autosize_textarea($("#compose-textarea"));
+        compose_ui.autosize_textarea($("textarea#compose-textarea"));
     }
 
     if (message && message.raw_content) {

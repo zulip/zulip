@@ -814,7 +814,7 @@ export function initialize() {
                 // We do the same when copying a code block, since the
                 // most likely next action within Zulip is to paste it
                 // into compose and modify it.
-                $("#compose-textarea").trigger("focus");
+                $("textarea#compose-textarea").trigger("focus");
                 return;
             } else if (
                 !window.getSelection().toString() &&
