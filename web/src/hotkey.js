@@ -239,7 +239,8 @@ export function processing_text() {
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
         $focused_elt.parents(".pill-container").length >= 1 ||
-        $focused_elt.attr("id") === "compose-send-button"
+        $focused_elt.attr("id") === "compose-send-button" ||
+        $focused_elt.parents(".dropdown-list-container").length >= 1
     );
 }
 
