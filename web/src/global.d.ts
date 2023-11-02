@@ -3,6 +3,8 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
+/// <reference types="spectrum" />
+
 declare let zulip_test: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 type JQueryCaretRange = {
