@@ -965,13 +965,18 @@ button#register_auth_button_gitlab {
             }
         }
 
-        &.support-form-field {
+        &.support-form-field,
+        &.sponsorship-form-field {
             width: 450px;
 
             & input,
             textarea {
                 width: 400px;
                 font-size: 1rem;
+            }
+
+            & select {
+                width: 450px;
             }
 
             & textarea {
@@ -1000,7 +1005,8 @@ button#register_auth_button_gitlab {
         border-radius: 4px;
     }
 
-    .support-submit-button {
+    .support-submit-button,
+    #sponsorship-button {
         margin-top: 20px;
         margin-bottom: 5px;
         width: 450px;

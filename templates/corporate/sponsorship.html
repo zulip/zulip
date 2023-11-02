@@ -14,11 +14,11 @@
             <div id="sponsorship-input-section">
                 <form id="sponsorship-form" method="post">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
-                    <div class="input-box no-validation">
+                    <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-name" class="inline-block label-title">{{ _('Organization') }}</label>
                         <div id="org-name" class="not-editable-realm-field">{{ realm_name }}</div>
                     </div>
-                    <div class="input-box">
+                    <div class="input-box sponsorship-form-field">
                         <div class="inline-block relative">
                             <select name="realm_type" id="realm_type" class="sponsorship-form-select">
                                 {% for org_type in sorted_org_types %}
@@ -34,11 +34,11 @@
                         </div>
                         <label for="realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
                     </div>
-                    <div class="input-box no-validation">
+                    <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-website" class="inline-block label-title">{{ _('Organization website') }}</label>
                         <input id="org-website" name="website" type="text" class="input-large" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
                     </div>
-                    <div class="input-box">
+                    <div class="input-box sponsorship-form-field">
                         <label for="description" class="inline-block label-title">{{ _('Describe your organization briefly') }}</label>
                         <textarea id="description" name="description" cols="100" rows="5" required></textarea>
                     </div>
