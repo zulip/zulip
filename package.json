@@ -103,6 +103,8 @@
     "@types/node": "^18.8.3",
     "@types/plotly.js": "^2.12.20",
     "@types/sortablejs": "^1.15.1",
+    "@types/spectrum": "^1.8.4",
+    "@types/tinycolor2": "^1.4.5",
     "@types/turndown": "^5.0.1",
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
