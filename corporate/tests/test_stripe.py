@@ -4,6 +4,7 @@ import os
 import random
 import re
 import sys
+import typing
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -41,7 +42,9 @@ from corporate.lib.stripe import (
     MAX_INVOICED_LICENSES,
     MIN_INVOICED_LICENSES,
     STRIPE_API_VERSION,
+    AuditLogEventType,
     BillingError,
+    BillingSessionAuditLogEventError,
     InvalidBillingScheduleError,
     InvalidTierError,
     RealmBillingSession,
@@ -4963,6 +4966,17 @@ class TestTestClasses(ZulipTestCase):
 
         realm.refresh_from_db()
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+
+
+class TestRealmBillingSession(StripeTestCase):
+    def test_get_audit_log_error(self) -> None:
+        user = self.example_user("hamlet")
+        billing_session = RealmBillingSession(user)
+        fake_audit_log = typing.cast(AuditLogEventType, 0)
+        with self.assertRaisesRegex(
+            BillingSessionAuditLogEventError, "Unknown audit log event type: 0"
+        ):
+            billing_session.get_audit_log_event(event_type=fake_audit_log)
 
 
 class TestSupportBillingHelpers(StripeTestCase):
