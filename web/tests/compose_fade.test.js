@@ -7,7 +7,7 @@ const {run_test} = require("./lib/test");
 
 mock_jquery((selector) => {
     switch (selector) {
-        case "#stream_message_recipient_topic":
+        case "input#stream_message_recipient_topic":
             return {
                 val() {
                     return "lunch";

@@ -81,9 +81,9 @@ function clear_box() {
     compose_state.set_recipient_edited_manually(false);
     clear_textarea();
     compose_validate.check_overflow_text();
-    $("#compose-textarea").removeData("draft-id");
-    $("#compose-textarea").toggleClass("invalid", false);
-    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("textarea#compose-textarea").removeData("draft-id");
+    $("textarea#compose-textarea").toggleClass("invalid", false);
+    compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
@@ -91,7 +91,7 @@ function clear_box() {
 
 export function autosize_message_content() {
     if (!compose_ui.is_full_size()) {
-        autosize($("#compose-textarea"), {
+        autosize($("textarea#compose-textarea"), {
             callback() {
                 maybe_scroll_up_selected_message();
             },
@@ -271,13 +271,13 @@ export function start(msg_type, opts) {
     show_compose_box(msg_type, opts);
 
     if (opts.draft_id) {
-        $("#compose-textarea").data("draft-id", opts.draft_id);
+        $("textarea#compose-textarea").data("draft-id", opts.draft_id);
     }
 
     if (opts.content !== undefined) {
         // If we were provided with message content, we might need to
         // resize the compose box, or display that it's too long.
-        compose_ui.autosize_textarea($("#compose-textarea"));
+        compose_ui.autosize_textarea($("textarea#compose-textarea"));
         compose_validate.check_overflow_text();
     }
 
@@ -307,7 +307,7 @@ export function cancel() {
         compose_ui.make_compose_box_original_size();
     }
 
-    $("#compose-textarea").height(40 + "px");
+    $("textarea#compose-textarea").height(40 + "px");
 
     if (page_params.narrow !== undefined) {
         // Never close the compose box in narrow embedded windows, but
@@ -376,7 +376,7 @@ export function on_topic_narrow() {
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").trigger("focus");
 }
 
 export function on_narrow(opts) {

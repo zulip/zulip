@@ -50,12 +50,12 @@ export function composing() {
     return Boolean(message_type);
 }
 
-function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
+function get_or_set(input_selector, keep_leading_whitespace, no_trim) {
     // We can't hoist the assignment of '$elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set
     // is called.
     return function (newval) {
-        const $elem = $(`#${CSS.escape(fieldname)}`);
+        const $elem = $(input_selector);
         const oldval = $elem.val();
         if (newval !== undefined) {
             $elem.val(newval);
@@ -108,7 +108,7 @@ export function set_compose_recipient_id(recipient_id) {
 }
 
 // TODO: Break out setter and getter into their own functions.
-export const topic = get_or_set("stream_message_recipient_topic");
+export const topic = get_or_set("input#stream_message_recipient_topic");
 
 export function empty_topic_placeholder() {
     return $t({defaultMessage: "(no topic)"});
@@ -116,12 +116,12 @@ export function empty_topic_placeholder() {
 
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
-export const message_content = get_or_set("compose-textarea", true);
+export const message_content = get_or_set("textarea#compose-textarea", true);
 
-const untrimmed_message_content = get_or_set("compose-textarea", true, true);
+const untrimmed_message_content = get_or_set("textarea#compose-textarea", true, true);
 
 function cursor_at_start_of_whitespace_in_compose() {
-    const cursor_position = $("#compose-textarea").caret();
+    const cursor_position = $("textarea#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
 }
 

@@ -120,7 +120,7 @@ export function initialize() {
 
                 // Refocus in the content box so you can continue typing or
                 // press Enter to send.
-                $("#compose-textarea").trigger("focus");
+                $("textarea#compose-textarea").trigger("focus");
 
                 channel.patch({
                     url: "/json/settings",

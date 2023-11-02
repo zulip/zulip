@@ -47,15 +47,15 @@ function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
     if (msg_type === "stream" && opts.stream_id && !opts.topic) {
-        return "#stream_message_recipient_topic";
+        return "input#stream_message_recipient_topic";
     } else if (
         (msg_type === "stream" && opts.stream_id) ||
         (msg_type === "private" && opts.private_message_recipient)
     ) {
         if (opts.trigger === "clear topic button") {
-            return "#stream_message_recipient_topic";
+            return "input#stream_message_recipient_topic";
         }
-        return "#compose-textarea";
+        return "textarea#compose-textarea";
     }
 
     if (msg_type === "stream") {
@@ -159,7 +159,7 @@ export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
 
 export function insert_syntax_and_focus(
     syntax,
-    $textarea = $("#compose-textarea"),
+    $textarea = $("textarea#compose-textarea"),
     mode = "inline",
     padding_newlines,
 ) {
@@ -184,7 +184,7 @@ export function insert_syntax_and_focus(
     }
 }
 
-export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-textarea")) {
+export function replace_syntax(old_syntax, new_syntax, $textarea = $("textarea#compose-textarea")) {
     // The following couple lines are needed to later restore the initial
     // logical position of the cursor after the replacement
     const prev_caret = $textarea.caret();
@@ -294,7 +294,7 @@ export function make_compose_box_full_size() {
 
     // The autosize should be destroyed for the full size compose
     // box else it will interfere and shrink its size accordingly.
-    autosize.destroy($("#compose-textarea"));
+    autosize.destroy($("textarea#compose-textarea"));
 
     $("#compose").addClass("compose-fullscreen");
 
@@ -304,7 +304,7 @@ export function make_compose_box_full_size() {
     $(".collapse_composebox_button").show();
     $(".expand_composebox_button").hide();
     $("#scroll-to-bottom-button-container").removeClass("show");
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").trigger("focus");
 }
 
 export function make_compose_box_original_size() {
@@ -317,11 +317,11 @@ export function make_compose_box_original_size() {
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen
-    autosize($("#compose-textarea"));
+    autosize($("textarea#compose-textarea"));
 
     $(".collapse_composebox_button").hide();
     $(".expand_composebox_button").show();
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").trigger("focus");
 }
 
 export function handle_keydown(event, $textarea) {

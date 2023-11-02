@@ -28,7 +28,7 @@ export function handler() {
         _old_width = new_width;
     }
     resize.resize_page_components();
-    compose_ui.autosize_textarea($("#compose-textarea"));
+    compose_ui.autosize_textarea($("textarea#compose-textarea"));
     resize.update_recent_view_filters_height();
 
     // Re-compute and display/remove 'Show more' buttons to messages
