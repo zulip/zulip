@@ -47,7 +47,6 @@
                 <ul class="nav nav-tabs" id="upgrade-tabs">
                     <li class="active"><a data-toggle="tab" href="#autopay">💳 Pay automatically</a></li>
                     <li><a data-toggle="tab" href="#invoice">🧾 Pay by invoice</a></li>
-                    <li><a data-toggle="tab" href="#sponsorship">💚 Request sponsorship</a></li>
                 </ul>
 
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
@@ -240,9 +239,6 @@
                             Upgrade complete! The page will now reload.
                         </div>
                     </div>
-
-                    {% include "corporate/sponsorship.html" %}
-
                 </div>
                 <div class="support-link">
                     <p>
