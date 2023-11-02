@@ -85,7 +85,7 @@
                             <div class="drag"></div>
 
                             <div id="message-send-controls-container">
-                                <a role="button" class="compose_control_button compose_draft_button hide-sm" tabindex=0 href="#drafts" data-tooltip-template-id="compose_draft_tooltip_template">
+                                <a id="compose-drafts-button" role="button" class="compose_control_button message-control-button hide-sm" tabindex=0 href="#drafts" data-tooltip-template-id="compose_draft_tooltip_template">
                                     {{t 'Drafts' }}
                                 </a>
                                 <span id="compose-limit-indicator"></span>
@@ -94,8 +94,7 @@
                                         <img class="loader" alt="" src="" />
                                         <i class="zulip-icon zulip-icon-send"></i>
                                     </button>
-                                    <button class="animated-purple-button message-control-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">
-                                        <div class="separator-line"></div>
+                                    <button class="message-control-button send-related-action-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">
                                         <i class="zulip-icon zulip-icon-more-vertical"></i>
                                     </button>
                                 </div>
