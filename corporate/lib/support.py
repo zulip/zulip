@@ -41,3 +41,10 @@ def update_realm_sponsorship_status(
 ) -> None:
     billing_session = RealmBillingSession(acting_user, realm)
     billing_session.update_customer_sponsorship_status(sponsorship_pending)
+
+
+def update_realm_billing_method(
+    realm: Realm, charge_automatically: bool, *, acting_user: UserProfile
+) -> None:
+    billing_session = RealmBillingSession(acting_user, realm)
+    billing_session.update_billing_method_of_current_plan(charge_automatically)

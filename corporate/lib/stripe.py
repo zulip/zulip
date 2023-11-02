@@ -332,6 +332,7 @@ class AuditLogEventType(Enum):
     DISCOUNT_CHANGED = 4
     SPONSORSHIP_APPROVED = 5
     SPONSORSHIP_PENDING_STATUS_CHANGED = 6
+    BILLING_METHOD_CHANGED = 7
 
 
 class BillingSessionAuditLogEventError(Exception):
@@ -463,6 +464,19 @@ class BillingSession(ABC):
             extra_data={"sponsorship_pending": sponsorship_pending},
         )
 
+    def update_billing_method_of_current_plan(self, charge_automatically: bool) -> None:
+        customer = self.get_customer()
+        if customer is not None:
+            plan = get_current_plan_by_customer(customer)
+            if plan is not None:
+                plan.charge_automatically = charge_automatically
+                plan.save(update_fields=["charge_automatically"])
+                self.write_to_audit_log(
+                    event_type=AuditLogEventType.BILLING_METHOD_CHANGED,
+                    event_time=timezone_now(),
+                    extra_data={"charge_automatically": charge_automatically},
+                )
+
 
 class RealmBillingSession(BillingSession):
     def __init__(self, user: UserProfile, realm: Optional[Realm] = None) -> None:
@@ -493,6 +507,8 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.REALM_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
+        elif event_type is AuditLogEventType.BILLING_METHOD_CHANGED:
+            return RealmAuditLog.REALM_BILLING_METHOD_CHANGED
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -1308,19 +1324,3 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     plus_plan = get_current_plan_by_realm(realm)
     assert plus_plan is not None  # for mypy
     invoice_plan(plus_plan, plan_switch_time)
-
-
-def update_billing_method_of_current_plan(
-    realm: Realm, charge_automatically: bool, *, acting_user: Optional[UserProfile]
-) -> None:
-    plan = get_current_plan_by_realm(realm)
-    if plan is not None:
-        plan.charge_automatically = charge_automatically
-        plan.save(update_fields=["charge_automatically"])
-        RealmAuditLog.objects.create(
-            realm=realm,
-            acting_user=acting_user,
-            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
-            event_time=timezone_now(),
-            extra_data={"charge_automatically": charge_automatically},
-        )

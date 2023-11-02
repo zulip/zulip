@@ -58,13 +58,13 @@ if settings.BILLING_ENABLED:
         get_latest_seat_count,
         make_end_of_cycle_updates_if_needed,
         switch_realm_from_standard_to_plus_plan,
-        update_billing_method_of_current_plan,
         void_all_open_invoices,
     )
     from corporate.lib.support import (
         approve_realm_sponsorship,
         attach_discount_to_realm,
         get_discount_for_realm,
+        update_realm_billing_method,
         update_realm_sponsorship_status,
     )
     from corporate.models import (
@@ -239,14 +239,14 @@ def support(
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif billing_method is not None:
             if billing_method == "send_invoice":
-                update_billing_method_of_current_plan(
+                update_realm_billing_method(
                     realm, charge_automatically=False, acting_user=acting_user
                 )
                 context[
                     "success_message"
                 ] = f"Billing method of {realm.string_id} updated to pay by invoice."
             elif billing_method == "charge_automatically":
-                update_billing_method_of_current_plan(
+                update_realm_billing_method(
                     realm, charge_automatically=True, acting_user=acting_user
                 )
                 context[
