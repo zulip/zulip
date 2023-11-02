@@ -274,6 +274,10 @@
        expands or contracts. */
     display: flex;
     flex-direction: column;
+    /* We add 6px of margin to the grid-gap of
+       6px, for 12px of space between the Send
+       button and the textarea. */
+    margin-left: 6px;
 }
 
 #message-formatting-controls-container {
@@ -843,6 +847,11 @@ textarea.new_message_textarea,
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Flex items respect z-index values;
+       this is needed to keep the send
+       button over top of the vdots
+       background */
+    z-index: 1;
 
     .zulip-icon-send {
         display: block;
@@ -1158,6 +1167,10 @@ textarea.new_message_textarea,
         outline: 0;
     }
 
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+
     &:hover {
         /* We need to use !important here, regrettably, to keep the default
            dark-mode hover colors from showing. */
@@ -1171,32 +1184,55 @@ textarea.new_message_textarea,
     }
 }
 
-/* vdots icon located next to `Send` / `Scheduled` button which shows
+/* vdots icon located next to `Send` button which shows
    options to schedule the message. */
 #send_later {
     display: flex;
     align-items: center;
-    float: right;
-    color: hsl(0deg 0% 100%);
+    justify-content: center;
+    width: 40px;
+    /* Allow to grow but not shrink */
+    flex: 1 0 auto;
+    /* TODO: Set this as a variable shared with
+       the send button. */
+    height: 28px;
+    /* Make the vdots appear to extend from
+       beneath the send button when an
+       interactive background is present. */
+    margin-left: -4px;
+    padding: 0 0 0 4px;
     border-radius: 0 4px 4px 0;
-    padding: 0;
-    margin: 0;
+    /* Flex items respect z-index values;
+       this is needed to keep the vdots
+       background beneath the send button. */
+    z-index: 0;
+
+    &:focus-visible {
+        /* Use a border, not an outline, to preserve the
+           conjoined layout with the Send button. Flexbox
+           will handle the dimension change, so there won't
+           be any movement of the vdots in this state. */
+        outline: 0;
+        border: 2px solid var(--color-outline-focus);
+    }
 
     .zulip-icon {
         padding: 5px 3px;
         font-size: 17px;
     }
+}
 
-    .separator-line {
-        background-color: hsl(0deg 0% 100% / 65%);
-        height: 70%;
-        width: 1px;
-    }
-
-    &:hover,
-    &:focus {
-        box-shadow: none;
-    }
+#compose-drafts-button {
+    /* In a columnar flex, we need to
+       use alignment to keep the Drafts
+       button from expanding the full
+       width of the column. */
+    align-self: flex-start;
+    /* Keep the Drafts button text
+       aligned with the Send button's
+       lefthand edge */
+    padding: 0 8px;
+    margin-left: -8px;
 }
 
 @media (width < $xl_min) {
