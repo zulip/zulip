@@ -13,7 +13,7 @@ export let is_using_input_method = false;
 
 export function narrow_or_search_for_term(search_string, {on_narrow_search}) {
     if (search_string === "") {
-        exit_search({keep_search_narrow_open: true});
+        // When a user tries to search the empty string, we don't do anything.
         return "";
     }
     const $search_query_box = $("#search_query");
@@ -76,7 +76,7 @@ export function initialize({on_narrow_search}) {
 
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
-        on_escape: () => exit_search({keep_search_narrow_open: false}),
+        on_escape: exit_search,
         tabIsEnter: false,
         openInputFieldOnKeyUp() {
             if ($(".navbar-search.expanded").length === 0) {
@@ -129,8 +129,14 @@ export function initialize({on_narrow_search}) {
                 // this codepath is that they first all blur the box to
                 // indicate that they've done what they need to do)
 
+                // If nothing is written in the search bar, we do nothing.
+                const search_string = $search_query_box.val();
+                if (search_string === "") {
+                    return;
+                }
+
                 // Pill is already added during keydown event of input pills.
-                narrow_or_search_for_term($search_query_box.val(), {on_narrow_search});
+                narrow_or_search_for_term(search_string, {on_narrow_search});
                 $search_query_box.trigger("blur");
             }
         });
@@ -157,7 +163,7 @@ export function initialize({on_narrow_search}) {
 
     // register searchbar click handler
     $("#search_exit").on("click", (e) => {
-        exit_search({keep_search_narrow_open: false});
+        exit_search();
         e.preventDefault();
         e.stopPropagation();
     });
@@ -174,7 +180,7 @@ export function initialize({on_narrow_search}) {
     $("#search_exit").on("keydown", (e) => {
         if (e.key === "tab") {
             popovers.hide_all();
-            exit_search({keep_search_narrow_open: false});
+            exit_search();
             e.preventDefault();
             e.stopPropagation();
         }
@@ -213,15 +219,11 @@ function reset_searchbox_text() {
     $("#search_query").val(get_initial_search_string());
 }
 
-function exit_search(opts) {
+function exit_search() {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
         close_search_bar_and_open_narrow_description();
-    } else if (opts.keep_search_narrow_open) {
-        // If the user is in a search narrow and we don't want to redirect,
-        // we just keep the search bar open and don't do anything.
-        return;
     } else {
         window.location.href = filter.generate_redirect_url();
     }
