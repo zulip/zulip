@@ -17,6 +17,7 @@
 # See `git help ignore` for details on the format.
 
 ## Config files for the dev environment
+/zproject/apns-dev.pem
 /zproject/dev-secrets.conf
 /tools/conf.ini
 /tools/custom_provision
