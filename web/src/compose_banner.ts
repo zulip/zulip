@@ -37,6 +37,7 @@ export const CLASSNAMES = {
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
     unscheduled_message: "unscheduled_message",
+    search_view: "search_view",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",
@@ -120,6 +121,10 @@ export function clear_unmute_topic_notifications(): void {
             .map((classname) => CSS.escape(classname))
             .join(".")}`,
     ).remove();
+}
+
+export function clear_search_view_banner(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.search_view)}`).remove();
 }
 
 export function clear_all(): void {
