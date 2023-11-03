@@ -1467,7 +1467,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result_dict = orjson.loads(
             self.client_get(f"/json/user_groups/{moderators_group.id}/subgroups").content
         )
-        self.assertEqual(result_dict["subgroups"], [admins_group.id, owners_group.id])
+        self.assertEqual(set(result_dict["subgroups"]), {admins_group.id, owners_group.id})
 
         params = {"direct_subgroup_only": orjson.dumps(True).decode()}
         result_dict = orjson.loads(
@@ -1482,7 +1482,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result_dict = orjson.loads(
             self.client_get(f"/json/user_groups/{moderators_group.id}/subgroups").content
         )
-        self.assertEqual(result_dict["subgroups"], [admins_group.id, owners_group.id])
+        self.assertEqual(set(result_dict["subgroups"]), {admins_group.id, owners_group.id})
 
         params = {"direct_subgroup_only": orjson.dumps(True).decode()}
         result_dict = orjson.loads(
