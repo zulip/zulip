@@ -401,3 +401,11 @@ input[name="licenses"] {
         margin: -150px -100px;
     }
 }
+
+.sponsorship-status-page .white-box {
+    font-weight: 400;
+}
+
+.sponsorship-status-page p:last-child {
+    margin-bottom: 0;
+}
