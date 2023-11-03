@@ -9,8 +9,10 @@ import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 import * as blueslip from "./blueslip";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {$t, $t_html} from "./i18n";
+import * as message_store from "./message_store";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
+import * as rows from "./rows";
 import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -134,6 +136,25 @@ export const update_elements = ($content) => {
                 // unpleasant corner cases involving data import.
                 set_name_in_mention_element(this, person.full_name, user_id);
             }
+        }
+    });
+
+    $content.find(".topic-mention").each(function () {
+        // TODO: This selector is designed to exclude drafts/scheduled
+        // messages. Arguably those settings should be unconditionally
+        // marked with user-mention-me, but rows.id doesn't support
+        // those elements, and we should address that quirk for
+        // mentions holistically.
+        const $message_row = $content.closest(".message_row");
+        if (!$message_row.length || $message_row.closest(".overlay-message-row").length) {
+            // There's no containing message when rendering a preview.
+            return;
+        }
+        const message_id = rows.id($message_row);
+        const message = message_store.get(message_id);
+
+        if (message.topic_wildcard_mentioned) {
+            $(this).addClass("user-mention-me");
         }
     });
 

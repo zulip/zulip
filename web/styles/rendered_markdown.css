@@ -178,8 +178,7 @@
         display: inline-block;
     }
 
-    .user-mention,
-    .topic-mention {
+    .user-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-direct-mention);
 
@@ -198,7 +197,8 @@
         }
     }
 
-    .user-group-mention {
+    .user-group-mention,
+    .topic-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-group-mention);
 
@@ -206,7 +206,9 @@
             color: var(--color-text-self-group-mention);
             font-weight: 600;
         }
+    }
 
+    .user-group-mention {
         &:hover {
             background-color: var(--color-background-text-hover-group-mention);
         }
