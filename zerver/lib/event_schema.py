@@ -644,15 +644,6 @@ bot_type_for_remove = DictType(
     ]
 )
 
-realm_bot_remove_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("realm_bot")),
-        ("op", Equals("remove")),
-        ("bot", bot_type_for_remove),
-    ]
-)
-check_realm_bot_remove = make_checker(realm_bot_remove_event)
-
 bot_type_for_update = DictType(
     required_keys=[
         ("user_id", int),
@@ -664,6 +655,7 @@ bot_type_for_update = DictType(
         ("default_events_register_stream", OptionalType(str)),
         ("default_sending_stream", OptionalType(str)),
         ("full_name", str),
+        ("is_active", bool),
         ("owner_id", int),
         ("services", bot_services_type),
     ],
@@ -1108,15 +1100,6 @@ removed_user_type = DictType(
     ]
 )
 
-realm_user_remove_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("realm_user")),
-        ("op", Equals("remove")),
-        ("person", removed_user_type),
-    ],
-)
-check_realm_user_remove = make_checker(realm_user_remove_event)
-
 custom_profile_field_type = DictType(
     required_keys=[
         ("id", int),
@@ -1188,6 +1171,12 @@ realm_user_person_types = dict(
             ("user_id", int),
             ("email", str),
             ("timezone", str),
+        ],
+    ),
+    is_active=DictType(
+        required_keys=[
+            ("user_id", int),
+            ("is_active", bool),
         ],
     ),
 )

@@ -8,7 +8,6 @@ import * as blueslip from "./blueslip";
 import * as scroll_util from "./scroll_util";
 
 type SortingFunction<T> = (a: T, b: T) => number;
-type GenericSortingFunction<T = Record<string, unknown>> = (prop: string) => SortingFunction<T>;
 
 type ListWidgetMeta<Key = unknown, Item = Key> = {
     sorting_function: SortingFunction<Item> | null;
@@ -125,11 +124,13 @@ export function get_filtered_items<Key, Item>(
     return result;
 }
 
-export const alphabetic_sort: GenericSortingFunction = (prop) =>
-    function (a, b) {
+export function alphabetic_sort<Prop extends string>(
+    prop: Prop,
+): SortingFunction<Record<Prop, string>> {
+    return (a, b) => {
         // The conversion to uppercase helps make the sorting case insensitive.
-        const str1 = (a[prop] as string).toUpperCase();
-        const str2 = (b[prop] as string).toUpperCase();
+        const str1 = a[prop].toUpperCase();
+        const str2 = b[prop].toUpperCase();
 
         if (str1 === str2) {
             return 0;
@@ -139,11 +140,14 @@ export const alphabetic_sort: GenericSortingFunction = (prop) =>
 
         return -1;
     };
+}
 
-export const numeric_sort: GenericSortingFunction = (prop) =>
-    function (a, b) {
-        const a_prop = Number.parseFloat(a[prop] as string);
-        const b_prop = Number.parseFloat(b[prop] as string);
+export function numeric_sort<Prop extends string>(
+    prop: Prop,
+): SortingFunction<Record<Prop, number>> {
+    return (a, b) => {
+        const a_prop = a[prop];
+        const b_prop = b[prop];
 
         if (a_prop > b_prop) {
             return 1;
@@ -153,23 +157,32 @@ export const numeric_sort: GenericSortingFunction = (prop) =>
 
         return -1;
     };
+}
 
-const generic_sorts = {
+type GenericSortKeys = {
+    alphabetic: string;
+    numeric: number;
+};
+
+const generic_sorts: {
+    [GenericFunc in keyof GenericSortKeys]: <Prop extends string>(
+        prop: Prop,
+    ) => SortingFunction<Record<Prop, GenericSortKeys[GenericFunc]>>;
+} = {
     alphabetic: alphabetic_sort,
     numeric: numeric_sort,
 };
 
-export function generic_sort_functions<T extends Record<string, unknown>>(
-    generic_func: keyof typeof generic_sorts,
-    props: string[],
-): Record<string, SortingFunction<T>> {
-    const sorting_functions: Record<string, SortingFunction<T>> = {};
-    for (const prop of props) {
-        const key = `${prop}_${generic_func}`;
-        sorting_functions[key] = generic_sorts[generic_func](prop);
-    }
-
-    return sorting_functions;
+export function generic_sort_functions<
+    GenericFunc extends keyof GenericSortKeys,
+    Prop extends string,
+>(
+    generic_func: GenericFunc,
+    props: Prop[],
+): Record<string, SortingFunction<Record<Prop, GenericSortKeys[GenericFunc]>>> {
+    return Object.fromEntries(
+        props.map((prop) => [`${prop}_${generic_func}`, generic_sorts[generic_func](prop)]),
+    );
 }
 
 function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
@@ -277,7 +290,9 @@ export function create<Key = unknown, Item = Key>(
             if (items?.selected_items) {
                 const data = items.selected_items;
                 for (const value of data) {
-                    const $list_item = $container.find(`li[data-value = "${value as string}"]`);
+                    const $list_item = $container.find(
+                        `li[data-value="${CSS.escape(String(value))}"]`,
+                    );
                     if ($list_item.length) {
                         const $link_elem = $list_item.find("a").expectOne();
                         $list_item.addClass("checked");

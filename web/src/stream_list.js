@@ -817,7 +817,7 @@ export function set_event_handlers({on_stream_click}) {
         const scroll_position = $(
             "#left_sidebar_scroll_container .simplebar-content-wrapper",
         ).scrollTop();
-        const pm_list_height = $("#private_messages_list").height();
+        const pm_list_height = $("#direct-messages-list").height();
         if (scroll_position > pm_list_height) {
             $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
             $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");

@@ -250,7 +250,7 @@ export function update_draft(opts = {}) {
         return undefined;
     }
 
-    const draft_id = $("#compose-textarea").data("draft-id");
+    const draft_id = $("textarea#compose-textarea").data("draft-id");
 
     if (draft_id !== undefined) {
         // We don't save multiple drafts of the same message;
@@ -265,7 +265,7 @@ export function update_draft(opts = {}) {
     // We have never saved a draft for this message, so add one.
     const update_count = opts.update_count === undefined ? true : opts.update_count;
     const new_draft_id = draft_model.addDraft(draft, update_count);
-    $("#compose-textarea").data("draft-id", new_draft_id);
+    $("textarea#compose-textarea").data("draft-id", new_draft_id);
     maybe_notify(no_notify);
 
     return new_draft_id;

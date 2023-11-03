@@ -327,7 +327,35 @@ body {
     --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
     --color-gear-menu-blue-text: hsl(217deg 100% 50%);
     --color-header-button-hover: hsl(0deg 0% 0% / 5%);
+    /* This is a technique for directing CSS to do
+       the color mixing ordinarily handled by the
+       alpha channel in hsl(); here, the alpha value
+       is omitted from the hsl() syntax and instead
+       used as the percentage for mixing over top of
+       the navbar background. This is needed so that
+       elements like the unread-count dot can make
+       use of the color, but neither compound alpha
+       values or apply alpha values over different
+       colors, such as the background color on the
+       unread dot.
+
+       The second color value aligns with
+       --color-background-navbar. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 5%,
+        hsl(0deg 0% 97%)
+    );
     --color-header-button-focus: hsl(0deg 0% 0% / 8%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 8%,
+        hsl(0deg 0% 97%)
+    );
     --color-fill-hover-copy-icon: hsl(200deg 100% 40%);
     --color-fill-user-invite-copy-icon: hsl(0deg 0% 46.7%);
 }
@@ -483,7 +511,21 @@ body {
     --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
     --color-gear-menu-blue-text: hsl(217deg 100% 65%);
     --color-header-button-hover: hsl(0deg 0% 100% / 4%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 4%,
+        hsl(0deg 0% 13%)
+    );
     --color-header-button-focus: hsl(0deg 0% 100% / 7%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 7%,
+        hsl(0deg 0% 13%)
+    );
     --color-fill-user-invite-copy-icon: hsl(236deg 33% 90%);
 }
 
@@ -2277,8 +2319,6 @@ div.focused-message-list {
     top: 0;
     left: 0;
     text-align: center;
-    vertical-align: middle;
-    /* border-right: 2px solid hsl(204, 20%, 74%); */
 }
 
 .hide-streamlist-toggle-visibility,
@@ -2288,32 +2328,54 @@ div.focused-message-list {
 
 #streamlist-toggle-button {
     text-decoration: none;
-    color: hsl(0deg 0% 52%);
-    display: block;
-    position: relative;
+    color: var(--color-navbar-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
+    height: 40px;
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-hover-no-alpha);
+        }
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:active,
+    &:focus-visible {
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-focus-no-alpha);
+        }
+    }
 }
 
 #streamlist-toggle-unreadcount {
     position: absolute;
     display: none;
-    height: 12px;
-    min-width: 12px;
-    line-height: 12px;
-    background-color: hsl(0deg 100% 20%);
-    top: 4px;
-    right: 4px;
-    border: 1px solid hsl(0deg 0% 93%);
-    box-shadow: 0 0 1px hsl(0deg 0% 0% / 20%);
-    border-radius: 12px;
-    padding: 1px;
-    font-size: 9px;
-    z-index: 15;
-    font-weight: normal;
-    color: hsl(0deg 0% 100%);
+    height: 6px;
+    width: 6px;
+    background-color: var(--color-navbar-icon);
+    top: 10px;
+    right: 9px;
+    border: 2px solid var(--color-background-navbar);
+    border-radius: 6px;
+    padding: 0;
+    font-size: 0;
 }
 
 .nav .dropdown-menu {
@@ -3126,14 +3188,20 @@ select.invite-as {
 @media (width < $sm_min) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
-        margin-top: 31px;
+        margin-top: var(--navbar-fixed-height);
+        /* For very small sizes, skip the relatively large top padding. */
+        padding-top: 0;
+    }
+
+    /* TODO: Properly and accurately align the
+       topmost headers on the left and right
+       sidebar. */
+    .column-right.expanded .right-sidebar-items {
+        margin-top: 10px;
     }
 
     .column-left.expanded {
         .left-sidebar {
-            /* For very small sizes, skip the relatively large top padding. */
-            padding-top: 0;
-
             #streams_header {
                 padding-right: 10px;
             }
@@ -3189,8 +3257,11 @@ select.invite-as {
 
     #streamlist-toggle-button {
         height: var(--header-height);
-        padding-top: 0;
-        padding-bottom: 0;
+    }
+
+    #streamlist-toggle-unreadcount {
+        /* Adjust in response to shorter navbar. */
+        top: 5px;
     }
 
     .column-right #personal-menu .header-button-avatar {

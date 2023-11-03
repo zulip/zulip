@@ -13,7 +13,7 @@ $user_status_emoji_width: 24px;
     overflow: auto;
 }
 
-#user_presences {
+#buddy-list-users-matching-view {
     max-width: 95%;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
@@ -249,17 +249,6 @@ $user_status_emoji_width: 24px;
         opacity: 1;
         cursor: pointer;
     }
-}
-
-#keyboard-icon {
-    position: relative;
-    cursor: pointer;
-    font-size: 20px;
-    margin-right: 15px;
-}
-
-#sidebar-keyboard-shortcuts {
-    color: inherit;
 }
 
 .right-sidebar-shortcuts {

@@ -39,7 +39,10 @@ class Customer(models.Model):
 
     @override
     def __str__(self) -> str:
-        return f"{self.realm!r} {self.stripe_customer_id}"
+        if self.realm is not None:
+            return f"{self.realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
+        else:
+            return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:

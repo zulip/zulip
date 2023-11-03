@@ -330,8 +330,8 @@ def update_realm(
         if k in realm.property_types:
             req_vars[k] = v
 
-        for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-            if k == permissions_configuration.id_field_name:
+        for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+            if k == permission_configuration.id_field_name:
                 req_group_setting_vars[k] = v
 
     for k, v in req_vars.items():
@@ -342,8 +342,8 @@ def update_realm(
             else:
                 data[k] = v
 
-    for setting_name, permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-        setting_group_id_name = permissions_configuration.id_field_name
+    for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        setting_group_id_name = permission_configuration.id_field_name
 
         assert setting_group_id_name in req_group_setting_vars
 
@@ -355,11 +355,7 @@ def update_realm(
                 user_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permissions_configuration.require_system_group,
-                allow_internet_group=permissions_configuration.allow_internet_group,
-                allow_owners_group=permissions_configuration.allow_owners_group,
-                allow_nobody_group=permissions_configuration.allow_nobody_group,
-                allow_everyone_group=permissions_configuration.allow_everyone_group,
+                permission_configuration=permission_configuration,
             )
             do_change_realm_permission_group_setting(
                 realm, setting_name, user_group, acting_user=user_profile
@@ -465,7 +461,7 @@ def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpRespo
 
 
 emojiset_choices = {emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()}
-default_view_options = ["recent_topics", "inbox", "all_messages"]
+web_home_view_options = ["recent_topics", "inbox", "all_messages"]
 
 
 @require_realm_admin
@@ -490,10 +486,12 @@ def update_realm_user_settings_defaults(
     ),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
     display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    default_view: Optional[str] = REQ(
-        str_validator=check_string_in(default_view_options), default=None
+    web_home_view: Optional[str] = REQ(
+        str_validator=check_string_in(web_home_view_options), default=None
     ),
-    escape_navigates_to_default_view: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    web_escape_navigates_to_home_view: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
     emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
     demote_inactive_streams: Optional[int] = REQ(

@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import type {GroupPermissionSetting} from "./types";
+
 const t1 = performance.now();
 export const page_params: {
     apps_page_url: string;
@@ -93,6 +95,11 @@ export const page_params: {
     server_sentry_environment: string | undefined;
     server_sentry_sample_rate: number | undefined;
     server_sentry_trace_rate: number | undefined;
+    server_supported_permission_settings: {
+        realm: Record<string, GroupPermissionSetting>;
+        stream: Record<string, GroupPermissionSetting>;
+        group: Record<string, GroupPermissionSetting>;
+    };
     server_web_public_streams_enabled: boolean;
     show_billing: boolean;
     show_plans: boolean;

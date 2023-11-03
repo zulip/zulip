@@ -45,6 +45,7 @@ from zerver.models import (
     RealmUserDefault,
     ScheduledEmail,
     Stream,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
@@ -925,10 +926,10 @@ class RealmTest(ZulipTestCase):
 
         for (
             setting_name,
-            permissions_configuration,
+            permission_configuration,
         ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
             self.assertEqual(
-                getattr(realm, setting_name).name, permissions_configuration.default_group_name
+                getattr(realm, setting_name).name, permission_configuration.default_group_name
             )
 
     def test_do_create_realm_with_keyword_arguments(self) -> None:
@@ -1024,24 +1025,24 @@ class RealmTest(ZulipTestCase):
         self.assert_length(system_user_groups, 8)
         user_group_names = [group.name for group in system_user_groups]
         expected_system_group_names = [
-            UserGroup.OWNERS_GROUP_NAME,
-            UserGroup.ADMINISTRATORS_GROUP_NAME,
-            UserGroup.MODERATORS_GROUP_NAME,
-            UserGroup.FULL_MEMBERS_GROUP_NAME,
-            UserGroup.MEMBERS_GROUP_NAME,
-            UserGroup.EVERYONE_GROUP_NAME,
-            UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
-            UserGroup.NOBODY_GROUP_NAME,
+            SystemGroups.OWNERS,
+            SystemGroups.ADMINISTRATORS,
+            SystemGroups.MODERATORS,
+            SystemGroups.FULL_MEMBERS,
+            SystemGroups.MEMBERS,
+            SystemGroups.EVERYONE,
+            SystemGroups.EVERYONE_ON_INTERNET,
+            SystemGroups.NOBODY,
         ]
         self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
 
     def test_changing_waiting_period_updates_system_groups(self) -> None:
         realm = get_realm("zulip")
         members_system_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.MEMBERS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
         )
         full_members_system_group = UserGroup.objects.get(
-            realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
+            realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
 
         self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 9)
@@ -1270,19 +1271,19 @@ class RealmAPITest(ZulipTestCase):
         for user_group in all_system_user_groups:
             if (
                 (
-                    user_group.name == UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME
+                    user_group.name == SystemGroups.EVERYONE_ON_INTERNET
                     and not setting_permission_configuration.allow_internet_group
                 )
                 or (
-                    user_group.name == UserGroup.NOBODY_GROUP_NAME
+                    user_group.name == SystemGroups.NOBODY
                     and not setting_permission_configuration.allow_nobody_group
                 )
                 or (
-                    user_group.name == UserGroup.EVERYONE_GROUP_NAME
+                    user_group.name == SystemGroups.EVERYONE
                     and not setting_permission_configuration.allow_everyone_group
                 )
                 or (
-                    user_group.name == UserGroup.OWNERS_GROUP_NAME
+                    user_group.name == SystemGroups.OWNERS
                     and not setting_permission_configuration.allow_owners_group
                 )
             ):
@@ -1336,7 +1337,7 @@ class RealmAPITest(ZulipTestCase):
         bool_tests: List[bool] = [False, True]
         test_values: Dict[str, Any] = dict(
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
-            default_view=["recent_topics", "inbox", "all_messages"],
+            web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,

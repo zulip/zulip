@@ -88,6 +88,7 @@ const keydown_shift_mappings = {
     38: {name: "up_arrow", message_view_only: false}, // up arrow
     40: {name: "down_arrow", message_view_only: false}, // down arrow
     72: {name: "view_edit_history", message_view_only: true}, // 'H'
+    78: {name: "narrow_to_next_unread_followed_topic", message_view_only: false}, // 'N'
 };
 
 const keydown_unshift_mappings = {
@@ -238,7 +239,8 @@ export function processing_text() {
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
         $focused_elt.parents(".pill-container").length >= 1 ||
-        $focused_elt.attr("id") === "compose-send-button"
+        $focused_elt.attr("id") === "compose-send-button" ||
+        $focused_elt.parents(".dropdown-list-container").length >= 1
     );
 }
 
@@ -319,7 +321,7 @@ export function process_escape_key(e) {
             // Check if the giphy popover was open using compose box.
             // Hide GIPHY popover if it's open.
             if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
-                $("#compose-textarea").trigger("focus");
+                $("textarea#compose-textarea").trigger("focus");
                 return true;
             }
 
@@ -350,10 +352,10 @@ export function process_escape_key(e) {
         return true;
     }
 
-    /* The Ctrl+[ hotkey navigates to the default view
+    /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
-    if (user_settings.escape_navigates_to_default_view || e.which === 219) {
-        hashchange.set_hash_to_default_view();
+    if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
+        hashchange.set_hash_to_home_view();
         return true;
     }
 
@@ -619,7 +621,7 @@ export function process_shift_tab_key() {
         return emoji_picker.navigate("shift_tab");
     }
 
-    if ($("#stream_message_recipient_topic").is(":focus")) {
+    if ($("input#stream_message_recipient_topic").is(":focus")) {
         compose_recipient.open_compose_recipient_dropdown();
         return true;
     }
@@ -904,7 +906,10 @@ export function process_hotkey(e, hotkey) {
             narrow.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic({trigger: "hotkey"});
+            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            return true;
+        case "narrow_to_next_unread_followed_topic":
+            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
             return true;
         case "p_key":
             narrow.narrow_to_next_pm_string({trigger: "hotkey"});

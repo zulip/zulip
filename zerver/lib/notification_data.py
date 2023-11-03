@@ -106,7 +106,7 @@ class UserMessageNotificationsData:
         topic_wildcard_mention_email_notify = (
             user_id in topic_wildcard_mention_user_ids
             and user_id not in dm_mention_email_disabled_user_ids
-            and "wildcard_mentioned" in flags
+            and "topic_wildcard_mentioned" in flags
         )
         stream_wildcard_mention_email_notify = (
             user_id in stream_wildcard_mention_user_ids
@@ -116,7 +116,7 @@ class UserMessageNotificationsData:
         topic_wildcard_mention_in_followed_topic_email_notify = (
             user_id in topic_wildcard_mention_in_followed_topic_user_ids
             and user_id not in dm_mention_email_disabled_user_ids
-            and "wildcard_mentioned" in flags
+            and "topic_wildcard_mentioned" in flags
         )
         stream_wildcard_mention_in_followed_topic_email_notify = (
             user_id in stream_wildcard_mention_in_followed_topic_user_ids
@@ -131,7 +131,7 @@ class UserMessageNotificationsData:
         topic_wildcard_mention_push_notify = (
             user_id in topic_wildcard_mention_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
-            and "wildcard_mentioned" in flags
+            and "topic_wildcard_mentioned" in flags
         )
         stream_wildcard_mention_push_notify = (
             user_id in stream_wildcard_mention_user_ids
@@ -141,7 +141,7 @@ class UserMessageNotificationsData:
         topic_wildcard_mention_in_followed_topic_push_notify = (
             user_id in topic_wildcard_mention_in_followed_topic_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
-            and "wildcard_mentioned" in flags
+            and "topic_wildcard_mentioned" in flags
         )
         stream_wildcard_mention_in_followed_topic_push_notify = (
             user_id in stream_wildcard_mention_in_followed_topic_user_ids

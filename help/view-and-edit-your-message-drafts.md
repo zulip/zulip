@@ -37,7 +37,7 @@ saved for 30 days.
 
 {tab|desktop-web}
 
-{relative|message|drafts}
+{!go-to-draft-messages.md!}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the draft you
    want to edit.
@@ -57,7 +57,7 @@ saved for 30 days.
 
 {tab|desktop-web}
 
-{relative|message|drafts}
+{!go-to-draft-messages.md!}
 
 1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the draft you
    want to delete.
@@ -75,7 +75,7 @@ saved for 30 days.
 
 {tab|desktop-web}
 
-{relative|message|drafts}
+{!go-to-draft-messages.md!}
 
 !!! keyboard_tip ""
 

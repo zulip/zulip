@@ -291,3 +291,10 @@ class GroupPermissionSetting:
     default_group_name: str
     id_field_name: str
     default_for_system_groups: Optional[str] = None
+
+
+@dataclass
+class ServerSupportedPermissionSettings:
+    realm: Dict[str, GroupPermissionSetting]
+    stream: Dict[str, GroupPermissionSetting]
+    group: Dict[str, GroupPermissionSetting]

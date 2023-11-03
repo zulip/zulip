@@ -90,7 +90,7 @@ class TranslationTestCase(ZulipTestCase):
     def fetch(
         self, method: str, url: str, expected_status: int, **kwargs: Any
     ) -> "TestHttpResponse":
-        response = getattr(self.client, method)(url, **kwargs)
+        response = getattr(self, f"client_{method}")(url, **kwargs)
         self.assertEqual(
             response.status_code,
             expected_status,

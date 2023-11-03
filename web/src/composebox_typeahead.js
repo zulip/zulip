@@ -241,7 +241,7 @@ function handle_keydown(e, {on_enter_send}) {
             target_sel = `#${CSS.escape(e.target.id)}`;
         }
 
-        const on_topic = target_sel === "#stream_message_recipient_topic";
+        const on_topic = target_sel === "input#stream_message_recipient_topic";
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
 
@@ -276,11 +276,11 @@ function handle_keydown(e, {on_enter_send}) {
                     return;
                 }
 
-                handle_enter($("#compose-textarea"), e);
+                handle_enter($("textarea#compose-textarea"), e);
             }
         } else if (on_topic || on_pm) {
             // We are doing the focusing on keyup to not abort the typeahead.
-            $nextFocus = $("#compose-textarea");
+            $nextFocus = $("textarea#compose-textarea");
         }
     }
 }
@@ -445,6 +445,7 @@ export const slash_commands = [
         text: $t({defaultMessage: "/me is excited (Display action text)"}),
         name: "me",
         aliases: "",
+        placeholder: $t({defaultMessage: "is …"}),
     },
     {
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
@@ -1132,7 +1133,7 @@ export function initialize({on_enter_send}) {
     $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    $("#stream_message_recipient_topic").typeahead({
+    $("input#stream_message_recipient_topic").typeahead({
         source() {
             return topics_seen_for(compose_state.stream_id());
         },
@@ -1194,7 +1195,7 @@ export function initialize({on_enter_send}) {
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
 
-    initialize_compose_typeahead("#compose-textarea");
+    initialize_compose_typeahead("textarea#compose-textarea");
 
     $("#private_message_recipient").on("blur", function () {
         const val = $(this).val();

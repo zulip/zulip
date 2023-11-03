@@ -182,6 +182,7 @@ const me_slash = {
     name: "me",
     aliases: "",
     text: "translated: /me is excited (Display action text)",
+    placeholder: "translated: is …",
 };
 
 const my_slash = {
@@ -576,7 +577,7 @@ test("content_typeahead_selected", ({override}) => {
     fake_this.query = "/m";
     fake_this.completing = "slash";
     actual_value = ct.content_typeahead_selected.call(fake_this, me_slash);
-    expected_value = "/me ";
+    expected_value = "/me translated: is …";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/da";
@@ -740,7 +741,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     override(stream_topic_history_util, "get_server_history", () => {});
 
     let topic_typeahead_called = false;
-    $("#stream_message_recipient_topic").typeahead = (options) => {
+    $("input#stream_message_recipient_topic").typeahead = (options) => {
         override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
             assert.equal(stream_id, sweden_stream.stream_id);
             return sweden_topics_to_show;
@@ -961,7 +962,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
 
     let compose_textarea_typeahead_called = false;
-    $("#compose-textarea").typeahead = (options) => {
+    $("textarea#compose-textarea").typeahead = (options) => {
         // options.source()
         //
         // For now we only test that get_sorted_filtered_items has been
@@ -1158,14 +1159,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.target.id = "some_non_existing_id";
     $("form#send_message_form").trigger(event);
 
-    $("#compose-textarea")[0] = {
+    $("textarea#compose-textarea")[0] = {
         selectionStart: 0,
         selectionEnd: 0,
     };
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n");
     });
-    $("#compose-textarea").caret = () => $("#compose-textarea")[0].selectionStart;
+    $("textarea#compose-textarea").caret = () => $("textarea#compose-textarea")[0].selectionStart;
 
     event.key = "Enter";
     event.target.id = "stream_message_recipient_topic";
@@ -1187,19 +1188,19 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     // Cover cases where there's at least one character there.
 
     // Test automatic bulleting.
-    $("#compose-textarea").val("- List item 1\n- List item 2");
-    $("#compose-textarea")[0].selectionStart = 27;
-    $("#compose-textarea")[0].selectionEnd = 27;
+    $("textarea#compose-textarea").val("- List item 1\n- List item 2");
+    $("textarea#compose-textarea")[0].selectionStart = 27;
+    $("textarea#compose-textarea")[0].selectionEnd = 27;
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n- ");
     });
     $("form#send_message_form").trigger(event);
 
     // Test removal of bullet.
-    $("#compose-textarea").val("- List item 1\n- List item 2\n- ");
-    $("#compose-textarea")[0].selectionStart = 30;
-    $("#compose-textarea")[0].selectionEnd = 30;
-    $("#compose-textarea")[0].setSelectionRange = (start, end) => {
+    $("textarea#compose-textarea").val("- List item 1\n- List item 2\n- ");
+    $("textarea#compose-textarea")[0].selectionStart = 30;
+    $("textarea#compose-textarea")[0].selectionEnd = 30;
+    $("textarea#compose-textarea")[0].setSelectionRange = (start, end) => {
         assert.equal(start, 28);
         assert.equal(end, 30);
     };
@@ -1209,19 +1210,19 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").trigger(event);
 
     // Test automatic numbering.
-    $("#compose-textarea").val("1. List item 1\n2. List item 2");
-    $("#compose-textarea")[0].selectionStart = 29;
-    $("#compose-textarea")[0].selectionEnd = 29;
+    $("textarea#compose-textarea").val("1. List item 1\n2. List item 2");
+    $("textarea#compose-textarea")[0].selectionStart = 29;
+    $("textarea#compose-textarea")[0].selectionEnd = 29;
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n3. ");
     });
     $("form#send_message_form").trigger(event);
 
     // Test removal of numbering.
-    $("#compose-textarea").val("1. List item 1\n2. List item 2\n3. ");
-    $("#compose-textarea")[0].selectionStart = 33;
-    $("#compose-textarea")[0].selectionEnd = 33;
-    $("#compose-textarea")[0].setSelectionRange = (start, end) => {
+    $("textarea#compose-textarea").val("1. List item 1\n2. List item 2\n3. ");
+    $("textarea#compose-textarea")[0].selectionStart = 33;
+    $("textarea#compose-textarea")[0].selectionEnd = 33;
+    $("textarea#compose-textarea")[0].setSelectionRange = (start, end) => {
         assert.equal(start, 30);
         assert.equal(end, 33);
     };
@@ -1230,9 +1231,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     });
     $("form#send_message_form").trigger(event);
 
-    $("#compose-textarea").val("A");
-    $("#compose-textarea")[0].selectionStart = 4;
-    $("#compose-textarea")[0].selectionEnd = 4;
+    $("textarea#compose-textarea").val("A");
+    $("textarea#compose-textarea")[0].selectionStart = 4;
+    $("textarea#compose-textarea")[0].selectionEnd = 4;
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n");
     });
@@ -1258,7 +1259,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
     // We trigger keydown in order to make nextFocus !== false
     $("form#send_message_form").trigger(event);
-    $("#stream_message_recipient_topic").off("mouseup");
+    $("input#stream_message_recipient_topic").off("mouseup");
     event.type = "keyup";
     $("form#send_message_form").trigger(event);
     event.key = "Tab";
@@ -1267,7 +1268,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.key = "a";
     $("form#send_message_form").trigger(event);
 
-    $("#stream_message_recipient_topic").off("focus");
+    $("input#stream_message_recipient_topic").off("focus");
     $("#private_message_recipient").off("focus");
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");

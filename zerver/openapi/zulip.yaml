@@ -594,6 +594,25 @@ paths:
                                             should update any data structures associated
                                             with this user to use this new value as the
                                             user's Zulip API email address.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When a user is deactivated or reactivated.
+
+                                        **Changes**: New in Zulip 8.0 (feature level
+                                        222). Previously the server sent a `realm_user` event with
+                                        `op` field set to `remove` when deactivating a user and a
+                                        `realm_user` event with `op` field set to `add` when
+                                        reactivating a user.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        is_active:
+                                          type: boolean
+                                          description: |
+                                            A boolean describing whether the user account has been deactivated.
                               additionalProperties: false
                               example:
                                 {
@@ -782,8 +801,12 @@ paths:
                                 to see a given stream's subscriber list, they will receive this event
                                 for the existing subscriptions to the stream.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 205), this event was not
-                                sent when a user gained access to a stream due to their [role
+                                **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
+                                incorrectly not sent to guest users when subscribers to web-public
+                                streams and subscribed public streams changed.
+
+                                Prior to Zulip 8.0 (feature level 205), this event was not sent when
+                                a user gained access to a stream due to their [role
                                 changing](/help/roles-and-permissions).
 
                                 Prior to Zulip 6.0 (feature level 134), this event was not sent when a
@@ -841,10 +864,13 @@ paths:
                                 from streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
 
-                                **Changes**: In Zulip 4.0 (feature level 35), the singular
-                                `user_id` and `stream_id` integers included in this event
-                                were replaced with plural `user_ids` and `stream_ids` integer
-                                arrays.
+                                **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
+                                incorrectly not sent to guest users when subscribers to web-public
+                                streams and subscribed public streams changed.
+
+                                In Zulip 4.0 (feature level 35), the singular `user_id` and
+                                `stream_id` integers included in this event were replaced
+                                with plural `user_ids` and `stream_ids` integer arrays.
 
                                 In Zulip 3.0 (feature level 19), the `stream_id` field was
                                 added to identify the stream the user unsubscribed from,
@@ -1041,8 +1067,12 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to all users in a Zulip organization when
-                                a user is deactivated.
+                                No longer sent by modern Zulip servers.
+
+                                **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
+
+                                Previously, this event was sent to all users in a Zulip organization when a
+                                user was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1197,9 +1227,11 @@ paths:
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the stream; just that it exists.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 205), this event was
-                                not sent when a user gained access to a stream due to their role
-                                changing.
+                                **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
+                                incorrectly not sent to guest users a web-public stream was created.
+
+                                Prior to Zulip 8.0 (feature level 205), this event was not sent
+                                when a user gained access to a stream due to their role changing.
 
                                 Prior to Zulip 8.0 (feature level 192), this event was not sent
                                 when guest users gained access to a public stream by being
@@ -1961,9 +1993,16 @@ paths:
                                 Event sent when a message has been deleted.
                                 Sent to all users who received the message.
 
+                                This event is also sent when the user loses access to a message,
+                                such as when it is [moved to a stream][message-move-stream] that
+                                the user does not [have permission to access][stream-access].
+
                                 **Changes**: Before Zulip 5.0 (feature level 77), events
                                 for direct messages contained additional `sender_id` and
                                 `recipient_id` fields.
+
+                                [message-move-stream]: /help/move-content-to-another-stream
+                                [stream-access]: /help/stream-permissions
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2748,7 +2787,44 @@ paths:
                                 Event sent to a user when [message flags][message-flags] are added
                                 to messages.
 
+                                This can reflect a direct user action, or can be the indirect
+                                consequence of another action. Whatever the cause, if there's a change
+                                in the set of message flags that the user has for a message, then an
+                                `update_message_flags` event will be sent with the change. Note
+                                that this applies when the user already had access to the message, and
+                                continues to have access to it. When a message newly appears or
+                                disappears, a [`message`][message-event] or
+                                [`delete_message`][message-delete] event is sent instead.
+
+                                Some examples of actions that trigger an `update_message_flags`
+                                event:
+
+                                - The `"starred"` flag is added when the user chooses to [star a
+                                  message](/help/star-a-message).
+                                - The `"read"` flag is added when the user marks messages as read by
+                                  scrolling through them, or uses [Mark all messages as read][all-read]
+                                  on a conversation.
+                                - The `"read"` flag is added when the user [mutes](/help/mute-a-user) a
+                                  message's sender.
+                                - The `"read"` flag is added after the user unsubscribes from a stream,
+                                  or messages are moved to a not-subscribed stream, provided the user
+                                  can still access the messages at all. Note a
+                                  [`delete_message`][message-delete] event is sent in the case where the
+                                  user can no longer access the messages.
+
+                                In some cases, a change in message flags that's caused by another change
+                                may happen a short while after the original change, rather than
+                                simultaneously. For example, when messages that were unread are moved to
+                                a stream where the user is not subscribed, the resulting change in
+                                message flags (and the corresponding `update_message_flags` event with
+                                flag `"read"`) may happen later than the message move itself. The delay
+                                in that example is typically at most a few hundred milliseconds and can
+                                in rare cases be minutes or longer.
+
                                 [message-flags]: /api/update-message-flags#available-flags
+                                [message-event]: /api/get-events#message
+                                [message-delete]: /api/get-events#delete_message
+                                [all-read]: /help/marking-messages-as-read#mark-all-messages-as-read
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2806,6 +2882,10 @@ paths:
                               description: |
                                 Event sent to a user when [message flags][message-flags] are
                                 removed from messages.
+
+                                See the description for the [`update_message_flags` op:
+                                `add`](/api/get-events#update_message_flags-add) event for
+                                more details about these events.
 
                                 [message-flags]: /api/update-message-flags#available-flags
                               properties:
@@ -3658,6 +3738,11 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users when a bot has been deactivated.
+
+                                **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
+
+                                Previously, this event was sent to all users in a Zulip organization when a
+                                bot was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4853,6 +4938,7 @@ paths:
                       An example JSON response for when the supplied stream does not exist:
   /mark_all_as_read:
     post:
+      deprecated: true
       operationId: mark-all-as-read
       summary: Mark all messages as read
       tags: ["messages"]
@@ -4866,7 +4952,11 @@ paths:
         response. If all messages were marked as read, then the success response
         will return `"complete": true`.
 
-        **Changes**: Before Zulip 8.0 (feature level 211), if the server's
+        **Changes**: Deprecated; clients should use the [update personal message
+        flags for narrow](/api/update-message-flags-for-narrow) endpoint instead
+        as this endpoint will be removed in a future release.
+
+        Before Zulip 8.0 (feature level 211), if the server's
         processing was interrupted by a timeout, but some messages were marked
         as read, then it would return `"result": "partially_completed"`, along
         with a `code` field for an error string, in the success response to
@@ -4905,11 +4995,16 @@ paths:
                     example: {"msg": "", "result": "success", "complete": true}
   /mark_stream_as_read:
     post:
+      deprecated: true
       operationId: mark-stream-as-read
       summary: Mark messages in a stream as read
       tags: ["messages"]
       description: |
         Mark all the unread messages in a stream as read.
+
+        **Changes**: Deprecated; clients should use the [update personal message
+        flags for narrow](/api/update-message-flags-for-narrow) endpoint instead
+        as this endpoint will be removed in a future release.
       parameters:
         - name: stream_id
           in: query
@@ -4924,11 +5019,16 @@ paths:
           $ref: "#/components/responses/SimpleSuccess"
   /mark_topic_as_read:
     post:
+      deprecated: true
       operationId: mark-topic-as-read
       summary: Mark messages in a topic as read
       tags: ["messages"]
       description: |
         Mark all the unread messages in a topic as read.
+
+        **Changes**: Deprecated; clients should use the [update personal message
+        flags for narrow](/api/update-message-flags-for-narrow) endpoint instead
+        as this endpoint will be removed in a future release.
       parameters:
         - name: stream_id
           in: query
@@ -6200,13 +6300,18 @@ paths:
 
                           Only present if the sender's visibility was in fact changed.
 
-                          Intended to be used by clients where it is important to explicitly display a
-                          notice that the topic's visibility policy has changed automatically due to
-                          the message sent. The information is also important to correctly decide whether to
-                          display a warning or notice suggesting to unmute the topic after sending a message
-                          to a muted stream. Such a notice might feel confusing in the event that the act of
-                          sending the message had already resulted in the user unmuting or following the topic
-                          in question.
+                          The value can be either [unmuted or followed](/api/update-user-topic#parameter-visibility_policy).
+
+                          Clients will also be notified about the change in policy via a
+                          `user_topic` event as usual. This field is intended to be used by clients
+                          to explicitly inform the user when a topic's visibility policy was changed
+                          automatically due to sending a message.
+
+                          For example, the Zulip web application uses this field to decide whether
+                          to display a warning or notice suggesting to unmute the topic after
+                          sending a message to a muted stream. Such a notice would be confusing in
+                          the event that the act of sending the message had already resulted in the
+                          user automatically unmuting or following the topic in question.
 
                           **Changes**: New in Zulip 8.0 (feature level 218).
                     example:
@@ -6405,9 +6510,6 @@ paths:
 
         See also the endpoint for [updating flags on a range of
         messages within a narrow](/api/update-message-flags-for-narrow).
-        For updating the `read` flag on common collections of messages, see also
-        the
-        [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
       x-parameter-description: |
         ## Available flags
         <div>
@@ -9114,6 +9216,7 @@ paths:
                       A typical failed JSON response for when the target stream does not exist:
   /users/me/subscriptions/muted_topics:
     patch:
+      deprecated: true
       operationId: mute-topic
       summary: Topic muting
       tags: ["streams"]
@@ -9186,18 +9289,18 @@ paths:
   /mobile_push/test_notification:
     post:
       operationId: test-notify
-      summary: Sends a test notifications to the user's mobile device(s)
+      summary: Sends a test notification to the user's mobile device(s)
       tags: ["mobile"]
       description: |
         This endpoint allows a user to trigger a test push notification to their
-        selected mobile devices, or all their mobile devices.
+        selected mobile device, or all their mobile devices.
 
         **Changes**: New in Zulip 8.0 (feature level 217).
       parameters:
         - name: token
           in: query
           description: |
-            The push token for the device to send the test notification to.
+            The push token for the device to which to send the test notification.
 
             If this parameter is not submitted, the test notification will be sent to all of the
             user's devices registered on the server.
@@ -10014,25 +10117,29 @@ paths:
           schema:
             type: boolean
           example: false
-        - name: default_view
+        - name: web_home_view
           in: query
           description: |
-            The [default view](/help/configure-home-view) used when opening a new
+            The [home view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
             - "inbox" - Inbox view
             - "all_messages" - All messages view
+
+            **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+            called `default_view`, which was new in Zulip 4.0 (feature level 42).
           schema:
             type: string
           example: all_messages
-        - name: escape_navigates_to_default_view
+        - name: web_escape_navigates_to_home_view
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-home-view).
+            [configured home view](/help/configure-home-view).
 
-            **Changes**: New in Zulip 5.0 (feature level 107).
+            **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was called
+            `escape_navigates_to_default_view`, which was new in Zulip 5.0 (feature level 107).
           schema:
             type: boolean
           example: true
@@ -12351,22 +12458,27 @@ paths:
 
                               The value needs to be a standard language code that the Zulip server has
                               translation data for; for example, `"en"` for English or `"de"` for German.
-                          default_view:
+                          web_home_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-home-view) used when opening a new
+                              The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - All messages view
-                          escape_navigates_to_default_view:
+
+                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                              called `default_view`, which was new in Zulip 4.0 (feature level 42).
+                          web_escape_navigates_to_home_view:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-home-view).
+                              [configured home view](/help/configure-home-view).
 
-                              **Changes**: New in Zulip 5.0 (feature level 107).
+                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this
+                              was called `escape_navigates_to_default_view`, which was new in Zulip
+                              5.0 (feature level 107).
                           left_side_userlist:
                             type: boolean
                             description: |
@@ -13199,7 +13311,7 @@ paths:
                           client capability and access the `user_settings` object instead.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
-                      default_view:
+                      web_home_view:
                         deprecated: true
                         type: string
                         description: |
@@ -13207,7 +13319,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          The [default view](/help/configure-home-view) in Zulip, represented
+                          The [home view](/help/configure-home-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
@@ -13215,9 +13327,12 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                          connecting to newer servers should declare the `user_settings_object`
-                          client capability and access the `user_settings` object instead.
+                          **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                          called `default_view`, which was new in Zulip 4.0 (feature level 42).
+
+                          **Deprecated** in Zulip 5.0 (feature level 89). Clients connecting to newer
+                          servers should declare the `user_settings_object` client capability and
+                          access the `user_settings` object instead.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
                       high_contrast_mode:
@@ -14544,22 +14659,27 @@ paths:
 
                               The value needs to be a standard language code that the Zulip server has
                               translation data for; for example, `"en"` for English or `"de"` for German.
-                          default_view:
+                          web_home_view:
                             type: string
                             description: |
-                              The [default view](/help/configure-home-view) used when opening a new
+                              The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - All messages view
-                          escape_navigates_to_default_view:
+
+                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                              called `default_view`, which was new in Zulip 4.0 (feature level 42).
+                          web_escape_navigates_to_home_view:
                             type: boolean
                             description: |
                               Whether the escape key navigates to the
-                              [configured default view](/help/configure-home-view).
+                              [configured home view](/help/configure-home-view).
 
-                              **Changes**: New in Zulip 5.0 (feature level 107).
+                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this
+                              was called `escape_navigates_to_default_view`, which was new in Zulip
+                              5.0 (feature level 107).
                           left_side_userlist:
                             type: boolean
                             description: |
@@ -15062,6 +15182,37 @@ paths:
                                   nullable: true
                                 avatar_version: {}
                                 profile_data: {}
+                      server_supported_permission_settings:
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Configuration for various group permission settings.
+
+                          We consider this part of the Zulip API to be unstable
+                          and may change significantly in future versions.
+
+                          **Changes**: New in Zulip 8.0 (feature level 221).
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          realm:
+                            type: object
+                            description: |
+                              Configuration for realm level group permission settings.
+                            additionalProperties:
+                              $ref: "#/components/schemas/GroupPermissionSetting"
+                          stream:
+                            type: object
+                            description: |
+                              Configuration for stream level group permission settings.
+                            additionalProperties:
+                              $ref: "#/components/schemas/GroupPermissionSetting"
+                          group:
+                            type: object
+                            description: |
+                              Configuration for group level group permission settings.
+                            additionalProperties:
+                              $ref: "#/components/schemas/GroupPermissionSetting"
                     example:
                       {
                         "last_event_id": -1,
@@ -15609,30 +15760,35 @@ paths:
           schema:
             type: string
           example: en
-        - name: default_view
+        - name: web_home_view
           in: query
           description: |
-            The [default view](/help/configure-home-view) used when opening a new
+            The [home view](/help/configure-home-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent conversations view
             - "inbox" - Inbox view
             - "all_messages" - All messages view
 
-            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+            called `default_view`, which was new in Zulip 4.0 (feature level 42).
+
+            Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
 
             Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: all_messages
-        - name: escape_navigates_to_default_view
+        - name: web_escape_navigates_to_home_view
           in: query
           description: |
             Whether the escape key navigates to the
-            [configured default view](/help/configure-home-view).
+            [configured home view](/help/configure-home-view).
 
-            **Changes**: New in Zulip 5.0 (feature level 107).
+            **Changes**: New in Zulip 8.0 (feature level 219). Previously, this
+            was called `escape_navigates_to_default_view`, which was new in Zulip
+            5.0 (feature level 107).
           schema:
             type: boolean
           example: true
@@ -17854,6 +18010,15 @@ components:
             owner_id:
               nullable: true
             services: {}
+            is_active:
+              type: boolean
+              description: |
+                A boolean describing whether the user account has been deactivated.
+
+                **Changes**: New in Zulip 8.0 (feature level 222). Previously
+                we sent `realm_user` event with `op` field set to `remove`
+                when deactivating a bot and `realm_user` event with `op`
+                field set to `add` when reactivating a bot.
     BasicBotBase:
       type: object
       properties:
@@ -19153,6 +19318,49 @@ components:
         - rendered_content
         - scheduled_delivery_timestamp
         - failed
+    GroupPermissionSetting:
+      description: |
+        Configuration for a group permission setting specifying the groups
+        to which the setting can be set to and the default values for the
+        setting.
+      additionalProperties: false
+      type: object
+      properties:
+        require_system_group:
+          type: boolean
+          description: |
+            Whether the setting can only be set to a system user group.
+        allow_internet_group:
+          type: boolean
+          description: |
+            Whether the setting can be set to `role:internet` system group.
+        allow_owners_group:
+          type: boolean
+          description: |
+            Whether the setting can be set to `role:owners` system group.
+        allow_nobody_group:
+          type: boolean
+          description: |
+            Whether the setting can be set to `role:nobody` system group.
+        allow_everyone_group:
+          type: boolean
+          description: |
+            Whether the setting can be set to `role:everyone` system group.
+        default_group_name:
+          type: string
+          description: |
+            Name of the default group for the setting.
+        id_field_name:
+          type: string
+          description: |
+            Name for the field used to pass the group ID for the setting.
+        default_for_system_groups:
+          type: string
+          nullable: true
+          description: |
+            Name of the default group for the setting for system groups.
+
+            This is non-null only for group-level settings.
     User:
       allOf:
         - $ref: "#/components/schemas/UserBase"
@@ -19704,7 +19912,8 @@ components:
           description: |
             ## Invalid push device token
 
-            A typical failed JSON response for when the push device token is invalid:
+            A typical failed JSON response for when the push device token is not
+            recognized by the Zulip server:
     InvalidRemotePushDeviceTokenError:
       allOf:
         - $ref: "#/components/schemas/CodedError"

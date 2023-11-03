@@ -38,6 +38,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Next unread topic**: <kbd>N</kbd>
 
+* **Next unread followed topic**: <kbd>Shift</kbd> + <kbd>N</kbd>
+
 * **Next unread direct message**: <kbd>P</kbd>
 
 * **Search messages**: <kbd>/</kbd>
@@ -241,11 +243,6 @@ A summary of the keyboard shortcuts above is available in the Zulip app.
 {start_tabs}
 
 {relative|gear|keyboard-shortcuts}
-
-!!! tip ""
-
-    You can also click the **keyboard** (<i class="fa fa-keyboard-o"></i>)
-    icon at the bottom of the app, just below the right sidebar.
 
 {end_tabs}
 

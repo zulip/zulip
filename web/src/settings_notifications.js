@@ -139,7 +139,11 @@ function stream_notification_setting_changed(e) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
-    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
+    stream_settings_api.set_stream_property(
+        sub,
+        {property: setting, value: e.target.checked},
+        $status_element,
+    );
 }
 
 export function set_up(settings_panel) {
@@ -368,8 +372,7 @@ export function initialize() {
 
         stream_settings_api.set_stream_property(
             sub,
-            "is_muted",
-            !sub.is_muted,
+            {property: "is_muted", value: !sub.is_muted},
             $row.closest(".subsection-parent").find(".alert-notification"),
         );
     });

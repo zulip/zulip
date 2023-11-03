@@ -17,7 +17,11 @@ from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import BaseModel, ConfigDict
 
-from analytics.lib.counts import COUNT_STATS
+from analytics.lib.counts import (
+    BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
+    COUNT_STATS,
+    do_increment_logging_stat,
+)
 from corporate.lib.stripe import do_deactivate_remote_server
 from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError
@@ -397,6 +401,13 @@ def remote_server_notify_push(
         len(android_devices),
         len(apple_devices),
     )
+    do_increment_logging_stat(
+        server,
+        COUNT_STATS["mobile_pushes_received::day"],
+        None,
+        timezone_now(),
+        increment=len(android_devices) + len(apple_devices),
+    )
 
     # Truncate incoming pushes to 200, due to APNs maximum message
     # sizes; see handle_remove_push_notification for the version of
@@ -418,7 +429,7 @@ def remote_server_notify_push(
     # send_apple_push_notification.
 
     gcm_payload = truncate_payload(gcm_payload)
-    send_android_push_notification(
+    android_successfully_delivered = send_android_push_notification(
         user_identity, android_devices, gcm_payload, gcm_options, remote=server
     )
 
@@ -426,7 +437,17 @@ def remote_server_notify_push(
         apns_payload["custom"].get("zulip"), dict
     ):
         apns_payload["custom"]["zulip"] = truncate_payload(apns_payload["custom"]["zulip"])
-    send_apple_push_notification(user_identity, apple_devices, apns_payload, remote=server)
+    apple_successfully_delivered = send_apple_push_notification(
+        user_identity, apple_devices, apns_payload, remote=server
+    )
+
+    do_increment_logging_stat(
+        server,
+        COUNT_STATS["mobile_pushes_forwarded::day"],
+        None,
+        timezone_now(),
+        increment=android_successfully_delivered + apple_successfully_delivered,
+    )
 
     return json_success(
         request,
@@ -442,8 +463,15 @@ def validate_incoming_table_data(
 ) -> None:
     last_id = get_last_id_from_server(server, model)
     for row in rows:
-        if is_count_stat and row["property"] not in COUNT_STATS:
+        if is_count_stat and (
+            row["property"] not in COUNT_STATS
+            or row["property"] in BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES
+        ):
             raise JsonableError(_("Invalid property {property}").format(property=row["property"]))
+        if row.get("id") is None:
+            # This shouldn't be possible, as submitting data like this should be
+            # prevented by our param validators.
+            raise AssertionError(f"Missing id field in row {row}")
         if row["id"] <= last_id:
             raise JsonableError(_("Data is out of order."))
         last_id = row["id"]
@@ -592,7 +620,15 @@ def remote_server_post_analytics(
 
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
-    last_count = model.objects.filter(server=server).order_by("remote_id").only("remote_id").last()
+    last_count = (
+        model.objects.filter(server=server)
+        # Rows with remote_id=None are managed by the bouncer service itself,
+        # and thus aren't meant for syncing and should be ignored here.
+        .exclude(remote_id=None)
+        .order_by("remote_id")
+        .only("remote_id")
+        .last()
+    )
     if last_count is not None:
         return last_count.remote_id
     return 0

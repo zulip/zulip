@@ -95,6 +95,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
@@ -820,6 +821,7 @@ Output:
         source_realm_id: str = "",
         key: Optional[str] = None,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_default_language: str = "en",
         enable_marketing_emails: Optional[bool] = None,
         email_address_visibility: Optional[int] = None,
         is_demo_organization: bool = False,
@@ -840,6 +842,7 @@ Output:
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
             "realm_type": realm_type,
+            "realm_default_language": realm_default_language,
             "key": key if key is not None else find_key_by_email(email),
             "timezone": timezone,
             "terms": True,
@@ -874,12 +877,14 @@ Output:
         realm_subdomain: str,
         realm_name: str,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_default_language: str = "en",
         realm_in_root_domain: Optional[str] = None,
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
             "realm_name": realm_name,
             "realm_type": realm_type,
+            "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
         }
         if realm_in_root_domain is not None:
@@ -1346,7 +1351,7 @@ Output:
             realm, invite_only, history_public_to_subscribers
         )
         administrators_user_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
         try:
@@ -1385,14 +1390,18 @@ Output:
 
     # Subscribe to a stream directly
     def subscribe(
-        self, user_profile: UserProfile, stream_name: str, invite_only: bool = False
+        self,
+        user_profile: UserProfile,
+        stream_name: str,
+        invite_only: bool = False,
+        is_web_public: bool = False,
     ) -> Stream:
         realm = user_profile.realm
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(
-                realm, stream_name, invite_only=invite_only
+                realm, stream_name, invite_only=invite_only, is_web_public=is_web_public
             )
         bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
@@ -2268,7 +2277,7 @@ one or more new messages.
         return body
 
 
-class MigrationsTestCase(ZulipTestCase):  # nocoverage
+class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
     """
     Test class for database migrations inspired by this blog post:
        https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
@@ -2286,6 +2295,7 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     @override
     def setUp(self) -> None:
+        super().setUp()
         assert (
             self.migrate_from and self.migrate_to
         ), f"TestCase '{type(self).__name__}' must define migrate_from and migrate_to properties"

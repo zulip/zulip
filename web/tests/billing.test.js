@@ -120,7 +120,7 @@ run_test("licensechange", ({override}) => {
         assert.equal(key, "licenses");
         return 20;
     };
-    $("#new_licenses_input").val = () => 15;
+    $("input#new_licenses_input").val = () => 15;
     create_ajax_request_called = false;
     const update_licenses_button_click_handler =
         $("#update-licenses-button").get_on_handler("click");
@@ -128,7 +128,7 @@ run_test("licensechange", ({override}) => {
     assert.ok(create_ajax_request_called);
     assert.ok(!confirm_license_modal_shown);
 
-    $("#new_licenses_input").val = () => 25;
+    $("input#new_licenses_input").val = () => 25;
     create_ajax_request_called = false;
     update_licenses_button_click_handler({preventDefault() {}});
     assert.ok(!create_ajax_request_called);

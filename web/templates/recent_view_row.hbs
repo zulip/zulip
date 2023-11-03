@@ -59,8 +59,8 @@
                     </div>
                 </div>
                 <div class="recent_topic_actions">
-                    <div class="recent_view_focusable hidden-for-spectators">
-                        <span class="change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
+                    <div class="hidden-for-spectators">
+                        <span class="recent_view_focusable change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
                             {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
                                 <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic'}}"
                                   role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You follow this topic' }}"></i>

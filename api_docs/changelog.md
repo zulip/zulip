@@ -20,6 +20,43 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 222**
+
+* [`GET /events`](/api/get-events): When a user is deactivated or
+  reactivated, the server uses `realm_user` events with `op: "update"`
+  updating the `is_active` field, instead of `realm_user` events with
+  `op: "remove"` and `op: "add"`, respectively.
+
+* [`GET /events`](/api/get-events): When a bot is deactivated or
+  reactivated, the server sends `realm_bot` events with `op: "update"`
+  updating the `is_active` field, instead of `realm_bot` events with
+  `op: "remove"` and `op: "add"`, respectively.
+
+**Feature level 221**
+
+* [`POST /register`](/api/register-queue): Added `server_supported_permission_settings`
+  field in the response which contains configuration data for various permission
+  settings.
+
+**Feature level 220**
+
+* [`GET /events`](/api/get-events): Stream creation events for web-public
+  streams are now sent to all guest users in the organization as well.
+
+* [`GET /events`](/api/get-events): The `subscription` events for `op:
+  "peer_add"` and `op: "peer_remove"` are now sent to subscribed guest
+  users for public streams and to all the guest users for web-public
+  streams; previously, they incorrectly only received these for
+  private streams.
+
+**Feature level 219**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`PATCH /settings`](/api/update-settings): Renamed `default_view` and
+  `escape_navigates_to_default_view` settings to `web_home_view` and
+  `web_escape_navigates_to_home_view` respectively.
+
 **Feature level 218**
 
 * [`POST /messages`](/api/send-message): Added an optional

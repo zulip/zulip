@@ -260,6 +260,17 @@ def clear_supported_auth_backends_cache() -> None:
     supported_backends = None
 
 
+class SystemGroups:
+    FULL_MEMBERS = "role:fullmembers"
+    EVERYONE_ON_INTERNET = "role:internet"
+    OWNERS = "role:owners"
+    ADMINISTRATORS = "role:administrators"
+    MODERATORS = "role:moderators"
+    MEMBERS = "role:members"
+    EVERYONE = "role:everyone"
+    NOBODY = "role:nobody"
+
+
 class RealmAuthenticationMethod(models.Model):
     """
     Tracks which authentication backends are enabled for a realm.
@@ -734,9 +745,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Whether clients should display "(guest)" after names of guest users.
     enable_guest_user_indicator = models.BooleanField(default=True)
 
-    # Duplicates of names for system group; TODO: Clean this up.
-    ADMINISTRATORS_GROUP_NAME = "role:administrators"
-
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
@@ -793,7 +801,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
-            default_group_name=ADMINISTRATORS_GROUP_NAME,
+            default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="create_multiuse_invite_group_id",
         ),
     )
@@ -1534,8 +1542,8 @@ class UserBaseSettings(models.Model):
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
     # This setting controls which view is rendered first when Zulip loads.
     # Values for it are URL suffix after `#`.
-    default_view = models.TextField(default="recent_topics")
-    escape_navigates_to_default_view = models.BooleanField(default=True)
+    web_home_view = models.TextField(default="recent_topics")
+    web_escape_navigates_to_home_view = models.BooleanField(default=True)
     dense_mode = models.BooleanField(default=True)
     fluid_layout_width = models.BooleanField(default=False)
     high_contrast_mode = models.BooleanField(default=False)
@@ -1732,7 +1740,7 @@ class UserBaseSettings(models.Model):
         # Instead, see `modern_settings` below.
         color_scheme=int,
         default_language=str,
-        default_view=str,
+        web_home_view=str,
         demote_inactive_streams=int,
         dense_mode=bool,
         emojiset=str,
@@ -1775,7 +1783,7 @@ class UserBaseSettings(models.Model):
         # Add new general settings here.
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
-        escape_navigates_to_default_view=bool,
+        web_escape_navigates_to_home_view=bool,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
@@ -2331,38 +2339,28 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
 
     can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
 
-    # Names for system groups.
-    FULL_MEMBERS_GROUP_NAME = "role:fullmembers"
-    EVERYONE_ON_INTERNET_GROUP_NAME = "role:internet"
-    OWNERS_GROUP_NAME = "role:owners"
-    ADMINISTRATORS_GROUP_NAME = "role:administrators"
-    MODERATORS_GROUP_NAME = "role:moderators"
-    MEMBERS_GROUP_NAME = "role:members"
-    EVERYONE_GROUP_NAME = "role:everyone"
-    NOBODY_GROUP_NAME = "role:nobody"
-
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
     # members and spectators.
     SYSTEM_USER_GROUP_ROLE_MAP = {
         UserProfile.ROLE_REALM_OWNER: {
-            "name": OWNERS_GROUP_NAME,
+            "name": SystemGroups.OWNERS,
             "description": "Owners of this organization",
         },
         UserProfile.ROLE_REALM_ADMINISTRATOR: {
-            "name": ADMINISTRATORS_GROUP_NAME,
+            "name": SystemGroups.ADMINISTRATORS,
             "description": "Administrators of this organization, including owners",
         },
         UserProfile.ROLE_MODERATOR: {
-            "name": MODERATORS_GROUP_NAME,
+            "name": SystemGroups.MODERATORS,
             "description": "Moderators of this organization, including administrators",
         },
         UserProfile.ROLE_MEMBER: {
-            "name": MEMBERS_GROUP_NAME,
+            "name": SystemGroups.MEMBERS,
             "description": "Members of this organization, not including guests",
         },
         UserProfile.ROLE_GUEST: {
-            "name": EVERYONE_GROUP_NAME,
+            "name": SystemGroups.EVERYONE,
             "description": "Everyone in this organization, including guests",
         },
     }
@@ -2374,8 +2372,8 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
-            default_group_name=EVERYONE_GROUP_NAME,
-            default_for_system_groups=NOBODY_GROUP_NAME,
+            default_group_name=SystemGroups.EVERYONE,
+            default_for_system_groups=SystemGroups.NOBODY,
             id_field_name="can_mention_group_id",
         ),
     }
@@ -2433,6 +2431,10 @@ class PreregistrationRealm(models.Model):
     org_type = models.PositiveSmallIntegerField(
         default=Realm.ORG_TYPES["unspecified"]["id"],
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+    )
+    default_language = models.CharField(
+        default="en",
+        max_length=MAX_LANGUAGE_ID_LENGTH,
     )
     string_id = models.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
     email = models.EmailField()
@@ -2736,7 +2738,7 @@ class Stream(models.Model):
             allow_owners_group=False,
             allow_nobody_group=False,
             allow_everyone_group=True,
-            default_group_name=UserGroup.ADMINISTRATORS_GROUP_NAME,
+            default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="can_remove_subscribers_group_id",
         ),
     }
@@ -3474,9 +3476,9 @@ class AbstractUserMessage(models.Model):
         "collapsed",
         "mentioned",
         "wildcard_mentioned",
-        # These next 4 flags are from features that have since been removed.
-        "summarize_in_home",
-        "summarize_in_stream",
+        "topic_wildcard_mentioned",
+        "group_mentioned",
+        # These next 2 flags are from features that have since been removed.
         "force_expand",
         "force_collapse",
         # Whether the message contains any of the user's alert words.
@@ -3504,12 +3506,12 @@ class AbstractUserMessage(models.Model):
         "has_alert_word",
         "mentioned",
         "wildcard_mentioned",
+        "topic_wildcard_mentioned",
+        "group_mentioned",
         "historical",
         # Unused flags can't be edited.
         "force_expand",
         "force_collapse",
-        "summarize_in_home",
-        "summarize_in_stream",
     }
     flags: BitHandler = BitField(flags=ALL_FLAGS, default=0)
 
@@ -3604,6 +3606,17 @@ class UserMessage(AbstractUserMessage):
                 condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask)
                 | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
                 name="zerver_usermessage_wildcard_mentioned_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.mentioned.mask
+                    | AbstractUserMessage.flags.wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.topic_wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.group_mentioned.mask
+                ),
+                name="zerver_usermessage_any_mentioned_message_id",
             ),
             models.Index(
                 "user_profile",
@@ -4635,6 +4648,7 @@ EMAIL_TYPES = {
     "account_registered": ScheduledEmail.WELCOME,
     "onboarding_zulip_topics": ScheduledEmail.WELCOME,
     "onboarding_zulip_guide": ScheduledEmail.WELCOME,
+    "onboarding_team_to_zulip": ScheduledEmail.WELCOME,
     "digest": ScheduledEmail.DIGEST,
     "invitation_reminder": ScheduledEmail.INVITATION_REMINDER,
 }

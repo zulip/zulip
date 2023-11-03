@@ -1,4 +1,6 @@
-export function compare_a_b(a, b) {
+import type {User} from "./people";
+
+export function compare_a_b(a: number | string, b: number | string): number {
     if (a > b) {
         return 1;
     } else if (a === b) {
@@ -7,7 +9,7 @@ export function compare_a_b(a, b) {
     return -1;
 }
 
-export function sort_email(a, b) {
+export function sort_email(a: User, b: User): number {
     const email_a = a.delivery_email;
     const email_b = b.delivery_email;
 
@@ -27,10 +29,10 @@ export function sort_email(a, b) {
     return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
 }
 
-export function sort_role(a, b) {
+export function sort_role(a: User, b: User): number {
     return compare_a_b(a.role, b.role);
 }
 
-export function sort_user_id(a, b) {
+export function sort_user_id(a: User, b: User): number {
     return compare_a_b(a.user_id, b.user_id);
 }
