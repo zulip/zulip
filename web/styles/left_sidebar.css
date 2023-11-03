@@ -534,6 +534,7 @@ li.active-sub-filter {
             .unread_count {
                 top: -6px;
                 right: -6px;
+                background: var(--color-background-unread-counter-no-alpha);
             }
         }
 
