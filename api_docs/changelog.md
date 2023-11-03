@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 224**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): The `wildcard_mentioned`
+  flag was deprecated, replaced with `stream_wildcard_mentioned` and
+  `topic_wildcard_mentioned`, but it is still available for backwards compatibility.
+
 **Feature level 223**
 
 * `POST /users/me/apns_device_token`:

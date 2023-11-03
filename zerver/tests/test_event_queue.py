@@ -1525,7 +1525,7 @@ class SchemaMigrationsTests(ZulipTestCase):
             ),
             dict(
                 id=cordelia.id,
-                flags=["wildcard_mentioned"],
+                flags=["stream_wildcard_mentioned"],
                 mentioned=False,
                 online_push_enabled=True,
                 stream_push_notify=True,
@@ -1543,7 +1543,7 @@ class SchemaMigrationsTests(ZulipTestCase):
             ),
             dict(
                 id=cordelia.id,
-                flags=["wildcard_mentioned"],
+                flags=["stream_wildcard_mentioned"],
             ),
         ]
 

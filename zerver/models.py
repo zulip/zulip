@@ -3485,7 +3485,7 @@ class AbstractUserMessage(models.Model):
         "starred",
         "collapsed",
         "mentioned",
-        "wildcard_mentioned",
+        "stream_wildcard_mentioned",
         "topic_wildcard_mentioned",
         "group_mentioned",
         # These next 2 flags are from features that have since been removed.
@@ -3516,7 +3516,7 @@ class AbstractUserMessage(models.Model):
         # These flags are bookkeeping and don't make sense to edit.
         "has_alert_word",
         "mentioned",
-        "wildcard_mentioned",
+        "stream_wildcard_mentioned",
         "topic_wildcard_mentioned",
         "group_mentioned",
         "historical",
@@ -3615,7 +3615,7 @@ class UserMessage(AbstractUserMessage):
                 "user_profile",
                 "message",
                 condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask)
-                | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
+                | Q(flags__andnz=AbstractUserMessage.flags.stream_wildcard_mentioned.mask),
                 name="zerver_usermessage_wildcard_mentioned_message_id",
             ),
             models.Index(
@@ -3623,7 +3623,7 @@ class UserMessage(AbstractUserMessage):
                 "message",
                 condition=Q(
                     flags__andnz=AbstractUserMessage.flags.mentioned.mask
-                    | AbstractUserMessage.flags.wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.stream_wildcard_mentioned.mask
                     | AbstractUserMessage.flags.topic_wildcard_mentioned.mask
                     | AbstractUserMessage.flags.group_mentioned.mask
                 ),
@@ -3670,7 +3670,7 @@ class UserMessage(AbstractUserMessage):
         return UserMessage.objects.filter(
             Q(
                 flags__andnz=UserMessage.flags.mentioned.mask
-                | UserMessage.flags.wildcard_mentioned.mask
+                | UserMessage.flags.stream_wildcard_mentioned.mask
                 | UserMessage.flags.topic_wildcard_mentioned.mask
                 | UserMessage.flags.group_mentioned.mask
             ),

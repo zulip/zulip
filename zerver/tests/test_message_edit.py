@@ -2186,11 +2186,11 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["read", "wildcard_mentioned"],
+                    "flags": ["read", "stream_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["stream_wildcard_mentioned"],
                 },
             ],
             key=itemgetter("id"),
@@ -2330,11 +2330,11 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["read", "wildcard_mentioned"],
+                    "flags": ["read", "stream_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["stream_wildcard_mentioned"],
                 },
             ],
             key=itemgetter("id"),
