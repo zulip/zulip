@@ -242,6 +242,16 @@
             "compose-textarea message-send-controls-container"
             "message-formatting-controls-container . ";
         grid-gap: 6px;
+
+        @media ((width >= $sm_min) and (width < $mc_min)) {
+            /* Drop to a 62px wide send column. */
+            grid-template-columns: minmax(0, 1fr) 62px;
+        }
+
+        @media (width < $sm_min) {
+            /* Drop to a 28px wide send column. */
+            grid-template-columns: minmax(0, 1fr) 28px;
+        }
     }
 
     .message_content {
@@ -278,6 +288,10 @@
        6px, for 12px of space between the Send
        button and the textarea. */
     margin-left: 6px;
+
+    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+        margin-left: 0;
+    }
 }
 
 #message-formatting-controls-container {
@@ -333,6 +347,17 @@
        eventually. */
     width: calc(112px - 23px + 6px);
     justify-content: flex-end;
+
+    @media ((width >= $sm_min) and (width < $mc_min)) {
+        /* Align to compose controls at narrower widths */
+        width: calc(62px - 23px + 6px);
+    }
+
+    @media (width < $sm_min) {
+        /* Don't attempt to control the width
+           at narrowest widths. */
+        width: auto;
+    }
 
     & button {
         background: transparent;
@@ -853,6 +878,11 @@ textarea.new_message_textarea,
        background */
     z-index: 1;
 
+    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+        /* Drop to a square button. */
+        width: 28px;
+    }
+
     .zulip-icon-send {
         display: block;
         font-size: 17px;
@@ -1039,6 +1069,14 @@ textarea.new_message_textarea,
 .message-send-controls {
     display: flex;
 
+    @media (width < $sm_min) {
+        /* At small widths, we display the
+           diminutive Send button and vdots
+           in a column, using `column-reverse`
+           to put the vdots above Send. */
+        flex-direction: column-reverse;
+    }
+
     &.disabled-message-send-controls {
         cursor: not-allowed;
 
@@ -1223,6 +1261,18 @@ textarea.new_message_textarea,
         border: 2px solid var(--color-outline-focus);
     }
 
+    @media ((width >= $sm_min) and (width < $mc_min)) {
+        width: 32px;
+    }
+
+    @media (width < $sm_min) {
+        /* Drop to a square, rounded button. */
+        width: 28px;
+        padding: 0;
+        margin-left: 0;
+        border-radius: 4px;
+    }
+
     .zulip-icon {
         padding: 5px 3px;
         font-size: 17px;
@@ -1240,6 +1290,10 @@ textarea.new_message_textarea,
        lefthand edge */
     padding: 0 8px;
     margin-left: -8px;
+
+    @media (width < $mc_min) {
+        margin-left: 0;
+    }
 }
 
 @media (width < $xl_min) {
