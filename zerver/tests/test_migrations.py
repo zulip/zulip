@@ -4,10 +4,9 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
-from typing import Optional
+from unittest.mock import patch
 
 from django.db.migrations.state import StateApps
-from django.utils.timezone import now
 from typing_extensions import override
 
 from zerver.lib.test_classes import MigrationsTestCase
@@ -25,51 +24,53 @@ from zerver.lib.test_classes import MigrationsTestCase
 #   "zerver_subscription" because it has pending trigger events
 
 
-class PushBouncerBackfillIosAppId(MigrationsTestCase):
-    @property
-    @override
-    def app(self) -> str:
-        return "zilencer"
+class UserMessageIndex(MigrationsTestCase):
+    migrate_from = "0485_alter_usermessage_flags_and_add_index"
+    migrate_to = "0486_clear_old_data_for_unused_usermessage_flags"
 
-    migrate_from = "0031_alter_remoteinstallationcount_remote_id_and_more"
-    migrate_to = "0032_remotepushdevicetoken_backfill_ios_app_id"
+    @override
+    def setUp(self) -> None:
+        with patch("builtins.print") as _:
+            super().setUp()
 
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        user = self.example_user("hamlet")
+        UserMessage = apps.get_model("zerver", "usermessage")
 
-        RemoteZulipServer = apps.get_model("zilencer", "RemoteZulipServer")
-        server = RemoteZulipServer.objects.create(
-            uuid="6cde5f7a-1f7e-4978-9716-49f69ebfc9fe",
-            api_key="secret",
-            hostname="chat.example",
-            last_updated=now(),
-        )
+        um_1 = UserMessage.objects.get(id=1)
+        um_1.flags.topic_wildcard_mentioned = True
+        um_1.flags.wildcard_mentioned = True
+        um_1.flags.force_expand = True
+        um_1.save()
 
-        RemotePushDeviceToken = apps.get_model("zilencer", "RemotePushDeviceToken")
+        um_2 = UserMessage.objects.get(id=2)
+        um_2.flags.group_mentioned = True
+        um_2.flags.topic_wildcard_mentioned = True
+        um_2.flags.mentioned = True
+        um_2.flags.force_collapse = True
+        um_2.save()
 
-        def create(kind: int, token: str, ios_app_id: Optional[str]) -> None:
-            RemotePushDeviceToken.objects.create(
-                server=server,
-                user_uuid=user.uuid,
-                kind=kind,
-                token=token,
-                ios_app_id=ios_app_id,
-            )
+        um_1 = UserMessage.objects.get(id=1)
+        um_2 = UserMessage.objects.get(id=2)
 
-        kinds = {choice[1]: choice[0] for choice in RemotePushDeviceToken.kind.field.choices}
-        create(kinds["apns"], "1234", None)
-        create(kinds["apns"], "2345", "example.app")
-        create(kinds["gcm"], "3456", None)
+        self.assertTrue(um_1.flags.topic_wildcard_mentioned)
+        self.assertTrue(um_1.flags.wildcard_mentioned)
+        self.assertTrue(um_1.flags.force_expand)
+        self.assertTrue(um_2.flags.group_mentioned)
+        self.assertTrue(um_2.flags.topic_wildcard_mentioned)
+        self.assertTrue(um_2.flags.mentioned)
+        self.assertTrue(um_2.flags.force_collapse)
 
-    @override
-    def tearDown(self) -> None:
-        RemotePushDeviceToken = self.apps.get_model("zilencer", "RemotePushDeviceToken")
-        RemotePushDeviceToken.objects.all().delete()
+    def test_clear_topic_wildcard_and_group_mentioned_flags(self) -> None:
+        UserMessage = self.apps.get_model("zerver", "usermessage")
 
-    def test_worked(self) -> None:
-        RemotePushDeviceToken = self.apps.get_model("zilencer", "RemotePushDeviceToken")
-        self.assertEqual(
-            dict(RemotePushDeviceToken.objects.values_list("token", "ios_app_id")),
-            {"1234": "org.zulip.Zulip", "2345": "example.app", "3456": None},
-        )
+        um_1 = UserMessage.objects.get(id=1)
+        um_2 = UserMessage.objects.get(id=2)
+
+        self.assertFalse(um_1.flags.topic_wildcard_mentioned)
+        self.assertTrue(um_1.flags.wildcard_mentioned)
+        self.assertFalse(um_1.flags.force_expand)
+        self.assertFalse(um_2.flags.group_mentioned)
+        self.assertFalse(um_2.flags.topic_wildcard_mentioned)
+        self.assertTrue(um_2.flags.mentioned)
+        self.assertFalse(um_2.flags.force_collapse)
