@@ -5,6 +5,7 @@ import * as condense from "./condense";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as resize from "./resize";
+import * as scroll_bar from "./scroll_bar";
 import * as sidebar_ui from "./sidebar_ui";
 import * as util from "./util";
 
@@ -24,6 +25,7 @@ export function handler() {
     resize.resize_page_components();
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
     resize.update_recent_view_filters_height();
+    scroll_bar.handle_overlay_scrollbars();
 
     // Re-compute and display/remove 'Show more' buttons to messages
     condense.condense_and_collapse(message_lists.all_current_message_rows());
