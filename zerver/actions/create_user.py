@@ -29,6 +29,8 @@ from zerver.lib.users import (
     can_access_delivery_email,
     format_user_row,
     get_api_key,
+    get_data_for_inaccessible_user,
+    user_access_restricted_in_realm,
     user_profile_to_user_row,
 )
 from zerver.models import (
@@ -320,13 +322,32 @@ def notify_created_user(user_profile: UserProfile) -> None:
         "custom_profile_field_data": {},
     }
 
-    active_users = user_profile.realm.get_active_users()
+    user_ids_without_access_to_created_user: List[int] = []
+    users_with_access_to_created_users: List[UserProfile] = []
+    active_realm_users = list(user_profile.realm.get_active_users())
+
+    # This call to user_access_restricted_in_realm results in
+    # one extra query in the user creation codepath to check
+    # "realm.can_access_all_users_group.name" because we do
+    # not prefetch realm and its related fields when fetching
+    # PreregistrationUser object.
+    if user_access_restricted_in_realm(user_profile):
+        for user in active_realm_users:
+            if user.is_guest:
+                # This logic assumes that can_access_all_users_group
+                # setting can only be set to EVERYONE or MEMBERS.
+                user_ids_without_access_to_created_user.append(user.id)
+            else:
+                users_with_access_to_created_users.append(user)
+    else:
+        users_with_access_to_created_users = active_realm_users
+
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
 
     person_for_real_email_access_users = None
     person_for_without_real_email_access_users = None
-    for recipient_user in active_users:
+    for recipient_user in users_with_access_to_created_users:
         if can_access_delivery_email(
             recipient_user, user_profile.id, user_row["email_address_visibility"]
         ):
@@ -358,6 +379,14 @@ def notify_created_user(user_profile: UserProfile) -> None:
         assert person_for_without_real_email_access_users is not None
         event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
         send_event_on_commit(user_profile.realm, event, user_ids_without_real_email_access)
+
+    if user_ids_without_access_to_created_user:
+        event = dict(
+            type="realm_user",
+            op="add",
+            person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
+        )
+        send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
