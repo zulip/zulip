@@ -694,7 +694,7 @@ function register_click_handlers() {
         });
     });
 
-    $("body").on("click", ".user-card-popover-actions .sidebar-popover-reactivate-user", (e) => {
+    $("body").on("click", ".sidebar-popover-reactivate-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_all();
         e.stopPropagation();
