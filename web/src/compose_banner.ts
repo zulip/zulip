@@ -36,6 +36,7 @@ export const CLASSNAMES = {
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
     unscheduled_message: "unscheduled_message",
+    search_view: "search_view",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",

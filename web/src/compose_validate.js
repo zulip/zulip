@@ -12,6 +12,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
+import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -242,6 +243,22 @@ export function warn_if_topic_resolved(topic_changed) {
         compose_state.set_recipient_viewed_topic_resolved_banner(true);
     } else {
         clear_topic_resolved_warning();
+    }
+}
+
+export function warn_if_in_search_view() {
+    if (narrow_state.filter()?.supports_collapsing_recipients()) {
+        const context = {
+            banner_type: compose_banner.WARNING,
+            banner_text: $t({
+                defaultMessage: "This view may not contain all messages in visible conversations.",
+            }),
+            button_text: $t({defaultMessage: "Go to conversation"}),
+            classname: compose_banner.CLASSNAMES.search_view,
+        };
+
+        const new_row = render_compose_banner(context);
+        compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
     }
 }
 

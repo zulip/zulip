@@ -290,6 +290,8 @@ export function start(msg_type, opts) {
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
+    // Show a warning if the user is in a search narrow
+    compose_validate.warn_if_in_search_view();
 
     compose_recipient.check_posting_policy_for_compose_box();
 
