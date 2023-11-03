@@ -18,6 +18,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
+import {revive_current_focus} from "./recent_view_ui";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
 import * as settings_config from "./settings_config";
@@ -56,6 +57,7 @@ function hide_box() {
     compose_fade.clear_compose();
     $(".message_comp").hide();
     $("#compose_controls").show();
+    setTimeout(revive_current_focus, 0);
 }
 
 function show_compose_box(msg_type, opts) {
