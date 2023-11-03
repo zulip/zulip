@@ -129,7 +129,7 @@ speakers in the community. It's all about making Zulip friendly and usable.
 
 _"Nachricht" (Facebook, WhatsApp, Transifex)_
 
-- Direct Message (DM) - **Direktnachrichten (DN)**
+- Direct Message (DM) - **Direktnachricht (DN)**
 
 _"Private Nachricht" (YouTube, Transifex)_
 

@@ -26,7 +26,7 @@ Zulip friendly and usable.
 ## Terms(शर्तें)
 
 - Message - **संदेश**
-- Direct Message (DM) - **Direct Message (DM)**
+- Private message (PM) - **निजी संदेश**
 - Stream - **धारा**: the use of the literal Hindi word for stream
   "प्रवाह" is very confusing and not the correct metaphor for Hindi
   speaking people. The correct term would be "धारा".

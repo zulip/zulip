@@ -190,21 +190,21 @@ You can pin streams in the left-side panel.
 
 > Możesz przypiąć wybrane kanały w menu kontekstowym po lewej.
 
-**Direct Message**: Direct Message
+**private message**: prywatna wiadomość
 
 example:
 
-You can send a direct message to other users in your organization.
+You can send a private message to other users in your organization.
 
-> Możesz wysłać wiadomość bezpośrednią do innych użytkowników w organizacji.
+> Możesz wysłać prywatną wiadomość do innych użytkowników w Twojej organizacji.
 
-**DM**: DM, translation could be confusing
+**PM**: PM, translation could be confusing
 
 example:
 
-Direct messages are often abbreviated to DM.
+Private messages are often abbreviated to PM.
 
-> Wiadomości bezpośrednie nazywane są także DM, od angielskiego „wiadomość bezpośrednia”.
+> Prywatne wiadomości są też nazywane PMami, od angielskiego "private message".
 
 **private stream**: prywatny kanał
 **public stream**: publiczny kanał
