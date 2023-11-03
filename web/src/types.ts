@@ -96,7 +96,8 @@ export type MessageWithBooleans = (
     starred: boolean;
     mentioned: boolean;
     mentioned_me_directly: boolean;
-    wildcard_mentioned: boolean;
+    stream_wildcard_mentioned: boolean;
+    topic_wildcard_mentioned: boolean;
     collapsed: boolean;
     alerted: boolean;
 };

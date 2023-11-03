@@ -364,7 +364,7 @@ class NarrowBuilder:
         elif operand == "mentioned":
             mention_flags_mask = (
                 UserMessage.flags.mentioned.mask
-                | UserMessage.flags.wildcard_mentioned.mask
+                | UserMessage.flags.stream_wildcard_mentioned.mask
                 | UserMessage.flags.topic_wildcard_mentioned.mask
                 | UserMessage.flags.group_mentioned.mask
             )

@@ -250,7 +250,7 @@ class NarrowBuilderTest(ZulipTestCase):
         where_clause = "WHERE (flags & %(flags_1)s) = %(param_1)s"
         mention_flags_mask = (
             UserMessage.flags.mentioned.mask
-            | UserMessage.flags.wildcard_mentioned.mask
+            | UserMessage.flags.stream_wildcard_mentioned.mask
             | UserMessage.flags.topic_wildcard_mentioned.mask
             | UserMessage.flags.group_mentioned.mask
         )

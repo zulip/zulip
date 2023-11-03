@@ -39,7 +39,7 @@ class UserMessageIndex(MigrationsTestCase):
 
         um_1 = UserMessage.objects.get(id=1)
         um_1.flags.topic_wildcard_mentioned = True
-        um_1.flags.wildcard_mentioned = True
+        um_1.flags.stream_wildcard_mentioned = True
         um_1.flags.force_expand = True
         um_1.save()
 
@@ -54,7 +54,7 @@ class UserMessageIndex(MigrationsTestCase):
         um_2 = UserMessage.objects.get(id=2)
 
         self.assertTrue(um_1.flags.topic_wildcard_mentioned)
-        self.assertTrue(um_1.flags.wildcard_mentioned)
+        self.assertTrue(um_1.flags.stream_wildcard_mentioned)
         self.assertTrue(um_1.flags.force_expand)
         self.assertTrue(um_2.flags.group_mentioned)
         self.assertTrue(um_2.flags.topic_wildcard_mentioned)
@@ -68,7 +68,7 @@ class UserMessageIndex(MigrationsTestCase):
         um_2 = UserMessage.objects.get(id=2)
 
         self.assertFalse(um_1.flags.topic_wildcard_mentioned)
-        self.assertTrue(um_1.flags.wildcard_mentioned)
+        self.assertTrue(um_1.flags.stream_wildcard_mentioned)
         self.assertFalse(um_1.flags.force_expand)
         self.assertFalse(um_2.flags.group_mentioned)
         self.assertFalse(um_2.flags.topic_wildcard_mentioned)

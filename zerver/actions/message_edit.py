@@ -250,7 +250,7 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
         .filter(
             Q(
                 flags__andnz=UserMessage.flags.mentioned
-                | UserMessage.flags.wildcard_mentioned
+                | UserMessage.flags.stream_wildcard_mentioned
                 | UserMessage.flags.topic_wildcard_mentioned
                 | UserMessage.flags.group_mentioned
             )
@@ -287,7 +287,7 @@ def update_user_message_flags(
         update_flag(um, mentioned, UserMessage.flags.mentioned)
 
         if rendering_result.mentions_stream_wildcard:
-            update_flag(um, True, UserMessage.flags.wildcard_mentioned)
+            update_flag(um, True, UserMessage.flags.stream_wildcard_mentioned)
         elif rendering_result.mentions_topic_wildcard:
             topic_wildcard_mentioned = um.user_profile_id in topic_participant_user_ids
             update_flag(um, topic_wildcard_mentioned, UserMessage.flags.topic_wildcard_mentioned)
