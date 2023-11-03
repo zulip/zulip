@@ -41,6 +41,10 @@ class Command(BaseCommand):
             # NOTE: The unique_id has to be less than 40 characters.
             CustomerProfile(unique_id="sponsorship-pending", sponsorship_pending=True),
             CustomerProfile(
+                unique_id="annual-free",
+                billing_schedule=CustomerPlan.ANNUAL,
+            ),
+            CustomerProfile(
                 unique_id="annual-standard",
                 billing_schedule=CustomerPlan.ANNUAL,
                 tier=CustomerPlan.STANDARD,
@@ -49,6 +53,10 @@ class Command(BaseCommand):
                 unique_id="annual-plus",
                 billing_schedule=CustomerPlan.ANNUAL,
                 tier=CustomerPlan.PLUS,
+            ),
+            CustomerProfile(
+                unique_id="monthly-free",
+                billing_schedule=CustomerPlan.MONTHLY,
             ),
             CustomerProfile(
                 unique_id="monthly-standard",
@@ -145,7 +153,8 @@ class Command(BaseCommand):
                 )
                 continue
 
-            assert customer_profile.tier is not None
+            if customer_profile.tier is None:
+                continue
 
             customer = update_or_create_stripe_customer(user)
             assert customer.stripe_customer_id is not None
