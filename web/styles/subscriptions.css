@@ -49,12 +49,10 @@
     white-space: normal;
 }
 
-.muted-sub,
 .control-label-disabled {
     color: hsl(0deg 0% 64%);
 }
 
-.sub_setting_checkbox .muted-sub label,
 .sub_setting_checkbox .control-label-disabled label {
     cursor: not-allowed;
 }
@@ -115,6 +113,10 @@ h3.user_group_setting_subsection_title {
     font-size: 1.5em;
     font-weight: normal;
     line-height: 1.5;
+}
+
+h4.stream_setting_subsection_title {
+    margin-bottom: 5px;
 }
 
 h4.stream_setting_subsection_title,

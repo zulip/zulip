@@ -3,9 +3,11 @@ from typing import Any, Dict, List, Optional, Tuple, Type
 from unittest import mock
 
 import orjson
+import time_machine
 from django.apps import apps
 from django.db import models
 from django.db.models import Sum
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 from typing_extensions import override
@@ -53,19 +55,26 @@ from zerver.actions.user_activity import update_user_activity_interval
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
+from zerver.lib.push_notifications import (
+    get_message_payload_apns,
+    get_message_payload_gcm,
+    hex_to_b64,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import TimeZoneNotUTCError, floor_to_day
+from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Client,
     Huddle,
     Message,
+    NotificationTriggers,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
     Recipient,
     Stream,
+    SystemGroups,
     UserActivityInterval,
     UserGroup,
     UserProfile,
@@ -73,6 +82,8 @@ from zerver.models import (
     get_user,
     is_cross_realm_bot_email,
 )
+from zilencer.models import RemoteInstallationCount, RemotePushDeviceToken, RemoteZulipServer
+from zilencer.views import get_last_id_from_server
 
 
 class AnalyticsTestCase(ZulipTestCase):
@@ -89,7 +100,9 @@ class AnalyticsTestCase(ZulipTestCase):
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
         )
         self.administrators_user_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=self.default_realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm=self.default_realm,
+            is_system_group=True,
         )
 
         # used to generate unique names in self.create_*
@@ -231,7 +244,7 @@ class AnalyticsTestCase(ZulipTestCase):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
                 kwargs[key] = kwargs.get(key, value)
-            if table is not InstallationCount and "realm" not in kwargs:
+            if table not in [InstallationCount, RemoteInstallationCount] and "realm" not in kwargs:
                 if "user" in kwargs:
                     kwargs["realm"] = kwargs["user"].realm
                 elif "stream" in kwargs:
@@ -1372,6 +1385,92 @@ class TestLoggingCountStats(AnalyticsTestCase):
             ],
         )
 
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    def test_mobile_pushes_received_count(self) -> None:
+        self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
+        self.server = RemoteZulipServer.objects.create(
+            uuid=self.server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=timezone_now(),
+        )
+
+        hamlet = self.example_user("hamlet")
+        token = "aaaa"
+
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64(token),
+            user_uuid=(hamlet.uuid),
+            server=self.server,
+        )
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64(token + "aa"),
+            user_uuid=(hamlet.uuid),
+            server=self.server,
+        )
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=hex_to_b64(token),
+            user_uuid=str(hamlet.uuid),
+            server=self.server,
+        )
+
+        message = Message(
+            sender=hamlet,
+            recipient=self.example_user("othello").recipient,
+            realm_id=hamlet.realm_id,
+            content="This is test content",
+            rendered_content="This is test content",
+            date_sent=timezone_now(),
+            sending_client=get_client("test"),
+        )
+        message.set_topic_name("Test topic")
+        message.save()
+        gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        apns_payload = get_message_payload_apns(
+            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
+        )
+
+        payload = {
+            "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
+            "gcm_payload": gcm_payload,
+            "apns_payload": apns_payload,
+            "gcm_options": gcm_options,
+        }
+        now = timezone_now()
+        with time_machine.travel(now, tick=False), mock.patch(
+            "zilencer.views.send_android_push_notification", return_value=1
+        ), mock.patch(
+            "zilencer.views.send_apple_push_notification", return_value=1
+        ), self.assertLogs(
+            "zilencer.views", level="INFO"
+        ):
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+                subdomain="",
+            )
+            self.assert_json_success(result)
+
+        # There are 3 devices we created for the user:
+        # 1. The mobile_pushes_received increment should match that number.
+        # 2. mobile_pushes_forwarded only counts successful deliveries, and we've set up
+        #    the mocks above to simulate 1 successful android and 1 successful apple delivery.
+        #    Thus the increment should be just 2.
+        self.assertTableState(
+            RemoteInstallationCount,
+            ["property", "value", "subgroup", "server", "remote_id", "end_time"],
+            [
+                ["mobile_pushes_received::day", 3, None, self.server, None, ceiling_to_day(now)],
+                ["mobile_pushes_forwarded::day", 2, None, self.server, None, ceiling_to_day(now)],
+            ],
+        )
+
     def test_invites_sent(self) -> None:
         property = "invites_sent::day"
 
@@ -1849,3 +1948,26 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             1,
         )
         self.assertEqual(RealmCount.objects.filter(property="realm_active_humans::day").count(), 1)
+
+
+class GetLastIdFromServerTest(ZulipTestCase):
+    def test_get_last_id_from_server_ignores_null(self) -> None:
+        """
+        Verifies that get_last_id_from_server ignores null remote_ids, since this goes
+        against the default Postgres ordering behavior, which treats nulls as the largest value.
+        """
+        self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
+        self.server = RemoteZulipServer.objects.create(
+            uuid=self.server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=timezone_now(),
+        )
+        first = RemoteInstallationCount.objects.create(
+            end_time=timezone_now(), server=self.server, property="test", value=1, remote_id=1
+        )
+        RemoteInstallationCount.objects.create(
+            end_time=timezone_now(), server=self.server, property="test2", value=1, remote_id=None
+        )
+        result = get_last_id_from_server(self.server, RemoteInstallationCount)
+        self.assertEqual(result, first.remote_id)

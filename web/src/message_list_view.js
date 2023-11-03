@@ -1117,7 +1117,7 @@ export class MessageListView {
             // the current compose is bigger than the empty, open
             // compose box.
             const compose_textarea_default_height = 42;
-            const compose_textarea_current_height = $("#compose-textarea").height();
+            const compose_textarea_current_height = $("textarea#compose-textarea").height();
             const expected_change =
                 compose_textarea_current_height - compose_textarea_default_height;
             const expected_offset = offset - expected_change;

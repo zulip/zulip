@@ -153,7 +153,6 @@ from zerver.lib.event_schema import (
     check_reaction_remove,
     check_realm_bot_add,
     check_realm_bot_delete,
-    check_realm_bot_remove,
     check_realm_bot_update,
     check_realm_deactivated,
     check_realm_default_update,
@@ -167,7 +166,6 @@ from zerver.lib.event_schema import (
     check_realm_update,
     check_realm_update_dict,
     check_realm_user_add,
-    check_realm_user_remove,
     check_realm_user_update,
     check_scheduled_message_add,
     check_scheduled_message_remove,
@@ -233,6 +231,7 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserPresence,
@@ -2750,14 +2749,14 @@ class NormalActionsTest(BaseAction):
         bot = self.create_bot("test")
         action = lambda: do_deactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=2)
-        check_realm_user_remove("events[0]", events[0])
-        check_realm_bot_remove("events[1]", events[1])
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_realm_bot_update("events[1]", events[1], "is_active")
 
     def test_do_deactivate_user(self) -> None:
         user_profile = self.example_user("cordelia")
         action = lambda: do_deactivate_user(user_profile, acting_user=None)
         events = self.verify_action(action, num_events=1)
-        check_realm_user_remove("events[0]", events[0])
+        check_realm_user_update("events[0]", events[0], "is_active")
 
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot("test")
@@ -2767,7 +2766,7 @@ class NormalActionsTest(BaseAction):
         do_deactivate_user(bot, acting_user=None)
         action = lambda: do_reactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=3)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_update("events[1]", events[1], "is_active")
         check_subscription_peer_add("events[2]", events[2])
 
         # Test 'peer_add' event for private stream is received only if user is subscribed to it.
@@ -2775,7 +2774,7 @@ class NormalActionsTest(BaseAction):
         self.subscribe(self.example_user("hamlet"), "Test private stream")
         action = lambda: do_reactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=4)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_update("events[1]", events[1], "is_active")
         check_subscription_peer_add("events[2]", events[2])
         check_subscription_peer_add("events[3]", events[3])
 
@@ -2788,7 +2787,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("iago")
         action = lambda: do_reactivate_user(bot, acting_user=self.example_user("iago"))
         events = self.verify_action(action, num_events=7)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_update("events[1]", events[1], "is_active")
         check_realm_bot_update("events[2]", events[2], "owner_id")
         check_realm_user_update("events[3]", events[3], "bot_owner_id")
         check_subscription_peer_remove("events[4]", events[4])
@@ -3752,7 +3751,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
 
         moderators_group = UserGroup.objects.get(
-            name=UserGroup.MODERATORS_GROUP_NAME,
+            name=SystemGroups.MODERATORS,
             is_system_group=True,
             realm=self.user_profile.realm,
         )

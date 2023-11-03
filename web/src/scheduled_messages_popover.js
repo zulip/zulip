@@ -116,7 +116,7 @@ export function initialize() {
         target: "#send_later i",
         onUntrigger() {
             // This is only called when the popover is closed by clicking on `target`.
-            $("#compose-textarea").trigger("focus");
+            $("textarea#compose-textarea").trigger("focus");
         },
         onShow(instance) {
             const formatted_send_later_time =

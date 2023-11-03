@@ -20,7 +20,7 @@ export function show_generate_integration_url_modal(api_key) {
     };
     const direct_messages_option = {
         name: $t_html({defaultMessage: "Direct message to me"}),
-        unique_id: "",
+        unique_id: -1,
         is_direct_message: true,
     };
     const html_body = render_generate_integration_url_modal({
@@ -65,12 +65,12 @@ export function show_generate_integration_url_modal(api_key) {
                 return;
             }
 
-            const stream_name = stream_input_dropdown_widget.value();
+            const stream_id = stream_input_dropdown_widget.value();
             const topic_name = $topic_input.val();
 
             const params = new URLSearchParams({api_key});
-            if (stream_name !== "") {
-                params.set("stream", stream_name);
+            if (stream_id !== -1) {
+                params.set("stream", stream_id);
                 if (topic_name !== "") {
                     params.set("topic", topic_name);
                 }
@@ -130,18 +130,20 @@ export function show_generate_integration_url_modal(api_key) {
                 placement: "bottom-start",
             },
             default_id: direct_messages_option.unique_id,
-            unique_id_type: dropdown_widget.DATA_TYPES.STRING,
+            unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
         });
         stream_input_dropdown_widget.setup();
 
         function get_options_for_stream_dropdown_widget() {
             const options = [
                 direct_messages_option,
-                ...streams.map((stream) => ({
-                    name: stream.name,
-                    unique_id: stream.name,
-                    stream,
-                })),
+                ...streams
+                    .filter((stream) => stream_data.can_post_messages_in_stream(stream))
+                    .map((stream) => ({
+                        name: stream.name,
+                        unique_id: stream.stream_id,
+                        stream,
+                    })),
             ];
             return options;
         }

@@ -217,6 +217,19 @@ li.show-more-topics {
     position: relative;
     z-index: 0;
     width: 100%;
+
+    .direct-messages-container {
+        /* TODO: Clean up this value and the
+           analogous one on #stream-filters;
+           this could be done alongside the
+           --left-sidebar-collapse-widget-gutter
+           cleanup so that all of the left sidebar
+           space is better, more uniformly handled.
+           That will be an essential pre-condition
+           for a resizable left sidebar. */
+        margin-right: 12px;
+        margin-left: 0;
+    }
 }
 
 .direct-messages-container {
@@ -261,39 +274,28 @@ li.show-more-topics {
         }
 
         & li.dm-list-item {
-            position: relative;
-            padding: 1px 10px 1px 4px;
-            margin-left: 2px;
-
             & a {
                 text-decoration: none;
                 color: inherit;
             }
 
-            /* TODO: Consolidate and eliminate these temporary
-               styles once CSS Grid is in place, taking care to
-               preserve the opacity on icons that need it. */
-            .fa-group,
-            .zulip-icon,
-            .user_circle {
-                display: block;
-            }
-
             .fa-group,
             .zulip-icon {
-                min-width: $left_col_size;
                 opacity: 0.7;
-            }
-
-            .user_circle {
-                margin-right: 7px;
             }
         }
 
         & li#show-more-direct-messages {
             cursor: pointer;
             padding-right: 26px;
-            padding-left: 6px;
+            /* TODO: Rewrite the show-more and show-less
+               buttons as grids alongside the left sidebar
+               header rewrites. This padding value
+               is a stopgap to provide the same lefthand
+               alignment as the "more topics" text, which
+               aligns with the topic above--just as this
+               aligns with the DM row above. */
+            padding-left: 29px;
 
             & a {
                 font-size: 12px;
@@ -532,6 +534,7 @@ li.active-sub-filter {
             .unread_count {
                 top: -6px;
                 right: -6px;
+                background: var(--color-background-unread-counter-no-alpha);
             }
         }
 
@@ -582,6 +585,11 @@ li.active-sub-filter {
 
 #left-sidebar-navigation-list {
     margin-bottom: $sections_vertical_gutter;
+    /* We display this as a grid only to control
+       the order of home views, using a single
+       named grid area. */
+    display: grid;
+    grid-template-areas: "selected-home-view";
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
@@ -592,6 +600,19 @@ li.active-sub-filter {
     }
 }
 
+.selected-home-view {
+    /* This bumps the selected view to the
+       top of the grid (expanded list).
+       Others items will auto place in the
+       remaining auto-generated grid rows. */
+    grid-area: selected-home-view;
+    /* The condensed view is a flexbox, so
+       here we'll use a negative order to
+       bump the selected home view to the
+       start of the flexbox (lefthand side). */
+    order: -1;
+}
+
 .top_left_starred_messages .unread_count,
 .top_left_drafts .unread_count,
 .top_left_scheduled_messages .unread_count,
@@ -599,6 +620,19 @@ li.active-sub-filter {
     background-color: unset;
     color: inherit;
     border: 0.5px solid var(--color-border-unread-counter);
+}
+
+/* Don't show unread counts on views... */
+.top_left_inbox,
+.top_left_recent_view,
+.top_left_all_messages {
+    .unread_count {
+        visibility: hidden;
+    }
+    /* ...unless it's the selected home view. */
+    &.selected-home-view .unread_count {
+        visibility: visible;
+    }
 }
 
 /* Don't show the scheduled messages item... */
@@ -664,10 +698,25 @@ li.top_left_scheduled_messages {
 }
 
 .conversation-partners {
-    line-height: 1.25;
-    display: flex;
-    width: 100%;
+    grid-area: row-content;
+    /* Set an 18px line-height to better vertically
+       center user circles and icons (both of which
+       have even heights). */
+    line-height: 18px;
     overflow: hidden;
+    text-overflow: ellipsis;
+    /* Use an inline grid to provide a modern layout
+       for status emoji in DM rows, while preserving
+       the expected ellipsis behavior on long usernames
+       or large DM groups.
+       The 16px-tall emoji will also align well
+       vertically with the 18px line-height here. */
+    display: inline-grid;
+    /* Provide a two-column grid, sized to accommodate
+       the content of the conversation list and status
+       emoji, if any. */
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    align-items: center;
 }
 
 .conversation-partners .status-emoji {
@@ -680,6 +729,7 @@ li.top_left_scheduled_messages {
 #views-label-container,
 .top_left_row,
 .left-sidebar-navigation-label-container,
+.dm-box,
 .subscription_block,
 .topic-box {
     display: grid;
@@ -891,8 +941,6 @@ li.top_left_scheduled_messages {
 
 .conversation-partners-list,
 .stream-name {
-    flex: auto;
-    min-width: 0;
     white-space: nowrap;
     overflow-x: hidden;
     overflow-x: clip;
@@ -901,9 +949,10 @@ li.top_left_scheduled_messages {
 }
 
 .conversation-partners-list {
-    /* Don't allow growth, so that status emoji
-       remain adjacent the username. */
-    flex: 0 1 auto;
+    /* TODO: See about consolidating or re-expressing
+       .stream-name spacing so as to not require
+       padding there, either. */
+    padding: 0;
 }
 
 /*
@@ -924,10 +973,6 @@ li.top_left_scheduled_messages {
     /* Set the icon size, which will be inherited
        by .zulip-icon */
     font-size: 17px;
-
-    &.hide {
-        display: none !important;
-    }
 
     /*
         If you hover directly over the ellipsis itself,
@@ -1006,29 +1051,49 @@ li.topic-list-item {
 }
 
 .dm-box {
-    display: flex;
-    padding-top: 1px;
-    margin-right: 16px;
-    align-items: baseline; /* Sets .user_circle alignment relative to text; standard icons do not participate in flex. */
+    grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
+    /* This padding maintains a 22px height on DM rows. */
+    padding: 2.25px 0;
+
+    .conversation-partners-icon {
+        grid-area: starting-anchor-element;
+        justify-self: center;
+        align-self: center;
+    }
 
     .user_circle {
-        min-width: 8px;
+        width: 8px;
         height: 8px;
-        margin-top: 0;
-        margin-bottom: 0;
-        margin-left: 2px;
-        position: relative;
-        top: 0;
+        /* TODO: Remove these after right-sidebar
+           row rewrites. */
+        float: none;
+        position: static;
     }
 
     .zulip-icon.zulip-icon-bot {
         font-size: 90%; /* Reduce the bulkiness of this icon */
         padding: 3px 0 3px 1px; /* Shift reduced icon a pixel left to maintain horizontal centering. */
     }
-}
 
-.zero-dm-unreads .dm-box {
-    margin-right: 15px;
+    .unread_count {
+        grid-area: markers-and-controls;
+        /* TODO: This is an alternative method
+           for presenting a 16px-tall unread
+           counter, regardless of context. This
+           method could be used app-wide once
+           all of the layout methods for presenting
+           unreads have been modernized.
+
+           Set the line-height to match the
+           font-size, so that the numerals sit in
+           a 12px box. */
+        line-height: 12px;
+        /* Use flexbox to vertically center
+           the 12px-high text node within the
+           16px-high unread box. */
+        display: flex;
+        align-items: center;
+    }
 }
 
 .zoom-out {
@@ -1184,7 +1249,12 @@ li.topic-list-item {
 
         & span {
             display: block;
-            padding: 2px 0 2px 4px;
+            /* TODO: Rewrite the show-more and show-less
+               buttons as grids alongside the left sidebar
+               header rewrites. The 6px left padding here
+               aligns the "back to streams" text with the
+               DIRECT MESSAGES heading above. */
+            padding: 2px 0 2px 6px;
         }
 
         &:hover {

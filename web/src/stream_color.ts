@@ -2,6 +2,7 @@ import {colord, extend} from "colord";
 import lchPlugin from "colord/plugins/lch";
 import mixPlugin from "colord/plugins/mix";
 import $ from "jquery";
+import type tinycolor from "tinycolor2";
 
 import {$t} from "./i18n";
 import * as settings_data from "./settings_data";
@@ -10,9 +11,9 @@ import * as stream_settings_api from "./stream_settings_api";
 
 extend([lchPlugin, mixPlugin]);
 
-export function update_stream_recipient_color($stream_header) {
+export function update_stream_recipient_color($stream_header: JQuery): void {
     if ($stream_header.length) {
-        const stream_id = Number.parseInt($($stream_header).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($stream_header.attr("data-stream-id")!, 10);
         if (!stream_id) {
             return;
         }
@@ -24,10 +25,10 @@ export function update_stream_recipient_color($stream_header) {
     }
 }
 
-export function get_stream_privacy_icon_color(color) {
+export function get_stream_privacy_icon_color(hex_color: string): string {
     // LCH stands for Lightness, Chroma, and Hue.
     // This function restricts Lightness of a color to be between 20 to 75.
-    color = colord(color).toLch();
+    const color = colord(hex_color).toLch();
     const min_color_l = 20;
     const max_color_l = 75;
     if (color.l < min_color_l) {
@@ -38,7 +39,7 @@ export function get_stream_privacy_icon_color(color) {
     return colord(color).toHex();
 }
 
-export function get_recipient_bar_color(color) {
+export function get_recipient_bar_color(color: string): string {
     // Mixes 50% of color to 40% of white (light theme) / black (dark theme).
     const using_dark_theme = settings_data.using_dark_theme();
     color = get_stream_privacy_icon_color(color);
@@ -59,13 +60,13 @@ const subscriptions_table_colorpicker_options = {
     showPalette: true,
     showInput: true,
     palette: stream_color_palette,
+    change: picker_do_change_color,
 };
 
-export function set_colorpicker_color($colorpicker, color) {
+export function set_colorpicker_color($colorpicker: JQuery, color: string): void {
     $colorpicker.spectrum({
         ...subscriptions_table_colorpicker_options,
         color,
-        container: "#subscription_overlay .subscription_settings.show",
     });
 }
 
@@ -80,14 +81,13 @@ export const sidebar_popover_colorpicker_options_full = {
     change: picker_do_change_color,
 };
 
-function picker_do_change_color(color) {
+function picker_do_change_color(this: HTMLElement, color: tinycolor.Instance): void {
     $(".colorpicker").spectrum("destroy");
     $(".colorpicker").spectrum(sidebar_popover_colorpicker_options_full);
-    const stream_id = Number.parseInt($(this).attr("stream_id"), 10);
+    const stream_id = Number.parseInt($(this).attr("stream_id")!, 10);
     const hex_color = color.toHexString();
     stream_settings_api.set_color(stream_id, hex_color);
 }
-subscriptions_table_colorpicker_options.change = picker_do_change_color;
 
 export const sidebar_popover_colorpicker_options = {
     clickoutFiresChange: true,

@@ -312,6 +312,12 @@ devDependencies:
   '@types/sortablejs':
     specifier: ^1.15.1
     version: 1.15.3
+  '@types/spectrum':
+    specifier: ^1.8.4
+    version: 1.8.4
+  '@types/tinycolor2':
+    specifier: ^1.4.5
+    version: 1.4.5
   '@types/turndown':
     specifier: ^5.0.1
     version: 5.0.2
@@ -3048,6 +3054,17 @@ packages:
 
   /@types/sortablejs@1.15.3:
     resolution: {integrity: sha512-v+zh6TZP/cLeMUK0MDx1onp8e7Jk2/4iTQ7sb/n80rTAvBm14yJkpOEfJdrTCkHiF7IZbPjxGX2NRJfogRoYIg==}
+    dev: true
+
+  /@types/spectrum@1.8.4:
+    resolution: {integrity: sha512-t/TUyULAe/O0YiVLycLRVI5191Zj8HgQePPVlvwzLEoO70xxsZIDvfvqE5PzqrZj/CQB03J2UAWkbqtDvkju3Q==}
+    dependencies:
+      '@types/jquery': 3.5.22
+      '@types/tinycolor2': 1.4.5
+    dev: true
+
+  /@types/tinycolor2@1.4.5:
+    resolution: {integrity: sha512-uLJijDHN5E6j5n1qefF9oaeplgszXglWXWTviMoFr/YxgvbyrkFil20yDT7ljhCiTQ/BfCYtxfJS81LdTro5DQ==}
     dev: true
 
   /@types/triple-beam@1.3.3:

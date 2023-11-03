@@ -500,7 +500,7 @@ function validate_stream_message(scheduling_message) {
                 $t({defaultMessage: "Topics are required in this organization."}),
                 compose_banner.CLASSNAMES.topic_missing,
                 $banner_container,
-                $("#stream_message_recipient_topic"),
+                $("input#stream_message_recipient_topic"),
             );
             return false;
         }
@@ -623,7 +623,7 @@ export function check_overflow_text() {
 
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
-        $("#compose-textarea").addClass("over_limit");
+        $("textarea#compose-textarea").addClass("over_limit");
         $indicator.text(text.length + "/" + max_length);
         compose_banner.show_error_message(
             $t(
@@ -639,14 +639,14 @@ export function check_overflow_text() {
         $("#compose-send-button").prop("disabled", true);
     } else if (text.length > 0.9 * max_length) {
         $indicator.removeClass("over_limit");
-        $("#compose-textarea").removeClass("over_limit");
+        $("textarea#compose-textarea").removeClass("over_limit");
         $indicator.text(text.length + "/" + max_length);
 
         $("#compose-send-button").prop("disabled", false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     } else {
         $indicator.text("");
-        $("#compose-textarea").removeClass("over_limit");
+        $("textarea#compose-textarea").removeClass("over_limit");
 
         $("#compose-send-button").prop("disabled", false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
@@ -657,8 +657,8 @@ export function check_overflow_text() {
 
 export function validate_message_length() {
     if (compose_state.message_content().length > page_params.max_message_length) {
-        $("#compose-textarea").addClass("flash");
-        setTimeout(() => $("#compose-textarea").removeClass("flash"), 1500);
+        $("textarea#compose-textarea").addClass("flash");
+        setTimeout(() => $("textarea#compose-textarea").removeClass("flash"), 1500);
         return false;
     }
     return true;
@@ -667,7 +667,7 @@ export function validate_message_length() {
 export function validate(scheduling_message) {
     const message_content = compose_state.message_content();
     if (/^\s*$/.test(message_content)) {
-        $("#compose-textarea").toggleClass("invalid", true);
+        $("textarea#compose-textarea").toggleClass("invalid", true);
         return false;
     }
 

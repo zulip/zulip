@@ -236,7 +236,8 @@ export const update_elements = ($content) => {
         $(this).prepend(toggle_button_html);
     });
 
-    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element.
+    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,
+    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.js`.
     $content.find("div.codehilite").each(function () {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
@@ -274,6 +275,7 @@ export const update_elements = ($content) => {
         clipboard.on("success", () => {
             show_copied_confirmation($copy_button[0]);
         });
+        $codehilite.addClass("zulip-code-block");
     });
 
     // Display emoji (including realm emoji) as text if

@@ -89,9 +89,9 @@ run_test("topics", ({override}) => {
     override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         switch (stream_id) {
             case muted_stream_id:
-                return ["ms-topic1", "ms-topic2"];
+                return ["ms-topic1", "ms-topic2", "followed"];
             case devel_stream_id:
-                return ["muted", "python"];
+                return ["muted", "python", "followed"];
         }
 
         return [];
@@ -107,10 +107,24 @@ run_test("topics", ({override}) => {
 
     override(user_topics, "is_topic_muted", (_stream_name, topic) => topic === "muted");
 
+    override(user_topics, "is_topic_followed", (_stream_name, topic) => topic === "followed");
+
     let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {
         stream: "devel",
         topic: "python",
+    });
+
+    next_item = tg.get_next_topic("devel", "python");
+    assert.deepEqual(next_item, {
+        stream: "devel",
+        topic: "followed",
+    });
+
+    next_item = tg.get_next_topic("muted", "whatever", true);
+    assert.deepEqual(next_item, {
+        stream: "muted",
+        topic: "followed",
     });
 
     next_item = tg.get_next_topic("muted", undefined);

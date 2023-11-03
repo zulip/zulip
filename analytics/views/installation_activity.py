@@ -279,17 +279,13 @@ def realm_summary_table() -> str:
 @require_server_admin
 @has_request_variables
 def get_installation_activity(request: HttpRequest) -> HttpResponse:
-    counts_content: str = realm_summary_table()
-    data = [
-        ("Counts", counts_content),
-    ]
-
-    title = "Installation Activity"
+    content: str = realm_summary_table()
+    title = "Installation activity"
 
     return render(
         request,
-        "analytics/activity.html",
-        context=dict(data=data, title=title, is_home=True),
+        "analytics/activity_details_template.html",
+        context=dict(data=content, title=title, is_home=True),
     )
 
 

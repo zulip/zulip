@@ -8,7 +8,6 @@ import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
-import {buddy_list} from "./buddy_list";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -358,11 +357,6 @@ export function dispatch_normal_event(event) {
                     bot_data.add(event.bot);
                     settings_bots.render_bots();
                     break;
-                case "remove":
-                    bot_data.deactivate(event.bot.user_id);
-                    event.bot.is_active = false;
-                    settings_bots.render_bots();
-                    break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.render_bots();
@@ -466,16 +460,6 @@ export function dispatch_normal_event(event) {
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
                         settings_users.redraw_bots_list();
-                    }
-                    break;
-                case "remove":
-                    people.deactivate(event.person);
-                    stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
-                    settings_users.update_view_on_deactivate(event.person.user_id);
-                    buddy_list.maybe_remove_key({key: event.person.user_id});
-                    settings_account.maybe_update_deactivate_account_button();
-                    if (people.user_is_bot(event.person.user_id)) {
-                        settings_users.update_bot_data(event.person.user_id);
                     }
                     break;
                 case "update":

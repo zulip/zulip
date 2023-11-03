@@ -295,12 +295,12 @@ function on_hidden_callback() {
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
-        ui_util.place_caret_at_end($("#stream_message_recipient_topic")[0]);
+        ui_util.place_caret_at_end($("input#stream_message_recipient_topic")[0]);
     } else {
         if (compose_state.private_message_recipient().length === 0) {
             $("#private_message_recipient").trigger("focus").trigger("select");
         } else {
-            $("#compose-textarea").trigger("focus");
+            $("textarea#compose-textarea").trigger("focus");
         }
     }
 }
@@ -339,7 +339,7 @@ export function initialize() {
 
 export function update_placeholder_text() {
     // Change compose placeholder text only if compose box is open.
-    if (!$("#compose-textarea").is(":visible")) {
+    if (!$("textarea#compose-textarea").is(":visible")) {
         return;
     }
 
@@ -352,5 +352,5 @@ export function update_placeholder_text() {
         private_message_recipient: compose_pm_pill.get_emails(),
     };
 
-    $("#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
+    $("textarea#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
 }

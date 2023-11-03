@@ -1190,9 +1190,12 @@ def extract_unread_data_from_um_rows(
         # TODO: Add support for alert words here as well.
         is_mentioned = (row["flags"] & UserMessage.flags.mentioned) != 0
         is_wildcard_mentioned = (row["flags"] & UserMessage.flags.wildcard_mentioned) != 0
+        is_topic_wildcard_mentioned = (
+            row["flags"] & UserMessage.flags.topic_wildcard_mentioned
+        ) != 0
         if is_mentioned:
             mentions.add(message_id)
-        if is_wildcard_mentioned:
+        if is_wildcard_mentioned or is_topic_wildcard_mentioned:
             if msg_type == Recipient.STREAM:
                 stream_id = row["message__recipient__type_id"]
                 topic = row[MESSAGE__TOPIC]
@@ -1369,7 +1372,9 @@ def apply_unread_message_event(
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
-    if "wildcard_mentioned" in flags and message_id in state["unmuted_stream_msgs"]:
+    if (
+        "wildcard_mentioned" in flags or "topic_wildcard_mentioned" in flags
+    ) and message_id in state["unmuted_stream_msgs"]:
         state["mentions"].add(message_id)
 
 

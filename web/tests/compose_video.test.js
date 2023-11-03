@@ -86,7 +86,7 @@ test("videos", ({override}) => {
         };
 
         const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").val("");
 
         with_overrides(({disallow}) => {
             disallow(compose_ui, "insert_syntax_and_focus");
@@ -115,7 +115,7 @@ test("videos", ({override}) => {
         });
 
         const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").val("");
 
         page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
 
@@ -187,14 +187,14 @@ test("videos", ({override}) => {
             return {abort() {}};
         };
 
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").val("");
         const video_handler = $("body").get_on_handler("click", ".video_link");
         video_handler(ev);
         const video_link_regex = /\[translated: Join video call\.]\(example\.zoom\.com\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
 
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").val("");
         const audio_handler = $("body").get_on_handler("click", ".audio_link");
         audio_handler(ev);
         const audio_link_regex = /\[translated: Join voice call\.]\(example\.zoom\.com\)/;
@@ -223,7 +223,7 @@ test("videos", ({override}) => {
         });
 
         const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").val("");
 
         page_params.realm_video_chat_provider =
             realm_available_video_chat_providers.big_blue_button.id;

@@ -5,7 +5,7 @@ import {$t} from "./i18n";
 import * as people from "./people";
 import * as sub_store from "./sub_store";
 
-let message_type = false; // 'stream', 'private', or false-y
+let message_type: "stream" | "private" | false = false;
 let recipient_edited_manually = false;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
@@ -16,47 +16,51 @@ let recipient_edited_manually = false;
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
 
-export function set_recipient_edited_manually(flag) {
+export function set_recipient_edited_manually(flag: boolean): void {
     recipient_edited_manually = flag;
 }
 
-export function is_recipient_edited_manually() {
+export function is_recipient_edited_manually(): boolean {
     return recipient_edited_manually;
 }
 
-export function set_message_type(msg_type) {
+export function set_message_type(msg_type: "stream" | "private" | false): void {
     message_type = msg_type;
 }
 
-export function get_message_type() {
+export function get_message_type(): "stream" | "private" | false {
     return message_type;
 }
 
-export function set_recipient_viewed_topic_resolved_banner(flag) {
+export function set_recipient_viewed_topic_resolved_banner(flag: boolean): void {
     recipient_viewed_topic_resolved_banner = flag;
 }
 
-export function has_recipient_viewed_topic_resolved_banner() {
+export function has_recipient_viewed_topic_resolved_banner(): boolean {
     return recipient_viewed_topic_resolved_banner;
 }
 
-export function recipient_has_topics() {
+export function recipient_has_topics(): boolean {
     return message_type !== "stream";
 }
 
-export function composing() {
+export function composing(): boolean {
     // This is very similar to get_message_type(), but it returns
     // a boolean.
     return Boolean(message_type);
 }
 
-function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
+function get_or_set(
+    input_selector: string,
+    keep_leading_whitespace?: boolean,
+    no_trim?: boolean,
+): (newval?: string) => string {
     // We can't hoist the assignment of '$elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set
     // is called.
     return function (newval) {
-        const $elem = $(`#${CSS.escape(fieldname)}`);
-        const oldval = $elem.val();
+        const $elem = $<HTMLInputElement | HTMLTextAreaElement>(input_selector);
+        const oldval = $elem.val()!;
         if (newval !== undefined) {
             $elem.val(newval);
         }
@@ -73,14 +77,14 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
 // "" -> stream message but no stream is selected
 // integer -> stream id of the selected stream.
 // "direct" -> Direct message is selected.
-export let selected_recipient_id = "";
-export const DIRECT_MESSAGE_ID = "direct";
+export let selected_recipient_id: number | "direct" | "" = "";
+export const DIRECT_MESSAGE_ID = "direct" as const;
 
-export function set_selected_recipient_id(recipient_id) {
+export function set_selected_recipient_id(recipient_id: number | "direct" | ""): void {
     selected_recipient_id = recipient_id;
 }
 
-export function stream_id() {
+export function stream_id(): number | undefined {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return stream_id;
@@ -88,7 +92,7 @@ export function stream_id() {
     return undefined;
 }
 
-export function stream_name() {
+export function stream_name(): string {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return sub_store.maybe_get_stream_name(stream_id) || "";
@@ -96,36 +100,35 @@ export function stream_name() {
     return "";
 }
 
-export function set_stream_id(stream_id) {
+export function set_stream_id(stream_id: number | ""): void {
     set_selected_recipient_id(stream_id);
 }
 
-export function set_compose_recipient_id(recipient_id) {
-    if (typeof recipient_id !== "number") {
-        recipient_id = DIRECT_MESSAGE_ID;
-    }
+export function set_compose_recipient_id(recipient_id: number | "direct"): void {
     set_selected_recipient_id(recipient_id);
 }
 
 // TODO: Break out setter and getter into their own functions.
-export const topic = get_or_set("stream_message_recipient_topic");
+export const topic = get_or_set("input#stream_message_recipient_topic");
 
-export function empty_topic_placeholder() {
+export function empty_topic_placeholder(): string {
     return $t({defaultMessage: "(no topic)"});
 }
 
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
-export const message_content = get_or_set("compose-textarea", true);
+export const message_content = get_or_set("textarea#compose-textarea", true);
 
-const untrimmed_message_content = get_or_set("compose-textarea", true, true);
+const untrimmed_message_content = get_or_set("textarea#compose-textarea", true, true);
 
-function cursor_at_start_of_whitespace_in_compose() {
-    const cursor_position = $("#compose-textarea").caret();
+function cursor_at_start_of_whitespace_in_compose(): boolean {
+    const cursor_position = $("textarea#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
 }
 
-export function focus_in_empty_compose(consider_start_of_whitespace_message_empty = false) {
+export function focus_in_empty_compose(
+    consider_start_of_whitespace_message_empty = false,
+): boolean {
     // A user trying to press arrow keys in an empty compose is mostly
     // likely trying to navigate messages. This helper function
     // decides whether the compose box is empty for this purpose.
@@ -143,7 +146,7 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
         return false;
     }
 
-    const focused_element_id = document.activeElement.id;
+    const focused_element_id = document.activeElement?.id;
     if (focused_element_id === "compose-textarea") {
         // Focus will be in the compose textarea after sending a
         // message; this is the most common situation.
@@ -168,7 +171,9 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
     return false;
 }
 
-export function private_message_recipient(value) {
+export function private_message_recipient(): string;
+export function private_message_recipient(value: string): undefined;
+export function private_message_recipient(value?: string): string | undefined {
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);
         return undefined;
@@ -176,18 +181,18 @@ export function private_message_recipient(value) {
     return compose_pm_pill.get_emails();
 }
 
-export function has_message_content() {
+export function has_message_content(): boolean {
     return message_content() !== "";
 }
 
-export function has_full_recipient() {
+export function has_full_recipient(): boolean {
     if (message_type === "stream") {
         return stream_id() !== undefined && topic() !== "";
     }
     return private_message_recipient() !== "";
 }
 
-export function update_email(user_id, new_email) {
+export function update_email(user_id: number, new_email: string): void {
     let reply_to = private_message_recipient();
 
     if (!reply_to) {

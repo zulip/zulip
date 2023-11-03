@@ -260,6 +260,17 @@ def clear_supported_auth_backends_cache() -> None:
     supported_backends = None
 
 
+class SystemGroups:
+    FULL_MEMBERS = "role:fullmembers"
+    EVERYONE_ON_INTERNET = "role:internet"
+    OWNERS = "role:owners"
+    ADMINISTRATORS = "role:administrators"
+    MODERATORS = "role:moderators"
+    MEMBERS = "role:members"
+    EVERYONE = "role:everyone"
+    NOBODY = "role:nobody"
+
+
 class RealmAuthenticationMethod(models.Model):
     """
     Tracks which authentication backends are enabled for a realm.
@@ -644,6 +655,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     PLAN_TYPE_STANDARD = 3
     PLAN_TYPE_STANDARD_FREE = 4
     PLAN_TYPE_PLUS = 10
+
+    # Used for creating realms with different plan types.
+    ALL_PLAN_TYPES = {
+        PLAN_TYPE_SELF_HOSTED: "self-hosted-plan",
+        PLAN_TYPE_LIMITED: "limited-plan",
+        PLAN_TYPE_STANDARD: "standard-plan",
+        PLAN_TYPE_STANDARD_FREE: "standard-free-plan",
+        PLAN_TYPE_PLUS: "plus-plan",
+    }
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     # This value is also being used in web/src/settings_bots.bot_creation_policy_values.
@@ -734,9 +754,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Whether clients should display "(guest)" after names of guest users.
     enable_guest_user_indicator = models.BooleanField(default=True)
 
-    # Duplicates of names for system group; TODO: Clean this up.
-    ADMINISTRATORS_GROUP_NAME = "role:administrators"
-
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
@@ -793,7 +810,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
-            default_group_name=ADMINISTRATORS_GROUP_NAME,
+            default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="create_multiuse_invite_group_id",
         ),
     )
@@ -2331,38 +2348,28 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
 
     can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
 
-    # Names for system groups.
-    FULL_MEMBERS_GROUP_NAME = "role:fullmembers"
-    EVERYONE_ON_INTERNET_GROUP_NAME = "role:internet"
-    OWNERS_GROUP_NAME = "role:owners"
-    ADMINISTRATORS_GROUP_NAME = "role:administrators"
-    MODERATORS_GROUP_NAME = "role:moderators"
-    MEMBERS_GROUP_NAME = "role:members"
-    EVERYONE_GROUP_NAME = "role:everyone"
-    NOBODY_GROUP_NAME = "role:nobody"
-
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
     # members and spectators.
     SYSTEM_USER_GROUP_ROLE_MAP = {
         UserProfile.ROLE_REALM_OWNER: {
-            "name": OWNERS_GROUP_NAME,
+            "name": SystemGroups.OWNERS,
             "description": "Owners of this organization",
         },
         UserProfile.ROLE_REALM_ADMINISTRATOR: {
-            "name": ADMINISTRATORS_GROUP_NAME,
+            "name": SystemGroups.ADMINISTRATORS,
             "description": "Administrators of this organization, including owners",
         },
         UserProfile.ROLE_MODERATOR: {
-            "name": MODERATORS_GROUP_NAME,
+            "name": SystemGroups.MODERATORS,
             "description": "Moderators of this organization, including administrators",
         },
         UserProfile.ROLE_MEMBER: {
-            "name": MEMBERS_GROUP_NAME,
+            "name": SystemGroups.MEMBERS,
             "description": "Members of this organization, not including guests",
         },
         UserProfile.ROLE_GUEST: {
-            "name": EVERYONE_GROUP_NAME,
+            "name": SystemGroups.EVERYONE,
             "description": "Everyone in this organization, including guests",
         },
     }
@@ -2374,8 +2381,8 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
-            default_group_name=EVERYONE_GROUP_NAME,
-            default_for_system_groups=NOBODY_GROUP_NAME,
+            default_group_name=SystemGroups.EVERYONE,
+            default_for_system_groups=SystemGroups.NOBODY,
             id_field_name="can_mention_group_id",
         ),
     }
@@ -2740,7 +2747,7 @@ class Stream(models.Model):
             allow_owners_group=False,
             allow_nobody_group=False,
             allow_everyone_group=True,
-            default_group_name=UserGroup.ADMINISTRATORS_GROUP_NAME,
+            default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="can_remove_subscribers_group_id",
         ),
     }
@@ -3478,9 +3485,9 @@ class AbstractUserMessage(models.Model):
         "collapsed",
         "mentioned",
         "wildcard_mentioned",
-        # These next 4 flags are from features that have since been removed.
-        "summarize_in_home",
-        "summarize_in_stream",
+        "topic_wildcard_mentioned",
+        "group_mentioned",
+        # These next 2 flags are from features that have since been removed.
         "force_expand",
         "force_collapse",
         # Whether the message contains any of the user's alert words.
@@ -3508,12 +3515,12 @@ class AbstractUserMessage(models.Model):
         "has_alert_word",
         "mentioned",
         "wildcard_mentioned",
+        "topic_wildcard_mentioned",
+        "group_mentioned",
         "historical",
         # Unused flags can't be edited.
         "force_expand",
         "force_collapse",
-        "summarize_in_home",
-        "summarize_in_stream",
     }
     flags: BitHandler = BitField(flags=ALL_FLAGS, default=0)
 
@@ -3608,6 +3615,17 @@ class UserMessage(AbstractUserMessage):
                 condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask)
                 | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
                 name="zerver_usermessage_wildcard_mentioned_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.mentioned.mask
+                    | AbstractUserMessage.flags.wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.topic_wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.group_mentioned.mask
+                ),
+                name="zerver_usermessage_any_mentioned_message_id",
             ),
             models.Index(
                 "user_profile",

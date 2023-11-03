@@ -17,7 +17,7 @@ export type InputPillItem<T> = {
     type: string;
     img_src?: string;
     deactivated?: boolean;
-    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code: boolean}; // TODO: Move this in user_status.js
+    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean}; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
 } & T;
 
@@ -56,7 +56,7 @@ type InputPillRenderingDetails = {
     img_src?: string;
     deactivated?: boolean;
     has_status?: boolean;
-    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code: boolean};
+    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean};
     should_add_guest_user_indicator?: boolean;
 };
 

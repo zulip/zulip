@@ -20,6 +20,24 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 222**
+
+* [`GET /events`](/api/get-events): When a user is deactivated or
+  reactivated, the server uses `realm_user` events with `op: "update"`
+  updating the `is_active` field, instead of `realm_user` events with
+  `op: "remove"` and `op: "add"`, respectively.
+
+* [`GET /events`](/api/get-events): When a bot is deactivated or
+  reactivated, the server sends `realm_bot` events with `op: "update"`
+  updating the `is_active` field, instead of `realm_bot` events with
+  `op: "remove"` and `op: "add"`, respectively.
+
+**Feature level 221**
+
+* [`POST /register`](/api/register-queue): Added `server_supported_permission_settings`
+  field in the response which contains configuration data for various permission
+  settings.
+
 **Feature level 220**
 
 * [`GET /events`](/api/get-events): Stream creation events for web-public

@@ -247,7 +247,14 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
             message=message_id,
             flags=~UserMessage.flags.historical,
         )
-        .filter(Q(flags__andnz=UserMessage.flags.mentioned | UserMessage.flags.wildcard_mentioned))
+        .filter(
+            Q(
+                flags__andnz=UserMessage.flags.mentioned
+                | UserMessage.flags.wildcard_mentioned
+                | UserMessage.flags.topic_wildcard_mentioned
+                | UserMessage.flags.group_mentioned
+            )
+        )
         .values_list("user_profile_id", flat=True)
     )
     return set(mentioned_user_ids)
@@ -283,7 +290,7 @@ def update_user_message_flags(
             update_flag(um, True, UserMessage.flags.wildcard_mentioned)
         elif rendering_result.mentions_topic_wildcard:
             topic_wildcard_mentioned = um.user_profile_id in topic_participant_user_ids
-            update_flag(um, topic_wildcard_mentioned, UserMessage.flags.wildcard_mentioned)
+            update_flag(um, topic_wildcard_mentioned, UserMessage.flags.topic_wildcard_mentioned)
 
     for um in changed_ums:
         um.save(update_fields=["flags"])

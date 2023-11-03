@@ -1,13 +1,25 @@
 import * as blueslip from "./blueslip";
+import type {InputPillContainer, InputPillItem} from "./input_pill";
 import * as input_pill from "./input_pill";
 import {page_params} from "./page_params";
+import type {User} from "./people";
 import * as people from "./people";
 import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing
 // direct messages or adding users to a stream/group.
 
-export function create_item_from_email(email, current_items) {
+type UserPill = {
+    user_id?: number;
+    email: string;
+};
+
+export type UserPillWidget = InputPillContainer<UserPill>;
+
+export function create_item_from_email(
+    email: string,
+    current_items: InputPillItem<UserPill>[],
+): InputPillItem<UserPill> | undefined {
     // For normal Zulip use, we need to validate the email for our realm.
     const user = people.get_by_email(email);
 
@@ -45,7 +57,7 @@ export function create_item_from_email(email, current_items) {
 
     // We must supply display_value for the widget to work.  Everything
     // else is for our own use in callbacks.
-    const item = {
+    const item: InputPillItem<UserPill> = {
         type: "user",
         display_value: user.full_name,
         user_id: user.user_id,
@@ -64,11 +76,11 @@ export function create_item_from_email(email, current_items) {
     return item;
 }
 
-export function get_email_from_item(item) {
+export function get_email_from_item(item: InputPillItem<UserPill>): string {
     return item.email;
 }
 
-export function append_person(opts) {
+export function append_person(opts: {person: User; pill_widget: UserPillWidget}): void {
     const person = opts.person;
     const pill_widget = opts.pill_widget;
     const avatar_url = people.small_avatar_url_for_person(person);
@@ -88,15 +100,12 @@ export function append_person(opts) {
     pill_widget.clear_text();
 }
 
-export function get_user_ids(pill_widget) {
+export function get_user_ids(pill_widget: UserPillWidget): number[] {
     const items = pill_widget.items();
-    let user_ids = items.map((item) => item.user_id);
-    user_ids = user_ids.filter(Boolean); // be defensive about undefined users
-
-    return user_ids;
+    return items.flatMap((item) => item.user_id ?? []); // be defensive about undefined users
 }
 
-export function has_unconverted_data(pill_widget) {
+export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
     // This returns true if we either have text that hasn't been
     // turned into pills or email-only pills (for Zephyr).
     if (pill_widget.is_pending()) {
@@ -109,18 +118,18 @@ export function has_unconverted_data(pill_widget) {
     return has_unknown_items;
 }
 
-export function typeahead_source(pill_widget, exclude_bots) {
+export function typeahead_source(pill_widget: UserPillWidget, exclude_bots?: boolean): User[] {
     const users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
     return filter_taken_users(users, pill_widget);
 }
 
-export function filter_taken_users(items, pill_widget) {
+export function filter_taken_users(items: User[], pill_widget: UserPillWidget): User[] {
     const taken_user_ids = get_user_ids(pill_widget);
     items = items.filter((item) => !taken_user_ids.includes(item.user_id));
     return items;
 }
 
-export function append_user(user, pills) {
+export function append_user(user: User, pills: UserPillWidget): void {
     if (user) {
         append_person({
             pill_widget: pills,
@@ -131,7 +140,12 @@ export function append_user(user, pills) {
     }
 }
 
-export function create_pills($pill_container, pill_config) {
+export function create_pills(
+    $pill_container: JQuery,
+    pill_config?: {
+        show_user_status_emoji?: boolean;
+    },
+): input_pill.InputPillContainer<UserPill> {
     const pills = input_pill.create({
         $container: $pill_container,
         pill_config,

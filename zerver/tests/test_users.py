@@ -67,7 +67,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
-    UserGroup,
+    SystemGroups,
     UserGroupMembership,
     UserHotspot,
     UserProfile,
@@ -891,8 +891,8 @@ class BulkCreateUserTest(ZulipTestCase):
 
         now = timezone_now()
         expected_user_group_names = {
-            UserGroup.MEMBERS_GROUP_NAME,
-            UserGroup.FULL_MEMBERS_GROUP_NAME,
+            SystemGroups.MEMBERS,
+            SystemGroups.FULL_MEMBERS,
         }
         create_users(realm, name_list)
         bono = get_user_by_delivery_email("bono@zulip.com", realm)

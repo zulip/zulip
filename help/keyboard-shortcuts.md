@@ -38,6 +38,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Next unread topic**: <kbd>N</kbd>
 
+* **Next unread followed topic**: <kbd>Shift</kbd> + <kbd>N</kbd>
+
 * **Next unread direct message**: <kbd>P</kbd>
 
 * **Search messages**: <kbd>/</kbd>

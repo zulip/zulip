@@ -5,19 +5,15 @@ import * as stream_data from "./stream_data";
 
 let is_inbox_visible = false;
 
-export function set_visible(value) {
+export function set_visible(value: boolean): void {
     is_inbox_visible = value;
 }
 
-export function is_visible() {
+export function is_visible(): boolean {
     return is_inbox_visible;
 }
 
-export function get_dm_key(msg) {
-    return "dm:" + msg.other_user_id;
-}
-
-export function update_stream_colors() {
+export function update_stream_colors(): void {
     if (!is_visible()) {
         return;
     }
@@ -25,7 +21,7 @@ export function update_stream_colors() {
     const $stream_headers = $("#inbox-streams-container .inbox-header");
     $stream_headers.each((_index, stream_header) => {
         const $stream_header = $(stream_header);
-        const stream_id = Number.parseInt($stream_header.attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($stream_header.attr("data-stream-id")!, 10);
         if (!stream_id) {
             return;
         }

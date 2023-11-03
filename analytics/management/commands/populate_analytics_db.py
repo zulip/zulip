@@ -32,6 +32,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserProfile,
 )
@@ -114,7 +115,7 @@ class Command(BaseCommand):
         )
 
         administrators_user_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
         stream = Stream.objects.create(
             name="all",

@@ -218,9 +218,9 @@ def send_apple_push_notification(
     devices: Sequence[DeviceToken],
     payload_data: Mapping[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
-) -> None:
+) -> int:
     if not devices:
-        return
+        return 0
     # We lazily do the APNS imports as part of optimizing Zulip's base
     # import time; since these are only needed in the push
     # notification queue worker, it's best to only import them in the
@@ -234,7 +234,7 @@ def send_apple_push_notification(
             "APNs: Dropping a notification because nothing configured.  "
             "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
         )
-        return
+        return 0
 
     if remote:
         assert settings.ZILENCER_ENABLED
@@ -275,6 +275,7 @@ def send_apple_push_notification(
 
     results = apns_context.loop.run_until_complete(send_all_notifications())
 
+    successfully_sent_count = 0
     for device, result in results:
         if isinstance(result, aioapns.exceptions.ConnectionError):
             logger.error(
@@ -290,6 +291,7 @@ def send_apple_push_notification(
                 exc_info=result,
             )
         elif result.is_successful:
+            successfully_sent_count += 1
             logger.info(
                 "APNs: Success sending for user %s to device %s", user_identity, device.token
             )
@@ -309,6 +311,8 @@ def send_apple_push_notification(
                 device.token,
                 result.description,
             )
+
+    return successfully_sent_count
 
 
 #
@@ -411,7 +415,7 @@ def send_android_push_notification(
     data: Dict[str, Any],
     options: Dict[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
-) -> None:
+) -> int:
     """
     Send a GCM message to the given devices.
 
@@ -424,13 +428,13 @@ def send_android_push_notification(
         For details, see `parse_gcm_options`.
     """
     if not devices:
-        return
+        return 0
     if not gcm_client:
         logger.debug(
             "Skipping sending a GCM push notification since "
             "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset"
         )
-        return
+        return 0
 
     if remote:
         logger.info(
@@ -463,11 +467,13 @@ def send_android_push_notification(
         )
     except OSError:
         logger.warning("Error while pushing to GCM", exc_info=True)
-        return
+        return 0
 
+    successfully_sent_count = 0
     if res and "success" in res:
         for reg_id, msg_id in res["success"].items():
             logger.info("GCM: Sent %s as %s", reg_id, msg_id)
+        successfully_sent_count = len(res["success"].keys())
 
     if remote:
         assert settings.ZILENCER_ENABLED
@@ -519,6 +525,8 @@ def send_android_push_notification(
             else:
                 for reg_id in reg_ids:
                     logger.warning("GCM: Delivery to %s failed: %s", reg_id, error)
+
+    return successfully_sent_count
 
     # python-gcm handles retrying of the unsent messages.
     # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497

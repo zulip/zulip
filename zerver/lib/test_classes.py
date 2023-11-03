@@ -95,6 +95,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
@@ -1350,7 +1351,7 @@ Output:
             realm, invite_only, history_public_to_subscribers
         )
         administrators_user_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
         try:
@@ -2276,7 +2277,7 @@ one or more new messages.
         return body
 
 
-class MigrationsTestCase(ZulipTestCase):  # nocoverage
+class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
     """
     Test class for database migrations inspired by this blog post:
        https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
@@ -2294,6 +2295,7 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     @override
     def setUp(self) -> None:
+        super().setUp()
         assert (
             self.migrate_from and self.migrate_to
         ), f"TestCase '{type(self).__name__}' must define migrate_from and migrate_to properties"

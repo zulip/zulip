@@ -151,13 +151,17 @@ function show_subscription_settings(sub) {
     });
 }
 
-function is_notification_setting(setting_label) {
+function has_global_notification_setting(setting_label) {
     if (setting_label.includes("_notifications")) {
         return true;
     } else if (setting_label.includes("_notify")) {
         return true;
     }
     return false;
+}
+
+function is_notification_setting(setting_label) {
+    return has_global_notification_setting(setting_label) || setting_label === "is_muted";
 }
 
 export function stream_settings(sub) {
@@ -171,9 +175,9 @@ export function stream_settings(sub) {
             label: settings_labels[setting],
             disabled_realm_setting: check_realm_setting[setting],
             is_disabled: check_realm_setting[setting],
-            is_notification_setting: is_notification_setting(setting),
+            has_global_notification_setting: has_global_notification_setting(setting),
         };
-        if (is_notification_setting(setting)) {
+        if (has_global_notification_setting(setting)) {
             // This block ensures we correctly display to users the
             // current state of stream-level notification settings
             // with a value of `null`, which inherit the user's global
@@ -181,7 +185,6 @@ export function stream_settings(sub) {
             ret.is_checked =
                 stream_data.receives_notifications(sub.stream_id, setting) &&
                 !check_realm_setting[setting];
-            ret.is_disabled = ret.is_disabled || sub.is_muted;
             return ret;
         }
         ret.is_checked = sub[setting] && !check_realm_setting[setting];
@@ -196,6 +199,7 @@ function setup_dropdown(sub, slim_sub) {
         get_options: () =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(
                 "can_remove_subscribers_group",
+                "stream",
             ),
         item_click_callback(event, dropdown) {
             dropdown.hide();
@@ -233,7 +237,7 @@ export function show_settings_for(node) {
 
     const other_settings = [];
     const notification_settings = all_settings.filter((setting) => {
-        if (setting.is_notification_setting) {
+        if (is_notification_setting(setting.name)) {
             return true;
         }
         other_settings.push(setting);
@@ -281,13 +285,10 @@ export function setup_stream_settings(node) {
 
 export function update_muting_rendering(sub) {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
-    const $notification_checkboxes = $edit_container.find(".sub_notification_setting");
     const $is_muted_checkbox = $edit_container.find("#sub_is_muted_setting .sub_setting_control");
 
     $is_muted_checkbox.prop("checked", sub.is_muted);
     $edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
-    $notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
-    $notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
 }
 
 function stream_is_muted_changed(e) {
@@ -299,8 +300,7 @@ function stream_is_muted_changed(e) {
 
     stream_settings_api.set_stream_property(
         sub,
-        "is_muted",
-        e.target.checked,
+        {property: "is_muted", value: e.target.checked},
         $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
     );
 }
@@ -317,11 +317,15 @@ function stream_setting_changed(e) {
         blueslip.error("undefined sub in stream_setting_changed()");
         return;
     }
-    if (is_notification_setting(setting) && sub[setting] === null) {
+    if (has_global_notification_setting(setting) && sub[setting] === null) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
-    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
+    stream_settings_api.set_stream_property(
+        sub,
+        {property: setting, value: e.target.checked},
+        $status_element,
+    );
 }
 
 export function archive_stream(stream_id, $alert_element, $stream_row) {

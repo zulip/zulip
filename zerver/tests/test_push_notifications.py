@@ -603,9 +603,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "gcm_options": {},
         }
         with mock.patch(
-            "zilencer.views.send_android_push_notification"
+            "zilencer.views.send_android_push_notification", return_value=2
         ) as android_push, mock.patch(
-            "zilencer.views.send_apple_push_notification"
+            "zilencer.views.send_apple_push_notification", return_value=1
         ) as apple_push, self.assertLogs(
             "zilencer.views", level="INFO"
         ) as logger:
@@ -698,8 +698,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
         }
         time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
         with time_machine.travel(time_received, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification"
-        ), mock.patch("zilencer.views.send_apple_push_notification"), self.assertLogs(
+            "zilencer.views.send_android_push_notification", return_value=1
+        ), mock.patch(
+            "zilencer.views.send_apple_push_notification", return_value=1
+        ), self.assertLogs(
             "zilencer.views", level="INFO"
         ) as logger:
             result = self.uuid_post(
@@ -1016,6 +1018,26 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         send_analytics_to_push_bouncer()
         check_counts(7, 5, 3, 2, 2)
+
+        # Now create an InstallationCount with a property that's not supposed
+        # to be tracked by the remote server - since the bouncer itself tracks
+        # the RemoteInstallationCount with this property. We want to verify
+        # that the remote server will fail at sending analytics to the bouncer
+        # with such an InstallationCount - since syncing it should not be allowed.
+        forbidden_installation_count = InstallationCount.objects.create(
+            property="mobile_pushes_received::day",
+            end_time=end_time,
+            value=5,
+        )
+        with self.assertLogs(level="WARNING") as warn_log:
+            send_analytics_to_push_bouncer()
+        self.assertEqual(
+            warn_log.output, ["WARNING:root:Invalid property mobile_pushes_received::day"]
+        )
+        # The analytics endpoint call counts increase by 1, but the actual RemoteCounts remain unchanged,
+        # since syncing the data failed.
+        check_counts(8, 6, 3, 2, 2)
+        forbidden_installation_count.delete()
 
         (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
             RealmCount.objects.all(), InstallationCount.objects.all(), RealmAuditLog.objects.all()
