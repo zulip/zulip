@@ -1,28 +1,36 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "sponsorship" %}
 
-{% set PAGE_TITLE = "💚 Request sponsorship" %}
+{% set PAGE_TITLE = "Request sponsorship" %}
 
 {% block portico_content %}
 
 {% if is_sponsored %}
 
-<div class="flex full-page thanks-page">
+<div class="flex full-page thanks-page sponsorship-status-page">
     <div class="center-block new-style">
-        <h1>Zulip Cloud billing for {{realm_name}}</h1>
-        <p> Zulip is sponsoring free Zulip Cloud Standard hosting for your organization. 🎉 </p>
+        <div class="pitch">
+            <h1>Zulip Cloud billing for {{realm_name}}</h1>
+        </div>
+        <div class="white-box">
+            <p> Zulip is sponsoring free <a href="/plans/">Zulip Cloud Standard</a> hosting for your organization. 🎉 </p>
+        </div>
     </div>
 </div>
 
 {% elif is_sponsorship_pending %}
 
-<div class="flex full-page thanks-page">
+<div class="flex full-page thanks-page sponsorship-status-page">
     <div class="center-block new-style">
-        <h1>Sponsorship request pending for {{realm_name}}</h1>
-        <p> Your organization has requested sponsorship for a free or discounted Zulip Cloud Standard plan.</p>
-        <p>
-            Please feel free to <a href="mailto:support@zulip.com">contact Zulip support</a> with any questions or updates to your request.
-        </p>
+        <div class="pitch">
+            <h1>Sponsorship request pending for {{realm_name}}</h1>
+        </div>
+        <div class="white-box">
+            <p> Your organization has requested sponsorship for a free or discounted <a href="/plans/">Zulip Cloud Standard</a> plan.</p>
+            <p>
+                Please feel free to <a href="mailto:support@zulip.com">contact Zulip support</a> with any questions or updates to your request.
+            </p>
+        </div>
     </div>
 </div>
 
@@ -31,7 +39,7 @@
 <div class="register-account flex full-page sponsorship-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>💚 Request sponsorship</h1>
+            <h1>Request sponsorship</h1>
         </div>
         <div class="white-box">
             <div id="sponsorship-error" class="alert alert-danger"></div>
@@ -63,7 +71,7 @@
                         <input id="org-website" name="website" type="text" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
                     </div>
                     <div class="input-box sponsorship-form-field">
-                        <label for="description" class="inline-block label-title">{{ _('Describe your organization briefly') }}</label>
+                        <label for="description" class="inline-block label-title">{{ _('Describe your organization') }}</label>
                         <textarea id="description" name="description" cols="100" rows="5" required></textarea>
                     </div>
                     <p id="sponsorship-discount-details"></p>
