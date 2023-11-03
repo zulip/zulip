@@ -1491,6 +1491,18 @@ class NormalActionsTest(BaseAction):
         check_user_group_add_members("events[2]", events[2])
         check_user_group_add_members("events[3]", events[3])
 
+    def test_register_events_for_restricted_users(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        self.user_profile = self.example_user("polonius")
+
+        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=3)
+
+        check_realm_user_add("events[0]", events[0])
+        self.assertEqual(events[0]["person"]["full_name"], "Unknown user")
+
+        check_user_group_add_members("events[1]", events[1])
+        check_user_group_add_members("events[2]", events[2])
+
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
         check_alert_words("events[0]", events[0])
