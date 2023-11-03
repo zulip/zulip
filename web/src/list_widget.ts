@@ -59,6 +59,7 @@ type ListWidget<Key = unknown, Item = Key> = {
     get_current_list(): Item[];
     filter_and_sort(): void;
     retain_selected_items(): void;
+    all_rendered(): boolean;
     render(how_many?: number): void;
     render_item(item: Item): void;
     clear(): void;
@@ -302,6 +303,11 @@ export function create<Key = unknown, Item = Key>(
             }
         },
 
+        // Returns if all available items are rendered.
+        all_rendered() {
+            return meta.offset >= meta.filtered_list.length;
+        },
+
         // Reads the provided list (in the scope directly above)
         // and renders the next block of messages automatically
         // into the specified container.
@@ -312,7 +318,7 @@ export function create<Key = unknown, Item = Key>(
             }
 
             // Stop once the offset reaches the length of the original list.
-            if (meta.offset >= meta.filtered_list.length) {
+            if (this.all_rendered()) {
                 render_empty_list_message_if_needed($container, meta.filter_value);
                 return;
             }
