@@ -165,6 +165,11 @@ function update_load_more_banner() {
         return;
     }
 
+    if (!topics_widget.all_rendered()) {
+        $(".recent-view-load-more-container").toggleClass("notvisible", true);
+        return;
+    }
+
     // There are some messages loaded, but not all messages yet. The banner was
     // hidden on page load, and we make sure to show it now that there are messages
     // we can display.
@@ -936,6 +941,11 @@ function is_scroll_position_for_render(scroll_container) {
     );
 }
 
+function callback_after_render() {
+    update_load_more_banner();
+    setTimeout(revive_current_focus, 0);
+}
+
 export function complete_rerender() {
     if (!recent_view_util.is_visible()) {
         return;
@@ -992,7 +1002,7 @@ export function complete_rerender() {
         },
         html_selector: get_topic_row,
         $simplebar_container: $("#recent_view_table .table_fix_head"),
-        callback_after_render: () => setTimeout(revive_current_focus, 0),
+        callback_after_render,
         is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
             // Update the focused element for keyboard navigation if needed.
