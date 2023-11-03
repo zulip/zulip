@@ -309,6 +309,7 @@ function is_status_emoji(emoji) {
 function process_enter_while_filtering(e) {
     if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
+        e.stopPropagation();
         const $first_emoji = get_rendered_emoji(0, 0);
         if ($first_emoji) {
             if (is_composition($first_emoji)) {
