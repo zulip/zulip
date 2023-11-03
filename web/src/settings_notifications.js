@@ -343,16 +343,14 @@ export function update_muted_stream_state(sub) {
         )}']`,
     );
 
-    $row.toggleClass("control-label-disabled", sub.is_muted);
     if (sub.is_muted) {
         $row.find(".unmute_stream").show();
     } else {
         $row.find(".unmute_stream").hide();
     }
-    $row.find("input").prop("disabled", sub.is_muted);
     $row.find('[name="push_notifications"]').prop(
         "disabled",
-        !page_params.realm_push_notifications_enabled || sub.is_muted,
+        !page_params.realm_push_notifications_enabled,
     );
 }
 

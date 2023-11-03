@@ -1,4 +1,4 @@
-<tr class="stream-notifications-row {{#if muted}}control-label-disabled{{/if}}" data-stream-id="{{stream.stream_id}}">
+<tr class="stream-notifications-row" data-stream-id="{{stream.stream_id}}">
     <td>
         <span class="stream-privacy-original-color-{{stream.stream_id}} stream-privacy filter-icon" style="color: {{stream.color}}">
             {{> ../stream_privacy
@@ -15,7 +15,6 @@
           prefix=(lookup ../stream "stream_id")
           is_checked=(lookup ../stream this)
           is_disabled=(lookup ../is_disabled this)
-          is_muted=../muted
           }}
     {{/each}}
 </tr>
