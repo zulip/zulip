@@ -23,7 +23,7 @@
         .status-emoji-wrapper {
             padding: 4px 8px;
             border-right: 1px solid;
-            border-color: inherit;
+            border-color: hsl(0deg 0% 0% / 60%);
             cursor: pointer;
 
             .selected-emoji {
