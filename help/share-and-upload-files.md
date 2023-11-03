@@ -12,12 +12,27 @@ and you can click on a thumbnail to [view the full image](/help/view-and-browse-
 
 {start_tabs}
 
-{tab|via-markdown}
+{tab|via-drag-and-drop}
+
+1. Drag and drop one or more files anywhere in the Zulip app,
+   whether or not the compose box is open.
+   Zulip will upload the files, and insert named links using
+   [Markdown formatting](/help/format-your-message-using-markdown#links):
+   `[Link text](URL)`.
+
+1. _(optional)_ Modify the link text as desired.
+
+!!! tip ""
+
+    You can [preview the message](/help/preview-your-message-before-sending)
+    before sending to see what your uploaded files will look like.
+
+{tab|via-paste}
 
 {!start-composing.md!}
 
-1. Drag and drop files, or copy and paste one or more files into the compose
-   box. Zulip will upload the files, and insert named links using
+1. Copy and paste one or more files into the compose box.
+   Zulip will upload the files, and insert named links using
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
