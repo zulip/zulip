@@ -1112,6 +1112,19 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             status_code=401,
         )
 
+        self.set_up_db_for_testing_user_access()
+        self.login("polonius")
+
+        response = self.client_get(f"/avatar/{cordelia.id}", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
+
+        response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
+
     def test_get_user_avatar_medium(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
