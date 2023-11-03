@@ -438,7 +438,20 @@ def send_stream_events_for_role_update(
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
+    # We want to both (a) take a lock on the UserProfile row, and (b)
+    # modify the passed-in UserProfile object, so that callers see the
+    # changes in the object they hold.  Unfortunately,
+    # `select_for_update` cannot be combined with `refresh_from_db`
+    # (https://code.djangoproject.com/ticket/28344).  Call
+    # `select_for_update` and throw away the result, so that we know
+    # we have the lock on the row, then re-fill the `user_profile`
+    # object with the values now that the lock exists.
+    UserProfile.objects.select_for_update().get(id=user_profile.id)
+    user_profile.refresh_from_db()
+
     old_value = user_profile.role
+    if old_value == value:
+        return
     old_system_group = get_system_user_group_for_user(user_profile)
 
     previously_accessible_streams = get_streams_for_user(
