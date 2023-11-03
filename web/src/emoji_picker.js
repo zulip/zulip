@@ -790,10 +790,10 @@ function register_click_handlers() {
         );
     });
 
-    $("body").on("click", "#set-user-status-modal #selected_emoji", (e) => {
+    $("body").on("click", "#set-user-status-modal #selected_emoji .status-emoji-wrapper", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        toggle_emoji_popover(e.target, undefined, {placement: "bottom"});
+        toggle_emoji_popover(e.currentTarget, undefined, {placement: "bottom"});
         if (is_open()) {
             // Because the emoji picker gets drawn on top of the user
             // status modal, we need this hack to make clicking outside
@@ -805,6 +805,12 @@ function register_click_handlers() {
             );
         }
     });
+
+    $("body").on(
+        "keydown",
+        "#set-user-status-modal #selected_emoji .status-emoji-wrapper",
+        ui_util.convert_enter_to_click,
+    );
 
     $(document).on("click", ".emoji-popover-emoji.status-emoji", function (e) {
         e.preventDefault();
