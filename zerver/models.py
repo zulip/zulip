@@ -3489,6 +3489,7 @@ class AbstractUserMessage(models.Model):
         "topic_wildcard_mentioned",
         "group_mentioned",
         # These next 2 flags are from features that have since been removed.
+        # We've cleared these 2 flags in migration 0486.
         "force_expand",
         "force_collapse",
         # Whether the message contains any of the user's alert words.
