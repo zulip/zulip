@@ -543,17 +543,37 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
             send_stream_creation_event(realm, stream, notify_user_ids, recent_traffic)
 
 
+def send_leave_notifications_to_private_streams(
+    private_stream: Stream,
+    unsubscribers: List[UserProfile],
+    realm: Realm,
+) -> None:
+    for unsubscribed_user in unsubscribers:
+        if unsubscribed_user.is_bot:
+            # Prevent 'state mismatch' issues when removing peers from a private stream during a change in the bot owner.
+            # see more at - https://zulip.readthedocs.io/en/latest/subsystems/events-system.html#testing
+            continue
+        sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        msg = _("@_**{user}** left this stream.").format(user=unsubscribed_user.full_name)
+        internal_send_stream_message(
+            sender=sender, stream=private_stream, topic="stream events", content=msg
+        )
+
+
 def send_peer_subscriber_events(
     op: str,
     realm: Realm,
     stream_dict: Dict[int, Stream],
     altered_user_dict: Dict[int, Set[int]],
     subscriber_peer_info: SubscriberPeerInfo,
+    user_profile_from_id: Optional[Dict[int, UserProfile]] = None,
 ) -> None:
     # Send peer_add/peer_remove events to other users who are tracking the
     # subscribers lists of streams in their browser; everyone for
     # public streams and only existing subscribers for private streams.
 
+    if user_profile_from_id is None:
+        user_profile_from_id = defaultdict(UserProfile)
     assert op in ["peer_add", "peer_remove"]
 
     private_stream_ids = [
@@ -564,6 +584,15 @@ def send_peer_subscriber_events(
     for stream_id in private_stream_ids:
         altered_user_ids = altered_user_dict[stream_id]
         peer_user_ids = private_peer_dict[stream_id] - altered_user_ids
+
+        if op == "peer_remove":
+            unsubscribers = [user_profile_from_id[id] for id in altered_user_ids]
+            # send user-left notification via notification-bot in private streams
+            send_leave_notifications_to_private_streams(
+                private_stream=stream_dict[stream_id],
+                unsubscribers=unsubscribers,
+                realm=realm,
+            )
 
         if peer_user_ids and altered_user_ids:
             event = dict(
@@ -862,6 +891,7 @@ def send_peer_remove_events(
     realm: Realm,
     streams: List[Stream],
     altered_user_dict: Dict[int, Set[int]],
+    user_profile_by_id: Dict[int, UserProfile],
 ) -> None:
     subscriber_peer_info = bulk_get_subscriber_peer_info(
         realm=realm,
@@ -875,6 +905,7 @@ def send_peer_remove_events(
         stream_dict=stream_dict,
         altered_user_dict=altered_user_dict,
         subscriber_peer_info=subscriber_peer_info,
+        user_profile_from_id=user_profile_by_id,
     )
 
 
@@ -899,9 +930,11 @@ def send_subscription_remove_events(
 ) -> None:
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
+    user_profile_by_id: Dict[int, UserProfile] = defaultdict(UserProfile)
     for user, stream in removed_subs:
         streams_by_user[user.id].append(stream)
         altered_user_dict[stream.id].add(user.id)
+        user_profile_by_id[user.id] = user
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
@@ -935,6 +968,7 @@ def send_subscription_remove_events(
         realm=realm,
         streams=streams,
         altered_user_dict=altered_user_dict,
+        user_profile_by_id=user_profile_by_id,
     )
 
 

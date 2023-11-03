@@ -677,11 +677,18 @@ def add_subscriptions_backend(
     result: Dict[str, Any] = dict(
         subscribed=defaultdict(list), already_subscribed=defaultdict(list)
     )
+
+    private_streams_add_subscribers: Dict[Stream, List[UserProfile]] = defaultdict(list)
+
     for sub_info in subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
         result["subscribed"][subscriber.email].append(stream.name)
         email_to_user_profile[subscriber.email] = subscriber
+        # Filtering out only private streams and subscribers
+        if stream.invite_only and subscriber != user_profile and not subscriber.is_bot:
+            private_streams_add_subscribers[stream].append(subscriber)
+
     for sub_info in already_subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
@@ -699,11 +706,41 @@ def add_subscriptions_backend(
         announce=announce,
     )
 
+    # Using notification bot to notify other private members that, someone got added
+    send_add_notifications_to_private_streams(
+        realm=realm,
+        user_profile=user_profile,
+        private_streams_add_subscribers=private_streams_add_subscribers,
+    )
+
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
     if not authorization_errors_fatal:
         result["unauthorized"] = [s.name for s in unauthorized_streams]
     return json_success(request, data=result)
+
+
+def send_add_notifications_to_private_streams(
+    realm: Realm,
+    user_profile: UserProfile,
+    private_streams_add_subscribers: Dict[Stream, List[UserProfile]],
+) -> None:
+    notifications = []
+    for private_stream in private_streams_add_subscribers:
+        subscribers = private_streams_add_subscribers[private_stream]
+        sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        for subscriber in subscribers:
+            msg = _("@_**{user1}** added @_**{user2}** to this stream.").format(
+                user1=user_profile.full_name, user2=subscriber.full_name
+            )
+            notifications.append(
+                internal_prep_stream_message(
+                    sender=sender, stream=private_stream, content=msg, topic="stream events"
+                )
+            )
+
+    if len(notifications) > 0:
+        do_send_messages(notifications, mark_as_read=[user_profile.id])
 
 
 def send_messages_for_new_subscribers(

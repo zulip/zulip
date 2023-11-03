@@ -2644,7 +2644,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=35,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2661,7 +2661,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=35,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -4582,14 +4582,18 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
-        self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.topic_name(), "stream events")
-        self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
-        self.assertIn(
-            f"**{policy_name}** stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
-            "```` quote",
-            msg.content,
-        )
+        if invite_only:
+            self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
+            self.assertIn("added", msg.content)
+        else:
+            self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
+            self.assertEqual(msg.topic_name(), "stream events")
+            self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
+            self.assertIn(
+                f"**{policy_name}** stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
+                "```` quote",
+                msg.content,
+            )
 
     def test_multi_user_subscription(self) -> None:
         user1 = self.example_user("cordelia")
@@ -4884,7 +4888,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_users_getting_remove_peer_event(self) -> None:
         """
-        Check users getting add_peer_event is correct
+        Check users getting remove_peer_event is correct
         """
         user1 = self.example_user("othello")
         user2 = self.example_user("cordelia")
@@ -4950,6 +4954,12 @@ class SubscriptionAPITest(ZulipTestCase):
             notifications.append((",".join(stream_names), removed_user_ids, notified_user_ids))
 
         notifications.sort(key=lambda tup: tup[0])
+
+        # verify that a user-left message was sent to the stream
+        msg = self.get_last_message()
+        expected_msg = f"@_**{user1.full_name}** left this stream."
+        self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
+        self.assertEqual(msg.content, expected_msg)
 
         self.assertEqual(
             notifications,
@@ -5530,7 +5540,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(38):
+        with self.assert_database_query_count(52):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5937,18 +5947,36 @@ class GetSubscribersTest(ZulipTestCase):
             self.assertEqual(set(never_sub), expected_fields)
 
     def assert_user_got_subscription_notification(
-        self, user: UserProfile, expected_msg: str
+        self,
+        user: UserProfile,
+        inbox_msg_for_private_stream: Optional[str] = None,
+        inbox_msg_for_public_streams: Optional[str] = None,
+        expected_stream_msg: Optional[str] = None,
     ) -> None:
         # verify that the user was sent a message informing them about the subscription
-        realm = user.realm
-        msg = most_recent_message(user)
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
-        self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
-
-        def non_ws(s: str) -> str:
+        def non_ws(s: Optional[str]) -> str:
+            if s is None:
+                return ""  # nocoverage
             return s.replace("\n", "").replace(" ", "")
 
-        self.assertEqual(non_ws(msg.content), non_ws(expected_msg))
+        realm = user.realm
+        msg = most_recent_message(user)
+        plain_text = non_ws(msg.content)
+        expected_inbox_message = ""
+
+        if inbox_msg_for_private_stream is not None:
+            expected_inbox_message += non_ws(inbox_msg_for_private_stream)
+        else:
+            expected_inbox_message += non_ws(inbox_msg_for_public_streams)
+
+        if expected_inbox_message == plain_text:
+            self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+            self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
+            self.assertEqual(plain_text, expected_inbox_message)
+        else:
+            # verify that a message was sent to the "private stream" informing other private stream
+            # subscribers about the subscription
+            self.assertIn(non_ws(expected_stream_msg), plain_text)
 
     def check_well_formed_result(
         self, result: Dict[str, Any], stream_name: str, realm: Realm
@@ -6034,7 +6062,9 @@ class GetSubscribersTest(ZulipTestCase):
             """
 
         for user in [cordelia, othello, polonius]:
-            self.assert_user_got_subscription_notification(user, msg)
+            self.assert_user_got_subscription_notification(
+                user=user, inbox_msg_for_public_streams=msg
+            )
 
         # Subscribe ourself first.
         self.common_subscribe_to_streams(
@@ -6053,12 +6083,18 @@ class GetSubscribersTest(ZulipTestCase):
             invite_only=True,
         )
 
-        msg = f"""
+        inbox_msg = f"""
             @**King Hamlet|{hamlet.id}** subscribed you to the stream #**stream_invite_only_1**.
             """
+        private_stream_msg = """
+            @_**King Hamlet** added
+            """
         for user in [cordelia, othello, polonius]:
-            self.assert_user_got_subscription_notification(user, msg)
-
+            self.assert_user_got_subscription_notification(
+                user=user,
+                inbox_msg_for_private_stream=inbox_msg,
+                expected_stream_msg=private_stream_msg,
+            )
         with self.assert_database_query_count(4):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
