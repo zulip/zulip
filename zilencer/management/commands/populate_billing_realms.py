@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import update_or_create_stripe_customer
+from corporate.lib.stripe import add_months, update_or_create_stripe_customer
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
@@ -170,6 +170,11 @@ class Command(BaseCommand):
                     invoice_settings={"default_payment_method": payment_method.id},
                 )
 
+            months = 12
+            if customer_profile.billing_schedule == CustomerPlan.MONTHLY:
+                months = 1
+            next_invoice_date = add_months(timezone_now(), months)
+
             customer_plan = CustomerPlan.objects.create(
                 customer=customer,
                 billing_cycle_anchor=timezone_now(),
@@ -179,6 +184,7 @@ class Command(BaseCommand):
                 automanage_licenses=customer_profile.automanage_licenses,
                 status=customer_profile.status,
                 charge_automatically=True,
+                next_invoice_date=next_invoice_date,
             )
 
             LicenseLedger.objects.create(
