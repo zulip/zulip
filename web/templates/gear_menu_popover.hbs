@@ -24,20 +24,26 @@
                         {{/if}}
                     </li>
                 {{/if}}
-                {{#if (and is_plan_limited is_owner) }}
-                <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
-                    <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Upgrade to {standard_plan_name}" }}</a>
-                </li>
-                {{/if}}
-                {{#if is_plan_limited }}
+                {{#if (and user_has_billing_access (not is_plan_standard_sponsored_for_free)) }}
+                    {{#if sponsorship_pending }}
+                    <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                        <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Sponsorship request pending" }}</a>
+                    </li>
+                    {{else}}
+                    {{#if is_plan_limited }}
+                    <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                        <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Upgrade to {standard_plan_name}" }}</a>
+                    </li>
+                    {{/if}}
                     {{#if is_education_org }}
                     <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
-                        <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request education pricing' }}</a>
+                        <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request education pricing' }}</a>
                     </li>
                     {{else if (not is_business_org) }}
                     <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
                         <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request sponsorship' }}</a>
                     </li>
+                    {{/if}}
                     {{/if}}
                 {{/if}}
             </ul>

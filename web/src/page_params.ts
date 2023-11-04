@@ -104,6 +104,7 @@ export const page_params: {
     show_billing: boolean;
     show_plans: boolean;
     show_webathena: boolean;
+    sponsorship_pending: boolean;
     translation_data: Record<string, string>;
     user_id: number | undefined;
     zulip_merge_base: string;
