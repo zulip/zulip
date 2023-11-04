@@ -216,18 +216,36 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
 
     def _extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(
-        self, show_message_content: bool = True
+        self,
+        show_message_content: bool = True,
+        *,
+        receiver_is_participant: bool,
     ) -> None:
-        for i in range(1, 6):
+        for i in range(1, 3):
             self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
+
+        if receiver_is_participant:
+            self.send_stream_message(self.example_user("hamlet"), "Denmark", content="hello")
+
         msg_id = self.send_stream_message(self.example_user("othello"), "Denmark", "@**topic**")
+        trigger = NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+        if not receiver_is_participant:
+            trigger = NotificationTriggers.STREAM_EMAIL
 
         if show_message_content:
-            verify_body_include = [
-                "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > @**topic** -- ",
-                "You are receiving this because all topic participants were mentioned in #Denmark > test.",
-            ]
+            # If Hamlet (receiver) is not a topic participant, @topic doesn't mention him,
+            # so he won't receive added context (previous messages) in the email.
+            if receiver_is_participant:
+                verify_body_include = [
+                    "Othello, the Moor of Venice: > 1 > 2 King Hamlet: > hello Othello, the Moor of Venice: > @**topic** -- ",
+                    "You are receiving this because all topic participants were mentioned in #Denmark > test.",
+                ]
+            else:
+                verify_body_include = [
+                    "Othello, the Moor of Venice: > @**topic** -- ",
+                    "You are receiving this because you have email notifications enabled for #Denmark.",
+                ]
             email_subject = "#Denmark > test"
             verify_body_does_not_include: List[str] = []
         else:
@@ -252,7 +270,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             email_subject,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
-            trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+            trigger=trigger,
         )
 
     def _extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic(
@@ -297,18 +315,36 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
 
     def _extra_context_in_missed_stream_messages_topic_wildcard_mention(
-        self, show_message_content: bool = True
+        self,
+        show_message_content: bool = True,
+        *,
+        receiver_is_participant: bool,
     ) -> None:
-        for i in range(1, 6):
+        for i in range(1, 3):
             self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
+
+        if receiver_is_participant:
+            self.send_stream_message(self.example_user("hamlet"), "Denmark", content="hello")
+
         msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "@**topic**")
+        trigger = NotificationTriggers.TOPIC_WILDCARD_MENTION
+        if not receiver_is_participant:
+            trigger = NotificationTriggers.STREAM_EMAIL
 
         if show_message_content:
-            verify_body_include = [
-                "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > @**topic** -- ",
-                "You are receiving this because all topic participants were mentioned in #Denmark > test.",
-            ]
+            # If Hamlet (receiver) is not a topic participant, @topic doesn't mention him,
+            # so he won't receive added context (previous messages) in the email.
+            if receiver_is_participant:
+                verify_body_include = [
+                    "Othello, the Moor of Venice: > 1 > 2 King Hamlet: > hello Othello, the Moor of Venice: > @**topic** -- ",
+                    "You are receiving this because all topic participants were mentioned in #Denmark > test.",
+                ]
+            else:
+                verify_body_include = [
+                    "Othello, the Moor of Venice: > @**topic** -- ",
+                    "You are receiving this because you have email notifications enabled for #Denmark.",
+                ]
             email_subject = "#Denmark > test"
             verify_body_does_not_include: List[str] = []
         else:
@@ -333,7 +369,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             email_subject,
             show_message_content=show_message_content,
             verify_body_does_not_include=verify_body_does_not_include,
-            trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
+            trigger=trigger,
         )
 
     def _extra_context_in_missed_stream_messages_stream_wildcard_mention(
@@ -383,7 +419,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
         msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "12")
         verify_body_include = [
-            "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > 12 -- ",
+            "Othello, the Moor of Venice: > 12 -- ",
             "You are receiving this because you have email notifications enabled for #Denmark.",
         ]
         email_subject = "#Denmark > test"
@@ -432,7 +468,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self.assert_json_success(self.resolve_topic_containing_message(othello_user, msg_id))
 
         verify_body_include = [
-            "Othello, the Moor of Venice: > 0 > 1 > 2 -- ",
+            "Othello, the Moor of Venice: > 2 -- ",
             "You are receiving this because you have email notifications enabled for #Denmark.",
         ]
         email_subject = "[resolved] #Denmark > threading and so forth"
@@ -987,7 +1023,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self._extra_context_in_missed_stream_messages_mention(show_message_content=False)
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(
-            show_message_content=False
+            show_message_content=False,
+            receiver_is_participant=True,
         )
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic(
@@ -995,7 +1032,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_topic_wildcard_mention(
-            show_message_content=False
+            show_message_content=False,
+            receiver_is_participant=True,
         )
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_stream_wildcard_mention(
@@ -1014,7 +1052,16 @@ class TestMessageNotificationEmails(ZulipTestCase):
     def test_extra_context_in_missed_stream_messages_topic_wildcard_in_followed_topic(
         self,
     ) -> None:
-        self._extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic()
+        self._extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(
+            receiver_is_participant=True
+        )
+
+    def test_extra_context_in_missed_stream_messages_topic_wildcard_in_followed_topic_receiver_not_participant(
+        self,
+    ) -> None:
+        self._extra_context_in_missed_stream_messages_topic_wildcard_mention_in_followed_topic(
+            receiver_is_participant=False
+        )
 
     def test_extra_context_in_missed_stream_messages_stream_wildcard_in_followed_topic(
         self,
@@ -1022,7 +1069,16 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self._extra_context_in_missed_stream_messages_stream_wildcard_mention_in_followed_topic()
 
     def test_extra_context_in_missed_stream_messages_topic_wildcard(self) -> None:
-        self._extra_context_in_missed_stream_messages_topic_wildcard_mention()
+        self._extra_context_in_missed_stream_messages_topic_wildcard_mention(
+            receiver_is_participant=True
+        )
+
+    def test_extra_context_in_missed_stream_messages_topic_wildcard_receiver_not_participant(
+        self,
+    ) -> None:
+        self._extra_context_in_missed_stream_messages_topic_wildcard_mention(
+            receiver_is_participant=False
+        )
 
     def test_extra_context_in_missed_stream_messages_stream_wildcard(self) -> None:
         self._extra_context_in_missed_stream_messages_stream_wildcard_mention()

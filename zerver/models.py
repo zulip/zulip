@@ -3662,6 +3662,20 @@ class UserMessage(AbstractUserMessage):
         """
         return UserMessage.objects.select_for_update().order_by("message_id")
 
+    @staticmethod
+    def has_any_mentions(user_profile_id: int, message_id: int) -> bool:
+        # The query uses the 'zerver_usermessage_any_mentioned_message_id' index.
+        return UserMessage.objects.filter(
+            Q(
+                flags__andnz=UserMessage.flags.mentioned.mask
+                | UserMessage.flags.wildcard_mentioned.mask
+                | UserMessage.flags.topic_wildcard_mentioned.mask
+                | UserMessage.flags.group_mentioned.mask
+            ),
+            user_profile_id=user_profile_id,
+            message_id=message_id,
+        ).exists()
+
 
 def get_usermessage_by_message_id(
     user_profile: UserProfile, message_id: int
