@@ -2301,7 +2301,7 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/sponsorship/")
         self.assert_in_success_response(
             [
-                "Your organization has requested sponsorship for a free or discounted Zulip Cloud Standard plan."
+                'This organization has requested sponsorship for a free or discounted <a href="/plans/">Zulip Cloud Standard</a> plan.'
             ],
             response,
         )
@@ -2324,7 +2324,9 @@ class StripeTest(StripeTestCase):
         self.login_user(self.example_user("hamlet"))
         response = self.client_get("/sponsorship/")
         self.assert_in_success_response(
-            ["Zulip is sponsoring free Zulip Cloud Standard hosting for your organization."],
+            [
+                'Zulip is sponsoring free <a href="/plans/">Zulip Cloud Standard</a> hosting for this organization.'
+            ],
             response,
         )
 
