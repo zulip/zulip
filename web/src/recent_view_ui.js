@@ -1492,6 +1492,9 @@ export function initialize({
         $("#recent_view_search").val("");
         update_filters_view();
     });
+    $("body").on("click", "#compose_close", () => {
+        setTimeout(revive_current_focus, 0);
+    });
 
     $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
         maybe_load_older_messages();
