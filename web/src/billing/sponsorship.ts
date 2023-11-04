@@ -23,6 +23,15 @@ function create_ajax_request(): void {
         data[item.name] = item.value;
     }
 
+    // Clear any previous error messages.
+    $(".sponsorship-field-error").text("");
+
+    if (data.description.trim() === "") {
+        $("#sponsorship-description-error").text("Organization description cannot be blank.");
+        hide_submit_loading_indicator();
+        return;
+    }
+
     void $.ajax({
         type: "post",
         url: "/json/billing/sponsorship",
@@ -33,6 +42,10 @@ function create_ajax_request(): void {
         error(xhr) {
             hide_submit_loading_indicator();
             if (xhr.responseJSON?.msg) {
+                if (xhr.responseJSON.msg === "Enter a valid URL.") {
+                    $("#sponsorship-org-website-error").text(xhr.responseJSON.msg);
+                    return;
+                }
                 $("#sponsorship-error").show().text(xhr.responseJSON.msg);
             }
         },
