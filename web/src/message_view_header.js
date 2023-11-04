@@ -48,11 +48,7 @@ function make_message_view_header(filter) {
         message_view_header.rendered_narrow_description = current_stream.rendered_description;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
         message_view_header.sub_count = sub_count;
-        // the "title" is passed as a variable and doesn't get translated (nor should it)
-        message_view_header.sub_count_tooltip_text = $t(
-            {defaultMessage: "This stream has {count} subscribers."},
-            {count: message_view_header.sub_count},
-        );
+        message_view_header.stream = current_stream;
         message_view_header.stream_settings_link =
             "#streams/" + current_stream.stream_id + "/" + current_stream.name;
     }
