@@ -2353,10 +2353,28 @@ class StripeTest(StripeTestCase):
 
         user.realm.plan_type = Realm.PLAN_TYPE_LIMITED
         user.realm.save()
-        Customer.objects.create(realm=user.realm, stripe_customer_id="cus_123")
+        customer = Customer.objects.create(realm=user.realm, stripe_customer_id="cus_123")
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual("/upgrade/", response["Location"])
+
+        # Check redirects for sponsorship pending
+        customer.sponsorship_pending = True
+        customer.save()
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("/sponsorship/", response["Location"])
+
+        # Don't redirect to sponsorship for paid plans.
+        user.realm.plan_type = Realm.PLAN_TYPE_STANDARD
+        user.realm.save()
+        response = self.client_get("/billing/")
+        self.assertNotEqual("/sponsorship/", response["Location"])
+
+        user.realm.plan_type = Realm.PLAN_TYPE_PLUS
+        user.realm.save()
+        response = self.client_get("/billing/")
+        self.assertNotEqual("/sponsorship/", response["Location"])
 
     def test_upgrade_page_for_demo_organizations(self) -> None:
         user = self.example_user("hamlet")
