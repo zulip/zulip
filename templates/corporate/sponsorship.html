@@ -47,7 +47,7 @@
                 <form id="sponsorship-form" method="post">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                     <div class="input-box sponsorship-form-field no-validation">
-                        <label for="org-name" class="inline-block label-title">{{ _('Organization') }}</label>
+                        <label for="org-name" class="inline-block label-title">Organization</label>
                         <div id="org-name" class="not-editable-realm-field">{{ realm_name }}</div>
                     </div>
                     <div class="input-box sponsorship-form-field">
@@ -64,21 +64,21 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <label for="organization-type" class="inline-block label-title">{{ _('Organization type') }}</label>
+                        <label for="organization-type" class="inline-block label-title">Organization type</label>
                     </div>
                     <div class="input-box sponsorship-form-field no-validation">
-                        <label for="org-website" class="inline-block label-title">{{ _('Organization website') }}</label>
-                        <input id="org-website" name="website" type="text" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
+                        <label for="org-website" class="inline-block label-title">Organization website</label>
+                        <input id="org-website" name="website" type="text" placeholder="Leave blank if your organization does not have a website."/>
                         <div id="sponsorship-org-website-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
                     <div class="input-box sponsorship-form-field">
-                        <label for="description" class="inline-block label-title">{{ _('Describe your organization') }}</label>
+                        <label for="description" class="inline-block label-title">Describe your organization</label>
                         <textarea id="description" name="description" cols="100" rows="5"></textarea>
                         <div id="sponsorship-description-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
                     <p id="sponsorship-discount-details"></p>
                     <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
-                    <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
+                    <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="Convert demo organization before upgrading."{% endif %}>
                         <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
                             <span class="sponsorship-button-text">Submit</span>
                             <object class="loader sponsorship-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
