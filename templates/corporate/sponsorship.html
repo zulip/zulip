@@ -69,10 +69,12 @@
                     <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-website" class="inline-block label-title">{{ _('Organization website') }}</label>
                         <input id="org-website" name="website" type="text" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
+                        <div id="sponsorship-org-website-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
                     <div class="input-box sponsorship-form-field">
                         <label for="description" class="inline-block label-title">{{ _('Describe your organization') }}</label>
-                        <textarea id="description" name="description" cols="100" rows="5" required></textarea>
+                        <textarea id="description" name="description" cols="100" rows="5"></textarea>
+                        <div id="sponsorship-description-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
                     <p id="sponsorship-discount-details"></p>
                     <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
