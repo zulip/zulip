@@ -437,13 +437,13 @@ export function initialize() {
         mode: "compose",
     });
 
-    // Allow the main panel to receive drag/drop events.
-    $(".app-main").on("dragover", (event) => event.preventDefault());
+    // Allow the app panel to receive drag/drop events.
+    $(".app").on("dragover", (event) => event.preventDefault());
 
     // TODO: Do something visual to hint that drag/drop will work.
-    $(".app-main").on("dragenter", (event) => event.preventDefault());
+    $(".app").on("dragenter", (event) => event.preventDefault());
 
-    $(".app-main").on("drop", (event) => {
+    $(".app").on("drop", (event) => {
         event.preventDefault();
 
         const $drag_drop_edit_containers = $(".message_edit_form form");
