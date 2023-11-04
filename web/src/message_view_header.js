@@ -1,6 +1,8 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
+import render_message_view_header_tooltip from "../templates/message_view_header_tooltip.hbs";
 
 import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
@@ -9,6 +11,7 @@ import * as peer_data from "./peer_data";
 import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
+import {parse_html} from "./ui_util";
 
 function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
@@ -105,6 +108,30 @@ function build_message_view_header(filter) {
         search.close_search_bar_and_open_narrow_description();
     }
 }
+
+// Add tooltip to stream name
+$("body").on("mouseenter", ".message-header-stream-settings-button", (e) => {
+    e.stopPropagation();
+    const $elem = $(e.currentTarget);
+    const current_stream = narrow_state.filter()._sub;
+    const stream = current_stream.name;
+    const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
+    const data = {stream, sub_count};
+
+    tippy($elem[0], {
+        delay: 0,
+        // Don't show tooltip on touch devices (99% mobile) since touch pressing on it will open stream settings
+        touch: false,
+        content: () => parse_html(render_message_view_header_tooltip(data)),
+        arrow: true,
+        placement: "bottom",
+        showOnCreate: true,
+        onHidden(instance) {
+            instance.destroy();
+        },
+        appendTo: () => document.body,
+    });
+});
 
 export function initialize() {
     render_title_area();
