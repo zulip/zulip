@@ -975,9 +975,6 @@ export function complete_rerender() {
     // was not the first view loaded in the app.
     show_selected_filters();
 
-    // Update the banner now that it's rendered.
-    update_load_more_banner();
-
     const $container = $("#recent_view_table table tbody");
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
