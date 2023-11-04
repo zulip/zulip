@@ -1895,6 +1895,8 @@ class UserMentionPattern(CompiledInlineProcessor):
                     self.zmd.zulip_rendering_result.mentions_topic_wildcard = True
             elif user is not None:
                 assert isinstance(user, FullNameInfo)
+                if not user.is_active:
+                    silent = True
 
                 if not silent:
                     self.zmd.zulip_rendering_result.mentions_user_ids.add(user.id)

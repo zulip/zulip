@@ -253,6 +253,7 @@ class MarkdownMiscTest(ZulipTestCase):
             FullNameInfo(
                 full_name="Fred Flintstone",
                 id=fred2.id,
+                is_active=True,
             ),
         )
         self.assertEqual(
@@ -260,6 +261,7 @@ class MarkdownMiscTest(ZulipTestCase):
             FullNameInfo(
                 full_name="Fred Flintstone",
                 id=fred4.id,
+                is_active=True,
             ),
         )
 
@@ -276,6 +278,7 @@ class MarkdownMiscTest(ZulipTestCase):
             FullNameInfo(
                 full_name=hamlet.full_name,
                 id=hamlet.id,
+                is_active=True,
             ),
         )
 
@@ -2093,6 +2096,48 @@ class MarkdownTest(ZulipTestCase):
     def test_mention_silent(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        user_id = user_profile.id
+
+        content = "@_**King Hamlet**"
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p><span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+
+    def test_mention_deactivated_users(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        change_user_is_active(user_profile, False)
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        user_id = user_profile.id
+
+        content = "@**King Hamlet**"
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p><span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+
+    def test_mention_silent_deactivated_users(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        change_user_is_active(user_profile, False)
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
