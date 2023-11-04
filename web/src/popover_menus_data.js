@@ -186,6 +186,7 @@ export function get_personal_menu_content_context() {
 }
 
 export function get_gear_menu_content_context() {
+    const user_has_billing_access = page_params.is_billing_admin || page_params.is_owner;
     return {
         realm_name: page_params.realm_name,
         realm_url: new URL(page_params.realm_uri).hostname,
@@ -209,5 +210,7 @@ export function get_gear_menu_content_context() {
         show_billing: page_params.show_billing,
         show_plans: page_params.show_plans,
         show_webathena: page_params.show_webathena,
+        sponsorship_pending: page_params.sponsorship_pending,
+        user_has_billing_access,
     };
 }
