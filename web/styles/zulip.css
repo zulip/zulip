@@ -1304,6 +1304,7 @@ strong {
 .buddy_list_tooltip_content {
     text-align: left;
     word-wrap: break-word;
+    max-width: 280px;
 }
 
 #change_visibility_policy_button_tooltip {
@@ -2844,6 +2845,7 @@ select.invite-as {
 .empty-feed-notice-title {
     font-size: 1.5em;
     font-weight: 400;
+    word-wrap: break-word;
 }
 
 .empty-feed-notice-description {
