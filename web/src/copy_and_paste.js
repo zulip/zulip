@@ -529,7 +529,7 @@ export function paste_handler(event) {
             event.preventDefault();
             event.stopPropagation();
             const text = paste_handler_converter(paste_html);
-            compose_ui.insert_syntax_and_focus(text);
+            compose_ui.insert_syntax_and_focus(text, $textarea);
         }
     }
 }

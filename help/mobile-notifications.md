@@ -41,11 +41,38 @@ notifications while you are actively using one of the Zulip apps.
 
 ## Troubleshooting mobile notifications
 
+### Checking your device settings
+
 Some Android vendors have added extra device-level settings that can impact the
 delivery of mobile notifications to apps like Zulip. If you're having issues
 with Zulip notifications on your Android phone, we recommend Signal's excellent
 [troubleshooting guide](https://support.signal.org/hc/en-us/articles/360007318711-Troubleshooting-Notifications#android_notifications_troubleshooting),
 which explains the notification settings for many popular Android vendors.
+
+### Enabling push notifications for self-hosted servers
+
+!!! warn ""
+
+    These instructions do not apply to Zulip Cloud organizations (`*.zulipchat.com`).
+
+To enable push notifications for your organization, your server administrator
+will need to register your Zulip server with the [Zulip mobile push notification
+service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
+
+#### Check whether notifications have been set up on your Zulip server
+
+{start_tabs}
+
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Settings**.
+
+1. Tap **Notifications**. If notifications have not been set up, you will see a
+   banner that indicates this.
+
+{end_tabs}
 
 ### Contacting Zulip support
 

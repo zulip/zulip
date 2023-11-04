@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, List, Match, Optional, Set, Tuple
 
+from django.conf import settings
 from django.db.models import Q
 
 from zerver.models import UserGroup, UserProfile, get_linkable_streams
@@ -91,9 +92,9 @@ class MentionBackend:
 
             rows = (
                 UserProfile.objects.filter(
-                    realm_id=self.realm_id,
-                    is_active=True,
+                    Q(realm_id=self.realm_id) | Q(email__in=settings.CROSS_REALM_BOT_EMAILS),
                 )
+                .filter(is_active=True)
                 .filter(
                     functools.reduce(lambda a, b: a | b, q_list),
                 )
