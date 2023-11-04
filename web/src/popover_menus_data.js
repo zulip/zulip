@@ -196,6 +196,7 @@ export function get_gear_menu_content_context() {
         is_plan_limited: page_params.realm_plan_type === 2,
         is_plan_standard: page_params.realm_plan_type === 3,
         is_plan_standard_sponsored_for_free: page_params.realm_plan_type === 4,
+        is_plan_plus: page_params.realm_plan_type === 10,
         is_business_org: page_params.realm_org_type === 10,
         is_education_org: page_params.realm_org_type === 30 || page_params.realm_org_type === 35,
         standard_plan_name: "Zulip Cloud Standard",
