@@ -27,6 +27,7 @@ from zproject.config import get_config
 class BillingInfo:
     show_billing: bool
     show_plans: bool
+    sponsorship_pending: bool
 
 
 @dataclass
@@ -75,25 +76,35 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
 
 
 def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
+    # See https://zulip.com/help/roles-and-permissions for clarity.
     show_billing = False
     show_plans = False
-    if settings.CORPORATE_ENABLED and user_profile is not None:
-        if user_profile.has_billing_access:
-            from corporate.models import CustomerPlan, get_customer_by_realm
+    sponsorship_pending = False
+    # This query runs on home page load, so we want to avoid
+    # hitting the database if possible. So, we only run it for the user
+    # types that can actually see the billing info.
+    if (
+        settings.CORPORATE_ENABLED
+        and user_profile is not None
+        and (user_profile.has_billing_access or user_profile.is_realm_owner)
+    ):
+        from corporate.models import CustomerPlan, get_customer_by_realm
 
-            customer = get_customer_by_realm(user_profile.realm)
-            if customer is not None:
-                if customer.sponsorship_pending:
-                    show_billing = True
-                elif CustomerPlan.objects.filter(customer=customer).exists():
-                    show_billing = True
+        customer = get_customer_by_realm(user_profile.realm)
+        if customer is not None:
+            if customer.sponsorship_pending:
+                sponsorship_pending = True
 
-        if not user_profile.is_guest and user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
+            if CustomerPlan.objects.filter(customer=customer).exists():
+                show_billing = True
+
+        if user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
             show_plans = True
 
     return BillingInfo(
         show_billing=show_billing,
         show_plans=show_plans,
+        sponsorship_pending=sponsorship_pending,
     )
 
 
@@ -202,6 +213,7 @@ def build_page_params_for_home_page_load(
         show_billing=billing_info.show_billing,
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
         show_plans=billing_info.show_plans,
+        sponsorship_pending=billing_info.sponsorship_pending,
         show_webathena=user_permission_info.show_webathena,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
