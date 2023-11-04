@@ -165,7 +165,7 @@ function update_load_more_banner() {
         return;
     }
 
-    if (!topics_widget.all_rendered()) {
+    if (!topics_widget?.all_rendered()) {
         $(".recent-view-load-more-container").toggleClass("notvisible", true);
         return;
     }
