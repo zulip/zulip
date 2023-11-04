@@ -655,6 +655,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     PLAN_TYPE_STANDARD = 3
     PLAN_TYPE_STANDARD_FREE = 4
     PLAN_TYPE_PLUS = 10
+
+    # Used for creating realms with different plan types.
+    ALL_PLAN_TYPES = {
+        PLAN_TYPE_SELF_HOSTED: "self-hosted-plan",
+        PLAN_TYPE_LIMITED: "limited-plan",
+        PLAN_TYPE_STANDARD: "standard-plan",
+        PLAN_TYPE_STANDARD_FREE: "standard-free-plan",
+        PLAN_TYPE_PLUS: "plus-plan",
+    }
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     # This value is also being used in web/src/settings_bots.bot_creation_policy_values.

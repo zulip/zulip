@@ -23,6 +23,10 @@ export function initialize() {
             "#new_direct_message_button",
         ],
         delay: EXTRA_LONG_HOVER_DELAY,
+        // Only show on mouseenter since for spectators, clicking on these
+        // buttons opens login modal, and Micromodal returns focus to the
+        // trigger after it closes, which results in tooltip being displayed.
+        trigger: "mouseenter",
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
