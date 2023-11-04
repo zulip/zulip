@@ -181,7 +181,8 @@ const emoji_list = [...emojis_by_name.values()].map((emoji_dict) => ({
 const me_slash = {
     name: "me",
     aliases: "",
-    text: "translated: /me (Action Message)",
+    text: "translated: /me is excited (Display action text)",
+    placeholder: "translated: is …",
 };
 
 const my_slash = {
