@@ -113,11 +113,19 @@ def billing_home(
         context["is_sponsored"] = True
         return HttpResponseRedirect(reverse("sponsorship_request"))
 
+    PAID_PLANS = [
+        Realm.PLAN_TYPE_STANDARD,
+        Realm.PLAN_TYPE_PLUS,
+    ]
+
     customer = get_customer_by_realm(user.realm)
-    if (
-        customer is not None and customer.sponsorship_pending
-    ) or user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
-        return HttpResponseRedirect(reverse("sponsorship_request"))
+    if customer is not None and customer.sponsorship_pending:
+        # Don't redirect to sponsorship page if the realm is on a paid plan
+        if user.realm.plan_type not in PAID_PLANS:
+            return HttpResponseRedirect(reverse("sponsorship_request"))
+        # If the realm is on a paid plan, show the sponsorship pending message
+        # TODO: Add a sponsorship pending message to the billing page
+        context["sponsorship_pending"] = True
 
     if customer is None:
         from corporate.views.upgrade import initial_upgrade
