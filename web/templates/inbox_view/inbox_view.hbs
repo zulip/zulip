@@ -5,10 +5,7 @@
             <i class="zulip-icon zulip-icon-close-small"></i>
         </button>
         <i class="zulip-icon zulip-icon-search-inbox"></i>
-        <button data-filter="include_muted" id="{{MUTED_FILTER_ID}}" type="button" class="btn btn-default btn-inbox-filter {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="false" tabindex="0">
-            <i id="inbox_filter_mute_toggle" class="fa fa-square-o"></i>
-            {{t 'Include muted' }}
-        </button>
+        {{> ../dropdown_widget widget_name="inbox-filter"}}
     </div>
     <div id="inbox-empty-with-search" class="inbox-empty-text empty-list-message">
         {{t "No conversations match your filters."}}
