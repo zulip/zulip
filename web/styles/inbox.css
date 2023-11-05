@@ -143,8 +143,11 @@
             border-radius: 5px;
             border: 1px solid hsl(0deg 0% 0% / 20%);
             margin-bottom: var(--max-unexpanded-compose-height);
-            /* Width of muted filter(130) + margin(10) + search padding(50) = 190px */
-            max-width: calc(var(--width-inbox-search) + 190px);
+            /* margin(5) + search left padding(30) + search right padding (28) = 63px */
+            max-width: calc(
+                var(--width-inbox-search) + var(--width-inbox-filters-dropdown) +
+                    63px
+            );
 
             .inbox-focus-border {
                 display: flex;
@@ -435,14 +438,6 @@
             align-items: center;
         }
 
-        #inbox_filter_mute_toggle {
-            font-size: 16px;
-            width: 16px;
-            height: 16px;
-            position: relative;
-            top: 1px;
-        }
-
         .inbox-row,
         .inbox-header {
             &:focus,
@@ -527,4 +522,44 @@
 .inbox-container #inbox-pane .inbox-empty-action-link {
     text-decoration: underline;
     color: hsl(200deg 100% 40%);
+}
+
+#inbox-filter_widget {
+    margin-left: 5px;
+    height: 30px;
+    max-width: var(--width-inbox-filters-dropdown);
+    border: 1px solid var(--color-border-inbox-search);
+    background-color: var(--color-background-inbox-search);
+    gap: 5px;
+
+    &:hover {
+        background-color: var(--color-background-inbox-search-hover);
+        border: 1px solid var(--color-border-inbox-search-hover);
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
+#inbox-filter_widget .dropdown_widget_value {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+    text-align: left;
+}
+
+#inbox-filter_widget .fa-chevron-down {
+    color: var(--color-icons-inbox);
+    opacity: 0.4;
+}
+
+.inbox-filter-dropdown-list-container .dropdown-list-wrapper {
+    width: var(--width-inbox-filters-dropdown);
+    min-width: unset;
 }
