@@ -43,6 +43,7 @@ export class DropdownWidget {
         unique_id_type = null,
         // Show disabled state if the default_id is not in `get_options()`.
         show_disabled_if_current_value_not_in_options = false,
+        hide_search_box = false,
     }) {
         this.widget_name = widget_name;
         this.widget_id = `#${CSS.escape(widget_name)}_widget`;
@@ -66,6 +67,7 @@ export class DropdownWidget {
         this.$events_container = $events_container;
         this.show_disabled_if_current_value_not_in_options =
             show_disabled_if_current_value_not_in_options;
+        this.hide_search_box = hide_search_box;
     }
 
     init() {
@@ -112,7 +114,14 @@ export class DropdownWidget {
             theme: "dropdown-widget",
             arrow: false,
             onShow: function (instance) {
-                instance.setContent(parse_html(render_dropdown_list_container()));
+                instance.setContent(
+                    parse_html(
+                        render_dropdown_list_container({
+                            widget_name: this.widget_name,
+                            hide_search_box: this.hide_search_box,
+                        }),
+                    ),
+                );
                 const $popper = $(instance.popper);
                 const $dropdown_list_body = $popper.find(".dropdown-list");
                 const $search_input = $popper.find(".dropdown-list-search-input");
@@ -171,6 +180,22 @@ export class DropdownWidget {
                         trigger_element_focus(last_item());
                     }.bind(this);
 
+                    const handle_arrow_down_on_last_item = () => {
+                        if (this.hide_search_box) {
+                            trigger_element_focus(first_item());
+                        } else {
+                            trigger_element_focus($search_input);
+                        }
+                    };
+
+                    const handle_arrow_up_on_first_item = () => {
+                        if (this.hide_search_box) {
+                            render_all_items_and_focus_last_item();
+                        } else {
+                            trigger_element_focus($search_input);
+                        }
+                    };
+
                     switch (e.key) {
                         case "Enter":
                             if (e.target === $search_input.get(0)) {
@@ -194,7 +219,7 @@ export class DropdownWidget {
                         case "ArrowDown":
                             switch (e.target) {
                                 case last_item().get(0):
-                                    trigger_element_focus($search_input);
+                                    handle_arrow_down_on_last_item();
                                     break;
                                 case $search_input.get(0):
                                     trigger_element_focus(first_item());
@@ -207,7 +232,7 @@ export class DropdownWidget {
                         case "ArrowUp":
                             switch (e.target) {
                                 case first_item().get(0):
-                                    trigger_element_focus($search_input);
+                                    handle_arrow_up_on_first_item();
                                     break;
                                 case $search_input.get(0):
                                     render_all_items_and_focus_last_item();
@@ -225,13 +250,17 @@ export class DropdownWidget {
                     if (this.unique_id_type === DATA_TYPES.NUMBER) {
                         this.current_value = Number.parseInt(this.current_value, 10);
                     }
-                    this.item_click_callback(event, instance);
+                    this.item_click_callback(event, instance, this);
                 });
 
-                // Set focus on search input when dropdown opens.
+                // Set focus on first element when dropdown opens.
                 setTimeout(() => {
-                    $(".dropdown-list-search-input").trigger("focus");
-                });
+                    if (this.hide_search_box) {
+                        $dropdown_list_body.find(".list-item:first-child").trigger("focus");
+                    } else {
+                        $search_input.trigger("focus");
+                    }
+                }, 0);
 
                 this.on_show_callback(instance);
             }.bind(this),
