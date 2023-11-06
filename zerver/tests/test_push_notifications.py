@@ -780,6 +780,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.client_delete(endpoint, {"token": broken_token}, subdomain="zulip")
             self.assert_json_error(result, "Empty or invalid length token")
 
+            # Try adding without appid...
+            if appid:
+                result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
+                self.assert_json_error(result, "Missing 'appid' argument")
+
             # Try to remove a non-existent token...
             result = self.client_delete(endpoint, {"token": "abcd1234"}, subdomain="zulip")
             self.assert_json_error(result, "Token does not exist")
@@ -2805,6 +2810,11 @@ class TestPushApi(BouncerTestCase):
 
             result = self.client_delete(endpoint, {"token": broken_token})
             self.assert_json_error(result, "Empty or invalid length token")
+
+            # Try adding without appid...
+            if appid:
+                result = self.client_post(endpoint, {"token": label})
+                self.assert_json_error(result, "Missing 'appid' argument")
 
             # Try to remove a non-existent token...
             result = self.client_delete(endpoint, {"token": "abcd1234"})

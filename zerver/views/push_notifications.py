@@ -1,6 +1,5 @@
 from typing import Optional
 
-from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
@@ -35,7 +34,7 @@ def add_apns_device_token(
     request: HttpRequest,
     user_profile: UserProfile,
     token: str = REQ(),
-    appid: str = REQ(default=settings.ZULIP_IOS_APP_ID),
+    appid: str = REQ(),
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     add_push_device_token(user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
