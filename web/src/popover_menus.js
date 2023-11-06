@@ -41,6 +41,10 @@ export function popover_items_handle_keyboard(key, $items) {
     let index = $items.index($items.filter(":focus"));
 
     if (key === "enter" && index >= 0 && index < $items.length) {
+        // This is not enough for some elements which need to trigger
+        // natural click for them to work like ClipboardJS and follow
+        // the link for anchor tags. For those elements, we need to
+        // use `.navigate-link-on-enter` class on them.
         $items.eq(index).trigger("click");
         return;
     }
