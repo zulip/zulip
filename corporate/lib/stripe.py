@@ -25,6 +25,8 @@ from corporate.models import (
     Customer,
     CustomerPlan,
     LicenseLedger,
+    PaymentIntent,
+    Session,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
     get_customer_by_realm,
@@ -342,6 +344,11 @@ class BillingSessionAuditLogEventError(Exception):
 
 
 class BillingSession(ABC):
+    @property
+    @abstractmethod
+    def billing_session_url(self) -> str:
+        pass
+
     @abstractmethod
     def get_customer(self) -> Optional[Customer]:
         pass
@@ -430,6 +437,33 @@ class BillingSession(ABC):
             self.replace_payment_method(customer.stripe_customer_id, payment_method, True)
         return customer
 
+    def create_stripe_checkout_session(
+        self,
+        metadata: Dict[str, Any],
+        session_type: int,
+        payment_intent: Optional[PaymentIntent] = None,
+    ) -> stripe.checkout.Session:
+        customer = self.get_customer()
+        assert customer is not None and customer.stripe_customer_id is not None
+        stripe_session = stripe.checkout.Session.create(
+            cancel_url=f"{self.billing_session_url}/billing/",
+            customer=customer.stripe_customer_id,
+            metadata=metadata,
+            mode="setup",
+            payment_method_types=["card"],
+            success_url=f"{self.billing_session_url}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+        )
+        session = Session.objects.create(
+            stripe_session_id=stripe_session.id,
+            customer=customer,
+            type=session_type,
+        )
+        if payment_intent is not None:
+            session.payment_intent = payment_intent
+            session.save(update_fields=["payment_intent"])
+            session.save()
+        return stripe_session
+
     def attach_discount_to_customer(self, discount: Decimal) -> None:
         customer = self.get_customer()
         old_discount: Optional[Decimal] = None
@@ -488,6 +522,11 @@ class RealmBillingSession(BillingSession):
         else:
             self.realm = user.realm
             self.support_session = False
+
+    @override
+    @property
+    def billing_session_url(self) -> str:
+        return self.realm.uri
 
     @override
     def get_customer(self) -> Optional[Customer]:
