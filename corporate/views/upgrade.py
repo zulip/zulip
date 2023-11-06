@@ -16,9 +16,9 @@ from corporate.lib.stripe import (
     MIN_INVOICED_LICENSES,
     BillingError,
     RealmBillingSession,
-    compute_plan_parameters,
     ensure_customer_does_not_have_active_plan,
     get_latest_seat_count,
+    get_price_per_license,
     is_free_trial_offer_enabled,
     is_sponsored_realm,
     process_initial_upgrade,
@@ -82,6 +82,7 @@ def check_upgrade_parameters(
 
 def setup_upgrade_checkout_session_and_payment_intent(
     user: UserProfile,
+    plan_tier: int,
     seat_count: int,
     licenses: int,
     license_management: str,
@@ -93,12 +94,8 @@ def setup_upgrade_checkout_session_and_payment_intent(
     customer = billing_session.update_or_create_stripe_customer()
     assert customer is not None  # for mypy
     free_trial = is_free_trial_offer_enabled()
-    _, _, _, price_per_license = compute_plan_parameters(
-        CustomerPlan.STANDARD,
-        license_management == "automatic",
-        billing_schedule,
-        customer.default_discount,
-        free_trial,
+    price_per_license = get_price_per_license(
+        plan_tier, billing_schedule, customer.default_discount
     )
     metadata = {
         "billing_modality": billing_modality,
@@ -201,6 +198,7 @@ def upgrade(
         if charge_automatically:
             stripe_checkout_session = setup_upgrade_checkout_session_and_payment_intent(
                 user,
+                CustomerPlan.STANDARD,
                 seat_count,
                 licenses,
                 license_management,
