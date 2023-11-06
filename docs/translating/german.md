@@ -75,9 +75,6 @@ This becomes even more evident in internet applications,
 so you should not be afraid of using them if they provide an advantage over
 the German equivalent. Take the following two examples as a reference:
 
-- Translating _Stream_: Use the German word _Kanal_, since it is just as short
-  and used in other web apps.
-
 - Translating _Bot_: Use _Bot_, as a completely accurate German
   equivalent **doesn't** exist (e.g. _Roboter_) and the term _Bot_ is not
   unknown to German speakers.
@@ -162,17 +159,6 @@ small German forums)_
 - Topic - **Thema**
 
 _(Gmail - for email subjects, Transifex)_
-
-- Invite-Only Stream - **Geschlossener Stream**
-
-For users to be able to join to an "invite-only" stream, they must have been
-invited by some user in this stream. This type of stream is equivalent to
-Facebook's "closed" groups, which in turn translates to "geschlossen" in German.
-This translation seems to be appropriate, for example [Linguee](https://www.linguee.de/englisch-deutsch/uebersetzung/invite-only.html)
-search returns only paraphrases of this term.
-
-_"Geschlossener Stream" (Transifex), "Geschlossene Gruppe" (Facebook),
-paraphrases (Linguee)_
 
 - Public Stream - **Öffentlicher Stream**
 
@@ -299,7 +285,7 @@ problem.
 
 _"Anpinnen/Ablösen" (Transifex), "Pinnen" (Pinterest)_
 
-- Mention/@mention - **Erwähnen/"@-Erwähnen**
+- Mention/@mention - **Erwähnen/@-erwähnen**
 
 Make sure to say "@-erwähnen", but "die @-Erwähnung" (capitalized).
 
