@@ -111,21 +111,25 @@ function analyze_edit_history(message, last_edit_timestr) {
     return {edited, moved, resolve_toggled};
 }
 
-function render_group_display_date(group, message_container) {
+function render_group_display_date(group, message_container, previous_message_container) {
     const time = new Date(message_container.msg.timestamp * 1000);
+    const prev_msg_time = previous_message_container
+        ? new Date(previous_message_container.msg.timestamp * 1000)
+        : null;
     const today = new Date();
-    const date_element = timerender.render_date(time, today)[0];
+    const date_element = timerender.render_date(time, today, prev_msg_time)[0];
 
     group.date = date_element.outerHTML;
 }
 
 function update_group_date(group, message_container, prev) {
     const time = new Date(message_container.msg.timestamp * 1000);
+    const prev_msg_time = prev ? new Date(prev.msg.timestamp * 1000) : null;
     const today = new Date();
 
     // Show the date in the recipient bar if the previous message was from a different day.
     group.date_unchanged = same_day(message_container, prev);
-    group.group_date_html = timerender.render_date(time, today)[0].outerHTML;
+    group.group_date_html = timerender.render_date(time, today, prev_msg_time)[0].outerHTML;
 }
 
 function clear_group_date(group) {
@@ -150,10 +154,15 @@ function update_message_date_divider(opts) {
     }
 
     const curr_time = new Date(curr_msg_container.msg.timestamp * 1000);
+    const prev_msg_time = new Date(prev_msg_container.msg.timestamp * 1000);
     const today = new Date();
 
     curr_msg_container.want_date_divider = true;
-    curr_msg_container.date_divider_html = timerender.render_date(curr_time, today)[0].outerHTML;
+    curr_msg_container.date_divider_html = timerender.render_date(
+        curr_time,
+        today,
+        prev_msg_time,
+    )[0].outerHTML;
 }
 
 function set_timestr(message_container) {
@@ -205,7 +214,11 @@ function get_users_for_recipient_row(message) {
     return users.sort(compare_by_name);
 }
 
-function populate_group_from_message_container(group, message_container) {
+function populate_group_from_message_container(
+    group,
+    message_container,
+    previous_message_container,
+) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
 
@@ -250,7 +263,7 @@ function populate_group_from_message_container(group, message_container) {
     group.topic_links = message_container.msg.topic_links;
 
     set_topic_edit_properties(group, message_container.msg);
-    render_group_display_date(group, message_container);
+    render_group_display_date(group, message_container, previous_message_container);
 }
 
 export class MessageListView {
@@ -495,6 +508,7 @@ export class MessageListView {
         });
 
         let current_group = start_group();
+        let prev_group = null;
         const new_message_groups = [];
         let prev;
 
@@ -507,6 +521,9 @@ export class MessageListView {
                 populate_group_from_message_container(
                     current_group,
                     current_group.message_containers[0],
+                    prev_group && prev_group.message_containers.length > 0
+                        ? prev_group.message_containers.at(-1)
+                        : null,
                 );
                 new_message_groups.push(current_group);
             }
@@ -529,6 +546,7 @@ export class MessageListView {
                 });
             } else {
                 finish_group();
+                prev_group = current_group;
                 current_group = start_group();
                 add_message_container_to_group(message_container);
 
@@ -681,6 +699,7 @@ export class MessageListView {
                 !same_day(second_group.message_containers[0], first_group.message_containers[0])
             ) {
                 // The groups did not merge, so we need up update the date row for the old group
+                render_group_display_date(second_group, curr_msg_container, prev_msg_container);
                 update_group_date(second_group, curr_msg_container, prev_msg_container);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
@@ -1623,6 +1642,7 @@ export class MessageListView {
         const today = new Date();
         const rendered_date = timerender.render_date(time, today);
         $sticky_header.find(".recipient_row_date").html(rendered_date);
+        this.update_next_message_group_recipient_display_date($message_row, message);
 
         // The following prevents a broken looking situation where
         // there's a recipient row (possibly partially) visible just
@@ -1674,5 +1694,49 @@ export class MessageListView {
             return message_ids.includes(message_id);
         });
         $rows_to_show_as_unread.addClass("unread");
+    }
+
+    // This function updates next message header display date when we scroll,
+    // When we scroll up, if current message date and next message date is not the same year and
+    // next message date is in the current year then we need to update the next message header
+    // display date to show the year in the message header recipient_row_date section.
+    update_next_message_group_recipient_display_date($current_message_row, current_message) {
+        if (!$current_message_row || !current_message) {
+            return;
+        }
+
+        const $next_message_row = rows.next_visible($current_message_row);
+        if (!$next_message_row || $next_message_row.length !== 1) {
+            return;
+        }
+        const next_message_id = rows.id($next_message_row);
+        if (!next_message_id) {
+            return;
+        }
+
+        const next_message = message_store.get(next_message_id);
+        if (!next_message) {
+            return;
+        }
+
+        const $current_message_recipient_row = rows.get_message_recipient_row($current_message_row);
+        const $next_message_recipient_row = rows.get_message_recipient_row($next_message_row);
+
+        // if current message and next message are in the same message group
+        // then we do not want to update the message header
+        if ($current_message_recipient_row.attr("id") === $next_message_recipient_row.attr("id")) {
+            return;
+        }
+
+        const next_msg_time = new Date(next_message.timestamp * 1000);
+        const curr_msg_time = new Date(current_message.timestamp * 1000);
+        const today = new Date();
+        const rendered_date_for_next_msg = timerender.render_date(
+            next_msg_time,
+            today,
+            curr_msg_time,
+        );
+        const $next_message_header = rows.get_message_recipient_header($next_message_row);
+        $next_message_header.find(".recipient_row_date").html(rendered_date_for_next_msg);
     }
 }
