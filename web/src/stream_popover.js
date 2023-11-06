@@ -33,16 +33,6 @@ let stream_popover_instance = null;
 let stream_widget_value;
 let $stream_header_colorblock;
 
-// Keep the menu icon over which the popover is based off visible.
-function show_left_sidebar_menu_icon(element) {
-    $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
-}
-
-// Remove the class from element when popover is closed
-function hide_left_sidebar_menu_icon() {
-    $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
-}
-
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
@@ -79,7 +69,7 @@ export function is_open() {
 
 export function hide_stream_popover() {
     if (is_open()) {
-        hide_left_sidebar_menu_icon();
+        ui_util.hide_left_sidebar_menu_icon();
         stream_popover_instance.destroy();
         stream_popover_instance = null;
     }
@@ -123,7 +113,7 @@ function build_stream_popover(opts) {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            show_left_sidebar_menu_icon(elt);
+            ui_util.show_left_sidebar_menu_icon(elt);
 
             // Stream settings
             $popper.on("click", ".open_stream_settings", (e) => {

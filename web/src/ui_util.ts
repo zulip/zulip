@@ -121,3 +121,13 @@ export function listener_for_preferred_color_scheme_change(callback: () => void)
         media_query_list.addListener(listener);
     }
 }
+
+// Keep the menu icon over which the popover is based off visible.
+export function show_left_sidebar_menu_icon(element: HTMLElement): void {
+    $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
+}
+
+// Remove the class from element when popover is closed
+export function hide_left_sidebar_menu_icon(): void {
+    $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
+}
