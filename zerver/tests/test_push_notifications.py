@@ -760,16 +760,21 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.login_user(user)
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
 
-        endpoints = [
-            ("/json/users/me/apns_device_token", "apple-tokenaz", RemotePushDeviceToken.APNS),
-            ("/json/users/me/android_gcm_reg_id", "android-token", RemotePushDeviceToken.GCM),
+        endpoints: List[Tuple[str, str, int, Mapping[str, str]]] = [
+            (
+                "/json/users/me/apns_device_token",
+                "apple-tokenaz",
+                RemotePushDeviceToken.APNS,
+                {"appid": "org.zulip.Zulip"},
+            ),
+            ("/json/users/me/android_gcm_reg_id", "android-token", RemotePushDeviceToken.GCM, {}),
         ]
 
         # Test error handling
-        for endpoint, token, kind in endpoints:
+        for endpoint, token, kind, appid in endpoints:
             # Try adding/removing tokens that are too big...
             broken_token = "a" * 5000  # too big
-            result = self.client_post(endpoint, {"token": broken_token}, subdomain="zulip")
+            result = self.client_post(endpoint, {"token": broken_token, **appid}, subdomain="zulip")
             self.assert_json_error(result, "Empty or invalid length token")
 
             result = self.client_delete(endpoint, {"token": broken_token}, subdomain="zulip")
@@ -787,7 +792,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     PushNotificationBouncerRetryLaterError,
                     r"^ConnectionError while trying to connect to push notification bouncer$",
                 ):
-                    self.client_post(endpoint, {"token": token}, subdomain="zulip")
+                    self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
                 self.assertIn(
                     f"ERROR:django.request:Bad Gateway: {endpoint}\nTraceback",
                     error_log.output[0],
@@ -799,7 +804,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     PushNotificationBouncerRetryLaterError,
                     r"Received 500 from push notification bouncer$",
                 ):
-                    self.client_post(endpoint, {"token": token}, subdomain="zulip")
+                    self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
                 self.assertEqual(
                     warn_log.output[0],
                     "WARNING:root:Received 500 from push notification bouncer",
@@ -809,12 +814,12 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 )
 
         # Add tokens
-        for endpoint, token, kind in endpoints:
+        for endpoint, token, kind, appid in endpoints:
             # Test that we can push twice
-            result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
+            result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
             self.assert_json_success(result)
 
-            result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
+            result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
             self.assert_json_success(result)
 
             tokens = list(
@@ -830,7 +835,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assert_length(tokens, 2)
 
         # Remove tokens
-        for endpoint, token, kind in endpoints:
+        for endpoint, token, kind, appid in endpoints:
             result = self.client_delete(endpoint, {"token": token}, subdomain="zulip")
             self.assert_json_success(result)
             tokens = list(
@@ -841,8 +846,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_length(tokens, 0)
 
         # Re-add copies of those tokens
-        for endpoint, token, kind in endpoints:
-            result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
+        for endpoint, token, kind, appid in endpoints:
+            result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
             self.assert_json_success(result)
         tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
         self.assert_length(tokens, 2)
@@ -2780,20 +2785,22 @@ class TestPushApi(BouncerTestCase):
         user = self.example_user("cordelia")
         self.login_user(user)
 
-        endpoints = [
-            ("/json/users/me/apns_device_token", "apple-tokenaz"),
-            ("/json/users/me/android_gcm_reg_id", "android-token"),
+        endpoints: List[Tuple[str, str, Mapping[str, str]]] = [
+            ("/json/users/me/apns_device_token", "apple-tokenaz", {"appid": "org.zulip.Zulip"}),
+            ("/json/users/me/android_gcm_reg_id", "android-token", {}),
         ]
 
         # Test error handling
-        for endpoint, label in endpoints:
+        for endpoint, label, appid in endpoints:
             # Try adding/removing tokens that are too big...
             broken_token = "a" * 5000  # too big
-            result = self.client_post(endpoint, {"token": broken_token})
+            result = self.client_post(endpoint, {"token": broken_token, **appid})
             self.assert_json_error(result, "Empty or invalid length token")
 
             if label == "apple-tokenaz":
-                result = self.client_post(endpoint, {"token": "xyz has non-hex characters"})
+                result = self.client_post(
+                    endpoint, {"token": "xyz has non-hex characters", **appid}
+                )
                 self.assert_json_error(result, "Invalid APNS token")
 
             result = self.client_delete(endpoint, {"token": broken_token})
@@ -2819,23 +2826,23 @@ class TestPushApi(BouncerTestCase):
         user = self.example_user("cordelia")
         self.login_user(user)
 
-        no_bouncer_requests = [
-            ("/json/users/me/apns_device_token", "apple-tokenaa"),
-            ("/json/users/me/android_gcm_reg_id", "android-token-1"),
+        no_bouncer_requests: List[Tuple[str, str, Mapping[str, str]]] = [
+            ("/json/users/me/apns_device_token", "apple-tokenaa", {"appid": "org.zulip.Zulip"}),
+            ("/json/users/me/android_gcm_reg_id", "android-token-1", {}),
         ]
 
-        bouncer_requests = [
-            ("/json/users/me/apns_device_token", "apple-tokenbb"),
-            ("/json/users/me/android_gcm_reg_id", "android-token-2"),
+        bouncer_requests: List[Tuple[str, str, Mapping[str, str]]] = [
+            ("/json/users/me/apns_device_token", "apple-tokenbb", {"appid": "org.zulip.Zulip"}),
+            ("/json/users/me/android_gcm_reg_id", "android-token-2", {}),
         ]
 
         # Add tokens without using push notification bouncer.
-        for endpoint, token in no_bouncer_requests:
+        for endpoint, token, appid in no_bouncer_requests:
             # Test that we can push twice.
-            result = self.client_post(endpoint, {"token": token})
+            result = self.client_post(endpoint, {"token": token, **appid})
             self.assert_json_success(result)
 
-            result = self.client_post(endpoint, {"token": token})
+            result = self.client_post(endpoint, {"token": token, **appid})
             self.assert_json_success(result)
 
             tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
@@ -2845,12 +2852,12 @@ class TestPushApi(BouncerTestCase):
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com"):
             self.add_mock_response()
             # Enable push notification bouncer and add tokens.
-            for endpoint, token in bouncer_requests:
+            for endpoint, token, appid in bouncer_requests:
                 # Test that we can push twice.
-                result = self.client_post(endpoint, {"token": token})
+                result = self.client_post(endpoint, {"token": token, **appid})
                 self.assert_json_success(result)
 
-                result = self.client_post(endpoint, {"token": token})
+                result = self.client_post(endpoint, {"token": token, **appid})
                 self.assert_json_success(result)
 
                 tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
@@ -2875,7 +2882,7 @@ class TestPushApi(BouncerTestCase):
         self.assertEqual(remote_token_values, ["apple-tokenbb", "android-token-2"])
 
         # Test removing tokens without using push notification bouncer.
-        for endpoint, token in no_bouncer_requests:
+        for endpoint, token, appid in no_bouncer_requests:
             result = self.client_delete(endpoint, {"token": token})
             self.assert_json_success(result)
             tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
@@ -2884,7 +2891,7 @@ class TestPushApi(BouncerTestCase):
         # Use push notification bouncer and test removing device tokens.
         # Tokens will be removed both locally and remotely.
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com"):
-            for endpoint, token in bouncer_requests:
+            for endpoint, token, appid in bouncer_requests:
                 result = self.client_delete(endpoint, {"token": token})
                 self.assert_json_success(result)
                 tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
