@@ -35,7 +35,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
-from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     APNsContext,
@@ -70,7 +70,10 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.response import json_response_from_error
 from zerver.lib.test_classes import BouncerTestCase, ZulipTestCase
-from zerver.lib.test_helpers import mock_queue_publish
+from zerver.lib.test_helpers import (
+    mock_queue_publish,
+    reset_email_visibility_to_everyone_in_zulip_realm,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
@@ -3202,6 +3205,55 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    def test_get_message_payload_apns_stream_message_from_inaccessible_user(self) -> None:
+        self.set_up_db_for_testing_user_access()
+
+        # Unsubscribe hamlet so that the guest user cannot access hamlet.
+        self.unsubscribe(self.sender, "test_stream1")
+
+        # Reset email visibility to everyone so that we can make sure
+        # that sender_email field is not set to real email.
+        reset_email_visibility_to_everyone_in_zulip_realm()
+
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        stream = Stream.objects.get(name="test_stream1")
+        # We reset the self.sender field here such that it is set
+        # to the UserProfile object with latest "realm" field.
+        self.sender = hamlet
+        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
+
+        payload = get_message_payload_apns(
+            polonius, message, NotificationTriggers.STREAM_PUSH, can_access_sender=False
+        )
+        expected = {
+            "alert": {
+                "title": "#test_stream1 > Test topic",
+                "subtitle": "Unknown user:",
+                "body": message.content,
+            },
+            "sound": "default",
+            "badge": 0,
+            "custom": {
+                "zulip": {
+                    "message_ids": [message.id],
+                    "recipient_type": "stream",
+                    "sender_email": f"user{hamlet.id}@zulip.testserver",
+                    "sender_id": hamlet.id,
+                    "stream": stream.name,
+                    "stream_id": stream.id,
+                    "topic": message.topic_name(),
+                    "server": settings.EXTERNAL_HOST,
+                    "realm_id": hamlet.realm.id,
+                    "realm_uri": hamlet.realm.uri,
+                    "user_id": polonius.id,
+                    "time": datetime_to_timestamp(message.date_sent),
+                }
+            },
+        }
+        self.assertDictEqual(payload, expected)
+
 
 class TestGetGCMPayload(PushNotificationTest):
     def _test_get_message_payload_gcm_stream_message(
@@ -3331,6 +3383,55 @@ class TestGetGCMPayload(PushNotificationTest):
                 "topic": "Test topic",
                 "stream": "Denmark",
                 "stream_id": stream.id,
+            },
+        )
+        self.assertDictEqual(
+            gcm_options,
+            {
+                "priority": "high",
+            },
+        )
+
+    def test_get_message_payload_gcm_stream_message_from_inaccessible_user(self) -> None:
+        self.set_up_db_for_testing_user_access()
+
+        # Unsubscribe hamlet so that the guest user cannot access hamlet.
+        self.unsubscribe(self.sender, "test_stream1")
+
+        # Reset email visibility to everyone so that we can make sure
+        # that sender_email field is not set to real email.
+        reset_email_visibility_to_everyone_in_zulip_realm()
+
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        stream = Stream.objects.get(name="test_stream1")
+        # We reset the self.sender field here such that it is set
+        # to the UserProfile object with latest "realm" field.
+        self.sender = hamlet
+        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
+
+        payload, gcm_options = get_message_payload_gcm(polonius, message, can_access_sender=False)
+        self.assertDictEqual(
+            payload,
+            {
+                "user_id": polonius.id,
+                "event": "message",
+                "zulip_message_id": message.id,
+                "time": datetime_to_timestamp(message.date_sent),
+                "content": message.content,
+                "content_truncated": False,
+                "server": settings.EXTERNAL_HOST,
+                "realm_id": hamlet.realm.id,
+                "realm_uri": hamlet.realm.uri,
+                "sender_id": hamlet.id,
+                "sender_email": f"user{hamlet.id}@zulip.testserver",
+                "sender_full_name": "Unknown user",
+                "sender_avatar_url": get_avatar_for_inaccessible_user(),
+                "recipient_type": "stream",
+                "stream": stream.name,
+                "stream_id": stream.id,
+                "topic": message.topic_name(),
             },
         )
         self.assertDictEqual(
