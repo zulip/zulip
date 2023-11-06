@@ -1,7 +1,6 @@
 import json
 import operator
 import os
-import random
 import re
 import sys
 import typing
@@ -3626,13 +3625,17 @@ class StripeTest(StripeTestCase):
 
     @mock_stripe()
     def test_downgrade_small_realms_behind_on_payments_as_needed(self, *mock: Mock) -> None:
+        test_realm_count = 0
+
         def create_realm(
             users_to_create: int,
             create_stripe_customer: bool,
             create_plan: bool,
             num_invoices: Optional[int] = None,
-        ) -> Tuple[Realm, Optional[Customer], Optional[CustomerPlan], List[stripe.Invoice]]:
-            realm_string_id = "realm_" + str(random.randrange(1, 1000000))
+        ) -> Tuple[Realm, Optional[CustomerPlan], List[stripe.Invoice]]:
+            nonlocal test_realm_count
+            test_realm_count += 1
+            realm_string_id = "test-realm-" + str(test_realm_count)
             realm = do_create_realm(
                 string_id=realm_string_id,
                 name=realm_string_id,
@@ -3660,7 +3663,7 @@ class StripeTest(StripeTestCase):
             if num_invoices is not None:
                 assert customer is not None
                 invoices = self.create_invoices(customer, num_invoices)
-            return realm, customer, plan, invoices
+            return realm, plan, invoices
 
         @dataclass
         class Row:
@@ -3672,46 +3675,47 @@ class StripeTest(StripeTestCase):
             email_expected_to_be_sent: bool
 
         rows: List[Row] = []
-        realm, _, _, _ = create_realm(
+
+        realm, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=False, create_plan=False
         )
         # To create local Customer object but no Stripe customer.
         attach_discount_to_realm(realm, Decimal(20), acting_user=self.example_user("iago"))
         rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, False, False))
 
-        realm, _, _, _ = create_realm(
+        realm, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=False
         )
         rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, False, False))
 
-        realm, customer, _, _ = create_realm(
+        realm, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=False, num_invoices=1
         )
         rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, True, False))
 
-        realm, _, plan, _ = create_realm(
+        realm, plan, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True
         )
         rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm, customer, plan, _ = create_realm(
+        realm, plan, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True, num_invoices=1
         )
         rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm, customer, plan, _ = create_realm(
+        realm, plan, _ = create_realm(
             users_to_create=3, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
         rows.append(Row(realm, Realm.PLAN_TYPE_LIMITED, plan, CustomerPlan.ENDED, True, True))
 
-        realm, customer, plan, invoices = create_realm(
+        realm, plan, invoices = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
         for invoice in invoices:
             stripe.Invoice.pay(invoice, paid_out_of_band=True)
         rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm, customer, plan, _ = create_realm(
+        realm, plan, _ = create_realm(
             users_to_create=20, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
         rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
