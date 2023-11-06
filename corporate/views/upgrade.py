@@ -133,21 +133,9 @@ def setup_upgrade_checkout_session_and_payment_intent(
             stripe_payment_intent_id=stripe_payment_intent.id,
             status=PaymentIntent.get_status_integer_from_status_text(stripe_payment_intent.status),
         )
-    stripe_session = stripe.checkout.Session.create(
-        cancel_url=f"{user.realm.uri}/upgrade/",
-        customer=customer.stripe_customer_id,
-        mode="setup",
-        payment_method_types=["card"],
-        metadata=metadata,
-        setup_intent_data={"metadata": metadata},
-        success_url=f"{user.realm.uri}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+    stripe_session = billing_session.create_stripe_checkout_session(
+        metadata, session_type, payment_intent
     )
-    session = Session.objects.create(
-        customer=customer, stripe_session_id=stripe_session.id, type=session_type
-    )
-    if payment_intent is not None:
-        session.payment_intent = payment_intent
-        session.save(update_fields=["payment_intent"])
     return stripe_session
 
 
