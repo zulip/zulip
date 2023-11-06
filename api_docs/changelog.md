@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+
+**Feature level 271**
+
+* `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
+  controlling whether the call should be voice-only, in which case we
+  keep cameras disabled for this call. The side effects are that now we
+  only support BigBlueButton 2.4 and above, and that only the call creator
+  is a moderator and all other joinees are viewers.
+
 **Feature level 270**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

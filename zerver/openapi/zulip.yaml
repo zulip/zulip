@@ -19923,6 +19923,14 @@ paths:
           description: |
             Meeting name for the BigBlueButton video call.
           example: "test_channel meeting"
+        - in: query
+          name: voice_only
+          schema:
+            type: boolean
+          required: true
+          description: |
+            Whether the call should be voice-only, in which case we keep
+            cameras disabled for this call.
       responses:
         "200":
           description: Success.
