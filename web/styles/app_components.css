@@ -952,7 +952,7 @@ div.overlay {
     }
 }
 /* Define the tooltip style */
-[data-tooltip]:before {
+[data-tooltip]::before {
     content: attr(data-tooltip);
     white-space: nowrap;
     position: absolute;
@@ -961,7 +961,7 @@ div.overlay {
     transform: translateX(-50%);
     padding: 5px 10px;
     background: hsl(166deg 35% 57%);
-    color: #fff;
+    color: "white";
     border-radius: 4px;
     font-size: 14px;
     visibility: hidden;
@@ -969,7 +969,7 @@ div.overlay {
     transition: opacity 0.3s;
 }
 
-[data-tooltip]:hover:before {
+[data-tooltip]:hover::before {
     visibility: visible;
     opacity: 1;
 }
