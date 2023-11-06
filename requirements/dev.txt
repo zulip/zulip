@@ -7,9 +7,8 @@
 #
 # For details, see requirements/README.md .
 #
-aioapns==3.1 \
-    --hash=sha256:0544912030317952a566d79880665990c7149fa840a357d609bb997076575215 \
-    --hash=sha256:6220827c156be7f7aceb40cc388b0129c6a33221b06cc73399b39a7d2997c338
+https://github.com/zulip/aioapns/archive/2d69284481d328bd3e4168c631d75a38268eddb9.zip#egg=aioapns==3.1+git \
+    --hash=sha256:e8ffed2c251b3383c75c08a538fb04392480ac19f97887ff8f113fe4a45cf96c
     # via -r requirements/common.in
 aiohttp==3.8.6 \
     --hash=sha256:002f23e6ea8d3dd8d149e569fd580c999232b5fbc601c48d55398fbc2e582e8c \
