@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 223**
+
+* `POST /users/me/apns_device_token`:
+  The `appid` parameter is now required.
+  Previously it defaulted to the server setting `ZULIP_IOS_APP_ID`,
+  defaulting to "org.zulip.Zulip".
+
 **Feature level 222**
 
 * [`GET /events`](/api/get-events): When a user is deactivated or
