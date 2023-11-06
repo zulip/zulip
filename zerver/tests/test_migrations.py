@@ -4,12 +4,13 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
-from django.db import connections
+from typing import Optional
+
 from django.db.migrations.state import StateApps
+from django.utils.timezone import now
 from typing_extensions import override
 
 from zerver.lib.test_classes import MigrationsTestCase
-from zerver.lib.test_helpers import use_db_models
 
 # Important note: These tests are very expensive, and details of
 # Django's database transaction model mean it does not super work to
@@ -22,31 +23,53 @@ from zerver.lib.test_helpers import use_db_models
 #
 #   django.db.utils.OperationalError: cannot ALTER TABLE
 #   "zerver_subscription" because it has pending trigger events
-#
-# As a result, we generally mark these tests as skipped once they have
-# been tested for a migration being merged.
 
 
-class UserMessageIndex(MigrationsTestCase):
-    migrate_from = "0484_preregistrationrealm_default_language"
-    migrate_to = "0485_alter_usermessage_flags_and_add_index"
+class PushBouncerBackfillIosAppId(MigrationsTestCase):
+    @property
+    @override
+    def app(self) -> str:
+        return "zilencer"
 
-    def index_exists(self, index_name: str) -> bool:
-        table_name = "zerver_usermessage"
-        connection = connections["default"]
+    migrate_from = "0031_alter_remoteinstallationcount_remote_id_and_more"
+    migrate_to = "0032_remotepushdevicetoken_backfill_ios_app_id"
 
-        with connection.cursor() as cursor:
-            # We use parameterized query to prevent SQL injection vulnerabilities
-            query = "SELECT indexname FROM pg_indexes WHERE tablename = %s AND indexname = %s"
-            cursor.execute(query, [table_name, index_name])
-            return cursor.fetchone() is not None
-
-    @use_db_models
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        self.assertTrue(self.index_exists("zerver_usermessage_wildcard_mentioned_message_id"))
-        self.assertFalse(self.index_exists("zerver_usermessage_any_mentioned_message_id"))
+        user = self.example_user("hamlet")
 
-    def test_new_index_created_old_index_not_removed(self) -> None:
-        self.assertTrue(self.index_exists("zerver_usermessage_wildcard_mentioned_message_id"))
-        self.assertTrue(self.index_exists("zerver_usermessage_any_mentioned_message_id"))
+        RemoteZulipServer = apps.get_model("zilencer", "RemoteZulipServer")
+        server = RemoteZulipServer.objects.create(
+            uuid="6cde5f7a-1f7e-4978-9716-49f69ebfc9fe",
+            api_key="secret",
+            hostname="chat.example",
+            last_updated=now(),
+        )
+
+        RemotePushDeviceToken = apps.get_model("zilencer", "RemotePushDeviceToken")
+
+        def create(kind: int, token: str, ios_app_id: Optional[str]) -> None:
+            RemotePushDeviceToken.objects.create(
+                server=server,
+                user_uuid=user.uuid,
+                kind=kind,
+                token=token,
+                ios_app_id=ios_app_id,
+            )
+
+        kinds = {choice[1]: choice[0] for choice in RemotePushDeviceToken.kind.field.choices}
+        create(kinds["apns"], "1234", None)
+        create(kinds["apns"], "2345", "example.app")
+        create(kinds["gcm"], "3456", None)
+
+    @override
+    def tearDown(self) -> None:
+        RemotePushDeviceToken = self.apps.get_model("zilencer", "RemotePushDeviceToken")
+        RemotePushDeviceToken.objects.all().delete()
+
+    def test_worked(self) -> None:
+        RemotePushDeviceToken = self.apps.get_model("zilencer", "RemotePushDeviceToken")
+        self.assertEqual(
+            dict(RemotePushDeviceToken.objects.values_list("token", "ios_app_id")),
+            {"1234": "org.zulip.Zulip", "2345": "example.app", "3456": None},
+        )
