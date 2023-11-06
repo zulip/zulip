@@ -652,6 +652,14 @@ function enable_or_disable_save_button($subsection_elem) {
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
         disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
     }
+    const $custom_input_elem = $("#id_realm_jitsi_server_url_custom_input");
+    const $saveButton = $(".save-button");
+    const inputValue = $custom_input_elem.val();
+    if (inputValue.length > 0 && disable_save_btn) {
+        $saveButton.attr('data-tooltip', 'Cannot save invalid Jitsi server URL.');
+    } else {
+        $saveButton.removeAttr('data-tooltip');
+    }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
 }

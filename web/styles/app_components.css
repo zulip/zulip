@@ -951,6 +951,28 @@ div.overlay {
         }
     }
 }
+/* Define the tooltip style */
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    white-space: nowrap;
+    position: absolute;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background: hsl(166deg 35% 57%);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 14px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+[data-tooltip]:hover:before {
+    visibility: visible;
+    opacity: 1;
+}
 
 .stream-privacy-type-icon {
     position: relative;
