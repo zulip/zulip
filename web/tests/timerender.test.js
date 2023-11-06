@@ -363,6 +363,39 @@ run_test("render_date_renders_time_html", () => {
     assert.equal(attrs.class, "timerender0");
 });
 
+run_test("render_date_renders_time_html_with_year_when_prev_elem_time_is_not_in_same_year", () => {
+    timerender.clear_for_testing();
+
+    // Set today to Nov 3 2023 12.30 AM
+    const today = new Date("2023-11-03T00:30:00.000Z");
+    const prev_elem_date = date_2017_PM;
+
+    // Set message_time to Nov 1 2023 12.30 AM
+    const message_time = new Date("2023-11-01T00:30:00.000Z");
+    const expected_html = timerender.get_localized_date_or_time_for_format(
+        message_time,
+        "dayofyear_year",
+    );
+
+    const attrs = {};
+    const $span_stub = $("<span>");
+
+    $span_stub.attr = (name, val) => {
+        attrs[name] = val;
+        return $span_stub;
+    };
+
+    $span_stub.append = (str) => {
+        $span_stub.html(str);
+        return $span_stub;
+    };
+
+    const $actual = timerender.render_date(message_time, today, prev_elem_date);
+    assert.equal($actual.html(), expected_html);
+    assert.equal(attrs["data-tippy-content"], "Wednesday, November 1, 2023");
+    assert.equal(attrs.class, "timerender0");
+});
+
 run_test("get_full_time", () => {
     const timestamp = date_2017.getTime() / 1000;
     const expected = "2017-05-18T07:12:53Z"; // ISO 8601 date format

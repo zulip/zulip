@@ -1621,7 +1621,7 @@ export class MessageListView {
         }
         const time = new Date(message.timestamp * 1000);
         const today = new Date();
-        const rendered_date = timerender.render_date(time, undefined, today);
+        const rendered_date = timerender.render_date(time, today);
         $sticky_header.find(".recipient_row_date").html(rendered_date);
 
         // The following prevents a broken looking situation where
