@@ -162,7 +162,7 @@ def register_remote_push_device(
     user_uuid: Optional[str] = REQ(default=None),
     token: str = REQ(),
     token_kind: int = REQ(json_validator=check_int),
-    ios_app_id: Optional[str] = None,
+    ios_app_id: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
 

@@ -838,7 +838,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 )
             )
             self.assert_length(tokens, 1)
-            self.assertEqual(tokens[0].token, token)
+            self.assertEqual(tokens[0].kind, kind)
+            self.assertEqual(tokens[0].ios_app_id, appid.get("appid"))
 
         # User should have tokens for both devices now.
         tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
