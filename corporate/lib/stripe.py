@@ -327,6 +327,14 @@ class StripeCustomerData:
     metadata: Dict[str, Any]
 
 
+@dataclass
+class StripePaymentIntentData:
+    amount: int
+    description: str
+    plan_name: str
+    email: str
+
+
 class AuditLogEventType(Enum):
     STRIPE_CUSTOMER_CREATED = 1
     STRIPE_CARD_CHANGED = 2
@@ -369,6 +377,18 @@ class BillingSession(ABC):
 
     @abstractmethod
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
+        pass
+
+    @abstractmethod
+    def update_data_for_checkout_session_and_payment_intent(
+        self, metadata: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def get_data_for_stripe_payment_intent(
+        self, price_per_license: int, licenses: int
+    ) -> StripePaymentIntentData:
         pass
 
     @abstractmethod
@@ -436,6 +456,29 @@ class BillingSession(ABC):
         if payment_method is not None:
             self.replace_payment_method(customer.stripe_customer_id, payment_method, True)
         return customer
+
+    def create_stripe_payment_intent(
+        self, price_per_license: int, licenses: int, metadata: Dict[str, Any]
+    ) -> PaymentIntent:
+        customer = self.get_customer()
+        assert customer is not None and customer.stripe_customer_id is not None
+        payment_intent_data = self.get_data_for_stripe_payment_intent(price_per_license, licenses)
+        stripe_payment_intent = stripe.PaymentIntent.create(
+            amount=payment_intent_data.amount,
+            currency="usd",
+            customer=customer.stripe_customer_id,
+            description=payment_intent_data.description,
+            receipt_email=payment_intent_data.email,
+            confirm=False,
+            statement_descriptor=payment_intent_data.plan_name,
+            metadata=metadata,
+        )
+        payment_intent = PaymentIntent.objects.create(
+            customer=customer,
+            stripe_payment_intent_id=stripe_payment_intent.id,
+            status=PaymentIntent.get_status_integer_from_status_text(stripe_payment_intent.status),
+        )
+        return payment_intent
 
     def create_stripe_checkout_session(
         self,
@@ -589,6 +632,35 @@ class RealmBillingSession(BillingSession):
             metadata=metadata,
         )
         return realm_stripe_customer_data
+
+    @override
+    def update_data_for_checkout_session_and_payment_intent(
+        self, metadata: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        updated_metadata = dict(
+            user_email=self.user.delivery_email,
+            realm_id=self.realm.id,
+            realm_str=self.realm.string_id,
+            user_id=self.user.id,
+            **metadata,
+        )
+        return updated_metadata
+
+    @override
+    def get_data_for_stripe_payment_intent(
+        self, price_per_license: int, licenses: int
+    ) -> StripePaymentIntentData:
+        # Support requests do not set any stripe billing information.
+        assert self.support_session is False
+        amount = price_per_license * licenses
+        description = f"Upgrade to Zulip Cloud Standard, ${price_per_license/100} x {licenses}"
+        plan_name = "Zulip Cloud Standard"
+        return StripePaymentIntentData(
+            amount=amount,
+            description=description,
+            plan_name=plan_name,
+            email=self.user.delivery_email,
+        )
 
     @override
     def update_or_create_customer(
