@@ -37,15 +37,17 @@
                         <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Upgrade to {standard_plan_name}" }}</a>
                     </li>
                     {{/if}}
-                    {{#if is_education_org }}
-                    <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
-                        <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request education pricing' }}</a>
-                    </li>
-                    {{else if (not is_business_org) }}
-                    <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
-                        <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request sponsorship' }}</a>
-                    </li>
-                    {{/if}}
+                    {{#unless is_org_on_paid_plan}}
+                        {{#if is_education_org }}
+                        <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                            <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request education pricing' }}</a>
+                        </li>
+                        {{else if (not is_business_org) }}
+                        <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                            <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request sponsorship' }}</a>
+                        </li>
+                        {{/if}}
+                    {{/unless}}
                     {{/if}}
                 {{/if}}
             </ul>
