@@ -967,6 +967,15 @@ textarea.new_message_textarea,
     }
 }
 
+.drafts-item-in-popover {
+    display: none;
+    /* Only show the Drafts item in the popover when it's not visible
+       in the compose box. */
+    @media (width < $sm_min) {
+        display: block;
+    }
+}
+
 #compose-recipient {
     display: flex;
     flex: 1 1 0;

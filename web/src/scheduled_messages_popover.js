@@ -5,6 +5,8 @@ import render_send_later_popover from "../templates/popovers/send_later_popover.
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
+import * as channel from "./channel";
+import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_validate from "./compose_validate";
 import * as flatpickr from "./flatpickr";
@@ -12,6 +14,7 @@ import * as modals from "./modals";
 import * as popover_menus from "./popover_menus";
 import * as scheduled_messages from "./scheduled_messages";
 import {parse_html} from "./ui_util";
+import {user_settings} from "./user_settings";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 
@@ -124,6 +127,7 @@ export function initialize() {
             instance.setContent(
                 parse_html(
                     render_send_later_popover({
+                        enter_sends_true: user_settings.enter_sends,
                         formatted_send_later_time,
                     }),
                 ),
@@ -133,10 +137,33 @@ export function initialize() {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
+            common.adjust_mac_kbd_tags(".enter_sends_choices kbd");
             $popper.one("click", ".send_later_selected_send_later_time", () => {
                 const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);
             });
+            // Handle clicks on Enter-to-send settings
+            $(instance.popper).one("click", ".enter_sends_choice", (e) => {
+                let selected_behaviour = $(e.currentTarget)
+                    .find("input[type='radio']")
+                    .attr("value");
+                selected_behaviour = selected_behaviour === "true"; // Convert to bool
+                user_settings.enter_sends = selected_behaviour;
+                $(`.enter_sends_${!selected_behaviour}`).hide();
+                $(`.enter_sends_${selected_behaviour}`).show();
+
+                // Refocus in the content box so you can continue typing or
+                // press Enter to send.
+                $("textarea#compose-textarea").trigger("focus");
+
+                channel.patch({
+                    url: "/json/settings",
+                    data: {enter_sends: selected_behaviour},
+                });
+                e.stopPropagation();
+                instance.hide();
+            });
+            // Handle Send later clicks
             $popper.one("click", ".open_send_later_modal", open_send_later_menu);
         },
         onHidden(instance) {
