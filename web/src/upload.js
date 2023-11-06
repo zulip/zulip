@@ -411,6 +411,10 @@ export function setup_upload(config) {
         show_error_message(config, message, file.id);
         compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
         compose_ui.autosize_textarea(get_item("textarea", config));
+
+        // The files with failed upload should be removed since uppy doesn't allow files in the store
+        // to be re-uploaded again.
+        uppy.removeFile(file.id);
     });
 
     uppy.on("restriction-failed", (file) => {
