@@ -22,6 +22,29 @@ in a more colloquial style, German translations should be rather informal as wel
 - "Das ist die Seite, wo der Quelltext steht." - the "_wo_" is regional,
   say _"Das ist die Seite, auf der Quelltext steht."_ instead.
 
+### Gender-inclusive language
+
+**Use gender-inclusive language, placing a _gender colon_
+([Gender-Doppelpunkt](https://de.wikipedia.org/wiki/Gender-Doppelpunkt))
+where necessary.**
+
+Place the gender colon between the word stem and the feminine ending.
+
+- Instead of _Nutzer_, use _Nutzer:innen_
+- Instead of _dieser Nutzer_, use _diese:r Nutzer:in_
+
+**Try to find gender-neutral alternatives before using the gender colon.**
+
+- Instead of _jede:r_, try to use _alle_.
+
+**If a gender-neutral term is readily available, consider using it.**
+
+- Instead of _benutzerdefiniert_, consider using _eigen_.
+
+**In compound nouns, only use the gender colon in the last element, if appropriate.**
+
+- Instead of _Nutzer:innengruppe_ or _Nutzer:innen-Gruppe_, use _Nutzergruppe_.
+
 ### Form of address
 
 **Use "Du" instead of "Sie".**
@@ -306,17 +329,17 @@ the infinitive form "anpassen".
 
 _"Ich möchte" - (Transifex, general sense of politeness)_
 
-- User - **Nutzer**
+- User - **Nutzer:in**
 
-"Benutzer" would work as well, but "Nutzer" is shorter and more commonly
+"Benutzer:in" would work as well, but "Nutzer:in" is shorter and more commonly
 used in web applications.
 
-_"Nutzer" (Facebook, Gmail), "Benutzer" (Transifex)_
+_"Nutzer\*innen" (Figma, Facebook), "Benutzer\*innen" (GitHub,
+Airtable), "Nutzer" (Facebook, Gmail), "Benutzer" (Transifex)_
 
-- Person/People - Nutzer/Personen
+- Person/People - Personen
 
-We use "Personen" instead of plural "Nutzer" for "people", as "Nutzer" stays
-the same in plural.
+We use "Personen" instead of plural "Nutzer:innen" for "people".
 
 _"Nutzer/Personen" (Transifex)_
 
