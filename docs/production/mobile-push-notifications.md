@@ -226,9 +226,6 @@ push notifications through the new app is quite straightforward:
     `APNS_TOKEN_KEY_ID` to the corresponding 10-character key ID, and
     `APNS_TEAM_ID` to your 10-character Apple team ID.
 
-- Set the `APNS_TOPIC` setting to the ID for
-  your app (for the official Zulip apps, it's `org.zulip.Zulip`).
-
 - Restart the Zulip server.
 
 [apple-doc-cert]: https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_certificate-based_connection_to_apns
