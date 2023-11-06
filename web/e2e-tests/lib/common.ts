@@ -157,7 +157,7 @@ export async function fill_form(
             }
             await page.select(`${form_selector} select[name="${CSS.escape(name)}"]`, value);
         } else {
-            await clear_and_type(page, `${form_selector} [name="${CSS.escape(name)}"`, value);
+            await clear_and_type(page, `${form_selector} [name="${CSS.escape(name)}"]`, value);
         }
     }
 }
@@ -296,13 +296,14 @@ export function set_realm_url(new_realm_url: string): void {
 
 export async function ensure_enter_does_not_send(page: Page): Promise<void> {
     // NOTE: Caller should ensure that the compose box is already open.
+    await page.click("#send_later");
+    await page.waitForSelector("#send_later_popover");
     const enter_sends = await page.$eval(
-        "span.enter_sends_true",
-        (el) => el.style.display !== "none",
+        ".enter_sends_choice input[value='true']",
+        (el) => el.checked === true,
     );
 
     if (enter_sends) {
-        await page.click(".open_enter_sends_dialog");
         const enter_sends_false_selector = ".enter_sends_choice input[value='false']";
         await page.waitForSelector(enter_sends_false_selector);
         await page.click(enter_sends_false_selector);
