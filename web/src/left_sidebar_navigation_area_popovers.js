@@ -15,7 +15,7 @@ import * as scheduled_messages from "./scheduled_messages";
 import * as settings_config from "./settings_config";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
-import {parse_html, update_unread_count_in_dom} from "./ui_util";
+import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
@@ -64,7 +64,7 @@ export function initialize() {
             const show_unstar_all_button = starred_messages.get_count() > 0;
 
             instance.setContent(
-                parse_html(
+                ui_util.parse_html(
                     render_starred_messages_sidebar_actions({
                         show_unstar_all_button,
                         starred_message_counts: user_settings.starred_message_counts,
@@ -94,7 +94,7 @@ export function initialize() {
         onShow(instance) {
             popovers.hide_all();
 
-            instance.setContent(parse_html(render_drafts_sidebar_actions({})));
+            instance.setContent(ui_util.parse_html(render_drafts_sidebar_actions({})));
         },
         onHidden(instance) {
             instance.destroy();
@@ -118,7 +118,7 @@ export function initialize() {
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.inbox.code;
             instance.setContent(
-                parse_html(
+                ui_util.parse_html(
                     render_left_sidebar_inbox_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
@@ -140,7 +140,7 @@ export function initialize() {
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.all_messages.code;
             instance.setContent(
-                parse_html(
+                ui_util.parse_html(
                     render_left_sidebar_all_messages_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
@@ -162,7 +162,7 @@ export function initialize() {
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.recent_topics.code;
             instance.setContent(
-                parse_html(
+                ui_util.parse_html(
                     render_left_sidebar_recent_view_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
@@ -188,15 +188,17 @@ export function initialize() {
             }
             popovers.hide_all();
             instance.setContent(
-                parse_html(render_left_sidebar_condensed_views_popover({has_scheduled_messages})),
+                ui_util.parse_html(
+                    render_left_sidebar_condensed_views_popover({has_scheduled_messages}),
+                ),
             );
         },
         onMount() {
-            update_unread_count_in_dom(
+            ui_util.update_unread_count_in_dom(
                 $(".condensed-views-popover-menu-drafts"),
                 drafts.draft_model.getDraftCount(),
             );
-            update_unread_count_in_dom(
+            ui_util.update_unread_count_in_dom(
                 $(".condensed-views-popover-menu-scheduled-messages"),
                 scheduled_messages.get_count(),
             );

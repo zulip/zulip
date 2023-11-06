@@ -12,7 +12,7 @@ import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
-import {parse_html} from "./ui_util";
+import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_topics from "./user_topics";
 
@@ -48,7 +48,9 @@ export function initialize() {
                     topic_name,
                     url,
                 });
-                instance.setContent(parse_html(render_topic_sidebar_actions(instance.context)));
+                instance.setContent(
+                    ui_util.parse_html(render_topic_sidebar_actions(instance.context)),
+                );
             },
             onMount(instance) {
                 const $popper = $(instance.popper);
