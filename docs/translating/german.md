@@ -126,13 +126,13 @@ speakers in the community. It's all about making Zulip friendly and usable.
 
 _"Nachricht" (Facebook, WhatsApp, Transifex)_
 
-- Private Message (PM) - **Private Nachricht (PN)**
+- Direct Message (DM), Direct Messages (DMs) - **Direktnachricht (DM), Direktnachrichten (DMs)**
 
-Since we try to avoid concatenating words whenever possible, don't use
-"Privatnachricht" . PN is the officially used abbreviation for
-"Private Nachricht" and is used in many German chat forums.
+While we try to avoid concatenating words whenever possible, "Direktnachricht" is used
+by many other platforms (e.g. X/Twitter, Slack, Discord).
+Use _DM_ with its plural form _DMs_ rather than DN/DNs in line with other services.
 
-_"Private Nachricht" (YouTube, Transifex)_
+_"Direktnachricht" (X/Twitter, Slack)_
 
 - Starred Message - **Markierte Nachricht**
 
