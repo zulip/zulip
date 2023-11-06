@@ -500,6 +500,31 @@ class PushBouncerNotificationTest(BouncerTestCase):
             401,
         )
 
+    def test_register_require_ios_app_id(self) -> None:
+        endpoint = "/api/v1/remotes/push/register"
+        args = {"user_id": 11, "token": "1122"}
+
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {**args, "token_kind": PushDeviceToken.APNS},
+        )
+        self.assert_json_error(result, "Missing ios_app_id")
+
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {**args, "token_kind": PushDeviceToken.APNS, "ios_app_id": "example.app"},
+        )
+        self.assert_json_success(result)
+
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {**args, "token_kind": PushDeviceToken.GCM},
+        )
+        self.assert_json_success(result)
+
     def test_register_device_deduplication(self) -> None:
         hamlet = self.example_user("hamlet")
         token = "111222"

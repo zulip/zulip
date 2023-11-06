@@ -165,6 +165,8 @@ def register_remote_push_device(
     ios_app_id: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
+    if token_kind == RemotePushDeviceToken.APNS and ios_app_id is None:
+        raise JsonableError(_("Missing ios_app_id"))
 
     if user_id is None and user_uuid is None:
         raise JsonableError(_("Missing user_id or user_uuid"))
