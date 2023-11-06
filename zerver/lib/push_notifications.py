@@ -258,6 +258,14 @@ def send_apple_push_notification(
     payload_data = dict(modernize_apns_payload(payload_data))
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
 
+    for device in devices:
+        if device.ios_app_id is None:
+            # This should be present for all APNs tokens, as an invariant maintained
+            # by the views that add the token to our database.
+            logger.error(
+                "APNs: Missing ios_app_id for user %s device %s", user_identity, device.token
+            )
+
     async def send_all_notifications() -> Iterable[
         Tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]
     ]:
