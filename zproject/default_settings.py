@@ -403,7 +403,7 @@ POST_MIGRATION_CACHE_FLUSHING = False
 APNS_CERT_FILE: Optional[str] = None
 APNS_SANDBOX = True
 APNS_TOPIC = "org.zulip.Zulip"
-ZULIP_IOS_APP_ID = "org.zulip.Zulip"
+# ZULIP_IOS_APP_ID is obsolete
 
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024

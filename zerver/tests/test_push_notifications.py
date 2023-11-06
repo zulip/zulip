@@ -1337,7 +1337,7 @@ class PushNotificationTest(BouncerTestCase):
                 kind=PushDeviceToken.APNS,
                 token=hex_to_b64(token),
                 user=self.user_profile,
-                ios_app_id=settings.ZULIP_IOS_APP_ID,
+                ios_app_id="org.zulip.Zulip",
             )
 
         self.remote_tokens = [("cccc", "ffff")]
