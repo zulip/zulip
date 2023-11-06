@@ -2277,6 +2277,24 @@ class TestAPNs(PushNotificationTest):
                 logger.output,
             )
 
+    def test_log_missing_ios_app_id(self) -> None:
+        device = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token="1234",
+            ios_app_id=None,
+            user_id=self.user_profile.id,
+            server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+        )
+        with self.mock_apns() as (apns_context, send_notification), self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
+            send_notification.return_value.is_successful = True
+            self.send(devices=[device])
+            self.assertIn(
+                f"ERROR:zerver.lib.push_notifications:APNs: Missing ios_app_id for user <id:{self.user_profile.id}> device {device.token}",
+                logger.output,
+            )
+
     def test_modernize_apns_payload(self) -> None:
         payload = {
             "alert": "Message from Hamlet",
