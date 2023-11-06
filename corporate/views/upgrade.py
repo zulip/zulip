@@ -29,7 +29,6 @@ from corporate.lib.stripe import (
 from corporate.lib.support import get_support_url
 from corporate.models import (
     CustomerPlan,
-    PaymentIntent,
     Session,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
@@ -97,7 +96,7 @@ def setup_upgrade_checkout_session_and_payment_intent(
     price_per_license = get_price_per_license(
         plan_tier, billing_schedule, customer.default_discount
     )
-    metadata = {
+    general_metadata = {
         "billing_modality": billing_modality,
         "billing_schedule": billing_schedule,
         "licenses": licenses,
@@ -105,11 +104,10 @@ def setup_upgrade_checkout_session_and_payment_intent(
         "price_per_license": price_per_license,
         "seat_count": seat_count,
         "type": "upgrade",
-        "user_email": user.delivery_email,
-        "realm_id": user.realm.id,
-        "realm_str": user.realm.string_id,
-        "user_id": user.id,
     }
+    updated_metadata = billing_session.update_data_for_checkout_session_and_payment_intent(
+        general_metadata
+    )
     if free_trial:
         if onboarding:
             session_type = Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE
@@ -118,23 +116,12 @@ def setup_upgrade_checkout_session_and_payment_intent(
         payment_intent = None
     else:
         session_type = Session.UPGRADE_FROM_BILLING_PAGE
-        stripe_payment_intent = stripe.PaymentIntent.create(
-            amount=price_per_license * licenses,
-            currency="usd",
-            customer=customer.stripe_customer_id,
-            description=f"Upgrade to Zulip Cloud Standard, ${price_per_license/100} x {licenses}",
-            receipt_email=user.delivery_email,
-            confirm=False,
-            statement_descriptor="Zulip Cloud Standard",
-            metadata=metadata,
+        payment_intent = billing_session.create_stripe_payment_intent(
+            price_per_license, licenses, updated_metadata
         )
-        payment_intent = PaymentIntent.objects.create(
-            customer=customer,
-            stripe_payment_intent_id=stripe_payment_intent.id,
-            status=PaymentIntent.get_status_integer_from_status_text(stripe_payment_intent.status),
-        )
+
     stripe_session = billing_session.create_stripe_checkout_session(
-        metadata, session_type, payment_intent
+        updated_metadata, session_type, payment_intent
     )
     return stripe_session
 
