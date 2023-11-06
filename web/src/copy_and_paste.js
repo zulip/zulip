@@ -511,7 +511,7 @@ function is_safe_url_paste_target($textarea) {
 }
 
 export function paste_handler(event) {
-    const clipboardData = event.originalEvent.clipboardData;
+    const clipboardData = event.originalEvent.clipboardData.getData("text");
     if (!clipboardData) {
         // On IE11, ClipboardData isn't defined.  One can instead
         // access it with `window.clipboardData`, but even that
