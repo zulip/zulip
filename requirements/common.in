@@ -94,7 +94,7 @@ tornado
 orjson
 
 # Needed for iOS push notifications
-aioapns
+https://github.com/zulip/aioapns/archive/2d69284481d328bd3e4168c631d75a38268eddb9.zip#egg=aioapns==3.1+git  # https://github.com/Fatal1ty/aioapns/pull/52
 
 python-twitter
 
