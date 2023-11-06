@@ -769,20 +769,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
         for endpoint, token, kind in endpoints:
             # Try adding/removing tokens that are too big...
             broken_token = "a" * 5000  # too big
-            result = self.client_post(
-                endpoint, {"token": broken_token, "token_kind": kind}, subdomain="zulip"
-            )
+            result = self.client_post(endpoint, {"token": broken_token}, subdomain="zulip")
             self.assert_json_error(result, "Empty or invalid length token")
 
-            result = self.client_delete(
-                endpoint, {"token": broken_token, "token_kind": kind}, subdomain="zulip"
-            )
+            result = self.client_delete(endpoint, {"token": broken_token}, subdomain="zulip")
             self.assert_json_error(result, "Empty or invalid length token")
 
             # Try to remove a non-existent token...
-            result = self.client_delete(
-                endpoint, {"token": "abcd1234", "token_kind": kind}, subdomain="zulip"
-            )
+            result = self.client_delete(endpoint, {"token": "abcd1234"}, subdomain="zulip")
             self.assert_json_error(result, "Token does not exist")
 
             assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
