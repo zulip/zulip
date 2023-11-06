@@ -178,10 +178,14 @@ def get_apns_context() -> Optional[APNsContext]:
             key=settings.APNS_TOKEN_KEY_FILE,
             key_id=settings.APNS_TOKEN_KEY_ID,
             team_id=settings.APNS_TEAM_ID,
-            topic=settings.APNS_TOPIC,
             max_connection_attempts=APNS_MAX_RETRIES,
             use_sandbox=settings.APNS_SANDBOX,
             err_func=err_func,
+            # The actual APNs topic will vary between notifications,
+            # so we set it there, overriding any value we put here.
+            # We can't just leave this out, though, because then
+            # the constructor attempts to guess.
+            topic="invalid.nonsense",
         )
 
     apns = loop.run_until_complete(make_apns())
@@ -262,6 +266,7 @@ def send_apple_push_notification(
     payload_data = dict(modernize_apns_payload(payload_data))
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
 
+    have_missing_app_id = False
     for device in devices:
         if device.ios_app_id is None:
             # This should be present for all APNs tokens, as an invariant maintained
@@ -269,13 +274,19 @@ def send_apple_push_notification(
             logger.error(
                 "APNs: Missing ios_app_id for user %s device %s", user_identity, device.token
             )
+            have_missing_app_id = True
+    if have_missing_app_id:
+        devices = [device for device in devices if device.ios_app_id is not None]
 
     async def send_all_notifications() -> Iterable[
         Tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]
     ]:
         requests = [
             aioapns.NotificationRequest(
-                device_token=device.token, message=message, time_to_live=24 * 3600
+                apns_topic=device.ios_app_id,
+                device_token=device.token,
+                message=message,
+                time_to_live=24 * 3600,
             )
             for device in devices
         ]

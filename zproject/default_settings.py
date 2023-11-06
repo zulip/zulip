@@ -405,8 +405,8 @@ APNS_TOKEN_KEY_FILE: Optional[str] = None
 APNS_TOKEN_KEY_ID = get_secret("apns_token_key_id", development_only=True)
 APNS_TEAM_ID = get_secret("apns_team_id", development_only=True)
 APNS_SANDBOX = True
-APNS_TOPIC = "org.zulip.Zulip"
-# ZULIP_IOS_APP_ID is obsolete
+# APNS_TOPIC is obsolete. Clients now pass the APNs topic to use.
+# ZULIP_IOS_APP_ID is obsolete. Clients now pass the iOS app ID to use for APNs.
 
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024

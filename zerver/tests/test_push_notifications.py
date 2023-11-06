@@ -1491,17 +1491,20 @@ class PushNotificationTest(BouncerTestCase):
             apns_context.loop.close()
 
     def setup_apns_tokens(self) -> None:
-        self.tokens = ["aaaa", "bbbb"]
-        for token in self.tokens:
+        self.tokens = [("aaaa", "org.zulip.Zulip"), ("bbbb", "com.zulip.flutter")]
+        for token, appid in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
                 token=hex_to_b64(token),
                 user=self.user_profile,
-                ios_app_id="org.zulip.Zulip",
+                ios_app_id=appid,
             )
 
-        self.remote_tokens = [("cccc", "ffff")]
-        for id_token, uuid_token in self.remote_tokens:
+        self.remote_tokens = [
+            ("cccc", "dddd", "org.zulip.Zulip"),
+            ("eeee", "ffff", "com.zulip.flutter"),
+        ]
+        for id_token, uuid_token, appid in self.remote_tokens:
             # We want to set up both types of RemotePushDeviceToken here:
             # the legacy one with user_id and the new with user_uuid.
             # This allows tests to work with either, without needing to
@@ -1509,12 +1512,14 @@ class PushNotificationTest(BouncerTestCase):
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
                 token=hex_to_b64(id_token),
+                ios_app_id=appid,
                 user_id=self.user_profile.id,
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
                 token=hex_to_b64(uuid_token),
+                ios_app_id=appid,
                 user_uuid=self.user_profile.uuid,
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
@@ -1607,6 +1612,16 @@ class HandlePushNotificationTest(PushNotificationTest):
             }
             send_notification.return_value.is_successful = True
             handle_push_notification(self.user_profile.id, missed_message)
+            self.assertEqual(
+                {
+                    (args[0][0].device_token, args[0][0].apns_topic)
+                    for args in send_notification.call_args_list
+                },
+                {
+                    (device.token, device.ios_app_id)
+                    for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
+                },
+            )
             self.assertEqual(
                 views_logger.output,
                 [
