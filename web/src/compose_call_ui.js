@@ -105,18 +105,20 @@ export function generate_and_insert_audio_or_video_call_link($target_element, is
         available_providers.big_blue_button &&
         realm.realm_video_chat_provider === available_providers.big_blue_button.id
     ) {
-        if (is_audio_call) {
-            // TODO: Add support for audio-only BigBlueButton calls here.
-            return;
-        }
         const meeting_name = get_recipient_label() + " meeting";
+        const request = {
+            meeting_name,
+            voice_only: is_audio_call,
+        };
         channel.get({
             url: "/json/calls/bigbluebutton/create",
-            data: {
-                meeting_name,
-            },
+            data: request,
             success(response) {
-                insert_video_call_url(response.url, $target_textarea);
+                if (is_audio_call) {
+                    insert_audio_call_url(response.url, $target_textarea);
+                } else {
+                    insert_video_call_url(response.url, $target_textarea);
+                }
             },
         });
     } else {
