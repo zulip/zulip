@@ -27,6 +27,12 @@ format used by the Zulip server that they are interacting with.
   Previously it defaulted to the server setting `ZULIP_IOS_APP_ID`,
   defaulting to "org.zulip.Zulip".
 
+* `POST /remotes/server/register`: The `ios_app_id` parameter is now
+  required when `kind` is 1, i.e. when registering an APNs token.
+  Previously it was ignored, and the push bouncer effectively
+  assumed its value was the server setting `APNS_TOPIC`,
+  defaulting to "org.zulip.Zulip".
+
 **Feature level 222**
 
 * [`GET /events`](/api/get-events): When a user is deactivated or
