@@ -23,6 +23,7 @@ export function initialize() {
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
                 popover_menus.popover_instances.topics_menu = instance;
+                ui_util.show_left_sidebar_menu_icon(instance.reference);
                 popover_menus.on_show_prep(instance);
                 let stream_id;
                 let topic_name;
@@ -165,6 +166,7 @@ export function initialize() {
             onHidden(instance) {
                 instance.destroy();
                 popover_menus.popover_instances.topics_menu = undefined;
+                ui_util.hide_left_sidebar_menu_icon();
             },
         },
     );

@@ -42,6 +42,7 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.starred_messages = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
 
             $popper.one("click", "#unstar_all_messages", () => {
                 starred_messages_ui.confirm_unstar_all_messages();
@@ -75,6 +76,7 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.starred_messages = undefined;
+            ui_util.hide_left_sidebar_menu_icon();
         },
     });
 
@@ -85,6 +87,7 @@ export function initialize() {
             const $popper = $(instance.popper);
             $popper.addClass("drafts-popover");
             popover_menus.popover_instances.drafts = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
 
             $popper.one("click", "#delete_all_drafts_sidebar", () => {
                 drafts.confirm_delete_all_drafts();
@@ -99,6 +102,7 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.drafts = undefined;
+            ui_util.hide_left_sidebar_menu_icon();
         },
     });
 
@@ -108,6 +112,7 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.left_sidebar_inbox_popover = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
 
             $popper.one("click", "#mark_all_messages_as_read", () => {
                 unread_ops.confirm_mark_all_as_read();
@@ -129,6 +134,7 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.left_sidebar_inbox_popover = undefined;
+            ui_util.hide_left_sidebar_menu_icon();
         },
     });
 
@@ -137,6 +143,7 @@ export function initialize() {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.all_messages.code;
             instance.setContent(
@@ -151,6 +158,7 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.left_sidebar_all_messages_popover = undefined;
+            ui_util.hide_left_sidebar_menu_icon();
         },
     });
 
@@ -159,6 +167,7 @@ export function initialize() {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.recent_topics.code;
             instance.setContent(
@@ -173,6 +182,7 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.left_sidebar_recent_view_popover = undefined;
+            ui_util.hide_left_sidebar_menu_icon();
         },
     });
 
