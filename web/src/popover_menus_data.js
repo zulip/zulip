@@ -187,6 +187,9 @@ export function get_personal_menu_content_context() {
 
 export function get_gear_menu_content_context() {
     const user_has_billing_access = page_params.is_billing_admin || page_params.is_owner;
+    const is_plan_standard = page_params.realm_plan_type === 3;
+    const is_plan_plus = page_params.realm_plan_type === 10;
+    const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
     return {
         realm_name: page_params.realm_name,
         realm_url: new URL(page_params.realm_uri).hostname,
@@ -194,9 +197,10 @@ export function get_gear_menu_content_context() {
         is_admin: page_params.is_admin,
         is_self_hosted: page_params.realm_plan_type === 1,
         is_plan_limited: page_params.realm_plan_type === 2,
-        is_plan_standard: page_params.realm_plan_type === 3,
+        is_plan_standard,
         is_plan_standard_sponsored_for_free: page_params.realm_plan_type === 4,
-        is_plan_plus: page_params.realm_plan_type === 10,
+        is_plan_plus,
+        is_org_on_paid_plan,
         is_business_org: page_params.realm_org_type === 10,
         is_education_org: page_params.realm_org_type === 30 || page_params.realm_org_type === 35,
         standard_plan_name: "Zulip Cloud Standard",
