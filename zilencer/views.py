@@ -206,7 +206,6 @@ def unregister_remote_push_device(
     token_kind: int = REQ(json_validator=check_int),
     user_id: Optional[int] = REQ(json_validator=check_int, default=None),
     user_uuid: Optional[str] = REQ(default=None),
-    ios_app_id: Optional[str] = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
