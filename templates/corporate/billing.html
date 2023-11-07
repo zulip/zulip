@@ -14,15 +14,9 @@
                 <div class="alert alert-danger" id="error-message-box"></div>
                 <h1>Zulip Cloud billing for {{ org_name }}</h1>
                 {% if admin_access and has_active_plan %}
-                <ul class="nav nav-tabs" id="billing-tabs">
-                    <li class="active"><a data-toggle="tab" href="#overview">Overview</a></li>
-                    <li><a data-toggle="tab" href="#payment-method">Payment method</a></li>
-                    <li><a data-toggle="tab" href="#settings">Settings</a></li>
-                </ul>
-
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
-                <div class="tab-content">
-                    <div class="tab-pane active" id="overview">
+                <div class="white-box">
+                    <div id="overview">
                         {% if free_trial %}
                         <p>Your current plan is <strong>{{ plan_name }} Free Trial</strong>.</p>
                         {% else %}
@@ -56,7 +50,7 @@
                             {% endif %}
                         </p>
                     </div>
-                    <div class="tab-pane" id="payment-method">
+                    <div id="payment-method">
                         <div id="cardchange-error" class="alert alert-danger"></div>
                         <div id="cardchange-input-section">
                             <form id="cardchange-form">
@@ -81,7 +75,7 @@
                         </div>
                     </div>
 
-                    <div class="tab-pane" id="settings">
+                    <div id="settings">
                         {% if not automanage_licenses and not downgrade_at_end_of_cycle %}
                         <div id="licensechange-error" class="alert alert-danger"></div>
                         <div id="licensechange-input-section" data-licenses="{{ licenses }}">
