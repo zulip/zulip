@@ -210,7 +210,7 @@ export const default_popover_props = {
                         elements_at_reference_position.some(
                             (element) =>
                                 element.id === "navbar-fixed-container" ||
-                                element.id === "compose" ||
+                                element.id === "compose-content" ||
                                 element.classList.contains("sticky_header"),
                         )
                     ) {
