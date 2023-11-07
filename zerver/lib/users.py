@@ -796,7 +796,9 @@ def get_cross_realm_dicts() -> List[APIUserDict]:
 
 
 def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
-    fake_email = Address(username=f"user{user_id}", domain=get_fake_email_domain(realm)).addr_spec
+    fake_email = Address(
+        username=f"user{user_id}", domain=get_fake_email_domain(realm.host)
+    ).addr_spec
 
     # We just set date_joined field to UNIX epoch.
     user_date_joined = timestamp_to_datetime(0)

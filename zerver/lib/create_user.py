@@ -70,7 +70,7 @@ def copy_default_settings(
 def get_display_email_address(user_profile: UserProfile) -> str:
     if not user_profile.email_address_is_realm_public():
         return Address(
-            username=f"user{user_profile.id}", domain=get_fake_email_domain(user_profile.realm)
+            username=f"user{user_profile.id}", domain=get_fake_email_domain(user_profile.realm.host)
         ).addr_spec
     return user_profile.delivery_email
 

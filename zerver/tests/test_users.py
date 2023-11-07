@@ -2820,27 +2820,27 @@ class DeleteUserTest(ZulipTestCase):
 class FakeEmailDomainTest(ZulipTestCase):
     def test_get_fake_email_domain(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual("zulip.testserver", get_fake_email_domain(realm))
+        self.assertEqual("zulip.testserver", get_fake_email_domain(realm.host))
 
         with self.settings(EXTERNAL_HOST="example.com"):
-            self.assertEqual("zulip.example.com", get_fake_email_domain(realm))
+            self.assertEqual("zulip.example.com", get_fake_email_domain(realm.host))
 
     @override_settings(FAKE_EMAIL_DOMAIN="fakedomain.com", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_get_fake_email_domain_realm_host_is_ip_addr(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual("fakedomain.com", get_fake_email_domain(realm))
+        self.assertEqual("fakedomain.com", get_fake_email_domain(realm.host))
 
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain(self) -> None:
         realm = get_realm("zulip")
         with self.assertRaises(InvalidFakeEmailDomainError):
-            get_fake_email_domain(realm)
+            get_fake_email_domain(realm.host)
 
     @override_settings(FAKE_EMAIL_DOMAIN="127.0.0.1", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain_ip(self) -> None:
         with self.assertRaises(InvalidFakeEmailDomainError):
             realm = get_realm("zulip")
-            get_fake_email_domain(realm)
+            get_fake_email_domain(realm.host)
 
 
 class TestBulkRegenerateAPIKey(ZulipTestCase):
