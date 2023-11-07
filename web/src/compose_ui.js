@@ -16,6 +16,7 @@ import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 
 export let compose_spinner_visible = false;
+export let shift_pressed = false; // true or false
 let full_size_status = false; // true or false
 
 // Some functions to handle the full size status explicitly
@@ -325,6 +326,9 @@ export function make_compose_box_original_size() {
 }
 
 export function handle_keydown(event, $textarea) {
+    if (event.key === "Shift") {
+        shift_pressed = true;
+    }
     // The event.key property will have uppercase letter if
     // the "Shift + <key>" combo was used or the Caps Lock
     // key was on. We turn to key to lowercase so the key bindings
@@ -350,6 +354,9 @@ export function handle_keydown(event, $textarea) {
 }
 
 export function handle_keyup(_event, $textarea) {
+    if (_event?.key === "Shift") {
+        shift_pressed = false;
+    }
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
 }
