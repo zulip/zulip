@@ -17,6 +17,7 @@ import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
+const ENTER_SENDS_SELECTION_DELAY = 600;
 
 function set_compose_box_schedule(element) {
     const selected_send_at_time = element.dataset.sendStamp / 1000;
@@ -133,7 +134,6 @@ export function initialize() {
                 ),
             );
             popover_menus.popover_instances.send_later = instance;
-            $(instance.popper).one("click", instance.hide);
         },
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -141,9 +141,10 @@ export function initialize() {
             $popper.one("click", ".send_later_selected_send_later_time", () => {
                 const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);
+                instance.hide();
             });
             // Handle clicks on Enter-to-send settings
-            $(instance.popper).one("click", ".enter_sends_choice", (e) => {
+            $popper.one("click", ".enter_sends_choice", (e) => {
                 let selected_behaviour = $(e.currentTarget)
                     .find("input[type='radio']")
                     .attr("value");
@@ -161,10 +162,15 @@ export function initialize() {
                     data: {enter_sends: selected_behaviour},
                 });
                 e.stopPropagation();
-                instance.hide();
+                setTimeout(() => {
+                    instance.hide();
+                }, ENTER_SENDS_SELECTION_DELAY);
             });
             // Handle Send later clicks
-            $popper.one("click", ".open_send_later_modal", open_send_later_menu);
+            $popper.one("click", ".open_send_later_modal", () => {
+                open_send_later_menu();
+                instance.hide();
+            });
         },
         onHidden(instance) {
             instance.destroy();
