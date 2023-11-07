@@ -189,6 +189,7 @@ def billing_home(
                 stripe_email=stripe_customer.email,
                 CustomerPlan=CustomerPlan,
                 onboarding=onboarding,
+                billing_frequency=CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule],
             )
 
     return render(request, "corporate/billing.html", context=context)

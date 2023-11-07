@@ -967,6 +967,7 @@ button#register_auth_button_gitlab {
             }
         }
 
+        &.billing-page-field,
         &.support-form-field,
         &.sponsorship-form-field {
             width: 450px;

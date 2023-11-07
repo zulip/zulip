@@ -17,7 +17,7 @@
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                 <div class="white-box">
                     <div id="overview">
-                        <div class="input-box no-validation">
+                        <div class="input-box billing-page-field no-validation">
                             <label for="org_current_plan" class="inline-block label-title">Your plan</label>
                             <div id="org_current_plan" class="not-editable-realm-field">
                                 {% if free_trial %}
@@ -25,6 +25,12 @@
                                 {% else %}
                                 {{ plan_name }}
                                 {% endif %}
+                            </div>
+                        </div>
+                        <div class="input-box billing-page-field no-validation">
+                            <label for="org_billing_freqency" class="inline-block label-title">Billing frequency</label>
+                            <div id="org_billing_freqency" class="not-editable-realm-field">
+                                {{ billing_frequency }}
                             </div>
                         </div>
                         <p>
