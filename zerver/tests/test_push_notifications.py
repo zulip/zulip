@@ -81,7 +81,6 @@ from zerver.models import (
     get_client,
     get_realm,
     get_stream,
-    get_user_profile_by_id,
 )
 from zilencer.models import RemoteZulipServerAuditLog
 
@@ -1631,6 +1630,16 @@ class HandlePushNotificationTest(PushNotificationTest):
                     pn_logger.output,
                 )
 
+            remote_realm_count = RealmCount.objects.values("property", "subgroup", "value").last()
+            self.assertEqual(
+                remote_realm_count,
+                dict(
+                    property="mobile_pushes_sent::day",
+                    subgroup=None,
+                    value=len(gcm_devices) + len(apns_devices),
+                ),
+            )
+
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
     def test_unregistered_client(self) -> None:
@@ -1749,9 +1758,9 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         # If the message is unread, we should send push notifications.
         with mock.patch(
-            "zerver.lib.push_notifications.send_apple_push_notification"
+            "zerver.lib.push_notifications.send_apple_push_notification", return_value=1
         ) as mock_send_apple, mock.patch(
-            "zerver.lib.push_notifications.send_android_push_notification"
+            "zerver.lib.push_notifications.send_android_push_notification", return_value=1
         ) as mock_send_android:
             handle_push_notification(user_profile.id, missed_message)
         mock_send_apple.assert_called_once()
@@ -1761,9 +1770,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         usermessage.flags.read = True
         usermessage.save()
         with mock.patch(
-            "zerver.lib.push_notifications.send_apple_push_notification"
+            "zerver.lib.push_notifications.send_apple_push_notification", return_value=1
         ) as mock_send_apple, mock.patch(
-            "zerver.lib.push_notifications.send_android_push_notification"
+            "zerver.lib.push_notifications.send_android_push_notification", return_value=1
         ) as mock_send_android:
             handle_push_notification(user_profile.id, missed_message)
         mock_send_apple.assert_not_called()
@@ -1867,7 +1876,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_logging_info:
             handle_push_notification(user_profile.id, missed_message)
             mock_send.assert_called_with(
-                user_profile.id,
+                user_profile,
                 {"apns": True},
                 {"gcm": True},
                 {},
@@ -1911,9 +1920,13 @@ class HandlePushNotificationTest(PushNotificationTest):
             "zerver.lib.push_notifications.get_message_payload_gcm",
             return_value=({"gcm": True}, {}),
         ), mock.patch(
-            "zerver.lib.push_notifications.send_apple_push_notification"
+            # Simulate the send...push_notification functions returning a number of successes
+            # lesser than the number of devices, so that we can verify correct CountStat counting.
+            "zerver.lib.push_notifications.send_apple_push_notification",
+            return_value=len(apple_devices) - 1,
         ) as mock_send_apple, mock.patch(
-            "zerver.lib.push_notifications.send_android_push_notification"
+            "zerver.lib.push_notifications.send_android_push_notification",
+            return_value=len(android_devices) - 1,
         ) as mock_send_android, mock.patch(
             "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ) as mock_push_notifications:
@@ -1922,6 +1935,16 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
+
+        remote_realm_count = RealmCount.objects.values("property", "subgroup", "value").last()
+        self.assertEqual(
+            remote_realm_count,
+            dict(
+                property="mobile_pushes_sent::day",
+                subgroup=None,
+                value=len(android_devices) + len(apple_devices) - 2,
+            ),
+        )
 
     def test_send_remove_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1941,7 +1964,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_send:
             handle_remove_push_notification(user_profile.id, [message.id])
             mock_send.assert_called_with(
-                user_profile.id,
+                user_profile,
                 {
                     "badge": 0,
                     "custom": {
@@ -1994,9 +2017,13 @@ class HandlePushNotificationTest(PushNotificationTest):
         with mock.patch(
             "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ) as mock_push_notifications, mock.patch(
-            "zerver.lib.push_notifications.send_android_push_notification"
+            # Simulate the send...push_notification functions returning a number of successes
+            # lesser than the number of devices, so that we can verify correct CountStat counting.
+            "zerver.lib.push_notifications.send_android_push_notification",
+            return_value=len(apple_devices) - 1,
         ) as mock_send_android, mock.patch(
-            "zerver.lib.push_notifications.send_apple_push_notification"
+            "zerver.lib.push_notifications.send_apple_push_notification",
+            return_value=len(apple_devices) - 1,
         ) as mock_send_apple:
             handle_remove_push_notification(self.user_profile.id, [message.id])
             mock_push_notifications.assert_called_once()
@@ -2035,6 +2062,16 @@ class HandlePushNotificationTest(PushNotificationTest):
             user_message = UserMessage.objects.get(user_profile=self.user_profile, message=message)
             self.assertEqual(user_message.flags.active_mobile_push_notification, False)
 
+            remote_realm_count = RealmCount.objects.values("property", "subgroup", "value").last()
+            self.assertEqual(
+                remote_realm_count,
+                dict(
+                    property="mobile_pushes_sent::day",
+                    subgroup=None,
+                    value=len(android_devices) + len(apple_devices) - 2,
+                ),
+            )
+
     def test_user_message_does_not_exist(self) -> None:
         """This simulates a condition that should only be an error if the user is
         not long-term idle; we fake it, though, in the sense that the user should
@@ -2069,9 +2106,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         with mock.patch(
             "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ) as mock_push_notifications, mock.patch(
-            "zerver.lib.push_notifications.send_android_push_notification"
+            "zerver.lib.push_notifications.send_android_push_notification", return_value=1
         ) as mock_send_android, mock.patch(
-            "zerver.lib.push_notifications.send_apple_push_notification"
+            "zerver.lib.push_notifications.send_apple_push_notification", return_value=1
         ) as mock_send_apple:
             handle_remove_push_notification(self.user_profile.id, [message_id])
             mock_push_notifications.assert_called_once()
@@ -2119,9 +2156,9 @@ class HandlePushNotificationTest(PushNotificationTest):
             "zerver.lib.push_notifications.get_message_payload_gcm",
             return_value=({"gcm": True}, {}),
         ), mock.patch(
-            "zerver.lib.push_notifications.send_apple_push_notification"
+            "zerver.lib.push_notifications.send_apple_push_notification", return_value=1
         ) as mock_send_apple, mock.patch(
-            "zerver.lib.push_notifications.send_android_push_notification"
+            "zerver.lib.push_notifications.send_android_push_notification", return_value=1
         ) as mock_send_android, mock.patch(
             "zerver.lib.push_notifications.logger.error"
         ) as mock_logger, mock.patch(
@@ -2892,13 +2929,15 @@ class TestGetGCMPayload(PushNotificationTest):
 class TestSendNotificationsToBouncer(ZulipTestCase):
     @mock.patch("zerver.lib.remote_server.send_to_push_bouncer")
     def test_send_notifications_to_bouncer(self, mock_send: mock.MagicMock) -> None:
+        user = self.example_user("hamlet")
+
         mock_send.return_value = {"total_android_devices": 1, "total_apple_devices": 3}
         total_android_devices, total_apple_devices = send_notifications_to_bouncer(
-            1, {"apns": True}, {"gcm": True}, {}
+            user, {"apns": True}, {"gcm": True}, {}
         )
         post_data = {
-            "user_uuid": get_user_profile_by_id(1).uuid,
-            "user_id": 1,
+            "user_uuid": user.uuid,
+            "user_id": user.id,
             "apns_payload": {"apns": True},
             "gcm_payload": {"gcm": True},
             "gcm_options": {},
@@ -2911,6 +2950,16 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
         )
         self.assertEqual(total_android_devices, 1)
         self.assertEqual(total_apple_devices, 3)
+
+        remote_realm_count = RealmCount.objects.values("property", "subgroup", "value").last()
+        self.assertEqual(
+            remote_realm_count,
+            dict(
+                property="mobile_pushes_sent::day",
+                subgroup=None,
+                value=total_android_devices + total_apple_devices,
+            ),
+        )
 
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
