@@ -156,7 +156,7 @@ li.show-more-topics {
         }
 
         .unread_count {
-            display: none;
+            visibility: hidden;
         }
     }
 
@@ -574,7 +574,7 @@ li.active-sub-filter {
         }
 
         &.top_left_starred_messages .unread_count {
-            display: none;
+            visibility: hidden;
         }
     }
 
