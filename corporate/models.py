@@ -216,6 +216,10 @@ class CustomerPlan(models.Model):
 
     ANNUAL = 1
     MONTHLY = 2
+    BILLING_SCHEDULES = {
+        ANNUAL: "Annual",
+        MONTHLY: "Monthly",
+    }
     billing_schedule = models.SmallIntegerField()
 
     # The next date the billing system should go through ledger
