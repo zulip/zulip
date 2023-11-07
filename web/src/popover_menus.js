@@ -10,6 +10,7 @@ import {media_breakpoints_num} from "./css_variables";
 import * as modals from "./modals";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
+import * as util from "./util";
 
 export const popover_instances = {
     compose_control_buttons: null,
@@ -269,8 +270,24 @@ function get_props_for_popover_centering(popover_props) {
                         offset({popper}) {
                             // Calculate the offset needed to place the reference in the center
                             const x_offset_to_center = window.innerWidth / 2;
-                            const y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
+                            let y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
 
+                            // Move popover to the top of the screen if user is focused on an element which can
+                            // open keyboard on a mobile device causing the screen to resize.
+                            // Resize doesn't happen on iOS when keyboard is open, and typing text in input field just works.
+                            // For other browsers, we need to check if the focused element is an text field and
+                            // is causing a resize (thus calling this `offset` modifier function), in which case
+                            // we need to move the popover to the top of the screen.
+                            if (util.is_mobile()) {
+                                const $focused_element = $(document.activeElement);
+                                if (
+                                    $focused_element.is(
+                                        "input[type=text], input[type=number], textarea",
+                                    )
+                                ) {
+                                    y_offset_to_center = 10;
+                                }
+                            }
                             return [x_offset_to_center, y_offset_to_center];
                         },
                     },
