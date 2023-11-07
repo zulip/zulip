@@ -1186,6 +1186,17 @@ Output:
 
         return [subscription.user_profile for subscription in subscriptions]
 
+    def not_long_term_idle_subscriber_ids(self, stream_name: str, realm: Realm) -> Set[int]:
+        stream = Stream.objects.get(name=stream_name, realm=realm)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+
+        subscriptions = Subscription.objects.filter(
+            recipient=recipient, active=True, is_user_active=True
+        ).exclude(user_profile__long_term_idle=True)
+        user_profile_ids = set(subscriptions.values_list("user_profile_id", flat=True))
+
+        return user_profile_ids
+
     def assert_json_success(
         self,
         result: Union["TestHttpResponse", HttpResponse],

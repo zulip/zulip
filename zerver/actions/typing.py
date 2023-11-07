@@ -3,7 +3,7 @@ from typing import List
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.stream_subscription import get_user_ids_for_streams
+from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import Realm, Stream, UserProfile, get_user_by_id_in_realm_including_cross_realm
 from zerver.tornado.django_api import send_event
 
@@ -77,6 +77,10 @@ def do_send_stream_typing_notification(
         topic=topic,
     )
 
-    user_ids_to_notify = get_user_ids_for_streams({stream.id})[stream.id]
+    # We don't notify long_term_idle subscribers.
+    subscriptions = get_active_subscriptions_for_stream_id(
+        stream.id, include_deactivated_users=False
+    ).exclude(user_profile__long_term_idle=True)
+    user_ids_to_notify = set(subscriptions.values_list("user_profile_id", flat=True))
 
     send_event(sender.realm, event, user_ids_to_notify)
