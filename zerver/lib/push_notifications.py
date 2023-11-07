@@ -32,6 +32,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from typing_extensions import TypeAlias, override
 
+from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -550,16 +551,16 @@ def uses_notification_bouncer() -> bool:
 
 
 def send_notifications_to_bouncer(
-    user_profile_id: int,
+    user_profile: UserProfile,
     apns_payload: Dict[str, Any],
     gcm_payload: Dict[str, Any],
     gcm_options: Dict[str, Any],
 ) -> Tuple[int, int]:
     post_data = {
-        "user_uuid": str(get_user_profile_by_id(user_profile_id).uuid),
+        "user_uuid": str(user_profile.uuid),
         # user_uuid is the intended future format, but we also need to send user_id
         # to avoid breaking old mobile registrations, which were made with user_id.
-        "user_id": user_profile_id,
+        "user_id": user_profile.id,
         "apns_payload": apns_payload,
         "gcm_payload": gcm_payload,
         "gcm_options": gcm_options,
@@ -569,7 +570,19 @@ def send_notifications_to_bouncer(
     assert isinstance(response_data["total_android_devices"], int)
     assert isinstance(response_data["total_apple_devices"], int)
 
-    return response_data["total_android_devices"], response_data["total_apple_devices"]
+    total_android_devices, total_apple_devices = (
+        response_data["total_android_devices"],
+        response_data["total_apple_devices"],
+    )
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["mobile_pushes_sent::day"],
+        None,
+        timezone_now(),
+        increment=total_android_devices + total_apple_devices,
+    )
+
+    return total_android_devices, total_apple_devices
 
 
 #
@@ -1045,7 +1058,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     if uses_notification_bouncer():
-        send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload, gcm_options)
+        send_notifications_to_bouncer(user_profile, apns_payload, gcm_payload, gcm_options)
     else:
         user_identity = UserPushIdentityCompat(user_id=user_profile_id)
         android_devices = list(
@@ -1054,10 +1067,21 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         apple_devices = list(
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
         )
-        if android_devices:
-            send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
-        if apple_devices:
-            send_apple_push_notification(user_identity, apple_devices, apns_payload)
+
+        android_successfully_sent_count = send_android_push_notification(
+            user_identity, android_devices, gcm_payload, gcm_options
+        )
+        apple_successfully_sent_count = send_apple_push_notification(
+            user_identity, apple_devices, apns_payload
+        )
+
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["mobile_pushes_sent::day"],
+            None,
+            timezone_now(),
+            increment=android_successfully_sent_count + apple_successfully_sent_count,
+        )
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
@@ -1180,7 +1204,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     if uses_notification_bouncer():
         total_android_devices, total_apple_devices = send_notifications_to_bouncer(
-            user_profile_id, apns_payload, gcm_payload, gcm_options
+            user_profile, apns_payload, gcm_payload, gcm_options
         )
         logger.info(
             "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
@@ -1205,8 +1229,21 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         len(apple_devices),
     )
     user_identity = UserPushIdentityCompat(user_id=user_profile.id)
-    send_apple_push_notification(user_identity, apple_devices, apns_payload)
-    send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
+
+    apple_successfully_sent_count = send_apple_push_notification(
+        user_identity, apple_devices, apns_payload
+    )
+    android_successfully_sent_count = send_android_push_notification(
+        user_identity, android_devices, gcm_payload, gcm_options
+    )
+
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["mobile_pushes_sent::day"],
+        None,
+        timezone_now(),
+        increment=apple_successfully_sent_count + android_successfully_sent_count,
+    )
 
 
 def send_test_push_notification_directly_to_devices(

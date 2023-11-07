@@ -829,6 +829,12 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         CountStat(
             "minutes_active::day", DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY
         ),
+        # Tracks the number of push notifications requested by the server.
+        LoggingCountStat(
+            "mobile_pushes_sent::day",
+            RealmCount,
+            CountStat.DAY,
+        ),
         # Rate limiting stats
         # Used to limit the number of invitation emails sent by a realm
         LoggingCountStat("invites_sent::day", RealmCount, CountStat.DAY),
