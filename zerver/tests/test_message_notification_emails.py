@@ -1,7 +1,7 @@
 import random
 import re
 from email.headerregistry import Address
-from typing import List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union
 from unittest import mock
 from unittest.mock import patch
 
@@ -1258,19 +1258,32 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
     def test_multiple_stream_messages(self) -> None:
         hamlet = self.example_user("hamlet")
-        msg_id_1 = self.send_stream_message(self.example_user("othello"), "Denmark", "Message1")
-        msg_id_2 = self.send_stream_message(self.example_user("iago"), "Denmark", "Message2")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+
+        message_ids: Dict[int, MissedMessageData] = {}
+        for i in range(1, 4):
+            msg_id = self.send_stream_message(othello, "Denmark", content=str(i))
+            message_ids[msg_id] = MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL)
+        for i in range(4, 7):
+            msg_id = self.send_stream_message(iago, "Denmark", content=str(i))
+            message_ids[msg_id] = MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL)
 
         handle_missedmessage_emails(
             hamlet.id,
-            {
-                msg_id_1: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
-                msg_id_2: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
-            },
+            message_ids,
         )
-        self.assert_length(mail.outbox, 1)
+
         email_subject = "#Denmark > test"
-        self.assertEqual(mail.outbox[0].subject, email_subject)
+        verify_body_include = [
+            "Othello, the Moor of Venice: > 1 > 2 > 3 Iago: > 4 > 5 > 6 -- ",
+            "You are receiving this because you have email notifications enabled for #Denmark.",
+        ]
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, email_subject)
+        for text in verify_body_include:
+            self.assertIn(text, self.normalize_string(msg.body))
 
     def test_multiple_stream_messages_and_mentions(self) -> None:
         """Subject should be stream name and topic as usual."""
