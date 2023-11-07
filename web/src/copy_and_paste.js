@@ -543,7 +543,10 @@ export function paste_handler(event) {
             return;
         }
 
-        if (paste_html && page_params.development_environment) {
+        // Unlike Chrome, Firefox doesn't automatically paste plainly on using Ctrl+Shift+V,
+        // hence we need to handle it ourselves, by checking if shift key is pressed, and only
+        // if not, we proceed with the default formatted paste.
+        if (paste_html && !compose_ui.shift_pressed && page_params.development_environment) {
             event.preventDefault();
             event.stopPropagation();
             const text = paste_handler_converter(paste_html);
