@@ -5,6 +5,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_wildcard_warning from "../templates/compose_banner/wildcard_warning.hbs";
+import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -624,7 +625,12 @@ export function check_overflow_text() {
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
         $("textarea#compose-textarea").addClass("over_limit");
-        $indicator.text(text.length + "/" + max_length);
+        $indicator.html(
+            render_compose_limit_indicator({
+                text_length: text.length,
+                max_length,
+            }),
+        );
         compose_banner.show_error_message(
             $t(
                 {
@@ -640,8 +646,12 @@ export function check_overflow_text() {
     } else if (text.length > 0.9 * max_length) {
         $indicator.removeClass("over_limit");
         $("textarea#compose-textarea").removeClass("over_limit");
-        $indicator.text(text.length + "/" + max_length);
-
+        $indicator.html(
+            render_compose_limit_indicator({
+                text_length: text.length,
+                max_length,
+            }),
+        );
         $("#compose-send-button").prop("disabled", false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     } else {

@@ -562,10 +562,14 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     });
 
     // Indicator should show red colored text
+    let limit_indicator_html;
+    mock_template("compose_limit_indicator.hbs", true, (_data, html) => {
+        limit_indicator_html = html;
+    });
     $textarea.val("a".repeat(10000 + 1));
     compose_validate.check_overflow_text();
     assert.ok($indicator.hasClass("over_limit"));
-    assert.equal($indicator.text(), "10001/10000");
+    assert.equal(limit_indicator_html, "10001&ZeroWidthSpace;/10000\n");
     assert.ok($textarea.hasClass("over_limit"));
     assert.ok(banner_rendered);
     assert.ok($send_button.prop("disabled"));
@@ -575,7 +579,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     $textarea.val("a".repeat(9000 + 1));
     compose_validate.check_overflow_text();
     assert.ok(!$indicator.hasClass("over_limit"));
-    assert.equal($indicator.text(), "9001/10000");
+    assert.equal(limit_indicator_html, "9001&ZeroWidthSpace;/10000\n");
     assert.ok(!$textarea.hasClass("over_limit"));
     assert.ok(!$send_button.prop("disabled"));
     assert.ok(!banner_rendered);
