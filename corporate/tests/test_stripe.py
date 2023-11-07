@@ -4991,12 +4991,24 @@ class TestSupportBillingHelpers(StripeTestCase):
             "\n\nIf you could [list Zulip as a sponsor on your website](/help/linking-to-zulip-website), we would really appreciate it!"
         )
         sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
-        recipient_id = self.example_user("desdemona").recipient_id
-        message = Message.objects.filter(realm_id=realm.id, sender=sender.id).first()
-        assert message is not None
-        self.assertEqual(message.content, expected_message)
-        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
-        self.assertEqual(message.recipient_id, recipient_id)
+
+        # Organization owners get the notification bot message
+        desdemona_recipient = self.example_user("desdemona").recipient
+        message_to_owner = Message.objects.filter(
+            realm_id=realm.id, sender=sender.id, recipient=desdemona_recipient
+        ).first()
+        assert message_to_owner is not None
+        self.assertEqual(message_to_owner.content, expected_message)
+        self.assertEqual(message_to_owner.recipient.type, Recipient.PERSONAL)
+
+        # Organization billing admins get the notification bot message
+        hamlet_recipient = self.example_user("hamlet").recipient
+        message_to_billing_admin = Message.objects.filter(
+            realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
+        ).first()
+        assert message_to_billing_admin is not None
+        self.assertEqual(message_to_billing_admin.content, expected_message)
+        self.assertEqual(message_to_billing_admin.recipient.type, Recipient.PERSONAL)
 
     def test_update_realm_sponsorship_status(self) -> None:
         lear = get_realm("lear")
