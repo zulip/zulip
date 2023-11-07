@@ -51,7 +51,9 @@ saved for 30 days.
 
 {end_tabs}
 
-## Delete a draft
+## Delete drafts
+
+### Delete a draft
 
 {start_tabs}
 
@@ -66,6 +68,23 @@ saved for 30 days.
 
     You can also use <kbd>Backspace</kbd> within the drafts view to delete the
     selected draft.
+
+{end_tabs}
+
+### Delete multiple drafts
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!go-to-draft-messages.md!}
+
+1. Click **Select all drafts** in the upper right corner of
+   the drafts view, or select the drafts you want to delete
+   by toggling the checkboxes on the right.
+
+1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon in the
+   upper right corner of the drafts view to delete all selected drafts.
 
 {end_tabs}
 
