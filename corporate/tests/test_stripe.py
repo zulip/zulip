@@ -3652,8 +3652,8 @@ class StripeTest(StripeTestCase):
 
             customer = None
             if create_stripe_customer:
-                billable_user = RealmBillingSession(users[0])
-                customer = billable_user.create_stripe_customer()
+                billing_session = RealmBillingSession(users[0])
+                customer = billing_session.create_stripe_customer()
             plan = None
             if create_plan:
                 plan, _ = self.subscribe_realm_to_monthly_plan_on_manual_license_management(
@@ -3848,11 +3848,11 @@ class StripeTest(StripeTestCase):
         customer = Customer.objects.create(realm=iago.realm)
         self.assertFalse(customer_has_credit_card_as_default_payment_method(customer))
 
-        billable_user = RealmBillingSession(iago)
-        customer = billable_user.create_stripe_customer()
+        billing_session = RealmBillingSession(iago)
+        customer = billing_session.create_stripe_customer()
         self.assertFalse(customer_has_credit_card_as_default_payment_method(customer))
 
-        customer = billable_user.create_stripe_customer(
+        customer = billing_session.create_stripe_customer(
             payment_method=create_payment_method(
                 self.get_test_card_number(
                     attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
