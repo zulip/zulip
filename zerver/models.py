@@ -995,7 +995,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         )
 
     def get_bot_domain(self) -> str:
-        return get_fake_email_domain(self)
+        return get_fake_email_domain(self.host)
 
     def get_notifications_stream(self) -> Optional["Stream"]:
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
@@ -5194,11 +5194,11 @@ class InvalidFakeEmailDomainError(Exception):
     pass
 
 
-def get_fake_email_domain(realm: Realm) -> str:
+def get_fake_email_domain(realm_host: str) -> str:
     try:
         # Check that realm.host can be used to form valid email addresses.
-        validate_email(Address(username="bot", domain=realm.host).addr_spec)
-        return realm.host
+        validate_email(Address(username="bot", domain=realm_host).addr_spec)
+        return realm_host
     except ValidationError:
         pass
 
