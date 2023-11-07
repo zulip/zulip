@@ -319,9 +319,14 @@ export function paste_handler_converter(paste_html) {
         copied_html_fragment.childNodes.length === 1 &&
         copied_html_fragment.firstElementChild &&
         copied_html_fragment.firstElementChild.innerHTML;
+    const outer_elements_to_retain = ["PRE", "OL"];
     // If the entire selection copied is within a single HTML element (like an
-    // `h1`), we don't want to retain its styling. We retain `pre` for code blocks.
-    if (copied_within_single_element && copied_html_fragment.firstElementChild.nodeName !== "PRE") {
+    // `h1`), we don't want to retain its styling, except when it helps identify
+    // the intended structure of the copied content (like `pre` and `ol`).
+    if (
+        copied_within_single_element &&
+        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
+    ) {
         paste_html = copied_html_fragment.firstChild.innerHTML;
     }
 
