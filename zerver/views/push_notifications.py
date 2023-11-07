@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
@@ -14,7 +15,17 @@ from zerver.lib.push_notifications import (
 )
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_string
 from zerver.models import PushDeviceToken, UserProfile
+
+
+def check_app_id(var_name: str, val: object) -> str:
+    # Garbage values should be harmless, but we can be picky
+    # as insurance against bugs somewhere.
+    s = check_string(var_name, val)
+    if not re.fullmatch("[.a-zA-Z0-9-]+", s):
+        raise JsonableError(_("Invalid app ID"))
+    return s
 
 
 def validate_token(token_str: str, kind: int) -> None:
@@ -34,7 +45,7 @@ def add_apns_device_token(
     request: HttpRequest,
     user_profile: UserProfile,
     token: str = REQ(),
-    appid: str = REQ(),
+    appid: str = REQ(str_validator=check_app_id),
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     add_push_device_token(user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
