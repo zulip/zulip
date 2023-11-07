@@ -169,18 +169,17 @@ export const default_popover_props = {
                     }
 
                     const $reference = $(state.elements.reference);
-                    // We don't want to hide popovers in these fixed / sticky elements where the reference cannot be obscured.
-                    if (
-                        $reference.parents("#compose").length === 1 ||
-                        $reference.parents("#navbar-fixed-container").length === 1 ||
-                        $reference.parents(".sticky_header").length === 1
-                    ) {
+                    // Hide popover if the reference element is below another element.
+                    //
+                    // We only care about the reference element if it is inside the message feed since
+                    // hiding elements outside the message feed is tricky and expensive due to stacking context.
+                    // References in overlays, modal, sidebar overlays, popovers, etc. can make the below logic hard
+                    // to live with if we take elements outside message feed into account.
+                    if ($reference.parents("#message_feed_container").length !== 1) {
                         return;
                     }
 
                     const reference_rect = $reference[0].getBoundingClientRect();
-                    // Hide popover if the reference element is below another element.
-                    //
                     // This is the logic we want but since it is too expensive to run
                     // on every scroll, we run a cheaper version of this to just check if
                     // compose, sticky header or navbar are not obscuring the reference
