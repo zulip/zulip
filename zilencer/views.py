@@ -48,7 +48,7 @@ from zerver.lib.validator import (
     check_string_fixed_length,
     check_union,
 )
-from zerver.views.push_notifications import validate_token
+from zerver.views.push_notifications import check_app_id, validate_token
 from zilencer.auth import InvalidZulipServerKeyError
 from zilencer.models import (
     RemoteInstallationCount,
@@ -162,7 +162,7 @@ def register_remote_push_device(
     user_uuid: Optional[str] = REQ(default=None),
     token: str = REQ(),
     token_kind: int = REQ(json_validator=check_int),
-    ios_app_id: Optional[str] = REQ(default=None),
+    ios_app_id: Optional[str] = REQ(str_validator=check_app_id, default=None),
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     if token_kind == RemotePushDeviceToken.APNS and ios_app_id is None:

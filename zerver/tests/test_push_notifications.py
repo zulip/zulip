@@ -525,6 +525,17 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_success(result)
 
+    def test_register_validate_ios_app_id(self) -> None:
+        endpoint = "/api/v1/remotes/push/register"
+        args = {"user_id": 11, "token": "1122", "token_kind": PushDeviceToken.APNS}
+
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {**args, "ios_app_id": "'; tables --"},
+        )
+        self.assert_json_error(result, "Invalid app ID")
+
     def test_register_device_deduplication(self) -> None:
         hamlet = self.example_user("hamlet")
         token = "111222"
