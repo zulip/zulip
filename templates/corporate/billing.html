@@ -33,16 +33,22 @@
                                 {{ billing_frequency }}
                             </div>
                         </div>
-                        <p>
-                            You are using <strong>{{ seat_count }} of {{ licenses }} licenses</strong>.
+                        <div class="input-box billing-page-field no-validation">
                             {% if automanage_licenses %}
-                            Licenses are automatically managed by Zulip; when you add or deactivate a user, the number of
-                            licenses will be immediately updated to reflect your new usage.
+                            <label for="automatic-license-count" class="inline-block label-title">
+                                Number of licenses
+                                <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                                    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                                </a>
+                            </label>
+                            <div id="automatic-license-count" class="not-editable-realm-field">
+                                {{ licenses }}  (managed automatically)
+                            </div>
                             {% else %}
                             Licenses are manually managed. You will not be able to add new users to your organization once
                             you are using all of your licenses.
                             {% endif %}
-                        </p>
+                        </div>
                         <p>
                             {% if renewal_amount %}
                                 {% if free_trial %}
