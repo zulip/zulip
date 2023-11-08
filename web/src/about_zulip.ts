@@ -36,5 +36,5 @@ export function initialize(): void {
             page_params.zulip_merge_base &&
             page_params.zulip_merge_base !== page_params.zulip_version,
     });
-    $(".app").append(rendered_about_zulip);
+    $("#about-zulip-modal-container").append(rendered_about_zulip);
 }
