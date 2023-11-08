@@ -100,11 +100,14 @@ USING_PGROONGA = True
 # Flush cache after migration.
 POST_MIGRATION_CACHE_FLUSHING = True
 
-# If a sandbox APNs cert is provided, use it.
-# To create such a cert, see instructions at:
+# If a sandbox APNs key or cert is provided, use it.
+# To create such a key or cert, see instructions at:
 #   https://github.com/zulip/zulip-mobile/blob/main/docs/howto/push-notifications.md#ios
+_candidate_apns_token_key_file = "zproject/apns-dev-key.p8"
 _candidate_apns_cert_file = "zproject/apns-dev.pem"
-if os.path.isfile(_candidate_apns_cert_file):
+if os.path.isfile(_candidate_apns_token_key_file):
+    APNS_TOKEN_KEY_FILE = _candidate_apns_token_key_file
+elif os.path.isfile(_candidate_apns_cert_file):
     APNS_CERT_FILE = _candidate_apns_cert_file
 
 # Don't require anything about password strength in development
