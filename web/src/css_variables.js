@@ -39,6 +39,7 @@ module.exports = {
         cb2_min: cb2 + "px",
         cb3_min: cb3 + "px",
         cb4_min: cb4 + "px",
+        short_navbar_cutoff_height: "600px",
     },
 
     media_breakpoints_num: {
