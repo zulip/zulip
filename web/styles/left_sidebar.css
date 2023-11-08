@@ -53,6 +53,13 @@ $before_unread_count_padding: 3px;
     font-size: inherit;
     font-weight: normal;
     display: inline;
+    /* Override heading margin from Bootstrap. */
+    margin: 0;
+    /* Show an ellipsis on a heading when
+       it won't sit adjacent other icons
+       or controls in the row. */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar-topic-check,
@@ -808,13 +815,6 @@ li.top_left_scheduled_messages {
 
     .left-sidebar-title {
         grid-area: row-content;
-        /* Override heading margin from Bootstrap. */
-        margin: 0;
-        /* Show an ellipsis on the VIEWS header when
-           it won't sit adjacent the icons in their
-           most condensed presentation. */
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     #left-sidebar-navigation-list-condensed {
