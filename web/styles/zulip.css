@@ -254,6 +254,7 @@ body {
     --color-text-item: hsl(0deg 0% 40%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
+    --color-text-sidebar-heading: hsl(0deg 0% 43%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
@@ -464,6 +465,15 @@ body {
     --color-text-item: hsl(0deg 0% 50%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
+    /* 75% opacity of --color-text-default against --color-background.
+       We use color-mix here to avoid defining a separate, compounding
+       `opacity` property, and also to preserve a record of the
+       relationship of the color of sidebar headings to other colors. */
+    --color-text-sidebar-heading: color-mix(
+        in srgb,
+        hsl(0deg 0% 75%) 75%,
+        hsl(0deg 0% 11%)
+    );
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
@@ -1162,7 +1172,7 @@ strong {
 }
 
 .sidebar-title {
-    color: hsl(0deg 0% 43%);
+    color: var(--color-text-sidebar-heading);
     font-size: inherit;
     font-weight: normal;
     display: inline;

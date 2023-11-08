@@ -445,11 +445,6 @@
         opacity: 0.5;
     }
 
-    .sidebar-title {
-        color: inherit;
-        opacity: 0.75;
-    }
-
     .rendered_markdown button,
     .new-style .button {
         background-color: hsl(0deg 0% 0% / 20%);
