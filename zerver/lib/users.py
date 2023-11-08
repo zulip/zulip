@@ -502,22 +502,6 @@ def format_user_row(
 
 
 def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
-    # What we're trying to do is simulate the user_profile having been
-    # fetched from a QuerySet using `.values(*realm_user_dict_fields)`
-    # even though we fetched UserProfile objects.  This is messier
-    # than it seems.
-    #
-    # What we'd like to do is just call model_to_dict(user,
-    # fields=realm_user_dict_fields).  The problem with this is
-    # that model_to_dict has a different convention than
-    # `.values()` in its handling of foreign keys, naming them as
-    # e.g. `bot_owner`, not `bot_owner_id`; we work around that
-    # here.
-    #
-    # This could be potentially simplified in the future by
-    # changing realm_user_dict_fields to name the bot owner with
-    # the less readable `bot_owner` (instead of `bot_owner_id`).
-
     return RawUserDict(
         id=user_profile.id,
         full_name=user_profile.full_name,
