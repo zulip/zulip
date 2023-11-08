@@ -13,8 +13,18 @@ import {parse_html} from "./ui_util";
 import * as user_profile from "./user_profile";
 import * as user_status from "./user_status";
 
+let is_triggered_via_hotkey = false;
+
 function elem_to_user_id($elem) {
     return Number.parseInt($elem.attr("data-user-id"), 10);
+}
+
+function focus_first_not_status_item_on_focus($popper) {
+    if (is_triggered_via_hotkey) {
+        // Focus the first item in the gear menu popover.
+        $popper.find("a:not(.personal-menu-clear-status):visible").first().trigger("focus");
+        is_triggered_via_hotkey = false;
+    }
 }
 
 export function initialize() {
@@ -39,6 +49,7 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.personal_menu = instance;
+            focus_first_not_status_item_on_focus($popper);
 
             tippy(".personal-menu-clear-status", {
                 placement: "top",
@@ -101,9 +112,10 @@ export function initialize() {
     });
 }
 
-export function toggle() {
+export function toggle(triggered_via_hotkey) {
     // NOTE: Since to open personal menu, you need to click on your avatar (which calls
     // tippyjs.hideAll()), or go via gear menu if using hotkeys, we don't need to
     // call tippyjs.hideAll() for it.
     $("#personal-menu").trigger("click");
+    is_triggered_via_hotkey = Boolean(triggered_via_hotkey);
 }

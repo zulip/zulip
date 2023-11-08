@@ -785,7 +785,7 @@ export function process_hotkey(e, hotkey) {
     // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
     if (
         navbar_menus.is_navbar_menus_displayed() &&
-        navbar_menus.handle_keyboard_events(event_name)
+        navbar_menus.handle_keyboard_events(event_name, true)
     ) {
         return true;
     }
@@ -906,7 +906,7 @@ export function process_hotkey(e, hotkey) {
             search.initiate_search();
             return true;
         case "gear_menu":
-            gear_menu.toggle();
+            gear_menu.toggle(true);
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");
