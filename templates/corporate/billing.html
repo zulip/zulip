@@ -198,27 +198,9 @@
                 To make changes to your plan or view your billing history <a href="mailto:support@zulip.com">contact Zulip support</a>.
             </p>
         </div>
-        {% elif admin_access and not has_active_plan %}
-        <!-- For sponsored or sponsorship pending organizations we already redirect to /sponsorship page. -->
-        <div class="tab-content">
-            <center>
-                <p>
-                    <h2>Your organization is on the <b>Zulip Free</b> plan.</h2>
-                    <a href="/upgrade/">
-                        <button type="submit" class="button green">Upgrade to Standard</button>
-                    </a>
-                    <a href="/plans/">
-                        <button type="submit">View all plans</button>
-                    </a>
-                </p>
-            </center>
-        </div>
-        <div class="support-link">
-            <p>
-                <a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.
-            </p>
-        </div>
         {% else %}
+        <!-- For sponsored or sponsorship pending organizations we redirect to /sponsorship page. -->
+        <!-- For organizations on free plan we redirect to /plans page. -->
         <p>
             You must be an organization owner or a billing administrator to view this page.
         </p>
@@ -294,7 +276,7 @@
             </header>
             <main class="modal__content">
                 <p>
-                    Your organization will be downgraded to Zulip Cloud Free at the end of the current billing
+                    Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                     period ({{ renewal_date }}). You will lose access to unlimited search history and
                     <a href="/plans/">other features</a>
                     of your current plan. Are you sure you want to continue?

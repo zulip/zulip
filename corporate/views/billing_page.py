@@ -140,6 +140,9 @@ def billing_home(
         # TODO: Add a sponsorship pending message to the billing page
         context["sponsorship_pending"] = True
 
+    if user.realm.plan_type == user.realm.PLAN_TYPE_LIMITED:
+        return HttpResponseRedirect(reverse("plans"))
+
     if customer is None:
         from corporate.views.upgrade import initial_upgrade
 
