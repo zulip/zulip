@@ -217,8 +217,7 @@
         .emoji-search-results-container {
             padding: 0;
             position: relative;
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow: hidden auto;
             display: block;
             width: 247px;
             padding-left: 3px;

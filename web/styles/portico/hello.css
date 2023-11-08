@@ -192,10 +192,8 @@ ul {
         grid-template-columns: repeat(6, 200px);
         grid-template-rows: 100px;
         justify-content: center;
-        align-items: center;
-        justify-items: center;
-        column-gap: 24px;
-        row-gap: 0;
+        place-items: center;
+        gap: 24px 0;
     }
 
     .client-logos div {
