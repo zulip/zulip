@@ -120,6 +120,7 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
         mm_address = MissedMessageEmailAddress.objects.select_related(
             "user_profile",
             "user_profile__realm",
+            "user_profile__realm__can_access_all_users_group",
             "message",
             "message__sender",
             "message__recipient",

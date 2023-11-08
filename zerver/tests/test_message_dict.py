@@ -101,6 +101,7 @@ class MessageDictTest(ZulipTestCase):
                 [unhydrated_dict],
                 apply_markdown=apply_markdown,
                 client_gravatar=client_gravatar,
+                realm=get_realm("zulip"),
             )
             final_dict = unhydrated_dict
             return final_dict
@@ -180,7 +181,9 @@ class MessageDictTest(ZulipTestCase):
             rows = list(MessageDict.get_raw_db_rows(ids))
 
             objs = [MessageDict.build_dict_from_raw_db_row(row) for row in rows]
-            MessageDict.post_process_dicts(objs, apply_markdown=False, client_gravatar=False)
+            MessageDict.post_process_dicts(
+                objs, apply_markdown=False, client_gravatar=False, realm=realm
+            )
 
         self.assert_length(rows, num_ids)
 
@@ -422,6 +425,8 @@ class MessageHydrationTest(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_edit_history=False,
+            user_profile=cordelia,
+            realm=cordelia.realm,
         )
 
         self.assert_length(messages, 2)
@@ -437,6 +442,46 @@ class MessageHydrationTest(ZulipTestCase):
 
         self.assertIn('class="user-mention"', new_message["content"])
         self.assertEqual(new_message["flags"], ["mentioned"])
+
+    def test_message_for_ids_for_restricted_user_access(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        hamlet = self.example_user("hamlet")
+        self.send_stream_message(
+            hamlet,
+            "test_stream1",
+            topic_name="test",
+            content="test message again",
+        )
+        realm = get_realm("zulip")
+        stream = get_stream("test_stream1", realm)
+
+        assert stream.recipient_id is not None
+        message_ids = Message.objects.filter(
+            recipient_id=stream.recipient_id, realm=realm
+        ).values_list("id", flat=True)
+        self.assert_length(message_ids, 2)
+
+        user_message_flags = {
+            message_ids[0]: ["read", "historical"],
+            message_ids[1]: ["read"],
+        }
+
+        messages = messages_for_ids(
+            message_ids=list(message_ids),
+            user_message_flags=user_message_flags,
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+            user_profile=self.example_user("polonius"),
+            realm=realm,
+        )
+        (inaccessible_sender_msg,) = (msg for msg in messages if msg["sender_id"] != hamlet.id)
+        self.assertEqual(inaccessible_sender_msg["sender_id"], self.example_user("othello").id)
+        self.assertEqual(inaccessible_sender_msg["sender_full_name"], "Unknown user")
+        self.assertTrue(
+            inaccessible_sender_msg["avatar_url"].endswith("images/unknown-user-avatar.png")
+        )
 
     def test_display_recipient_up_to_date(self) -> None:
         """
@@ -473,6 +518,8 @@ class MessageHydrationTest(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_edit_history=False,
+            user_profile=cordelia,
+            realm=cordelia.realm,
         )
         message = messages[0]
 
@@ -516,6 +563,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_edit_history=False,
+            user_profile=cordelia,
+            realm=cordelia.realm,
         )
 
         self._verify_display_recipient(messages[0]["display_recipient"], [hamlet, cordelia])
@@ -537,6 +586,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_edit_history=False,
+            user_profile=cordelia,
+            realm=cordelia.realm,
         )
 
         self.assertEqual(messages[0]["display_recipient"], "Verona")
@@ -559,6 +610,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_edit_history=False,
+            user_profile=cordelia,
+            realm=cordelia.realm,
         )
 
         self._verify_display_recipient(
@@ -593,6 +646,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_edit_history=False,
+            user_profile=cordelia,
+            realm=cordelia.realm,
         )
 
         self._verify_display_recipient(
