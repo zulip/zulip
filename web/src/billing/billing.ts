@@ -7,29 +7,43 @@ import * as helpers from "./helpers";
 export function create_update_current_cycle_license_request(): void {
     $("#current-manual-license-count-update-button .billing-button-text").text("");
     $("#current-manual-license-count-update-button .loader").show();
-    helpers.create_ajax_request("/json/billing/plan", "current-license-change", [], "PATCH", () => {
-        window.location.replace("/billing/");
-        $("#licensechange-success").show();
-        $("#current-manual-license-count-update-button .loader").hide();
-        $("#current-manual-license-count-update-button .billing-button-text").text("Update");
-    }, () => {
-        $("#current-manual-license-count-update-button .loader").hide();
-        $("#current-manual-license-count-update-button .billing-button-text").text("Update");
-    });
+    helpers.create_ajax_request(
+        "/json/billing/plan",
+        "current-license-change",
+        [],
+        "PATCH",
+        () => {
+            window.location.replace("/billing/");
+            $("#licensechange-success").show();
+            $("#current-manual-license-count-update-button .loader").hide();
+            $("#current-manual-license-count-update-button .billing-button-text").text("Update");
+        },
+        () => {
+            $("#current-manual-license-count-update-button .loader").hide();
+            $("#current-manual-license-count-update-button .billing-button-text").text("Update");
+        },
+    );
 }
 
 export function create_update_next_cycle_license_request(): void {
     $("#next-manual-license-count-update-button .loader").show();
     $("#next-manual-license-count-update-button .billing-button-text").text("");
-    helpers.create_ajax_request("/json/billing/plan", "next-license-change", [], "PATCH", () => {
-        window.location.replace("/billing/");
-        $("#licensechange-success").show();
-        $("#next-manual-license-count-update-button .loader").hide();
-        $("#next-manual-license-count-update-button .billing-button-text").text("");
-    }, () => {
-        $("#next-manual-license-count-update-button .loader").hide();
-        $("#next-manual-license-count-update-button .billing-button-text").text("");
-    });
+    helpers.create_ajax_request(
+        "/json/billing/plan",
+        "next-license-change",
+        [],
+        "PATCH",
+        () => {
+            window.location.replace("/billing/");
+            $("#licensechange-success").show();
+            $("#next-manual-license-count-update-button .loader").hide();
+            $("#next-manual-license-count-update-button .billing-button-text").text("Update");
+        },
+        () => {
+            $("#next-manual-license-count-update-button .loader").hide();
+            $("#next-manual-license-count-update-button .billing-button-text").text("Update");
+        },
+    );
 }
 
 export function initialize(): void {
@@ -46,10 +60,11 @@ export function initialize(): void {
             (response) => {
                 const response_data = helpers.stripe_session_url_schema.parse(response);
                 window.location.replace(response_data.stripe_session_url);
-            }, () => {
+            },
+            () => {
                 $("#update-card-button .loader").hide();
                 $("#update-card-button .billing-button-text").text("Update card");
-            }
+            },
         );
         e.preventDefault();
     });
@@ -125,7 +140,6 @@ export function initialize(): void {
     $("#confirm-licenses-modal .dialog_submit_button").on("click", () => {
         portico_modals.close("confirm-licenses-modal");
         if ($("#confirm-licenses-modal .dialog_submit_button").attr("data-cycle") === "current") {
-
             create_update_current_cycle_license_request();
         } else if (
             $("#confirm-licenses-modal .dialog_submit_button").attr("data-cycle") === "next"
@@ -134,12 +148,15 @@ export function initialize(): void {
         }
     });
 
-    $("#change-plan-status").on("click", (e) => {
-        helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
-            window.location.replace("/billing/"),
-        );
-        e.preventDefault();
-    });
+    $("#confirm-cancel-subscription-modal .dialog_submit_button, #reactivate-subscription").on(
+        "click",
+        (e) => {
+            helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
+                window.location.replace("/billing/"),
+            );
+            e.preventDefault();
+        },
+    );
 
     $("#cancel-subscription").on("click", (e) => {
         e.preventDefault();
