@@ -324,36 +324,18 @@ run_test("loading_newer", () => {
             can_call_again: true,
         });
 
-        // The msg_list is empty and we are calling frontfill, which should
-        // raise fatal error.
-        if (opts.empty_msg_list) {
-            assert.throws(
-                () => {
-                    message_fetch.maybe_load_newer_messages({
-                        msg_list,
-                        show_loading: noop,
-                        hide_loading: noop,
-                    });
-                },
-                {
-                    name: "Error",
-                    message: "There are no message available to frontfill.",
-                },
-            );
-        } else {
-            message_fetch.maybe_load_newer_messages({
-                msg_list,
-                show_loading: noop,
-                hide_loading: noop,
-            });
+        message_fetch.maybe_load_newer_messages({
+            msg_list,
+            show_loading: noop,
+            hide_loading: noop,
+        });
 
-            test_dup_new_fetch(msg_list);
+        test_dup_new_fetch(msg_list);
 
-            test_fetch_success({
-                fetch,
-                response: data.resp,
-            });
-        }
+        test_fetch_success({
+            fetch,
+            response: data.resp,
+        });
     }
 
     (function test_narrow() {
@@ -361,6 +343,31 @@ run_test("loading_newer", () => {
         page_params.unread_msgs = {
             old_unreads_missing: true,
         };
+
+        // Test what happens when an empty list is returned with found_newest false.
+        const empty_list_data = {
+            req: {
+                anchor: "oldest",
+                num_before: 0,
+                num_after: 100,
+                narrow: `[{"negated":false,"operator":"dm","operand":[${alice.user_id}]}]`,
+                client_gravatar: true,
+            },
+            resp: {
+                messages: message_range(500, 600),
+                found_newest: false,
+            },
+        };
+
+        test_happy_path({
+            msg_list,
+            data: empty_list_data,
+        });
+
+        msg_list.append_to_view = () => {};
+        // Instead of using 444 as page_param.pointer, we
+        // should have a message with that id in the message_list.
+        msg_list.append(message_range(444, 445), false);
 
         const data = {
             req: {
@@ -379,18 +386,6 @@ run_test("loading_newer", () => {
         test_happy_path({
             msg_list,
             data,
-            empty_msg_list: true,
-        });
-
-        msg_list.append_to_view = () => {};
-        // Instead of using 444 as page_param.pointer, we
-        // should have a message with that id in the message_list.
-        msg_list.append(message_range(444, 445), false);
-
-        test_happy_path({
-            msg_list,
-            data,
-            empty_msg_list: false,
         });
 
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), true);
