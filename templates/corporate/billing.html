@@ -57,14 +57,16 @@
                         </a>
                     </label>
                     <div class="number-input-with-label">
-                        <input id="current-manual-license-count" class="short-width-number-input" type="number" value="{{ licenses }}"/>
+                        <form id="current-license-change-form">
+                            <input min="{{ licenses }}" type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" required/>
+                        </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
-                        <button class="current-manual-license-count-update-button license-count-update-button">
+                        <button id="current-manual-license-count-update-button" class="license-count-update-button" disabled>
                             <span class="billing-button-text">Update</span>
                             <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
                     </div>
-                    <div id="billing-page-current-manual-license-count-error" class="alert alert-danger billing-page-error"></div>
+                    <div id="current-license-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
                 {% if not downgrade_at_end_of_cycle %}
                 <div class="input-box billing-page-field no-validation input-box-number">
@@ -75,14 +77,16 @@
                         </a>
                     </label>
                     <div class="number-input-with-label">
-                        <input id="next-manual-license-count" class="short-width-number-input" type="number" value="{{ licenses }}"/>
+                        <form id="next-license-change-form">
+                            <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" required/>
+                        </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
-                        <button class="next-manual-license-count-update-button license-count-update-button">
+                        <button id="next-manual-license-count-update-button" class="license-count-update-button" disabled>
                             <span class="billing-button-text">Update</span>
                             <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
                     </div>
-                    <div id="billing-page-next-manual-license-count-error" class="alert alert-danger billing-page-error"></div>
+                    <div id="next-license-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
                 {% endif %}
                 <div id="licensechange-success" class="alert alert-success billing-page-success">
@@ -223,13 +227,13 @@
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
                 <h1 class="modal__title dialog_heading">
-                    {{ _('Confirm license increase') }}
+                    {{ _('Confirm license change') }}
                 </h1>
                 <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
                 <p>
-                    Are you sure you want to increase the licenses from
+                    Are you sure you want to change the licenses from
                     <b><span id="current_license_count_holder"></span></b> to
                     <b><span id="new_license_count_holder"></span></b>?
                 </p>
