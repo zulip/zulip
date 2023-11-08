@@ -30,6 +30,7 @@ export function create_ajax_request(
     ignored_inputs: string[] = [],
     type = "POST",
     success_callback: (response: unknown) => void,
+    error_callback: (xhr: JQuery.jqXHR) => void = () => {},
 ): void {
     const $form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
@@ -85,6 +86,7 @@ export function create_ajax_request(
             $(form_input_section).show();
             $(zulip_limited_section).show();
             $(free_trial_alert_message).show();
+            error_callback(xhr);
         },
     });
 }

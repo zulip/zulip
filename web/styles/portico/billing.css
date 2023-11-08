@@ -427,7 +427,11 @@ input[name="licenses"] {
     align-items: flex-end;
 }
 
-#billing-page .white-box .input-box-number .number-input-with-label .short-width-number-input {
+#billing-page
+    .white-box
+    .input-box-number
+    .number-input-with-label
+    .short-width-number-input {
     width: 100px;
 }
 
@@ -442,6 +446,20 @@ input[name="licenses"] {
     margin: 0 auto;
     font-size: 1.1rem;
     margin-right: 0;
+    max-width: 100px;
+
+    &:disabled {
+        color: hsl(0deg 0% 80%);
+
+        &:hover {
+            cursor: not-allowed;
+        }
+    }
+}
+
+#billing-page #current-license-change-form,
+#billing-page #next-license-change-form {
+    margin-bottom: 0;
 }
 
 .billing-page-success {
