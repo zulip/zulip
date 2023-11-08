@@ -662,12 +662,12 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     };
 
     // dragover event test
-    const dragover_handler = $(".app").get_on_handler("dragover");
+    const dragover_handler = $(".app, #navbar-fixed-container").get_on_handler("dragover");
     dragover_handler(drag_event);
     assert.equal(prevent_default_counter, 1);
 
     // dragenter event test
-    const dragenter_handler = $(".app").get_on_handler("dragenter");
+    const dragenter_handler = $(".app, #navbar-fixed-container").get_on_handler("dragenter");
     dragenter_handler(drag_event);
     assert.equal(prevent_default_counter, 2);
 
@@ -686,7 +686,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
 
     $(".message_edit_form form").last = () => ({length: 0});
 
-    const drop_handler = $(".app").get_on_handler("drop");
+    const drop_handler = $(".app, #navbar-fixed-container").get_on_handler("drop");
 
     // Test drop on compose box
     let upload_files_called = false;
@@ -764,11 +764,11 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
     const $drag_drop_container = $(`#zfilt${CSS.escape(40)} .message_edit_form`);
 
     // Dragover event test
-    const dragover_handler = $(".app").get_on_handler("dragover");
+    const dragover_handler = $(".app, #navbar-fixed-container").get_on_handler("dragover");
     dragover_handler(drag_event);
     assert.equal(prevent_default_counter, 1);
     // Dragenter event test
-    const dragenter_handler = $(".app").get_on_handler("dragenter");
+    const dragenter_handler = $(".app, #navbar-fixed-container").get_on_handler("dragenter");
     dragenter_handler(drag_event);
     assert.equal(prevent_default_counter, 2);
 
@@ -784,7 +784,7 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
             },
         },
     };
-    const drop_handler = $(".app").get_on_handler("drop");
+    const drop_handler = $(".app, #navbar-fixed-container").get_on_handler("drop");
     let upload_files_called = false;
     let dropped_row_id = -1;
     override_rewire(upload, "upload_files", (_, config) => {
