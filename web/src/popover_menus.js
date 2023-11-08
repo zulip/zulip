@@ -180,7 +180,11 @@ export const default_popover_props = {
                     // hiding elements outside the message feed is tricky and expensive due to stacking context.
                     // References in overlays, modal, sidebar overlays, popovers, etc. can make the below logic hard
                     // to live with if we take elements outside message feed into account.
-                    if ($reference.parents("#message_feed_container").length !== 1) {
+                    // Since `.sticky_header` is inside `#message_feed_container`, we allow popovers from reference inside
+                    // `.sticky_header` to be visible.
+                    if (
+                        $reference.parents("#message_feed_container, .sticky_header").length !== 1
+                    ) {
                         return;
                     }
 
