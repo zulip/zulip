@@ -402,6 +402,10 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
+    def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
+        pass
+
+    @abstractmethod
     def approve_sponsorship(self) -> None:
         pass
 
@@ -733,14 +737,29 @@ class RealmBillingSession(BillingSession):
             return customer
 
     @override
+    def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
+        from zerver.actions.realm_settings import do_change_realm_plan_type
+
+        # This function needs to translate between the different
+        # formats of CustomerPlan.tier and Realm.plan_type.
+        if is_sponsored:
+            plan_type = Realm.PLAN_TYPE_STANDARD_FREE
+        elif tier == CustomerPlan.STANDARD:
+            plan_type = Realm.PLAN_TYPE_STANDARD
+        elif tier == CustomerPlan.PLUS:
+            plan_type = Realm.PLAN_TYPE_PLUS
+        else:
+            raise AssertionError("Unexpected tier")
+        do_change_realm_plan_type(self.realm, plan_type, acting_user=self.user)
+
+    @override
     def approve_sponsorship(self) -> None:
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
         from zerver.actions.message_send import internal_send_private_message
-        from zerver.actions.realm_settings import do_change_realm_plan_type
 
-        do_change_realm_plan_type(self.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=self.user)
+        self.do_change_plan_type(tier=None, is_sponsored=True)
         customer = self.get_customer()
         if customer is not None and customer.sponsorship_pending:
             customer.sponsorship_pending = False
@@ -1049,7 +1068,6 @@ def process_initial_upgrade(
     billing_session = RealmBillingSession(user)
     customer = billing_session.update_or_create_stripe_customer()
     assert customer.stripe_customer_id is not None  # for mypy
-    assert customer.realm is not None
     ensure_customer_does_not_have_active_plan(customer)
     (
         billing_cycle_anchor,
@@ -1133,9 +1151,7 @@ def process_initial_upgrade(
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
-    from zerver.actions.realm_settings import do_change_realm_plan_type
-
-    do_change_realm_plan_type(customer.realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
+    billing_session.do_change_plan_type(tier=CustomerPlan.STANDARD)
 
 
 def update_license_ledger_for_manual_plan(
