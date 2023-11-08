@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Iterable, Tuple
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
+from django.db import connection
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 from django_stubs_ext import ValuesQuerySet
@@ -107,22 +108,42 @@ cache_fillers: Dict[
 }
 
 
+class SQLQueryCounter:
+    def __init__(self) -> None:
+        self.count = 0
+
+    def __call__(
+        self,
+        execute: Callable[[str, Any, bool, Dict[str, Any]], Any],
+        sql: str,
+        params: Any,
+        many: bool,
+        context: Dict[str, Any],
+    ) -> Any:
+        self.count += 1
+        return execute(sql, params, many, context)
+
+
 def fill_remote_cache(cache: str) -> None:
     remote_cache_time_start = get_remote_cache_time()
     remote_cache_requests_start = get_remote_cache_requests()
     items_for_remote_cache: Dict[str, Any] = {}
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
-    for obj in objects():
-        items_filler(items_for_remote_cache, obj)
-        count += 1
-        if count % batch_size == 0:
-            cache_set_many(items_for_remote_cache, timeout=3600 * 24)
-            items_for_remote_cache = {}
-    cache_set_many(items_for_remote_cache, timeout=3600 * 24 * 7)
+    db_query_counter = SQLQueryCounter()
+    with connection.execute_wrapper(db_query_counter):
+        for obj in objects():
+            items_filler(items_for_remote_cache, obj)
+            count += 1
+            if count % batch_size == 0:
+                cache_set_many(items_for_remote_cache, timeout=3600 * 24)
+                items_for_remote_cache = {}
+        cache_set_many(items_for_remote_cache, timeout=3600 * 24 * 7)
     logging.info(
-        "Successfully populated %s cache!  Consumed %s remote cache queries (%s time)",
+        "Successfully populated %s cache: %d items, %d DB queries, %d memcached sets, %.2f seconds",
         cache,
+        count,
+        db_query_counter.count,
         get_remote_cache_requests() - remote_cache_requests_start,
-        round(get_remote_cache_time() - remote_cache_time_start, 2),
+        get_remote_cache_time() - remote_cache_time_start,
     )
