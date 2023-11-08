@@ -2333,7 +2333,7 @@ class StripeTest(StripeTestCase):
         customer = Customer.objects.create(realm=user.realm, stripe_customer_id="cus_123")
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual("/upgrade/", response["Location"])
+        self.assertEqual("/plans/", response["Location"])
 
         # Check redirects for sponsorship pending
         customer.sponsorship_pending = True
@@ -3103,9 +3103,8 @@ class StripeTest(StripeTestCase):
 
             self.login_user(user)
             response = self.client_get("/billing/")
-            self.assert_in_success_response(
-                ["Your organization is on the <b>Zulip Free</b>"], response
-            )
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual("/plans/", response["Location"])
 
             # The extra users added in the final month are not charged
             with patch("corporate.lib.stripe.invoice_plan") as mocked:
@@ -3151,7 +3150,8 @@ class StripeTest(StripeTestCase):
         invoice_plans_as_needed(self.next_year)
 
         response = self.client_get("/billing/")
-        self.assert_in_success_response(["Your organization is on the <b>Zulip Free</b>"], response)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("/plans/", response["Location"])
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.next_year):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
@@ -3462,7 +3462,8 @@ class StripeTest(StripeTestCase):
 
         self.login_user(user)
         response = self.client_get("/billing/")
-        self.assert_in_success_response(["Your organization is on the <b>Zulip Free</b>"], response)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("/plans/", response["Location"])        
 
         # The extra users added in the final month are not charged
         with patch("corporate.lib.stripe.invoice_plan") as mocked:
@@ -3486,7 +3487,8 @@ class StripeTest(StripeTestCase):
 
         self.login_user(user)
         response = self.client_get("/billing/")
-        self.assert_in_success_response(["Your organization is on the <b>Zulip Free</b>"], response)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("/plans/", response["Location"])
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
