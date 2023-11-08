@@ -8,12 +8,8 @@
     "billing": [
         "./src/billing/page_params",
         "./src/bundles/portico",
-        "./src/portico/landing-page",
-        "./styles/portico/landing_page.css",
         "./src/billing/helpers",
         "./src/billing/billing",
-        "./src/templates",
-        "./src/loading",
         "./styles/portico/billing.css"
     ],
     "sponsorship": [

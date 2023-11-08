@@ -359,10 +359,12 @@ input[name="licenses"] {
     background-color: hsl(240deg 96% 68%);
 }
 
+#billing-page .white-box,
 .sponsorship-page .white-box {
     margin: 30px;
 }
 
+#billing-page #billing-page-details,
 .sponsorship-page #sponsorship-form {
     margin: 0;
 }
@@ -377,6 +379,7 @@ input[name="licenses"] {
 }
 
 @media (width < 600px) {
+    #billing-page,
     .sponsorship-page {
         transform: scale(0.8);
         margin: -50px;
@@ -384,6 +387,7 @@ input[name="licenses"] {
 }
 
 @media (width < 460px) {
+    #billing-page,
     .sponsorship-page {
         transform: scale(0.6);
         margin: -150px -100px;
