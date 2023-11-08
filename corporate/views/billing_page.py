@@ -111,7 +111,6 @@ def billing_home(
         return render(request, "corporate/billing.html", context=context)
 
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
-        context["is_sponsored"] = True
         return HttpResponseRedirect(reverse("sponsorship_request"))
 
     PAID_PLANS = [
