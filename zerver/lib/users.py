@@ -7,20 +7,19 @@ import dateutil.parser as date_parser
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
-from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
 from django_otp.middleware import is_verified
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key, realm_user_dict_fields
+from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.exceptions import (
     JsonableError,
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
 )
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, RawUserDict
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -388,7 +387,7 @@ def can_access_delivery_email(
 def format_user_row(
     realm_id: int,
     acting_user: Optional[UserProfile],
-    row: Dict[str, Any],
+    row: RawUserDict,
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     custom_profile_field_data: Optional[Dict[str, Any]] = None,
@@ -425,6 +424,7 @@ def format_user_row(
         # Only send day level precision date_joined data to spectators.
         del result["is_billing_admin"]
         del result["timezone"]
+        assert isinstance(result["date_joined"], str)
         result["date_joined"] = str(date_parser.parse(result["date_joined"]).date())
 
     # Zulip clients that support using `GET /avatar/{user_id}` as a
@@ -476,7 +476,7 @@ def format_user_row(
     return result
 
 
-def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
+def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
     # What we're trying to do is simulate the user_profile having been
     # fetched from a QuerySet using `.values(*realm_user_dict_fields)`
     # even though we fetched UserProfile objects.  This is messier
@@ -492,10 +492,25 @@ def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
     # This could be potentially simplified in the future by
     # changing realm_user_dict_fields to name the bot owner with
     # the less readable `bot_owner` (instead of `bot_owner_id`).
-    user_row = model_to_dict(user_profile, fields=[*realm_user_dict_fields, "bot_owner"])
-    user_row["bot_owner_id"] = user_row["bot_owner"]
-    del user_row["bot_owner"]
-    return user_row
+
+    return RawUserDict(
+        id=user_profile.id,
+        full_name=user_profile.full_name,
+        email=user_profile.email,
+        avatar_source=user_profile.avatar_source,
+        avatar_version=user_profile.avatar_version,
+        is_active=user_profile.is_active,
+        role=user_profile.role,
+        is_billing_admin=user_profile.is_billing_admin,
+        is_bot=user_profile.is_bot,
+        timezone=user_profile.timezone,
+        date_joined=user_profile.date_joined,
+        bot_owner_id=user_profile.bot_owner_id,
+        delivery_email=user_profile.delivery_email,
+        bot_type=user_profile.bot_type,
+        long_term_idle=user_profile.long_term_idle,
+        email_address_visibility=user_profile.email_address_visibility,
+    )
 
 
 @cache_with_key(get_cross_realm_dicts_key)
