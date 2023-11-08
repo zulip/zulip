@@ -125,7 +125,12 @@
                             Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
                         {% endif %}
                     </div>
-
+                    <div class="input-box no-validation billing-page-field">
+                        <label for="billing-contact" class="inline-block label-title">Billing contact</label>
+                        <div id="billing-contact" class="not-editable-realm-field">
+                            <a href="mailto:{{ stripe_email }}">{{ stripe_email }}</a>
+                        </div>
+                    </div>
                     <div id="settings">
                         <div id="planchange-error" class="alert alert-danger"></div>
                         <div id="planchange-input-section">
@@ -182,8 +187,7 @@
                 <hr />
                 <div class="support-link">
                     <p>
-                        <a href="mailto:support@zulip.com">Contact Zulip support</a>
-                        for billing history or to make changes to your subscription or billing email.
+                        To make changes to your plan or view your billing history <a href="mailto:support@zulip.com">contact Zulip support</a>.
                     </p>
                 </div>
                 {% elif admin_access and not has_active_plan %}
