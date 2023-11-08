@@ -401,6 +401,9 @@ POST_MIGRATION_CACHE_FLUSHING = False
 # rebuilding the mobile app with a different push notifications
 # server.
 APNS_CERT_FILE: Optional[str] = None
+APNS_TOKEN_KEY_FILE: Optional[str] = None
+APNS_TOKEN_KEY_ID = get_secret("apns_token_key_id", development_only=True)
+APNS_TEAM_ID = get_secret("apns_team_id", development_only=True)
 APNS_SANDBOX = True
 APNS_TOPIC = "org.zulip.Zulip"
 # ZULIP_IOS_APP_ID is obsolete

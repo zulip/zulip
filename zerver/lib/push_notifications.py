@@ -145,13 +145,17 @@ class APNsContext:
     loop: asyncio.AbstractEventLoop
 
 
+def apns_enabled() -> bool:
+    return settings.APNS_TOKEN_KEY_FILE is not None or settings.APNS_CERT_FILE is not None
+
+
 @lru_cache(maxsize=None)
 def get_apns_context() -> Optional[APNsContext]:
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
     import aioapns
 
-    if settings.APNS_CERT_FILE is None:  # nocoverage
+    if not apns_enabled():  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
@@ -171,6 +175,9 @@ def get_apns_context() -> Optional[APNsContext]:
     async def make_apns() -> aioapns.APNs:
         return aioapns.APNs(
             client_cert=settings.APNS_CERT_FILE,
+            key=settings.APNS_TOKEN_KEY_FILE,
+            key_id=settings.APNS_TOKEN_KEY_ID,
+            team_id=settings.APNS_TEAM_ID,
             topic=settings.APNS_TOPIC,
             max_connection_attempts=APNS_MAX_RETRIES,
             use_sandbox=settings.APNS_SANDBOX,
@@ -179,10 +186,6 @@ def get_apns_context() -> Optional[APNsContext]:
 
     apns = loop.run_until_complete(make_apns())
     return APNsContext(apns=apns, loop=loop)
-
-
-def apns_enabled() -> bool:
-    return settings.APNS_CERT_FILE is not None
 
 
 def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:

@@ -213,13 +213,23 @@ push notifications through the new app is quite straightforward:
   [FCM push notifications](https://firebase.google.com/docs/cloud-messaging)
   key in the Google Developer console and set `android_gcm_api_key` in
   `/etc/zulip/zulip-secrets.conf` to that key.
-- Register for a
-  [mobile push notification certificate][apple-docs]
-  from Apple's developer console. Set `APNS_SANDBOX=False` and
-  `APNS_CERT_FILE` to be the path of your APNS certificate file in
-  `/etc/zulip/settings.py`.
+
+- In Apple's developer console, register a [token][apple-doc-token] or
+  [certificate][apple-doc-cert] for sending push notifications.
+  Then in `/etc/zulip/settings.py`, set `APNS_SANDBOX=False`, and:
+
+  - If using APNs [certificate-based authentication][apple-doc-cert],
+    set `APNS_CERT_FILE` to the path of your APNs certificate file.
+
+  - If using APNs [token-based authentication][apple-doc-token],
+    set `APNS_TOKEN_KEY_FILE` to the path of your APNs token key file,
+    `APNS_TOKEN_KEY_ID` to the corresponding 10-character key ID, and
+    `APNS_TEAM_ID` to your 10-character Apple team ID.
+
 - Set the `APNS_TOPIC` setting to the ID for
   your app (for the official Zulip apps, it's `org.zulip.Zulip`).
+
 - Restart the Zulip server.
 
-[apple-docs]: https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html
+[apple-doc-cert]: https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_certificate-based_connection_to_apns
+[apple-doc-token]: https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns
