@@ -82,28 +82,6 @@
                             </div>
                             {% endif %}
                         </div>
-                        <div class="next-payment-info not-editable-realm-field">
-                            {% if renewal_amount %}
-                                {% if free_trial %}
-                                Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
-                                <strong>${{ renewal_amount }}</strong>.
-                                {% elif downgrade_at_end_of_cycle %}
-                                Your plan will be downgraded to <strong>Zulip Free</strong> on <strong>{{ renewal_date }}</strong>.
-                                {% elif switch_to_annual_at_end_of_cycle %}
-                                Your plan will be switched from monthly to annual billing on <strong>{{ renewal_date }}</strong>.
-                                {% else %}
-                                    {% if charge_automatically %}
-                                    Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
-                                    {% else %}
-                                    Your next invoice is due on <strong>{{ renewal_date }}</strong>.
-                                    {% endif %}
-                                <br />
-                                Expected charge: <strong>${{ renewal_amount }}</strong>.
-                                {% endif %}
-                            {% else %}
-                                Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
-                            {% endif %}
-                        </div>
                     </div>
                     <div id="payment-method">
                         <div id="cardchange-error" class="alert alert-danger"></div>
@@ -124,6 +102,28 @@
                         <div id="cardchange-success" class="alert alert-success">
                             Redirecting to Stripe checkout page for updating Card details.
                         </div>
+                    </div>
+                    <div class="next-payment-info not-editable-realm-field">
+                        {% if renewal_amount %}
+                            {% if free_trial %}
+                            Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
+                            <strong>${{ renewal_amount }}</strong>.
+                            {% elif downgrade_at_end_of_cycle %}
+                            Your plan will be downgraded to <strong>Zulip Free</strong> on <strong>{{ renewal_date }}</strong>.
+                            {% elif switch_to_annual_at_end_of_cycle %}
+                            Your plan will be switched from monthly to annual billing on <strong>{{ renewal_date }}</strong>.
+                            {% else %}
+                                {% if charge_automatically %}
+                                Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
+                                {% else %}
+                                Your next invoice is due on <strong>{{ renewal_date }}</strong>.
+                                {% endif %}
+                            <br />
+                            Expected charge: <strong>${{ renewal_amount }}</strong>.
+                            {% endif %}
+                        {% else %}
+                            Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
+                        {% endif %}
                     </div>
 
                     <div id="settings">
