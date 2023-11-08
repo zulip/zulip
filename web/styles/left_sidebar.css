@@ -246,33 +246,43 @@ li.show-more-topics {
 }
 
 .direct-messages-container {
-    margin-right: 16px;
-    margin-left: 6px;
-    z-index: 1;
-
     #private_messages_section_header {
+        grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 12px;
+        grid-template-rows: 24px;
+        /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
+           value and the styles dependent on it so that this kind of
+           1990s layout shenanigans is made unnecessary. */
+        margin-left: -3px;
         cursor: pointer;
-        padding: 0 10px 1px 6px;
         white-space: nowrap;
 
+        #toggle_private_messages_section_icon {
+            grid-area: starting-anchor-element;
+        }
+
+        .left-sidebar-title {
+            grid-area: row-content;
+        }
+
+        .heading-markers-and-controls {
+            grid-area: markers-and-controls;
+        }
+
         #show_all_private_messages {
-            right: 0;
-            float: right;
-            position: absolute;
+            grid-area: ending-anchor-element;
+            /* Make the clickable area large
+               around the icon. */
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             opacity: 0.7;
             text-decoration: none;
             color: inherit;
-            margin-right: 21px;
-            margin-top: 1px;
 
             &:hover {
                 opacity: 1;
             }
-        }
-
-        .unread_count {
-            margin-right: 16px;
-            margin-top: 2px;
         }
     }
 
@@ -324,8 +334,6 @@ li.show-more-topics {
 #toggle_private_messages_section_icon,
 #toggle-top-left-navigation-area-icon {
     opacity: 0.7;
-    margin-left: -15px;
-    min-width: 12px;
 
     &.fa-caret-right {
         position: relative;
@@ -742,6 +750,7 @@ li.top_left_scheduled_messages {
 #views-label-container,
 .top_left_row,
 .left-sidebar-navigation-label-container,
+#private_messages_section_header,
 .dm-box,
 .subscription_block,
 .topic-box {
@@ -807,10 +816,6 @@ li.top_left_scheduled_messages {
 
     #toggle-top-left-navigation-area-icon {
         grid-area: starting-anchor-element;
-        /* Remove negative left margin. This should be cleaned
-           up along with the `--left-sidebar-collapse-widget-gutter`
-           matters above. */
-        margin-left: 0;
     }
 
     .left-sidebar-title {
