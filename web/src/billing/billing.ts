@@ -36,6 +36,8 @@ export function initialize(): void {
     helpers.set_tab("billing");
 
     $("#update-card-button").on("click", (e) => {
+        $("#update-card-button .billing-button-text").text("");
+        $("#update-card-button .loader").show();
         helpers.create_ajax_request(
             "/json/billing/session/start_card_update_session",
             "cardchange",
@@ -44,7 +46,10 @@ export function initialize(): void {
             (response) => {
                 const response_data = helpers.stripe_session_url_schema.parse(response);
                 window.location.replace(response_data.stripe_session_url);
-            },
+            }, () => {
+                $("#update-card-button .loader").hide();
+                $("#update-card-button .billing-button-text").text("Update card");
+            }
         );
         e.preventDefault();
     });
