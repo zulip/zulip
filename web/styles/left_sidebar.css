@@ -48,6 +48,13 @@ $before_unread_count_padding: 3px;
     }
 }
 
+.left-sidebar-title {
+    color: var(--color-text-sidebar-heading);
+    font-size: inherit;
+    font-weight: normal;
+    display: inline;
+}
+
 .sidebar-topic-check,
 .topic-name,
 .topic-markers-and-controls {
@@ -769,7 +776,7 @@ li.top_left_scheduled_messages {
         }
         /* Give the sidebar title through the end of the markers
            area, if needed. */
-        .sidebar-title {
+        .left-sidebar-title {
             grid-column: row-content-start / markers-and-controls-end;
         }
     }
@@ -799,7 +806,7 @@ li.top_left_scheduled_messages {
         margin-left: 0;
     }
 
-    .sidebar-title {
+    .left-sidebar-title {
         grid-area: row-content;
         /* Override heading margin from Bootstrap. */
         margin: 0;

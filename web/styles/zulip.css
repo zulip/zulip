@@ -1171,13 +1171,6 @@ strong {
     white-space: nowrap;
 }
 
-.sidebar-title {
-    color: var(--color-text-sidebar-heading);
-    font-size: inherit;
-    font-weight: normal;
-    display: inline;
-}
-
 .tooltip {
     &.in {
         font-size: 12px;
