@@ -85,20 +85,12 @@ li.show-more-topics {
 
 #streams_inline_icon,
 .streams_filter_icon {
-    float: right;
     opacity: 0.5;
-    padding: 3px;
-    margin-left: 4px;
 
     &:hover {
         opacity: 1;
         cursor: pointer;
     }
-}
-
-.streams_inline_icon_wrapper {
-    float: right;
-    margin-right: 8px;
 }
 
 .streams_filter_icon.web_public {
@@ -750,7 +742,6 @@ li.top_left_scheduled_messages {
 #views-label-container,
 .top_left_row,
 .left-sidebar-navigation-label-container,
-#private_messages_section_header,
 .dm-box,
 .subscription_block,
 .topic-box {
@@ -769,6 +760,23 @@ li.top_left_scheduled_messages {
        (which alters the box size) or `margin` (which notoriously bleeds outside
        of the element it's defined on). */
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+}
+
+#private_messages_section_header,
+#streams_header {
+    display: grid;
+    align-items: center;
+    /* This extends the general pattern of left sidebar rows, but includes a
+       second grid row for placing filter boxes. This pattern keeps the box
+       aligned with the text content in `row-content` and includes the
+       `ending-anchor-element` space.
+
+       There is currently no filter box on DM rows, but we can prepare for
+       that now by having it share this grid template. Its row and column
+       definitions have the final say about dimensions and placement. */
+    grid-template-areas:
+        "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset"
+        ".               .                       filter-box  filter-box           filter-box            .            ";
 }
 
 #views-label-container {
@@ -1141,26 +1149,108 @@ li.topic-list-item {
 }
 
 #streams_header {
-    margin-right: 12px;
+    grid-template-columns: 0 0 minmax(0, 1fr) minmax(17px, max-content) 30px 12px;
+    /* Keep the stream-search area rows collapsed. */
+    grid-template-rows: 24px 0 0;
     cursor: pointer;
     padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
     position: sticky;
     background-color: var(--color-background);
     /* Ideally, 0px should work here, but maybe simplebar is doing something
        that is creating `0.5px` extra gap in zoomed-in windows. */
-    top: -0.5px;
     z-index: 1;
 
+    &.showing-stream-search-section {
+        /* Open up the stream-search rows. The 10px
+           row maintains space with the streams list
+           below. */
+        grid-template-rows: 24px 28px 10px;
+    }
+
+    .left-sidebar-title {
+        grid-area: row-content;
+    }
+
+    .heading-markers-and-controls {
+        grid-area: markers-and-controls;
+        height: 100%;
+    }
+
+    #filter_streams_tooltip {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Filter streams tooltip is just a block,
+           not a flex or grid item at present,
+           so we fill the row height this way. */
+        height: 100%;
+    }
+
+    /* TODO: In the redesign, the streams icons will
+       be grouped and placed to the left of a new
+       unread count on Streams. */
+    #add_streams_tooltip {
+        grid-area: ending-anchor-element;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .input-append {
+        grid-area: filter-box;
+        display: flex;
+        justify-content: stretch;
+        /* Set an even line-height for better
+           vertical centering. */
+        line-height: 20px;
         white-space: nowrap;
-        margin-bottom: 10px;
 
         & input {
-            padding-right: 20px;
+            /* Use the border-box model so flex
+               can do its thing despite whatever
+               padding and border we specify. */
+            box-sizing: border-box;
+            flex: 1 0 100%;
+            /* Match the input height exactly
+               with the row height for a perfect
+               fit and better vertical alignment. */
+            height: 28px;
+            /* Pad the entire clear-button area,
+               so that input text does not bleed
+               into there. */
+            padding-right: 30px;
         }
 
         .clear_search_button {
-            margin-left: -1px;
+            /* Use the border-box model so flex
+               can do its thing despite whatever
+               padding and border we specify. */
+            box-sizing: border-box;
+            /* Clear inherited positioning. */
+            position: static;
+            /* We're going to use flexbox, not
+               positioning, to get the clear button
+               over top of the input. This -30px
+               margin accomplishes that, in tandem
+               with the 30px width of this element,
+               which is shared with the ending
+               anchor element in left sidebar header
+               rows. */
+            width: 30px;
+            margin-left: -30px;
+            /* Flexbox respects z-index; this just
+               ensures the button remains over top
+               of the input. */
+            z-index: 1;
+            /* Make the button itself a flex container,
+               so we can perfectly center the X icon. */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Flexbox will pull the element open
+               to make a generous clickable area. */
+            padding: 0;
         }
     }
 }
@@ -1203,7 +1293,6 @@ li.topic-list-item {
 }
 
 .stream-list-filter {
-    width: 216px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

@@ -887,11 +887,13 @@ export function clear_search(e) {
 }
 
 export function show_search_section() {
+    $("#streams_header").addClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().removeClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
 
 export function hide_search_section() {
+    $("#streams_header").removeClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().addClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
