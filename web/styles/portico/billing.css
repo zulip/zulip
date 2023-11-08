@@ -402,7 +402,9 @@ input[name="licenses"] {
     margin-bottom: 0;
 }
 
-.sponsorship-field-error {
+.sponsorship-field-error,
+.billing-page-error,
+.billing-page-success {
     text-align: left;
     margin-left: 2px;
     margin-top: 5px;
@@ -410,4 +412,34 @@ input[name="licenses"] {
 
 .header.portico-header {
     display: block;
+}
+
+#billing-page .input-box-number {
+    text-align: left;
+}
+
+#billing-page .number-input-with-label {
+    display: flex;
+    align-items: flex-end;
+}
+
+#billing-page .white-box .input-box-number .number-input-with-label .short-width-number-input {
+    width: 100px;
+}
+
+#billing-page .number-input-with-label .licence-count-in-use {
+    padding-left: 10px;
+    vertical-align: bottom;
+    position: relative;
+    bottom: 15px;
+}
+
+#billing-page .license-count-update-button {
+    margin: 0 auto;
+    font-size: 1.1rem;
+    margin-right: 0;
+}
+
+.billing-page-success {
+    display: none;
 }
