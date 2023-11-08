@@ -1069,15 +1069,20 @@ export function save_message_row_edit($row) {
                 }
 
                 hide_message_edit_spinner($row);
-                const message = channel.xhr_error_message("", xhr);
-                const $container = compose_banner.get_compose_banner_container(
-                    $row.find("textarea"),
-                );
-                compose_banner.show_error_message(
-                    message,
-                    compose_banner.CLASSNAMES.generic_compose_error,
-                    $container,
-                );
+                if (xhr.readyState !== 0) {
+                    const message = channel.xhr_error_message(
+                        $t({defaultMessage: "Error editing message"}),
+                        xhr,
+                    );
+                    const $container = compose_banner.get_compose_banner_container(
+                        $row.find("textarea"),
+                    );
+                    compose_banner.show_error_message(
+                        message,
+                        compose_banner.CLASSNAMES.generic_compose_error,
+                        $container,
+                    );
+                }
             }
         },
     });
