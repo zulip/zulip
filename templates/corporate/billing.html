@@ -107,29 +107,31 @@
                 <div id="cardchange-success" class="alert alert-success billing-page-success">
                     Redirecting to Stripe checkout page for updating Card details.
                 </div>
-                <div class="next-payment-info not-editable-realm-field input-box no-validation">
-                    {% if renewal_amount %}
-                        {% if free_trial %}
-                        Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
-                        <strong>${{ renewal_amount }}</strong>.
-                        {% elif downgrade_at_end_of_cycle %}
-                        Your plan will be downgraded to <strong>Zulip Free</strong> on <strong>{{ renewal_date }}</strong>.
-                        {% elif switch_to_annual_at_end_of_cycle %}
-                        Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
-                        period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
-                        <a href="/plans/">other features</a> of your current plan.
+                <div class="input-box billing-page-field no-validation">
+                    <div class="next-payment-info not-editable-realm-field">
+                        {% if renewal_amount %}
+                            {% if free_trial %}
+                            Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
+                            <strong>${{ renewal_amount }}</strong>.
+                            {% elif downgrade_at_end_of_cycle %}
+                            Your plan will be downgraded to <strong>Zulip Free</strong> on <strong>{{ renewal_date }}</strong>.
+                            {% elif switch_to_annual_at_end_of_cycle %}
+                            Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
+                            period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
+                            <a href="/plans/">other features</a> of your current plan.
+                            {% else %}
+                            {% if charge_automatically %}
+                            Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
+                            {% else %}
+                            Your next invoice is due on <strong>{{ renewal_date }}</strong>.
+                            {% endif %}
+                            <br />
+                            Expected charge: <strong>${{ renewal_amount }}</strong>.
+                            {% endif %}
                         {% else %}
-                        {% if charge_automatically %}
-                        Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
-                        {% else %}
-                        Your next invoice is due on <strong>{{ renewal_date }}</strong>.
+                            Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
                         {% endif %}
-                        <br />
-                        Expected charge: <strong>${{ renewal_amount }}</strong>.
-                        {% endif %}
-                    {% else %}
-                        Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
-                    {% endif %}
+                    </div>
                 </div>
                 <div class="input-box no-validation billing-page-field">
                     <label for="billing-contact" class="inline-block label-title">Billing contact</label>
