@@ -36,8 +36,8 @@
                         {% endif %}
                     </div>
                 </div>
+                {% if automanage_licenses %}
                 <div class="input-box billing-page-field no-validation">
-                    {% if automanage_licenses %}
                     <label for="automatic-license-count" class="inline-block label-title">
                         Number of licenses
                         <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
@@ -47,44 +47,48 @@
                     <div id="automatic-license-count" class="not-editable-realm-field">
                         {{ licenses }} (managed automatically)
                     </div>
-                    {% else %}
-                    <div id="licensechange-error" class="alert alert-danger"></div>
+                </div>
+                {% else %}
+                <div class="input-box billing-page-field no-validation input-box-number">
                     <label for="current-manual-license-count" class="inline-block label-title">
                         Number of licenses for current billing period
                         <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
-                        <input id="current-manual-license-count" type="number" value="{{ licenses }}"/>
                     </label>
-                    <div class="current-manual-license-count-update">
-                        <button class="current-manual-license-count-update-button">
+                    <div class="number-input-with-label">
+                        <input id="current-manual-license-count" class="short-width-number-input" type="number" value="{{ licenses }}"/>
+                        <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
+                        <button class="current-manual-license-count-update-button license-count-update-button">
                             <span class="billing-button-text">Update</span>
                             <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
                     </div>
-                    {% if not downgrade_at_end_of_cycle %}
+                    <div id="billing-page-current-manual-license-count-error" class="alert alert-danger billing-page-error"></div>
+                </div>
+                {% if not downgrade_at_end_of_cycle %}
+                <div class="input-box billing-page-field no-validation input-box-number">
                     <label for="next-manual-license-count" class="inline-block label-title">
                         Number of licenses for next billing period
                         <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                     </label>
-                    <input id="next-manual-license-count" type="number" value="{{ licenses }}" /> licenses ({{ seat_count }} in use)
-                    <div class="input-box">
-                        <button class="update-licenses-button register-button">Update</button>
-                    </div>
-                    <div class="next-manual-license-count-update">
-                        <button class="next-manual-license-count-update-button">
+                    <div class="number-input-with-label">
+                        <input id="next-manual-license-count" class="short-width-number-input" type="number" value="{{ licenses }}"/>
+                        <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
+                        <button class="next-manual-license-count-update-button license-count-update-button">
                             <span class="billing-button-text">Update</span>
                             <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
                     </div>
-                    {% endif %}
-                    <div id="licensechange-success" class="alert alert-success">
-                        Plan updated. The page will now reload.
-                    </div>
-                    {% endif %}
+                    <div id="billing-page-next-manual-license-count-error" class="alert alert-danger billing-page-error"></div>
                 </div>
+                {% endif %}
+                <div id="licensechange-success" class="alert alert-success billing-page-success">
+                    Plan updated. The page will now reload.
+                </div>
+                {% endif %}
                 <div id="cardchange-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field no-validation">
                     <label for="customer-payment-method" class="inline-block label-title">Payment method</label>
@@ -100,7 +104,7 @@
                     </div>
                     {% endif %}
                 </div>
-                <div id="cardchange-success" class="alert alert-success">
+                <div id="cardchange-success" class="alert alert-success billing-page-success">
                     Redirecting to Stripe checkout page for updating Card details.
                 </div>
                 <div class="next-payment-info not-editable-realm-field input-box no-validation">
@@ -166,7 +170,7 @@
                         {% endif %}
                     {% endif %}
                 </div>
-                <div id="planchange-success" class="alert alert-success">
+                <div id="planchange-success" class="alert alert-success billing-page-success">
                     Plan updated. The page will now reload.
                 </div>
             </div>

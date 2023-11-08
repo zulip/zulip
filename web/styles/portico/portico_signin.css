@@ -518,6 +518,7 @@ html {
         & input[type="text"],
         input[type="email"],
         input[type="password"],
+        input[type="number"],
         textarea,
         select {
             padding: 10px 32px 10px 12px;
@@ -1016,7 +1017,8 @@ button#register_auth_button_gitlab {
     }
 
     .register-button .loader,
-    .sponsorship-button-loader {
+    .sponsorship-button-loader,
+    .billing-button-loader {
         display: none;
         vertical-align: top;
         position: relative;
