@@ -3,7 +3,7 @@
         <div id="views-label-container" class="showing-expanded-navigation hidden-for-spectators">
             <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down" aria-hidden="true"></i>
             {{~!-- squash whitespace --~}}
-            <h4 class="sidebar-title">{{t 'VIEWS' }}</h4>
+            <h4 class="left-sidebar-title">{{t 'VIEWS' }}</h4>
             <ul id="left-sidebar-navigation-list-condensed" class="filters">
                 <li class="top_left_inbox left-sidebar-navigation-condensed-item {{#if is_inbox_home_view}}selected-home-view{{/if}}">
                     <a href="#inbox" {{#if is_inbox_home_view}}tabindex="0"{{/if}} class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="inbox-tooltip-template">
@@ -138,7 +138,7 @@
             <div id="private_messages_section_header" class="zoom-out zoom-in-sticky">
                 <span id="pm_tooltip_container">
                     <i id="toggle_private_messages_section_icon" class="fa fa-sm fa-caret-down toggle_private_messages_section zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
-                    <h4 class="sidebar-title toggle_private_messages_section">{{t 'DIRECT MESSAGES' }}</h4>
+                    <h4 class="left-sidebar-title toggle_private_messages_section">{{t 'DIRECT MESSAGES' }}</h4>
                 </span>
                 <span class="unread_count"></span>
                 <a id="show_all_private_messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-pms-template">
@@ -157,7 +157,7 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'STREAMS' }}</h4>
+            <div id="streams_header" class="zoom-in-hide"><h4 class="left-sidebar-title" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'STREAMS' }}</h4>
                 <span id="add_streams_tooltip" class="streams_inline_icon_wrapper hidden-for-spectators" data-tippy-content="{{t 'Add streams' }}">
                     <i id="streams_inline_icon" class='fa fa-plus' aria-hidden="true" ></i>
                 </span>

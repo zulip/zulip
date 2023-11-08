@@ -315,7 +315,7 @@ async function test_search_venice(page: Page): Promise<void> {
     await page.waitForSelector(await get_stream_li(page, "Venice"), {visible: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
 
-    await page.click("#streams_header .sidebar-title");
+    await page.click("#streams_header .left-sidebar-title");
     await page.waitForSelector(".input-append.notdisplayed");
 }
 
@@ -323,7 +323,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     console.log("Filter streams using left side bar");
 
     await page.waitForSelector(".input-append.notdisplayed"); // Stream filter box invisible initially
-    await page.click("#streams_header .sidebar-title");
+    await page.click("#streams_header .left-sidebar-title");
 
     await page.waitForSelector("#streams_list .input-append.notdisplayed", {hidden: true});
 
@@ -377,7 +377,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await test_search_venice(page);
 
     // Search for beginning of "Verona".
-    await page.click("#streams_header .sidebar-title");
+    await page.click("#streams_header .left-sidebar-title");
     await page.type(".stream-list-filter", "ver");
     await page.waitForSelector(await get_stream_li(page, "core team"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});

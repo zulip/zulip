@@ -7,6 +7,13 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.right-sidebar-title {
+    color: var(--color-text-sidebar-heading);
+    font-size: inherit;
+    font-weight: normal;
+    display: inline;
+}
+
 #buddy_list_wrapper {
     position: relative;
     margin-left: 0;

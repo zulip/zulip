@@ -194,7 +194,7 @@ export function initialize() {
     $("body").on("click", "#views-label-container", (e) => {
         if (
             $(e.currentTarget).hasClass("showing-condensed-navigation") &&
-            !($(e.target).hasClass("sidebar-title") || $(e.target).hasClass("fa-caret-right"))
+            !($(e.target).hasClass("left-sidebar-title") || $(e.target).hasClass("fa-caret-right"))
         ) {
             // Ignore clicks on condensed nav items
             return;
