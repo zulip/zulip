@@ -47,10 +47,9 @@ from zerver.models import (
     get_user_profile_by_id,
 )
 from zerver.views.invite import get_invitee_emails_set
-from zilencer.lib.remote_counts import MissingDataError
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.lib.remote_counts import compute_max_monthly_messages
+    from zilencer.lib.remote_counts import MissingDataError, compute_max_monthly_messages
     from zilencer.models import RemoteZulipServer
 
 if settings.BILLING_ENABLED:
