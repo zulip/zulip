@@ -28,6 +28,7 @@ class CustomerProfile:
     sponsorship_pending: bool = False
     is_sponsored: bool = False
     card: str = ""
+    charge_automatically: bool = True
 
 
 class Command(BaseCommand):
@@ -85,6 +86,12 @@ class Command(BaseCommand):
                 billing_schedule=CustomerPlan.MONTHLY,
                 tier=CustomerPlan.STANDARD,
                 card="pm_card_visa",
+            ),
+            CustomerProfile(
+                unique_id="standard-invoice-payment",
+                billing_schedule=CustomerPlan.MONTHLY,
+                tier=CustomerPlan.STANDARD,
+                charge_automatically=False,
             ),
             CustomerProfile(
                 unique_id="sponsored",
@@ -193,7 +200,7 @@ class Command(BaseCommand):
                 price_per_license=3,
                 automanage_licenses=customer_profile.automanage_licenses,
                 status=customer_profile.status,
-                charge_automatically=True,
+                charge_automatically=customer_profile.charge_automatically,
                 next_invoice_date=next_invoice_date,
             )
 
