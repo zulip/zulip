@@ -92,18 +92,18 @@
                 <div id="cardchange-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field no-validation">
                     <label for="customer-payment-method" class="inline-block label-title">Payment method</label>
-                    <div id="customer-payment-method" class="">
+                    <div id="customer-payment-method" class="not-editable-realm-field">
                         {{ payment_method }}
                     </div>
-                    {% if charge_automatically %}
-                    <div class="user-stripe-card-update">
-                        <button class="user-stripe-card-update-button">
-                            <span class="billing-button-text">Update card</span>
-                            <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
-                        </button>
-                    </div>
-                    {% endif %}
                 </div>
+                {% if charge_automatically %}
+                <div class="user-stripe-card-update input-box billing-page-field no-validation">
+                    <button class="user-stripe-card-update-button">
+                        <span class="billing-button-text">Update card</span>
+                        <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                    </button>
+                </div>
+                {% endif %}
                 <div id="cardchange-success" class="alert alert-success billing-page-success">
                     Redirecting to Stripe checkout page for updating Card details.
                 </div>

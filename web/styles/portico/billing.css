@@ -443,3 +443,12 @@ input[name="licenses"] {
 .billing-page-success {
     display: none;
 }
+
+#billing-page-details .input-box.billing-page-field.user-stripe-card-update {
+    margin-top: 10px;
+    text-align: left;
+}
+
+#billing-page-details .user-stripe-card-update .user-stripe-card-update-button {
+    margin: 0;
+}
