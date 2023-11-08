@@ -155,16 +155,16 @@
                     {% else %}
                         {% if downgrade_at_end_of_cycle %}
                         <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
-                        <div class="reactivate-current-plan">
-                            <button class="reactivate-current-plan-button">
+                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation">
+                            <button class="reactivate-current-plan-button plan-toggle-action-button">
                                 <span class="billing-button-text">Reactivate subscription</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
                         {% else %}
                         <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
-                        <div class="cancel-current-plan">
-                            <button class="cancel-current-plan-button">
+                        <div class="cancel-current-plan plan-toggle-action input-box billing-page-field no-validation">
+                            <button class="cancel-current-plan-button plan-toggle-action-button">
                                 <span class="billing-button-text">Cancel plan</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>

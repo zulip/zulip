@@ -418,6 +418,10 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#billing-page .pitch {
+    width: 600px;
+}
+
 #billing-page .number-input-with-label {
     display: flex;
     align-items: flex-end;
@@ -444,11 +448,30 @@ input[name="licenses"] {
     display: none;
 }
 
+#billing-page-details .input-box.billing-page-field.plan-toggle-action,
 #billing-page-details .input-box.billing-page-field.user-stripe-card-update {
     margin-top: 10px;
     text-align: left;
 }
 
+#billing-page-details .plan-toggle-action .plan-toggle-action-button {
+    margin: 20px auto 0;
+    background-color: hsl(0deg 70% 40%);
+}
+
 #billing-page-details .user-stripe-card-update .user-stripe-card-update-button {
     margin: 0;
+}
+
+#billing-page-details .next-payment-info {
+    width: 450px;
+    padding-top: 0;
+}
+
+#billing-page-details .input-box.billing-page-field:first-child {
+    margin-top: 10px;
+}
+
+#billing-page .support-link {
+    text-align: center;
 }
