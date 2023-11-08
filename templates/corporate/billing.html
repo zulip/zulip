@@ -118,8 +118,6 @@
                             Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
                             <strong>${{ renewal_amount }}</strong>.
                             {% elif downgrade_at_end_of_cycle %}
-                            Your plan will be downgraded to <strong>Zulip Free</strong> on <strong>{{ renewal_date }}</strong>.
-                            {% elif switch_to_annual_at_end_of_cycle %}
                             Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                             period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
                             <a href="/plans/">other features</a> of your current plan.
@@ -146,7 +144,6 @@
                 <div id="planchange-error" class="alert alert-danger"></div>
                 <div id="planchange-input-section">
                     {% if free_trial %}
-                        <input name="status" type="hidden" value="{{ CustomerPlan.ENDED }}" />
                         <div class="end-free-trail">
                             <p>
                                 End Free Trial and downgrade plan to <strong>Zulip Free</strong>.
@@ -156,26 +153,32 @@
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
-                    {% else %}
-                        {% if downgrade_at_end_of_cycle %}
-                        <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
-                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation">
+                    {% elif downgrade_at_end_of_cycle %}
+                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation" id="reactivate-subscription">
                             <button class="reactivate-current-plan-button plan-toggle-action-button">
                                 <span class="billing-button-text">Reactivate subscription</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
-                        {% else %}
-                        <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
-                        <div class="cancel-current-plan plan-toggle-action input-box billing-page-field no-validation">
+                    {% else %}
+                        <div class="cancel-current-plan plan-toggle-action input-box billing-page-field no-validation" id="cancel-subscription">
                             <button class="cancel-current-plan-button plan-toggle-action-button">
                                 <span class="billing-button-text">Cancel plan</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
-                        {% endif %}
                     {% endif %}
                 </div>
+                <form id="planchange-form">
+                    {% if free_trial %}
+                    <input name="status" type="hidden" value="{{ CustomerPlan.ENDED }}" />
+                    {% elif downgrade_at_end_of_cycle %}
+                    <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
+                    {% else %}
+                    <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
+                    {% endif %}
+                </form>
+                <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
                 <div id="planchange-success" class="alert alert-success billing-page-success">
                     Plan updated. The page will now reload.
                 </div>
