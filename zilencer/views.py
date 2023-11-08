@@ -507,12 +507,10 @@ def update_remote_realm_data_for_server(
     server: RemoteZulipServer, server_realms_info: List[Dict[str, Any]]
 ) -> None:
     uuids = [realm["uuid"] for realm in server_realms_info]
-    already_registered_uuids = set(
-        str(uuid)
-        for uuid in RemoteRealm.objects.filter(uuid__in=uuids, server=server).values_list(
-            "uuid", flat=True
-        )
-    )
+    already_registered_remote_realms = RemoteRealm.objects.filter(uuid__in=uuids, server=server)
+    already_registered_uuids = {
+        str(remote_realm.uuid) for remote_realm in already_registered_remote_realms
+    }
 
     new_remote_realms = [
         RemoteRealm(
@@ -531,6 +529,49 @@ def update_remote_realm_data_for_server(
         RemoteRealm.objects.bulk_create(new_remote_realms)
     except IntegrityError:
         raise JsonableError(_("Duplicate registration detected."))
+
+    uuid_to_realm_dict = {str(realm["uuid"]): realm for realm in server_realms_info}
+    remote_realms_to_update = []
+    remote_realm_audit_logs = []
+    now = timezone_now()
+
+    # Update RemoteRealm entries, for which the corresponding realm's info has changed
+    # (for the attributes that make sense to sync like this).
+    for remote_realm in already_registered_remote_realms:
+        modified = False
+        realm = uuid_to_realm_dict[str(remote_realm.uuid)]
+        for remote_realm_attr, realm_dict_key in [
+            ("host", "host"),
+            ("realm_deactivated", "deactivated"),
+        ]:
+            old_value = getattr(remote_realm, remote_realm_attr)
+            new_value = realm[realm_dict_key]
+            if old_value == new_value:
+                continue
+
+            setattr(remote_realm, remote_realm_attr, new_value)
+            remote_realm_audit_logs.append(
+                RemoteRealmAuditLog(
+                    server=server,
+                    remote_id=None,
+                    remote_realm=remote_realm,
+                    realm_id=realm["id"],
+                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    event_time=now,
+                    extra_data={
+                        "attr_name": remote_realm_attr,
+                        "old_value": old_value,
+                        "new_value": new_value,
+                    },
+                )
+            )
+            modified = True
+
+        if modified:
+            remote_realms_to_update.append(remote_realm)
+
+    RemoteRealm.objects.bulk_update(remote_realms_to_update, ["host", "realm_deactivated"])
+    RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 
 @has_request_variables

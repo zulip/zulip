@@ -4795,6 +4795,11 @@ class AbstractRealmAuditLog(models.Model):
     REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
     REMOTE_SERVER_DEACTIVATED = 10201
 
+    # This value is for RemoteRealmAuditLog entries tracking changes to the
+    # RemoteRealm model resulting from modified realm information sent to us
+    # via send_analytics_to_push_bouncer.
+    REMOTE_REALM_VALUE_UPDATED = 20001
+
     event_type = models.PositiveSmallIntegerField()
 
     # event_types synced from on-prem installations to Zulip Cloud when
