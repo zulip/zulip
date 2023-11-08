@@ -66,7 +66,7 @@ from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key, get_raw_user_data, is_2fa_verified
+from zerver.lib.users import get_api_key, get_users_for_api, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import check_bool, validate_login_email
 from zerver.models import (
@@ -1023,7 +1023,7 @@ def jwt_fetch_api_key(
     }
 
     if include_profile:
-        members = get_raw_user_data(
+        members = get_users_for_api(
             realm,
             user_profile,
             target_user=user_profile,

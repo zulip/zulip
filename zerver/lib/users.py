@@ -542,7 +542,7 @@ def get_custom_profile_field_values(
     return profiles_by_user_id
 
 
-def get_raw_user_data(
+def get_users_for_api(
     realm: Realm,
     acting_user: Optional[UserProfile],
     *,

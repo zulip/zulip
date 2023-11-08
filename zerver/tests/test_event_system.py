@@ -27,7 +27,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stub_event_queue_user_events,
 )
-from zerver.lib.users import get_api_key, get_raw_user_data
+from zerver.lib.users import get_api_key, get_users_for_api
 from zerver.models import (
     CustomProfileField,
     UserMessage,
@@ -1384,10 +1384,10 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
         self.assertEqual(result, [])
 
 
-class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
-    def test_get_raw_user_data_on_system_bot_realm(self) -> None:
+class TestGetUserAPIDataSystemBotRealm(ZulipTestCase):
+    def test_get_users_api_data_on_system_bot_realm(self) -> None:
         realm = get_realm(settings.SYSTEM_BOT_REALM)
-        result = get_raw_user_data(
+        result = get_users_for_api(
             realm,
             self.example_user("hamlet"),
             client_gravatar=True,

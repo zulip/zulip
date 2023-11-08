@@ -59,7 +59,7 @@ from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
-    get_raw_user_data,
+    get_users_for_api,
     is_administrator_role,
     max_message_id_for_user,
 )
@@ -457,7 +457,7 @@ def fetch_initial_state_data(
             default_language=spectator_requested_language,
         )
     if want("realm_user"):
-        state["raw_users"] = get_raw_user_data(
+        state["raw_users"] = get_users_for_api(
             realm,
             user_profile,
             client_gravatar=client_gravatar,
