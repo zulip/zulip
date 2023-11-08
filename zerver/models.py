@@ -100,6 +100,7 @@ from zerver.lib.types import (
     ProfileData,
     ProfileDataElementBase,
     ProfileDataElementValue,
+    RawUserDict,
     RealmPlaygroundDict,
     RealmUserValidator,
     UnspecifiedValue,
@@ -4173,7 +4174,7 @@ def get_user_by_id_in_realm_including_cross_realm(
 
 
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)
-def get_realm_user_dicts(realm_id: int) -> List[Dict[str, Any]]:
+def get_realm_user_dicts(realm_id: int) -> List[RawUserDict]:
     return list(
         UserProfile.objects.filter(
             realm_id=realm_id,

@@ -298,3 +298,22 @@ class ServerSupportedPermissionSettings:
     realm: Dict[str, GroupPermissionSetting]
     stream: Dict[str, GroupPermissionSetting]
     group: Dict[str, GroupPermissionSetting]
+
+
+class RawUserDict(TypedDict):
+    id: int
+    full_name: str
+    email: str
+    avatar_source: str
+    avatar_version: int
+    is_active: bool
+    role: int
+    is_billing_admin: bool
+    is_bot: bool
+    timezone: str
+    date_joined: datetime.datetime
+    bot_owner_id: Optional[int]
+    delivery_email: str
+    bot_type: Optional[int]
+    long_term_idle: bool
+    email_address_visibility: int
