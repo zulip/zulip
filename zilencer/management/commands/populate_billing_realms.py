@@ -94,6 +94,12 @@ class Command(BaseCommand):
                 charge_automatically=False,
             ),
             CustomerProfile(
+                unique_id="standard-switch-to-annual-eoc",
+                billing_schedule=CustomerPlan.MONTHLY,
+                tier=CustomerPlan.STANDARD,
+                status=CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
+            ),
+            CustomerProfile(
                 unique_id="sponsored",
                 is_sponsored=True,
                 billing_schedule=CustomerPlan.MONTHLY,
