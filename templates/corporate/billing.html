@@ -45,8 +45,41 @@
                                 {{ licenses }}  (managed automatically)
                             </div>
                             {% else %}
-                            Licenses are manually managed. You will not be able to add new users to your organization once
-                            you are using all of your licenses.
+                            <div id="licensechange-error" class="alert alert-danger"></div>
+                            <label for="current-manual-license-count" class="inline-block label-title">
+                                Number of licenses for current billing period
+                                <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                                    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                                </a>
+                                <input id="current-manual-license-count" type="number" value="{{ licenses }}"/>
+                            </label>
+                            <div class="current-manual-license-count-update">
+                                <button class="current-manual-license-count-update-button">
+                                    <span class="billing-button-text">Update</span>
+                                    <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                                </button>
+                            </div>
+                            {%if not downgrade_at_end_of_cycle %}
+                            <label for="next-manual-license-count" class="inline-block label-title">
+                                Number of licenses for next billing period
+                                <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                                    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                                </a>
+                            </label>
+                            <input id="next-manual-license-count" type="number" value="{{ licenses }}" /> licenses ({{ seat_count }} in use)
+                            <div class="input-box">
+                                <button class="update-licenses-button register-button">Update</button>
+                            </div>
+                            <div class="next-manual-license-count-update">
+                                <button class="next-manual-license-count-update-button">
+                                    <span class="billing-button-text">Update</span>
+                                    <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                                </button>
+                            </div>
+                            {% endif %}
+                            <div id="licensechange-success" class="alert alert-success">
+                                Plan updated. The page will now reload.
+                            </div>
                             {% endif %}
                         </div>
                         <p>
@@ -93,43 +126,6 @@
                     </div>
 
                     <div id="settings">
-                        {% if not automanage_licenses and not downgrade_at_end_of_cycle %}
-                        <div id="licensechange-error" class="alert alert-danger"></div>
-                        <div id="licensechange-input-section" data-licenses="{{ licenses }}">
-                            <form id="licensechange-form">
-                                <h3>Licenses</h3>
-                                <h4>Number of licenses in the current billing period</h4>
-                                <p>
-                                    You can only increase the number of licenses.
-                                </p>
-                                <input min="{{ licenses }}" type="number" name="licenses" value="{{ licenses }}" autocomplete="off" id="new_licenses_input" required/>
-                                <br />
-                                <button class="btn-info" id="update-licenses-button">Update</button>
-                                <br />
-                                <br />
-                                <h4>Licenses in next renewal</h4>
-                                <p>
-                                    You can increase or decrease the number of licenses.
-                                </p>
-                                <input type="number" name="licenses_at_next_renewal" value="{{ licenses_at_next_renewal }}" autocomplete="off" id="licenses_at_next_renewal_input"/>
-                                <br />
-                                <button class="btn-info" id="update-licenses-at-next-renewal-button">Update</button>
-                            </form>
-                        </div>
-                        <div id="licensechange-loading">
-                            <div class="zulip-loading-logo">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
-                                    <circle cx="386.56" cy="386.56" r="386.56"/>
-                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
-                                </svg>
-                            </div>
-                            <div id="licensechange_loading_indicator"></div>
-                        </div>
-                        <div id="licensechange-success" class="alert alert-success">
-                            Plan updated. The page will now reload.
-                        </div>
-                        {% endif %}
-
                         <div id="planchange-error" class="alert alert-danger"></div>
                         <div id="planchange-input-section">
                             <form id="planchange-form">
