@@ -52,19 +52,23 @@ body {
     */
     --header-height: 40px;
 
-    @media (width < $sm_min) {
+    /*
+    At 600px, the header starts taking up more than 5%
+    of the screen. We make it shorter to leave more space
+    to see the rest of the app. */
+    @media (height < $short_navbar_cutoff_height) {
         --header-height: 30px;
     }
 
     /*
     Height of the search box, which appears in the header.
-    On very small screens, the search box's height becomes
+    On very short screens, the search box's height becomes
     the height of its parent (i.e. the header height).
     */
     --search-box-height: 28px;
     --search-box-width: 150px;
 
-    @media (width < $sm_min) {
+    @media (height < $short_navbar_cutoff_height) {
         --search-box-height: var(--header-height);
     }
 
@@ -1013,7 +1017,7 @@ body.has-overlay-scrollbar {
         /* width of right column - width of gear icon - right margin of column-right (250px - 40px - 40px -7px) */
         width: 163px;
 
-        @media (width < $xl_min) {
+        @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
             display: none;
         }
 
@@ -1047,7 +1051,7 @@ body.has-overlay-scrollbar {
         width: var(--header-height);
         border-left: 1px solid hsl(0deg 0% 88%);
 
-        @media (width >= $xl_min) {
+        @media (width >= $xl_min) and (height >= 600px) {
             display: none;
         }
 
@@ -2335,7 +2339,7 @@ div.focused-message-list {
             align-self: baseline;
         }
 
-        @media (width < $sm_min) {
+        @media (height < $short_navbar_cutoff_height) {
             padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
 
@@ -2545,6 +2549,10 @@ nav {
             margin-top: 8px;
             height: 25px;
             max-width: 200px;
+
+            @media (height < $short_navbar_cutoff_height) {
+                height: 15px;
+            }
         }
     }
 
@@ -3132,23 +3140,25 @@ select.invite-as {
     }
 }
 
-@media (width < $xl_min) {
-    .app-main,
-    .header-main {
-        min-width: 750px;
-    }
-
+@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
     .spectator-view {
         #navbar-middle {
-            /* = 40px (width of button) * 3 (number of buttons) + 10px extra margin. */
-            margin-right: 130px;
+            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 3 + 10px);
         }
 
         #help-menu,
         #gear-menu {
             position: relative;
-            right: 40px;
+            right: var(--header-height);
         }
+    }
+}
+
+@media (width < $xl_min) {
+    .app-main,
+    .header-main {
+        min-width: 750px;
     }
 
     .column-right {
@@ -3191,8 +3201,8 @@ select.invite-as {
     }
 
     #navbar-middle {
-        /* = 40px (width of button) * 4 (number of buttons) + 10px extra margin. */
-        margin-right: 170px;
+        /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: calc(var(--header-height) * 4 + 10px);
     }
 }
 
@@ -3273,11 +3283,11 @@ select.invite-as {
     }
 }
 
-@media (width < $sm_min) {
+@media (height < $short_navbar_cutoff_height) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
         margin-top: var(--navbar-fixed-height);
-        /* For very small sizes, skip the relatively large top padding. */
+        /* For very short screen sizes, skip the relatively large top padding. */
         padding-top: 0;
     }
 
@@ -3290,23 +3300,6 @@ select.invite-as {
 
     .column-left.expanded .left-sidebar-navigation-area {
         margin-top: 10px;
-    }
-
-    .spectator-view {
-        #navbar-middle {
-            /* = 30px (width of button) * 3 (number of buttons) + 10px extra margin. */
-            margin-right: 100px;
-        }
-
-        #help-menu,
-        #gear-menu {
-            right: 30px;
-        }
-    }
-
-    #navbar-middle {
-        /* = 30px (width of button) * 4 (number of buttons) + 10px extra margin. */
-        margin-right: 130px;
     }
 
     .nav .dropdown-menu {
@@ -3325,10 +3318,6 @@ select.invite-as {
     .header {
         line-height: var(--header-height);
         height: var(--header-height);
-    }
-
-    #searchbox_form {
-        height: calc(var(--header-height) - 1px);
     }
 
     .spectator_narrow_login_button {
