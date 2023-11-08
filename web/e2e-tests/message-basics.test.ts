@@ -25,6 +25,14 @@ async function expect_home(page: Page): Promise<void> {
     ]);
 }
 
+async function expect_verona_stream_top_topic(page: Page): Promise<void> {
+    await page.waitForSelector("#zfilt", {visible: true});
+    await common.check_messages_sent(page, "zfilt", [
+        ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
+    ]);
+    assert.strictEqual(await page.title(), "#Verona > test - Zulip Dev - Zulip");
+}
+
 async function expect_verona_stream(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
@@ -285,6 +293,9 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
 
     await page.click((await get_stream_li(page, "Verona")) + " a");
     await expect_verona_stream(page);
+
+    await page.click((await get_stream_li(page, "Verona")) + " .stream-name");
+    await expect_verona_stream_top_topic(page);
 
     await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
