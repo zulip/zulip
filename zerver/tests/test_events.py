@@ -1059,6 +1059,35 @@ class NormalActionsTest(BaseAction):
             state_change_expected=True,
         )
 
+    def test_events_for_message_from_inaccessible_sender(self) -> None:
+        reset_email_visibility_to_everyone_in_zulip_realm()
+        self.set_up_db_for_testing_user_access()
+        othello = self.example_user("othello")
+        self.user_profile = self.example_user("polonius")
+
+        events = self.verify_action(
+            lambda: self.send_stream_message(
+                othello, "test_stream1", "hello 2", allow_unsubscribed_sender=True
+            ),
+        )
+        check_message("events[0]", events[0])
+        message_obj = events[0]["message"]
+        self.assertEqual(message_obj["sender_full_name"], "Unknown user")
+        self.assertEqual(message_obj["sender_email"], f"user{othello.id}@zulip.testserver")
+        self.assertTrue(message_obj["avatar_url"].endswith("images/unknown-user-avatar.png"))
+
+        iago = self.example_user("iago")
+        events = self.verify_action(
+            lambda: self.send_stream_message(
+                iago, "test_stream1", "hello 2", allow_unsubscribed_sender=True
+            ),
+        )
+        check_message("events[0]", events[0])
+        message_obj = events[0]["message"]
+        self.assertEqual(message_obj["sender_full_name"], iago.full_name)
+        self.assertEqual(message_obj["sender_email"], iago.delivery_email)
+        self.assertIsNone(message_obj["avatar_url"])
+
     def test_add_reaction(self) -> None:
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)

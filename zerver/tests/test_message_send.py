@@ -1652,7 +1652,12 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row)
-        MessageDict.post_process_dicts([dct], apply_markdown=True, client_gravatar=False)
+        MessageDict.post_process_dicts(
+            [dct],
+            apply_markdown=True,
+            client_gravatar=False,
+            realm=user_profile.realm,
+        )
         self.assertEqual(dct["display_recipient"], "Denmark")
 
         stream = get_stream("Denmark", user_profile.realm)
