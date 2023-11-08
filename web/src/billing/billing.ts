@@ -72,6 +72,11 @@ export function initialize(): void {
         );
         e.preventDefault();
     });
+
+    $("#cancel-subscription").on("click", (e) => {
+        e.preventDefault();
+        portico_modals.open("confirm-cancel-subscription-modal");
+    });
 }
 
 $(() => {

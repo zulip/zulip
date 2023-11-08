@@ -107,7 +107,7 @@
                             Redirecting to Stripe checkout page for updating Card details.
                         </div>
                     </div>
-                    <div class="next-payment-info not-editable-realm-field">
+                    <div class="next-payment-info not-editable-realm-field input-box no-validation">
                         {% if renewal_amount %}
                             {% if free_trial %}
                             Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
@@ -115,7 +115,9 @@
                             {% elif downgrade_at_end_of_cycle %}
                             Your plan will be downgraded to <strong>Zulip Free</strong> on <strong>{{ renewal_date }}</strong>.
                             {% elif switch_to_annual_at_end_of_cycle %}
-                            Your plan will be switched from monthly to annual billing on <strong>{{ renewal_date }}</strong>.
+                            Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
+                            period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
+                            <a href="/plans">other features</a> of your current plan.
                             {% else %}
                                 {% if charge_automatically %}
                                 Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
@@ -139,43 +141,40 @@
                         <div id="planchange-error" class="alert alert-danger"></div>
                         <div id="planchange-input-section">
                             <form id="planchange-form">
-                                <h3>Downgrade</h3>
                                 {% if free_trial %}
+                                <input name="status" type="hidden" value="{{ CustomerPlan.ENDED }}" />
+                                <div class="end-free-trail">
                                     <p>
                                         End Free Trial and downgrade plan to <strong>Zulip Free</strong>.
                                     </p>
-                                    <input name="status" type="hidden" value="{{ CustomerPlan.ENDED }}" />
-                                    <button class="btn-danger" id="change-plan-status">End free trial</button>
+                                    <button class="end-free-trail-button">
+                                        <span class="billing-button-text">End free trial</span>
+                                        <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                                    </button>
+                                </div>
                                 {% else %}
-                                    {% if downgrade_at_end_of_cycle %}
-                                    <p>
-                                        You plan is scheduled for downgrade on <strong>{{ renewal_date }}</strong>.
-                                    </p>
+                                {% if downgrade_at_end_of_cycle %}
                                     <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
-                                    <button class="btn-info" id="change-plan-status">Cancel downgrade</button>
+                                    <div class="reactivate-current-plan">
+                                        <button class="reactivate-current-plan-button">
+                                            <span class="billing-button-text">Reactivate subscription</span>
+                                            <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                                        </button>
+                                    </div>
                                     {% else %}
-                                    <p>
-                                        Downgrade to <strong>Zulip Free</strong> at the end of current billing period.
-                                    </p>
                                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
-                                    <button class="btn-danger" id="change-plan-status">Start downgrade process</button>
+                                    <div class="cancel-current-plan">
+                                        <button class="cancel-current-plan-button">
+                                            <span class="billing-button-text">Cancel plan</span>
+                                            <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                                        </button>
+                                    </div>
                                     {% endif %}
                                 {% endif %}
                             </form>
                         </div>
-                        <div id="planchange-loading">
-                            <div class="zulip-loading-logo">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
-                                    <circle cx="386.56" cy="386.56" r="386.56"/>
-                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
-                                </svg>
-                            </div>
-                            <div id="planchange_loading_indicator"></div>
-                        </div>
                         <div id="planchange-success" class="alert alert-success">
                             Plan updated. The page will now reload.
-                        </div>
-                        <div class="tab-pane" id="loading">
                         </div>
                     </div>
                 </div>
@@ -253,4 +252,32 @@
         </div>
     </div>
 </div>
+
+<div id="confirm-cancel-subscription-modal" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Downgrade {{ org_name }} to Zulip Cloud Free
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Your organization will be downgraded to Zulip Cloud Free at the end of the current billing 
+                    period ({{ renewal_date }}). You will lose access to unlimited search history and 
+                    <a href="/plans">other features</a>
+                    of your current plan. Are you sure you want to continue?
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Downgrade') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
