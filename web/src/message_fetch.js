@@ -408,12 +408,30 @@ export function get_frontfill_anchor(msg_list) {
         return last_msg.id;
     }
 
-    // Although it is impossible that we reach here since we
-    // are already checking `msg_list.fetch_status.can_load_newer_messages`
-    // and user cannot be scrolling down on an empty message_list to
-    // fetch more data, and if user is, then the available data is wrong
-    // and we raise a fatal error.
-    throw new Error("There are no message available to frontfill.");
+    // This fallthrough only occurs in a rare race, where the user
+    // navigates to a currently empty narrow, and the `GET /messages`
+    // request sees 0 matching messages, but loses the race with a
+    // simultaneous `GET /events` request returning a just-sent
+    // message matching this narrow. In that case,
+    // get_messages_success will see no matching messages, even though
+    // we know via `FetchStatus._expected_max_message_id` that we are
+    // expecting to see a new message here, and thus
+    // `FetchStatus.has_found_newest` remains false.
+    //
+    // In this situation, we know there are no messages older than the
+    // ones we're looking for, so returning "oldest" should correctly
+    // allow the follow-up request to find all messages that raced in
+    // this way.
+    //
+    // Can be manually reproduced as follows:
+    // * Add a long sleep at the end of `GET /messages` API requests
+    //   in the server.
+    // * Open two browser windows.
+    // * Narrow to an empty topic in the first. You'll see a loading indicator.
+    // * In the second window, send a message to the empty topic.
+    // * When the first browser window's `GET /messages` request finishes,
+    //   this code path will be reached.
+    return "oldest";
 }
 
 export function maybe_load_older_messages(opts) {
