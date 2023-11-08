@@ -54,6 +54,7 @@ from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementVal
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
+    APIUserDict,
     access_bot_by_id,
     access_user_by_email,
     access_user_by_id,
@@ -741,7 +742,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         client_gravatar=False,
         user_avatar_url_field_optional=False,
     )
-    result: Dict[str, Any] = raw_user_data[user_profile.id]
+    result: APIUserDict = raw_user_data[user_profile.id]
 
     result["max_message_id"] = max_message_id_for_user(user_profile)
 

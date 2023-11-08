@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from django_otp.middleware import is_verified
+from typing_extensions import NotRequired
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
@@ -384,6 +385,29 @@ def can_access_delivery_email(
     return False
 
 
+class APIUserDict(TypedDict):
+    email: str
+    user_id: int
+    avatar_version: int
+    is_admin: bool
+    is_owner: bool
+    is_guest: bool
+    is_billing_admin: NotRequired[bool]
+    role: int
+    is_bot: bool
+    full_name: str
+    timezone: NotRequired[str]
+    is_active: bool
+    date_joined: str
+    avatar_url: NotRequired[Optional[str]]
+    delivery_email: Optional[str]
+    bot_type: NotRequired[Optional[int]]
+    bot_owner_id: NotRequired[Optional[int]]
+    profile_data: NotRequired[Optional[Dict[str, Any]]]
+    is_system_bot: NotRequired[bool]
+    max_message_id: NotRequired[int]
+
+
 def format_user_row(
     realm_id: int,
     acting_user: Optional[UserProfile],
@@ -391,7 +415,7 @@ def format_user_row(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     custom_profile_field_data: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+) -> APIUserDict:
     """Formats a user row returned by a database fetch using
     .values(*realm_user_dict_fields) into a dictionary representation
     of that user for API delivery to clients.  The acting_user
@@ -402,7 +426,14 @@ def format_user_row(
     is_owner = row["role"] == UserProfile.ROLE_REALM_OWNER
     is_guest = row["role"] == UserProfile.ROLE_GUEST
     is_bot = row["is_bot"]
-    result = dict(
+
+    delivery_email = None
+    if acting_user is not None and can_access_delivery_email(
+        acting_user, row["id"], row["email_address_visibility"]
+    ):
+        delivery_email = row["delivery_email"]
+
+    result = APIUserDict(
         email=row["email"],
         user_id=row["id"],
         avatar_version=row["avatar_version"],
@@ -416,6 +447,7 @@ def format_user_row(
         timezone=canonicalize_timezone(row["timezone"]),
         is_active=row["is_active"],
         date_joined=row["date_joined"].isoformat(),
+        delivery_email=delivery_email,
     )
 
     if acting_user is None:
@@ -456,13 +488,6 @@ def format_user_row(
             medium=False,
             client_gravatar=client_gravatar,
         )
-
-    if acting_user is not None and can_access_delivery_email(
-        acting_user, row["id"], row["email_address_visibility"]
-    ):
-        result["delivery_email"] = row["delivery_email"]
-    else:
-        result["delivery_email"] = None
 
     if is_bot:
         result["bot_type"] = row["bot_type"]
@@ -514,7 +539,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
 
 
 @cache_with_key(get_cross_realm_dicts_key)
-def get_cross_realm_dicts() -> List[Dict[str, Any]]:
+def get_cross_realm_dicts() -> List[APIUserDict]:
     user_dict = bulk_get_cross_realm_bots()
     users = sorted(user_dict.values(), key=lambda user: user.full_name)
     result = []
@@ -565,7 +590,7 @@ def get_users_for_api(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
-) -> Dict[int, Dict[str, str]]:
+) -> Dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to
     acting_user via the standard format for the Zulip API.  If
     target_user is None, we fetch all users in the realm.
