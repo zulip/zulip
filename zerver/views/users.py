@@ -66,7 +66,7 @@ from zerver.lib.users import (
     check_valid_bot_type,
     check_valid_interface_type,
     get_api_key,
-    get_raw_user_data,
+    get_users_for_api,
     max_message_id_for_user,
     validate_user_custom_profile_data,
 )
@@ -637,7 +637,7 @@ def get_user_data(
     """
     realm = user_profile.realm
 
-    members = get_raw_user_data(
+    members = get_users_for_api(
         realm,
         user_profile,
         target_user=target_user,
@@ -734,7 +734,7 @@ def create_user_backend(
 
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    raw_user_data = get_raw_user_data(
+    raw_user_data = get_users_for_api(
         user_profile.realm,
         user_profile,
         target_user=user_profile,
