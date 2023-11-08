@@ -1,6 +1,6 @@
+import {all_messages_data} from "./all_messages_data";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
-import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -68,7 +68,7 @@ export function has_recent_activity(sub) {
         // to set_filter_out_inactives.
         return true;
     }
-    return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
+    return all_messages_data.has_message_from_stream(sub.stream_id) || sub.newly_subscribed;
 }
 
 export function has_recent_activity_but_muted(sub) {

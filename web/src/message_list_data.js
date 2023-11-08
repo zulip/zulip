@@ -590,4 +590,8 @@ export class MessageListData {
         const msg = this._items[msg_index];
         return msg;
     }
+
+    has_message_from_stream(stream_id) {
+        return this._items.some((message) => message.stream_id === stream_id);
+    }
 }

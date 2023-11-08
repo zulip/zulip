@@ -10,7 +10,7 @@ const {user_settings} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const stream_topic_history = zrequire("stream_topic_history");
+const all_messages_data = zrequire("all_messages_data");
 const stream_list_sort = zrequire("stream_list_sort");
 const settings_config = zrequire("settings_config");
 
@@ -222,12 +222,8 @@ test("has_recent_activity", () => {
     assert.ok(stream_list_sort.has_recent_activity(sub));
     sub.pin_to_top = false;
 
-    const opts = {
-        stream_id: 222,
-        message_id: 108,
-        topic_name: "topic2",
-    };
-    stream_topic_history.add_message(opts);
+    const messages = [{id: 108, stream_id: 222}];
+    all_messages_data.all_messages_data.add_messages(messages);
 
     assert.ok(stream_list_sort.has_recent_activity(sub));
 
@@ -256,7 +252,7 @@ test("has_recent_activity", () => {
 
     assert.ok(stream_list_sort.has_recent_activity(sub));
 
-    stream_topic_history.add_message(opts);
+    all_messages_data.all_messages_data.add_messages(messages);
 
     assert.ok(stream_list_sort.has_recent_activity(sub));
 
@@ -279,7 +275,7 @@ test("has_recent_activity", () => {
     sub.pin_to_top = true;
     assert.ok(stream_list_sort.has_recent_activity(sub));
 
-    stream_topic_history.add_message(opts);
+    all_messages_data.all_messages_data.add_messages(messages);
 
     assert.ok(stream_list_sort.has_recent_activity(sub));
 });

@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
-const stream_topic_history = mock_esm("../src/stream_topic_history");
+const all_messages_data = mock_esm("../src/all_messages_data");
 
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
@@ -169,11 +169,11 @@ test("sort_streams", ({override}) => {
     );
 
     stream_list_sort.set_filter_out_inactives();
-    override(
-        stream_topic_history,
-        "stream_has_topics",
-        (stream_id) => ![105, 205].includes(stream_id),
-    );
+    all_messages_data.all_messages_data = {
+        has_message_from_stream(stream_id) {
+            return ![105, 205].includes(stream_id);
+        },
+    };
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
