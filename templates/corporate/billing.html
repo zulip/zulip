@@ -31,6 +31,10 @@
                             <label for="org_billing_freqency" class="inline-block label-title">Billing frequency</label>
                             <div id="org_billing_freqency" class="not-editable-realm-field">
                                 {{ billing_frequency }}
+                                {% if switch_to_annual_at_end_of_cycle %}
+                                <br />
+                                Your plan will switch to annual billing on {{ renewal_date }}.
+                                {% endif %}
                             </div>
                         </div>
                         <div class="input-box billing-page-field no-validation">
