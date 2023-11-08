@@ -34,6 +34,12 @@ function common_click_handlers() {
         popovers.hide_all();
     });
 }
+// This callback is called from the popovers on all home views
+function register_mark_all_read_handler(event) {
+    const {instance} = event.data;
+    unread_ops.confirm_mark_all_as_read();
+    instance.hide();
+}
 
 export function initialize() {
     // Starred messages popover
@@ -114,10 +120,12 @@ export function initialize() {
             popover_menus.popover_instances.left_sidebar_inbox_popover = instance;
             ui_util.show_left_sidebar_menu_icon(instance.reference);
 
-            $popper.one("click", "#mark_all_messages_as_read", () => {
-                unread_ops.confirm_mark_all_as_read();
-                instance.hide();
-            });
+            $popper.one(
+                "click",
+                "#mark_all_messages_as_read",
+                {instance},
+                register_mark_all_read_handler,
+            );
         },
         onShow(instance) {
             popovers.hide_all();
@@ -141,6 +149,15 @@ export function initialize() {
     // All messages popover
     popover_menus.register_popover_menu(".all-messages-sidebar-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.one(
+                "click",
+                "#mark_all_messages_as_read",
+                {instance},
+                register_mark_all_read_handler,
+            );
+        },
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
             ui_util.show_left_sidebar_menu_icon(instance.reference);
@@ -165,6 +182,15 @@ export function initialize() {
     // Recent view popover
     popover_menus.register_popover_menu(".recent-view-sidebar-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.one(
+                "click",
+                "#mark_all_messages_as_read",
+                {instance},
+                register_mark_all_read_handler,
+            );
+        },
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
             ui_util.show_left_sidebar_menu_icon(instance.reference);
