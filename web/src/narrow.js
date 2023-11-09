@@ -353,7 +353,16 @@ export function activate(raw_operators, opts) {
             if (opts.then_select_offset === undefined) {
                 const $row = message_lists.current.get_row(opts.then_select_id);
                 if ($row.length > 0) {
-                    opts.then_select_offset = $row.get_offset_to_window().top;
+                    const row_props = $row.get_offset_to_window();
+                    const navbar_height = $("#navbar-fixed-container").height();
+                    // 30px height + 10px top margin.
+                    const sticky_header_outer_height = 40;
+                    const min_height_for_message_top_visible =
+                        navbar_height + sticky_header_outer_height;
+                    opts.then_select_offset = Math.max(
+                        row_props.top,
+                        min_height_for_message_top_visible,
+                    );
                 }
             }
         }
