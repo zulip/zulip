@@ -2558,9 +2558,7 @@ class StripeTest(StripeTestCase):
         for stripe_payment_method in stripe_payment_methods:
             stripe.PaymentMethod.detach(stripe_payment_method.id)
         response = self.client_get("/billing/")
-        self.assert_in_success_response(
-            ["payment method: <strong>No payment method on file"], response
-        )
+        self.assert_in_success_response(["No payment method on file."], response)
 
         start_session_json_response = self.client_post(
             "/json/billing/session/start_card_update_session"
