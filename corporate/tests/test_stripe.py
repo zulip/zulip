@@ -2550,7 +2550,7 @@ class StripeTest(StripeTestCase):
         )
 
         response = self.client_get("/billing/")
-        self.assert_in_success_response(["payment method: <strong>visa ending in 0341"], response)
+        self.assert_in_success_response(["Visa ending in 0341"], response)
         assert RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists()
         stripe_payment_methods = stripe.PaymentMethod.list(customer=stripe_customer_id, type="card")
         self.assert_length(stripe_payment_methods, 2)
@@ -2590,9 +2590,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(self.example_user("hamlet"))
         response = self.client_get("/billing/")
-        self.assert_in_success_response(
-            ["payment method: <strong>mastercard ending in 4444"], response
-        )
+        self.assert_in_success_response(["Mastercard ending in 4444"], response)
         self.assert_length(stripe.PaymentMethod.list(customer=stripe_customer_id, type="card"), 1)
         # Ideally we'd also test that we don't pay invoices with collection_method=='send_invoice'
         for stripe_invoice in stripe.Invoice.list(customer=stripe_customer_id):
