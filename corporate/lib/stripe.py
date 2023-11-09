@@ -402,22 +402,16 @@ class BillingSession(ABC):
         pass
 
     @catch_stripe_errors
-    def create_stripe_customer(self, payment_method: Optional[str] = None) -> Customer:
+    def create_stripe_customer(self) -> Customer:
         stripe_customer_data = self.get_data_for_stripe_customer()
         stripe_customer = stripe.Customer.create(
             description=stripe_customer_data.description,
             email=stripe_customer_data.email,
             metadata=stripe_customer_data.metadata,
-            payment_method=payment_method,
-        )
-        stripe.Customer.modify(
-            stripe_customer.id, invoice_settings={"default_payment_method": payment_method}
         )
         event_time = timestamp_to_datetime(stripe_customer.created)
         with transaction.atomic():
             self.write_to_audit_log(AuditLogEventType.STRIPE_CUSTOMER_CREATED, event_time)
-            if payment_method is not None:
-                self.write_to_audit_log(AuditLogEventType.STRIPE_CARD_CHANGED, event_time)
             customer = self.update_or_create_customer(stripe_customer.id)
         return customer
 
@@ -448,11 +442,15 @@ class BillingSession(ABC):
     def update_or_create_stripe_customer(self, payment_method: Optional[str] = None) -> Customer:
         customer = self.get_customer()
         if customer is None or customer.stripe_customer_id is None:
+            # A stripe.PaymentMethod should be attached to a stripe.Customer via
+            # a stripe.SetupIntent or stripe.PaymentIntent. Here we just want to
+            # create a new stripe.Customer.
+            assert payment_method is None
             # We could do a better job of handling race conditions here, but if two
             # people try to upgrade at exactly the same time, the main bad thing that
-            # will happen is that we will create an extra stripe customer that we can
+            # will happen is that we will create an extra stripe.Customer that we can
             # delete or ignore.
-            return self.create_stripe_customer(payment_method=payment_method)
+            return self.create_stripe_customer()
         if payment_method is not None:
             self.replace_payment_method(customer.stripe_customer_id, payment_method, True)
         return customer
