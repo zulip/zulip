@@ -319,7 +319,7 @@ export function paste_handler_converter(paste_html) {
         copied_html_fragment.childNodes.length === 1 &&
         copied_html_fragment.firstElementChild &&
         copied_html_fragment.firstElementChild.innerHTML;
-    const outer_elements_to_retain = ["PRE", "OL", "A"];
+    const outer_elements_to_retain = ["PRE", "UL", "OL", "A"];
     // If the entire selection copied is within a single HTML element (like an
     // `h1`), we don't want to retain its styling, except when it is needed to
     // identify the intended structure of the copied content.
