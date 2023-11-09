@@ -58,6 +58,7 @@ import * as util from "./util";
 import * as widgetize from "./widgetize";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
+export let has_visited_all_messages = false;
 
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
@@ -988,11 +989,19 @@ export function deactivate(message_feed_previously_hidden = false) {
       message_lists.home in it.
      */
     search.clear_search_form();
-    // Both All messages and Recent Conversations have `undefined` filter.
-    // Return if already in the All message narrow.
-    if (narrow_state.filter() === undefined && !message_feed_previously_hidden) {
+
+    // If we're already looking at the All messages view, exit without
+    // doing any work.
+    if (
+        narrow_state.filter() === undefined &&
+        !message_feed_previously_hidden &&
+        has_visited_all_messages
+    ) {
         return;
     }
+
+    has_visited_all_messages = true;
+
     blueslip.debug("Unnarrowed");
 
     if (message_scroll_state.actively_scrolling) {
