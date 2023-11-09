@@ -104,17 +104,6 @@ function toggle_condensed_navigation_area() {
     resize.resize_stream_filters_container();
 }
 
-export function highlight_recent_view() {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_mentions"));
-    remove($(".top_left_inbox"));
-    $(".top_left_recent_view").addClass("active-filter");
-    setTimeout(() => {
-        resize.resize_stream_filters_container();
-    }, 0);
-}
-
 export function animate_mention_changes($li, new_mention_count) {
     if (new_mention_count > last_mention_count) {
         do_new_messages_animation($li);
@@ -141,6 +130,17 @@ export function highlight_inbox_view() {
     remove($(".top_left_recent_view"));
     remove($(".top_left_mentions"));
     $(".top_left_inbox").addClass("active-filter");
+    setTimeout(() => {
+        resize.resize_stream_filters_container();
+    }, 0);
+}
+
+export function highlight_recent_view() {
+    remove($(".top_left_all_messages"));
+    remove($(".top_left_starred_messages"));
+    remove($(".top_left_mentions"));
+    remove($(".top_left_inbox"));
+    $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
