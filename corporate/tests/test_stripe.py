@@ -843,23 +843,20 @@ class StripeTest(StripeTestCase):
         for substring in [
             "Zulip Cloud Standard",
             str(self.seat_count),
-            "You are using",
-            f"{self.seat_count} of {self.seat_count} licenses",
-            "Licenses are automatically managed by Zulip; when you add",
-            "Your plan will renew on",
+            "Number of licenses",
+            f"{ self.seat_count } (managed automatically)",
+            "Your plan will automatically renew on",
             "January 2, 2013",
             f"${80 * self.seat_count}.00",
-            f"Billing email: <strong>{user.delivery_email}</strong>",
-            "visa ending in 4242",
+            "Visa ending in 4242",
             "Update card",
         ]:
             self.assert_in_response(substring, response)
 
         self.assert_not_in_success_response(
             [
-                "You can only increase the number of licenses.",
-                "Number of licenses",
-                "Licenses in next renewal",
+                "Number of licenses for current billing period",
+                "Your next invoice is due on",
             ],
             response,
         )
@@ -981,17 +978,11 @@ class StripeTest(StripeTestCase):
         for substring in [
             "Zulip Cloud Standard",
             str(123),
-            "You are using",
-            f"{self.seat_count} of {123} licenses",
-            "Licenses are manually managed. You will not be able to add ",
-            "Your plan will renew on",
+            "Number of licenses for current billing period",
+            f"licenses ({self.seat_count} in use)",
+            "Your next invoice is due on",
             "January 2, 2013",
             "$9,840.00",  # 9840 = 80 * 123
-            f"Billing email: <strong>{user.delivery_email}</strong>",
-            "Billed by invoice",
-            "You can only increase the number of licenses.",
-            "Number of licenses",
-            "Licenses in next renewal",
         ]:
             self.assert_in_response(substring, response)
 
@@ -1055,6 +1046,8 @@ class StripeTest(StripeTestCase):
                 next_invoice_date=free_trial_end_date,
                 tier=CustomerPlan.STANDARD,
                 status=CustomerPlan.FREE_TRIAL,
+                # For payment through card.
+                charge_automatically=True,
             )
             LicenseLedger.objects.get(
                 plan=plan,
@@ -1102,13 +1095,12 @@ class StripeTest(StripeTestCase):
                 "Zulip Cloud Standard",
                 "Free Trial",
                 str(self.seat_count),
-                "You are using",
-                f"{self.seat_count} of {self.seat_count} licenses",
+                "Number of licenses",
+                f"{self.seat_count} (managed automatically)",
                 "Your plan will be upgraded to",
                 "March 2, 2012",
                 f"${80 * self.seat_count}.00",
-                f"Billing email: <strong>{user.delivery_email}</strong>",
-                "visa ending in 4242",
+                "Visa ending in 4242",
                 "Update card",
             ]:
                 self.assert_in_response(substring, response)
@@ -1321,6 +1313,8 @@ class StripeTest(StripeTestCase):
                 next_invoice_date=free_trial_end_date,
                 tier=CustomerPlan.STANDARD,
                 status=CustomerPlan.FREE_TRIAL,
+                # For invoice billing.
+                charge_automatically=False,
             )
 
             LicenseLedger.objects.get(
@@ -1362,15 +1356,13 @@ class StripeTest(StripeTestCase):
                 response = self.client_get("/billing/")
             self.assert_not_in_success_response(["Pay annually"], response)
             for substring in [
-                "Zulip Cloud Standard",
-                "Free Trial",
+                "Zulip Cloud Standard Free Trial",
                 str(self.seat_count),
-                "You are using",
-                f"{self.seat_count} of {123} licenses",
+                "Number of licenses for current billing period",
+                f"{self.seat_count} in use",
                 "Your plan will be upgraded to",
                 "March 2, 2012",
                 f"{80 * 123:,.2f}",
-                f"Billing email: <strong>{user.delivery_email}</strong>",
                 "Billed by invoice",
             ]:
                 self.assert_in_response(substring, response)
@@ -2631,10 +2623,9 @@ class StripeTest(StripeTestCase):
                 response = self.client_get("/billing/")
                 self.assert_in_success_response(
                     [
-                        "Your plan will be downgraded to <strong>Zulip Free</strong> on "
+                        "Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing",
                         "<strong>January 2, 2013</strong>",
-                        "You plan is scheduled for downgrade on <strong>January 2, 2013</strong>",
-                        "Cancel downgrade",
+                        "Reactivate subscription",
                     ],
                     response,
                 )
@@ -2737,7 +2728,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(
-            ["be switched from monthly to annual billing on <strong>February 2, 2012"], response
+            ["Your plan will switch to annual billing on February 2, 2012"], response
         )
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
@@ -2925,7 +2916,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(
-            ["be switched from monthly to annual billing on <strong>February 2, 2012"], response
+            ["Your plan will switch to annual billing on February 2, 2012"], response
         )
 
         invoice_plans_as_needed(self.next_month)
@@ -3463,7 +3454,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual("/plans/", response["Location"])        
+        self.assertEqual("/plans/", response["Location"])
 
         # The extra users added in the final month are not charged
         with patch("corporate.lib.stripe.invoice_plan") as mocked:
@@ -4119,7 +4110,7 @@ class RequiresBillingAccessTest(StripeTestCase):
         self.upgrade()
         # Check that the non-admin hamlet can still access /billing
         response = self.client_get("/billing/")
-        self.assert_in_success_response(["Your current plan is"], response)
+        self.assert_in_success_response(["Zulip Cloud Standard"], response)
 
         # Check realm owners can access billing, even though they are not a billing admin
         desdemona = self.example_user("desdemona")
@@ -4127,7 +4118,7 @@ class RequiresBillingAccessTest(StripeTestCase):
         desdemona.save(update_fields=["role"])
         self.login_user(self.example_user("desdemona"))
         response = self.client_get("/billing/")
-        self.assert_in_success_response(["Your current plan is"], response)
+        self.assert_in_success_response(["Zulip Cloud Standard"], response)
 
         # Check that member who is not a billing admin does not have access
         self.login_user(self.example_user("cordelia"))
