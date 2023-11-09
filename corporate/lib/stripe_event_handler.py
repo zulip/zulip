@@ -12,7 +12,7 @@ from corporate.lib.stripe import (
     ensure_customer_does_not_have_active_plan,
     process_initial_upgrade,
 )
-from corporate.models import Event, PaymentIntent, Session
+from corporate.models import CustomerPlan, Event, PaymentIntent, Session
 from zerver.models import get_active_user_profile_by_id_in_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -102,6 +102,7 @@ def handle_checkout_session_completed_event(
         billing_session.update_or_create_stripe_customer(payment_method)
         process_initial_upgrade(
             user,
+            CustomerPlan.STANDARD,
             int(stripe_session.metadata["licenses"]),
             stripe_session.metadata["license_management"] == "automatic",
             int(stripe_session.metadata["billing_schedule"]),
@@ -151,6 +152,7 @@ def handle_payment_intent_succeeded_event(
 
     process_initial_upgrade(
         user,
+        CustomerPlan.STANDARD,
         int(metadata["licenses"]),
         metadata["license_management"] == "automatic",
         int(metadata["billing_schedule"]),
