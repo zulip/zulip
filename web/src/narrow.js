@@ -376,10 +376,31 @@ export function activate(raw_operators, opts) {
             // We override target_id in this case, since the user could be
             // having a near: narrow auto-reloaded.
             id_info.target_id = opts.then_select_id;
+            // Position selected row to not scroll off-screen.
             if (opts.then_select_offset === undefined) {
                 const $row = message_lists.current.get_row(opts.then_select_id);
                 if ($row.length > 0) {
-                    opts.then_select_offset = $row.get_offset_to_window().top;
+                    const row_props = $row.get_offset_to_window();
+                    const navbar_height = $("#navbar-fixed-container").height();
+                    // 30px height + 10px top margin.
+                    const compose_box_top = $("#compose").get_offset_to_window().top;
+                    const sticky_header_outer_height = 40;
+                    const min_height_for_message_top_visible =
+                        navbar_height + sticky_header_outer_height;
+
+                    if (
+                        // We want to keep the selected message in the same scroll position after the narrow changes if possible.
+                        // Row top should be below the sticky header.
+                        row_props.top >= min_height_for_message_top_visible &&
+                        // Row top and some part of message should be above the compose box.
+                        row_props.top + 10 <= compose_box_top
+                    ) {
+                        // Use the same offset of row in the new narrow as it is in the current narrow.
+                        opts.then_select_offset = row_props.top;
+                    } else {
+                        // Otherwise, show selected message below the sticky header.
+                        opts.then_select_offset = min_height_for_message_top_visible;
+                    }
                 }
             }
         }
