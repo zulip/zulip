@@ -105,6 +105,11 @@ class Command(BaseCommand):
                 billing_schedule=CustomerPlan.MONTHLY,
                 tier=CustomerPlan.STANDARD,
             ),
+            CustomerProfile(
+                unique_id="free-trial",
+                tier=CustomerPlan.STANDARD,
+                status=CustomerPlan.FREE_TRIAL,
+            ),
         ]
 
         # Create a realm for each customer profile
