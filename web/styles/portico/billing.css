@@ -493,3 +493,15 @@ input[name="licenses"] {
 #billing-page .support-link {
     text-align: center;
 }
+
+#confirm-licenses-modal-decrease,
+#confirm-licenses-modal-increase,
+#confirm-cancel-subscription-modal {
+    .modal__title {
+        font-weight: 600;
+    }
+
+    .modal__content {
+        font-weight: 400;
+    }
+}

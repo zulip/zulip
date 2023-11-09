@@ -18,7 +18,7 @@ function active_modal(): string | undefined {
     return `#${CSS.escape($micromodal.attr("id")!)}`;
 }
 
-function close_active(): void {
+export function close_active(): void {
     if (!is_open()) {
         blueslip.warn("close_active() called without checking is_open()");
         return;

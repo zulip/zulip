@@ -118,10 +118,14 @@ export function initialize(): void {
         e.preventDefault();
         const {new_current_manual_license_count, old_current_manual_license_count} =
             get_old_and_new_license_count_for_current_cycle();
-        $("#new_license_count_holder").text(new_current_manual_license_count);
-        $("#current_license_count_holder").text(old_current_manual_license_count);
-        $("#confirm-licenses-modal .dialog_submit_button").attr("data-cycle", "current");
-        portico_modals.open("confirm-licenses-modal");
+        const $modal = $("#confirm-licenses-modal-increase");
+        $modal.find(".new_license_count_holder").text(new_current_manual_license_count);
+        $modal.find(".current_license_count_holder").text(old_current_manual_license_count);
+        $modal
+            .find(".difference_license_count_holder")
+            .text(new_current_manual_license_count - old_current_manual_license_count);
+        $modal.find(".dialog_submit_button").attr("data-cycle", "current");
+        portico_modals.open("confirm-licenses-modal-increase");
     });
 
     $("#next-manual-license-count-update-button").on("click", (e) => {
@@ -131,22 +135,36 @@ export function initialize(): void {
         e.preventDefault();
         const {new_next_manual_license_count, old_next_manual_license_count} =
             get_old_and_new_license_count_for_next_cycle();
-        $("#new_license_count_holder").text(new_next_manual_license_count);
-        $("#current_license_count_holder").text(old_next_manual_license_count);
-        $("#confirm-licenses-modal .dialog_submit_button").attr("data-cycle", "next");
-        portico_modals.open("confirm-licenses-modal");
+        let $modal;
+        if (new_next_manual_license_count > old_next_manual_license_count) {
+            $modal = $("#confirm-licenses-modal-increase");
+        } else {
+            $modal = $("#confirm-licenses-modal-decrease");
+        }
+
+        $modal.find(".new_license_count_holder").text(new_next_manual_license_count);
+        $modal.find(".current_license_count_holder").text(old_next_manual_license_count);
+        $modal
+            .find(".difference_license_count_holder")
+            .text(new_next_manual_license_count - old_next_manual_license_count);
+        $modal.find(".dialog_submit_button").attr("data-cycle", "next");
+        portico_modals.open($modal.attr("id")!);
     });
 
-    $("#confirm-licenses-modal .dialog_submit_button").on("click", () => {
-        portico_modals.close("confirm-licenses-modal");
-        if ($("#confirm-licenses-modal .dialog_submit_button").attr("data-cycle") === "current") {
-            create_update_current_cycle_license_request();
-        } else if (
-            $("#confirm-licenses-modal .dialog_submit_button").attr("data-cycle") === "next"
-        ) {
-            create_update_next_cycle_license_request();
-        }
-    });
+    $("#confirm-licenses-modal-increase, #confirm-licenses-modal-decrease").on(
+        "click",
+        ".dialog_submit_button",
+        (e) => {
+            portico_modals.close_active();
+            const is_current_cycle = $(e.currentTarget).attr("data-cycle") === "current";
+
+            if (is_current_cycle) {
+                create_update_current_cycle_license_request();
+            } else {
+                create_update_next_cycle_license_request();
+            }
+        },
+    );
 
     $("#confirm-cancel-subscription-modal .dialog_submit_button, #reactivate-subscription").on(
         "click",
