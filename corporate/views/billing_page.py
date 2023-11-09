@@ -37,6 +37,16 @@ from zerver.models import Realm, UserProfile
 
 billing_logger = logging.getLogger("corporate.stripe")
 
+CARD_CAPITALIZATION = {
+    "amex": "American Express",
+    "diners": "Diners Club",
+    "discover": "Discover",
+    "jcb": "JCB",
+    "mastercard": "Mastercard",
+    "unionpay": "UnionPay",
+    "visa": "Visa",
+}
+
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
@@ -45,8 +55,11 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
         return _("No payment method on file.")
 
     if default_payment_method.type == "card":
+        brand_name = default_payment_method.card.brand
+        if brand_name in CARD_CAPITALIZATION:
+            brand_name = CARD_CAPITALIZATION[default_payment_method.card.brand]
         return _("{brand} ending in {last4}").format(
-            brand=default_payment_method.card.brand,
+            brand=brand_name,
             last4=default_payment_method.card.last4,
         )
     # There might be one-off stuff we do for a particular customer that
