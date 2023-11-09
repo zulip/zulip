@@ -144,7 +144,7 @@ def handle_payment_intent_succeeded_event(
             collection_method="charge_automatically",
             customer=stripe_payment_intent.customer,
             days_until_due=None,
-            statement_descriptor="Zulip Cloud Standard Credit",
+            statement_descriptor="Cloud Standard Credit",
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
         raise e
