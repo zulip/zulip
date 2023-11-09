@@ -688,12 +688,7 @@ export function switch_to_stream_row(stream_id) {
 
     scroll_util.scroll_element_into_container($stream_row, $container);
 
-    // It's dubious that we need this timeout any more.
-    setTimeout(() => {
-        if (stream_id === stream_settings_components.get_active_data().id) {
-            $stream_row.trigger("click");
-        }
-    }, 100);
+    stream_edit.open_edit_panel_for_row($stream_row);
 }
 
 function show_right_section() {
