@@ -7,7 +7,7 @@ from django.db.models import CASCADE, Q
 from typing_extensions import override
 
 from zerver.models import Realm, UserProfile
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 
 class Customer(models.Model):
@@ -54,6 +54,14 @@ class Customer(models.Model):
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
     return Customer.objects.filter(realm=realm).first()
+
+
+def get_customer_by_remote_server(remote_server: RemoteZulipServer) -> Optional[Customer]:
+    return Customer.objects.filter(remote_server=remote_server).first()
+
+
+def get_customer_by_remote_realm(remote_realm: RemoteRealm) -> Optional[Customer]:  # nocoverage
+    return Customer.objects.filter(remote_realm=remote_realm).first()
 
 
 class Event(models.Model):
