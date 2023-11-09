@@ -4814,9 +4814,13 @@ class AbstractRealmAuditLog(models.Model):
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
     # REALM_DEACTIVATED = 201, and REMOTE_SERVER_DEACTIVATED = 10201).
-    REMOTE_SERVER_CREATED = 10215
-    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
     REMOTE_SERVER_DEACTIVATED = 10201
+    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
+    REMOTE_SERVER_DISCOUNT_CHANGED = 10209
+    REMOTE_SERVER_SPONSORSHIP_APPROVED = 10210
+    REMOTE_SERVER_BILLING_METHOD_CHANGED = 10211
+    REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED = 10213
+    REMOTE_SERVER_CREATED = 10215
 
     # This value is for RemoteRealmAuditLog entries tracking changes to the
     # RemoteRealm model resulting from modified realm information sent to us
