@@ -301,6 +301,9 @@ export class MessageListView {
         // what range of messages is currently rendered in the dOM.
         this._render_win_start = 0;
         this._render_win_end = 0;
+
+        // ID of message under the sticky recipient bar if there is one.
+        this.sticky_recipient_message_id = undefined;
     }
 
     // Number of messages to render at a time
@@ -1538,7 +1541,7 @@ export class MessageListView {
         const partially_hidden_header_position = visible_top - 1;
 
         function is_sticky(header) {
-            // header has a box-shodow of `1px` at top but since it doesn't impact
+            // header has a box-shadow of `1px` at top but since it doesn't impact
             // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
             // This value is dependent upon space between two `recipient_row` message groups.
@@ -1611,14 +1614,23 @@ export class MessageListView {
                 $message_row = $sticky_header.nextAll(".message_row").first();
             }
         }
+        // We expect message information to be available for the message row even for failed or
+        // local echo messages. If for some reason we don't have the data for message row, we can't
+        // update the sticky header date or identify the message under it for other use cases.
+        this.sticky_recipient_message_id = undefined;
         const msg_id = rows.id($message_row);
         if (msg_id === undefined) {
+            blueslip.error(`Missing message id for sticky recipient row.`);
             return;
         }
         const message = message_store.get(msg_id);
         if (!message) {
+            blueslip.error(
+                `Message not found for the message id identified for sticky header: ${msg_id}.`,
+            );
             return;
         }
+        this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
         const today = new Date();
         const rendered_date = timerender.render_date(time, undefined, today);
