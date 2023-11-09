@@ -22,7 +22,7 @@ attached to messages in your current view.
 
     * **Reset zoom** so that the image is recentered and back to its original size
 
-    * **Open** the image in a new browser tab if you are using the Zulip web app
+    * **Open** the image in a new browser tab
 
     * **Download** the image
 
@@ -74,7 +74,7 @@ attached to messages in your current view.
 
     * Watch in **full screen** mode
 
-    * **Open** the video in a new browser tab if you are using the Zulip web app
+    * **Open** the video in a new browser tab
 
     * **Download** the video if it was uploaded to Zulip
 
@@ -95,6 +95,13 @@ attached to messages in your current view.
     Use <kbd class="arrow-key">↑</kbd> and <kbd class="arrow-key">↓</kbd>
     to increase or decrease the volume.
     Use <kbd>V</kbd> or <kbd>Esc</kbd> to **close** the video player.
+
+{tab|mobile}
+
+1. Tap a video thumbnail, link, or file name to open the video in your device's
+   default browser.
+
+1. You can switch back to the Zulip app once you are done.
 
 {end_tabs}
 
