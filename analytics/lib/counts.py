@@ -24,7 +24,12 @@ from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour,
 from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteInstallationCount, RemoteZulipServer
+    from zilencer.models import (
+        RemoteInstallationCount,
+        RemoteRealm,
+        RemoteRealmCount,
+        RemoteZulipServer,
+    )
 
 ## Logging setup ##
 
@@ -296,7 +301,7 @@ def do_aggregate_to_summary_table(
 
 # called from zerver.actions; should not throw any errors
 def do_increment_logging_stat(
-    model_object_for_bucket: Union[Realm, UserProfile, Stream, "RemoteZulipServer"],
+    model_object_for_bucket: Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"],
     stat: CountStat,
     subgroup: Optional[Union[str, int, bool]],
     event_time: datetime,
@@ -308,9 +313,9 @@ def do_increment_logging_stat(
     table = stat.data_collector.output_table
     if table == RealmCount:
         assert isinstance(model_object_for_bucket, Realm)
-        id_args: Dict[str, Optional[Union[Realm, UserProfile, Stream, "RemoteZulipServer"]]] = {
-            "realm": model_object_for_bucket
-        }
+        id_args: Dict[
+            str, Optional[Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"]]
+        ] = {"realm": model_object_for_bucket}
     elif table == UserCount:
         assert isinstance(model_object_for_bucket, UserProfile)
         id_args = {"realm": model_object_for_bucket.realm, "user": model_object_for_bucket}
@@ -320,6 +325,13 @@ def do_increment_logging_stat(
     elif table == RemoteInstallationCount:
         assert isinstance(model_object_for_bucket, RemoteZulipServer)
         id_args = {"server": model_object_for_bucket, "remote_id": None}
+    elif table == RemoteRealmCount:
+        assert isinstance(model_object_for_bucket, RemoteRealm)
+        id_args = {
+            "server": model_object_for_bucket.server,
+            "remote_realm": model_object_for_bucket,
+            "remote_id": None,
+        }
     else:
         raise AssertionError("Unsupported CountStat output_table")
 
@@ -850,25 +862,18 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
     ]
 
     if settings.ZILENCER_ENABLED:
+        # See also the remote_installation versions of these in REMOTE_INSTALLATION_COUNT_STATS.
         count_stats_.append(
-            # Tracks the number of push notifications requested to be sent
-            # by a remote server.
             LoggingCountStat(
                 "mobile_pushes_received::day",
-                RemoteInstallationCount,
+                RemoteRealmCount,
                 CountStat.DAY,
             )
         )
         count_stats_.append(
-            # Tracks the number of push notifications successfully sent to mobile
-            # devices, as requested by the remote server. Therefore this should be
-            # less than or equal to mobile_pushes_received - with potential tiny offsets
-            # resulting from a request being *received* by the bouncer right before midnight,
-            # but *sent* to the mobile device right after midnight. This would cause the increments
-            # to happen to CountStat records for different days.
             LoggingCountStat(
                 "mobile_pushes_forwarded::day",
-                RemoteInstallationCount,
+                RemoteRealmCount,
                 CountStat.DAY,
             )
         )
@@ -886,3 +891,35 @@ BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES = [
 
 # To avoid refactoring for now COUNT_STATS can be used as before
 COUNT_STATS = get_count_stats()
+
+REMOTE_INSTALLATION_COUNT_STATS = OrderedDict()
+
+if settings.ZILENCER_ENABLED:
+    # REMOTE_INSTALLATION_COUNT_STATS contains duplicates of the
+    # RemoteRealmCount stats declared above; it is necessary because
+    # pre-8.0 servers do not send the fields required to identify a
+    # RemoteRealm.
+
+    # Tracks the number of push notifications requested to be sent
+    # by a remote server.
+    REMOTE_INSTALLATION_COUNT_STATS["mobile_pushes_received::day"] = LoggingCountStat(
+        "mobile_pushes_received::day",
+        RemoteInstallationCount,
+        CountStat.DAY,
+    )
+    # Tracks the number of push notifications successfully sent to
+    # mobile devices, as requested by the remote server. Therefore
+    # this should be less than or equal to mobile_pushes_received -
+    # with potential tiny offsets resulting from a request being
+    # *received* by the bouncer right before midnight, but *sent* to
+    # the mobile device right after midnight. This would cause the
+    # increments to happen to CountStat records for different days.
+    REMOTE_INSTALLATION_COUNT_STATS["mobile_pushes_forwarded::day"] = LoggingCountStat(
+        "mobile_pushes_forwarded::day",
+        RemoteInstallationCount,
+        CountStat.DAY,
+    )
+
+ALL_COUNT_STATS = OrderedDict(
+    list(COUNT_STATS.items()) + list(REMOTE_INSTALLATION_COUNT_STATS.items())
+)

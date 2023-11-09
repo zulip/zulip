@@ -561,6 +561,7 @@ def send_notifications_to_bouncer(
         # user_uuid is the intended future format, but we also need to send user_id
         # to avoid breaking old mobile registrations, which were made with user_id.
         "user_id": user_profile.id,
+        "realm_uuid": str(user_profile.realm.uuid),
         "apns_payload": apns_payload,
         "gcm_payload": gcm_payload,
         "gcm_options": gcm_options,

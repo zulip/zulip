@@ -82,7 +82,13 @@ from zerver.models import (
     get_user,
     is_cross_realm_bot_email,
 )
-from zilencer.models import RemoteInstallationCount, RemotePushDeviceToken, RemoteZulipServer
+from zilencer.models import (
+    RemoteInstallationCount,
+    RemotePushDeviceToken,
+    RemoteRealm,
+    RemoteRealmCount,
+    RemoteZulipServer,
+)
 from zilencer.views import get_last_id_from_server
 
 
@@ -244,7 +250,10 @@ class AnalyticsTestCase(ZulipTestCase):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
                 kwargs[key] = kwargs.get(key, value)
-            if table not in [InstallationCount, RemoteInstallationCount] and "realm" not in kwargs:
+            if (
+                table not in [InstallationCount, RemoteInstallationCount, RemoteRealmCount]
+                and "realm" not in kwargs
+            ):
                 if "user" in kwargs:
                     kwargs["realm"] = kwargs["user"].realm
                 elif "stream" in kwargs:
@@ -1433,6 +1442,9 @@ class TestLoggingCountStats(AnalyticsTestCase):
             hamlet, message, NotificationTriggers.DIRECT_MESSAGE
         )
 
+        # First we'll make a request without providing realm_uuid. That means
+        # the bouncer can't increment the RemoteRealmCount stat, and only
+        # RemoteInstallationCount will be incremented.
         payload = {
             "user_id": hamlet.id,
             "user_uuid": str(hamlet.uuid),
@@ -1466,8 +1478,162 @@ class TestLoggingCountStats(AnalyticsTestCase):
             RemoteInstallationCount,
             ["property", "value", "subgroup", "server", "remote_id", "end_time"],
             [
-                ["mobile_pushes_received::day", 3, None, self.server, None, ceiling_to_day(now)],
-                ["mobile_pushes_forwarded::day", 2, None, self.server, None, ceiling_to_day(now)],
+                [
+                    "mobile_pushes_received::day",
+                    3,
+                    None,
+                    self.server,
+                    None,
+                    ceiling_to_day(now),
+                ],
+                [
+                    "mobile_pushes_forwarded::day",
+                    2,
+                    None,
+                    self.server,
+                    None,
+                    ceiling_to_day(now),
+                ],
+            ],
+        )
+        self.assertFalse(
+            RemoteRealmCount.objects.filter(property="mobile_pushes_received::day").exists()
+        )
+        self.assertFalse(
+            RemoteRealmCount.objects.filter(property="mobile_pushes_forwarded::day").exists()
+        )
+
+        # Now provide the realm_uuid. However, the RemoteRealm record doesn't exist yet, so it'll
+        # still be ignored.
+        payload = {
+            "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
+            "realm_uuid": str(hamlet.realm.uuid),
+            "gcm_payload": gcm_payload,
+            "apns_payload": apns_payload,
+            "gcm_options": gcm_options,
+        }
+        with time_machine.travel(now, tick=False), mock.patch(
+            "zilencer.views.send_android_push_notification", return_value=1
+        ), mock.patch(
+            "zilencer.views.send_apple_push_notification", return_value=1
+        ), self.assertLogs(
+            "zilencer.views", level="INFO"
+        ):
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+                subdomain="",
+            )
+            self.assert_json_success(result)
+
+        # The RemoteInstallationCount records get incremented again, but the RemoteRealmCount
+        # remains ignored due to missing RemoteRealm record.
+        self.assertTableState(
+            RemoteInstallationCount,
+            ["property", "value", "subgroup", "server", "remote_id", "end_time"],
+            [
+                [
+                    "mobile_pushes_received::day",
+                    6,
+                    None,
+                    self.server,
+                    None,
+                    ceiling_to_day(now),
+                ],
+                [
+                    "mobile_pushes_forwarded::day",
+                    4,
+                    None,
+                    self.server,
+                    None,
+                    ceiling_to_day(now),
+                ],
+            ],
+        )
+        self.assertFalse(
+            RemoteRealmCount.objects.filter(property="mobile_pushes_received::day").exists()
+        )
+        self.assertFalse(
+            RemoteRealmCount.objects.filter(property="mobile_pushes_forwarded::day").exists()
+        )
+
+        # Create the RemoteRealm registration and repeat the above. This time RemoteRealmCount
+        # stats should be collected.
+        realm = hamlet.realm
+        remote_realm = RemoteRealm.objects.create(
+            server=self.server,
+            uuid=realm.uuid,
+            uuid_owner_secret=realm.uuid_owner_secret,
+            host=realm.host,
+            realm_deactivated=realm.deactivated,
+            realm_date_created=realm.date_created,
+        )
+
+        with time_machine.travel(now, tick=False), mock.patch(
+            "zilencer.views.send_android_push_notification", return_value=1
+        ), mock.patch(
+            "zilencer.views.send_apple_push_notification", return_value=1
+        ), self.assertLogs(
+            "zilencer.views", level="INFO"
+        ):
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+                subdomain="",
+            )
+            self.assert_json_success(result)
+
+        # The RemoteInstallationCount records get incremented again, and the RemoteRealmCount
+        # gets collected.
+        self.assertTableState(
+            RemoteInstallationCount,
+            ["property", "value", "subgroup", "server", "remote_id", "end_time"],
+            [
+                [
+                    "mobile_pushes_received::day",
+                    9,
+                    None,
+                    self.server,
+                    None,
+                    ceiling_to_day(now),
+                ],
+                [
+                    "mobile_pushes_forwarded::day",
+                    6,
+                    None,
+                    self.server,
+                    None,
+                    ceiling_to_day(now),
+                ],
+            ],
+        )
+        self.assertTableState(
+            RemoteRealmCount,
+            ["property", "value", "subgroup", "server", "remote_realm", "remote_id", "end_time"],
+            [
+                [
+                    "mobile_pushes_received::day",
+                    3,
+                    None,
+                    self.server,
+                    remote_realm,
+                    None,
+                    ceiling_to_day(now),
+                ],
+                [
+                    "mobile_pushes_forwarded::day",
+                    2,
+                    None,
+                    self.server,
+                    remote_realm,
+                    None,
+                    ceiling_to_day(now),
+                ],
             ],
         )
 

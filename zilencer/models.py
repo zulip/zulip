@@ -200,7 +200,14 @@ class RemoteInstallationCount(BaseRemoteCount):
 
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
 class RemoteRealmCount(BaseRemoteCount):
-    realm_id = models.IntegerField()
+    realm_id = models.IntegerField(null=True)
+    # Certain RemoteRealmCount will be counts tracked on the bouncer server directly, about
+    # stats pertaining to a realm on a remote server. For such objects, we will link to
+    # the corresponding RemoteRealm object that the remote server registered with us.
+    # In the future we may be able to link all RemoteRealmCount objects to a RemoteRealm,
+    # including the RemoteRealmCount objects are results of just syncing the RealmCount
+    # table from the remote server.
+    remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
 
     class Meta:
         unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
