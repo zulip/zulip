@@ -29,6 +29,7 @@ import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
+import * as stream_edit_toggler from "./stream_edit_toggler";
 import * as stream_list from "./stream_list";
 import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_components from "./stream_settings_components";
@@ -679,7 +680,7 @@ export function setup_page(callback) {
     }
 }
 
-export function switch_to_stream_row(stream_id) {
+export function switch_to_stream_row(stream_id, right_side_tab) {
     const $stream_row = stream_ui_updates.row_for_stream_id(stream_id);
     const $container = $(".streams-list");
 
@@ -688,7 +689,8 @@ export function switch_to_stream_row(stream_id) {
 
     scroll_util.scroll_element_into_container($stream_row, $container);
 
-    stream_edit.open_edit_panel_for_row($stream_row);
+    stream_edit.open_edit_panel_for_row($stream_row, right_side_tab);
+    stream_edit_toggler.toggler.goto(right_side_tab);
 }
 
 function show_right_section() {
@@ -697,7 +699,7 @@ function show_right_section() {
     resize.resize_stream_subscribers_list();
 }
 
-export function change_state(section) {
+export function change_state(section, right_side_tab) {
     // if in #streams/new form.
     if (section === "new") {
         if (!page_params.is_guest) {
@@ -735,7 +737,7 @@ export function change_state(section) {
             toggler.goto("subscribed");
         } else {
             show_right_section();
-            switch_to_stream_row(stream_id);
+            switch_to_stream_row(stream_id, right_side_tab);
         }
         return;
     }
@@ -744,7 +746,7 @@ export function change_state(section) {
     toggler.goto("subscribed");
 }
 
-export function launch(section) {
+export function launch(section, right_side_tab) {
     setup_page(() => {
         overlays.open_overlay({
             name: "subscriptions",
@@ -754,7 +756,7 @@ export function launch(section) {
                 $(".colorpicker").spectrum("destroy");
             },
         });
-        change_state(section);
+        change_state(section, right_side_tab);
     });
     if (!stream_settings_components.get_active_data().id) {
         if (section === "new") {
@@ -792,7 +794,7 @@ export function switch_rows(event) {
     const row_data = get_row_data($switch_row);
     if (row_data) {
         const stream_id = row_data.id;
-        switch_to_stream_row(stream_id);
+        switch_to_stream_row(stream_id, "general");
     } else if (event === "up_arrow" && !row_data) {
         $("#search_stream_name").trigger("focus");
     }
