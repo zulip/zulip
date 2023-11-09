@@ -1125,7 +1125,7 @@ def process_initial_upgrade(
         stripe.InvoiceItem.create(
             currency="usd",
             customer=customer.stripe_customer_id,
-            description="Zulip Cloud Standard",
+            description=plan.name,
             discountable=False,
             period={
                 "start": datetime_to_timestamp(billing_cycle_anchor),
@@ -1147,7 +1147,7 @@ def process_initial_upgrade(
             collection_method=collection_method,
             customer=customer.stripe_customer_id,
             days_until_due=days_until_due,
-            statement_descriptor="Zulip Cloud Standard",
+            statement_descriptor=plan.name,
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
