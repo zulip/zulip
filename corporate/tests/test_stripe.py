@@ -126,18 +126,6 @@ ReturnT = TypeVar("ReturnT")
 STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
 
 
-def create_payment_method(card_number: str) -> stripe.PaymentMethod:
-    return stripe.PaymentMethod.create(
-        type="card",
-        card={
-            "number": card_number,
-            "exp_month": 3,
-            "exp_year": 2033,
-            "cvc": "333",
-        },
-    )
-
-
 def stripe_fixture_path(
     decorated_function_name: str, mocked_function_name: str, call_count: int
 ) -> str:
@@ -449,7 +437,7 @@ class StripeTestCase(ZulipTestCase):
         match = re.search(r"name=\"salt\" value=\"(\w+)\"", response.content.decode())
         return match.group(1) if match else None
 
-    def get_test_card_number(
+    def get_test_card_string(
         self,
         attaches_to_customer: bool,
         charge_succeeds: Optional[bool] = None,
@@ -459,14 +447,14 @@ class StripeTestCase(ZulipTestCase):
             assert charge_succeeds is not None
             if charge_succeeds:
                 if card_provider == "visa":
-                    return "4242424242424242"
+                    return "pm_card_visa"
                 if card_provider == "mastercard":
-                    return "5555555555554444"
+                    return "pm_card_mastercard"
                 raise AssertionError("Unreachable code path")
             else:
-                return "4000000000000341"
+                return "pm_card_chargeCustomerFail"
         else:
-            return "4000000000000002"
+            return "pm_card_visa_chargeDeclined"
 
     def assert_details_of_valid_session_from_event_status_endpoint(
         self, stripe_session_id: str, expected_details: Dict[str, Any]
@@ -496,12 +484,12 @@ class StripeTestCase(ZulipTestCase):
 
     def trigger_stripe_checkout_session_completed_webhook(
         self,
-        payment_method: stripe.PaymentMethod,
+        payment_method: str,
         stripe_session: Optional[stripe.checkout.Session] = None,
     ) -> None:
         [checkout_setup_intent] = stripe.SetupIntent.list(limit=1)
         stripe_setup_intent = stripe.SetupIntent.create(
-            payment_method=payment_method.id,
+            payment_method=payment_method,
             confirm=True,
             payment_method_types=checkout_setup_intent.payment_method_types,
             customer=checkout_setup_intent.customer,
@@ -550,7 +538,7 @@ class StripeTestCase(ZulipTestCase):
         invoice: bool = False,
         talk_to_stripe: bool = True,
         onboarding: bool = False,
-        payment_method: Optional[stripe.PaymentMethod] = None,
+        payment_method: str = "pm_card_visa",
         upgrade_page_response: Optional["TestHttpResponse"] = None,
         del_args: Sequence[str] = [],
         **kwargs: Any,
@@ -609,12 +597,6 @@ class StripeTestCase(ZulipTestCase):
         self.assert_details_of_valid_session_from_event_status_endpoint(
             response_dict["stripe_session_id"], expected_session_details
         )
-        if payment_method is None:
-            payment_method = create_payment_method(
-                self.get_test_card_number(
-                    attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
-                )
-            )
         self.trigger_stripe_checkout_session_completed_webhook(payment_method)
         self.send_stripe_webhook_events(last_event)
         return upgrade_json_response
@@ -1486,8 +1468,8 @@ class StripeTest(StripeTestCase):
         # a Customer object succeeds, but attempts to charge the customer fail.
         with self.assertLogs("corporate.stripe", "INFO") as m:
             response = self.upgrade(
-                payment_method=create_payment_method(
-                    self.get_test_card_number(attaches_to_customer=True, charge_succeeds=False)
+                payment_method=self.get_test_card_string(
+                    attaches_to_customer=True, charge_succeeds=False
                 )
             )
             self.assertEqual(
@@ -1568,10 +1550,8 @@ class StripeTest(StripeTestCase):
             },
         )
         self.trigger_stripe_checkout_session_completed_webhook(
-            create_payment_method(
-                self.get_test_card_number(
-                    attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
-                )
+            self.get_test_card_string(
+                attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
             )
         )
         self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
@@ -1654,8 +1634,8 @@ class StripeTest(StripeTestCase):
         # a Customer object succeeds, but attempts to charge the customer fail.
         with self.assertLogs("corporate.stripe", "INFO") as m:
             response = self.upgrade(
-                payment_method=create_payment_method(
-                    self.get_test_card_number(attaches_to_customer=True, charge_succeeds=False)
+                payment_method=self.get_test_card_string(
+                    attaches_to_customer=True, charge_succeeds=False
                 )
             )
             self.assertEqual(
@@ -1832,10 +1812,8 @@ class StripeTest(StripeTestCase):
                 response,
                 "The organization is already subscribed to a plan. Please reload the billing page.",
             )
-        payment_method = create_payment_method(
-            self.get_test_card_number(
-                attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
-            )
+        payment_method = self.get_test_card_string(
+            attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
         )
 
         # Organization has been upgraded by the time hamlet completes the checkout session.
@@ -1862,7 +1840,7 @@ class StripeTest(StripeTestCase):
         # Organization has been upgraded by the time payment intent is successful.
         stripe.PaymentIntent.confirm(
             hamlet_payment_intent.id,
-            payment_method=payment_method.id,
+            payment_method=payment_method,
             off_session=True,
         )
         with self.assertLogs("corporate.stripe", "WARNING"):
@@ -2536,7 +2514,7 @@ class StripeTest(StripeTestCase):
             # emulates what happens in the Stripe Checkout page. Adding this check mostly for coverage of
             # create_payment_method.
             self.trigger_stripe_checkout_session_completed_webhook(
-                create_payment_method(self.get_test_card_number(attaches_to_customer=False))
+                self.get_test_card_string(attaches_to_customer=False)
             )
 
         start_session_json_response = self.client_post(
@@ -2552,9 +2530,7 @@ class StripeTest(StripeTestCase):
         )
         with self.assertLogs("corporate.stripe", "INFO") as m:
             self.trigger_stripe_checkout_session_completed_webhook(
-                create_payment_method(
-                    self.get_test_card_number(attaches_to_customer=True, charge_succeeds=False)
-                )
+                self.get_test_card_string(attaches_to_customer=True, charge_succeeds=False)
             )
             self.assertEqual(
                 m.output[0],
@@ -2591,10 +2567,8 @@ class StripeTest(StripeTestCase):
         )
         self.assert_json_success(start_session_json_response)
         self.trigger_stripe_checkout_session_completed_webhook(
-            create_payment_method(
-                self.get_test_card_number(
-                    attaches_to_customer=True, charge_succeeds=True, card_provider="mastercard"
-                )
+            self.get_test_card_string(
+                attaches_to_customer=True, charge_succeeds=True, card_provider="mastercard"
             )
         )
         response_dict = self.assert_json_success(start_session_json_response)
