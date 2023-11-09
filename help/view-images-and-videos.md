@@ -6,7 +6,7 @@ can click on a preview to view an image in more detail, or to play a
 video. Zulip also makes it convenient to browse all images and videos
 attached to messages in your current view.
 
-## Using the image viewer
+## Use the image viewer
 
 {start_tabs}
 
@@ -41,26 +41,69 @@ attached to messages in your current view.
 
 {end_tabs}
 
-## Using the image browser
-
-In the Zulip desktop or web app, you can browse the images in the current view.
-For example, if you're in a conversation view, the image browser will show all
-the images from that stream. If you do a [search](/help/search-for-messages),
-the image browser will show all images in messages that matched that search.
+## Use the video player
 
 {start_tabs}
 
 {tab|desktop-web}
 
-1. Click an image preview or use <kbd>V</kbd> to open the **image viewer**.
+1. Click a video thumbnail to open the **video player**.
 
-1. You can click an image or use the left and right buttons at the bottom of
-   the viewer to browse images.
+1. You can interact with the video.
+
+    * **Play** the video
+
+    * Adjust the **volume**
+
+    * Watch in **full screen** mode
+
+    * **Open** the video in a new browser tab if you are using the Zulip web app
+
+    * **Download** the video if it was uploaded to Zulip
+
+    * Adjust **playback speed**
+
+    * Turn on **picture-in-picture**
+
+1. Click anywhere outside the video to close the video player once you are done.
+
+!!! tip ""
+
+    You can click on the file name to open the video in a new browser tab
+    rather than viewing it in the Zulip app.
 
 !!! keyboard_tip ""
 
-    Use <kbd class="arrow-key">←</kbd> and <kbd class="arrow-key">→</kbd>
-    to scroll through the images.
+    Use <kbd>V</kbd> to **open** the video player.
+    Use <kbd class="arrow-key">↑</kbd> and <kbd class="arrow-key">↓</kbd>
+    to increase or decrease the volume.
+    Use <kbd>V</kbd> or <kbd>Esc</kbd> to **close** the video player.
+
+{end_tabs}
+
+## Browse images and videos
+
+In the Zulip desktop or web app, you can browse the images and videos in
+the current view. For example, if you're in a stream view, you'll be able
+to browse through all the images and videos in that stream. If you do a
+[search](/help/search-for-messages), the **viewer** will display all the
+images and videos in messages matching that search.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Click an image preview or video thumbnail to open the viewer.
+
+1. Browse by using the left and right arrow buttons at the bottom of the viewer.
+
+1. Click any image or video to display it.
+
+!!! keyboard_tip ""
+
+    Use <kbd>V</kbd> to **open** the viewer. Use
+    <kbd class="arrow-key">←</kbd> and <kbd class="arrow-key">→</kbd>
+    to scroll through the collection of images and videos.
 
 {end_tabs}
 
