@@ -9,6 +9,7 @@ import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as common from "./common";
 import {$t} from "./i18n";
 import * as loading from "./loading";
+import * as markdown from "./markdown";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
@@ -360,6 +361,26 @@ export function handle_keyup(_event, $textarea) {
     }
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
+}
+
+export function cursor_inside_code_block($textarea) {
+    // Returns whether the cursor is at a point that would be inside
+    // a code block on rendering the textarea content as markdown.
+    const cursor_position = $textarea.caret();
+    const current_content = $textarea.val();
+
+    let unique_insert = "UNIQUEINSERT:" + Math.random();
+    while (current_content.includes(unique_insert)) {
+        unique_insert = "UNIQUEINSERT:" + Math.random();
+    }
+    const content =
+        current_content.slice(0, cursor_position) +
+        unique_insert +
+        current_content.slice(cursor_position);
+    const rendered_content = markdown.parse_non_message(content);
+    const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
+    const code_blocks = rendered_html.querySelectorAll("pre > code");
+    return [...code_blocks].some((code_block) => code_block.textContent.includes(unique_insert));
 }
 
 export function format_text($textarea, type, inserted_content) {
