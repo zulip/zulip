@@ -166,19 +166,23 @@ export function initialize(): void {
         },
     );
 
-    $("#confirm-cancel-subscription-modal .dialog_submit_button, #reactivate-subscription").on(
-        "click",
-        (e) => {
-            helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
-                window.location.replace("/billing/"),
-            );
-            e.preventDefault();
-        },
-    );
+    $(
+        "#confirm-cancel-subscription-modal .dialog_submit_button, #reactivate-subscription, #confirm-end-free-trial .dialog_submit_button",
+    ).on("click", (e) => {
+        helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
+            window.location.replace("/billing/"),
+        );
+        e.preventDefault();
+    });
 
     $("#cancel-subscription").on("click", (e) => {
         e.preventDefault();
         portico_modals.open("confirm-cancel-subscription-modal");
+    });
+
+    $("#end-free-trial").on("click", (e) => {
+        e.preventDefault();
+        portico_modals.open("confirm-end-free-trial");
     });
 
     $("#current-manual-license-count").on("keyup", () => {
