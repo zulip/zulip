@@ -42,7 +42,7 @@ billing_logger = logging.getLogger("corporate.stripe")
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
     default_payment_method = stripe_customer.invoice_settings.default_payment_method
     if default_payment_method is None:
-        return _("No payment method on file")
+        return _("No payment method on file.")
 
     if default_payment_method.type == "card":
         return _("{brand} ending in {last4}").format(
