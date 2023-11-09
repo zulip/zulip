@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
     COUNT_STATS,
+    REMOTE_INSTALLATION_COUNT_STATS,
     do_increment_logging_stat,
 )
 from corporate.lib.stripe import do_deactivate_remote_server
@@ -352,6 +353,16 @@ def remote_server_notify_push(
     apns_payload = payload["apns_payload"]
     gcm_options = payload.get("gcm_options", {})
 
+    realm_uuid = payload.get("realm_uuid")
+    remote_realm = None
+    if realm_uuid is not None:
+        try:
+            remote_realm = RemoteRealm.objects.get(uuid=realm_uuid, server=server)
+        except RemoteRealm.DoesNotExist:
+            # We don't yet have a RemoteRealm for this realm. E.g. the server hasn't yet
+            # submitted analytics data since the realm's creation.
+            remote_realm = None
+
     android_devices = list(
         RemotePushDeviceToken.objects.filter(
             user_identity.filter_q(),
@@ -406,11 +417,19 @@ def remote_server_notify_push(
     )
     do_increment_logging_stat(
         server,
-        COUNT_STATS["mobile_pushes_received::day"],
+        REMOTE_INSTALLATION_COUNT_STATS["mobile_pushes_received::day"],
         None,
         timezone_now(),
         increment=len(android_devices) + len(apple_devices),
     )
+    if remote_realm is not None:
+        do_increment_logging_stat(
+            remote_realm,
+            COUNT_STATS["mobile_pushes_received::day"],
+            None,
+            timezone_now(),
+            increment=len(android_devices) + len(apple_devices),
+        )
 
     # Truncate incoming pushes to 200, due to APNs maximum message
     # sizes; see handle_remove_push_notification for the version of
@@ -446,11 +465,19 @@ def remote_server_notify_push(
 
     do_increment_logging_stat(
         server,
-        COUNT_STATS["mobile_pushes_forwarded::day"],
+        REMOTE_INSTALLATION_COUNT_STATS["mobile_pushes_forwarded::day"],
         None,
         timezone_now(),
         increment=android_successfully_delivered + apple_successfully_delivered,
     )
+    if remote_realm is not None:
+        do_increment_logging_stat(
+            remote_realm,
+            COUNT_STATS["mobile_pushes_forwarded::day"],
+            None,
+            timezone_now(),
+            increment=android_successfully_delivered + apple_successfully_delivered,
+        )
 
     return json_success(
         request,

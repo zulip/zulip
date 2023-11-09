@@ -2938,6 +2938,7 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
         post_data = {
             "user_uuid": user.uuid,
             "user_id": user.id,
+            "realm_uuid": user.realm.uuid,
             "apns_payload": {"apns": True},
             "gcm_payload": {"gcm": True},
             "gcm_options": {},
