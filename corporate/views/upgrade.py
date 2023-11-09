@@ -142,6 +142,7 @@ def upgrade(
         else:
             process_initial_upgrade(
                 user,
+                CustomerPlan.STANDARD,
                 licenses,
                 automanage_licenses,
                 billing_schedule,

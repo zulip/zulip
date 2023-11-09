@@ -627,6 +627,7 @@ class StripeTestCase(ZulipTestCase):
         ) -> Any:
             return process_initial_upgrade(
                 self.example_user("hamlet"),
+                CustomerPlan.STANDARD,
                 licenses,
                 automanage_licenses,
                 billing_schedule,

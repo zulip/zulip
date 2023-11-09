@@ -746,7 +746,7 @@ class RealmBillingSession(BillingSession):
             plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         elif tier == CustomerPlan.STANDARD:
             plan_type = Realm.PLAN_TYPE_STANDARD
-        elif tier == CustomerPlan.PLUS:
+        elif tier == CustomerPlan.PLUS:  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = Realm.PLAN_TYPE_PLUS
         else:
             raise AssertionError("Unexpected tier")
@@ -1059,6 +1059,7 @@ def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
 @catch_stripe_errors
 def process_initial_upgrade(
     user: UserProfile,
+    plan_tier: int,
     licenses: int,
     automanage_licenses: bool,
     billing_schedule: int,
@@ -1075,7 +1076,7 @@ def process_initial_upgrade(
         period_end,
         price_per_license,
     ) = compute_plan_parameters(
-        CustomerPlan.STANDARD,
+        plan_tier,
         automanage_licenses,
         billing_schedule,
         customer.default_discount,
@@ -1099,7 +1100,7 @@ def process_initial_upgrade(
             "discount": customer.default_discount,
             "billing_cycle_anchor": billing_cycle_anchor,
             "billing_schedule": billing_schedule,
-            "tier": CustomerPlan.STANDARD,
+            "tier": plan_tier,
         }
         if free_trial:
             plan_params["status"] = CustomerPlan.FREE_TRIAL
@@ -1151,7 +1152,7 @@ def process_initial_upgrade(
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
-    billing_session.do_change_plan_type(tier=CustomerPlan.STANDARD)
+    billing_session.do_change_plan_type(tier=plan_tier)
 
 
 def update_license_ledger_for_manual_plan(
