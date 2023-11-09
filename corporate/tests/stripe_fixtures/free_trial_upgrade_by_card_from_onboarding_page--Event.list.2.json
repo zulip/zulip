@@ -2,13 +2,14 @@
   "data": [
     {
       "api_version": "2020-08-27",
-      "created": 1010000005,
+      "created": 1010000006,
       "data": {
         "object": {
           "address": null,
           "balance": 0,
           "created": 1010000001,
           "currency": null,
+          "default_currency": null,
           "default_source": null,
           "delinquent": false,
           "description": "zulip (Zulip Dev)",
@@ -18,8 +19,9 @@
           "invoice_prefix": "NORMA01",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1K2OZ0HSaWXyvFpKi5ubkIRr",
-            "footer": null
+            "default_payment_method": "pm_1OAbdvDEQaroqDjsZI4csghA",
+            "footer": null,
+            "rendering_options": null
           },
           "livemode": false,
           "metadata": {
@@ -32,7 +34,8 @@
           "phone": null,
           "preferred_locales": [],
           "shipping": null,
-          "tax_exempt": "none"
+          "tax_exempt": "none",
+          "test_clock": null
         },
         "previous_attributes": {
           "invoice_settings": {
@@ -40,51 +43,44 @@
           }
         }
       },
-      "id": "evt_1K2OZ2HSaWXyvFpKK7Oneoq8",
+      "id": "evt_1OAbdxDEQaroqDjs9sT3nFdj",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0002",
-        "idempotency_key": "b9c83c9c-de65-43ee-a014-6fa0caf6c0cf"
+        "id": "req_NORMALIZED0001",
+        "idempotency_key": "b3fa363d-ad43-4674-b71e-ba3afa3818cf"
       },
       "type": "customer.updated"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000006,
+      "created": 1010000002,
       "data": {
         "object": {
           "application": null,
+          "automatic_payment_methods": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1K2OZ1HSaWXyvFpKxpkD3TLd_secret_KhoBu3CFk4EF6cEbPq0NxRgiie9Za3r",
-          "created": 1010000006,
+          "client_secret": "seti_1OAbdvDEQaroqDjsLtM7XeR2_secret_OyYl13wCY3CXPcylGH8IJ3n2W7vyW7N",
+          "created": 1010000002,
           "customer": "cus_NORMALIZED0001",
           "description": null,
-          "id": "seti_1K2OZ1HSaWXyvFpKxpkD3TLd",
+          "flow_directions": null,
+          "id": "seti_1OAbdvDEQaroqDjsLtM7XeR2",
           "last_setup_error": null,
-          "latest_attempt": "setatt_1K2OZ1HSaWXyvFpKHbvUjmVs",
+          "latest_attempt": "setatt_1OAbdvDEQaroqDjsyw01DWBo",
           "livemode": false,
           "mandate": null,
-          "metadata": {
-            "billing_modality": "charge_automatically",
-            "billing_schedule": "1",
-            "license_management": "automatic",
-            "licenses": "6",
-            "price_per_license": "8000",
-            "realm_id": "1",
-            "realm_str": "zulip",
-            "seat_count": "6",
-            "type": "upgrade",
-            "user_email": "hamlet@zulip.com",
-            "user_id": "10"
-          },
+          "metadata": {},
           "next_action": null,
           "object": "setup_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1K2OZ0HSaWXyvFpKi5ubkIRr",
+          "payment_method": "pm_1OAbdvDEQaroqDjsZI4csghA",
+          "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
+              "mandate_options": null,
+              "network": null,
               "request_three_d_secure": "automatic"
             }
           },
@@ -96,19 +92,19 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1K2OZ2HSaWXyvFpKw5IM5FDZ",
+      "id": "evt_1OAbdwDEQaroqDjsJN7Wq9kY",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "22167880-3334-44e2-b988-3a7c2964d81f"
+        "id": "req_NORMALIZED0002",
+        "idempotency_key": "c14bb11e-7cca-4998-813e-514791ae4164"
       },
       "type": "setup_intent.succeeded"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000006,
+      "created": 1010000002,
       "data": {
         "object": {
           "billing_details": {
@@ -132,8 +128,8 @@
               "cvc_check": "pass"
             },
             "country": "US",
-            "exp_month": 3,
-            "exp_year": 2033,
+            "exp_month": 11,
+            "exp_year": 2024,
             "fingerprint": "NORMALIZED000001",
             "funding": "credit",
             "generated_from": null,
@@ -151,58 +147,51 @@
           },
           "created": 1010000002,
           "customer": "cus_NORMALIZED0001",
-          "id": "pm_1K2OZ0HSaWXyvFpKi5ubkIRr",
+          "id": "pm_1OAbdvDEQaroqDjsZI4csghA",
           "livemode": false,
           "metadata": {},
           "object": "payment_method",
           "type": "card"
         }
       },
-      "id": "evt_1K2OZ2HSaWXyvFpKcLio45Zj",
+      "id": "evt_1OAbdvDEQaroqDjscrmRmZfP",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "22167880-3334-44e2-b988-3a7c2964d81f"
+        "id": "req_NORMALIZED0002",
+        "idempotency_key": "c14bb11e-7cca-4998-813e-514791ae4164"
       },
       "type": "payment_method.attached"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000006,
+      "created": 1010000002,
       "data": {
         "object": {
           "application": null,
+          "automatic_payment_methods": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1K2OZ1HSaWXyvFpKxpkD3TLd_secret_KhoBu3CFk4EF6cEbPq0NxRgiie9Za3r",
-          "created": 1010000006,
+          "client_secret": "seti_1OAbdvDEQaroqDjsLtM7XeR2_secret_OyYl13wCY3CXPcylGH8IJ3n2W7vyW7N",
+          "created": 1010000002,
           "customer": "cus_NORMALIZED0001",
           "description": null,
-          "id": "seti_1K2OZ1HSaWXyvFpKxpkD3TLd",
+          "flow_directions": null,
+          "id": "seti_1OAbdvDEQaroqDjsLtM7XeR2",
           "last_setup_error": null,
-          "latest_attempt": "setatt_1K2OZ1HSaWXyvFpKHbvUjmVs",
+          "latest_attempt": "setatt_1OAbdvDEQaroqDjsyw01DWBo",
           "livemode": false,
           "mandate": null,
-          "metadata": {
-            "billing_modality": "charge_automatically",
-            "billing_schedule": "1",
-            "license_management": "automatic",
-            "licenses": "6",
-            "price_per_license": "8000",
-            "realm_id": "1",
-            "realm_str": "zulip",
-            "seat_count": "6",
-            "type": "upgrade",
-            "user_email": "hamlet@zulip.com",
-            "user_id": "10"
-          },
+          "metadata": {},
           "next_action": null,
           "object": "setup_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1K2OZ0HSaWXyvFpKi5ubkIRr",
+          "payment_method": "pm_1OAbdvDEQaroqDjsZI4csghA",
+          "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
+              "mandate_options": null,
+              "network": null,
               "request_three_d_secure": "automatic"
             }
           },
@@ -214,51 +203,44 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1K2OZ2HSaWXyvFpK41Y4hHYr",
+      "id": "evt_1OAbdvDEQaroqDjspJ1TR3Wq",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "22167880-3334-44e2-b988-3a7c2964d81f"
+        "id": "req_NORMALIZED0002",
+        "idempotency_key": "c14bb11e-7cca-4998-813e-514791ae4164"
       },
       "type": "setup_intent.created"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000002,
+      "created": 1010000007,
       "data": {
         "object": {
           "application": null,
+          "automatic_payment_methods": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1K2OZ0HSaWXyvFpKfjWNloMy_secret_KhoBztlwaf4DHFa5JEjvam7ZnYNNqDm",
-          "created": 1010000002,
+          "client_secret": "seti_1OAbduDEQaroqDjsRJcj8xNk_secret_OyYltHCTB8MTo0cyEYeJO8hDzBGIhwS",
+          "created": 1010000007,
           "customer": "cus_NORMALIZED0001",
           "description": null,
-          "id": "seti_1K2OZ0HSaWXyvFpKfjWNloMy",
+          "flow_directions": null,
+          "id": "seti_1OAbduDEQaroqDjsRJcj8xNk",
           "last_setup_error": null,
           "latest_attempt": null,
           "livemode": false,
           "mandate": null,
-          "metadata": {
-            "billing_modality": "charge_automatically",
-            "billing_schedule": "1",
-            "license_management": "automatic",
-            "licenses": "6",
-            "price_per_license": "8000",
-            "realm_id": "1",
-            "realm_str": "zulip",
-            "seat_count": "6",
-            "type": "upgrade",
-            "user_email": "hamlet@zulip.com",
-            "user_id": "10"
-          },
+          "metadata": {},
           "next_action": null,
           "object": "setup_intent",
           "on_behalf_of": null,
           "payment_method": null,
+          "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
+              "mandate_options": null,
+              "network": null,
               "request_three_d_secure": "automatic"
             }
           },
@@ -270,13 +252,13 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1K2OZ0HSaWXyvFpK4gP5YihS",
+      "id": "evt_1OAbduDEQaroqDjsOS0N94QE",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0004",
-        "idempotency_key": "654719a3-c040-40b1-b358-09e98da84b13"
+        "id": "req_NORMALIZED0003",
+        "idempotency_key": "280d4f32-6c31-4131-b8de-b0c089867b02"
       },
       "type": "setup_intent.created"
     },
@@ -289,6 +271,7 @@
           "balance": 0,
           "created": 1010000001,
           "currency": null,
+          "default_currency": null,
           "default_source": null,
           "delinquent": false,
           "description": "zulip (Zulip Dev)",
@@ -299,7 +282,8 @@
           "invoice_settings": {
             "custom_fields": null,
             "default_payment_method": null,
-            "footer": null
+            "footer": null,
+            "rendering_options": null
           },
           "livemode": false,
           "metadata": {
@@ -312,16 +296,17 @@
           "phone": null,
           "preferred_locales": [],
           "shipping": null,
-          "tax_exempt": "none"
+          "tax_exempt": "none",
+          "test_clock": null
         }
       },
-      "id": "evt_1K2OYzHSaWXyvFpKkLzYeFXJ",
+      "id": "evt_1OAbdtDEQaroqDjsh1S2sefM",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0005",
-        "idempotency_key": "84fa6e68-9c39-4bd3-9165-5fcda5f12160"
+        "id": "req_NORMALIZED0004",
+        "idempotency_key": "269ed71b-b5b8-49bd-ad20-196a9e64f1d2"
       },
       "type": "customer.created"
     }

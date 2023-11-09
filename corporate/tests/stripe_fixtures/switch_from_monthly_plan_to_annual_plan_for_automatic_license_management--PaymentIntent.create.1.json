@@ -1,6 +1,9 @@
 {
   "amount": 4800,
   "amount_capturable": 0,
+  "amount_details": {
+    "tip": {}
+  },
   "amount_received": 0,
   "application": null,
   "application_fee_amount": null,
@@ -15,7 +18,7 @@
     "total_count": 0,
     "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
   },
-  "client_secret": "pi_NORMALIZED00000000000001_secret_XFh1O0803XKyaTfGwKbRrpwn2",
+  "client_secret": "pi_NORMALIZED00000000000001_secret_kylb80BjRsrDJeLMehiJgOcnp",
   "confirmation_method": "automatic",
   "created": 1000000000,
   "currency": "usd",
@@ -24,6 +27,7 @@
   "id": "pi_NORMALIZED00000000000001",
   "invoice": null,
   "last_payment_error": null,
+  "latest_charge": null,
   "livemode": false,
   "metadata": {
     "billing_modality": "charge_automatically",
@@ -42,9 +46,11 @@
   "object": "payment_intent",
   "on_behalf_of": null,
   "payment_method": null,
+  "payment_method_configuration_details": null,
   "payment_method_options": {
     "card": {
       "installments": null,
+      "mandate_options": null,
       "network": null,
       "request_three_d_secure": "automatic"
     }
@@ -52,6 +58,7 @@
   "payment_method_types": [
     "card"
   ],
+  "processing": null,
   "receipt_email": "hamlet@zulip.com",
   "review": null,
   "setup_future_usage": null,

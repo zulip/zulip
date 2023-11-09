@@ -3,22 +3,24 @@
   "balance": 0,
   "created": 1000000000,
   "currency": null,
+  "default_currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "realm_257744 ()",
+  "description": "test-realm-7 (test-realm-7)",
   "discount": null,
-  "email": "user-0-realm_257744@zulip.com",
+  "email": "user-0-test-realm-7@zulip.com",
   "id": "cus_NORMALIZED0006",
   "invoice_prefix": "NORMA06",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": null,
-    "footer": null
+    "footer": null,
+    "rendering_options": null
   },
   "livemode": false,
   "metadata": {
     "realm_id": "6",
-    "realm_str": "realm_257744"
+    "realm_str": "test-realm-7"
   },
   "name": null,
   "next_invoice_sequence": 1,
@@ -26,5 +28,6 @@
   "phone": null,
   "preferred_locales": [],
   "shipping": null,
-  "tax_exempt": "none"
+  "tax_exempt": "none",
+  "test_clock": null
 }
