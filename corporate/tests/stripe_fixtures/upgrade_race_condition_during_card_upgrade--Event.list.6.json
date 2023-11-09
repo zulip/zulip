@@ -7,6 +7,9 @@
         "object": {
           "amount": 48000,
           "amount_capturable": 0,
+          "amount_details": {
+            "tip": {}
+          },
           "amount_received": 48000,
           "application": null,
           "application_fee_amount": null,
@@ -37,7 +40,7 @@
                   "name": null,
                   "phone": null
                 },
-                "calculated_statement_descriptor": "ZULIP STANDARD",
+                "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
                 "captured": true,
                 "created": 1000000000,
                 "currency": "usd",
@@ -46,6 +49,7 @@
                 "destination": null,
                 "dispute": null,
                 "disputed": false,
+                "failure_balance_transaction": null,
                 "failure_code": null,
                 "failure_message": null,
                 "fraud_details": {},
@@ -78,9 +82,10 @@
                 },
                 "paid": true,
                 "payment_intent": "pi_NORMALIZED00000000000002",
-                "payment_method": "pm_1K2ObtHSaWXyvFpKyMIBvtur",
+                "payment_method": "pm_1OAbiYDEQaroqDjsPhGYMLFj",
                 "payment_method_details": {
                   "card": {
+                    "amount_authorized": 48000,
                     "brand": "visa",
                     "checks": {
                       "address_line1_check": null,
@@ -88,13 +93,30 @@
                       "cvc_check": "pass"
                     },
                     "country": "US",
-                    "exp_month": 3,
-                    "exp_year": 2033,
+                    "exp_month": 11,
+                    "exp_year": 2024,
+                    "extended_authorization": {
+                      "status": "disabled"
+                    },
                     "fingerprint": "NORMALIZED000001",
                     "funding": "credit",
+                    "incremental_authorization": {
+                      "status": "unavailable"
+                    },
                     "installments": null,
                     "last4": "4242",
+                    "mandate": null,
+                    "multicapture": {
+                      "status": "unavailable"
+                    },
                     "network": "visa",
+                    "network_token": {
+                      "used": false
+                    },
+                    "overcapture": {
+                      "maximum_amount_capturable": 48000,
+                      "status": "unavailable"
+                    },
                     "three_d_secure": null,
                     "wallet": null
                   },
@@ -102,7 +124,7 @@
                 },
                 "receipt_email": "hamlet@zulip.com",
                 "receipt_number": null,
-                "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000002/rcpt_NORMALIZED000000000000000000002",
+                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKJOktKoGMgb0CqrWLHw6LBa4wla6EaUsi_NORMALIZED00015trPhLv81P8sStb4wT8kXKxecX7T_DHn",
                 "refunded": false,
                 "refunds": {
                   "data": [],
@@ -127,7 +149,7 @@
             "total_count": 1,
             "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
           },
-          "client_secret": "pi_NORMALIZED00000000000002_secret_mnAsIum3Y1d5cYoyOjtOvxLFJ",
+          "client_secret": "pi_NORMALIZED00000000000002_secret_7Ft1BJELt5zuvUeHIaD28tuzR",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
@@ -136,6 +158,7 @@
           "id": "pi_NORMALIZED00000000000002",
           "invoice": null,
           "last_payment_error": null,
+          "latest_charge": "ch_NORMALIZED00000000000002",
           "livemode": false,
           "metadata": {
             "billing_modality": "charge_automatically",
@@ -153,10 +176,12 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1K2ObtHSaWXyvFpKyMIBvtur",
+          "payment_method": "pm_1OAbiYDEQaroqDjsPhGYMLFj",
+          "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
               "installments": null,
+              "mandate_options": null,
               "network": null,
               "request_three_d_secure": "automatic"
             }
@@ -164,6 +189,7 @@
           "payment_method_types": [
             "card"
           ],
+          "processing": null,
           "receipt_email": "hamlet@zulip.com",
           "review": null,
           "setup_future_usage": null,
@@ -176,13 +202,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3K2ObjHSaWXyvFpK0ur1TcC8",
+      "id": "evt_3OAbi9DEQaroqDjs0i313AhB",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0011",
-        "idempotency_key": "ab8a6a04-01ec-439f-9afc-42fc5a4eeb86"
+        "idempotency_key": "c933da52-47cf-4824-865b-626600687f08"
       },
       "type": "payment_intent.succeeded"
     }

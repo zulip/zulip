@@ -19,8 +19,9 @@
   "price": {
     "active": false,
     "billing_scheme": "per_unit",
-    "created": 1010000009,
+    "created": 1010000008,
     "currency": "usd",
+    "custom_unit_amount": null,
     "id": "price_NORMALIZED00000000000002",
     "livemode": false,
     "lookup_key": null,
@@ -40,6 +41,7 @@
   "quantity": 15,
   "subscription": null,
   "tax_rates": [],
+  "test_clock": null,
   "unit_amount": 8000,
   "unit_amount_decimal": "8000"
 }
