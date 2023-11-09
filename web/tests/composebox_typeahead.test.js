@@ -17,6 +17,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea() {
         autosize_called = true;
     },
+    cursor_inside_code_block: () => false,
 });
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
