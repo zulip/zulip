@@ -46,6 +46,7 @@ from corporate.lib.stripe import (
     InvalidBillingScheduleError,
     InvalidTierError,
     RealmBillingSession,
+    RemoteServerBillingSession,
     StripeCardError,
     add_months,
     catch_stripe_errors,
@@ -4900,6 +4901,64 @@ class TestRealmBillingSession(StripeTestCase):
             BillingSessionAuditLogEventError, "Unknown audit log event type: 0"
         ):
             billing_session.get_audit_log_event(event_type=fake_audit_log)
+
+    def test_get_customer(self) -> None:
+        user = self.example_user("hamlet")
+        billing_session = RealmBillingSession(user)
+        customer = billing_session.get_customer()
+        self.assertEqual(customer, None)
+
+        customer = Customer.objects.create(realm=user.realm, stripe_customer_id="cus_12345")
+        self.assertEqual(billing_session.get_customer(), customer)
+
+
+class TestRemoteServerBillingSession(StripeTestCase):
+    def test_get_audit_log_error(self) -> None:
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        billing_session = RemoteServerBillingSession(remote_server)
+        fake_audit_log = typing.cast(AuditLogEventType, 0)
+        with self.assertRaisesRegex(
+            BillingSessionAuditLogEventError, "Unknown audit log event type: 0"
+        ):
+            billing_session.get_audit_log_event(event_type=fake_audit_log)
+
+    def test_get_customer(self) -> None:
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        billing_session = RemoteServerBillingSession(remote_server)
+        customer = billing_session.get_customer()
+        self.assertEqual(customer, None)
+
+        customer = Customer.objects.create(
+            remote_server=remote_server, stripe_customer_id="cus_12345"
+        )
+        self.assertEqual(billing_session.get_customer(), customer)
+
+    # @mock_stripe
+    # def test_update_or_create_stripe_customer(self) -> None:
+    #     server_uuid = str(uuid.uuid4())
+    #     remote_server = RemoteZulipServer.objects.create(
+    #         uuid=server_uuid,
+    #         api_key="magic_secret_api_key",
+    #         hostname="demo.example.com",
+    #         contact_email="email@example.com",
+    #     )
+    #     billing_session = RemoteServerBillingSession(remote_server)
+    #     # We need to generate stripe fixture for this type of test.
+    #     customer = billing_session.update_or_create_stripe_customer()
+    #     assert customer.stripe_customer_id
+    #     # Confirm audit log, etc.
 
 
 class TestSupportBillingHelpers(StripeTestCase):
