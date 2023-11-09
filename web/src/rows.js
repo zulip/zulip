@@ -162,7 +162,18 @@ export function recipient_from_group(message_group) {
     return message_store.get(id($(message_group).children(".message_row").first().expectOne()));
 }
 
+export function is_header_of_row_sticky($recipient_row) {
+    return $recipient_row.find(".message_header").hasClass("sticky_header");
+}
+
 export function id_for_recipient_row($recipient_row) {
+    if (is_header_of_row_sticky($recipient_row)) {
+        const msg_id = message_lists.current.view.sticky_recipient_message_id;
+        if (msg_id !== undefined) {
+            return msg_id;
+        }
+    }
+
     const $msg_row = first_message_in_group($recipient_row);
     return id($msg_row);
 }
