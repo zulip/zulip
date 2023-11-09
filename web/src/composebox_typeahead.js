@@ -153,6 +153,10 @@ export function should_enter_send(e) {
 }
 
 function handle_bulleting_or_numbering($textarea, e) {
+    // We only want this functionality if the cursor is not in a code block
+    if (compose_ui.cursor_inside_code_block($textarea)) {
+        return;
+    }
     // handles automatic insertion or removal of bulleting or numbering
     const before_text = split_at_cursor($textarea.val(), $textarea)[0];
     const previous_line = bulleted_numbered_list_util.get_last_line(before_text);
