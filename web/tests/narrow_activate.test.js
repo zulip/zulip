@@ -165,6 +165,9 @@ run_test("basics", ({override}) => {
         last: () => ({id: 1100}),
     };
 
+    $("#navbar-fixed-container").set_height(40);
+    $("#compose").get_offset_to_window = () => ({top: 200});
+
     message_fetch.load_messages_for_narrow = (opts) => {
         // Only validates the anchor and set of fields
         assert.deepEqual(opts, {
@@ -181,7 +184,9 @@ run_test("basics", ({override}) => {
     });
 
     assert.equal(message_lists.current.selected_id, selected_id);
-    assert.equal(message_lists.current.view.offset, 25);
+    // 25 was the offset of the selected message but it is low for the
+    // message top to be visible, so we use set offset to navbar height + header height.
+    assert.equal(message_lists.current.view.offset, 80);
     assert.equal(narrow_state.narrowed_to_pms(), false);
 
     helper.assert_events([
@@ -212,4 +217,27 @@ run_test("basics", ({override}) => {
     });
 
     assert.equal(narrow_state.narrowed_to_pms(), true);
+
+    message_lists.current.selected_id = () => -1;
+    // Row offset is between navbar and compose, so we keep it in the same position.
+    row.get_offset_to_window = () => ({top: 100, bottom: 150});
+    message_lists.current.get_row = () => row;
+
+    narrow.activate(terms, {
+        then_select_id: selected_id,
+    });
+
+    assert.equal(message_lists.current.view.offset, 100);
+
+    message_lists.current.selected_id = () => -1;
+    // Row is below navbar and row bottom is below compose but since the message is
+    // visible enough, we don't scroll the message to a new position.
+    row.get_offset_to_window = () => ({top: 150, bottom: 250});
+    message_lists.current.get_row = () => row;
+
+    narrow.activate(terms, {
+        then_select_id: selected_id,
+    });
+
+    assert.equal(message_lists.current.view.offset, 150);
 });
