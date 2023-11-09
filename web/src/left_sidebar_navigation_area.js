@@ -68,8 +68,7 @@ export function handle_narrow_activated(filter) {
     if (ops.length >= 1) {
         filter_name = ops[0];
         if (filter_name === "home") {
-            $filter_li = $(".top_left_all_messages");
-            $filter_li.addClass("active-filter");
+            highlight_all_messages_view();
         }
     }
     ops = filter.operands("is");
@@ -141,6 +140,17 @@ export function highlight_recent_view() {
     remove($(".top_left_mentions"));
     remove($(".top_left_inbox"));
     $(".top_left_recent_view").addClass("active-filter");
+    setTimeout(() => {
+        resize.resize_stream_filters_container();
+    }, 0);
+}
+
+export function highlight_all_messages_view() {
+    remove($(".top_left_starred_messages"));
+    remove($(".top_left_mentions"));
+    remove($(".top_left_recent_view"));
+    remove($(".top_left_inbox"));
+    $(".top_left_all_messages").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
