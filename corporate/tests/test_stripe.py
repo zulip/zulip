@@ -3849,16 +3849,11 @@ class StripeTest(StripeTestCase):
         self.assertFalse(customer_has_credit_card_as_default_payment_method(customer))
 
         billing_session = RealmBillingSession(iago)
-        customer = billing_session.create_stripe_customer()
+        customer = billing_session.update_or_create_stripe_customer()
         self.assertFalse(customer_has_credit_card_as_default_payment_method(customer))
 
-        customer = billing_session.create_stripe_customer(
-            payment_method=create_payment_method(
-                self.get_test_card_number(
-                    attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
-                )
-            ).id,
-        )
+        self.login_user(iago)
+        self.upgrade()
         self.assertTrue(customer_has_credit_card_as_default_payment_method(customer))
 
 
@@ -4317,9 +4312,7 @@ class BillingHelpersTest(ZulipTestCase):
             "corporate.lib.stripe.BillingSession.create_stripe_customer", return_value="returned"
         ) as mocked1:
             billing_session = RealmBillingSession(user)
-            returned = billing_session.update_or_create_stripe_customer(
-                payment_method="payment_method_id"
-            )
+            returned = billing_session.update_or_create_stripe_customer()
         mocked1.assert_called_once()
         self.assertEqual(returned, "returned")
 
@@ -4329,9 +4322,7 @@ class BillingHelpersTest(ZulipTestCase):
             "corporate.lib.stripe.BillingSession.create_stripe_customer", return_value="returned"
         ) as mocked2:
             billing_session = RealmBillingSession(user)
-            returned = billing_session.update_or_create_stripe_customer(
-                payment_method="payment_method_id"
-            )
+            returned = billing_session.update_or_create_stripe_customer()
         mocked2.assert_called_once()
         self.assertEqual(returned, "returned")
 
@@ -4340,7 +4331,7 @@ class BillingHelpersTest(ZulipTestCase):
         # Customer exists, replace payment source
         with patch("corporate.lib.stripe.BillingSession.replace_payment_method") as mocked3:
             billing_session = RealmBillingSession(user)
-            returned_customer = billing_session.update_or_create_stripe_customer("token")
+            returned_customer = billing_session.update_or_create_stripe_customer("pm_card_visa")
         mocked3.assert_called_once()
         self.assertEqual(returned_customer, customer)
 
