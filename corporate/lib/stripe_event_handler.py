@@ -102,9 +102,9 @@ def handle_checkout_session_completed_event(
         billing_session.update_or_create_stripe_customer(payment_method)
         process_initial_upgrade(
             user,
-            int(stripe_setup_intent.metadata["licenses"]),
-            stripe_setup_intent.metadata["license_management"] == "automatic",
-            int(stripe_setup_intent.metadata["billing_schedule"]),
+            int(stripe_session.metadata["licenses"]),
+            stripe_session.metadata["license_management"] == "automatic",
+            int(stripe_session.metadata["billing_schedule"]),
             charge_automatically=True,
             free_trial=True,
         )
