@@ -372,8 +372,14 @@ li.show-more-topics {
     &.top_left_row:hover,
     &.bottom_left_row:hover {
         background-color: var(--color-background-hover-narrow-filter);
-        border-radius: 4px;
     }
+}
+
+.top_left_row,
+.bottom_left_row {
+    /* Ensure a border radius on any interactive
+       state that might show a highlight. */
+    border-radius: 4px;
 }
 
 #stream_filters .narrow-filter.highlighted_stream {
