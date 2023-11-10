@@ -552,6 +552,50 @@ class BillingSession(ABC):
                     extra_data={"charge_automatically": charge_automatically},
                 )
 
+    def setup_upgrade_checkout_session_and_payment_intent(
+        self,
+        plan_tier: int,
+        seat_count: int,
+        licenses: int,
+        license_management: str,
+        billing_schedule: int,
+        billing_modality: str,
+        onboarding: bool,
+    ) -> stripe.checkout.Session:
+        customer = self.update_or_create_stripe_customer()
+        assert customer is not None  # for mypy
+        free_trial = is_free_trial_offer_enabled()
+        price_per_license = get_price_per_license(
+            plan_tier, billing_schedule, customer.default_discount
+        )
+        general_metadata = {
+            "billing_modality": billing_modality,
+            "billing_schedule": billing_schedule,
+            "licenses": licenses,
+            "license_management": license_management,
+            "price_per_license": price_per_license,
+            "seat_count": seat_count,
+            "type": "upgrade",
+        }
+        updated_metadata = self.update_data_for_checkout_session_and_payment_intent(
+            general_metadata
+        )
+        if free_trial:
+            if onboarding:
+                session_type = Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE
+            else:
+                session_type = Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE
+            payment_intent = None
+        else:
+            session_type = Session.UPGRADE_FROM_BILLING_PAGE
+            payment_intent = self.create_stripe_payment_intent(
+                price_per_license, licenses, updated_metadata
+            )
+        stripe_session = self.create_stripe_checkout_session(
+            updated_metadata, session_type, payment_intent
+        )
+        return stripe_session
+
 
 class RealmBillingSession(BillingSession):
     def __init__(self, user: UserProfile, realm: Optional[Realm] = None) -> None:

@@ -2,7 +2,6 @@ import logging
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
-import stripe
 from django import forms
 from django.conf import settings
 from django.core import signing
@@ -18,7 +17,6 @@ from corporate.lib.stripe import (
     RealmBillingSession,
     ensure_customer_does_not_have_active_plan,
     get_latest_seat_count,
-    get_price_per_license,
     is_free_trial_offer_enabled,
     process_initial_upgrade,
     sign_string,
@@ -28,7 +26,6 @@ from corporate.lib.stripe import (
 from corporate.lib.support import get_support_url
 from corporate.models import (
     CustomerPlan,
-    Session,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_customer_by_realm,
@@ -78,53 +75,6 @@ def check_upgrade_parameters(
     )
 
 
-def setup_upgrade_checkout_session_and_payment_intent(
-    user: UserProfile,
-    plan_tier: int,
-    seat_count: int,
-    licenses: int,
-    license_management: str,
-    billing_schedule: int,
-    billing_modality: str,
-    onboarding: bool,
-) -> stripe.checkout.Session:
-    billing_session = RealmBillingSession(user)
-    customer = billing_session.update_or_create_stripe_customer()
-    assert customer is not None  # for mypy
-    free_trial = is_free_trial_offer_enabled()
-    price_per_license = get_price_per_license(
-        plan_tier, billing_schedule, customer.default_discount
-    )
-    general_metadata = {
-        "billing_modality": billing_modality,
-        "billing_schedule": billing_schedule,
-        "licenses": licenses,
-        "license_management": license_management,
-        "price_per_license": price_per_license,
-        "seat_count": seat_count,
-        "type": "upgrade",
-    }
-    updated_metadata = billing_session.update_data_for_checkout_session_and_payment_intent(
-        general_metadata
-    )
-    if free_trial:
-        if onboarding:
-            session_type = Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE
-        else:
-            session_type = Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE
-        payment_intent = None
-    else:
-        session_type = Session.UPGRADE_FROM_BILLING_PAGE
-        payment_intent = billing_session.create_stripe_payment_intent(
-            price_per_license, licenses, updated_metadata
-        )
-
-    stripe_session = billing_session.create_stripe_checkout_session(
-        updated_metadata, session_type, payment_intent
-    )
-    return stripe_session
-
-
 @require_organization_member
 @has_request_variables
 def upgrade(
@@ -170,15 +120,17 @@ def upgrade(
             schedule
         ]
         if charge_automatically:
-            stripe_checkout_session = setup_upgrade_checkout_session_and_payment_intent(
-                user,
-                CustomerPlan.STANDARD,
-                seat_count,
-                licenses,
-                license_management,
-                billing_schedule,
-                billing_modality,
-                onboarding,
+            billing_session = RealmBillingSession(user)
+            stripe_checkout_session = (
+                billing_session.setup_upgrade_checkout_session_and_payment_intent(
+                    CustomerPlan.STANDARD,
+                    seat_count,
+                    licenses,
+                    license_management,
+                    billing_schedule,
+                    billing_modality,
+                    onboarding,
+                )
             )
             return json_success(
                 request,
