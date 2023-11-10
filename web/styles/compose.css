@@ -1291,6 +1291,10 @@ textarea.new_message_textarea,
 }
 
 #compose-drafts-button {
+    /* Use border-box sizing to make
+       width calculations more predictable
+       in a flex context. */
+    box-sizing: border-box;
     /* In a columnar flex, we need to
        use alignment to keep the Drafts
        button from expanding the full
@@ -1301,9 +1305,22 @@ textarea.new_message_textarea,
        lefthand edge */
     padding: 0 8px;
     margin-left: -8px;
+    /* Allow the button to occupy as much
+       as 100% of the container width, plus
+       the 8px from the negative left margin. */
+    max-width: calc(100% + 8px);
+    /* Set an ellipsis when the translated
+       version of `Drafts` exceeds the width,
+       and keep button text to a single line. */
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
 
     @media (width < $mc_min) {
         margin-left: 0;
+        /* With no negative left margin,
+           hold the max width to 100%. */
+        max-width: 100%;
         /* Align the `Drafts` text with the
            send icon below. */
         padding: 0 5px;
