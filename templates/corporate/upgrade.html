@@ -59,34 +59,19 @@
                                 <hr />
                                 <h2>Zulip Cloud Standard free trial</h2>
                                 {% endif %}
-                                <div class="payment-schedule">
+                                <div class="payment-schedule input-box">
                                     <div id="autopay-error" class="alert alert-danger"></div>
-                                    <h3>{{ _("Payment schedule") }}</h3>
                                     {% if free_trial_days %}
                                     <p>
                                         You won't be charged during the free trial. You can also downgrade to
                                         Zulip Cloud Free, our forever free plan, at any time.
                                     </p>
                                     {% endif %}
-                                    <label>
-                                        <input type="radio" name="schedule" value="monthly" checked/>
-                                        <div class="box">
-                                            <div class="schedule-time">{{ _("Pay monthly") }}</div>
-                                            <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
-                                        </div>
-                                    </label>
-                                    <label>
-                                        <input type="radio" name="schedule" value="annual"/>
-                                        <div class="box">
-                                            <div class="schedule-time annually">{{ _("Pay annually") }}</div>
-                                            <div class="schedule-amount">
-                                                $<span id="autopay_annual_price_per_month"></span>/user/month
-                                                <div class="schedule-amount-2">
-                                                    ($<span id="autopay_annual_price"></span>/user/year)
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </label>
+                                    <select name="payment-schedule" id="payment-schedule-select">
+                                        <option value="monthly" id="autopay_monthly_price"></option>
+                                        <option value="annually" id="autopay_annual_price_per_month"></option>
+                                    </select>
+                                    <label for="payment-schedule-select">Payment schedule</label>
                                 </div>
 
                                 {% if not manual_license_management %}

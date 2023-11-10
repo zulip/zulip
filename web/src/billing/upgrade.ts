@@ -40,9 +40,12 @@ export const initialize = (): void => {
         helpers.update_charged_amount(prices, helpers.schedule_schema.parse(this.value));
     });
 
-    $("#autopay_annual_price").text(helpers.format_money(prices.annual));
-    $("#autopay_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
-    $("#autopay_monthly_price").text(helpers.format_money(prices.monthly));
+    $("#autopay_annual_price_per_month").text(
+        `Pay annually ($${helpers.format_money(prices.annual / 12)}/user/month)`,
+    );
+    $("#autopay_monthly_price").text(
+        `Pay monthly ($${helpers.format_money(prices.monthly)}/user/month)`,
+    );
     $("#invoice_annual_price").text(helpers.format_money(prices.annual));
     $("#invoice_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
 
