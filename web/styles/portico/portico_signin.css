@@ -1019,6 +1019,7 @@ button#register_auth_button_gitlab {
     }
 
     .register-button .loader,
+    .upgrade-button-loader,
     .sponsorship-button-loader,
     .billing-button-loader {
         display: none;

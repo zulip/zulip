@@ -381,13 +381,24 @@ input[name="licenses"] {
         transform: scale(0.8);
         margin: -50px;
     }
+
+    #upgrade-page {
+        transform: scale(0.8);
+        margin: -50px 0;
+    }
 }
 
 @media (width < 460px) {
+    #upgrade-page,
     #billing-page,
     .sponsorship-page {
         transform: scale(0.6);
         margin: -150px -100px;
+    }
+
+    #upgrade-page {
+        transform: scale(0.6);
+        margin: -150px 0;
     }
 }
 
@@ -520,4 +531,12 @@ input[name="licenses"] {
     .modal__content {
         font-weight: 400;
     }
+}
+
+#upgrade-page-details .license-management-section .not-editable-realm-field {
+    padding-top: 0;
+}
+
+#upgrade-page-details {
+    margin: 0;
 }
