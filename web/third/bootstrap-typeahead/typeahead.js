@@ -369,8 +369,13 @@ import {get_string_diff} from "../../src/util";
         }
         return i[0]
       })
+      if(this.query.length!==0){
 
       items.first().addClass('active')
+    }
+    else{
+      items.first().removeClass('active');
+    }
       this.$menu.html(items)
       return this
     }
@@ -513,7 +518,7 @@ import {get_string_diff} from "../../src/util";
         case 9: // tab
           if (!this.options.tabIsEnter) return
         case 13: // enter
-          if (!this.shown) return
+          if (!this.shown || this.query.length===0) return
           this.select(e)
           break
 

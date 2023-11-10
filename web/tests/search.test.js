@@ -27,7 +27,7 @@ run_test("clear_search_form", () => {
     assert.equal($("#search_query").val(), "");
 });
 
-run_test("initialize", ({override_rewire, mock_template}) => {
+run_test("initialize", ({mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -294,11 +294,16 @@ run_test("initialize", ({override_rewire, mock_template}) => {
 
     assert.ok(!is_blurred);
 
-    override_rewire(search, "exit_search", () => {});
+    _setup("as");
     ev.key = "Enter";
     $search_query_box.is = () => true;
     $searchbox_form.trigger(ev);
     assert.ok(is_blurred);
+
+    // We don't blur search for empty string input.
+    _setup("");
+    $searchbox_form.trigger(ev);
+    assert.ok(!is_blurred);
 
     _setup("ver");
     ev.key = "Enter";

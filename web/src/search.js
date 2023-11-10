@@ -129,8 +129,14 @@ export function initialize({on_narrow_search}) {
                 // this codepath is that they first all blur the box to
                 // indicate that they've done what they need to do)
 
+                // If nothing is written in the search bar, we do nothing.
+                const search_string = $search_query_box.val();
+                if (search_string === "") {
+                    return;
+                }
+
                 // Pill is already added during keydown event of input pills.
-                narrow_or_search_for_term($search_query_box.val(), {on_narrow_search});
+                narrow_or_search_for_term(search_string, {on_narrow_search});
                 $search_query_box.trigger("blur");
             }
         });
