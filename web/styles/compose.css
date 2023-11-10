@@ -879,8 +879,10 @@ textarea.new_message_textarea,
     z-index: 1;
 
     @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
-        /* Drop to a square button. */
-        width: 28px;
+        /* Drop to a square button,
+           and don't flex any wider. */
+        width: 30px;
+        flex-grow: 0;
     }
 
     .zulip-icon-send {
@@ -1276,7 +1278,7 @@ textarea.new_message_textarea,
 
     @media (width < $sm_min) {
         /* Drop to a square, rounded button. */
-        width: 28px;
+        width: 30px;
         padding: 0;
         margin-left: 0;
         border-radius: 4px;
@@ -1302,6 +1304,9 @@ textarea.new_message_textarea,
 
     @media (width < $mc_min) {
         margin-left: 0;
+        /* Align the `Drafts` text with the
+           send icon below. */
+        padding: 0 5px;
     }
 }
 
