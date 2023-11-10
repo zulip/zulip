@@ -434,7 +434,7 @@ export function initialize() {
             }
             return true;
         },
-        delay: LONG_HOVER_DELAY,
+        delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
 
@@ -456,7 +456,7 @@ export function initialize() {
             }
             return true;
         },
-        delay: LONG_HOVER_DELAY,
+        delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
 
