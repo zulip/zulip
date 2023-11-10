@@ -215,7 +215,7 @@ export function initialize() {
 
     delegate("body", {
         target: [
-            "#streams_header .left-sidebar-title",
+            "#streams_header .streams-tooltip-target",
             "#userlist-title",
             "#user_filter_icon",
             "#scroll-to-bottom-button-clickable-area",
