@@ -36,6 +36,7 @@ let dms_dict = new Map();
 let topics_dict = new Map();
 let streams_dict = new Map();
 let update_triggered_by_user = false;
+let filters_dropdown_widget;
 
 const FILTERS = {
     ALL_TOPICS: "all_topics",
@@ -507,14 +508,23 @@ function filters_dropdown_options() {
         {
             unique_id: FILTERS.ALL_TOPICS,
             name: $t({defaultMessage: "All topics"}),
+            bold_current_selection:
+                filters_dropdown_widget &&
+                filters_dropdown_widget.current_value === FILTERS.ALL_TOPICS,
         },
         {
             unique_id: FILTERS.UNMUTED_TOPICS,
             name: $t({defaultMessage: "Unmuted topics"}),
+            bold_current_selection:
+                filters_dropdown_widget &&
+                filters_dropdown_widget.current_value === FILTERS.UNMUTED_TOPICS,
         },
         {
             unique_id: FILTERS.FOLLOWED_TOPICS,
             name: $t({defaultMessage: "Followed topics"}),
+            bold_current_selection:
+                filters_dropdown_widget &&
+                filters_dropdown_widget.current_value === FILTERS.FOLLOWED_TOPICS,
         },
     ];
 }
@@ -559,7 +569,7 @@ export function complete_rerender() {
         revive_current_focus();
     }, 0);
 
-    new dropdown_widget.DropdownWidget({
+    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "inbox-filter",
         get_options: filters_dropdown_options,
         item_click_callback: filter_click_handler,
@@ -571,7 +581,9 @@ export function complete_rerender() {
         unique_id_type: dropdown_widget.DATA_TYPES.STRING,
         default_id: filters.values().next().value,
         hide_search_box: true,
-    }).setup();
+        bold_current_selection: true,
+    });
+    filters_dropdown_widget.setup();
 }
 
 export function search_and_update() {

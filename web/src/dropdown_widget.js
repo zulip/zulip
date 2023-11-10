@@ -22,6 +22,8 @@ export const DATA_TYPES = {
 export class DropdownWidget {
     constructor({
         widget_name,
+        // You can bold the selected `option` by setting `option.bold_current_selection` to `true`.
+        // Currently, not implemented for stream names.
         get_options,
         item_click_callback,
         // Provide an parent element to widget which will be re-rendered if the widget is setup again.

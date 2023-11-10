@@ -8,7 +8,11 @@
             {{else if is_setting_disabled}}
                 <span class="setting-disabled-option"><i class="fa fa-ban" aria-hidden="true"></i>{{t "Disable" }}</span>
             {{else}}
-                {{name}}
+                {{#if bold_current_selection}}
+                    <span class="dropdown-list-bold-selected">{{name}}</span>
+                {{else}}
+                    {{name}}
+                {{/if}}
             {{/if}}
         </a>
     </li>
