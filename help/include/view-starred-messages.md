@@ -1,6 +1,6 @@
 {start_tabs}
 
-{tab|desktop}
+{tab|desktop-web}
 
 1. Click on <i class="zulip-icon zulip-icon-star-filled"></i> **Starred messages**
    (or <i class="zulip-icon zulip-icon-star-filled"></i> if the **views**
