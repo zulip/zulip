@@ -1,9 +1,9 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area">
         <div id="views-label-container" class="showing-expanded-navigation hidden-for-spectators">
-            <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down" aria-hidden="true"></i>
+            <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down views-tooltip-target" aria-hidden="true"></i>
             {{~!-- squash whitespace --~}}
-            <h4 class="left-sidebar-title">{{t 'VIEWS' }}</h4>
+            <h4 class="left-sidebar-title"><span class="views-tooltip-target">{{t 'VIEWS' }}</span></h4>
             <ul id="left-sidebar-navigation-list-condensed" class="filters">
                 <li class="top_left_inbox left-sidebar-navigation-condensed-item {{#if is_inbox_home_view}}selected-home-view{{/if}}">
                     <a href="#inbox" {{#if is_inbox_home_view}}tabindex="0"{{/if}} class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="inbox-tooltip-template">

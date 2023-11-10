@@ -421,6 +421,24 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".views-tooltip-target",
+        onShow(instance) {
+            if ($("#toggle-top-left-navigation-area-icon").hasClass("fa-caret-down")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Collapse views",
+                    }),
+                );
+            } else {
+                instance.setContent($t({defaultMessage: "Expand views"}));
+            }
+            return true;
+        },
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
         target: ".dm-tooltip-target",
         onShow(instance) {
             if ($(".direct-messages-container").hasClass("zoom-in")) {
