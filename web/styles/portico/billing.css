@@ -306,11 +306,6 @@
         margin-left: -25px;
     }
 
-    #license-automatic-section,
-    #license-manual-section {
-        display: none;
-    }
-
     & select,
     input,
     textarea {

@@ -685,7 +685,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         response = self.client_get("/upgrade/")
-        self.assert_in_success_response(["Pay annually"], response)
+        self.assert_in_success_response(["Your subscription will renew automatically"], response)
         self.assertNotEqual(user.realm.plan_type, Realm.PLAN_TYPE_STANDARD)
         self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
 
@@ -996,7 +996,9 @@ class StripeTest(StripeTestCase):
             response = self.client_get("/upgrade/")
             free_trial_end_date = self.now + timedelta(days=60)
 
-            self.assert_in_success_response(["Pay annually", "Free Trial", "60 day"], response)
+            self.assert_in_success_response(
+                ["You won't be charged", "Free Trial", "60 day"], response
+            )
             self.assertNotEqual(user.realm.plan_type, Realm.PLAN_TYPE_STANDARD)
             self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
 
@@ -1280,7 +1282,9 @@ class StripeTest(StripeTestCase):
         with self.settings(FREE_TRIAL_DAYS=60):
             response = self.client_get("/upgrade/")
 
-            self.assert_in_success_response(["Pay annually", "Free Trial", "60 day"], response)
+            self.assert_in_success_response(
+                ["You won't be charged", "Free Trial", "60 day"], response
+            )
             self.assertNotEqual(user.realm.plan_type, Realm.PLAN_TYPE_STANDARD)
             self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
 
