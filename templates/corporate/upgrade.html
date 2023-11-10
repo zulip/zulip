@@ -12,7 +12,7 @@
             <h1>Upgrade {{ realm.name }} to {{ plan }}</h1>
         </div>
         <div class="white-box">
-            <div class="upgrade-page-details">
+            <div id="upgrade-page-details">
                 {% if free_trial_days %}
                 <div id="free-trial-alert-message" class="alert alert-info">
                     Upgrade now to start your {{ free_trial_days }} day free trial
@@ -78,8 +78,8 @@
                                 </div>
 
                                 {% if not manual_license_management %}
-                                <div id="license-automatic-section">
-                                    <p>
+                                <div id="license-automatic-section" class="input-box upgrade-page-field license-management-section">
+                                    <p class="not-editable-realm-field">
                                         {% if free_trial_days %}
                                         After the Free Trial, you&rsquo;ll be charged
                                         <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
@@ -98,8 +98,8 @@
                                     <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
                                 </div>
                                 {% else %}
-                                <div id="license-manual-section">
-                                    <p>
+                                <div id="license-manual-section" class="input-box upgrade-page-field">
+                                    <p class="not-editable-realm-field">
                                         {% if free_trial_days %}
                                         Enter the number of users you would like to pay for after the Free Trial.<br />
                                         You'll need to manually add licenses to add or invite
@@ -128,10 +128,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="support-link">
-                    <p>
+                <div class="input-box upgrade-page-field">
+                    <div class="support-link not-editable-realm-field">
                         To pay by invoice or for any other questions, contact <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
-                    </p>
+                    </div>
                 </div>
             </div>
         </div>
