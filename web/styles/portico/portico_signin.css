@@ -917,6 +917,7 @@ button#register_auth_button_gitlab {
     }
 }
 
+#upgrade-page-details,
 #billing-page-details,
 #sponsorship-form,
 #registration,
@@ -968,6 +969,7 @@ button#register_auth_button_gitlab {
             }
         }
 
+        &.upgrade-page-field,
         &.billing-page-field,
         &.support-form-field,
         &.sponsorship-form-field {
