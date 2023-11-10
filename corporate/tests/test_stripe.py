@@ -1984,7 +1984,7 @@ class StripeTest(StripeTestCase):
                 stripe_session.id = "stripe_session_id"
                 stripe_session.url = "stripe_session_url"
                 with patch(
-                    "corporate.views.upgrade.setup_upgrade_checkout_session_and_payment_intent",
+                    "corporate.lib.stripe.BillingSession.setup_upgrade_checkout_session_and_payment_intent",
                     return_value=stripe_session,
                 ):
                     response = self.upgrade(
@@ -2039,7 +2039,7 @@ class StripeTest(StripeTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         with patch(
-            "corporate.views.upgrade.setup_upgrade_checkout_session_and_payment_intent",
+            "corporate.lib.stripe.BillingSession.setup_upgrade_checkout_session_and_payment_intent",
             side_effect=Exception,
         ), self.assertLogs("corporate.stripe", "WARNING") as m:
             response = self.upgrade(talk_to_stripe=False)
