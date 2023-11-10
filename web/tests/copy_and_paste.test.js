@@ -115,4 +115,9 @@ run_test("paste_handler_converter", () => {
         copy_and_paste.paste_handler_converter(input),
         'const compose_ui = mock_esm("../src/compose_ui");\n\nset_global("document", document);',
     );
+
+    // Pasting from Google Sheets (remove <style> elements completely)
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><style type="text/css"><!--td {border: 1px solid #cccccc;}br {mso-data-placement:same-cell;}--></style><span style="font-size:10pt;font-family:Arial;font-style:normal;text-align:right;" data-sheets-value="{&quot;1&quot;:3,&quot;3&quot;:123}" data-sheets-userformat="{&quot;2&quot;:769,&quot;3&quot;:{&quot;1&quot;:0},&quot;11&quot;:3,&quot;12&quot;:0}">123</span>';
+    assert.equal(copy_and_paste.paste_handler_converter(input), "123");
 });
