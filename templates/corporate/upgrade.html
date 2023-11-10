@@ -42,14 +42,9 @@
                 </div>
                 {% endif %}
 
-                <ul class="nav nav-tabs" id="upgrade-tabs">
-                    <li class="active"><a data-toggle="tab" href="#autopay">💳 Pay automatically</a></li>
-                    <li><a data-toggle="tab" href="#invoice">🧾 Pay by invoice</a></li>
-                </ul>
-
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
-                <div class="tab-content">
-                    <div class="tab-pane active" id="autopay">
+                <div>
+                    <div id="autopay">
                         <div id="autopay-input-section">
                             <form id="autopay-form">
                                 <input type="hidden" name="seat_count" value="{{ seat_count }}" />
@@ -175,7 +170,7 @@
                         </div>
                     </div>
 
-                    <div class="tab-pane" id="invoice">
+                    <div id="invoice">
                         <div id="invoice-error" class="alert alert-danger"></div>
                         <div id="invoice-input-section">
                             <form id="invoice-form" method="post">
