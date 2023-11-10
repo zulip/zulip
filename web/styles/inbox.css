@@ -57,7 +57,8 @@
             .zulip-icon-search-inbox {
                 position: absolute;
                 top: 23px;
-                left: 6px;
+                /* 5px (dropdown right margin) + 7.5px (= (30px left padding - 15px icon width) / 2)  = 12.5px */
+                left: calc(var(--width-inbox-filters-dropdown) + 12.5px);
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
             }
@@ -143,10 +144,10 @@
             border-radius: 5px;
             border: 1px solid hsl(0deg 0% 0% / 20%);
             margin-bottom: var(--max-unexpanded-compose-height);
-            /* margin(5) + search left padding(30) + search right padding (28) = 63px */
+            /* margin(5) + search left padding(30) + search right padding (28) + border(2px) = 65px */
             max-width: calc(
                 var(--width-inbox-search) + var(--width-inbox-filters-dropdown) +
-                    63px
+                    65px
             );
 
             .inbox-focus-border {
@@ -525,7 +526,7 @@
 }
 
 #inbox-filter_widget {
-    margin-left: 5px;
+    margin-right: 5px;
     height: 30px;
     max-width: var(--width-inbox-filters-dropdown);
     border: 1px solid var(--color-border-inbox-search);

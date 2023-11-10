@@ -798,7 +798,7 @@ function set_list_focus(input_key) {
     const $all_rows = get_all_rows();
     const max_row_focus = $all_rows.length - 1;
     if (max_row_focus < 0) {
-        focus_inbox_search();
+        focus_filters_dropdown();
         return;
     }
 
@@ -931,11 +931,17 @@ export function change_focused_element(input_key) {
 
         switch (input_key) {
             case "down_arrow":
+            case "tab":
                 set_list_focus();
                 return true;
             case "right_arrow":
-            case "tab":
                 if (end !== text_length || is_selected) {
+                    return false;
+                }
+                focus_filters_dropdown();
+                return true;
+            case "left_arrow":
+                if (start !== 0 || is_selected) {
                     return false;
                 }
                 focus_filters_dropdown();
@@ -946,21 +952,23 @@ export function change_focused_element(input_key) {
                 }
                 set_list_focus();
                 return true;
-            case "shift_tab":
-                // Let user focus outside inbox view.
-                current_focus_id = "";
-                return false;
         }
     } else if (is_filters_dropdown_focused()) {
         switch (input_key) {
             case "down_arrow":
-            case "tab":
                 set_list_focus();
                 return true;
             case "left_arrow":
-            case "shift_tab":
                 focus_inbox_search();
                 return true;
+            case "right_arrow":
+            case "tab":
+                focus_inbox_search();
+                return true;
+            case "shift_tab":
+                // Let user focus outside inbox view.
+                current_focus_id = "";
+                return false;
         }
     } else {
         switch (input_key) {
@@ -973,7 +981,7 @@ export function change_focused_element(input_key) {
             case "vim_up":
             case "up_arrow":
                 if (row_focus === 0) {
-                    focus_inbox_search();
+                    focus_filters_dropdown();
                     return true;
                 }
                 row_focus -= 1;
