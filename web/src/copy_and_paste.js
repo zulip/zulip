@@ -338,6 +338,12 @@ export function paste_handler_converter(paste_html) {
         codeBlockStyle: "fenced",
         headingStyle: "atx",
     });
+    turndownService.addRule("style", {
+        filter: "style",
+        replacement() {
+            return "";
+        },
+    });
     turndownService.addRule("strikethrough", {
         filter: ["del", "s", "strike"],
         replacement(content) {
