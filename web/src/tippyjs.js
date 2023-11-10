@@ -421,7 +421,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: "#pm_tooltip_container",
+        target: ".dm-tooltip-target",
         onShow(instance) {
             if ($(".direct-messages-container").hasClass("zoom-in")) {
                 return false;
