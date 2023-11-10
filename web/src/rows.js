@@ -70,13 +70,13 @@ export function visible_range(start_id, end_id) {
     return rows;
 }
 
-export function is_draft_row($row) {
-    return $row.find("#drafts_table .restore-overlay-message").length >= 1;
+export function is_overlay_row($row) {
+    return $row.closest(".overlay-message-row").length >= 1;
 }
 
 export function id($message_row) {
-    if (is_draft_row($message_row)) {
-        blueslip.error("Drafts have no zid");
+    if (is_overlay_row($message_row)) {
+        blueslip.error("Drafts and scheduled messages have no zid");
         return undefined;
     }
 
