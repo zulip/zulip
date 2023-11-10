@@ -68,6 +68,13 @@
                                     <label for="payment-schedule-select">Payment schedule</label>
                                 </div>
 
+                                {% if manual_license_management %}
+                                <div class="input-box upgrade-page-field">
+                                    <label for="licenses" class="inline-block label-title">Number of licenses {% if not exempt_from_license_number_check %}(minimum {{ seat_count }}){% endif %}</label>
+                                    <input type="number" name="licenses" autocomplete="off" {% if not exempt_from_license_number_check %}min="{{ seat_count }}" value="{{ seat_count }}"{% endif %} autocomplete="off" id="manual_license_count" required/>
+                                </div>
+                                {% endif %}
+
                                 <div class="input-box upgrade-page-field no-validation">
                                     <label for="due_today" class="inline-block label-title">Due today</label>
                                     <div id="due_today" class="not-editable-realm-field">
@@ -111,8 +118,6 @@
                                         <a href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
                                         {% endif %}
                                     </p>
-                                    <h4>Number of licenses {% if not exempt_from_license_number_check %}(minimum {{ seat_count }}){% endif %}</h4>
-                                    <input type="number" name="licenses" {% if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} autocomplete="off" id="manual_license_count" required/><br />
                                 </div>
                                 {% endif %}
                                 <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
