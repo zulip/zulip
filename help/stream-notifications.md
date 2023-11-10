@@ -5,7 +5,9 @@ stream basis.
 
 ## Configure notifications for a single stream
 
-These settings will override any default stream notification settings.
+These settings will override any default stream notification settings. In [muted
+streams](/help/mute-a-stream), stream notification settings apply only to
+[unmuted topics](/help/mute-a-topic).
 
 {start_tabs}
 
