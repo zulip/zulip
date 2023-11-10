@@ -47,8 +47,6 @@ export function create_update_next_cycle_license_request(): void {
 }
 
 export function initialize(): void {
-    helpers.set_tab("billing");
-
     $("#update-card-button").on("click", (e) => {
         $("#update-card-button .billing-button-text").text("");
         $("#update-card-button .loader").show();
@@ -167,7 +165,7 @@ export function initialize(): void {
     );
 
     $(
-        "#confirm-cancel-subscription-modal .dialog_submit_button, #reactivate-subscription, #confirm-end-free-trial .dialog_submit_button",
+        "#confirm-cancel-subscription-modal .dialog_submit_button, #reactivate-subscription .reactivate-current-plan-button, #confirm-end-free-trial .dialog_submit_button",
     ).on("click", (e) => {
         helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
             window.location.replace("/billing/"),
@@ -175,12 +173,12 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    $("#cancel-subscription").on("click", (e) => {
+    $("#cancel-subscription .cancel-current-plan-button").on("click", (e) => {
         e.preventDefault();
         portico_modals.open("confirm-cancel-subscription-modal");
     });
 
-    $("#end-free-trial").on("click", (e) => {
+    $("#end-free-trial .end-free-trial-button").on("click", (e) => {
         e.preventDefault();
         portico_modals.open("confirm-end-free-trial");
     });
