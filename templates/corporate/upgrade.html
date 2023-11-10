@@ -63,7 +63,7 @@
                                     {% endif %}
                                     <select name="payment-schedule" id="payment-schedule-select">
                                         <option value="monthly" id="autopay_monthly_price"></option>
-                                        <option value="annually" id="autopay_annual_price_per_month"></option>
+                                        <option value="annual" id="autopay_annual_price_per_month"></option>
                                     </select>
                                     <label for="payment-schedule-select">Payment schedule</label>
                                 </div>
@@ -72,15 +72,22 @@
                                 <div class="input-box upgrade-page-field">
                                     <label for="licenses" class="inline-block label-title">Number of licenses {% if not exempt_from_license_number_check %}(minimum {{ seat_count }}){% endif %}</label>
                                     <input type="number" name="licenses" autocomplete="off" {% if not exempt_from_license_number_check %}min="{{ seat_count }}" value="{{ seat_count }}"{% endif %} autocomplete="off" id="manual_license_count" required/>
+                                    <div id="upgrade-licenses-change-error" class="alert alert-danger upgrade-page-error"></div>
                                 </div>
                                 {% endif %}
 
                                 <div class="input-box upgrade-page-field no-validation">
-                                    <label for="due_today" class="inline-block label-title">Due today</label>
-                                    <div id="due_today" class="not-editable-realm-field">
-                                        $6.67 x 10 users x 1 month
-
-                                        <h1>$66.70</h1>
+                                    <label for="due-today" class="inline-block label-title">Due today</label>
+                                    <div id="due-today" class="not-editable-realm-field">
+                                        $<span class="due-today-unit-price"></span> x
+                                        {% if not manual_license_management %}
+                                            {{ seat_count }}
+                                        {% else %}
+                                            <span class="due-today-license-count">{{ seat_count }}</span>
+                                        {% endif %}
+                                        users x
+                                        <span class="due-today-duration"></span> month
+                                        <h1>$<span class="due-today-price"></span></h1>
                                     </div>
                                 </div>
 

@@ -410,6 +410,7 @@ input[name="licenses"] {
     margin-bottom: 0;
 }
 
+.upgrade-page-error,
 .sponsorship-field-error,
 .billing-page-error,
 .billing-page-success {
