@@ -3462,6 +3462,10 @@ select.invite-as {
     }
 }
 
+.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+    font-weight: 700;
+}
+
 #scheduled_messages_overlay .error-icon-message-recipient {
     width: 15px;
     height: 100%;
