@@ -12,9 +12,11 @@ import * as compose_fade from "./compose_fade";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
+import * as feedback_widget from "./feedback_widget";
 import {Filter} from "./filter";
 import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
+import {$t} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -775,6 +777,18 @@ export function narrow_to_next_topic(opts = {}) {
         curr_info.topic,
         opts.only_followed_topics,
     );
+
+    if (!next_narrow && opts.only_followed_topics) {
+        feedback_widget.show({
+            populate($container) {
+                $container.text(
+                    $t({defaultMessage: "You have no unread messages in followed topics."}),
+                );
+            },
+            title_text: $t({defaultMessage: "You're done!"}),
+        });
+        return;
+    }
 
     if (!next_narrow) {
         return;
