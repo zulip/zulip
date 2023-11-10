@@ -1,10 +1,24 @@
 # Follow a topic
 
-Zulip lets you follow topics you are interested in. You can configure how you
-get notified about new messages for topics you follow.
+Zulip lets you follow topics you are interested in. You can follow or unfollow
+any topic. You can also configure Zulip to automatically follow topics you start
+or participate in.
 
-In muted streams, topics you follow are automatically treated as
-[unmuted](/help/mute-a-topic).
+It's easy to prioritize catching up on followed topics. You can:
+
+- Configure how you get notified about new messages for topics you follow.
+
+- Use the <kbd>Shift</kbd> + <kbd>N</kbd> keyboard shortcut to go to the next
+  unread followed topic.
+
+- Filter the [**inbox**](/help/inbox) view to only show followed topics.
+
+- See which topics are followed in the **left sidebar** and [**recent
+  conversations**](/help/recent-conversations).
+
+You can use followed topics for a variety of workflows:
+
+{!followed-topic-workflows.md!}
 
 ## Follow or unfollow a topic
 
@@ -13,6 +27,32 @@ In muted streams, topics you follow are automatically treated as
 {tab|desktop-web}
 
 {!configure-topic-notifications-desktop-web.md!}
+
+{end_tabs}
+
+## Catch up on followed topics
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!go-to-inbox.md!}
+
+1. Filter the view to the topics you follow by selecting **Followed topics** in
+   the dropdown in the upper left.
+
+1. Click on a conversation you're interested in to view it. You can also use
+   the arrow keys to select a conversation, and press <kbd>Enter</kbd>.
+
+2. Return to **Inbox** when done to select the next conversation. You can use
+   the **back** button in your browser or the desktop app, <kbd>Shift</kbd> +
+   <kbd>I</kbd>, or <kbd>Esc</kbd> if **Inbox** is configured as you [home
+   view](/help/configure-home-view).
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Shift</kbd> + <kbd>N</kbd> to go to the next unread
+    followed topic from any location.
 
 {end_tabs}
 
@@ -36,6 +76,7 @@ In muted streams, topics you follow are automatically treated as
 
 ## Related articles
 
+* [Reading strategies](/help/reading-strategies)
 * [Topic notifications](/help/topic-notifications)
 * [Stream notifications](/help/stream-notifications)
 * [Mute or unmute a topic](/help/mute-a-topic)
