@@ -475,6 +475,23 @@ input[name="licenses"] {
     background-color: hsl(0deg 70% 40%);
 }
 
+#org-upgrade-button,
+#upgrade-add-card-button {
+    margin: 0;
+    width: 100%;
+}
+
+#org-upgrade-button {
+    &:disabled,
+    .permanent-disabled {
+        color: hsl(0deg 0% 80%);
+
+        &:hover {
+            cursor: not-allowed;
+        }
+    }
+}
+
 #billing-page-details .user-stripe-card-update .user-stripe-card-update-button {
     margin: 0;
 }
