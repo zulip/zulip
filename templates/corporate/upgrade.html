@@ -18,7 +18,7 @@
 
         <div class="page-content">
             <div class="main">
-                <h1>🚀 {% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
+                <h1>Upgrade {{ realm.name }} to {{ plan }}</h1>
                 {% if free_trial_days %}
                 <div id="free-trial-alert-message" class="alert alert-info">
                     Upgrade now to start your {{ free_trial_days }} day free trial
@@ -89,24 +89,7 @@
                                     </label>
                                 </div>
 
-                                <div class="license-management">
-                                    <h3>{{ _("License management") }}</h3>
-                                    <label>
-                                        <input type="radio" name="license_management" value="automatic" checked />
-                                        <div class="box">
-                                            <div class="management-type">{{ _("Automatic") }}</div>
-                                            <div class="management-type-text">{{ _("Most convenient") }}</div>
-                                        </div>
-                                    </label>
-                                    <label>
-                                        <input type="radio" name="license_management" value="manual" />
-                                        <div class="box">
-                                            <div class="management-type">{{ _("Manual") }}</div>
-                                            <div class="management-type-text">{{ _("Most control") }}</div>
-                                        </div>
-                                    </label>
-                                </div>
-
+                                {% if not manual_license_management %}
                                 <div id="license-automatic-section">
                                     <p>
                                         {% if free_trial_days %}
@@ -118,34 +101,32 @@
                                         are added, and remove licenses not in use at the end of each billing
                                         period.
                                         {% else %}
-                                        You&rsquo;ll initially be charged
-                                        <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
-                                        users.<br />
-                                        We'll automatically charge you for additional licenses as users
-                                        are added, and remove licenses not in use at the end of each billing
-                                        period.
+                                        Your subscription will renew automatically. Your bill will vary based on the number
+                                        of active users in your organization. You can also
+                                        <a href="/upgrade/?manual_license_management=true">purchase a fixed number of licenses</a> instead. See
+                                        <a target="_blank" href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
                                         {% endif %}
                                     </p>
                                     <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
                                 </div>
-
+                                {% else %}
                                 <div id="license-manual-section">
-
                                     <p>
                                         {% if free_trial_days %}
                                         Enter the number of users you would like to pay for after the Free Trial.<br />
                                         You'll need to manually add licenses to add or invite
                                         additional users.
                                         {% else %}
-                                        Enter the number of users you would like to pay for.<br />
-                                        You'll need to manually add licenses to add or invite
-                                        additional users.
+                                        Your subscription will renew automatically. You will be able to manage the number of licenses on
+                                        your organization's billing page. You can also
+                                        <a href="/upgrade/">choose automatic license management</a> instead. See
+                                        <a href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
                                         {% endif %}
                                     </p>
-
                                     <h4>Number of licenses {% if not exempt_from_license_number_check %}(minimum {{ seat_count }}){% endif %}</h4>
                                     <input type="number" name="licenses" {% if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} autocomplete="off" id="manual_license_count" required/><br />
                                 </div>
+                                {% endif %}
                                 <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
                                 <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
                                     <button id="add-card-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
@@ -235,9 +216,7 @@
                 </div>
                 <div class="support-link">
                     <p>
-                        We're happy to help!
-                        Contact <a href="mailto:support@zulip.com">support@zulip.com</a>
-                        for any billing-related questions.
+                        To pay by invoice or for any other questions, contact <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
                     </p>
                 </div>
             </div>

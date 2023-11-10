@@ -173,7 +173,9 @@ def upgrade(
 @zulip_login_required
 @has_request_variables
 def initial_upgrade(
-    request: HttpRequest, onboarding: bool = REQ(default=False, json_validator=check_bool)
+    request: HttpRequest,
+    onboarding: bool = REQ(default=False, json_validator=check_bool),
+    manual_license_management: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
@@ -223,6 +225,7 @@ def initial_upgrade(
             "demo_organization_scheduled_deletion_date": user.realm.demo_organization_scheduled_deletion_date,
         },
         "is_demo_organization": user.realm.demo_organization_scheduled_deletion_date is not None,
+        "manual_license_management": manual_license_management,
     }
 
     response = render(request, "corporate/upgrade.html", context=context)

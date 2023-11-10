@@ -139,19 +139,6 @@ export function update_discount_details(organization_type: string): void {
     $("#sponsorship-discount-details").text(discount_notice);
 }
 
-export function show_license_section(license: string): void {
-    $("#license-automatic-section").hide();
-    $("#license-manual-section").hide();
-
-    $("#automatic_license_count").prop("disabled", true);
-    $("#manual_license_count").prop("disabled", true);
-
-    const section_id = `#license-${CSS.escape(license)}-section`;
-    $(section_id).show();
-    const input_id = `#${CSS.escape(license)}_license_count`;
-    $(input_id).prop("disabled", false);
-}
-
 let current_page: string;
 
 function handle_hashchange(): void {

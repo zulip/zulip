@@ -36,10 +36,6 @@ export const initialize = (): void => {
         monthly: page_params.monthly_price * (1 - page_params.percent_off / 100),
     };
 
-    $<HTMLInputElement>("input[type=radio][name=license_management]").on("change", function () {
-        helpers.show_license_section(this.value);
-    });
-
     $<HTMLInputElement>("input[type=radio][name=schedule]").on("change", function () {
         helpers.update_charged_amount(prices, helpers.schedule_schema.parse(this.value));
     });
@@ -50,9 +46,6 @@ export const initialize = (): void => {
     $("#invoice_annual_price").text(helpers.format_money(prices.annual));
     $("#invoice_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
 
-    helpers.show_license_section(
-        $<HTMLInputElement>("input[type=radio][name=license_management]:checked").val()!,
-    );
     helpers.update_charged_amount(
         prices,
         helpers.schedule_schema.parse(
