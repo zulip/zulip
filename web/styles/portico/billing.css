@@ -354,11 +354,13 @@ input[name="licenses"] {
     background-color: hsl(240deg 96% 68%);
 }
 
+#upgrade-page .white-box,
 #billing-page .white-box,
 .sponsorship-page .white-box {
     margin: 30px;
 }
 
+#upgrade-page #billing-page-details,
 #billing-page #billing-page-details,
 .sponsorship-page #sponsorship-form {
     margin: 0;
@@ -413,6 +415,7 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#upgrade-page .pitch,
 #billing-page .pitch {
     width: 600px;
 }
@@ -481,6 +484,7 @@ input[name="licenses"] {
     padding-top: 0;
 }
 
+#upgrade-page-details .input-box.billing-page-field:first-child,
 #billing-page-details .input-box.billing-page-field:first-child {
     margin-top: 10px;
 }

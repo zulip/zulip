@@ -24,12 +24,8 @@
         "./src/billing/page_params",
         "./src/bundles/portico",
         "./src/portico/tippyjs",
-        "./src/portico/landing-page",
-        "./styles/portico/landing_page.css",
         "./src/billing/helpers",
         "./src/billing/upgrade",
-        "./src/templates",
-        "./src/loading",
         "./styles/portico/billing.css"
     ],
     "billing-event-status": [

@@ -5,20 +5,14 @@
 <title>{{ _("Upgrade") }} | Zulip</title>
 {% endblock %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
-
-{% block content %}
-
-<div class="app portico-page">
-
-    <div class="billing-upgrade-page new-style">
-        <div class="hero small-hero"></div>
-
-        <div class="page-content">
-            <div class="main">
-                <h1>Upgrade {{ realm.name }} to {{ plan }}</h1>
+{% block portico_content %}
+<div id="upgrade-page" class="register-account flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1>Upgrade {{ realm.name }} to {{ plan }}</h1>
+        </div>
+        <div class="white-box">
+            <div class="upgrade-page-details">
                 {% if free_trial_days %}
                 <div id="free-trial-alert-message" class="alert alert-info">
                     Upgrade now to start your {{ free_trial_days }} day free trial
