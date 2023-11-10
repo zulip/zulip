@@ -23,8 +23,42 @@ import * as sub_store from "./sub_store";
 import * as util from "./util";
 
 let user_acknowledged_wildcard = false;
+let upload_in_progress = false;
+let message_too_long = false;
+let recipient_disallowed = false;
 
 export let wildcard_mention_large_stream_threshold = 15;
+
+export function set_upload_in_progress(status) {
+    upload_in_progress = status;
+    update_send_button_status();
+}
+
+function set_message_too_long(status) {
+    message_too_long = status;
+    update_send_button_status();
+}
+
+export function set_recipient_disallowed(status) {
+    recipient_disallowed = status;
+    update_send_button_status();
+}
+
+function update_send_button_status() {
+    $(".message-send-controls").toggleClass(
+        "disabled-message-send-controls",
+        message_too_long || upload_in_progress || recipient_disallowed,
+    );
+}
+
+export function get_disabled_send_tooltip() {
+    if (message_too_long) {
+        return $t({defaultMessage: "Message length shouldn't be greater than 10000 characters."});
+    } else if (upload_in_progress) {
+        return $t({defaultMessage: "Cannot send message while files are being uploaded."});
+    }
+    return "";
+}
 
 export function needs_subscribe_warning(user_id, stream_id) {
     // This returns true if all of these conditions are met:
@@ -655,7 +689,7 @@ export function check_overflow_text() {
             compose_banner.CLASSNAMES.message_too_long,
             $("#compose_banners"),
         );
-        $("#compose-send-button").prop("disabled", true);
+        set_message_too_long(true);
     } else if (text.length > 0.9 * max_length) {
         $indicator.removeClass("over_limit");
         $("textarea#compose-textarea").removeClass("over_limit");
@@ -665,13 +699,13 @@ export function check_overflow_text() {
                 max_length,
             }),
         );
-        $("#compose-send-button").prop("disabled", false);
+        set_message_too_long(false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     } else {
         $indicator.text("");
         $("textarea#compose-textarea").removeClass("over_limit");
 
-        $("#compose-send-button").prop("disabled", false);
+        set_message_too_long(false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     }
 

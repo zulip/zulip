@@ -561,7 +561,6 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
 
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
-    const $send_button = $("#compose-send-button");
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.message_too_long);
@@ -585,7 +584,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     assert.equal(limit_indicator_html, "10001&ZeroWidthSpace;/10000\n");
     assert.ok($textarea.hasClass("over_limit"));
     assert.ok(banner_rendered);
-    assert.ok($send_button.prop("disabled"));
+    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     // Indicator should show orange colored text
     banner_rendered = false;
@@ -594,7 +593,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "9001&ZeroWidthSpace;/10000\n");
     assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!$send_button.prop("disabled"));
+    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
     assert.ok(!banner_rendered);
 
     // Indicator must be empty
