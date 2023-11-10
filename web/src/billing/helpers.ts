@@ -3,8 +3,6 @@ import {z} from "zod";
 
 import * as loading from "../loading";
 
-import {page_params} from "./page_params";
-
 export type FormDataObject = Record<string, string>;
 
 export const schedule_schema = z.enum(["monthly", "annual"]);
@@ -104,10 +102,6 @@ export function format_money(cents: number): string {
         minimumFractionDigits: precision,
         maximumFractionDigits: precision,
     }).format(Number.parseFloat((cents / 100).toFixed(precision)));
-}
-
-export function update_charged_amount(prices: Prices, schedule: keyof Prices): void {
-    $("#charged_amount").text(format_money(page_params.seat_count * prices[schedule]));
 }
 
 export function update_discount_details(organization_type: string): void {

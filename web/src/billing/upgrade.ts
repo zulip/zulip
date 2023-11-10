@@ -4,6 +4,9 @@ import * as helpers from "./helpers";
 import type {Prices} from "./helpers";
 import {page_params} from "./page_params";
 
+let selected_schedule = "monthly";
+let current_license_count = page_params.seat_count;
+
 export const initialize = (): void => {
     $("#add-card-button").on("click", (e) => {
         const license_management = $<HTMLInputElement>(
@@ -24,8 +27,24 @@ export const initialize = (): void => {
         monthly: page_params.monthly_price * (1 - page_params.percent_off / 100),
     };
 
-    $<HTMLInputElement>("input[type=radio][name=schedule]").on("change", function () {
-        helpers.update_charged_amount(prices, helpers.schedule_schema.parse(this.value));
+    function update_due_today(schedule: string): void {
+        let num_months = 12;
+        if (schedule === "monthly") {
+            num_months = 1;
+        }
+        $("#due-today .due-today-duration").text(num_months);
+        const schedule_typed = helpers.schedule_schema.parse(schedule);
+        $("#due-today .due-today-price").text(
+            helpers.format_money(current_license_count * prices[schedule_typed]),
+        );
+        const unit_price = prices[schedule_typed] / num_months;
+        $("#due-today .due-today-unit-price").text(helpers.format_money(unit_price));
+    }
+
+    update_due_today(selected_schedule);
+    $<HTMLInputElement>("#payment-schedule-select").on("change", function () {
+        selected_schedule = this.value;
+        update_due_today(selected_schedule);
     });
 
     $("#autopay_annual_price_per_month").text(
@@ -34,6 +53,20 @@ export const initialize = (): void => {
     $("#autopay_monthly_price").text(
         `Pay monthly ($${helpers.format_money(prices.monthly)}/user/month)`,
     );
+
+    $<HTMLInputElement>("#manual_license_count").on("keyup", function () {
+        $("#upgrade-licenses-change-error").text("");
+        const license_count = Number.parseInt(this.value, 10);
+        if (!license_count || license_count < page_params.seat_count) {
+            $("#upgrade-licenses-change-error").text(
+                `You must purchase licenses for all active users in your organization (minimum ${page_params.seat_count}).`,
+            );
+            return;
+        }
+        $("#due-today .due-today-license-count").text(license_count);
+        current_license_count = license_count;
+        update_due_today(selected_schedule);
+    });
 };
 
 $(() => {
