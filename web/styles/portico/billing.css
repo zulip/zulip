@@ -534,6 +534,8 @@ input[name="licenses"] {
     }
 }
 
+#onboarding-go-to-org .not-editable-realm-field,
+#free-trial-top-banner .not-editable-realm-field,
 #upgrade-page-details .license-management-section .not-editable-realm-field {
     padding-top: 0;
 }

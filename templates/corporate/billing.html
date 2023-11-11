@@ -179,15 +179,12 @@
                 <div id="planchange-success" class="alert alert-success billing-page-success">
                     Plan updated. The page will now reload.
                 </div>
+                {% if onboarding %}
+                <div id="onboarding-go-to-org" class="input-box upgrade-page-field">
+                    <a class="not-editable-realm-field" href="/"><b>Go to your Zulip organization</b></a>
+                </div>
+                {% endif %}
             </div>
-        </div>
-        <div id="goto-zulip-organization-link">
-            {% if onboarding %}
-            <br />
-            <h3>
-                <b><a href="/">Go to your Zulip organization</a></b>
-            </h3>
-            {% endif %}
         </div>
         <hr />
         <div class="support-link">
