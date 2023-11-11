@@ -42,7 +42,7 @@ run_test("basics", () => {
         filter: new Filter(),
     });
 
-    assert.equal(mld.is_search(), false);
+    assert.equal(mld.is_keyword_search(), false);
     assert.ok(mld.can_mark_messages_read());
     mld.add_anywhere(make_msgs([35, 25, 15, 45]));
 

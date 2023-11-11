@@ -96,7 +96,7 @@ test("basics", () => {
     assert.ok(!filter.has_operand("stream", "exclude_stream"));
     assert.ok(!filter.has_operand("stream", "nada"));
 
-    assert.ok(!filter.is_search());
+    assert.ok(!filter.is_keyword_search());
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.contains_only_private_messages());
@@ -113,7 +113,7 @@ test("basics", () => {
     ];
     filter = new Filter(operators);
 
-    assert.ok(filter.is_search());
+    assert.ok(filter.is_keyword_search());
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.contains_only_private_messages());
@@ -131,7 +131,7 @@ test("basics", () => {
     ];
     filter = new Filter(operators);
 
-    assert.ok(!filter.is_search());
+    assert.ok(!filter.is_keyword_search());
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.contains_only_private_messages());
@@ -320,7 +320,7 @@ test("basics", () => {
     ];
     filter = new Filter(operators);
 
-    assert.ok(!filter.is_search());
+    assert.ok(!filter.is_keyword_search());
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.contains_only_private_messages());

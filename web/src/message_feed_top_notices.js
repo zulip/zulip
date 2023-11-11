@@ -48,7 +48,7 @@ export function update_top_of_narrow_notices(msg_list) {
         }
         // Potentially display the notice that lets users know
         // that not all messages were searched.  One could
-        // imagine including `filter.is_search()` in these
+        // imagine including `filter.is_keyword_search()` in these
         // conditions, but there's a very legitimate use case
         // for moderation of searching for all messages sent
         // by a potential spammer user.

@@ -448,7 +448,7 @@ export class Filter {
         });
     }
 
-    is_search() {
+    is_keyword_search() {
         return this.has_operator("search");
     }
 
@@ -803,7 +803,7 @@ export class Filter {
         // Since there can be multiple operators, each block should
         // just return false here.
 
-        if (this.is_search()) {
+        if (this.is_keyword_search()) {
             // The semantics for matching keywords are implemented
             // by database plugins, and we don't have JS code for
             // that, plus search queries tend to go too far back in
