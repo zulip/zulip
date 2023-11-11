@@ -30,12 +30,6 @@
                 </div>
                 {% endif %}
 
-                {% if error_message %}
-                <div class="alert alert-danger" id="upgrade-error-message-box">
-                    {{ error_message }}
-                </div>
-                {% endif %}
-
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                 <form id="autopay-form">
                     <input type="hidden" name="seat_count" value="{{ seat_count }}" />
@@ -51,7 +45,6 @@
                     <h2>Zulip Cloud Standard free trial</h2>
                     {% endif %}
                     <div class="input-box upgrade-page-field no-validation">
-                        <div id="autopay-error" class="alert alert-danger"></div>
                         {% if free_trial_days %}
                         <p>
                             You won't be charged during the free trial. You can also downgrade to
@@ -135,8 +128,14 @@
                             </span>
                             <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
+                        <div id="autopay-error" class="alert alert-danger upgrade-page-error"></div>
                     </div>
                 </form>
+                {% if error_message %}
+                <div class="alert alert-danger" id="upgrade-error-message-box">
+                    {{ error_message }}
+                </div>
+                {% endif %}
                 <div class="input-box upgrade-page-field">
                     <div class="support-link not-editable-realm-field">
                         To pay by invoice or for any other questions, contact <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
