@@ -61,9 +61,14 @@ export function initialize(): void {
         create_ajax_request();
     });
 
-    $<HTMLSelectElement>("#organization-type").on("change", (e) => {
-        const string_value = $(e.currentTarget.selectedOptions).attr("data-string-value") ?? "";
-        helpers.update_discount_details(string_value);
+    function update_discount_details(): void {
+        const selected_org_type = $<HTMLSelectElement>("#organization-type").find(":selected").attr("data-string-value") ?? "";
+        helpers.update_discount_details(selected_org_type);
+    }
+
+    update_discount_details();
+    $<HTMLSelectElement>("#organization-type").on("change", () => {
+        update_discount_details();
     });
 }
 
