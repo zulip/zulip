@@ -93,6 +93,13 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     )
 
     was_invite_only = stream.invite_only
+    was_public = stream.is_public()
+    was_web_public = stream.is_web_public
+
+    # We do not use do_change_stream_permission because no users need to
+    # be notified, and we do not want to create audit log entries for
+    # changing stream privacy. And due to this we also need to duplicate
+    # the code to unset is_web_public field on attachments below.
     stream.deactivated = True
     stream.invite_only = True
     # Preserve as much as possible the original stream name while giving it a
@@ -109,6 +116,26 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
 
     stream.name = new_name[: Stream.MAX_NAME_LENGTH]
     stream.save(update_fields=["name", "deactivated", "invite_only"])
+
+    assert stream.recipient_id is not None
+    if was_web_public:
+        assert was_public
+        # Unset the is_web_public and is_realm_public cache on attachments,
+        # since the stream is now private.
+        Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_web_public=None, is_realm_public=None
+        )
+        ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_web_public=None, is_realm_public=None
+        )
+    elif was_public:
+        # Unset the is_realm_public cache on attachments, since the stream is now private.
+        Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_realm_public=None
+        )
+        ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_realm_public=None
+        )
 
     # If this is a default stream, remove it, properly sending a
     # notification to browser clients.
