@@ -544,3 +544,8 @@ input[name="licenses"] {
 #upgrade-page-details {
     margin: 0;
 }
+
+#free-trial-alert-message,
+#free-trial-top-banner {
+    text-align: left;
+}
