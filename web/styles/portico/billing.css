@@ -372,7 +372,7 @@ input[name="licenses"] {
 #sponsorship-discount-details {
     font-weight: normal;
     margin: 2px;
-    padding-top: 25px;
+    padding-top: 0;
     text-align: left;
     overflow-wrap: break-word;
     width: 450px;

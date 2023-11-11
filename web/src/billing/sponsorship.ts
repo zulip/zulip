@@ -14,6 +14,30 @@ function hide_submit_loading_indicator(): void {
     $("#sponsorship-button .sponsorship-button-text").show();
 }
 
+function validate_data(data: helpers.FormDataObject): boolean {
+    let found_error = false;
+    if (data.description.trim() === "") {
+        $("#sponsorship-description-error").text("Organization description cannot be blank.");
+        hide_submit_loading_indicator();
+        found_error = true;
+    }
+
+    if (data.paid_users_count.trim() === "") {
+        $("#sponsorship-paid-users-count-error").text("Number of paid staff cannot be blank.");
+        hide_submit_loading_indicator();
+        found_error = true;
+    }
+
+    if (data.expected_total_users.trim() === "") {
+        $("#sponsorship-expected-total-users-error").text(
+            "Expected number of users cannot be blank.",
+        );
+        hide_submit_loading_indicator();
+        found_error = true;
+    }
+    return !found_error;
+}
+
 function create_ajax_request(): void {
     show_submit_loading_indicator();
     const $form = $("#sponsorship-form");
@@ -25,10 +49,7 @@ function create_ajax_request(): void {
 
     // Clear any previous error messages.
     $(".sponsorship-field-error").text("");
-
-    if (data.description.trim() === "") {
-        $("#sponsorship-description-error").text("Organization description cannot be blank.");
-        hide_submit_loading_indicator();
+    if (!validate_data(data)) {
         return;
     }
 
@@ -62,7 +83,10 @@ export function initialize(): void {
     });
 
     function update_discount_details(): void {
-        const selected_org_type = $<HTMLSelectElement>("#organization-type").find(":selected").attr("data-string-value") ?? "";
+        const selected_org_type =
+            $<HTMLSelectElement>("#organization-type")
+                .find(":selected")
+                .attr("data-string-value") ?? "";
         helpers.update_discount_details(selected_org_type);
     }
 
