@@ -202,8 +202,8 @@ export class MessageListData {
         this._selected_id = this.closest_id(this._selected_id);
     }
 
-    is_search() {
-        return this.filter.is_search();
+    is_keyword_search() {
+        return this.filter.is_keyword_search();
     }
     can_mark_messages_read() {
         return this.filter.can_mark_messages_read();
