@@ -8,13 +8,7 @@ let selected_schedule = "monthly";
 let current_license_count = page_params.seat_count;
 
 export const initialize = (): void => {
-    $("#add-card-button").on("click", (e) => {
-        const license_management = $<HTMLInputElement>(
-            "input[type=radio][name=license_management]:checked",
-        ).val()!;
-        if (!helpers.is_valid_input($(`#${CSS.escape(license_management)}_license_count`))) {
-            return;
-        }
+    $("#org-upgrade-button").on("click", (e) => {
         e.preventDefault();
 
         helpers.create_ajax_request("/json/billing/upgrade", "autopay", [], "POST", (response) => {
@@ -22,6 +16,7 @@ export const initialize = (): void => {
             window.location.replace(response_data.stripe_session_url);
         });
     });
+
     const prices: Prices = {
         annual: page_params.annual_price * (1 - page_params.percent_off / 100),
         monthly: page_params.monthly_price * (1 - page_params.percent_off / 100),

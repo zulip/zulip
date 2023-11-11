@@ -58,7 +58,7 @@
                             Zulip Cloud Free, our forever free plan, at any time.
                         </p>
                         {% endif %}
-                        <select name="payment-schedule" id="payment-schedule-select">
+                        <select name="schedule" id="payment-schedule-select">
                             <option value="monthly" id="autopay_monthly_price"></option>
                             <option value="annual" id="autopay_annual_price_per_month"></option>
                         </select>
@@ -71,6 +71,9 @@
                         <input type="number" name="licenses" autocomplete="off" {% if not exempt_from_license_number_check %}min="{{ seat_count }}" value="{{ seat_count }}"{% endif %} autocomplete="off" id="manual_license_count" required/>
                         <div id="upgrade-licenses-change-error" class="alert alert-danger upgrade-page-error"></div>
                     </div>
+                    <input type="hidden" name="license_management" value="manual" />
+                    {% else %}
+                    <input type="hidden" name="license_management" value="automatic" />
                     {% endif %}
 
                     <div class="input-box upgrade-page-field no-validation">
