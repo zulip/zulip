@@ -19,23 +19,6 @@
         </div>
         <div class="white-box">
             <div id="upgrade-page-details">
-                {% if free_trial_days %}
-                <div id="free-trial-alert-message" class="alert alert-info">
-                    Upgrade now to start your {{ free_trial_days }} day free trial
-                    of Zulip Cloud Standard!
-                </div>
-                {% endif %}
-
-                {% if is_demo_organization %}
-                <div class="demo-organization-warning">
-                    Demo organizations cannot be directly upgraded to a paid plan. Please start by
-                    <a href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization">
-                    converting your demo organization
-                    </a>
-                    to a permanent organization.
-                </div>
-                {% endif %}
-
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                 <form id="autopay-form">
                     <input type="hidden" name="seat_count" value="{{ seat_count }}" />
@@ -49,13 +32,31 @@
                     <p id="onboarding-free-trial-not-ready" class="not-editable-realm-field"><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
                     <hr/>
                     {% endif %}
-                    <div class="input-box upgrade-page-field no-validation">
+
+                    <div id="free-trial-top-banner" class="input-box upgrade-page-field">
                         {% if free_trial_days %}
-                        <p>
+                        <div id="free-trial-alert-message" class="alert alert-info">
+                            Upgrade now to start your {{ free_trial_days }} day free trial
+                            of Zulip Cloud Standard!
+                        </div>
+                        <div class="not-editable-realm-field">
                             You won't be charged during the free trial. You can also downgrade to
                             Zulip Cloud Free, our forever free plan, at any time.
-                        </p>
+                        </div>
                         {% endif %}
+
+                        {% if is_demo_organization %}
+                        <div class="demo-organization-warning">
+                            Demo organizations cannot be directly upgraded to a paid plan. Please start by
+                            <a href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization">
+                            converting your demo organization
+                            </a>
+                            to a permanent organization.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="input-box upgrade-page-field no-validation">
                         <select name="schedule" id="payment-schedule-select">
                             <option value="monthly" id="autopay_monthly_price"></option>
                             <option value="annual" id="autopay_annual_price_per_month"></option>
@@ -75,7 +76,13 @@
                     {% endif %}
 
                     <div class="input-box upgrade-page-field no-validation">
-                        <label for="due-today" class="inline-block label-title">Due today</label>
+                        <label for="due-today" class="inline-block label-title">Due
+                            {% if free_trial_days %}
+                                after free trial
+                            {% else %}
+                                today
+                            {% endif %}
+                        </label>
                         <div id="due-today" class="not-editable-realm-field">
                             $<span class="due-today-unit-price"></span> x
                             {% if not manual_license_management %}
@@ -94,7 +101,7 @@
                         <p class="not-editable-realm-field">
                             {% if free_trial_days %}
                             After the Free Trial, you&rsquo;ll be charged
-                            <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
+                            <b>$<span class="due-today-price"></span></b> for <b>{{ seat_count }}</b>
                             users (or more if you later add more users).<br />
 
                             We'll automatically charge you for additional licenses as users
@@ -129,7 +136,11 @@
                     <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
                         <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}">
                             <span id="org-upgrade-button-span">
-                                Purchase Zulip Cloud Standard
+                                {% if free_trial_days %}
+                                    Start {{ free_trial_days }} day free trial
+                                {% else %}
+                                    Purchase Zulip Cloud Standard
+                                {% endif %}
                             </span>
                             <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>

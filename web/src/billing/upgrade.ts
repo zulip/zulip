@@ -29,7 +29,7 @@ export const initialize = (): void => {
         }
         $("#due-today .due-today-duration").text(num_months);
         const schedule_typed = helpers.schedule_schema.parse(schedule);
-        $("#due-today .due-today-price").text(
+        $(".due-today-price").text(
             helpers.format_money(current_license_count * prices[schedule_typed]),
         );
         const unit_price = prices[schedule_typed] / num_months;
