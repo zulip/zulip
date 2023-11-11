@@ -17,7 +17,6 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 
 @require_billing_access
-@has_request_variables
 def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) -> HttpResponse:
     billing_session = RealmBillingSession(user)
     assert billing_session.get_customer() is not None
