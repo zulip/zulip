@@ -27,7 +27,7 @@ export const initialize = (): void => {
         if (schedule === "monthly") {
             num_months = 1;
         }
-        $("#due-today .due-today-duration").text(num_months);
+        $("#due-today .due-today-duration").text(num_months === 1 ? "1 month" : "12 months");
         const schedule_typed = helpers.schedule_schema.parse(schedule);
         $(".due-today-price").text(
             helpers.format_money(current_license_count * prices[schedule_typed]),
@@ -59,6 +59,13 @@ export const initialize = (): void => {
             return;
         }
         $("#due-today .due-today-license-count").text(license_count);
+        const $user_plural = $("#due-today .due-today-license-count-user-plural");
+        if (license_count === 1) {
+            $user_plural.text("user");
+        } else {
+            $user_plural.text("users");
+        }
+
         current_license_count = license_count;
         update_due_today(selected_schedule);
     });

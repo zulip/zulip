@@ -90,8 +90,10 @@
                             {% else %}
                                 <span class="due-today-license-count">{{ seat_count }}</span>
                             {% endif %}
-                            users x
-                            <span class="due-today-duration"></span> month
+                            <span class="due-today-license-count-user-plural">
+                                {{ 'user' if seat_count == 1 else 'users' }}
+                            </span> x
+                            <span class="due-today-duration"></span>
                             <h1>$<span class="due-today-price"></span></h1>
                         </div>
                     </div>
