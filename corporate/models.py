@@ -360,3 +360,6 @@ class ZulipSponsorshipRequest(models.Model):
     org_website = models.URLField(max_length=MAX_ORG_URL_LENGTH, blank=True, null=True)
 
     org_description = models.TextField(default="")
+    expected_total_users = models.TextField(default="")
+    paid_users_count = models.TextField(default="")
+    paid_users_description = models.TextField(default="")

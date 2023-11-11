@@ -235,6 +235,9 @@ class SponsorshipRequestForm(forms.Form):
     website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False)
     organization_type = forms.IntegerField()
     description = forms.CharField(widget=forms.Textarea)
+    expected_total_users = forms.CharField(widget=forms.Textarea)
+    paid_users_count = forms.CharField(widget=forms.Textarea)
+    paid_users_description = forms.CharField(widget=forms.Textarea, required=False)
 
 
 @require_organization_member
@@ -245,6 +248,9 @@ def sponsorship(
     organization_type: str = REQ("organization-type"),
     website: str = REQ(),
     description: str = REQ(),
+    expected_total_users: str = REQ(),
+    paid_users_count: str = REQ(),
+    paid_users_description: str = REQ(),
 ) -> HttpResponse:
     realm = user.realm
     billing_session = RealmBillingSession(user)
@@ -268,6 +274,9 @@ def sponsorship(
                 org_website=form.cleaned_data["website"],
                 org_description=form.cleaned_data["description"],
                 org_type=form.cleaned_data["organization_type"],
+                expected_total_users=form.cleaned_data["expected_total_users"],
+                paid_users_count=form.cleaned_data["paid_users_count"],
+                paid_users_description=form.cleaned_data["paid_users_description"],
             )
             sponsorship_request.save()
 
@@ -289,6 +298,9 @@ def sponsorship(
             "organization_type": org_type_display_name,
             "website": website,
             "description": description,
+            "expected_total_users": expected_total_users,
+            "paid_users_count": paid_users_count,
+            "paid_users_description": paid_users_description,
         }
         send_email(
             "zerver/emails/sponsorship_request",

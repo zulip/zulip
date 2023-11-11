@@ -72,6 +72,21 @@
                         <div id="sponsorship-org-website-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
                     <div class="input-box sponsorship-form-field">
+                        <label for="expected-total-users" class="inline-block label-title">Expected number of users (approximate range)</label>
+                        <textarea id="expected-total-users" name="expected_total_users" cols="100" rows="2" placeholder="e.g., probably no more than 100"></textarea>
+                        <div id="sponsorship-expected-total-users-error" class="alert alert-danger sponsorship-field-error"></div>
+                    </div>
+                    <div class="input-box sponsorship-form-field no-validation">
+                        <label for="paid-users-count" class="inline-block label-title">How many paid staff does your organization have?</label>
+                        <input id="paid-users-count" name="paid_users_count" type="text" placeholder="e.g., 10"/>
+                        <div id="sponsorship-paid-users-count-error" class="alert alert-danger sponsorship-field-error"></div>
+                    </div>
+                    <div class="input-box sponsorship-form-field">
+                        <label for="paid-users-description" class="inline-block label-title">Description of Paid Staff (If more than zero, please describe):</label>
+                        <textarea id="paid-users-description" name="paid_users_description" cols="100" rows="5" placeholder="Briefly describe the roles and responsibilities of your paid staff members in the context of Zulip usage."></textarea>
+                        <div id="sponsorship-paid-users-description-error" class="alert alert-danger sponsorship-field-error"></div>
+                    </div>
+                    <div class="input-box sponsorship-form-field">
                         <label for="description" class="inline-block label-title">Describe this organization</label>
                         <textarea id="description" name="description" cols="100" rows="5"></textarea>
                         <div id="sponsorship-description-error" class="alert alert-danger sponsorship-field-error"></div>
