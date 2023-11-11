@@ -9,7 +9,13 @@
 <div id="upgrade-page" class="register-account flex full-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Upgrade {{ realm.name }} to {{ plan }}</h1>
+            <h1>Upgrade {{ realm.name }} to
+                {% if free_trial_days %}
+                    Zulip Cloud Standard free trial
+                {% else %}
+                    {{ plan }}
+                {% endif %}
+            </h1>
         </div>
         <div class="white-box">
             <div id="upgrade-page-details">
@@ -40,9 +46,8 @@
                     <input type="hidden" name="onboarding" value="true" />
                     {% endif %}
                     {% if onboarding and free_trial_days %}
-                    <p><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
-                    <hr />
-                    <h2>Zulip Cloud Standard free trial</h2>
+                    <p id="onboarding-free-trial-not-ready" class="not-editable-realm-field"><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
+                    <hr/>
                     {% endif %}
                     <div class="input-box upgrade-page-field no-validation">
                         {% if free_trial_days %}
