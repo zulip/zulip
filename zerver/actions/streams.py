@@ -201,10 +201,13 @@ def do_unarchive_stream(
     ).only("id")
     cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
 
-    # Unset the is_web_public cache on attachments, since the stream is now private.
-    Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(is_web_public=None)
+    # Unset the is_web_public and is_realm_public cache on attachments,
+    # since the stream is now private.
+    Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+        is_web_public=None, is_realm_public=None
+    )
     ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-        is_web_public=None
+        is_web_public=None, is_realm_public=None
     )
 
     RealmAuditLog.objects.create(
