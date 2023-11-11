@@ -2159,6 +2159,9 @@ class StripeTest(StripeTestCase):
             "organization-type": Realm.ORG_TYPES["opensource"]["id"],
             "website": "invalid-url",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+            "expected_total_users": "10 users",
+            "paid_users_count": "1 user",
+            "paid_users_description": "We have 1 paid user.",
         }
 
         response = self.client_post("/json/billing/sponsorship", data)
@@ -2172,6 +2175,9 @@ class StripeTest(StripeTestCase):
             "organization-type": Realm.ORG_TYPES["opensource"]["id"],
             "website": "",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+            "expected_total_users": "10 users",
+            "paid_users_count": "1 user",
+            "paid_users_description": "We have 1 paid user.",
         }
 
         response = self.client_post("/json/billing/sponsorship", data)
@@ -2223,6 +2229,9 @@ class StripeTest(StripeTestCase):
             "organization-type": Realm.ORG_TYPES["opensource"]["id"],
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+            "expected_total_users": "10 users",
+            "paid_users_count": "1 user",
+            "paid_users_description": "We have 1 paid user.",
         }
         response = self.client_post("/json/billing/sponsorship", data)
         self.assert_json_success(response)

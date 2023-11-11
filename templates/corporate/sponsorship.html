@@ -66,17 +66,35 @@
                         </div>
                         <label for="organization-type" class="inline-block label-title">Organization type</label>
                     </div>
+                    <p id="sponsorship-discount-details"></p>
                     <div class="input-box sponsorship-form-field no-validation">
-                        <label for="org-website" class="inline-block label-title">Organization website</label>
-                        <input id="org-website" name="website" type="text" placeholder="Leave blank if this organization does not have a website."/>
+                        <label for="org-website" class="inline-block
+                          label-title">Organization website (if any)</label>
+                        <input id="org-website" name="website" type="text"/>
                         <div id="sponsorship-org-website-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
                     <div class="input-box sponsorship-form-field">
-                        <label for="description" class="inline-block label-title">Describe this organization</label>
+                        <label for="description" class="inline-block
+                          label-title">Description of your organization</label>
                         <textarea id="description" name="description" cols="100" rows="5"></textarea>
                         <div id="sponsorship-description-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
-                    <p id="sponsorship-discount-details"></p>
+                    <div class="input-box sponsorship-form-field">
+                        <label for="expected-total-users" class="inline-block label-title">Expected number of users (approximate range)</label>
+                        <input id="expected-total-users" name="expected_total_users" type="text" />
+                        <div id="sponsorship-expected-total-users-error" class="alert alert-danger sponsorship-field-error"></div>
+                    </div>
+                    <div class="input-box sponsorship-form-field no-validation">
+                        <label for="paid-users-count" class="inline-block label-title">How many paid staff does your organization have?</label>
+                        <input id="paid-users-count" name="paid_users_count" type="text"/>
+                        <div id="sponsorship-paid-users-count-error" class="alert alert-danger sponsorship-field-error"></div>
+                    </div>
+                    <div class="input-box sponsorship-form-field">
+                        <label for="paid-users-description" class="inline-block
+                          label-title">Description of paid staff (if any)</label>
+                        <textarea id="paid-users-description" name="paid_users_description" cols="100" rows="2"></textarea>
+                        <div id="sponsorship-paid-users-description-error" class="alert alert-danger sponsorship-field-error"></div>
+                    </div>
                     <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
                     <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="Convert demo organization before upgrading."{% endif %}>
                         <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
