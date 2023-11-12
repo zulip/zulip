@@ -116,9 +116,9 @@ def validate_licenses(
     if licenses is None or (not exempt_from_license_number_check and licenses < min_licenses):
         raise BillingError(
             "not enough licenses",
-            _("You must invoice for at least {min_licenses} users.").format(
-                min_licenses=min_licenses
-            ),
+            _(
+                "You must purchase licenses for all active users in your organization (minimum {min_licenses})."
+            ).format(min_licenses=min_licenses),
         )
 
     if max_licenses is not None and licenses > max_licenses:
