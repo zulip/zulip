@@ -456,7 +456,7 @@ input[name="licenses"] {
     margin: 0 auto;
     font-size: 1.1rem;
     margin-right: 0;
-    max-width: 100px;
+    width: 100px;
 
     &:disabled {
         color: hsl(0deg 0% 80%);
@@ -506,6 +506,7 @@ input[name="licenses"] {
 
 #billing-page-details .user-stripe-card-update .user-stripe-card-update-button {
     margin: 0;
+    width: 150px;
 }
 
 #billing-page-details .next-payment-info {
