@@ -208,7 +208,7 @@ class Command(BaseCommand):
                 billing_cycle_anchor=timezone_now(),
                 billing_schedule=customer_profile.billing_schedule,
                 tier=customer_profile.tier,
-                price_per_license=3,
+                price_per_license=1200,
                 automanage_licenses=customer_profile.automanage_licenses,
                 status=customer_profile.status,
                 charge_automatically=customer_profile.charge_automatically,
