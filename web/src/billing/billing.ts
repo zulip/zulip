@@ -204,7 +204,7 @@ export function initialize(): void {
         const {new_next_manual_license_count, old_next_manual_license_count} =
             get_old_and_new_license_count_for_next_cycle();
         if (
-            !new_next_manual_license_count ||
+            !new_next_manual_license_count || new_next_manual_license_count < 0 ||
             new_next_manual_license_count === old_next_manual_license_count
         ) {
             $("#next-manual-license-count-update-button").prop("disabled", true);
