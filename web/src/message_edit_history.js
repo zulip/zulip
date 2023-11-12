@@ -136,6 +136,7 @@ export function fetch_and_render_message_history(message) {
                 });
         },
         error(xhr) {
+            show_history();
             ui_report.error(
                 $t_html({defaultMessage: "Error fetching message edit history"}),
                 xhr,
