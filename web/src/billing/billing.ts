@@ -194,15 +194,15 @@ export function initialize(): void {
             const {new_current_manual_license_count, old_current_manual_license_count} =
                 get_old_and_new_license_count_for_current_cycle();
             if (new_current_manual_license_count > old_current_manual_license_count) {
-                $("#current-manual-license-count-update-button").prop("disabled", false);
+                $("#current-manual-license-count-update-button").toggleClass("hide", false);
                 $("#current-license-change-error").text("");
             } else if (new_current_manual_license_count < old_current_manual_license_count) {
                 $("#current-license-change-error").text(
                     "You can only increase the number of licenses for the current billing period.",
                 );
-                $("#current-manual-license-count-update-button").prop("disabled", true);
+                $("#current-manual-license-count-update-button").toggleClass("hide", true);
             } else {
-                $("#current-manual-license-count-update-button").prop("disabled", true);
+                $("#current-manual-license-count-update-button").toggleClass("hide", true);
                 $("#current-license-change-error").text("");
             }
         }, 300); // Wait for 300ms after the user stops typing
@@ -221,9 +221,9 @@ export function initialize(): void {
                 new_next_manual_license_count < 0 ||
                 new_next_manual_license_count === old_next_manual_license_count
             ) {
-                $("#next-manual-license-count-update-button").prop("disabled", true);
+                $("#next-manual-license-count-update-button").toggleClass("hide", true);
             } else {
-                $("#next-manual-license-count-update-button").prop("disabled", false);
+                $("#next-manual-license-count-update-button").toggleClass("hide", false);
             }
         }, 300); // Wait for 300ms after the user stops typing
     });

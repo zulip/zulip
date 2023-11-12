@@ -457,14 +457,10 @@ input[name="licenses"] {
     font-size: 1.1rem;
     margin-right: 0;
     width: 100px;
+}
 
-    &:disabled {
-        color: hsl(0deg 0% 80%);
-
-        &:hover {
-            cursor: not-allowed;
-        }
-    }
+#billing-page .license-count-update-button.hide {
+    display: none;
 }
 
 #billing-page #current-license-change-form,
