@@ -187,6 +187,21 @@ def billing_home(
             else:
                 payment_method = "Billed by invoice"
 
+            fixed_price = (
+                cents_to_dollar_string(plan.fixed_price) if plan.fixed_price is not None else None
+            )
+
+            billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
+            price_per_license_int = plan.price_per_license
+            if price_per_license_int is not None and billing_frequency == "Annual":
+                price_per_license_int = int(price_per_license_int / 12)
+
+            price_per_license = (
+                cents_to_dollar_string(price_per_license_int)
+                if price_per_license_int is not None
+                else None
+            )
+
             context.update(
                 plan_name=plan.name,
                 has_active_plan=True,
@@ -204,7 +219,9 @@ def billing_home(
                 stripe_email=stripe_customer.email,
                 CustomerPlan=CustomerPlan,
                 onboarding=onboarding,
-                billing_frequency=CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule],
+                billing_frequency=billing_frequency,
+                fixed_price=fixed_price,
+                price_per_license=price_per_license,
             )
 
     return render(request, "corporate/billing.html", context=context)
