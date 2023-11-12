@@ -1907,17 +1907,17 @@ class StripeTest(StripeTestCase):
         check_error("Invalid license_management", "", {"license_management": "invalid"})
 
         check_error(
-            "You must invoice for at least 30 users.",
+            "You must purchase licenses for all active users in your organization (minimum 30).",
             "not enough licenses",
             {"billing_modality": "send_invoice", "licenses": -1},
         )
         check_error(
-            "You must invoice for at least 30 users.",
+            "You must purchase licenses for all active users in your organization (minimum 30).",
             "not enough licenses",
             {"billing_modality": "send_invoice"},
         )
         check_error(
-            "You must invoice for at least 30 users.",
+            "You must purchase licenses for all active users in your organization (minimum 30).",
             "not enough licenses",
             {"billing_modality": "send_invoice", "licenses": 25},
         )
@@ -1928,13 +1928,13 @@ class StripeTest(StripeTestCase):
         )
 
         check_error(
-            "You must invoice for at least 6 users.",
+            "You must purchase licenses for all active users in your organization (minimum 6).",
             "not enough licenses",
             {"billing_modality": "charge_automatically", "license_management": "manual"},
         )
 
         check_error(
-            "You must invoice for at least 6 users.",
+            "You must purchase licenses for all active users in your organization (minimum 6).",
             "not enough licenses",
             {
                 "billing_modality": "charge_automatically",
@@ -1960,7 +1960,7 @@ class StripeTest(StripeTestCase):
                 response = self.upgrade(
                     invoice=invoice, talk_to_stripe=False, del_args=del_args, **upgrade_params
                 )
-            self.assert_json_error_contains(response, f"at least {min_licenses_in_response} users")
+            self.assert_json_error_contains(response, f"minimum {min_licenses_in_response}")
             self.assertEqual(
                 orjson.loads(response.content)["error_description"], "not enough licenses"
             )
@@ -3204,7 +3204,10 @@ class StripeTest(StripeTestCase):
 
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 25})
-            self.assert_json_error_contains(result, "You must invoice for at least 30 users.")
+            self.assert_json_error_contains(
+                result,
+                "You must purchase licenses for all active users in your organization (minimum 30).",
+            )
 
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 2000})
