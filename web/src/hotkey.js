@@ -1092,7 +1092,6 @@ export function process_hotkey(e, hotkey) {
         case "view_edit_history": {
             if (page_params.realm_allow_edit_history) {
                 message_edit_history.fetch_and_render_message_history(msg);
-                $("#message-history-cancel").trigger("focus");
                 return true;
             }
             return false;
