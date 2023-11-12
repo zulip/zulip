@@ -97,5 +97,14 @@ export function initialize(): void {
 }
 
 $(() => {
+    // Don't preserve scroll position on reload. This allows us to
+    // show the sponsorship pending message after user submits the
+    // form otherwise the sponsorship pending message is partially
+    // hidden due to browser preserving scroll position.
+    // https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration
+    if (history.scrollRestoration) {
+        history.scrollRestoration = "manual";
+    }
+
     initialize();
 });
