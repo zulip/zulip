@@ -189,8 +189,11 @@ export function sort_emojis<T extends Emoji>(objs: T[], query: string): T[] {
         objs.filter((obj) => obj.is_realm_emoji).map((obj) => obj.emoji_name),
     );
 
-    const popular_emoji_matches = objs.filter((obj) => is_popular(obj));
-    const others = objs.filter((obj) => !is_popular(obj));
+    const perfect_emoji_matches = objs.filter((obj) => obj.emoji_name === query);
+    const without_perfect_matches = objs.filter((obj) => obj.emoji_name !== query);
+
+    const popular_emoji_matches = without_perfect_matches.filter((obj) => is_popular(obj));
+    const others = without_perfect_matches.filter((obj) => !is_popular(obj));
 
     const triage_results = triage(query, others, (x) => x.emoji_name);
 
@@ -202,6 +205,7 @@ export function sort_emojis<T extends Emoji>(objs: T[], query: string): T[] {
     }
 
     const sorted_results_with_possible_duplicates = [
+        ...perfect_emoji_matches,
         ...popular_emoji_matches,
         ...prioritise_realm_emojis(triage_results.matches),
         ...prioritise_realm_emojis(triage_results.rest),
