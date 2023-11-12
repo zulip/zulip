@@ -61,7 +61,7 @@
                             <input min="{{ licenses }}" type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
-                        <button id="current-manual-license-count-update-button" class="license-count-update-button" disabled>
+                        <button id="current-manual-license-count-update-button" class="license-count-update-button hide">
                             <span class="billing-button-text">Update</span>
                             <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
@@ -81,7 +81,7 @@
                             <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
-                        <button id="next-manual-license-count-update-button" class="license-count-update-button" disabled>
+                        <button id="next-manual-license-count-update-button" class="license-count-update-button hide">
                             <span class="billing-button-text">Update</span>
                             <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
