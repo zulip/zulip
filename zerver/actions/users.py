@@ -24,7 +24,12 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import get_active_bots_owned_by_user, get_user_ids_who_can_access_user
+from zerver.lib.users import (
+    get_active_bots_owned_by_user,
+    get_user_ids_who_can_access_user,
+    get_users_involved_in_dms_with_target_users,
+    user_access_restricted_in_realm,
+)
 from zerver.models import (
     Message,
     Realm,
@@ -35,6 +40,8 @@ from zerver.models import (
     Subscription,
     UserGroupMembership,
     UserProfile,
+    active_non_guest_user_ids,
+    active_user_ids,
     bot_owner_user_ids,
     get_bot_dicts_in_realm,
     get_bot_services,
@@ -245,6 +252,69 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
         Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
 
 
+def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
+    event_deactivate_user = dict(
+        type="realm_user",
+        op="update",
+        person=dict(user_id=user_profile.id, is_active=False),
+    )
+    realm = user_profile.realm
+
+    if not user_access_restricted_in_realm(user_profile):
+        send_event_on_commit(realm, event_deactivate_user, active_user_ids(realm.id))
+        return
+
+    non_guest_user_ids = active_non_guest_user_ids(realm.id)
+    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([user_profile], realm)
+
+    # This code path is parallel to
+    # get_subscribers_of_target_user_subscriptions, but can't reuse it
+    # because we need to process stream and huddle subscriptions
+    # separately.
+    deactivated_user_subs = Subscription.objects.filter(
+        user_profile=user_profile,
+        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        active=True,
+    ).values_list("recipient_id", flat=True)
+    subscribers_in_deactivated_user_subs = Subscription.objects.filter(
+        recipient_id__in=list(deactivated_user_subs),
+        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        is_user_active=True,
+        active=True,
+    ).values_list("recipient__type", "user_profile_id")
+
+    subscribers_in_deactivated_user_streams = set()
+    subscribers_in_deactivated_user_huddles = set()
+    for recipient_type, user_id in subscribers_in_deactivated_user_subs:
+        if recipient_type == Recipient.HUDDLE:
+            subscribers_in_deactivated_user_huddles.add(user_id)
+        else:
+            subscribers_in_deactivated_user_streams.add(user_id)
+
+    users_with_access_to_deactivated_user = (
+        set(non_guest_user_ids)
+        | users_involved_in_dms_dict[user_profile.id]
+        | subscribers_in_deactivated_user_huddles
+    )
+    if users_with_access_to_deactivated_user:
+        send_event_on_commit(
+            realm, event_deactivate_user, list(users_with_access_to_deactivated_user)
+        )
+
+    users_losing_access_to_deactivated_user = (
+        subscribers_in_deactivated_user_streams - users_with_access_to_deactivated_user
+    )
+    if users_losing_access_to_deactivated_user:
+        event_remove_user = dict(
+            type="realm_user",
+            op="remove",
+            person=dict(user_id=user_profile.id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)),
+        )
+        send_event_on_commit(
+            realm, event_remove_user, list(users_losing_access_to_deactivated_user)
+        )
+
+
 def do_deactivate_user(
     user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -298,16 +368,7 @@ def do_deactivate_user(
 
         transaction.on_commit(lambda: delete_user_sessions(user_profile))
 
-        event_deactivate_user = dict(
-            type="realm_user",
-            op="update",
-            person=dict(user_id=user_profile.id, is_active=False),
-        )
-        send_event_on_commit(
-            user_profile.realm,
-            event_deactivate_user,
-            get_user_ids_who_can_access_user(user_profile),
-        )
+        send_events_for_user_deactivation(user_profile)
 
         if user_profile.is_bot:
             event_deactivate_bot = dict(

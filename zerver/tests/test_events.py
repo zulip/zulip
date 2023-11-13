@@ -2966,6 +2966,20 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, num_events=1)
         check_realm_user_update("events[0]", events[0], "is_active")
 
+        # Guest loses access to deactivated user if the user
+        # was not involved in DMs.
+        user_profile = self.example_user("hamlet")
+        action = lambda: do_deactivate_user(user_profile, acting_user=None)
+        events = self.verify_action(action, num_events=1)
+        check_realm_user_remove("events[0]", events[0])
+
+        user_profile = self.example_user("aaron")
+        action = lambda: do_deactivate_user(user_profile, acting_user=None)
+        # One update event is for a deactivating a bot owned by aaron.
+        events = self.verify_action(action, num_events=2)
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_realm_user_update("events[1]", events[1], "is_active")
+
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot("test")
         self.subscribe(bot, "Denmark")
