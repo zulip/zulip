@@ -8,11 +8,11 @@
 {% block portico_content %}
 <div id="billing-page" class="register-account flex full-page">
     <div class="center-block new-style">
+        {% if admin_access and has_active_plan %}
         <div class="pitch">
             <h1>Zulip Cloud billing for {{ org_name }}</h1>
         </div>
         <div class="alert alert-danger" id="error-message-box"></div>
-        {% if admin_access and has_active_plan %}
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
         <div class="white-box">
             <div id="billing-page-details">
@@ -198,9 +198,16 @@
         {% else %}
         <!-- For sponsored or sponsorship pending organizations we redirect to /sponsorship page. -->
         <!-- For organizations on free plan we redirect to /plans page. -->
-        <p>
-            You must be an organization owner or a billing administrator to view this page.
-        </p>
+        <div class="billing-status-page">
+            <div class="pitch">
+                <h1>Zulip Cloud billing for {{ org_name }}</h1>
+            </div>
+            <div class="white-box">
+                <p>
+                    You must be an organization owner or a billing administrator to view this page.
+                </p>
+            </div>
+        </div>
         {% endif %}
     </div>
 </div>
