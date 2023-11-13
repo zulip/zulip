@@ -255,7 +255,11 @@ def next_invoice_date(plan: CustomerPlan) -> Optional[datetime]:
 def renewal_amount(plan: CustomerPlan, event_time: datetime) -> int:  # nocoverage: TODO
     if plan.fixed_price is not None:
         return plan.fixed_price
-    new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, event_time)
+    realm = plan.customer.realm
+    billing_session = RealmBillingSession(user=None, realm=realm)
+    new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
+        plan, event_time
+    )
     if last_ledger_entry is None:
         return 0
     if last_ledger_entry.licenses_at_next_renewal is None:
@@ -402,6 +406,7 @@ class AuditLogEventType(Enum):
     SPONSORSHIP_APPROVED = 5
     SPONSORSHIP_PENDING_STATUS_CHANGED = 6
     BILLING_METHOD_CHANGED = 7
+    CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 8
 
 
 class BillingSessionAuditLogEventError(Exception):
@@ -462,6 +467,10 @@ class BillingSession(ABC):
 
     @abstractmethod
     def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
+        pass
+
+    @abstractmethod
+    def process_downgrade(self, plan: CustomerPlan) -> None:
         pass
 
     @abstractmethod
@@ -821,16 +830,159 @@ class BillingSession(ABC):
             )
         return data
 
+    # event_time should roughly be timezone_now(). Not designed to handle
+    # event_times in the past or future
+    @transaction.atomic
+    def make_end_of_cycle_updates_if_needed(
+        self, plan: CustomerPlan, event_time: datetime
+    ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
+        last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
+        last_ledger_renewal = (
+            LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
+        )
+        assert last_ledger_renewal is not None
+        last_renewal = last_ledger_renewal.event_time
+
+        if plan.is_free_trial() or plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
+            assert plan.next_invoice_date is not None
+            next_billing_cycle = plan.next_invoice_date
+        else:
+            next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
+        if next_billing_cycle <= event_time and last_ledger_entry is not None:
+            licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+            assert licenses_at_next_renewal is not None
+            if plan.status == CustomerPlan.ACTIVE:
+                return None, LicenseLedger.objects.create(
+                    plan=plan,
+                    is_renewal=True,
+                    event_time=next_billing_cycle,
+                    licenses=licenses_at_next_renewal,
+                    licenses_at_next_renewal=licenses_at_next_renewal,
+                )
+            if plan.is_free_trial():
+                plan.invoiced_through = last_ledger_entry
+                plan.billing_cycle_anchor = next_billing_cycle.replace(microsecond=0)
+                plan.status = CustomerPlan.ACTIVE
+                plan.save(update_fields=["invoiced_through", "billing_cycle_anchor", "status"])
+                return None, LicenseLedger.objects.create(
+                    plan=plan,
+                    is_renewal=True,
+                    event_time=next_billing_cycle,
+                    licenses=licenses_at_next_renewal,
+                    licenses_at_next_renewal=licenses_at_next_renewal,
+                )
+
+            if plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
+                if plan.fixed_price is not None:  # nocoverage
+                    raise NotImplementedError("Can't switch fixed priced monthly plan to annual.")
+
+                plan.status = CustomerPlan.ENDED
+                plan.save(update_fields=["status"])
+
+                discount = plan.customer.default_discount or plan.discount
+                _, _, _, price_per_license = compute_plan_parameters(
+                    tier=plan.tier,
+                    automanage_licenses=plan.automanage_licenses,
+                    billing_schedule=CustomerPlan.ANNUAL,
+                    discount=plan.discount,
+                )
+
+                new_plan = CustomerPlan.objects.create(
+                    customer=plan.customer,
+                    billing_schedule=CustomerPlan.ANNUAL,
+                    automanage_licenses=plan.automanage_licenses,
+                    charge_automatically=plan.charge_automatically,
+                    price_per_license=price_per_license,
+                    discount=discount,
+                    billing_cycle_anchor=next_billing_cycle,
+                    tier=plan.tier,
+                    status=CustomerPlan.ACTIVE,
+                    next_invoice_date=next_billing_cycle,
+                    invoiced_through=None,
+                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                )
+
+                new_plan_ledger_entry = LicenseLedger.objects.create(
+                    plan=new_plan,
+                    is_renewal=True,
+                    event_time=next_billing_cycle,
+                    licenses=licenses_at_next_renewal,
+                    licenses_at_next_renewal=licenses_at_next_renewal,
+                )
+
+                self.write_to_audit_log(
+                    event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
+                    event_time=event_time,
+                    extra_data={
+                        "monthly_plan_id": plan.id,
+                        "annual_plan_id": new_plan.id,
+                    },
+                )
+                return new_plan, new_plan_ledger_entry
+
+            if plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
+                standard_plan = plan
+                standard_plan.end_date = next_billing_cycle
+                standard_plan.status = CustomerPlan.ENDED
+                standard_plan.save(update_fields=["status", "end_date"])
+
+                (_, _, _, plus_plan_price_per_license) = compute_plan_parameters(
+                    CustomerPlan.PLUS,
+                    standard_plan.automanage_licenses,
+                    standard_plan.billing_schedule,
+                    standard_plan.customer.default_discount,
+                )
+                plus_plan_billing_cycle_anchor = standard_plan.end_date.replace(microsecond=0)
+
+                plus_plan = CustomerPlan.objects.create(
+                    customer=standard_plan.customer,
+                    status=CustomerPlan.ACTIVE,
+                    automanage_licenses=standard_plan.automanage_licenses,
+                    charge_automatically=standard_plan.charge_automatically,
+                    price_per_license=plus_plan_price_per_license,
+                    discount=standard_plan.customer.default_discount,
+                    billing_schedule=standard_plan.billing_schedule,
+                    tier=CustomerPlan.PLUS,
+                    billing_cycle_anchor=plus_plan_billing_cycle_anchor,
+                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                    next_invoice_date=plus_plan_billing_cycle_anchor,
+                )
+
+                standard_plan_last_ledger = (
+                    LicenseLedger.objects.filter(plan=standard_plan).order_by("id").last()
+                )
+                assert standard_plan_last_ledger is not None
+                licenses_for_plus_plan = standard_plan_last_ledger.licenses_at_next_renewal
+                assert licenses_for_plus_plan is not None
+                plus_plan_ledger_entry = LicenseLedger.objects.create(
+                    plan=plus_plan,
+                    is_renewal=True,
+                    event_time=plus_plan_billing_cycle_anchor,
+                    licenses=licenses_for_plus_plan,
+                    licenses_at_next_renewal=licenses_for_plus_plan,
+                )
+                return plus_plan, plus_plan_ledger_entry
+
+            if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+                self.process_downgrade(plan)
+            return None, None
+        return None, last_ledger_entry
+
 
 class RealmBillingSession(BillingSession):
-    def __init__(self, user: UserProfile, realm: Optional[Realm] = None) -> None:
+    def __init__(self, user: Optional[UserProfile] = None, realm: Optional[Realm] = None) -> None:
         self.user = user
-        if realm is not None:
+        assert user is not None or realm is not None
+        if user is not None and realm is not None:
             assert user.is_staff
             self.realm = realm
             self.support_session = True
-        else:
+        elif user is not None:
             self.realm = user.realm
+            self.support_session = False
+        else:
+            assert realm is not None  # for mypy
+            self.realm = realm
             self.support_session = False
 
     @override
@@ -862,6 +1014,8 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_METHOD_CHANGED:
             return RealmAuditLog.REALM_BILLING_METHOD_CHANGED
+        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
+            return RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -874,26 +1028,25 @@ class RealmBillingSession(BillingSession):
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         audit_log_event = self.get_audit_log_event(event_type)
+        audit_log_data = {
+            "realm": self.realm,
+            "event_type": audit_log_event,
+            "event_time": event_time,
+        }
+
         if extra_data:
-            RealmAuditLog.objects.create(
-                realm=self.realm,
-                acting_user=self.user,
-                event_type=audit_log_event,
-                event_time=event_time,
-                extra_data=extra_data,
-            )
-        else:
-            RealmAuditLog.objects.create(
-                realm=self.realm,
-                acting_user=self.user,
-                event_type=audit_log_event,
-                event_time=event_time,
-            )
+            audit_log_data["extra_data"] = extra_data
+
+        if self.user is not None:
+            audit_log_data["acting_user"] = self.user
+
+        RealmAuditLog.objects.create(**audit_log_data)
 
     @override
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
+        assert self.user is not None
         metadata: Dict[str, Any] = {}
         metadata["realm_id"] = self.realm.id
         metadata["realm_str"] = self.realm.string_id
@@ -908,6 +1061,7 @@ class RealmBillingSession(BillingSession):
     def update_data_for_checkout_session_and_payment_intent(
         self, metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
+        assert self.user is not None
         updated_metadata = dict(
             user_email=self.user.delivery_email,
             realm_id=self.realm.id,
@@ -923,6 +1077,7 @@ class RealmBillingSession(BillingSession):
     ) -> StripePaymentIntentData:
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
+        assert self.user is not None
         amount = price_per_license * licenses
         description = f"Upgrade to Zulip Cloud Standard, ${price_per_license/100} x {licenses}"
         plan_name = "Zulip Cloud Standard"
@@ -945,6 +1100,7 @@ class RealmBillingSession(BillingSession):
             )
             from zerver.actions.users import do_make_user_billing_admin
 
+            assert self.user is not None
             do_make_user_billing_admin(self.user)
             return customer
         else:
@@ -968,6 +1124,15 @@ class RealmBillingSession(BillingSession):
         else:
             raise AssertionError("Unexpected tier")
         do_change_realm_plan_type(self.realm, plan_type, acting_user=self.user)
+
+    @override
+    def process_downgrade(self, plan: CustomerPlan) -> None:
+        from zerver.actions.realm_settings import do_change_realm_plan_type
+
+        assert plan.customer.realm is not None
+        do_change_realm_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        plan.status = CustomerPlan.ENDED
+        plan.save(update_fields=["status"])
 
     @override
     def approve_sponsorship(self) -> None:
@@ -1015,149 +1180,6 @@ def customer_has_credit_card_as_default_payment_method(customer: Customer) -> bo
         return False
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     return stripe_customer_has_credit_card_as_default_payment_method(stripe_customer)
-
-
-# event_time should roughly be timezone_now(). Not designed to handle
-# event_times in the past or future
-@transaction.atomic
-def make_end_of_cycle_updates_if_needed(
-    plan: CustomerPlan, event_time: datetime
-) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
-    last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
-    last_ledger_renewal = (
-        LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
-    )
-    assert last_ledger_renewal is not None
-    last_renewal = last_ledger_renewal.event_time
-
-    if plan.is_free_trial() or plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
-        assert plan.next_invoice_date is not None
-        next_billing_cycle = plan.next_invoice_date
-    else:
-        next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
-    if next_billing_cycle <= event_time and last_ledger_entry is not None:
-        licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
-        assert licenses_at_next_renewal is not None
-        if plan.status == CustomerPlan.ACTIVE:
-            return None, LicenseLedger.objects.create(
-                plan=plan,
-                is_renewal=True,
-                event_time=next_billing_cycle,
-                licenses=licenses_at_next_renewal,
-                licenses_at_next_renewal=licenses_at_next_renewal,
-            )
-        if plan.is_free_trial():
-            plan.invoiced_through = last_ledger_entry
-            plan.billing_cycle_anchor = next_billing_cycle.replace(microsecond=0)
-            plan.status = CustomerPlan.ACTIVE
-            plan.save(update_fields=["invoiced_through", "billing_cycle_anchor", "status"])
-            return None, LicenseLedger.objects.create(
-                plan=plan,
-                is_renewal=True,
-                event_time=next_billing_cycle,
-                licenses=licenses_at_next_renewal,
-                licenses_at_next_renewal=licenses_at_next_renewal,
-            )
-
-        if plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
-            if plan.fixed_price is not None:  # nocoverage
-                raise NotImplementedError("Can't switch fixed priced monthly plan to annual.")
-
-            plan.status = CustomerPlan.ENDED
-            plan.save(update_fields=["status"])
-
-            discount = plan.customer.default_discount or plan.discount
-            _, _, _, price_per_license = compute_plan_parameters(
-                tier=plan.tier,
-                automanage_licenses=plan.automanage_licenses,
-                billing_schedule=CustomerPlan.ANNUAL,
-                discount=plan.discount,
-            )
-
-            new_plan = CustomerPlan.objects.create(
-                customer=plan.customer,
-                billing_schedule=CustomerPlan.ANNUAL,
-                automanage_licenses=plan.automanage_licenses,
-                charge_automatically=plan.charge_automatically,
-                price_per_license=price_per_license,
-                discount=discount,
-                billing_cycle_anchor=next_billing_cycle,
-                tier=plan.tier,
-                status=CustomerPlan.ACTIVE,
-                next_invoice_date=next_billing_cycle,
-                invoiced_through=None,
-                invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
-            )
-
-            new_plan_ledger_entry = LicenseLedger.objects.create(
-                plan=new_plan,
-                is_renewal=True,
-                event_time=next_billing_cycle,
-                licenses=licenses_at_next_renewal,
-                licenses_at_next_renewal=licenses_at_next_renewal,
-            )
-
-            realm = new_plan.customer.realm
-            assert realm is not None
-
-            RealmAuditLog.objects.create(
-                realm=realm,
-                event_time=event_time,
-                event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
-                extra_data={
-                    "monthly_plan_id": plan.id,
-                    "annual_plan_id": new_plan.id,
-                },
-            )
-            return new_plan, new_plan_ledger_entry
-
-        if plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
-            standard_plan = plan
-            standard_plan.end_date = next_billing_cycle
-            standard_plan.status = CustomerPlan.ENDED
-            standard_plan.save(update_fields=["status", "end_date"])
-
-            (_, _, _, plus_plan_price_per_license) = compute_plan_parameters(
-                CustomerPlan.PLUS,
-                standard_plan.automanage_licenses,
-                standard_plan.billing_schedule,
-                standard_plan.customer.default_discount,
-            )
-            plus_plan_billing_cycle_anchor = standard_plan.end_date.replace(microsecond=0)
-
-            plus_plan = CustomerPlan.objects.create(
-                customer=standard_plan.customer,
-                status=CustomerPlan.ACTIVE,
-                automanage_licenses=standard_plan.automanage_licenses,
-                charge_automatically=standard_plan.charge_automatically,
-                price_per_license=plus_plan_price_per_license,
-                discount=standard_plan.customer.default_discount,
-                billing_schedule=standard_plan.billing_schedule,
-                tier=CustomerPlan.PLUS,
-                billing_cycle_anchor=plus_plan_billing_cycle_anchor,
-                invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
-                next_invoice_date=plus_plan_billing_cycle_anchor,
-            )
-
-            standard_plan_last_ledger = (
-                LicenseLedger.objects.filter(plan=standard_plan).order_by("id").last()
-            )
-            assert standard_plan_last_ledger is not None
-            licenses_for_plus_plan = standard_plan_last_ledger.licenses_at_next_renewal
-            assert licenses_for_plus_plan is not None
-            plus_plan_ledger_entry = LicenseLedger.objects.create(
-                plan=plus_plan,
-                is_renewal=True,
-                event_time=plus_plan_billing_cycle_anchor,
-                licenses=licenses_for_plus_plan,
-                licenses_at_next_renewal=licenses_for_plus_plan,
-            )
-            return plus_plan, plus_plan_ledger_entry
-
-        if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
-            process_downgrade(plan)
-        return None, None
-    return None, last_ledger_entry
 
 
 def calculate_discounted_price_per_license(
@@ -1303,7 +1325,10 @@ def update_license_ledger_for_manual_plan(
 def update_license_ledger_for_automanaged_plan(
     realm: Realm, plan: CustomerPlan, event_time: datetime
 ) -> None:
-    new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, event_time)
+    billing_session = RealmBillingSession(user=None, realm=realm)
+    new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
+        plan, event_time
+    )
     if last_ledger_entry is None:
         return
     if new_plan is not None:
@@ -1345,7 +1370,9 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
             f"Realm {plan.customer.realm.string_id} has a paid plan without a Stripe customer."
         )
 
-    make_end_of_cycle_updates_if_needed(plan, event_time)
+    realm = plan.customer.realm
+    billing_session = RealmBillingSession(user=None, realm=realm)
+    billing_session.make_end_of_cycle_updates_if_needed(plan, event_time)
 
     if plan.invoicing_status == CustomerPlan.INITIAL_INVOICE_TO_BE_SENT:
         invoiced_through_id = -1
@@ -1466,15 +1493,6 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
     )
 
 
-def process_downgrade(plan: CustomerPlan) -> None:
-    from zerver.actions.realm_settings import do_change_realm_plan_type
-
-    assert plan.customer.realm is not None
-    do_change_realm_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
-    plan.status = CustomerPlan.ENDED
-    plan.save(update_fields=["status"])
-
-
 # During realm deactivation we instantly downgrade the plan to Limited.
 # Extra users added in the final month are not charged. Also used
 # for the cancellation of Free Trial.
@@ -1483,7 +1501,8 @@ def downgrade_now_without_creating_additional_invoices(realm: Realm) -> None:
     if plan is None:
         return
 
-    process_downgrade(plan)
+    billing_session = RealmBillingSession(user=None, realm=realm)
+    billing_session.process_downgrade(plan)
     plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by("id").last()
     plan.next_invoice_date = next_invoice_date(plan)
     plan.save(update_fields=["invoiced_through", "next_invoice_date"])

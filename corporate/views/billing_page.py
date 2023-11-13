@@ -10,13 +10,13 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from corporate.lib.stripe import (
+    RealmBillingSession,
     cents_to_dollar_string,
     do_change_plan_status,
     downgrade_at_the_end_of_billing_cycle,
     downgrade_now_without_creating_additional_invoices,
     format_money,
     get_latest_seat_count,
-    make_end_of_cycle_updates_if_needed,
     renewal_amount,
     start_of_next_billing_cycle,
     stripe_get_customer,
@@ -159,7 +159,9 @@ def billing_home(
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
         now = timezone_now()
-        new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, now)
+        realm = plan.customer.realm
+        billing_session = RealmBillingSession(user=None, realm=realm)
+        new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(plan, now)
         if last_ledger_entry is not None:
             if new_plan is not None:  # nocoverage
                 plan = new_plan
@@ -254,7 +256,11 @@ def update_plan(
     plan = get_current_plan_by_realm(user.realm)
     assert plan is not None  # for mypy
 
-    new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, timezone_now())
+    realm = plan.customer.realm
+    billing_session = RealmBillingSession(user=None, realm=realm)
+    new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
+        plan, timezone_now()
+    )
     if new_plan is not None:
         raise JsonableError(
             _("Unable to update the plan. The plan has been expired and replaced with a new plan.")
