@@ -1,3 +1,41 @@
+/* Begin non-color Zulip customizations */
+.codehilite .c,
+.codehilite .cm,
+.codehilite .c1,
+.codehilite .cs,
+.codehilite .ge,
+.codehilite .sd {
+    font-style: italic;
+} /* Comment, Comment.Multiline, Comment.Single, Comment.Special,
+     Generic.Emph, Literal.String.Doc */
+
+.codehilite .gh,
+.codehilite .gp,
+.codehilite .gs,
+.codehilite .gu,
+.codehilite .kc,
+.codehilite .kn,
+.codehilite .kr,
+.codehilite .nc,
+.codehilite .ni,
+.codehilite .ne,
+.codehilite .nn,
+.codehilite .nt,
+.codehilite .ow,
+.codehilite .se,
+.codehilite .si {
+    font-weight: bold;
+} /* Generic.Heading, Generic.Prompt, Generic.Strong, Generic.Subheading,
+     Keyword.Constant, Keyword.Namespace, Keyword.Reserved, Name.Class,
+     Name.Entity, Name.Exception, Name.Namespace, Name.Tag, Operator.Word,
+     Literal.String.Escape, Literal.String.Interpol */
+
+.codehilite .err {
+    border: 1px solid hsl(0deg 100% 50%);
+} /* Error */
+
+/* End non-color Zulip customizations. */
+
 .codehilite pre {
     background-color: hsl(0deg 0% 100%);
 }
@@ -14,9 +52,6 @@
     color: hsl(180deg 33% 37%);
     font-style: italic;
 } /* Comment */
-.codehilite .err {
-    border: 1px solid hsl(0deg 100% 50%);
-} /* Error */
 .codehilite .k {
     color: hsl(332deg 70% 38%);
 } /* Keyword */
