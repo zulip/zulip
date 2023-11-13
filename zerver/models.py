@@ -4291,10 +4291,6 @@ def get_huddle_hash(id_list: List[int]) -> str:
     return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
-def huddle_hash_cache_key(huddle_hash: str) -> str:
-    return f"huddle_by_hash:{huddle_hash}"
-
-
 def get_or_create_huddle(id_list: List[int]) -> Huddle:
     """
     Takes a list of user IDs and returns the Huddle object for the
@@ -4302,13 +4298,6 @@ def get_or_create_huddle(id_list: List[int]) -> Huddle:
     yet exist, it will be transparently created.
     """
     huddle_hash = get_huddle_hash(id_list)
-    return get_or_create_huddle_backend(huddle_hash, id_list)
-
-
-@cache_with_key(
-    lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600 * 24 * 7
-)
-def get_or_create_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
     with transaction.atomic():
         (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
         if created:

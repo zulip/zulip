@@ -24,7 +24,7 @@ from zerver.lib.cache import (
 from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
-from zerver.models import Client, Huddle, UserProfile, get_client_cache_key, huddle_hash_cache_key
+from zerver.models import Client, UserProfile, get_client_cache_key
 
 
 def user_cache_items(
@@ -41,10 +41,6 @@ def user_cache_items(
 
 def client_cache_items(items_for_remote_cache: Dict[str, Tuple[Client]], client: Client) -> None:
     items_for_remote_cache[get_client_cache_key(client.name)] = (client,)
-
-
-def huddle_cache_items(items_for_remote_cache: Dict[str, Tuple[Huddle]], huddle: Huddle) -> None:
-    items_for_remote_cache[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
 
 
 def session_cache_items(
@@ -95,12 +91,6 @@ cache_fillers: Dict[
     "client": (
         lambda: Client.objects.all(),
         client_cache_items,
-        3600 * 24 * 7,
-        10000,
-    ),
-    "huddle": (
-        lambda: Huddle.objects.select_related("recipient").all(),
-        huddle_cache_items,
         3600 * 24 * 7,
         10000,
     ),
