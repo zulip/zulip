@@ -191,15 +191,12 @@ export function handle_home_view_changed(new_home_view) {
 export function initialize() {
     update_scheduled_messages_row();
 
-    $("body").on("click", "#views-label-container", (e) => {
-        if (
-            $(e.currentTarget).hasClass("showing-condensed-navigation") &&
-            !($(e.target).hasClass("left-sidebar-title") || $(e.target).hasClass("fa-caret-right"))
-        ) {
-            // Ignore clicks on condensed nav items
-            return;
-        }
-        e.stopPropagation();
-        toggle_condensed_navigation_area();
-    });
+    $("body").on(
+        "click",
+        "#toggle-top-left-navigation-area-icon, #views-label-container .left-sidebar-title",
+        (e) => {
+            e.stopPropagation();
+            toggle_condensed_navigation_area();
+        },
+    );
 }
