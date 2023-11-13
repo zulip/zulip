@@ -62,7 +62,6 @@ from corporate.lib.stripe import (
     is_free_trial_offer_enabled,
     is_realm_on_free_trial,
     is_sponsored_realm,
-    make_end_of_cycle_updates_if_needed,
     next_month,
     sign_string,
     stripe_customer_has_credit_card_as_default_payment_method,
@@ -4493,11 +4492,17 @@ class LicenseLedgerTest(StripeTestCase):
         self.assertEqual(LicenseLedger.objects.count(), 1)
         plan = CustomerPlan.objects.get()
         # Plan hasn't renewed yet
-        make_end_of_cycle_updates_if_needed(plan, self.next_year - timedelta(days=1))
+        realm = plan.customer.realm
+        billing_session = RealmBillingSession(user=None, realm=realm)
+        billing_session.make_end_of_cycle_updates_if_needed(
+            plan, self.next_year - timedelta(days=1)
+        )
         self.assertEqual(LicenseLedger.objects.count(), 1)
         # Plan needs to renew
         # TODO: do_deactivate_user for a user, so that licenses_at_next_renewal != licenses
-        new_plan, ledger_entry = make_end_of_cycle_updates_if_needed(plan, self.next_year)
+        new_plan, ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
+            plan, self.next_year
+        )
         self.assertIsNone(new_plan)
         self.assertEqual(LicenseLedger.objects.count(), 2)
         ledger_params = {
@@ -4510,7 +4515,9 @@ class LicenseLedgerTest(StripeTestCase):
         for key, value in ledger_params.items():
             self.assertEqual(getattr(ledger_entry, key), value)
         # Plan needs to renew, but we already added the plan_renewal ledger entry
-        make_end_of_cycle_updates_if_needed(plan, self.next_year + timedelta(days=1))
+        billing_session.make_end_of_cycle_updates_if_needed(
+            plan, self.next_year + timedelta(days=1)
+        )
         self.assertEqual(LicenseLedger.objects.count(), 2)
 
     def test_update_license_ledger_if_needed(self) -> None:
@@ -4622,7 +4629,8 @@ class LicenseLedgerTest(StripeTestCase):
             self.assertEqual(plan.licenses(), self.seat_count + 10)
             self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count + 10)
 
-        make_end_of_cycle_updates_if_needed(plan, self.next_year)
+        billing_session = RealmBillingSession(user=None, realm=realm)
+        billing_session.make_end_of_cycle_updates_if_needed(plan, self.next_year)
         self.assertEqual(plan.licenses(), self.seat_count + 10)
 
         ledger_entries = list(

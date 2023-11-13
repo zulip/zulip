@@ -54,10 +54,10 @@ if settings.ZILENCER_ENABLED:
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
+        RealmBillingSession,
         downgrade_at_the_end_of_billing_cycle,
         downgrade_now_without_creating_additional_invoices,
         get_latest_seat_count,
-        make_end_of_cycle_updates_if_needed,
         switch_realm_from_standard_to_plus_plan,
         void_all_open_invoices,
     )
@@ -185,6 +185,8 @@ def support(
         context["success_message"] = request.session["success_message"]
         del request.session["success_message"]
 
+    acting_user = request.user
+    assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
         # We check that request.POST only has two keys in it: The
         # realm_id and a field to change.
@@ -197,8 +199,6 @@ def support(
         assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
 
-        acting_user = request.user
-        assert isinstance(acting_user, UserProfile)
         if plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
@@ -375,7 +375,8 @@ def support(
                 current_plan=current_plan,
             )
             if current_plan is not None:
-                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(
+                billing_session = RealmBillingSession(user=None, realm=realm)
+                new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
                     current_plan, timezone_now()
                 )
                 if last_ledger_entry is not None:
