@@ -9,6 +9,9 @@ class zulip_ops::profile::prometheus_server {
   # This blackbox monitoring of the backup system runs locally
   include zulip_ops::prometheus::wal_g
 
+  # Ditto the Akamai logs
+  include zulip_ops::prometheus::akamai
+
   $version = $zulip::common::versions['prometheus']['version']
   $dir = "/srv/zulip-prometheus-${version}"
   $bin = "${dir}/prometheus"
