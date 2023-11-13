@@ -162,5 +162,14 @@ class zulip::common {
         'aarch64' => 'ab7c9298d2fe5c5f58e3fe7c905929e93979d2b3b11c75eb8ba6ccc7a547238c',
       },
     },
+
+    # https://vector.dev/download/
+    'vector' => {
+      'version' => '0.34.0',
+      'sha256'  => {
+        'amd64'   => '3a39e712da43126262db878c3ae7647b23aac88834dea2763cc84269cb3c0206',
+        'aarch64' => '57acc628c495882e2ace787ac804e7bab57e42ae322fcc4e3861cd5a106a1323',
+      },
+    },
   }
 }
