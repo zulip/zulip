@@ -877,7 +877,7 @@ export function content_typeahead_selected(item, event) {
                     item.user_id,
                     is_silent,
                 );
-                if (!is_silent) {
+                if (!is_silent && !item.is_broadcast) {
                     compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
                     mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
                         mention_text,
