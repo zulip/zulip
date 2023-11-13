@@ -402,10 +402,16 @@ input[name="licenses"] {
     }
 }
 
+#billing-page .billing-status-page .pitch {
+    width: 100%;
+}
+
+.billing-status-page,
 .sponsorship-status-page .white-box {
     font-weight: 400;
 }
 
+.billing-status-page p:last-child,
 .sponsorship-status-page p:last-child {
     margin-bottom: 0;
 }
