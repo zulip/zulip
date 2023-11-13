@@ -2361,12 +2361,12 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     objects: CTEManager = CTEManager()
     name = models.CharField(max_length=MAX_NAME_LENGTH)
     direct_members = models.ManyToManyField(
-        UserProfile, through="UserGroupMembership", related_name="direct_groups"
+        UserProfile, through="zerver.UserGroupMembership", related_name="direct_groups"
     )
     direct_subgroups = models.ManyToManyField(
         "self",
         symmetrical=False,
-        through="GroupGroupMembership",
+        through="zerver.GroupGroupMembership",
         through_fields=("supergroup", "subgroup"),
         related_name="direct_supergroups",
     )
@@ -2509,7 +2509,7 @@ class PreregistrationUser(models.Model):
     full_name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
     full_name_validated = models.BooleanField(default=False)
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)
-    streams = models.ManyToManyField("Stream")
+    streams = models.ManyToManyField("zerver.Stream")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)
     # Indicates whether the user needs a password.  Users who were
@@ -2579,7 +2579,7 @@ def filter_to_valid_prereg_users(
 
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    streams = models.ManyToManyField("Stream")
+    streams = models.ManyToManyField("zerver.Stream")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
 
@@ -3800,7 +3800,7 @@ class Attachment(AbstractAttachment):
 
     # This is only present for Attachment and not ArchiveAttachment.
     # because ScheduledMessage is not subject to archiving.
-    scheduled_messages = models.ManyToManyField("ScheduledMessage")
+    scheduled_messages = models.ManyToManyField("zerver.ScheduledMessage")
 
     def is_claimed(self) -> bool:
         return self.messages.exists() or self.scheduled_messages.exists()
@@ -4449,7 +4449,7 @@ class DefaultStreamGroup(models.Model):
 
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    streams = models.ManyToManyField("Stream")
+    streams = models.ManyToManyField("zerver.Stream")
     description = models.CharField(max_length=1024, default="")
 
     class Meta:
