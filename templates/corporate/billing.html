@@ -9,6 +9,9 @@
 <div id="billing-page" class="register-account flex full-page">
     <div class="center-block new-style">
         {% if admin_access and has_active_plan %}
+        {% if success_message %}
+        <div class="alert alert-success billing-page-success" id="billing-success-message-top">{{ success_message }}</div>
+        {% endif %}
         <div class="pitch">
             <h1>Zulip Cloud billing for {{ org_name }}</h1>
         </div>
@@ -89,9 +92,6 @@
                     <div id="next-license-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
                 {% endif %}
-                <div id="licensechange-success" class="alert alert-success billing-page-success">
-                    Plan updated. The page will now reload.
-                </div>
                 {% endif %}
                 <div id="cardchange-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field no-validation">

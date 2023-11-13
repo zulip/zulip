@@ -552,3 +552,8 @@ input[name="licenses"] {
 #free-trial-top-banner {
     text-align: left;
 }
+
+#billing-success-message-top {
+    display: block;
+    text-align: center;
+}
