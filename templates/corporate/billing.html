@@ -179,9 +179,6 @@
                     {% endif %}
                 </form>
                 <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
-                <div id="planchange-success" class="alert alert-success billing-page-success">
-                    Plan updated. The page will now reload.
-                </div>
                 {% if onboarding %}
                 <div id="onboarding-go-to-org" class="input-box upgrade-page-field">
                     <a class="not-editable-realm-field" href="/"><b>Go to your Zulip organization</b></a>
