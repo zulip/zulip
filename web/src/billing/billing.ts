@@ -170,11 +170,33 @@ export function initialize(): void {
         },
     );
 
-    $(
-        "#confirm-cancel-subscription-modal .dialog_submit_button, #reactivate-subscription .reactivate-current-plan-button, #confirm-end-free-trial .dialog_submit_button",
-    ).on("click", (e) => {
+    $("#confirm-cancel-subscription-modal .dialog_submit_button").on("click", (e) => {
         helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
-            window.location.replace("/billing/"),
+            window.location.replace(
+                "/billing/?success_message=" +
+                    encodeURIComponent("Your plan has been canceled and will not renew."),
+            ),
+        );
+        e.preventDefault();
+    });
+
+    $("#reactivate-subscription .reactivate-current-plan-button").on("click", (e) => {
+        helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
+            window.location.replace(
+                "/billing/?success_message=" +
+                    encodeURIComponent(
+                        "Your plan has been reactivated and will renew automatically.",
+                    ),
+            ),
+        );
+        e.preventDefault();
+    });
+
+    $("#confirm-end-free-trial .dialog_submit_button").on("click", (e) => {
+        helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
+            window.location.replace(
+                "/billing/?success_message=" + encodeURIComponent("Successfully ended trial!"),
+            ),
         );
         e.preventDefault();
     });
