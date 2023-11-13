@@ -131,7 +131,6 @@ async function test_restore_message_draft_via_draft_overlay(page: Page): Promise
 async function edit_stream_message_draft(page: Page): Promise<void> {
     await common.select_stream_in_compose_via_dropdown(page, "Denmark");
     await common.fill_form(page, "form#send_message_form", {
-        stream_message_recipient_topic: "tests",
         content: "Updated stream message",
     });
     await page.click("#compose_close");
