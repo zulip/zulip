@@ -10,7 +10,6 @@ from corporate.lib.stripe import (
     RealmBillingSession,
     UpgradeWithExistingPlanError,
     ensure_customer_does_not_have_active_plan,
-    process_initial_upgrade,
 )
 from corporate.models import CustomerPlan, Event, PaymentIntent, Session
 from zerver.models import get_active_user_profile_by_id_in_realm
@@ -100,8 +99,7 @@ def handle_checkout_session_completed_event(
     ]:
         ensure_customer_does_not_have_active_plan(session.customer)
         billing_session.update_or_create_stripe_customer(payment_method)
-        process_initial_upgrade(
-            user,
+        billing_session.process_initial_upgrade(
             CustomerPlan.STANDARD,
             int(stripe_session.metadata["licenses"]),
             stripe_session.metadata["license_management"] == "automatic",
@@ -150,8 +148,8 @@ def handle_payment_intent_succeeded_event(
         stripe.Invoice.finalize_invoice(stripe_invoice)
         raise e
 
-    process_initial_upgrade(
-        user,
+    billing_session = RealmBillingSession(user)
+    billing_session.process_initial_upgrade(
         CustomerPlan.STANDARD,
         int(metadata["licenses"]),
         metadata["license_management"] == "automatic",

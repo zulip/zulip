@@ -604,6 +604,104 @@ class BillingSession(ABC):
         )
         return stripe_session
 
+    # Only used for cloud signups
+    @catch_stripe_errors
+    def process_initial_upgrade(
+        self,
+        plan_tier: int,
+        licenses: int,
+        automanage_licenses: bool,
+        billing_schedule: int,
+        charge_automatically: bool,
+        free_trial: bool,
+    ) -> None:
+        customer = self.update_or_create_stripe_customer()
+        assert customer.stripe_customer_id is not None  # for mypy
+        ensure_customer_does_not_have_active_plan(customer)
+        (
+            billing_cycle_anchor,
+            next_invoice_date,
+            period_end,
+            price_per_license,
+        ) = compute_plan_parameters(
+            plan_tier,
+            automanage_licenses,
+            billing_schedule,
+            customer.default_discount,
+            free_trial,
+        )
+
+        # TODO: The correctness of this relies on user creation, deactivation, etc being
+        # in a transaction.atomic() with the relevant RealmAuditLog entries
+        with transaction.atomic():
+            if customer.exempt_from_license_number_check:
+                billed_licenses = licenses
+            else:
+                # billed_licenses can be greater than licenses if users are added between the start of
+                # this function (process_initial_upgrade) and now
+                current_licenses_count = self.current_count_for_billed_licenses()
+                billed_licenses = max(current_licenses_count, licenses)
+            plan_params = {
+                "automanage_licenses": automanage_licenses,
+                "charge_automatically": charge_automatically,
+                "price_per_license": price_per_license,
+                "discount": customer.default_discount,
+                "billing_cycle_anchor": billing_cycle_anchor,
+                "billing_schedule": billing_schedule,
+                "tier": plan_tier,
+            }
+            if free_trial:
+                plan_params["status"] = CustomerPlan.FREE_TRIAL
+            plan = CustomerPlan.objects.create(
+                customer=customer, next_invoice_date=next_invoice_date, **plan_params
+            )
+            ledger_entry = LicenseLedger.objects.create(
+                plan=plan,
+                is_renewal=True,
+                event_time=billing_cycle_anchor,
+                licenses=billed_licenses,
+                licenses_at_next_renewal=billed_licenses,
+            )
+            plan.invoiced_through = ledger_entry
+            plan.save(update_fields=["invoiced_through"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=billing_cycle_anchor,
+                extra_data=plan_params,
+            )
+
+        if not free_trial:
+            stripe.InvoiceItem.create(
+                currency="usd",
+                customer=customer.stripe_customer_id,
+                description=plan.name,
+                discountable=False,
+                period={
+                    "start": datetime_to_timestamp(billing_cycle_anchor),
+                    "end": datetime_to_timestamp(period_end),
+                },
+                quantity=billed_licenses,
+                unit_amount=price_per_license,
+            )
+
+            if charge_automatically:
+                collection_method = "charge_automatically"
+                days_until_due = None
+            else:
+                collection_method = "send_invoice"
+                days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+
+            stripe_invoice = stripe.Invoice.create(
+                auto_advance=True,
+                collection_method=collection_method,
+                customer=customer.stripe_customer_id,
+                days_until_due=days_until_due,
+                statement_descriptor=plan.name,
+            )
+            stripe.Invoice.finalize_invoice(stripe_invoice)
+
+        self.do_change_plan_type(tier=plan_tier)
+
 
 class RealmBillingSession(BillingSession):
     def __init__(self, user: UserProfile, realm: Optional[Realm] = None) -> None:
@@ -1053,106 +1151,6 @@ def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
         server=remote_server,
         event_time=timezone_now(),
     )
-
-
-# Only used for cloud signups
-@catch_stripe_errors
-def process_initial_upgrade(
-    user: UserProfile,
-    plan_tier: int,
-    licenses: int,
-    automanage_licenses: bool,
-    billing_schedule: int,
-    charge_automatically: bool,
-    free_trial: bool,
-) -> None:
-    billing_session = RealmBillingSession(user)
-    customer = billing_session.update_or_create_stripe_customer()
-    assert customer.stripe_customer_id is not None  # for mypy
-    ensure_customer_does_not_have_active_plan(customer)
-    (
-        billing_cycle_anchor,
-        next_invoice_date,
-        period_end,
-        price_per_license,
-    ) = compute_plan_parameters(
-        plan_tier,
-        automanage_licenses,
-        billing_schedule,
-        customer.default_discount,
-        free_trial,
-    )
-
-    # TODO: The correctness of this relies on user creation, deactivation, etc being
-    # in a transaction.atomic() with the relevant RealmAuditLog entries
-    with transaction.atomic():
-        if customer.exempt_from_license_number_check:
-            billed_licenses = licenses
-        else:
-            # billed_licenses can be greater than licenses if users are added between the start of
-            # this function (process_initial_upgrade) and now
-            current_licenses_count = billing_session.current_count_for_billed_licenses()
-            billed_licenses = max(current_licenses_count, licenses)
-        plan_params = {
-            "automanage_licenses": automanage_licenses,
-            "charge_automatically": charge_automatically,
-            "price_per_license": price_per_license,
-            "discount": customer.default_discount,
-            "billing_cycle_anchor": billing_cycle_anchor,
-            "billing_schedule": billing_schedule,
-            "tier": plan_tier,
-        }
-        if free_trial:
-            plan_params["status"] = CustomerPlan.FREE_TRIAL
-        plan = CustomerPlan.objects.create(
-            customer=customer, next_invoice_date=next_invoice_date, **plan_params
-        )
-        ledger_entry = LicenseLedger.objects.create(
-            plan=plan,
-            is_renewal=True,
-            event_time=billing_cycle_anchor,
-            licenses=billed_licenses,
-            licenses_at_next_renewal=billed_licenses,
-        )
-        plan.invoiced_through = ledger_entry
-        plan.save(update_fields=["invoiced_through"])
-        billing_session.write_to_audit_log(
-            event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
-            event_time=billing_cycle_anchor,
-            extra_data=plan_params,
-        )
-
-    if not free_trial:
-        stripe.InvoiceItem.create(
-            currency="usd",
-            customer=customer.stripe_customer_id,
-            description=plan.name,
-            discountable=False,
-            period={
-                "start": datetime_to_timestamp(billing_cycle_anchor),
-                "end": datetime_to_timestamp(period_end),
-            },
-            quantity=billed_licenses,
-            unit_amount=price_per_license,
-        )
-
-        if charge_automatically:
-            collection_method = "charge_automatically"
-            days_until_due = None
-        else:
-            collection_method = "send_invoice"
-            days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-
-        stripe_invoice = stripe.Invoice.create(
-            auto_advance=True,
-            collection_method=collection_method,
-            customer=customer.stripe_customer_id,
-            days_until_due=days_until_due,
-            statement_descriptor=plan.name,
-        )
-        stripe.Invoice.finalize_invoice(stripe_invoice)
-
-    billing_session.do_change_plan_type(tier=plan_tier)
 
 
 def update_license_ledger_for_manual_plan(

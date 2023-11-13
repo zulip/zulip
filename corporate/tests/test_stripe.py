@@ -64,7 +64,6 @@ from corporate.lib.stripe import (
     is_sponsored_realm,
     make_end_of_cycle_updates_if_needed,
     next_month,
-    process_initial_upgrade,
     sign_string,
     stripe_customer_has_credit_card_as_default_payment_method,
     stripe_get_customer,
@@ -625,8 +624,9 @@ class StripeTestCase(ZulipTestCase):
             free_trial: bool,
             *mock_args: Any,
         ) -> Any:
-            return process_initial_upgrade(
-                self.example_user("hamlet"),
+            hamlet = self.example_user("hamlet")
+            billing_session = RealmBillingSession(hamlet)
+            return billing_session.process_initial_upgrade(
                 CustomerPlan.STANDARD,
                 licenses,
                 automanage_licenses,
@@ -1980,7 +1980,7 @@ class StripeTest(StripeTestCase):
             else:
                 del_args = []
                 upgrade_params["licenses"] = licenses
-            with patch("corporate.views.upgrade.process_initial_upgrade"):
+            with patch("corporate.lib.stripe.BillingSession.process_initial_upgrade"):
                 stripe_session = stripe.checkout.Session()
                 stripe_session.id = "stripe_session_id"
                 stripe_session.url = "stripe_session_url"
@@ -2087,7 +2087,7 @@ class StripeTest(StripeTestCase):
         self.login_user(hamlet)
 
         with patch(
-            "corporate.lib.stripe_event_handler.process_initial_upgrade", side_effect=Exception
+            "corporate.lib.stripe.BillingSession.process_initial_upgrade", side_effect=Exception
         ), self.assertLogs("corporate.stripe", "WARNING"):
             response = self.upgrade()
 

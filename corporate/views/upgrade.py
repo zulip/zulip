@@ -18,7 +18,6 @@ from corporate.lib.stripe import (
     ensure_customer_does_not_have_active_plan,
     get_latest_seat_count,
     is_free_trial_offer_enabled,
-    process_initial_upgrade,
     sign_string,
     unsign_string,
     validate_licenses,
@@ -119,8 +118,8 @@ def upgrade(
         billing_schedule = {"annual": CustomerPlan.ANNUAL, "monthly": CustomerPlan.MONTHLY}[
             schedule
         ]
+        billing_session = RealmBillingSession(user)
         if charge_automatically:
-            billing_session = RealmBillingSession(user)
             stripe_checkout_session = (
                 billing_session.setup_upgrade_checkout_session_and_payment_intent(
                     CustomerPlan.STANDARD,
@@ -140,8 +139,7 @@ def upgrade(
                 },
             )
         else:
-            process_initial_upgrade(
-                user,
+            billing_session.process_initial_upgrade(
                 CustomerPlan.STANDARD,
                 licenses,
                 automanage_licenses,
