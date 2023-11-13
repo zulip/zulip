@@ -996,6 +996,12 @@ def apply_event(
                     user_profile.realm, person_user_id
                 )
                 state["raw_users"][person_user_id] = inaccessible_user_dict
+
+            if include_subscribers:
+                for sub in state["subscriptions"]:
+                    sub["subscribers"] = [
+                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                    ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
