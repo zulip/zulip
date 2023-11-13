@@ -13,8 +13,12 @@ export function create_update_current_cycle_license_request(): void {
         [],
         "PATCH",
         () => {
-            window.location.replace("/billing/");
-            $("#licensechange-success").show();
+            window.location.replace(
+                "/billing/?success_message=" +
+                    encodeURIComponent(
+                        "Updated number of licenses for the current billing period.",
+                    ),
+            );
             $("#current-manual-license-count-update-button .loader").hide();
             $("#current-manual-license-count-update-button .billing-button-text").text("Update");
         },
@@ -34,8 +38,10 @@ export function create_update_next_cycle_license_request(): void {
         [],
         "PATCH",
         () => {
-            window.location.replace("/billing/");
-            $("#licensechange-success").show();
+            window.location.replace(
+                "/billing/?success_message=" +
+                    encodeURIComponent("Updated number of licenses for the next billing period."),
+            );
             $("#next-manual-license-count-update-button .loader").hide();
             $("#next-manual-license-count-update-button .billing-button-text").text("Update");
         },
