@@ -1070,6 +1070,12 @@ def apply_event(
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
 
+            state["subscriptions"] = [
+                stream
+                for stream in state["subscriptions"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
+
             state["unsubscribed"] = [
                 stream
                 for stream in state["unsubscribed"]
