@@ -23,7 +23,6 @@ export const popover_instances = {
     message_actions: null,
     stream_settings: null,
     compose_mobile_button: null,
-    compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
     change_visibility_policy: null,
@@ -90,10 +89,6 @@ export function get_compose_control_buttons_popover() {
 
 export function get_starred_messages_popover() {
     return popover_instances.starred_messages;
-}
-
-export function is_compose_enter_sends_popover_displayed() {
-    return popover_instances.compose_enter_sends?.state.isVisible;
 }
 
 export function is_personal_menu_popover_displayed() {
