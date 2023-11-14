@@ -461,7 +461,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: "#send_later",
+        target: ".send-control-button",
         delay: LONG_HOVER_DELAY,
         placement: "top",
         appendTo: () => document.body,
