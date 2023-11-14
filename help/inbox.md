@@ -16,7 +16,7 @@ regularly clear all unread messages in your subscribed streams.
 
 ## Filter conversations
 
-### Filter by topic state
+### Filter by topic status
 
 In the web app, you can control whether the **Inbox** includes all topics, just
 [unmuted](/help/mute-a-topic) topics, or only topics you
@@ -28,8 +28,8 @@ In the web app, you can control whether the **Inbox** includes all topics, just
 
 {!go-to-inbox.md!}
 
-1. Select **All topics**, **Unmuted topics**, or **Followed topics** in
-   the dropdown in the upper left.
+1. Select **All topics**, **Unmuted topics**, or **Followed topics** from
+   the dropdown in the upper left of the **inbox** view.
 
 {end_tabs}
 

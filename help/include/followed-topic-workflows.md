@@ -1,6 +1,7 @@
 - [Catch up](/help/follow-a-topic#catch-up-on-followed-topics) on
   followed topics at the start of the day, and whenever you want to
-  spend a few minutes checking on where your attention is needed.
+  spend a few minutes checking on on the conversations that need
+  your attention.
 
 - No more stressing about missing a reply to your message in streams
   you don't regularly read. You can [automatically
@@ -14,7 +15,7 @@
   automatically treated as [unmuted](/help/mute-a-topic), so it will
   be easy to see when someone responds to your message.
 
-- If you like, follow just the topics where you prompt attention is
+- If you like, follow just the topics where your prompt attention is
   needed, and [enable desktop and mobile
   notifications](/help/follow-a-topic#configure-notifications-for-followed-topics)
   for followed topics.
