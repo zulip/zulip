@@ -587,3 +587,8 @@ TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 5000
 # How often a client should send start notifications to the server to
 # indicate that the user is still interacting with the compose UI.
 TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000
+
+# The maximum number of subscribers for a stream to have typing
+# notifications enabled. Default is set to avoid excessive Tornado
+# load in large organizations.
+MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100

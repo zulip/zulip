@@ -1,5 +1,6 @@
 from typing import List
 
+from django.conf import settings
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
@@ -78,9 +79,20 @@ def do_send_stream_typing_notification(
     )
 
     # We don't notify long_term_idle subscribers.
-    subscriptions = get_active_subscriptions_for_stream_id(
+    subscriptions_query = get_active_subscriptions_for_stream_id(
         stream.id, include_deactivated_users=False
-    ).exclude(user_profile__long_term_idle=True)
-    user_ids_to_notify = set(subscriptions.values_list("user_profile_id", flat=True))
+    )
+
+    total_subscriptions = subscriptions_query.count()
+    if total_subscriptions > settings.MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS:
+        # TODO: Stream typing notifications are disabled in streams
+        # with too many subscribers for performance reasons.
+        return
+
+    user_ids_to_notify = set(
+        subscriptions_query.exclude(user_profile__long_term_idle=True).values_list(
+            "user_profile_id", flat=True
+        )
+    )
 
     send_event(sender.realm, event, user_ids_to_notify)
