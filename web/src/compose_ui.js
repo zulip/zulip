@@ -704,7 +704,7 @@ export function format_text($textarea, type, inserted_content) {
 export function hide_compose_spinner() {
     compose_spinner_visible = false;
     $(".compose-submit-button .loader").hide();
-    $(".compose-submit-button span").show();
+    $(".compose-submit-button .zulip-icon-send").show();
     $(".compose-submit-button").removeClass("disable-btn");
 }
 
@@ -712,7 +712,7 @@ export function show_compose_spinner() {
     compose_spinner_visible = true;
     // Always use white spinner.
     loading.show_button_spinner($(".compose-submit-button .loader"), true);
-    $(".compose-submit-button span").hide();
+    $(".compose-submit-button .zulip-icon-send").hide();
     $(".compose-submit-button").addClass("disable-btn");
 }
 
