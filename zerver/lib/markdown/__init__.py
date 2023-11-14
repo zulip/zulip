@@ -1812,7 +1812,24 @@ def prepare_linkifier_pattern(source: str) -> str:
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as
     OUTER_CAPTURE_GROUP."""
-    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
+    regex = rf"""
+        (?P<{BEFORE_CAPTURE_GROUP}>
+            ^  |
+            \s |
+            ['"\(,:<]
+        )
+        (?P<{OUTER_CAPTURE_GROUP}>
+            {source}
+        )
+        (?P<{AFTER_CAPTURE_GROUP}>
+            $ |
+            [^\pL\pN]
+        )
+    """
+    # Strip out the spaces and newlines added to make the above
+    # legible -- re2 does not have the equivalent of the /x modifier
+    # that does this automatically.
+    return regex.replace(" ", "").replace("\n", "")
 
 
 # Given a regular expression pattern, linkifies groups that match it
