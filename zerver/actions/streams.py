@@ -74,6 +74,44 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
+def send_user_remove_events_on_stream_deactivation(
+    stream: Stream, subscribed_users: List[UserProfile]
+) -> None:
+    guest_subscribed_users = [user for user in subscribed_users if user.is_guest]
+
+    if len(guest_subscribed_users) == 0:  # nocoverage
+        # Save a few database queries in the case that the stream
+        # didn't contain any guest users.
+        return
+
+    other_subscriptions_of_subscribed_users = get_subscribers_of_target_user_subscriptions(
+        guest_subscribed_users
+    )
+    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
+        guest_subscribed_users, stream.realm
+    )
+
+    subscriber_ids = {user.id for user in subscribed_users}
+    inaccessible_user_dict: Dict[int, Set[int]] = defaultdict(set)
+    for guest_user in guest_subscribed_users:
+        users_accessible_by_guest = (
+            {guest_user.id}
+            | other_subscriptions_of_subscribed_users[guest_user.id]
+            | users_involved_in_dms_dict[guest_user.id]
+        )
+        users_inaccessible_to_guest = subscriber_ids - users_accessible_by_guest
+        for user_id in users_inaccessible_to_guest:
+            inaccessible_user_dict[user_id].add(guest_user.id)
+
+    for user_id, notify_user_ids in inaccessible_user_dict.items():
+        event_remove_user = dict(
+            type="realm_user",
+            op="remove",
+            person=dict(user_id=user_id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)),
+        )
+        send_event_on_commit(stream.realm, event_remove_user, list(notify_user_ids))
+
+
 @transaction.atomic(savepoint=False)
 def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) -> None:
     # If the stream is already deactivated, this is a no-op
@@ -94,9 +132,11 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
 
-    get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True).update(
-        active=False
-    )
+    stream_subscribers = get_active_subscriptions_for_stream_id(
+        stream.id, include_deactivated_users=True
+    ).select_related("user_profile")
+    subscribed_users = [sub.user_profile for sub in stream_subscribers]
+    stream_subscribers.update(active=False)
 
     was_invite_only = stream.invite_only
     was_public = stream.is_public()
@@ -156,6 +196,9 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
     event = dict(type="stream", op="delete", streams=[stream_dict])
     send_event_on_commit(stream.realm, event, affected_user_ids)
+
+    if stream.realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+        send_user_remove_events_on_stream_deactivation(stream, subscribed_users)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
