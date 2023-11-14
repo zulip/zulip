@@ -470,6 +470,14 @@ $time_column_min_width: 42px; /* + padding */
         display: unset !important;
         cursor: default;
     }
+
+    /* Message-editing styles */
+    .message-edit-buttons-and-timer {
+        margin-top: 5px;
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+    }
 }
 
 .recipient_row {
