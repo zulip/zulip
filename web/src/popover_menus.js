@@ -83,6 +83,10 @@ export function get_scheduled_messages_popover() {
     return popover_instances.send_later;
 }
 
+export function is_scheduled_messages_popover_displayed() {
+    return popover_instances.send_later?.state.isVisible;
+}
+
 export function get_compose_control_buttons_popover() {
     return popover_instances.compose_control_buttons;
 }
