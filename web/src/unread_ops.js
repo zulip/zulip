@@ -546,12 +546,14 @@ export function mark_stream_as_read(stream_id) {
     mark_bulk_as_read(narrow)
 
 }
-export function mark_topic_as_read(stream_id, topic, cont) {
-    channel.post({
-        url: "/json/mark_topic_as_read",
-        data: {stream_id, topic_name: topic},
-        success: cont,
-    });
+export function mark_topic_as_read(stream_id, topic) {
+
+    const narrow = JSON.stringify([
+        {operator: "stream", operand: stream_id},
+        {operator: "topic", operand: topic},
+    ]);
+
+    mark_bulk_as_read(narrow)
 }
 
 export function mark_pm_as_read(user_ids_string) {
