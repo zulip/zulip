@@ -446,16 +446,14 @@ export function mark_current_list_as_read(options) {
     notify_server_messages_read(message_lists.current.all_messages(), options);
 }
 
-export function mark_stream_as_read(
-    stream_id,
+function mark_bulk_as_read(
+    narrow,
+    anchor = "first_unread",
     messages_marked_read_till_now = 0,
-    batch_size = INITIAL_BATCH_SIZE,
+    batch_size = INITIAL_BATCH_SIZE
 ) {
-    message_lists.current.prevent_reading();
-    const narrow = JSON.stringify([{operator: "stream", operand: stream_id}]);
-
     const opts = {
-        anchor: "first_unread",
+        anchor,
         num_before: 0,
         // The first message is not counted
         num_after: batch_size - 1,
@@ -491,7 +489,7 @@ export function mark_stream_as_read(
                     loading_indicator_displayed = true;
                 }
 
-                mark_stream_as_read(stream_id, messages_marked_read_till_now, FOLLOWUP_BATCH_SIZE);
+                mark_bulk_as_read(narrow, anchor, messages_marked_read_till_now, FOLLOWUP_BATCH_SIZE);
             } else if (loading_indicator_displayed) {
                 // If we were showing a loading indicator, then
                 // display that we finished. For the common case where
@@ -540,6 +538,14 @@ export function mark_stream_as_read(
     });
 }
 
+export function mark_stream_as_read(stream_id) {
+
+    message_lists.current.prevent_reading();
+    const narrow = JSON.stringify([{operator: "stream", operand: stream_id}]);
+
+    mark_bulk_as_read(narrow)
+
+}
 export function mark_topic_as_read(stream_id, topic, cont) {
     channel.post({
         url: "/json/mark_topic_as_read",
