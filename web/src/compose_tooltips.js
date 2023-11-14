@@ -57,6 +57,13 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".send-control-button",
+        delay: LONG_HOVER_DELAY,
+        placement: "top",
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
         target: "#compose-send-button",
         delay: EXTRA_LONG_HOVER_DELAY,
         // By default, tippyjs uses a trigger value of "mouseenter focus",
