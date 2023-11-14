@@ -5,6 +5,7 @@ import render_send_later_popover from "../templates/popovers/send_later_popover.
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
@@ -18,6 +19,8 @@ import {user_settings} from "./user_settings";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 const ENTER_SENDS_SELECTION_DELAY = 600;
+
+let send_later_popover_keyboard_toggle = false;
 
 function set_compose_box_schedule(element) {
     const selected_send_at_time = element.dataset.sendStamp / 1000;
@@ -114,6 +117,28 @@ export function do_schedule_message(send_at_time) {
     compose.finish(true);
 }
 
+function get_send_later_menu_items() {
+    const $current_schedule_popover_elem = $("[data-tippy-root] #send_later_popover");
+    if (!$current_schedule_popover_elem) {
+        blueslip.error("Trying to get menu items when schedule popover is closed.");
+        return undefined;
+    }
+
+    return $current_schedule_popover_elem.find("li:not(.divider):visible a");
+}
+
+function focus_first_send_later_popover_item() {
+    // It is recommended to only call this when the user opens the menu with a hotkey.
+    // Our popup menus act kind of funny when you mix keyboard and mouse.
+    const $items = get_send_later_menu_items();
+    popover_menus.focus_first_popover_item($items);
+}
+
+export function toggle() {
+    send_later_popover_keyboard_toggle = true;
+    $("#send_later i").trigger("click");
+}
+
 export function initialize() {
     delegate("body", {
         ...popover_menus.default_popover_props,
@@ -136,6 +161,10 @@ export function initialize() {
             popover_menus.popover_instances.send_later = instance;
         },
         onMount(instance) {
+            if (send_later_popover_keyboard_toggle) {
+                focus_first_send_later_popover_item();
+                send_later_popover_keyboard_toggle = false;
+            }
             const $popper = $(instance.popper);
             common.adjust_mac_kbd_tags(".enter_sends_choices kbd");
             $popper.one("click", ".send_later_selected_send_later_time", () => {
@@ -175,6 +204,7 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.send_later = undefined;
+            send_later_popover_keyboard_toggle = false;
         },
     });
 }
