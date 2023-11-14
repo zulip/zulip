@@ -1134,16 +1134,13 @@ jsonschema==4.21.1 \
 jsonschema-path==0.3.2 \
     --hash=sha256:271aedfefcd161a0f467bdf23e1d9183691a61eaabf4b761046a914e369336c7 \
     --hash=sha256:4d0dababf341e36e9b91a5fb2a3e3fd300b0150e7fe88df4e55cc8253c5a3989
-    # via openapi-spec-validator
-jsonschema-spec==0.2.4 \
-    --hash=sha256:873e396ad1ba6edf9f52d6174c110d4fafb7b5f5894744246a53fe75e5251ec2 \
-    --hash=sha256:e6dcf7056734ec6854f7888da6c08ce6c421f28aeeddce96bb90de0fb6d711ef
-    # via openapi-core
-jsonschema-specifications==2023.7.1 \
-    --hash=sha256:05adf340b659828a004220a9613be00fa3f223f2b82002e273dee62fd50524b1 \
-    --hash=sha256:c91a50404e88a1f6ba40636778e2ee08f6e24c5613fe4c53ac24578a5a7f72bb
     # via
-    #   -r requirements/common.in
+    #   openapi-core
+    #   openapi-spec-validator
+jsonschema-specifications==2023.12.1 \
+    --hash=sha256:48a76787b3e70f5ed53f1160d2b81f586e4ca6d1548c5de7085d1682674764cc \
+    --hash=sha256:87e4fdf3a94858b8a2ba2778d9ba57d8a9cafca7c7489c46ba0d30a8bc6a9c3c
+    # via
     #   jsonschema
     #   openapi-schema-validator
 jsx-lexer==2.0.1 \
@@ -1622,9 +1619,9 @@ oauthlib==3.2.2 \
     # via
     #   requests-oauthlib
     #   social-auth-core
-openapi-core==0.18.2 \
-    --hash=sha256:d4cc50f3ee03ae46313c83e97c6fbfe7e7ae9686741135eb0e4ed49e9d8ff08a \
-    --hash=sha256:ec13d366766d564450de60374f59feb0b5ccb447aed642cdf0f1ecfcc6fbe80a
+openapi-core==0.19.0a1 \
+    --hash=sha256:3d339c12f0da2948b19d196203651592314fef4c7c9f88e0fa81bf47cc86deed \
+    --hash=sha256:76414ebd43aea54a0f34c603ee986470293fe7bcde53fb74f4ba41a8f76746ac
     # via -r requirements/common.in
 openapi-schema-validator==0.6.2 \
     --hash=sha256:11a95c9c9017912964e3e5f2545a5b11c3814880681fcacfb73b1759bb4f2804 \
@@ -1715,9 +1712,7 @@ parso==0.8.3 \
 pathable==0.4.3 \
     --hash=sha256:5c869d315be50776cc8a993f3af43e0c60dc01506b399643f919034ebf4cdcab \
     --hash=sha256:cdd7b1f9d7d5c8b8d3315dbf5a86b2596053ae845f056f57d97c0eefff84da14
-    # via
-    #   jsonschema-path
-    #   jsonschema-spec
+    # via jsonschema-path
 pathspec==0.12.1 \
     --hash=sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08 \
     --hash=sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712
@@ -2291,7 +2286,6 @@ pyyaml==6.0.1 \
     --hash=sha256:fd66fc5d0da6d9815ba2cebeb4205f95818ff4b79c3ebe268e75d961704af52f
     # via
     #   jsonschema-path
-    #   jsonschema-spec
     #   libcst
     #   moto
     #   myst-parser
@@ -2308,13 +2302,12 @@ redis==5.0.1 \
     --hash=sha256:0dab495cd5753069d3bc650a0dde8a8f9edde16fc5691b689a566eda58100d0f \
     --hash=sha256:ed4802971884ae19d640775ba3b03aa2e7bd5e8fb8dfaed2decce4d0fc48391f
     # via -r requirements/common.in
-referencing==0.30.2 \
-    --hash=sha256:449b6669b6121a9e96a7f9e410b245d471e8d48964c67113ce9afe50c8dd7bdf \
-    --hash=sha256:794ad8003c65938edcdbc027f1933215e0d0ccc0291e3ce20a4d87432b59efc0
+referencing==0.31.1 \
+    --hash=sha256:81a1471c68c9d5e3831c30ad1dd9815c45b558e596653db751a2bfdd17b3b9ec \
+    --hash=sha256:c19c4d006f1757e3dd75c4f784d38f8698d87b649c54f9ace14e5e8c9667c01d
     # via
     #   jsonschema
     #   jsonschema-path
-    #   jsonschema-spec
     #   jsonschema-specifications
     #   types-jsonschema
 regex==2023.12.25 \
@@ -2420,7 +2413,6 @@ requests[security]==2.31.0 \
     # via
     #   -r requirements/common.in
     #   jsonschema-path
-    #   jsonschema-spec
     #   moto
     #   pyoembed
     #   python-digitalocean
