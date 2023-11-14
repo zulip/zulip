@@ -137,7 +137,7 @@
                     <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
                     <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
                         <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}">
-                            <span id="org-upgrade-button-span">
+                            <span id="org-upgrade-button-text">
                                 {% if free_trial_days %}
                                     Start {{ free_trial_days }} day free trial
                                 {% else %}
