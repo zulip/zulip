@@ -55,6 +55,17 @@ notification. Silent mentions start with `@_` instead of `@`.
 
 {end_tabs}
 
+## Mention all topic participants
+
+You can mention topic participants with the `@**topic**` mention. A participant
+is anyone who sent a message to a topic, or reacted to a message on the topic.
+
+Note that this will not notify anyone who has muted the topic, and
+users can disable receiving email/push notifications for these
+wildcard mentions, either
+[globally](/help/dm-mention-alert-notifications) or for [individual
+streams](/help/stream-notifications).
+
 ## Mention everyone on a stream
 
 You can mention everyone on a stream with the `@**all**` mention (or,
