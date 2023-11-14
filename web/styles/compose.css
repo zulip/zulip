@@ -1252,9 +1252,12 @@ textarea.new_message_textarea,
     height: 28px;
     /* Make the vdots appear to extend from
        beneath the send button when an
-       interactive background is present. */
+       interactive background is present.
+       Compensatory padding for this negative
+       margin is handled on the vdots icon
+       below, so as to make for a maximum
+       clickable vdots area. */
     margin-left: -4px;
-    padding: 0 0 0 4px;
     border-radius: 0 4px 4px 0;
     /* Flex items respect z-index values;
        this is needed to keep the vdots
@@ -1277,14 +1280,14 @@ textarea.new_message_textarea,
     @media (width < $sm_min) {
         /* Drop to a square, rounded button. */
         width: 30px;
-        padding: 0;
         margin-left: 0;
         border-radius: 4px;
     }
 
     .zulip-icon {
-        padding: 5px 3px;
+        padding: 5px 0 5px 4px;
         font-size: 17px;
+        flex-grow: 1;
     }
 }
 
