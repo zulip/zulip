@@ -13,7 +13,7 @@ It's easy to prioritize catching up on followed topics. You can:
 
 - Filter the [**inbox**](/help/inbox) view to only show followed topics.
 
-- See which topics are followed in the **left sidebar** and [**recent
+- See which topics you are following in the **left sidebar** and [**recent
   conversations**](/help/recent-conversations).
 
 You can use followed topics for a variety of workflows:
@@ -38,21 +38,21 @@ You can use followed topics for a variety of workflows:
 
 {!go-to-inbox.md!}
 
-1. Filter the view to the topics you follow by selecting **Followed topics** in
-   the dropdown in the upper left.
+1. Filter the view to the topics you follow by selecting **Followed topics**
+   from the dropdown in the upper left of the **inbox** view.
 
 1. Click on a conversation you're interested in to view it. You can also use
    the arrow keys to select a conversation, and press <kbd>Enter</kbd>.
 
-2. Return to **Inbox** when done to select the next conversation. You can use
+1. Return to **Inbox** when done to select the next conversation. You can use
    the **back** button in your browser or the desktop app, <kbd>Shift</kbd> +
    <kbd>I</kbd>, or <kbd>Esc</kbd> if **Inbox** is configured as you [home
    view](/help/configure-home-view).
 
 !!! keyboard_tip ""
 
-    You can also use <kbd>Shift</kbd> + <kbd>N</kbd> to go to the next unread
-    followed topic from any location.
+    You can also use <kbd>Shift</kbd> + <kbd>N</kbd> from any location to go
+    to the next unread followed topic.
 
 {end_tabs}
 
