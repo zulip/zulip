@@ -1996,14 +1996,15 @@ div.focused-message-list {
 }
 
 .message-edit-timer {
-    float: right;
     display: none;
-    margin-top: 5px;
+    /* Use flexbox to position to far right of
+       the Save and Cancel buttons. */
+    margin-left: auto;
 }
 
 .message-edit-feature-group {
-    display: inline-flex;
-    margin: 0 auto -5px 10px;
+    display: flex;
+    margin: 0;
     align-items: baseline;
 }
 
