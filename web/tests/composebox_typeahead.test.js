@@ -1753,8 +1753,8 @@ test("typeahead_results", () => {
     // Verify we're not matching on a terms that only appear in the description.
     assert_mentions_matches("characters of", []);
 
-    // Verify we suggest only the first matching wildcard mention,
-    // irrespective of how many equivalent wildcard mentions match.
+    // Verify we suggest only the first matching stream wildcard mention,
+    // irrespective of how many equivalent stream wildcard mentions match.
     const mention_everyone = ct.broadcast_mentions()[1];
     // Here, we suggest only "everyone" instead of both the matching
     // "everyone" and "stream" wildcard mentions.
@@ -1770,6 +1770,12 @@ test("typeahead_results", () => {
         hamletcharacters,
         call_center,
     ]);
+
+    // Verify we suggest both 'the first matching stream wildcard' and
+    // 'topic wildcard' mentions. Not only one matching wildcard mention.
+    const mention_topic = ct.broadcast_mentions()[3];
+    // Here, we suggest both "everyone" and "topic".
+    assert_mentions_matches("o", [othello, mention_everyone, mention_topic, cordelia]);
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
