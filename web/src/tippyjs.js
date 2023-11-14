@@ -4,7 +4,6 @@ import tippy, {delegate} from "tippy.js";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n";
-import * as popover_menus from "./popover_menus";
 import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
@@ -240,20 +239,6 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
         },
-    });
-
-    delegate("body", {
-        target: [".enter_sends_true", ".enter_sends_false"],
-        delay: LONG_HOVER_DELAY,
-        content: $t({defaultMessage: "Change send shortcut"}),
-        onShow() {
-            // Don't show tooltip if the popover is displayed.
-            if (popover_menus.is_compose_enter_sends_popover_displayed()) {
-                return false;
-            }
-            return true;
-        },
-        appendTo: () => document.body,
     });
 
     delegate("body", {

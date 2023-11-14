@@ -935,40 +935,6 @@ textarea.new_message_textarea,
     }
 }
 
-.open_enter_sends_dialog {
-    font-size: 12px;
-    height: 14px;
-    padding-left: 4px;
-    opacity: 0.7;
-    margin-bottom: 5px;
-    position: relative;
-    top: -2px;
-    cursor: pointer;
-
-    @media (width < $mm_min) {
-        font-size: 11px;
-    }
-
-    & kbd {
-        padding: 0 4px;
-    }
-
-    &:hover {
-        opacity: 1;
-    }
-
-    .enter_sends_true,
-    .enter_sends_false {
-        display: none;
-    }
-
-    & i {
-        padding-left: 3px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-}
-
 .drafts-item-in-popover {
     display: none;
     /* Only show the Drafts item in the popover when it's not visible

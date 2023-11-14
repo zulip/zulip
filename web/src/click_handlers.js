@@ -691,11 +691,6 @@ export function initialize() {
         if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {
             return;
         }
-
-        if ($(".enter_sends").has(e.target).length) {
-            e.preventDefault();
-            return;
-        }
     }
 
     $("body").on("click", "#compose-content", handle_compose_click);
@@ -835,7 +830,6 @@ export function initialize() {
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".typeahead").length &&
-                !$(e.target).closest(".enter_sends").length &&
                 !$(e.target).closest(".flatpickr-calendar").length &&
                 $(e.target).closest("body").length
             ) {
