@@ -89,6 +89,7 @@ export function create_ajax_request(
     });
 }
 
+// This function imitates the behavior of the format_money in views/billing_page.py
 export function format_money(cents: number): string {
     // allow for small floating point errors
     cents = Math.ceil(cents - 0.001);

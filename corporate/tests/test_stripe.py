@@ -1208,6 +1208,16 @@ class StripeTest(StripeTestCase):
             invoice_plans_as_needed(add_months(free_trial_end_date, 12))
             [invoice0, invoice1, invoice2] = stripe.Invoice.list(customer=stripe_customer.id)
 
+        # Check /billing/ has correct information for fixed price customers.
+        plan.fixed_price = 127
+        plan.price_per_license = None
+        plan.save(update_fields=["fixed_price", "price_per_license"])
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            response = self.client_get("/billing/")
+        self.assert_in_success_response(["$1.27"], response)
+        # Don't show price breakdown
+        self.assert_not_in_success_response(["{self.seat_count} x"], response)
+
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_free_trial_upgrade_by_card_from_onboarding_page(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
