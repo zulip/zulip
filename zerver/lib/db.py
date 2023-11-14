@@ -22,6 +22,7 @@ def wrapper_execute(
     finally:
         stop = time.time()
         duration = stop - start
+        assert isinstance(self.connection, TimeTrackingConnection)
         self.connection.queries.append(
             {
                 "time": f"{duration:.3f}",
