@@ -10,9 +10,8 @@ import os
 import re
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
 
-import openapi_core
 import orjson
-from openapi_core import Spec
+from openapi_core import OpenAPI
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
 
@@ -77,7 +76,7 @@ class OpenAPISpec:
         self.mtime: Optional[float] = None
         self._openapi: Dict[str, Any] = {}
         self._endpoints_dict: Dict[str, str] = {}
-        self._spec: Optional[Spec] = None
+        self._spec: Optional[OpenAPI] = None
 
     def check_reload(self) -> None:
         # Because importing yaml takes significant time, and we only
@@ -102,7 +101,7 @@ class OpenAPISpec:
 
             openapi = yaml.load(f, Loader=yaml.CSafeLoader)
 
-        spec = Spec.from_dict(openapi)
+        spec = OpenAPI.from_dict(openapi)
         self._spec = spec
         self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
         self.create_endpoints_dict()
@@ -161,7 +160,7 @@ class OpenAPISpec:
         assert len(self._endpoints_dict) > 0
         return self._endpoints_dict
 
-    def spec(self) -> Spec:
+    def spec(self) -> OpenAPI:
         """Reload the OpenAPI file if it has been modified after the last time
         it was read, and then return the openapi_core validator object. Similar
         to preceding functions. Used for proper access to OpenAPI objects.
@@ -390,11 +389,11 @@ def validate_against_openapi_schema(
     mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
     mock_response = MockResponse(
         # TODO: Use original response content instead of re-serializing it.
-        orjson.dumps(content).decode(),
+        orjson.dumps(content),
         status_code=int(status_code),
     )
     try:
-        openapi_core.validate_response(mock_request, mock_response, spec=openapi_spec.spec())
+        openapi_spec.spec().validate_response(mock_request, mock_response)
     except OpenAPIValidationError as error:
         message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
         message += f"\n\n{type(error).__name__}: {error}"
@@ -490,7 +489,7 @@ def validate_request(
         "http://localhost:9991/", method, "/api/v1" + url, headers=http_headers, args=data
     )
     try:
-        openapi_core.validate_request(mock_request, spec=openapi_spec.spec())
+        openapi_spec.spec().validate_request(mock_request)
     except OpenAPIValidationError as error:
         # Show a block error message explaining the options for fixing it.
         msg = f"""
