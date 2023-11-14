@@ -69,13 +69,16 @@ def handle_checkout_session_completed_event(
     session.status = Session.COMPLETED
     session.save()
 
+    assert isinstance(stripe_session.setup_intent, str)
     stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
     assert session.customer.realm is not None
+    assert stripe_session.metadata is not None
     user_id = stripe_session.metadata.get("user_id")
     assert user_id is not None
-    user = get_active_user_profile_by_id_in_realm(user_id, session.customer.realm)
+    user = get_active_user_profile_by_id_in_realm(int(user_id), session.customer.realm)
     billing_session = RealmBillingSession(user)
     payment_method = stripe_setup_intent.payment_method
+    assert isinstance(payment_method, (str, type(None)))
 
     if session.type in [
         Session.UPGRADE_FROM_BILLING_PAGE,
@@ -124,7 +127,10 @@ def handle_payment_intent_succeeded_event(
     user = get_active_user_profile_by_id_in_realm(user_id, payment_intent.customer.realm)
 
     description = ""
+    charge: stripe.Charge
     for charge in stripe_payment_intent.charges:
+        assert charge.payment_method_details is not None
+        assert charge.payment_method_details.card is not None
         description = f"Payment (Card ending in {charge.payment_method_details.card.last4})"
         break
 
@@ -163,6 +169,7 @@ def handle_payment_intent_succeeded_event(
 def handle_payment_intent_payment_failed_event(
     stripe_payment_intent: stripe.PaymentIntent, payment_intent: PaymentIntent
 ) -> None:
+    assert stripe_payment_intent.last_payment_error is not None
     payment_intent.status = PaymentIntent.get_status_integer_from_status_text(
         stripe_payment_intent.status
     )

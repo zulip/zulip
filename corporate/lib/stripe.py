@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypedDict, TypeVar, Union
 
 import stripe
 from django.conf import settings
@@ -283,6 +283,7 @@ def catch_stripe_errors(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, Ret
         # https://stripe.com/docs/api/ruby#error_handling suggests there are additional fields, and
         # https://stripe.com/docs/error-codes gives a more detailed set of error codes
         except stripe.error.StripeError as e:
+            assert isinstance(e.json_body, dict)
             err = e.json_body.get("error", {})
             if isinstance(e, stripe.error.CardError):
                 billing_logger.info(
@@ -886,8 +887,10 @@ class RealmBillingSession(BillingSession):
 def stripe_customer_has_credit_card_as_default_payment_method(
     stripe_customer: stripe.Customer,
 ) -> bool:
+    assert stripe_customer.invoice_settings is not None
     if not stripe_customer.invoice_settings.default_payment_method:
         return False
+    assert isinstance(stripe_customer.invoice_settings.default_payment_method, stripe.PaymentMethod)
     return stripe_customer.invoice_settings.default_payment_method.type == "card"
 
 
@@ -1217,6 +1220,12 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
     return billing_period_end
 
 
+class PriceArgs(TypedDict, total=False):
+    amount: int
+    unit_amount: int
+    quantity: int
+
+
 def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:
         raise NotImplementedError("Plan with invoicing_status==STARTED needs manual resolution.")
@@ -1240,7 +1249,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     for ledger_entry in LicenseLedger.objects.filter(
         plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
     ).order_by("id"):
-        price_args: Dict[str, int] = {}
+        price_args: PriceArgs = {}
         if ledger_entry.is_renewal:
             if plan.fixed_price is not None:
                 price_args = {"amount": plan.fixed_price}
@@ -1398,6 +1407,7 @@ def void_all_open_invoices(realm: Realm) -> int:
     voided_invoices_count = 0
     for invoice in invoices:
         if invoice.status == "open":
+            assert invoice.id is not None
             stripe.Invoice.void_invoice(invoice.id)
             voided_invoices_count += 1
     return voided_invoices_count
