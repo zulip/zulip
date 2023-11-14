@@ -3075,6 +3075,39 @@ class NormalActionsTest(BaseAction):
             check_stream_delete("events[0]", events[0])
             self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
+    def test_user_losing_access_on_deactivating_stream(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+        self.user_profile = self.example_user("polonius")
+
+        stream = get_stream("test_stream1", realm)
+        self.assertCountEqual(
+            self.users_subscribed_to_stream(stream.name, realm), [hamlet, polonius]
+        )
+
+        action = lambda: do_deactivate_stream(stream, acting_user=None)
+        events = self.verify_action(action, num_events=2)
+        check_stream_delete("events[0]", events[0])
+        check_realm_user_remove("events[1]", events[1])
+        self.assertEqual(events[1]["person"]["user_id"], hamlet.id)
+
+        # Test that if the subscribers of deactivated stream are involved in
+        # DMs with guest, then the guest does not get "remove" event for them.
+        stream = get_stream("test_stream2", self.user_profile.realm)
+        shiva = self.example_user("shiva")
+        iago = self.example_user("iago")
+        self.subscribe(shiva, stream.name)
+        self.assertCountEqual(
+            self.users_subscribed_to_stream(stream.name, realm), [iago, polonius, shiva]
+        )
+
+        events = self.verify_action(action, num_events=2)
+        check_stream_delete("events[0]", events[0])
+        check_realm_user_remove("events[1]", events[1])
+        self.assertEqual(events[1]["person"]["user_id"], iago.id)
+
     def test_subscribe_other_user_never_subscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
             action = partial(self.subscribe, self.example_user("othello"), f"test_stream{i}")
