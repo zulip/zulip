@@ -446,13 +446,6 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ".send-control-button",
-        delay: LONG_HOVER_DELAY,
-        placement: "top",
-        appendTo: () => document.body,
-    });
-
-    delegate("body", {
         target: ["#stream_creation_form .add_subscribers_disabled"],
         content: $t({
             defaultMessage:
