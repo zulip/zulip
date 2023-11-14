@@ -51,11 +51,14 @@ CARD_CAPITALIZATION = {
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
+    assert stripe_customer.invoice_settings is not None
     default_payment_method = stripe_customer.invoice_settings.default_payment_method
     if default_payment_method is None:
         return _("No payment method on file.")
 
+    assert isinstance(default_payment_method, stripe.PaymentMethod)
     if default_payment_method.type == "card":
+        assert default_payment_method.card is not None
         brand_name = default_payment_method.card.brand
         if brand_name in CARD_CAPITALIZATION:
             brand_name = CARD_CAPITALIZATION[default_payment_method.card.brand]
