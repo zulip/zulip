@@ -158,7 +158,7 @@ function build_stream_popover(opts) {
 
                 compose_actions.start("stream", {
                     trigger: "popover new topic button",
-                    stream: sub.name,
+                    stream_id: sub.stream_id,
                     topic: "",
                 });
                 e.preventDefault();
