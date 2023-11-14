@@ -12,6 +12,7 @@ from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Uni
 
 import stripe
 from django.conf import settings
+from django.core import signing
 from django.core.signing import Signer
 from django.db import transaction
 from django.urls import reverse
@@ -57,6 +58,10 @@ MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
+VALID_BILLING_MODALITY_VALUES = ["send_invoice", "charge_automatically"]
+VALID_BILLING_SCHEDULE_VALUES = ["annual", "monthly"]
+VALID_LICENSE_MANAGEMENT_VALUES = ["automatic", "manual"]
+
 # The version of Stripe API the billing system supports.
 STRIPE_API_VERSION = "2020-08-27"
 
@@ -101,6 +106,13 @@ def unsign_string(signed_string: str, salt: str) -> str:
     return signer.unsign(signed_string)
 
 
+def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
+    try:
+        return int(unsign_string(signed_seat_count, salt))
+    except signing.BadSignature:
+        raise BillingError("tampered seat count")
+
+
 def validate_licenses(
     charge_automatically: bool,
     licenses: Optional[int],
@@ -127,6 +139,28 @@ def validate_licenses(
             " complete the upgrade, please contact {email}."
         ).format(max_licenses=max_licenses, email=settings.ZULIP_ADMINISTRATOR)
         raise BillingError("too many licenses", message)
+
+
+def check_upgrade_parameters(
+    billing_modality: str,
+    schedule: str,
+    license_management: Optional[str],
+    licenses: Optional[int],
+    seat_count: int,
+    exempt_from_license_number_check: bool,
+) -> None:
+    if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
+        raise BillingError("unknown billing_modality", "")
+    if schedule not in VALID_BILLING_SCHEDULE_VALUES:  # nocoverage
+        raise BillingError("unknown schedule")
+    if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:  # nocoverage
+        raise BillingError("unknown license_management")
+    validate_licenses(
+        billing_modality == "charge_automatically",
+        licenses,
+        seat_count,
+        exempt_from_license_number_check,
+    )
 
 
 # Be extremely careful changing this function. Historical billing periods
@@ -333,6 +367,17 @@ class StripePaymentIntentData:
     description: str
     plan_name: str
     email: str
+
+
+@dataclass
+class UpgradeRequest:
+    billing_modality: str
+    schedule: str
+    signed_seat_count: str
+    salt: str
+    onboarding: bool
+    license_management: Optional[str]
+    licenses: Optional[int]
 
 
 class AuditLogEventType(Enum):
@@ -701,6 +746,66 @@ class BillingSession(ABC):
             stripe.Invoice.finalize_invoice(stripe_invoice)
 
         self.do_change_plan_type(tier=plan_tier)
+
+    def do_upgrade(self, upgrade_request: UpgradeRequest) -> Dict[str, Any]:
+        customer = self.get_customer()
+        if customer is not None:
+            ensure_customer_does_not_have_active_plan(customer)
+        billing_modality = upgrade_request.billing_modality
+        schedule = upgrade_request.schedule
+        license_management = upgrade_request.license_management
+        licenses = upgrade_request.licenses
+
+        seat_count = unsign_seat_count(upgrade_request.signed_seat_count, upgrade_request.salt)
+        if billing_modality == "charge_automatically" and license_management == "automatic":
+            licenses = seat_count
+        if billing_modality == "send_invoice":
+            schedule = "annual"
+            license_management = "manual"
+
+        exempt_from_license_number_check = (
+            customer is not None and customer.exempt_from_license_number_check
+        )
+        check_upgrade_parameters(
+            billing_modality,
+            schedule,
+            license_management,
+            licenses,
+            seat_count,
+            exempt_from_license_number_check,
+        )
+        assert licenses is not None and license_management is not None
+        automanage_licenses = license_management == "automatic"
+        charge_automatically = billing_modality == "charge_automatically"
+
+        billing_schedule = {"annual": CustomerPlan.ANNUAL, "monthly": CustomerPlan.MONTHLY}[
+            schedule
+        ]
+        data: Dict[str, Any] = {}
+        if charge_automatically:
+            stripe_checkout_session = self.setup_upgrade_checkout_session_and_payment_intent(
+                CustomerPlan.STANDARD,
+                seat_count,
+                licenses,
+                license_management,
+                billing_schedule,
+                billing_modality,
+                upgrade_request.onboarding,
+            )
+            data = {
+                "stripe_session_url": stripe_checkout_session.url,
+                "stripe_session_id": stripe_checkout_session.id,
+            }
+        else:
+            self.process_initial_upgrade(
+                CustomerPlan.STANDARD,
+                licenses,
+                automanage_licenses,
+                billing_schedule,
+                False,
+                is_free_trial_offer_enabled(),
+            )
+        return data
 
 
 class RealmBillingSession(BillingSession):
