@@ -2011,6 +2011,9 @@ div.focused-message-list {
 
 .message-edit-timer {
     display: none;
+    /* Center vertically relative to
+       buttons. */
+    align-self: center;
     /* Use flexbox to position to far right of
        the Save and Cancel buttons. */
     margin-left: auto;
