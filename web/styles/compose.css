@@ -1204,14 +1204,14 @@ textarea.new_message_textarea,
 
 /* Class for send-area buttons, such as
    Drafts and the send-adjacent vdots */
-.message-control-button {
+.send-control-button {
     border: 0;
     outline: 0;
     padding: 0;
     margin: 0;
     border-radius: 4px;
-    color: var(--color-compose-message-control-button);
-    background-color: var(--color-compose-message-control-button-background);
+    color: var(--color-compose-send-control-button);
+    background-color: var(--color-compose-send-control-button-background);
     font-weight: 450;
 
     &:active {
@@ -1230,11 +1230,9 @@ textarea.new_message_textarea,
     &:hover {
         /* We need to use !important here, regrettably, to keep the default
            dark-mode hover colors from showing. */
-        color: var(
-            --color-compose-message-control-button-interactive
-        ) !important;
+        color: var(--color-compose-send-control-button-interactive) !important;
         background-color: var(
-            --color-compose-message-control-button-background-interactive
+            --color-compose-send-control-button-background-interactive
         );
         text-decoration: none;
     }
