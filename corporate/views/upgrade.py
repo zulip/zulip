@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional
 
 from django import forms
 from django.conf import settings
-from django.core import signing
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -13,18 +12,17 @@ from django.urls import reverse
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
     MIN_INVOICED_LICENSES,
+    VALID_BILLING_MODALITY_VALUES,
+    VALID_BILLING_SCHEDULE_VALUES,
+    VALID_LICENSE_MANAGEMENT_VALUES,
     BillingError,
     RealmBillingSession,
-    ensure_customer_does_not_have_active_plan,
+    UpgradeRequest,
     get_latest_seat_count,
-    is_free_trial_offer_enabled,
     sign_string,
-    unsign_string,
-    validate_licenses,
 )
 from corporate.lib.support import get_support_url
 from corporate.models import (
-    CustomerPlan,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_customer_by_realm,
@@ -39,39 +37,6 @@ from zerver.lib.validator import check_bool, check_int, check_string_in
 from zerver.models import UserProfile, get_org_type_display_name
 
 billing_logger = logging.getLogger("corporate.stripe")
-
-VALID_BILLING_MODALITY_VALUES = ["send_invoice", "charge_automatically"]
-VALID_BILLING_SCHEDULE_VALUES = ["annual", "monthly"]
-VALID_LICENSE_MANAGEMENT_VALUES = ["automatic", "manual"]
-
-
-def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
-    try:
-        return int(unsign_string(signed_seat_count, salt))
-    except signing.BadSignature:
-        raise BillingError("tampered seat count")
-
-
-def check_upgrade_parameters(
-    billing_modality: str,
-    schedule: str,
-    license_management: Optional[str],
-    licenses: Optional[int],
-    seat_count: int,
-    exempt_from_license_number_check: bool,
-) -> None:
-    if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
-        raise BillingError("unknown billing_modality", "")
-    if schedule not in VALID_BILLING_SCHEDULE_VALUES:  # nocoverage
-        raise BillingError("unknown schedule")
-    if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:  # nocoverage
-        raise BillingError("unknown license_management")
-    validate_licenses(
-        billing_modality == "charge_automatically",
-        licenses,
-        seat_count,
-        exempt_from_license_number_check,
-    )
 
 
 @require_organization_member
@@ -89,66 +54,19 @@ def upgrade(
     ),
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
-    customer = get_customer_by_realm(user.realm)
-    if customer is not None:
-        ensure_customer_does_not_have_active_plan(customer)
     try:
-        seat_count = unsign_seat_count(signed_seat_count, salt)
-        if billing_modality == "charge_automatically" and license_management == "automatic":
-            licenses = seat_count
-        if billing_modality == "send_invoice":
-            schedule = "annual"
-            license_management = "manual"
-
-        exempt_from_license_number_check = (
-            customer is not None and customer.exempt_from_license_number_check
+        upgrade_request = UpgradeRequest(
+            billing_modality=billing_modality,
+            schedule=schedule,
+            signed_seat_count=signed_seat_count,
+            salt=salt,
+            onboarding=onboarding,
+            license_management=license_management,
+            licenses=licenses,
         )
-        check_upgrade_parameters(
-            billing_modality,
-            schedule,
-            license_management,
-            licenses,
-            seat_count,
-            exempt_from_license_number_check,
-        )
-        assert licenses is not None and license_management is not None
-        automanage_licenses = license_management == "automatic"
-        charge_automatically = billing_modality == "charge_automatically"
-
-        billing_schedule = {"annual": CustomerPlan.ANNUAL, "monthly": CustomerPlan.MONTHLY}[
-            schedule
-        ]
         billing_session = RealmBillingSession(user)
-        if charge_automatically:
-            stripe_checkout_session = (
-                billing_session.setup_upgrade_checkout_session_and_payment_intent(
-                    CustomerPlan.STANDARD,
-                    seat_count,
-                    licenses,
-                    license_management,
-                    billing_schedule,
-                    billing_modality,
-                    onboarding,
-                )
-            )
-            return json_success(
-                request,
-                data={
-                    "stripe_session_url": stripe_checkout_session.url,
-                    "stripe_session_id": stripe_checkout_session.id,
-                },
-            )
-        else:
-            billing_session.process_initial_upgrade(
-                CustomerPlan.STANDARD,
-                licenses,
-                automanage_licenses,
-                billing_schedule,
-                False,
-                is_free_trial_offer_enabled(),
-            )
-            return json_success(request)
-
+        data = billing_session.do_upgrade(upgrade_request)
+        return json_success(request, data)
     except BillingError as e:
         billing_logger.warning(
             "BillingError during upgrade: %s. user=%s, realm=%s (%s), billing_modality=%s, "
