@@ -14,6 +14,7 @@ from corporate.lib.stripe import (
     do_change_plan_status,
     downgrade_at_the_end_of_billing_cycle,
     downgrade_now_without_creating_additional_invoices,
+    format_money,
     get_latest_seat_count,
     make_end_of_cycle_updates_if_needed,
     renewal_amount,
@@ -194,15 +195,13 @@ def billing_home(
             )
 
             billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
-            price_per_license_int = plan.price_per_license
-            if price_per_license_int is not None and billing_frequency == "Annual":
-                price_per_license_int = int(price_per_license_int / 12)
 
-            price_per_license = (
-                cents_to_dollar_string(price_per_license_int)
-                if price_per_license_int is not None
-                else None
-            )
+            if plan.price_per_license is None:
+                price_per_license = ""
+            elif billing_frequency == "Annual":
+                price_per_license = format_money(plan.price_per_license / 12)
+            else:
+                price_per_license = format_money(plan.price_per_license)
 
             context.update(
                 plan_name=plan.name,

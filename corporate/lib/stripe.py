@@ -68,6 +68,20 @@ STRIPE_API_VERSION = "2020-08-27"
 stripe.api_version = STRIPE_API_VERSION
 
 
+# This function imitates the behavior of the format_money in billing/helpers.ts
+def format_money(cents: float) -> str:
+    # allow for small floating point errors
+    cents = math.ceil(cents - 0.001)
+    if cents % 100 == 0:
+        precision = 0
+    else:
+        precision = 2
+
+    dollars = cents / 100
+    # Format the number as a string with the correct number of decimal places
+    return f"{dollars:.{precision}f}"
+
+
 def get_latest_seat_count(realm: Realm) -> int:
     return get_seat_count(realm, extra_non_guests_count=0, extra_guests_count=0)
 
