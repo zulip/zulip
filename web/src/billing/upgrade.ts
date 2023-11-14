@@ -11,10 +11,22 @@ export const initialize = (): void => {
     $("#org-upgrade-button").on("click", (e) => {
         e.preventDefault();
 
-        helpers.create_ajax_request("/json/billing/upgrade", "autopay", [], "POST", (response) => {
-            const response_data = helpers.stripe_session_url_schema.parse(response);
-            window.location.replace(response_data.stripe_session_url);
-        });
+        $("#org-upgrade-button-text").hide();
+        $("#org-upgrade-button .upgrade-button-loader").show();
+        helpers.create_ajax_request(
+            "/json/billing/upgrade",
+            "autopay",
+            [],
+            "POST",
+            (response) => {
+                const response_data = helpers.stripe_session_url_schema.parse(response);
+                window.location.replace(response_data.stripe_session_url);
+            },
+            () => {
+                $("#org-upgrade-button-text").show();
+                $("#org-upgrade-button .upgrade-button-loader").hide();
+            },
+        );
     });
 
     const prices: Prices = {
