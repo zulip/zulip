@@ -94,7 +94,7 @@ function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeForma
     }
 }
 
-function get_user_locale(): string {
+export function get_user_locale(): string {
     const user_default_language = user_settings.default_language;
     let locale = "";
     try {
