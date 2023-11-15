@@ -30,7 +30,10 @@ run_test("python_to_js_linkifier", () => {
         },
     ]);
     let actual_value = get_linkifier_regexes();
-    let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
+    let expected_value = [
+        /(^|\s|\u0085|\p{Z}|['"(,:<])(\/aa\/g)($|[^\p{L}\p{N}])/gimu,
+        /(^|\s|\u0085|\p{Z}|['"(,:<])(\/aa\/g)($|[^\p{L}\p{N}])/gu,
+    ];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
     linkifiers.update_linkifier_rules([
@@ -41,7 +44,7 @@ run_test("python_to_js_linkifier", () => {
         },
     ]);
     actual_value = get_linkifier_regexes();
-    expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
+    expected_value = [/(^|\s|\u0085|\p{Z}|['"(,:<])(#cf(\d+)([A-Z][\dA-Z]*))($|[^\p{L}\p{N}])/gu];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
     blueslip.expect("error", "python_to_js_linkifier failure!");

@@ -24,10 +24,6 @@ apps.
 You can customize whether or not Zulip will send mobile push
 notifications while you are actively using one of the Zulip apps.
 
-!!! tip ""
-    When testing mobile notifications, make sure Zulip is
-    configured to send mobile notifications even when you're online.
-
 {start_tabs}
 
 {tab|desktop-web}
@@ -36,6 +32,46 @@ notifications while you are actively using one of the Zulip apps.
 
 1. Under **Mobile message notifications**, toggle
    **Send mobile notifications even if I'm online**, as desired.
+
+{end_tabs}
+
+## Testing mobile notifications
+
+Start by configuring your notifications settings to make it easy to trigger a
+notification.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|notifications}
+
+1. In the **Mobile** column of the **Notification triggers** table, make sure
+   the **DMs, mentions, and alerts** checkbox is checked.
+
+1. Under **Mobile message notifications**, make sure the **Send mobile
+   notifications even if I'm online** checkbox is checked.
+
+{end_tabs}
+
+Next, test Zulip push notifications on your mobile device.
+
+{start_tabs}
+
+{tab|mobile}
+
+1. [Download](https://zulip.com/apps/) and install the Zulip mobile app if you
+   have not done so already.
+
+1. If your Zulip organization is self-hosted (not at `*.zulipchat.com`),
+   [check](/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers)
+   whether push notifications have been set up. If they were set up recently,
+   you will need to [log out](/help/logging-out) of your account and [log
+   in](/help/logging-in) again.
+
+1. Ask *another* user (not yourself) to [send you a direct
+   message](/help/starting-a-new-direct-message). You should see a Zulip message
+   notification in the **notifications area** on your device.
 
 {end_tabs}
 

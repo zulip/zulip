@@ -42,7 +42,7 @@ function python_to_js_linkifier(
         current_group += 1;
     }
     // Convert any python in-regex flags to RegExp flags
-    let js_flags = "g";
+    let js_flags = "gu";
     const inline_flag_re = /\(\?([Limsux]+)\)/;
     match = inline_flag_re.exec(pattern);
 
@@ -59,15 +59,11 @@ function python_to_js_linkifier(
 
         pattern = pattern.replace(inline_flag_re, "");
     }
-    // Ideally we should have been checking that linkifiers
-    // begin with certain characters but since there is no
-    // support for negative lookbehind in javascript, we check
-    // for this condition in `contains_backend_only_syntax()`
-    // function. If the condition is satisfied then the message
-    // is rendered locally, otherwise, we return false there and
-    // message is rendered on the backend which has proper support
-    // for negative lookbehind.
-    pattern = pattern + /(?!\w)/.source;
+    // This boundary-matching must be kept in sync with prepare_linkifier_pattern in
+    // zerver.lib.markdown.  It does not use look-ahead or look-behind, because re2
+    // does not support either.
+    pattern =
+        /(^|\s|\u0085|\p{Z}|['"(,:<])/u.source + "(" + pattern + ")" + /($|[^\p{L}\p{N}])/u.source;
     let final_regex = null;
     try {
         final_regex = new RegExp(pattern, js_flags);

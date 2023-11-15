@@ -168,6 +168,11 @@
               in, e.g., a group DM. */
             display: flex;
             align-items: center;
+            /* Ensure horizontal centering, too. */
+            justify-content: center;
+            /* Disallow shrinking or growth, which can cause
+               little layout shifts with pills. */
+            flex: 0 0 auto;
             height: var(--compose-recipient-box-min-height);
             /* Round up natural width to next whole pixel. */
             width: 23px;
