@@ -38,8 +38,8 @@ class TimeTrackingCursor(cursor):
         wrapper_execute(self, super().execute, query, vars)
 
     @override
-    def executemany(self, query: Query, vars: Iterable[Params]) -> None:  # nocoverage
-        wrapper_execute(self, super().executemany, query, vars)
+    def executemany(self, query: Query, vars_list: Iterable[Params]) -> None:  # nocoverage
+        wrapper_execute(self, super().executemany, query, vars_list)
 
 
 CursorT = TypeVar("CursorT", bound=cursor)
