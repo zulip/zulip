@@ -128,7 +128,7 @@ def handle_payment_intent_succeeded_event(
 
     description = ""
     charge: stripe.Charge
-    for charge in stripe_payment_intent.charges:
+    for charge in stripe_payment_intent.charges:  # type: ignore[attr-defined] # https://stripe.com/docs/upgrades#2022-11-15
         assert charge.payment_method_details is not None
         assert charge.payment_method_details.card is not None
         description = f"Payment (Card ending in {charge.payment_method_details.card.last4})"
