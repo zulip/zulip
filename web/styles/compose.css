@@ -1335,9 +1335,16 @@ textarea.new_message_textarea,
     #compose-textarea,
     #preview_message_area {
         /* When in full screen, override max-height
-           properties set on the textarea itself,
-           e.g., from manually resizing the textarea. */
+           properties set from manually resizing. */
         max-height: none !important;
+    }
+
+    #compose-textarea {
+        /* Additionally, override the height properties
+           on the textarea. This is essential if the
+           textarea has been manually resized prior
+           to going into fullscreen. */
+        height: auto !important;
     }
 
     #preview_message_area {
