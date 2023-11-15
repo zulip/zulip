@@ -976,6 +976,8 @@ def channel_message_to_zerver_message(
                 float(message["thread_ts"]), tz=datetime.timezone.utc
             )
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
+            start_of_message = content[:min(60, len(content))]
+            topic_name = f"{thread_ts_str} - {start_of_message}"
             # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
             # threads with the same date.
             if thread_ts_str in thread_map:
