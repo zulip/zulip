@@ -1352,6 +1352,9 @@ textarea.new_message_textarea,
 
 .preview_mode {
     #preview-message-area-container {
+        /* Maintain same top alignment as the
+           compose textarea. */
+        margin-top: 5px;
         /* When in preview mode, we display the
            preview container as a columnar flexbox.
            This containing element is necessary
