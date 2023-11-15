@@ -341,7 +341,15 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
     return result;
 }
 
-export function wildcard_mention_allowed() {
+function is_recipient_large_stream() {
+    return (
+        compose_state.stream_id() &&
+        peer_data.get_subscriber_count(compose_state.stream_id()) >
+            wildcard_mention_large_stream_threshold
+    );
+}
+
+function wildcard_mention_allowed_in_large_stream() {
     if (
         page_params.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
@@ -385,6 +393,10 @@ export function wildcard_mention_allowed() {
     return !page_params.is_guest;
 }
 
+export function wildcard_mention_allowed() {
+    return !is_recipient_large_stream() || wildcard_mention_allowed_in_large_stream();
+}
+
 export function set_wildcard_mention_large_stream_threshold(value) {
     wildcard_mention_large_stream_threshold = value;
 }
@@ -393,12 +405,13 @@ export function validate_stream_message_mentions(opts) {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
-    // stream, check if they permission to do so.
+    // stream, check if they permission to do so. If yes, warn them
+    // if they haven't acknowledged the wildcard warning yet.
     if (
         opts.wildcard_mention !== null &&
         subscriber_count > wildcard_mention_large_stream_threshold
     ) {
-        if (!wildcard_mention_allowed()) {
+        if (!wildcard_mention_allowed_in_large_stream()) {
             compose_banner.show_error_message(
                 $t({
                     defaultMessage:
