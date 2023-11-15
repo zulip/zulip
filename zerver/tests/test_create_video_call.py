@@ -70,6 +70,7 @@ class TestVideoCall(ZulipTestCase):
             responses.calls[-1].request.url,
             "https://api.zoom.us/v2/users/me/meetings",
         )
+        assert responses.calls[-1].request.body is not None
         self.assertEqual(
             orjson.loads(responses.calls[-1].request.body),
             {
@@ -104,6 +105,7 @@ class TestVideoCall(ZulipTestCase):
             responses.calls[-1].request.url,
             "https://api.zoom.us/v2/users/me/meetings",
         )
+        assert responses.calls[-1].request.body is not None
         self.assertEqual(
             orjson.loads(responses.calls[-1].request.body),
             {
