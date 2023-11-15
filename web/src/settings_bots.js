@@ -444,11 +444,6 @@ export function set_up() {
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const data = generate_zuliprc_content(bot);
-
-            // /* eslint no-console: "error" */
-            // console.log(data);
-
-
             return data;
         },
     });
@@ -458,7 +453,7 @@ export function set_up() {
         show_copied_confirmation(e.trigger);
     });
 
-    const clipboardEmail = new ClipboardJS("button.copy_email", {
+    const clipboardEmail = new ClipboardJS("#copy_bot_email", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
@@ -472,7 +467,7 @@ export function set_up() {
         show_copied_confirmation(e.trigger);
     });
 
-    const clipboardApi = new ClipboardJS("button.copy_api_key", {
+    const clipboardApi = new ClipboardJS("#copy_api_key", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
@@ -482,7 +477,7 @@ export function set_up() {
         },
     });
 
-    clipboardApi .on("success", (e) => {
+    clipboardApi.on("success", (e) => {
         show_copied_confirmation(e.trigger);
     });
 
