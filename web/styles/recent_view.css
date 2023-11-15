@@ -28,7 +28,15 @@
         }
 
         .recent_view_focusable {
-            display: inline-block;
+            /* Use flexbox to align icons vertically */
+            display: flex;
+            align-items: center;
+
+            .filter-icon {
+                /* Maintain righthand space between icon
+                   and stream name. */
+                margin-right: 3px;
+            }
 
             & > * {
                 outline: 0;
