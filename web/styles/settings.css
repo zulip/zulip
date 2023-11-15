@@ -2109,3 +2109,13 @@ $option_title_width: 180px;
         margin-top: -10px;
     }
 }
+
+.copy_icon{
+    position: relative;
+    margin-left: 7px;
+    color: hsl(0deg 0% 67%);
+    transition: all 0.1s ease;
+    &:hover {
+        color: hsl(0deg 0% 27%);
+    }
+}
