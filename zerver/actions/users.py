@@ -444,11 +444,11 @@ def do_change_user_role(
     send_stream_events_for_role_update(user_profile, previously_accessible_streams)
 
 
-def do_make_user_billing_admin(user_profile: UserProfile) -> None:
-    user_profile.is_billing_admin = True
+def do_change_is_billing_admin(user_profile: UserProfile, value: bool) -> None:
+    user_profile.is_billing_admin = value
     user_profile.save(update_fields=["is_billing_admin"])
     event = dict(
-        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_billing_admin=True)
+        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_billing_admin=value)
     )
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 

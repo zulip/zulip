@@ -1099,10 +1099,10 @@ class RealmBillingSession(BillingSession):
             customer, created = Customer.objects.update_or_create(
                 realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
             )
-            from zerver.actions.users import do_make_user_billing_admin
+            from zerver.actions.users import do_change_is_billing_admin
 
             assert self.user is not None
-            do_make_user_billing_admin(self.user)
+            do_change_is_billing_admin(self.user, True)
             return customer
         else:
             customer, created = Customer.objects.update_or_create(

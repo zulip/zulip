@@ -122,9 +122,9 @@ from zerver.actions.user_settings import (
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
+    do_change_is_billing_admin,
     do_change_user_role,
     do_deactivate_user,
-    do_make_user_billing_admin,
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
@@ -2133,9 +2133,13 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        events = self.verify_action(lambda: do_make_user_billing_admin(self.user_profile))
+        events = self.verify_action(lambda: do_change_is_billing_admin(self.user_profile, True))
         check_realm_user_update("events[0]", events[0], "is_billing_admin")
         self.assertEqual(events[0]["person"]["is_billing_admin"], True)
+
+        events = self.verify_action(lambda: do_change_is_billing_admin(self.user_profile, False))
+        check_realm_user_update("events[0]", events[0], "is_billing_admin")
+        self.assertEqual(events[0]["person"]["is_billing_admin"], False)
 
     def test_change_is_owner(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
