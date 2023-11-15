@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-16 00:18+0000\n"
+"POT-Creation-Date: 2023-11-15 22:07+0000\n"
 "PO-Revision-Date: 2021-05-27 07:08+0000\n"
 "Last-Translator: Akash Nimare <svnitakash@gmail.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/zulip/zulip/language/"
@@ -3461,89 +3461,93 @@ msgstr ""
 msgid "The password is too weak."
 msgstr ""
 
-#: zerver/forms.py:86
+#: zerver/forms.py:90
 msgid "Subdomain needs to have length 3 or greater."
 msgstr ""
 
-#: zerver/forms.py:87
+#: zerver/forms.py:91
 msgid "Subdomain cannot start or end with a '-'."
 msgstr ""
 
-#: zerver/forms.py:88
+#: zerver/forms.py:92
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr ""
 
-#: zerver/forms.py:89
-msgid "Subdomain unavailable. Please choose a different one."
+#: zerver/forms.py:93
+msgid "Subdomain already in use. Please choose a different one."
 msgstr ""
 
-#: zerver/forms.py:123 zerver/forms.py:126 zerver/forms.py:268
+#: zerver/forms.py:94
+msgid "Subdomain reserved. Please choose a different one."
+msgstr ""
+
+#: zerver/forms.py:131 zerver/forms.py:134 zerver/forms.py:270
 #: zerver/lib/email_validation.py:107
 msgid "Please use your real email address."
 msgstr ""
 
-#: zerver/forms.py:244
+#: zerver/forms.py:246
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr ""
 
-#: zerver/forms.py:252
+#: zerver/forms.py:254
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
 msgstr ""
 
-#: zerver/forms.py:263
+#: zerver/forms.py:265
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
 msgstr ""
 
-#: zerver/forms.py:271
+#: zerver/forms.py:273
 msgid "Email addresses containing + are not allowed in this organization."
 msgstr ""
 
-#: zerver/forms.py:284
+#: zerver/forms.py:286
 msgid ""
 "New members cannot join this organization because all Zulip licenses are in "
 "use. Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
 msgstr ""
 
-#: zerver/forms.py:303
+#: zerver/forms.py:305
 msgid "New password"
 msgstr "പുതിയ രഹസ്യവാക്ക്"
 
-#: zerver/forms.py:310
+#: zerver/forms.py:312
 msgid "New password confirmation"
 msgstr ""
 
-#: zerver/forms.py:496
+#: zerver/forms.py:498
 msgid ""
 "You're making too many attempts to sign in. Try again in {} seconds or "
 "contact your organization administrator for help."
 msgstr ""
 
-#: zerver/forms.py:508
+#: zerver/forms.py:510
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
 msgstr ""
 
-#: zerver/forms.py:557
+#: zerver/forms.py:559
 msgid "Token"
 msgstr ""
 
-#: zerver/forms.py:578
+#: zerver/forms.py:580
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr ""
 
-#: zerver/forms.py:584
+#: zerver/forms.py:586
 msgid "Please enter at most 10 emails."
 msgstr ""
 
-#: zerver/forms.py:597
+#: zerver/forms.py:599
 msgid "We couldn't find that Zulip organization."
 msgstr ""
 

@@ -15,6 +15,7 @@
 # Transifex Bot <>, 2023
 # longjiang li <cqlilon@live.com>, 2023
 # FaZang, 2023
+# Clay Cheng <569735195@qq.com>, 2023
 # 
 #, fuzzy
 msgid ""
@@ -23,7 +24,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-12 23:45+0000\n"
 "PO-Revision-Date: 2023-06-12 23:55+0000\n"
-"Last-Translator: FaZang, 2023\n"
+"Last-Translator: Clay Cheng <569735195@qq.com>, 2023\n"
 "Language-Team: Chinese Simplified (https://app.transifex.com/zulip/teams/53893/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -38,7 +39,7 @@ msgstr "禁止访客用户"
 
 #: analytics/views/stats.py:153
 msgid "Invalid organization"
-msgstr "无效的社群"
+msgstr "无效的组织"
 
 #: analytics/views/stats.py:294
 msgid "Public streams"
@@ -50,11 +51,11 @@ msgstr "私有频道"
 
 #: analytics/views/stats.py:296
 msgid "Direct messages"
-msgstr ""
+msgstr "私聊消息"
 
 #: analytics/views/stats.py:297
 msgid "Group direct messages"
-msgstr ""
+msgstr "私聊群组消息"
 
 #: analytics/views/stats.py:318
 msgid "Unknown chart name: {}"
@@ -82,7 +83,7 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
-"您的社群没有剩余的 Zulip 许可证，并且不能再接受新用户。请[增加许可数量]({billing_page_link}) "
+"您的组织没有剩余的 Zulip 许可证，并且不能再接受新用户。请[增加许可数量]({billing_page_link}) "
 "或[停用非活动用户]({deactivate_user_help_page_link}) 以允许新用户加入。"
 
 #: corporate/lib/registration.py:36
@@ -93,7 +94,7 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
 msgstr ""
-"您的社群只剩下一个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
+"您的组织只剩下一个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
 "[停用非活动用户]({deactivate_user_help_page_link}) 以允许多个用户加入。"
 
 #: corporate/lib/registration.py:41
@@ -104,7 +105,7 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
 msgstr ""
-"您的社群只剩下两个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
+"您的组织只剩下两个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
 "[停用非活动用户]({deactivate_user_help_page_link}) 以允许两个以上的用户加入。"
 
 #: corporate/lib/registration.py:46
@@ -115,7 +116,7 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
 msgstr ""
-"您的社群只剩下三个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
+"您的组织只剩下三个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
 "[停用非活动用户]({deactivate_user_help_page_link}) 以允许三个以上的用户加入。"
 
 #: corporate/lib/registration.py:57
@@ -126,19 +127,19 @@ msgid ""
 "licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow new members to join."
 msgstr ""
-"新成员 ({email}) 无法加入您的社群，因为所有 Zulip 许可证都在使用中。请[增加许可数量]({billing_page_link}) "
+"新成员 ({email}) 无法加入您的组织，因为所有 Zulip 许可证都在使用中。请[增加许可数量]({billing_page_link}) "
 "或[停用非活动用户]({deactivate_user_help_page_link}) 以允许新成员加入。"
 
 #: corporate/lib/registration.py:109
 msgid "All Zulip licenses for this organization are currently in use."
-msgstr "该社群的所有 Zulip 许可证当前都在使用中。"
+msgstr "该组织的所有 Zulip 许可证当前都在使用中。"
 
 #: corporate/lib/registration.py:112
 #, python-brace-format
 msgid ""
 "Your organization does not have enough unused Zulip licenses to invite "
 "{num_invites} users."
-msgstr "您的社群没有足够的未使用的 Zulip 许可证来邀请 {num_invites} 用户。"
+msgstr "您的组织没有足够的未使用的 Zulip 许可证来邀请 {num_invites} 用户。"
 
 #: corporate/lib/stripe.py:112
 msgid "You must invoice for at least {} users."
@@ -224,7 +225,7 @@ msgstr "没什么可改变的。"
 
 #: corporate/views/event_status.py:28
 msgid "No customer for this organization!"
-msgstr "该社群没有客户！"
+msgstr "该组织没有客户！"
 
 #: corporate/views/event_status.py:34
 msgid "Session not found"
@@ -232,7 +233,7 @@ msgstr "找不到会话"
 
 #: corporate/views/event_status.py:37 zerver/decorator.py:196
 msgid "Must be a billing administrator or an organization owner"
-msgstr "必须是帐单管理员或社群所有者"
+msgstr "必须是帐单管理员或组织所有者"
 
 #: corporate/views/event_status.py:47
 msgid "Payment intent not found"
@@ -484,7 +485,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"            确认一下嗷，Zulip社群的账户已经更改咯\n"
+"            确认一下嗷，Zulip账号的邮件地址已经更改咯\n"
 "            从%(old_email_html_tag)s 更改为%(new_email_html_tag)s\n"
 "            "
 
@@ -522,7 +523,7 @@ msgstr "确认链接已过期或已停用。"
 
 #: templates/confirmation/link_expired.html:15
 msgid "Please contact your organization administrator for a new link."
-msgstr "请联系您的社群管理员以获取新链接。"
+msgstr "请联系您的组织管理员以获取新链接。"
 
 #: templates/confirmation/link_malformed.html:4
 msgid "Confirmation link malformed"
@@ -601,7 +602,7 @@ msgstr "账单状态"
 #: templates/corporate/for/use-cases.html:23
 #: templates/zerver/create_realm.html:38
 msgid "Create organization"
-msgstr "创建社群"
+msgstr "创建组织"
 
 #: templates/corporate/for/business.html:36
 #: templates/corporate/for/use-cases.html:26
@@ -721,7 +722,7 @@ msgstr "商务用Zulip"
 
 #: templates/corporate/sponsorship.html:24
 msgid "Leave blank if your organization does not have a website."
-msgstr "如果您的社群没有网站，请留空。"
+msgstr "如果您的组织没有网站，请留空。"
 
 #: templates/corporate/sponsorship.html:32
 #: templates/corporate/upgrade.html:158 templates/corporate/upgrade.html:223
@@ -738,7 +739,7 @@ msgstr "从"
 
 #: templates/corporate/support_request.html:19
 msgid "Organization"
-msgstr "社群"
+msgstr "组织"
 
 #: templates/corporate/support_request.html:23
 msgid "Subject"
@@ -880,7 +881,7 @@ msgstr "注册Zulip"
 
 #: templates/zerver/accounts_home.html:37
 msgid "You need an invitation to join this organization."
-msgstr "您需要邀请才能加入本社群。"
+msgstr "您需要邀请才能加入本组织。"
 
 #: templates/zerver/accounts_home.html:76 templates/zerver/login.html:50
 #: templates/zerver/login.html:133
@@ -1066,7 +1067,7 @@ msgstr "创建新的组织"
 
 #: templates/zerver/create_realm.html:16
 msgid "Create a new Zulip organization"
-msgstr "创建一个新的Zulip社群"
+msgstr "创建一个新的Zulip组织"
 
 #: templates/zerver/create_realm.html:27 templates/zerver/reset.html:27
 msgid "Enter your email address"
@@ -1087,7 +1088,7 @@ msgstr ""
 
 #: templates/zerver/deactivated.html:4 templates/zerver/deactivated.html:19
 msgid "Deactivated organization"
-msgstr "关闭的社群"
+msgstr "关闭的组织"
 
 #: templates/zerver/deactivated.html:24
 #, python-format
@@ -1097,7 +1098,7 @@ msgid ""
 "                    "
 msgstr ""
 "\n"
-"                    您要加入的社群, %(deactivated_domain_name)s, 已停用.\n"
+"                    您要加入的组织, %(deactivated_domain_name)s, 已停用.\n"
 "                    "
 
 #: templates/zerver/deactivated.html:28
@@ -1120,7 +1121,7 @@ msgid ""
 "                    "
 msgstr ""
 "\n"
-"                    请联系社群管理员 <a href=\"mailto:%(support_email)s\">%(support_email)s</a> 重新激活\n"
+"                    请联系 <a href=\"mailto:%(support_email)s\">%(support_email)s</a> 重新激活\n"
 "                    群聊.\n"
 "                    "
 
@@ -1240,7 +1241,7 @@ msgstr "如果您未请求此更改，请立即通过 %(support_email)s 与我�
 #: templates/zerver/emails/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.txt:2
 msgid "You have requested a new Zulip organization. Awesome!"
-msgstr "您请求了一个新的 Zulip 社群。惊人的！"
+msgstr "您请求了一个新的 Zulip 组织。真不错！"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:13
 #: templates/zerver/emails/confirm_registration.html:12
@@ -1252,7 +1253,7 @@ msgstr "您刚刚注册了Zulip，太棒了！"
 #: templates/zerver/emails/confirm_registration.html:17
 msgid ""
 "Click the button below to create the organization and register your account."
-msgstr "单击下面的按钮以创建社群并注册您的帐户。"
+msgstr "单击下面的按钮以创建组织并注册您的账号。"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:20
 #: templates/zerver/emails/confirm_registration.html:19
@@ -1366,12 +1367,12 @@ msgstr ""
 #: templates/zerver/emails/compiled/followup_day1.html:16
 #, python-format
 msgid "You've created the new Zulip organization <b>%(realm_name)s</b>."
-msgstr "您创建了新的Zulip社群<b>%(realm_name)s</b>"
+msgstr "您创建了新的Zulip组织<b>%(realm_name)s</b>"
 
 #: templates/zerver/emails/compiled/followup_day1.html:19
 #, python-format
 msgid "You've joined the Zulip organization <b>%(realm_name)s</b>."
-msgstr "您加入了Zulip社群<b>%(realm_name)s</b>"
+msgstr "您加入了Zulip组织<b>%(realm_name)s</b>"
 
 #: templates/zerver/emails/compiled/followup_day1.html:24
 msgid "Your account details:"
@@ -1382,7 +1383,7 @@ msgstr "您的账户详情："
 #: templates/zerver/emails/followup_day1.txt:16
 #, python-format
 msgid "Organization URL: %(organization_url)s"
-msgstr "社群网址：%(organization_url)s"
+msgstr "组织网址：%(organization_url)s"
 
 #: templates/zerver/emails/compiled/followup_day1.html:31
 #, python-format
@@ -1520,7 +1521,7 @@ msgstr "您好"
 msgid ""
 "%(referrer_name)s wants you to join them on Zulip — the team communication "
 "tool designed for productivity."
-msgstr "%(referrer_name)s 邀请您加入他们的 Zulip 社群 — 专为提高生产力而设计的团队沟通工具。"
+msgstr "%(referrer_name)s 邀请您加入他们的 Zulip — 专为提高生产力而设计的团队沟通工具。"
 
 #: templates/zerver/emails/compiled/invitation.html:16
 #: templates/zerver/emails/compiled/invitation_reminder.html:14
@@ -1540,7 +1541,7 @@ msgstr "又见面了"
 msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on"
 " Zulip — the team communication tool designed for productivity."
-msgstr "叮铃铃~%(referrer_name)s 希望您加入他们的 Zulip社群—专为提高生产力而设计的团队沟通工具。"
+msgstr "叮铃铃~%(referrer_name)s 希望您加入他们的 Zulip—专为提高生产力而设计的团队沟通工具。"
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:19
 #: templates/zerver/emails/invitation_reminder.html:18
@@ -1570,7 +1571,7 @@ msgid ""
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
 msgstr ""
-"此电子邮件不包含消息内容，因为您的社群已禁用<a class=\"content_disabled_help_link\" "
+"此电子邮件不包含消息内容，因为您的组织已禁用<a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">出现在邮件通知中包含消息内容</a>。"
 
@@ -1677,7 +1678,7 @@ msgstr "最好"
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "社群：%(organization_url)s时间：%(login_time)s电子邮件：%(user_email)s"
+msgstr "组织：%(organization_url)s时间：%(login_time)s电子邮件：%(user_email)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:13
 #: templates/zerver/emails/notify_new_login.html:12
@@ -1689,7 +1690,7 @@ msgstr "我们注意到最近登录了以下Zulip帐户。"
 #: templates/zerver/emails/notify_new_login.html:16
 #, python-format
 msgid "Organization: %(organization_link)s"
-msgstr "社群：%(organization_link)s"
+msgstr "组织：%(organization_link)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:21
 #: templates/zerver/emails/notify_new_login.html:19
@@ -1752,7 +1753,7 @@ msgstr "取消订阅登录通知"
 msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
 "%(email)s on %(realm_uri)s."
-msgstr "有人（可能是你）为%(realm_uri)s社群的Zulip账户%(email)s请求一个新的密码。"
+msgstr "有人（可能是你）为%(realm_uri)s处的Zulip账号%(email)s请求一个新的密码。"
 
 #: templates/zerver/emails/compiled/password_reset.html:14
 #: templates/zerver/emails/password_reset.html:13
@@ -1777,13 +1778,13 @@ msgstr ""
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
 msgid "You do not have an account in that Zulip organization."
-msgstr "您在那个Zulip社群中还没有账户"
+msgstr "您在那个Zulip组织中还没有账号。"
 
 #: templates/zerver/emails/compiled/password_reset.html:27
 #: templates/zerver/emails/password_reset.html:26
 #: templates/zerver/emails/password_reset.txt:16
 msgid "You do have active accounts in the following organization(s)."
-msgstr "您在这些社群中有活跃账户"
+msgstr "您在以下这个(些)组织中有活跃账户"
 
 #: templates/zerver/emails/compiled/password_reset.html:34
 #: templates/zerver/emails/password_reset.html:32
@@ -1791,7 +1792,7 @@ msgstr "您在这些社群中有活跃账户"
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr "您可以尝试在上面的社群中登录或重置密码。"
+msgstr "您可以尝试在上述这个(些)组织中登录或重置密码。"
 
 #: templates/zerver/emails/compiled/password_reset.html:40
 #: templates/zerver/emails/password_reset.html:38
@@ -1848,17 +1849,17 @@ msgstr "尊敬的%(realm_name)s前管理员"
 msgid ""
 "One of your administrators requested reactivation of the previously "
 "deactivated Zulip organization hosted at %(realm_uri)s."
-msgstr "您的一个管理员请求重新激活以前已停用Zulip社群，社群的地址是%(realm_uri)s。"
+msgstr "您的一个管理员请求重新激活以前已停用的Zulip组织，位于%(realm_uri)s。"
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:14
 #: templates/zerver/emails/realm_reactivation.html:13
 msgid "Click the button below to reactivate your organization."
-msgstr "点击下面的按钮重新激活您的社群"
+msgstr "点击下面的按钮重新激活您的组织"
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:15
 #: templates/zerver/emails/realm_reactivation.html:14
 msgid "Reactivate organization"
-msgstr "重新激活社群"
+msgstr "重新激活组织"
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:18
 #: templates/zerver/emails/realm_reactivation.html:17
@@ -1881,7 +1882,7 @@ msgstr "如果不是你请求的变更，请立即联系我们<%(support_email)s
 
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
-msgstr "创建您的 Zulip 社群"
+msgstr "创建您的 Zulip 组织"
 
 #: templates/zerver/emails/confirm_registration.subject.txt:4
 msgid "Activate your Zulip account"
@@ -1965,7 +1966,7 @@ msgid ""
 "organizations hosted by <a href=\"%(external_host)s\">%(external_host)s</a>:"
 msgstr ""
 "您的电子邮件地址 %(email)s 拥有以下由 %(external_host)s 托管的<a "
-"href=\"%(external_host)s\">Zulip</a>社群的帐户："
+"href=\"%(external_host)s\">Zulip</a>组织的帐户："
 
 #: templates/zerver/emails/find_team.subject.txt:1
 msgid "Your Zulip accounts"
@@ -1976,7 +1977,7 @@ msgstr "您的 Zulip 帐户"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
-msgstr "您的电子邮件地址 %(email)s 拥有以下由 %(external_host)s 托管的 Zulip 社群的帐户："
+msgstr "您的电子邮件地址 %(email)s 拥有以下由 %(external_host)s 托管的 Zulip 组织的帐户："
 
 #: templates/zerver/emails/followup_day1.html:11
 #, python-format
@@ -4547,7 +4548,7 @@ msgstr "Zulip 账户安全"
 
 #: zerver/lib/streams.py:228
 msgid "Only organization administrators can send to this stream."
-msgstr "只有社群管理员才能发送到这个频道"
+msgstr "只有组织管理员才能发送到这个频道。"
 
 #: zerver/lib/streams.py:234
 msgid ""
