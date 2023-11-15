@@ -2405,11 +2405,9 @@ _Released 2019-03-01_
 
 - This release adds support for submitting basic usage statistics to
   help the Zulip core team. This feature can be enabled only if a server
-  is using the [Mobile Push Notification Service][mpns-statistics-docs],
+  is using the [Mobile Push Notification Service][mobile-push],
   and is enabled by default in that case. To disable it, set
   `SUBMIT_USAGE_STATISTICS = False` in `/etc/zulip/settings.py`.
-
-[mpns-statistics-docs]: ../production/mobile-push-notifications.md#submitting-statistics
 
 #### Full feature changelog
 
@@ -2648,7 +2646,7 @@ _Released 2018-11-07_
 _Released 2018-05-07_
 
 - Added an automated tool (`manage.py register_server`) to sign up for
-  the [mobile push notifications service](../production/mobile-push-notifications.md).
+  the [mobile push notifications service][mobile-push].
 - Improved rendering of block quotes in mobile push notifications.
 - Improved some installer error messages.
 - Fixed several minor bugs with the new Slack import feature.
