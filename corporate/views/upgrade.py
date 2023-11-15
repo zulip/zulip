@@ -28,7 +28,7 @@ from corporate.models import (
     get_customer_by_realm,
 )
 from corporate.views.billing_page import billing_home
-from zerver.actions.users import do_make_user_billing_admin
+from zerver.actions.users import do_change_is_billing_admin
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -205,7 +205,7 @@ def sponsorship(
                 realm.save(update_fields=["org_type"])
 
             billing_session.update_customer_sponsorship_status(True)
-            do_make_user_billing_admin(user)
+            do_change_is_billing_admin(user, True)
 
             org_type_display_name = get_org_type_display_name(org_type)
 
