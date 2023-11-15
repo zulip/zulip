@@ -1184,27 +1184,23 @@ li.topic-list-item {
     .heading-markers-and-controls {
         grid-area: markers-and-controls;
         height: 100%;
+        display: flex;
+        align-items: center;
+        grid-gap: 5px;
     }
 
     #filter_streams_tooltip {
         display: flex;
         align-items: center;
         justify-content: center;
-        /* Filter streams tooltip is just a block,
-           not a flex or grid item at present,
-           so we fill the row height this way. */
-        height: 100%;
+        width: 15px;
     }
 
-    /* TODO: In the redesign, the streams icons will
-       be grouped and placed to the left of a new
-       unread count on Streams. */
     #add_streams_tooltip {
-        grid-area: ending-anchor-element;
-        align-self: stretch;
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 15px;
     }
 
     .input-append {
