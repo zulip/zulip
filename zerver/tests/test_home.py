@@ -212,6 +212,7 @@ class HomeTest(ZulipTestCase):
         "settings_send_digest_emails",
         "show_billing",
         "show_plans",
+        "show_remote_billing",
         "show_webathena",
         "sponsorship_pending",
         "starred_messages",
@@ -364,6 +365,7 @@ class HomeTest(ZulipTestCase):
             "server_sentry_dsn",
             "show_billing",
             "show_plans",
+            "show_remote_billing",
             "show_webathena",
             "sponsorship_pending",
             "test_suite",
@@ -831,6 +833,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
         self.assertEqual(page_params["max_message_id"], -1)
 
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     def test_get_billing_info(self) -> None:
         user = self.example_user("desdemona")
         user.role = UserProfile.ROLE_REALM_OWNER
@@ -841,6 +844,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # realm owner, with inactive CustomerPlan and realm plan_type SELF_HOSTED -> show only billing link
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
@@ -857,6 +861,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # realm owner, with inactive CustomerPlan and realm plan_type LIMITED -> show billing link and plans
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
@@ -865,6 +870,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertTrue(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # Always false without CORPORATE_ENABLED
         with self.settings(CORPORATE_ENABLED=False):
@@ -872,6 +878,8 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        # show_remote_billing is independent of CORPORATE_ENABLED
+        self.assertTrue(billing_info.show_remote_billing)
 
         # Always false without a UserProfile
         with self.settings(CORPORATE_ENABLED=True):
@@ -879,6 +887,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # realm admin, with CustomerPlan and realm plan_type LIMITED -> don't show any links
         # Only billing admin and realm owner have access to billing.
@@ -889,6 +898,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # billing admin, with CustomerPlan and realm plan_type STANDARD -> show only billing link
         user.role = UserProfile.ROLE_MEMBER
@@ -900,6 +910,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # billing admin, with CustomerPlan and realm plan_type PLUS -> show only billing link
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
@@ -909,6 +920,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
@@ -919,6 +931,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # guest, with CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_GUEST
@@ -929,6 +942,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # billing admin, but no CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_MEMBER
@@ -940,6 +954,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # billing admin, with sponsorship pending and realm plan_type SELF_HOSTED -> show only sponsorship pending link
         customer.sponsorship_pending = True
@@ -949,6 +964,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertTrue(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # billing admin, no customer object and realm plan_type SELF_HOSTED -> no links
         customer.delete()
@@ -957,6 +973,13 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
+
+        # If the server doesn't have the push bouncer configured,
+        # don't show remote billing.
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_remote_billing)
 
     def test_promote_sponsoring_zulip_in_realm(self) -> None:
         realm = get_realm("zulip")

@@ -46,6 +46,7 @@ class ErrorCode(Enum):
     REACTION_ALREADY_EXISTS = auto()
     REACTION_DOES_NOT_EXIST = auto()
     SERVER_NOT_READY = auto()
+    MISSING_REMOTE_REALM = auto()
 
 
 class JsonableError(Exception):
@@ -570,3 +571,16 @@ class ApiParamValidationError(JsonableError):
 class ServerNotReadyError(JsonableError):
     code = ErrorCode.SERVER_NOT_READY
     http_status_code = 500
+
+
+class MissingRemoteRealmError(JsonableError):  # nocoverage
+    code: ErrorCode = ErrorCode.MISSING_REMOTE_REALM
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Organization not registered")

@@ -15,6 +15,13 @@ from corporate.views.portico import (
     plans_view,
     team_view,
 )
+from corporate.views.remote_billing_page import (
+    remote_billing_page_realm,
+    remote_billing_page_server,
+    remote_billing_plans_realm,
+    remote_billing_plans_server,
+    remote_server_billing_finalize_login,
+)
 from corporate.views.session import (
     start_card_update_stripe_session,
     start_card_update_stripe_session_for_realm_upgrade,
@@ -146,4 +153,19 @@ urlpatterns = list(i18n_urlpatterns)
 urlpatterns += [
     path("api/v1/", include(v1_api_and_json_patterns)),
     path("json/", include(v1_api_and_json_patterns)),
+]
+
+urlpatterns += [
+    path(
+        "remote-billing-login/<signed_billing_access_token>", remote_server_billing_finalize_login
+    ),
+    # Remote server billling endpoints.
+    path("realm/<realm_uuid>/plans", remote_billing_plans_realm, name="remote_billing_plans_realm"),
+    path(
+        "server/<server_uuid>/plans",
+        remote_billing_plans_server,
+        name="remote_billing_plans_server",
+    ),
+    path("realm/<realm_uuid>/billing", remote_billing_page_realm, name="remote_billing_page_realm"),
+    path("server/<server_uuid>/", remote_billing_page_server, name="remote_billing_page_server"),
 ]

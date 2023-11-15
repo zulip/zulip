@@ -1,6 +1,6 @@
 import logging
 import urllib
-from typing import Any, Dict, List, Mapping, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import orjson
 import requests
@@ -11,7 +11,7 @@ from pydantic import UUID4, BaseModel, ConfigDict
 
 from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.models import Realm, RealmAuditLog
@@ -41,6 +41,12 @@ class RealmDataForAnalytics(BaseModel):
 
     uuid: UUID4
     uuid_owner_secret: str
+
+
+class UserDataForRemoteBilling(BaseModel):
+    uuid: UUID4
+    email: str
+    full_name: str
 
 
 def send_to_push_bouncer(
@@ -117,6 +123,14 @@ def send_to_push_bouncer(
             from zerver.lib.push_notifications import InvalidRemotePushDeviceTokenError
 
             raise InvalidRemotePushDeviceTokenError
+        elif (
+            endpoint == "server/billing"
+            and "code" in result_dict
+            and result_dict["code"] == "MISSING_REMOTE_REALM"
+        ):  # nocoverage
+            # The callers requesting this endpoint want the exception to propagate
+            # so they can catch it.
+            raise MissingRemoteRealmError
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)
@@ -186,8 +200,11 @@ def build_analytics_data(
     )
 
 
-def get_realms_info_for_push_bouncer() -> List[RealmDataForAnalytics]:
+def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[RealmDataForAnalytics]:
     realms = Realm.objects.order_by("id")
+    if realm_id is not None:  # nocoverage
+        realms = realms.filter(id=realm_id)
+
     realm_info_list = [
         RealmDataForAnalytics(
             id=realm.id,
