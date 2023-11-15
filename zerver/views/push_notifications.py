@@ -1,17 +1,30 @@
 import re
 from typing import Optional
 
-from django.http import HttpRequest, HttpResponse
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.utils.translation import gettext as _
 
-from zerver.decorator import human_users_only
-from zerver.lib.exceptions import JsonableError
+from zerver.decorator import human_users_only, zulip_login_required
+from zerver.lib.exceptions import (
+    JsonableError,
+    MissingRemoteRealmError,
+    OrganizationOwnerRequiredError,
+)
 from zerver.lib.push_notifications import (
     InvalidPushDeviceTokenError,
     add_push_device_token,
     b64_to_hex,
     remove_push_device_token,
     send_test_push_notification,
+    uses_notification_bouncer,
+)
+from zerver.lib.remote_server import (
+    UserDataForRemoteBilling,
+    get_realms_info_for_push_bouncer,
+    send_realms_only_to_push_bouncer,
+    send_to_push_bouncer,
 )
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -101,3 +114,45 @@ def send_test_push_notification_api(
     send_test_push_notification(user_profile, devices)
 
     return json_success(request)
+
+
+@zulip_login_required
+def self_hosting_auth_redirect(request: HttpRequest) -> HttpResponse:  # nocoverage
+    if not settings.DEVELOPMENT or not uses_notification_bouncer():
+        return render(request, "404.html", status=404)
+
+    user = request.user
+    assert user.is_authenticated
+    assert isinstance(user, UserProfile)
+    if not user.has_billing_access:
+        # We may want to replace this with an html error page at some point,
+        # but this endpoint shouldn't be accessible via the UI to an unauthorized
+        # user - and they need to directly enter the URL in their browser. So a json
+        # error may be sufficient.
+        raise OrganizationOwnerRequiredError
+
+    realm_info = get_realms_info_for_push_bouncer(user.realm_id)[0]
+
+    user_info = UserDataForRemoteBilling(
+        uuid=user.uuid,
+        email=user.delivery_email,
+        full_name=user.full_name,
+    )
+
+    post_data = {
+        "user": user_info.model_dump_json(),
+        "realm": realm_info.model_dump_json(),
+    }
+    try:
+        result = send_to_push_bouncer("POST", "server/billing", post_data)
+    except MissingRemoteRealmError:
+        # Upload realm info and re-try. It should work now.
+        send_realms_only_to_push_bouncer()
+        result = send_to_push_bouncer("POST", "server/billing", post_data)
+
+    if result["result"] != "success":
+        raise JsonableError(_("Error returned by the bouncer: {result}").format(result=result))
+
+    redirect_url = result["billing_access_url"]
+    assert isinstance(redirect_url, str)
+    return HttpResponseRedirect(redirect_url)
