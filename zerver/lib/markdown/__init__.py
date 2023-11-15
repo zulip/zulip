@@ -39,6 +39,7 @@ import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
 import markdown.postprocessors
+import markdown.preprocessors
 import markdown.treeprocessors
 import markdown.util
 import re2
@@ -50,7 +51,7 @@ from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from soupsieve import escape as css_escape
 from tlds import tld_set
-from typing_extensions import TypeAlias, override
+from typing_extensions import Self, TypeAlias, override
 
 from zerver.lib import mention
 from zerver.lib.cache import cache_with_key
@@ -2160,11 +2161,11 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
-def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
+def get_sub_registry(r: markdown.util.Registry[T], keys: List[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
     # object instead of removing keys from the existing object.
-    new_r = markdown.util.Registry()
+    new_r = markdown.util.Registry[T]()
     for k in keys:
         new_r.register(r[k], k, r.get_index_for_name(k))
     return new_r
@@ -2208,7 +2209,7 @@ class ZulipMarkdown(markdown.Markdown):
         self.set_output_format("html")
 
     @override
-    def build_parser(self) -> markdown.Markdown:
+    def build_parser(self) -> Self:
         # Build the parser using selected default features from Python-Markdown.
         # The complete list of all available processors can be found in the
         # super().build_parser() function.
@@ -2224,12 +2225,12 @@ class ZulipMarkdown(markdown.Markdown):
         self.handle_zephyr_mirror()
         return self
 
-    def build_preprocessors(self) -> markdown.util.Registry:
+    def build_preprocessors(self) -> markdown.util.Registry[markdown.preprocessors.Preprocessor]:
         # We disable the following preprocessors from upstream:
         #
         # html_block - insecure
         # reference - references don't make sense in a chat context.
-        preprocessors = markdown.util.Registry()
+        preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
         preprocessors.register(
             markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
@@ -2269,7 +2270,7 @@ class ZulipMarkdown(markdown.Markdown):
         )
         return parser
 
-    def build_inlinepatterns(self) -> markdown.util.Registry:
+    def build_inlinepatterns(self) -> markdown.util.Registry[markdown.inlinepatterns.Pattern]:
         # We disable the following upstream inline patterns:
         #
         # backtick -        replaced by ours
@@ -2304,7 +2305,7 @@ class ZulipMarkdown(markdown.Markdown):
         # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
-        reg = markdown.util.Registry()
+        reg = markdown.util.Registry[markdown.inlinepatterns.Pattern]()
         reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), "backtick", 105)
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
@@ -2342,7 +2343,9 @@ class ZulipMarkdown(markdown.Markdown):
         reg.register(UnicodeEmoji(cast(Pattern[str], POSSIBLE_EMOJI_RE), self), "unicodeemoji", 0)
         return reg
 
-    def register_linkifiers(self, registry: markdown.util.Registry) -> markdown.util.Registry:
+    def register_linkifiers(
+        self, registry: markdown.util.Registry[markdown.inlinepatterns.Pattern]
+    ) -> markdown.util.Registry[markdown.inlinepatterns.Pattern]:
         for linkifier in self.linkifiers:
             pattern = linkifier["pattern"]
             registry.register(
@@ -2352,9 +2355,9 @@ class ZulipMarkdown(markdown.Markdown):
             )
         return registry
 
-    def build_treeprocessors(self) -> markdown.util.Registry:
+    def build_treeprocessors(self) -> markdown.util.Registry[markdown.treeprocessors.Treeprocessor]:
         # Here we build all the processors from upstream, plus a few of our own.
-        treeprocessors = markdown.util.Registry()
+        treeprocessors = markdown.util.Registry[markdown.treeprocessors.Treeprocessor]()
         # We get priority 30 from 'hilite' extension
         treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
         treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 20)
@@ -2367,9 +2370,9 @@ class ZulipMarkdown(markdown.Markdown):
             treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
         return treeprocessors
 
-    def build_postprocessors(self) -> markdown.util.Registry:
+    def build_postprocessors(self) -> markdown.util.Registry[markdown.postprocessors.Postprocessor]:
         # These are the default Python-Markdown processors, unmodified.
-        postprocessors = markdown.util.Registry()
+        postprocessors = markdown.util.Registry[markdown.postprocessors.Postprocessor]()
         postprocessors.register(markdown.postprocessors.RawHtmlPostprocessor(self), "raw_html", 20)
         postprocessors.register(
             markdown.postprocessors.AndSubstitutePostprocessor(), "amp_substitute", 15
