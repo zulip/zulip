@@ -262,13 +262,13 @@ li.show-more-topics {
 
         .heading-markers-and-controls {
             grid-area: markers-and-controls;
+            display: flex;
+            gap: 5px;
+            align-items: center;
         }
 
         #show_all_private_messages {
-            grid-area: ending-anchor-element;
-            /* Make the clickable area large
-               around the icon. */
-            align-self: stretch;
+            width: var(--left-sidebar-header-icon-width);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1193,14 +1193,14 @@ li.topic-list-item {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 15px;
+        width: var(--left-sidebar-header-icon-width);
     }
 
     #add_streams_tooltip {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 15px;
+        width: var(--left-sidebar-header-icon-width);
     }
 
     .input-append {
@@ -1380,9 +1380,5 @@ li.topic-list-item {
         top: 0;
         z-index: 1;
         padding: 3px 0 3px $far_left_gutter_size;
-    }
-
-    #show_all_private_messages {
-        margin-right: 5px !important;
     }
 }

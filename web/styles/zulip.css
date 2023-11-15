@@ -98,6 +98,7 @@ body {
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
+    --left-sidebar-header-icon-width: 15px;
 
     /*
     Message box elements and values.
