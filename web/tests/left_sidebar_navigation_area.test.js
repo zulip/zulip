@@ -74,6 +74,7 @@ run_test("update_count_in_dom", () => {
     const counts = {
         mentioned_message_count: 222,
         home_unread_messages: 333,
+        stream_unread_messages: 666,
     };
 
     make_elem($(".top_left_mentions"), "<mentioned-count>");
@@ -86,6 +87,8 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_scheduled_messages"), "<scheduled-count>");
 
+    make_elem($("#streams_header"), "<stream-count>");
+
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     left_sidebar_navigation_area.update_starred_count(444);
     // Calls left_sidebar_navigation_area.update_scheduled_messages_row
@@ -95,6 +98,7 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<home-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
     assert.equal($("<scheduled-count>").text(), "555");
+    assert.equal($("<stream-count>").text(), "666");
 
     counts.mentioned_message_count = 0;
     scheduled_messages.get_count = () => 0;

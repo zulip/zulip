@@ -807,6 +807,7 @@ export function get_counts() {
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
     const streams_with_unmuted_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
+    res.stream_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
     res.streams_with_mentions = [...streams_with_mentions];
     res.streams_with_unmuted_mentions = [...streams_with_unmuted_mentions];
