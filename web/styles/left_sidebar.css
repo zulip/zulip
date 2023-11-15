@@ -238,11 +238,9 @@ li.show-more-topics {
 }
 
 .direct-messages-container {
-    #private_messages_section {
-        /* Properly offset all the grid rows
-           in the DM section. */
-        margin-right: 12px;
-    }
+    /* Properly offset all the grid rows
+       in the DM section. */
+    margin-right: 12px;
 
     #private_messages_section_header {
         grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
