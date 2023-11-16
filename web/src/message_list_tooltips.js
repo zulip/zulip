@@ -150,6 +150,11 @@ export function initialize() {
             }
             const $elem = $(instance.reference);
 
+            if ($elem.hasClass("active-emoji-picker-reference")) {
+                // Don't show the tooltip when the emoji picker is open
+                return false;
+            }
+
             const config = {attributes: false, childList: true, subtree: true};
             const target = $elem.parents(".message-list.focused-message-list").get(0);
             const nodes_to_check_for_removal = [
