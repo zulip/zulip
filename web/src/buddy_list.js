@@ -10,10 +10,10 @@ import * as padded_widget from "./padded_widget";
 import * as scroll_util from "./scroll_util";
 
 class BuddyListConf {
-    container_sel = "#buddy-list-users-matching-view";
-    scroll_container_sel = "#buddy_list_wrapper";
-    item_sel = "li.user_sidebar_entry";
-    padding_sel = "#buddy_list_wrapper_padding";
+    container_selector = "#buddy-list-users-matching-view";
+    scroll_container_selector = "#buddy_list_wrapper";
+    item_selector = "li.user_sidebar_entry";
+    padding_selector = "#buddy_list_wrapper_padding";
 
     items_to_html(opts) {
         const html = render_presence_rows({presence_rows: opts.items});
@@ -27,8 +27,8 @@ class BuddyListConf {
 
     get_li_from_key(opts) {
         const user_id = opts.key;
-        const $container = $(this.container_sel);
-        return $container.find(`${this.item_sel}[data-user-id='${CSS.escape(user_id)}']`);
+        const $container = $(this.container_selector);
+        return $container.find(`${this.item_selector}[data-user-id='${CSS.escape(user_id)}']`);
     }
 
     get_key_from_li(opts) {
@@ -84,7 +84,7 @@ export class BuddyList extends BuddyListConf {
         const html = this.items_to_html({
             items,
         });
-        this.$container = $(this.container_sel);
+        this.$container = $(this.container_selector);
         this.$container.append(html);
 
         // Invariant: more_keys.length >= items.length.
@@ -98,7 +98,7 @@ export class BuddyList extends BuddyListConf {
     }
 
     get_items() {
-        const $obj = this.$container.find(`${this.item_sel}`);
+        const $obj = this.$container.find(`${this.item_selector}`);
         return $obj.map((_i, elem) => $(elem));
     }
 
@@ -265,13 +265,15 @@ export class BuddyList extends BuddyListConf {
     fill_screen_with_content() {
         let height = this.height_to_fill();
 
-        const elem = scroll_util.get_scroll_element($(this.scroll_container_sel)).expectOne()[0];
+        const elem = scroll_util
+            .get_scroll_element($(this.scroll_container_selector))
+            .expectOne()[0];
 
         // Add a fudge factor.
         height += 10;
 
         while (this.render_count < this.keys.length) {
-            const padding_height = $(this.padding_sel).height();
+            const padding_height = $(this.padding_selector).height();
             const bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
 
             if (bottom_offset > height) {
@@ -288,12 +290,12 @@ export class BuddyList extends BuddyListConf {
 
     // This is a bit of a hack to make sure we at least have
     // an empty list to start, before we get the initial payload.
-    $container = $(this.container_sel);
+    $container = $(this.container_selector);
 
     start_scroll_handler() {
         // We have our caller explicitly call this to make
         // sure everything's in place.
-        const $scroll_container = scroll_util.get_scroll_element($(this.scroll_container_sel));
+        const $scroll_container = scroll_util.get_scroll_element($(this.scroll_container_selector));
 
         $scroll_container.on("scroll", () => {
             this.fill_screen_with_content();
@@ -304,8 +306,8 @@ export class BuddyList extends BuddyListConf {
         padded_widget.update_padding({
             shown_rows: this.render_count,
             total_rows: this.keys.length,
-            content_sel: this.container_sel,
-            padding_sel: this.padding_sel,
+            content_sel: this.container_selector,
+            padding_selector: this.padding_selector,
         });
     }
 }

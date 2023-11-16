@@ -744,7 +744,7 @@ const update_streams_for_search = _.throttle(actually_update_streams_for_search,
 export function initialize_stream_cursor() {
     stream_cursor = new ListCursor({
         list: {
-            scroll_container_sel: "#left_sidebar_scroll_container",
+            scroll_container_selector: "#left_sidebar_scroll_container",
             find_li(opts) {
                 const stream_id = opts.key;
                 const $li = get_stream_li(stream_id);

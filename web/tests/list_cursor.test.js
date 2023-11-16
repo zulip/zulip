@@ -11,7 +11,7 @@ const {ListCursor} = zrequire("list_cursor");
 
 function basic_conf({first_key, prev_key, next_key}) {
     const list = {
-        scroll_container_sel: "whatever",
+        scroll_container_selector: "whatever",
         find_li() {},
         first_key,
         prev_key,

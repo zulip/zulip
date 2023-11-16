@@ -224,7 +224,7 @@ run_test("scrolling", ({override}) => {
     assert.ok(!tried_to_fill);
 
     buddy_list.start_scroll_handler();
-    $(buddy_list.scroll_container_sel).trigger("scroll");
+    $(buddy_list.scroll_container_selector).trigger("scroll");
 
     assert.ok(tried_to_fill);
 });
