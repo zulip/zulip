@@ -972,7 +972,7 @@ function handle_post_narrow_deactivate_processes(msg_list) {
     message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 }
 
-export function deactivate(message_feed_previously_hidden = false) {
+export function deactivate() {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -990,14 +990,22 @@ export function deactivate(message_feed_previously_hidden = false) {
      */
     search.clear_search_form();
 
-    // If we're already looking at the All messages view, exit without
-    // doing any work.
-    if (
-        narrow_state.filter() === undefined &&
-        !message_feed_previously_hidden &&
-        has_visited_all_messages
-    ) {
+    const coming_from_recent_view = recent_view_util.is_visible();
+    const coming_from_inbox = inbox_util.is_visible();
+
+    if (coming_from_recent_view) {
+        recent_view_ui.hide();
+    } else if (coming_from_inbox) {
+        inbox_ui.hide();
+    } else if (narrow_state.filter() === undefined && has_visited_all_messages) {
+        // If we're already looking at the All messages view, exit without
+        // doing any work.
         return;
+    } else {
+        // We must instead be switching from another message view.
+        // Save the scroll position in that message list, so that
+        // we can restore it if/when we later navigate back to that view.
+        message_lists.save_pre_narrow_offset_for_reload();
     }
 
     has_visited_all_messages = true;
