@@ -34,9 +34,10 @@ class DraftData(BaseModel):
 def further_validated_draft_dict(
     draft_dict: DraftData, user_profile: UserProfile
 ) -> Dict[str, Any]:
-    """Take a draft_dict that was already validated by draft_dict_validator then
-    further sanitize, validate, and transform it. Ultimately return this "further
-    validated" draft dict. It will have a slightly different set of keys the values
+    """Take a DraftData object that was already validated by the @typed_endpoint
+    decorator then further sanitize, validate, and transform it.
+    Ultimately return this "further validated" draft dict.
+    It will have a slightly different set of keys the values
     for which can be used to directly create a Draft object."""
 
     content = normalize_body(draft_dict.content)
@@ -96,10 +97,10 @@ def draft_endpoint(
 
 
 def do_create_drafts(drafts: List[DraftData], user_profile: UserProfile) -> List[Draft]:
-    """Create drafts in bulk for a given user based on the draft dicts. Since
+    """Create drafts in bulk for a given user based on the DraftData objects. Since
     currently, the only place this method is being used (apart from tests) is from
-    the create_draft view, we assume that the drafts_dicts are syntactically valid
-    (i.e. they satisfy the draft_dict_validator)."""
+    the create_draft view, we assume that these are syntactically valid
+    (i.e. they satisfy the @typed_endpoint validation for DraftData)."""
     draft_objects = []
     for draft in drafts:
         valid_draft_dict = further_validated_draft_dict(draft, user_profile)
@@ -127,8 +128,8 @@ def do_create_drafts(drafts: List[DraftData], user_profile: UserProfile) -> List
 
 def do_edit_draft(draft_id: int, draft: DraftData, user_profile: UserProfile) -> None:
     """Edit/update a single draft for a given user. Since the only place this method is being
-    used from (apart from tests) is the edit_draft view, we assume that the drafts_dict is
-    syntactically valid (i.e. it satisfies the draft_dict_validator)."""
+    used from (apart from tests) is the edit_draft view, we assume that the DraftData object
+    is syntactically valid (i.e. it satisfies the @typed_endpoint validation for DraftData)."""
     try:
         draft_object = Draft.objects.get(id=draft_id, user_profile=user_profile)
     except Draft.DoesNotExist:
