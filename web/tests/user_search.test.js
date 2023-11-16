@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 const fake_buddy_list = {
-    scroll_container_sel: "#whatever",
+    scroll_container_selector: "#whatever",
     $container: {
         data() {},
     },
