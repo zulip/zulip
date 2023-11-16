@@ -36,9 +36,22 @@
 
 /* End non-color Zulip customizations. */
 
-/* Begin Quansight-Labs GitHub Styles */
+/* Begin Zulip color customizations. */
 
 /* stylelint-disable color-no-hex, no-duplicate-selectors */
+
+/* GitHub-style simple diff colors. These are
+   the same in light and dark modes. */
+.codehilite .gd {
+    color: #d44;
+} /* Generic.Deleted */
+.codehilite .gi {
+    color: #292;
+} /* Generic.Inserted */
+
+/* End Zulip color customizations. */
+
+/* Begin Quansight-Labs GitHub Styles */
 .codehilite .hll {
     background-color: #0969da4a;
 }
@@ -82,9 +95,6 @@
 .codehilite .cs {
     color: #6e7781;
 } /* Comment.Special */
-.codehilite .gd {
-    color: #0550ae;
-} /* Generic.Deleted */
 .codehilite .ge {
     font-style: italic;
 } /* Generic.Emph */
@@ -299,9 +309,6 @@
     .codehilite .cs {
         color: #8b949e;
     } /* Comment.Special */
-    .codehilite .gd {
-        color: #79c0ff;
-    } /* Generic.Deleted */
     .codehilite .ge {
         font-style: italic;
     } /* Generic.Emph */
