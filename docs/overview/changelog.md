@@ -5,13 +5,7 @@ This page contains the release history for the Zulip server. See also the
 
 ## Zulip Server 8.x series
 
-### Zulip Server 8.0
-
-_Unreleased_
-
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of all changes.
+### 8.0-beta1 -- 2023-11-16
 
 #### Highlights
 
