@@ -10461,15 +10461,20 @@ paths:
           description: |
             Unread count badge (appears in desktop sidebar and browser tab)
 
-            - 1 - All unreads
-            - 2 - Direct messages and mentions
-            - 3 - None
+            - 1 - All unread messages
+            - 2 - DMs, mentions, and followed topics
+            - 3 - DMs and mentions
+            - 4 - None
+
+            **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+            topics` option, renumbering the options to insert it in order.
           schema:
             type: integer
             enum:
               - 1
               - 2
               - 3
+              - 4
           example: 1
         - name: realm_name_in_email_notifications_policy
           in: query
@@ -12742,9 +12747,14 @@ paths:
                             description: |
                               Unread count badge (appears in desktop sidebar and browser tab)
 
-                              - 1 - All unreads
-                              - 2 - Direct messages and mentions
-                              - 3 - None
+                              - 1 - All unread messages
+                              - 2 - DMs, mentions, and followed topics
+                              - 3 - DMs and mentions
+                              - 4 - None
+
+                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              and followed topics` option, renumbering the options to insert it in
+                              order.
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
@@ -14934,9 +14944,14 @@ paths:
                             description: |
                               Unread count badge (appears in desktop sidebar and browser tab)
 
-                              - 1 - All unreads
-                              - 2 - Direct messages and mentions
-                              - 3 - None
+                              - 1 - All unread messages
+                              - 2 - DMs, mentions, and followed topics
+                              - 3 - DMs and mentions
+                              - 4 - None
+
+                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              and followed topics` option, renumbering the options to insert it in
+                              order.
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
@@ -16219,18 +16234,23 @@ paths:
           description: |
             Unread count badge (appears in desktop sidebar and browser tab)
 
-            - 1 - All unreads
-            - 2 - Direct messages and mentions
-            - 3 - None
+            - 1 - All unread messages
+            - 2 - DMs, mentions, and followed topics
+            - 3 - DMs and mentions
+            - 4 - None
 
-            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
-            the `PATCH /settings/notifications` endpoint.
+            **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+            topics` option, renumbering the options to insert it in order.
+
+            Before Zulip 5.0 (feature level 80), this setting was managed by the
+            `PATCH /settings/notifications` endpoint.
           schema:
             type: integer
             enum:
               - 1
               - 2
               - 3
+              - 4
           example: 1
         - name: realm_name_in_email_notifications_policy
           in: query

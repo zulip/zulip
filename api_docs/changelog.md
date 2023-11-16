@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 227**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added `DMs, mentions, and followed topics` option for `desktop_icon_count_display`
+  setting, and renumbered the options.
+  The total unread count of DMs, mentions, and followed topics appears in
+  desktop sidebar and browser tab when this option is configured.
+
 **Feature level 226**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
