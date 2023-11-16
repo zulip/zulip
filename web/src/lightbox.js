@@ -314,13 +314,6 @@ function display_video(payload) {
     $(".media-actions .open").attr("href", payload.url);
 }
 
-function get_asset_map_key_for_media($preview_src, $media) {
-    return asset_map.get([
-        $preview_src,
-        $media.parent().attr("aria-label") || $media.parent().attr("href"),
-    ]);
-}
-
 export function build_open_media_function(on_close) {
     if (on_close === undefined) {
         on_close = function () {
@@ -334,7 +327,7 @@ export function build_open_media_function(on_close) {
         // if the asset_map already contains the metadata required to display the
         // asset, just recall that metadata.
         let $preview_src = $media.attr("src");
-        let payload = get_asset_map_key_for_media($preview_src, $media);
+        let payload = asset_map.get($preview_src);
         if (payload === undefined) {
             if ($preview_src.endsWith("&size=full")) {
                 // while fetching an image for canvas, `src` attribute supplies
@@ -348,7 +341,7 @@ export function build_open_media_function(on_close) {
                 // `data-thumbnail-src` attribute that we add to the
                 // canvas elements.
                 $preview_src = $preview_src.slice(0, -"full".length) + "thumbnail";
-                payload = get_asset_map_key_for_media($preview_src, $media);
+                payload = asset_map.get($preview_src);
             }
             if (payload === undefined) {
                 payload = parse_media_data($media);
@@ -437,7 +430,7 @@ export function parse_media_data(media) {
 
     if (asset_map.has(preview_src)) {
         // check if media's data is already present in asset_map.
-        return get_asset_map_key_for_media(preview_src, $media);
+        return asset_map.get(preview_src);
     }
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
@@ -504,7 +497,7 @@ export function parse_media_data(media) {
         url: util.is_valid_url(url) ? url : "",
     };
 
-    asset_map.set([preview_src, $parent.attr("aria-label") || $parent.attr("href")], payload);
+    asset_map.set(preview_src, payload);
     return payload;
 }
 
