@@ -51,9 +51,7 @@ function maybe_hide_inbox() {
 }
 
 function show_all_message_view() {
-    const coming_from_recent_view = maybe_hide_recent_view();
-    const coming_from_inbox = maybe_hide_inbox();
-    narrow.deactivate(coming_from_recent_view || coming_from_inbox);
+    narrow.deactivate();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
     message_viewport.maybe_scroll_to_selected();
