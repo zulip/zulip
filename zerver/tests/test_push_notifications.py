@@ -25,6 +25,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
+from version import ZULIP_VERSION
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.realm_settings import do_deactivate_realm
@@ -59,7 +60,9 @@ from zerver.lib.remote_server import (
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
     build_analytics_data,
+    get_realms_info_for_push_bouncer,
     send_analytics_to_push_bouncer,
+    send_realms_only_to_push_bouncer,
     send_to_push_bouncer,
 )
 from zerver.lib.response import json_response_from_error
@@ -1444,6 +1447,60 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 skip_audit_log_check=True,
             )
         self.assertIn("Malformed audit log data", m.output[0])
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_send_realms_only_to_push_bouncer(self) -> None:
+        self.add_mock_response()
+        self.example_user("hamlet")
+
+        send_realms_only_to_push_bouncer()
+
+        self.assertEqual(
+            list(
+                RemoteRealm.objects.order_by("id").values(
+                    "server_id",
+                    "uuid",
+                    "uuid_owner_secret",
+                    "host",
+                    "realm_date_created",
+                    "registration_deactivated",
+                    "realm_deactivated",
+                    "plan_type",
+                )
+            ),
+            [
+                {
+                    "server_id": self.server.id,
+                    "uuid": realm.uuid,
+                    "uuid_owner_secret": realm.uuid_owner_secret,
+                    "host": realm.host,
+                    "realm_date_created": realm.date_created,
+                    "registration_deactivated": False,
+                    "realm_deactivated": False,
+                    "plan_type": RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+                }
+                for realm in Realm.objects.order_by("id")
+            ],
+        )
+
+        # Use a mock to assert exactly the data that gets sent.
+        with mock.patch(
+            "zerver.lib.remote_server.send_to_push_bouncer"
+        ) as mock_send_to_push_bouncer:
+            send_realms_only_to_push_bouncer()
+
+        post_data = {
+            "realm_counts": "[]",
+            "installation_counts": "[]",
+            "realms": orjson.dumps(get_realms_info_for_push_bouncer()).decode(),
+            "version": orjson.dumps(ZULIP_VERSION).decode(),
+        }
+        mock_send_to_push_bouncer.assert_called_with(
+            "POST",
+            "server/analytics",
+            post_data,
+        )
 
 
 class PushNotificationTest(BouncerTestCase):
