@@ -229,3 +229,16 @@ def send_analytics_to_push_bouncer() -> None:
         send_to_push_bouncer("POST", "server/analytics", request)
     except JsonableError as e:
         logging.warning(e.msg)
+
+
+def send_realms_only_to_push_bouncer() -> None:
+    request = {
+        "realm_counts": "[]",
+        "installation_counts": "[]",
+        "realms": orjson.dumps(get_realms_info_for_push_bouncer()).decode(),
+        "version": orjson.dumps(ZULIP_VERSION).decode(),
+    }
+
+    # We don't catch JsonableError here, because we want it to propagate further
+    # to either explicitly, loudly fail or be error-handled by the caller.
+    send_to_push_bouncer("POST", "server/analytics", request)
