@@ -46,8 +46,8 @@ from zerver.decorator import (
     require_post,
     require_realm_admin,
 )
-from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.exceptions import (
     JsonableError,
     OrganizationOwnerRequiredError,
