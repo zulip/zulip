@@ -52,9 +52,6 @@ function maybe_hide_inbox() {
 
 function show_all_message_view() {
     narrow.deactivate();
-    // We need to maybe scroll to the selected message
-    // once we have the proper viewport set up
-    message_viewport.maybe_scroll_to_selected();
 }
 
 export function set_hash_to_home_view() {
