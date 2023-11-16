@@ -1821,9 +1821,6 @@ def prepare_linkifier_pattern(source: str) -> str:
     # We use an extended definition of 'whitespace' which is
     # equivalent to \p{White_Space} -- since \s in re2 only matches
     # ASCII spaces, and re2 does not support \p{White_Space}.
-    #
-    # This implementation should be kept in sync with the one in
-    # web/src/linkifiers.js
     regex = rf"""
         (?P<{BEFORE_CAPTURE_GROUP}>
             ^  |

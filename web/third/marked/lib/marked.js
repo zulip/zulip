@@ -650,10 +650,10 @@ InlineLexer.prototype.output = function(src) {
     regexes.forEach(function (regex) {
       var ret = self.inlineReplacement(regex, src, function(regex, groups, match) {
         // Insert the created URL
-        href = self.linkifier(regex, groups.slice(1, -1), match);
+        href = self.linkifier(regex, groups, match);
         if (href !== undefined) {
           href = escape(href);
-          return groups[0] + self.renderer.link(href, href, groups[1]) + groups.slice(-1)[0]
+          return self.renderer.link(href, href, match);
         } else {
           return match;
         }
