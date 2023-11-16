@@ -54,7 +54,7 @@ class SendLoginEmailTest(ZulipTestCase):
             )
             user_tz = zoneinfo.ZoneInfo(user.timezone)
             mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
-            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M%p %Z")
+            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M %p %Z")
             with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
                 self.client_post(
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
