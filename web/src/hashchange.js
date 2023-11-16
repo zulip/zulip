@@ -12,7 +12,6 @@ import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
 import * as narrow from "./narrow";
@@ -54,8 +53,7 @@ function maybe_hide_inbox() {
 function show_all_message_view() {
     const coming_from_recent_view = maybe_hide_recent_view();
     const coming_from_inbox = maybe_hide_inbox();
-    const is_actively_scrolling = message_scroll.is_actively_scrolling();
-    narrow.deactivate(coming_from_recent_view || coming_from_inbox, is_actively_scrolling);
+    narrow.deactivate(coming_from_recent_view || coming_from_inbox);
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
     setTimeout(message_viewport.maybe_scroll_to_selected, 0);
