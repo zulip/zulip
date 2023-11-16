@@ -19,7 +19,7 @@
             {% trans user_email=macros.email_tag(user_email) %}Email: {{ user_email }}{% endtrans %}
         </li>
         <li>
-            {% trans %}Time: {{ login_time }}{% endtrans %}
+            {% trans %}Time: {{ login_time|replace:"AM" :" AM"|replace:"PM" :" PM" }} {% endtrans %}
         </li>
         <li>
             {% trans %}Device: {{ device_browser }} on {{ device_os }}.{% endtrans %}
