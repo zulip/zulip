@@ -15710,6 +15710,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
