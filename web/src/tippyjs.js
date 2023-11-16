@@ -152,9 +152,9 @@ export function initialize() {
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onShow(instance) {
-            const $container = instance.popper.querySelector(".views-tooltip-container");
-            if ($($container).data("view-code") === user_settings.web_home_view) {
-                $($container).find(".views-tooltip-home-view-note").removeClass("hide");
+            const container = instance.popper.querySelector(".views-tooltip-container");
+            if ($(container).data("view-code") === user_settings.web_home_view) {
+                $(container).find(".views-tooltip-home-view-note").removeClass("hide");
             }
         },
         onHidden(instance) {
