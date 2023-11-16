@@ -839,7 +839,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/billing/", response["Location"])
 
         # Check /billing/ has the correct information
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_not_in_success_response(["Pay annually"], response)
         for substring in [
@@ -974,7 +974,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/billing/", response["Location"])
 
         # Check /billing/ has the correct information
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_not_in_success_response(["Pay annually", "Update card"], response)
         for substring in [
@@ -1093,7 +1093,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
             self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
 
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_get("/billing/")
             self.assert_not_in_success_response(["Pay annually"], response)
             for substring in [
@@ -1111,7 +1111,7 @@ class StripeTest(StripeTestCase):
                 self.assert_in_response(substring, response)
             self.assert_not_in_success_response(["Go to your Zulip organization"], response)
 
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_get("/billing/", {"onboarding": "true"})
                 self.assert_in_success_response(["Go to your Zulip organization"], response)
 
@@ -1214,7 +1214,7 @@ class StripeTest(StripeTestCase):
         plan.fixed_price = 127
         plan.price_per_license = None
         plan.save(update_fields=["fixed_price", "price_per_license"])
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(["$1.27"], response)
         # Don't show price breakdown
@@ -1371,7 +1371,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
             self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
 
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_get("/billing/")
             self.assert_not_in_success_response(["Pay annually"], response)
             for substring in [
@@ -2643,14 +2643,12 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), None)
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             mock_customer = Mock(email=user.delivery_email)
             mock_customer.invoice_settings.default_payment_method = Mock(
                 spec=stripe.PaymentMethod, type=Mock()
             )
-            with patch(
-                "corporate.views.billing_page.stripe_get_customer", return_value=mock_customer
-            ):
+            with patch("corporate.lib.stripe.stripe_get_customer", return_value=mock_customer):
                 response = self.client_get("/billing/")
                 self.assert_in_success_response(
                     [
@@ -2756,7 +2754,7 @@ class StripeTest(StripeTestCase):
                 self.assert_json_success(response)
         monthly_plan.refresh_from_db()
         self.assertEqual(monthly_plan.status, CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE)
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(
             ["Your plan will switch to annual billing on February 2, 2012"], response
@@ -2946,7 +2944,7 @@ class StripeTest(StripeTestCase):
                 self.assert_json_success(response)
         monthly_plan.refresh_from_db()
         self.assertEqual(monthly_plan.status, CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE)
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(
             ["Your plan will switch to annual billing on February 2, 2012"], response

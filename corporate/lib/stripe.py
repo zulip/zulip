@@ -62,6 +62,16 @@ VALID_BILLING_MODALITY_VALUES = ["send_invoice", "charge_automatically"]
 VALID_BILLING_SCHEDULE_VALUES = ["annual", "monthly"]
 VALID_LICENSE_MANAGEMENT_VALUES = ["automatic", "manual"]
 
+CARD_CAPITALIZATION = {
+    "amex": "American Express",
+    "diners": "Diners Club",
+    "discover": "Discover",
+    "jcb": "JCB",
+    "mastercard": "Mastercard",
+    "unionpay": "UnionPay",
+    "visa": "Visa",
+}
+
 # The version of Stripe API the billing system supports.
 STRIPE_API_VERSION = "2020-08-27"
 
@@ -252,14 +262,18 @@ def next_invoice_date(plan: CustomerPlan) -> Optional[datetime]:
     return dt
 
 
-def renewal_amount(plan: CustomerPlan, event_time: datetime) -> int:  # nocoverage: TODO
+def renewal_amount(
+    plan: CustomerPlan, event_time: datetime, last_ledger_entry: Optional[LicenseLedger] = None
+) -> int:  # nocoverage: TODO
     if plan.fixed_price is not None:
         return plan.fixed_price
-    realm = plan.customer.realm
-    billing_session = RealmBillingSession(user=None, realm=realm)
-    new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-        plan, event_time
-    )
+    new_plan = None
+    if last_ledger_entry is None:
+        realm = plan.customer.realm
+        billing_session = RealmBillingSession(user=None, realm=realm)
+        new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
+            plan, event_time
+        )
     if last_ledger_entry is None:
         return 0
     if last_ledger_entry.licenses_at_next_renewal is None:
@@ -278,6 +292,32 @@ def get_idempotency_key(ledger_entry: LicenseLedger) -> Optional[str]:
 
 def cents_to_dollar_string(cents: int) -> str:
     return f"{cents / 100.:,.2f}"
+
+
+# Should only be called if the customer is being charged automatically
+def payment_method_string(stripe_customer: stripe.Customer) -> str:
+    assert stripe_customer.invoice_settings is not None
+    default_payment_method = stripe_customer.invoice_settings.default_payment_method
+    if default_payment_method is None:
+        return _("No payment method on file.")
+
+    assert isinstance(default_payment_method, stripe.PaymentMethod)
+    if default_payment_method.type == "card":
+        assert default_payment_method.card is not None
+        brand_name = default_payment_method.card.brand
+        if brand_name in CARD_CAPITALIZATION:
+            brand_name = CARD_CAPITALIZATION[default_payment_method.card.brand]
+        return _("{brand} ending in {last4}").format(
+            brand=brand_name,
+            last4=default_payment_method.card.last4,
+        )
+    # There might be one-off stuff we do for a particular customer that
+    # would land them here. E.g. by default we don't support ACH for
+    # automatic payments, but in theory we could add it for a customer via
+    # the Stripe dashboard.
+    return _("Unknown payment method. Please contact {email}.").format(
+        email=settings.ZULIP_ADMINISTRATOR,
+    )  # nocoverage
 
 
 class BillingError(JsonableError):
@@ -968,6 +1008,81 @@ class BillingSession(ABC):
                 self.process_downgrade(plan)
             return None, None
         return None, last_ledger_entry
+
+    def get_billing_page_context(self) -> Dict[str, Any]:
+        customer = self.get_customer()
+        assert customer is not None
+        plan = get_current_plan_by_customer(customer)
+        context: Dict[str, Any] = {}
+        if plan is not None:
+            now = timezone_now()
+            new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
+            if last_ledger_entry is not None:
+                if new_plan is not None:  # nocoverage
+                    plan = new_plan
+                assert plan is not None  # for mypy
+                downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+                switch_to_annual_at_end_of_cycle = (
+                    plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
+                )
+                licenses = last_ledger_entry.licenses
+                licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+                seat_count = self.current_count_for_billed_licenses()
+
+                # Should do this in JavaScript, using the user's time zone
+                if plan.is_free_trial():
+                    assert plan.next_invoice_date is not None
+                    renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
+                else:
+                    renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
+                        dt=start_of_next_billing_cycle(plan, now)
+                    )
+
+                renewal_cents = renewal_amount(plan, now, last_ledger_entry)
+                charge_automatically = plan.charge_automatically
+                assert customer.stripe_customer_id is not None  # for mypy
+                stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+                if charge_automatically:
+                    payment_method = payment_method_string(stripe_customer)
+                else:
+                    payment_method = "Billed by invoice"
+
+                fixed_price = (
+                    cents_to_dollar_string(plan.fixed_price)
+                    if plan.fixed_price is not None
+                    else None
+                )
+
+                billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
+
+                if plan.price_per_license is None:
+                    price_per_license = ""
+                elif billing_frequency == "Annual":
+                    price_per_license = format_money(plan.price_per_license / 12)
+                else:
+                    price_per_license = format_money(plan.price_per_license)
+
+                context = {
+                    "plan_name": plan.name,
+                    "has_active_plan": True,
+                    "free_trial": plan.is_free_trial(),
+                    "downgrade_at_end_of_cycle": downgrade_at_end_of_cycle,
+                    "automanage_licenses": plan.automanage_licenses,
+                    "switch_to_annual_at_end_of_cycle": switch_to_annual_at_end_of_cycle,
+                    "licenses": licenses,
+                    "licenses_at_next_renewal": licenses_at_next_renewal,
+                    "seat_count": seat_count,
+                    "renewal_date": renewal_date,
+                    "renewal_amount": cents_to_dollar_string(renewal_cents),
+                    "payment_method": payment_method,
+                    "charge_automatically": charge_automatically,
+                    "stripe_email": stripe_customer.email,
+                    "CustomerPlan": CustomerPlan,
+                    "billing_frequency": billing_frequency,
+                    "fixed_price": fixed_price,
+                    "price_per_license": price_per_license,
+                }
+        return context
 
 
 class RealmBillingSession(BillingSession):
