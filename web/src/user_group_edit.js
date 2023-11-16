@@ -203,15 +203,29 @@ export function handle_member_edit_event(group_id, user_ids) {
 
     // update display of check-mark.
     if (is_group_already_present(group)) {
-        const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
-        const $join_leave_button = row_for_group_id(group_id).find(".join_leave_button");
-        if (is_member) {
-            $join_leave_button.removeClass("disabled");
-            $join_leave_button.addClass("checked");
-        } else {
-            $join_leave_button.removeClass("checked");
-            $join_leave_button.addClass("disabled");
+        const $row = row_for_group_id(group_id);
+
+        const item = group;
+        item.is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
+        item.can_edit = settings_data.can_edit_user_group(item.id);
+        const html = render_browse_user_groups_list_item(item);
+        const $new_row = $(html);
+
+        // TODO: Remove this if/when we just handle "active" when rendering templates.
+        if ($row.hasClass("active")) {
+            $new_row.addClass("active");
         }
+
+        $row.replaceWith($new_row);
+    }
+
+    if (
+        !is_editing_group(group_id) &&
+        user_ids.includes(people.my_current_user_id()) &&
+        user_groups.is_user_in_group(group_id, people.my_current_user_id())
+    ) {
+        const $group_row = row_for_group_id(group.id);
+        open_group_edit_panel_for_row($group_row);
     }
 
     // update_settings buttons.
@@ -630,6 +644,7 @@ export function setup_page(callback) {
                     people.my_current_user_id(),
                     item.id,
                 );
+                item.can_edit = settings_data.can_edit_user_group(item.id);
                 return render_browse_user_groups_list_item(item);
             },
             filter: {
@@ -777,6 +792,11 @@ export function initialize() {
     });
 
     $("#groups_overlay_container").on("click", ".join_leave_button", (e) => {
+        if ($(e.currentTarget).hasClass("disabled")) {
+            // We return early if user is not allowed to join or leave a group.
+            return;
+        }
+
         const user_group_id = get_user_group_id(e.target);
         const user_group = user_groups.get_user_group_from_id(user_group_id);
         add_or_remove_from_group(user_group);
