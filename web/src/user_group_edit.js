@@ -557,6 +557,7 @@ function redraw_left_panel(tab_name) {
     }
     groups_list_data.sort(compare_by_name);
     group_list_widget.replace_list_data(groups_list_data);
+    update_empty_left_panel_message();
 }
 
 export function redraw_user_group_list() {
@@ -591,6 +592,31 @@ export function add_or_remove_from_group(group) {
             error() {},
         });
     }
+}
+
+export function update_empty_left_panel_message() {
+    // Check if we have any groups in panel to decide whether to
+    // display a notice.
+    let has_groups;
+    const is_your_groups_tab_active =
+        get_active_data().$tabs.first().attr("data-tab-key") === "your-groups";
+    if (is_your_groups_tab_active) {
+        has_groups = user_groups.get_user_groups_of_user(people.my_current_user_id()).length;
+    } else {
+        has_groups = user_groups.get_realm_user_groups().length;
+    }
+    if (has_groups) {
+        $(".no-groups-to-show").hide();
+        return;
+    }
+    if (is_your_groups_tab_active) {
+        $(".all_groups_tab_empty_text").hide();
+        $(".your_groups_tab_empty_text").show();
+    } else {
+        $(".your_groups_tab_empty_text").hide();
+        $(".all_groups_tab_empty_text").show();
+    }
+    $(".no-groups-to-show").show();
 }
 
 export function setup_page(callback) {
