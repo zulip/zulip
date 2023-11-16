@@ -1357,10 +1357,12 @@ li.topic-list-item {
             display: block;
             /* TODO: Rewrite the show-more and show-less
                buttons as grids alongside the left sidebar
-               header rewrites. The 6px left padding here
+               header rewrites. The 12px left padding here
                aligns the "back to streams" text with the
-               DIRECT MESSAGES heading above. */
-            padding: 2px 0 2px 6px;
+               DIRECT MESSAGES heading above, which itself
+               is offset -3 px to the left, but reserves
+               15px for the arrow marker. 15px - 3px = 12px. */
+            padding: 2px 0 2px 12px;
         }
 
         &:hover {
@@ -1379,6 +1381,5 @@ li.topic-list-item {
         position: sticky;
         top: 0;
         z-index: 1;
-        padding: 3px 0 3px $far_left_gutter_size;
     }
 }
